@@ -166,29 +166,29 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		})
 	}, 'timelineTriggerTime$0,$1')
-	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
-		// This is called from the playout-gateway when a segmentLine starts playing.
-		// Note that this function can / might be called several times from playout-gateway for the same segmentLine
+	export function partPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
+		// This is called from the playout-gateway when a part starts playing.
+		// Note that this function can / might be called several times from playout-gateway for the same part
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.slId, String)
+		check(r.partId, String)
 
-		// Meteor.call('playout_segmentLinePlaybackStart', r.rundownId, r.slId, r.time)
-		ServerPlayoutAPI.slPlaybackStartedCallback(r.rundownId, r.slId, r.time)
+		// Meteor.call('playout_partPlaybackStart', r.rundownId, r.partId, r.time)
+		ServerPlayoutAPI.partPlaybackStartedCallback(r.rundownId, r.partId, r.time)
 	}
-	export function segmentLinePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStoppedResult) {
+	export function partPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStoppedResult) {
 		// This is called from the playout-gateway when an
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.slId, String)
+		check(r.partId, String)
 
-		ServerPlayoutAPI.slPlaybackStoppedCallback(r.rundownId, r.slId, r.time)
+		ServerPlayoutAPI.partPlaybackStoppedCallback(r.rundownId, r.partId, r.time)
 	}
 	export function piecePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -363,26 +363,26 @@ postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMe
 	/*
 	let segment = convertToSegment(story, rundownId, 0)
 	let rank = 0
-	saveIntoDb(SegmentLines, {
+	saveIntoDb(Parts, {
 		rundownId: rundownId,
 		segmentId: segment._id
 	}, _.map(story.Items, (item: IMOSItem) => {
-		return convertToSegmentLine(item, rundownId, segment._id, rank++)
+		return convertToPart(item, rundownId, segment._id, rank++)
 	}), {
 		afterInsert (o) {
 			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
 			if (item) {
-				afterInsertUpdateSegmentLine(item, rundownId, segment._id)
+				afterInsertUpdatePart(item, rundownId, segment._id)
 			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
 		},
 		afterUpdate (o) {
 			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
 			if (item) {
-				afterInsertUpdateSegmentLine(item, rundownId, segment._id)
+				afterInsertUpdatePart(item, rundownId, segment._id)
 			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
 		},
 		afterRemove (o) {
-			afterRemoveSegmentLine(o._id)
+			afterRemovePart(o._id)
 		}
 	})
 	*/
@@ -404,11 +404,11 @@ methods[PeripheralDeviceAPI.methods.ping] = (deviceId: string, deviceToken: stri
 methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.partPlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.partPlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLinePlaybackStopped(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.partPlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.partPlaybackStopped(deviceId, deviceToken, r)
 }
 methods[PeripheralDeviceAPI.methods.piecePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.piecePlaybackStopped(deviceId, deviceToken, r)

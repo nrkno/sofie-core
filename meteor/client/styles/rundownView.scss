@@ -16,7 +16,7 @@ $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-guest: $general-live-guest-color;
 $segment-title-background-color-has-played: #2c2c2c;
-$segment-line-start-color: #a5a5a5;
+$part-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
@@ -547,33 +547,33 @@ body.vertical-overflow-only {
 			white-space: nowrap;
 			padding: 0;
 
-			.segment-timeline__segment-line {
+			.segment-timeline__part {
 				vertical-align: top;
 				z-index: inherit;
 
-				.segment-timeline__segment-line__nextline {
+				.segment-timeline__part__nextline {
 					border-left-width: 1px;
 
 					&::before, &::after {
 						display: none;
 					}
 
-					&.segment-timeline__segment-line__nextline--endline {
+					&.segment-timeline__part__nextline--endline {
 						display: none;
 					}
 
-					.segment-timeline__segment-line__nextline__label {
+					.segment-timeline__part__nextline__label {
 						display: none;
 					}
 				}
 
 				&.next {
-					.segment-timeline__segment-line__nextline {
+					.segment-timeline__part__nextline {
 						&::before, &::after {
 							display: none;
 						}
 
-						.segment-timeline__segment-line__nextline__label {
+						.segment-timeline__part__nextline__label {
 							display: none;
 						}
 					}
@@ -618,7 +618,7 @@ body.vertical-overflow-only {
 					display: none;
 				}
 
-				.segment-timeline__segment-line__difference {
+				.segment-timeline__part__difference {
 					background: rgba(0, 0, 0, 0.5);	
 				}
 			}
@@ -725,8 +725,8 @@ body.vertical-overflow-only {
 				}
 			}
 		}
-		.segment-timeline__segment-line {
-			.segment-timeline__segment-line__invalid-cover {
+		.segment-timeline__part {
+			.segment-timeline__part__invalid-cover {
 				background-image:
 					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
 					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
@@ -897,8 +897,8 @@ body.vertical-overflow-only {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
-		// Segment line is an element grouping all segment-lines
-		.segment-timeline__segment-line {
+		// Part is an element grouping all parts
+		.segment-timeline__part {
 			position: relative;
 			z-index: 1;
 			transform-style: preserve-3d;
@@ -908,7 +908,7 @@ body.vertical-overflow-only {
 				-webkit-backface-visibility: hidden;
 			}
 
-			&.segment-timeline__segment-line--end-of-segment {
+			&.segment-timeline__part--end-of-segment {
 				background: $segment-background-color;
 				height: 100%;
 				top: 0;
@@ -919,7 +919,7 @@ body.vertical-overflow-only {
 				background-color: #333;
 			}
 
-			.segment-timeline__segment-line__previewline {
+			.segment-timeline__part__previewline {
 				display: block;
 				position: absolute;
 				top: -13px;
@@ -929,23 +929,23 @@ body.vertical-overflow-only {
 				z-index: 10;
 			}
 
-			.segment-timeline__segment-line__nextline {
+			.segment-timeline__part__nextline {
 				display: block;
 				position: absolute;
 				top: -13px;
 				left: 0;
 				bottom: -1.3em;
 				flex: 0;
-				border-left: 2px solid $segment-line-start-color;
+				border-left: 2px solid $part-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
 				transform: translate3d(0,0,50px);
 
-				&.segment-timeline__segment-line__nextline--endline {
+				&.segment-timeline__part__nextline--endline {
 					left: auto;
 					right: 0;
 				}
 
-				.segment-timeline__segment-line__nextline__label {
+				.segment-timeline__part__nextline__label {
 					display: none;
 					text-transform: uppercase;
 					position: absolute;
@@ -956,13 +956,13 @@ body.vertical-overflow-only {
 					line-height: 1em;
 					white-space: nowrap;
 					word-wrap: none;
-					color: $segment-line-start-color;
+					color: $part-start-color;
 
-					&.segment-timeline__segment-line__nextline__label--thin {
+					&.segment-timeline__part__nextline__label--thin {
 						font-weight: 400;
 					}
 
-					.segment-timeline__segment-line__nextline__label__carriage-return {
+					.segment-timeline__part__nextline__label__carriage-return {
 						width: 20px;
 						height: 15px;
 						position: relative;
@@ -971,7 +971,7 @@ body.vertical-overflow-only {
 						display: inline-block;
 
 						> svg {
-							fill: $segment-line-start-color;
+							fill: $part-start-color;
 						}
 					}
 				}
@@ -986,7 +986,7 @@ body.vertical-overflow-only {
 					height: 0;
 					border-style: solid;
 					border-width: 5px 0 5px 9px;
-					border-color: transparent transparent transparent $segment-line-start-color;
+					border-color: transparent transparent transparent $part-start-color;
 				}
 
 				&::before {
@@ -999,11 +999,11 @@ body.vertical-overflow-only {
 					height: 0;
 					border-style: solid;
 					border-width: 5px 0 5px 9px;
-					border-color: transparent transparent transparent $segment-line-start-color;
+					border-color: transparent transparent transparent $part-start-color;
 				}
 			}
 
-			.segment-timeline__segment-line__invalid-cover {
+			.segment-timeline__part__invalid-cover {
 				position: absolute;
 				top: 0;
 				left: 0;
@@ -1018,15 +1018,15 @@ body.vertical-overflow-only {
 			}
 
 			&:not(.live) {
-				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline),
-				.segment-timeline__segment-line__nextline.invalid:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
+				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
 					border-left-width: 1px;
 
 					&::before, &::after {
 						left: -1px;
 					}
 
-					.segment-timeline__segment-line__nextline__label {
+					.segment-timeline__part__nextline__label {
 						display: block;
 						left: 10px;
 					}
@@ -1034,46 +1034,46 @@ body.vertical-overflow-only {
 			}
 
 			&.live {
-				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
 					&::after, &::before {
 						display: none;
 					}
 				}
 			}
 
-			.segment-timeline__segment-line__nextline.auto-next.segment-timeline__segment-line__nextline--endline {
+			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
 				border-left-width: 1px;
 
 				&::before, &::after {
 					left: -1px;
 				}
 
-				.segment-timeline__segment-line__nextline__label {
+				.segment-timeline__part__nextline__label {
 					display: block;
 					left: 10px;
 				}
 			}
 
-			.segment-timeline__segment-line__show-end {
+			.segment-timeline__part__show-end {
 				position: absolute;
 				top: -13px;
 				left: 100%;
 				white-space: nowrap;
 				bottom: -1.3rem;
-				border-left: 2px solid $segment-line-start-color;
+				border-left: 2px solid $part-start-color;
 				margin-left: 2px;
 				padding-left: 0.5em;
 				text-transform: uppercase;
 				font-size: 0.9em;
 
-				.segment-timeline__segment-line__show-end__label {
+				.segment-timeline__part__show-end__label {
 					position: absolute;
 					top: 50%;
 					transform: translateY(calc(-50% - 6px));
 				}
 			}
 
-			.segment-timeline__segment-line__future-shade {
+			.segment-timeline__part__future-shade {
 				display: block;
 				position: absolute;
 				top: 0;
@@ -1084,8 +1084,8 @@ body.vertical-overflow-only {
 			}
 
 			&.next {
-				.segment-timeline__segment-line__nextline:not(.offset) {
-					.segment-timeline__segment-line__nextline__label {
+				.segment-timeline__part__nextline:not(.offset) {
+					.segment-timeline__part__nextline__label {
 						> svg {
 							margin-left: 1px;
 							margin-right: 5px;
@@ -1093,7 +1093,7 @@ body.vertical-overflow-only {
 					}
 				}
 
-				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline):not(.offset) {
+				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline):not(.offset) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
@@ -1101,11 +1101,11 @@ body.vertical-overflow-only {
 						border-color: transparent transparent transparent $general-next-color;
 					}
 
-					.segment-timeline__segment-line__nextline__label {
+					.segment-timeline__part__nextline__label {
 						color: $general-next-color;
 						display: block;
 
-						.segment-timeline__segment-line__nextline__label__carriage-return {
+						.segment-timeline__part__nextline__label__carriage-return {
 							> svg {
 								fill: $general-next-color;
 							}
@@ -1114,13 +1114,13 @@ body.vertical-overflow-only {
 				}
 			}
 
-			.segment-timeline__segment-line__nextline--endline.show-end {
+			.segment-timeline__part__nextline--endline.show-end {
 				&::before, &::after {
 					display: none;
 				}
 			}
 
-			.segment-timeline__segment-line__nextline--endline.is-next {
+			.segment-timeline__part__nextline--endline.is-next {
 				border-left-color: $general-next-color;
 				color: $general-next-color;
 
@@ -1128,11 +1128,11 @@ body.vertical-overflow-only {
 					border-color: transparent transparent transparent $general-next-color;
 				}
 
-				.segment-timeline__segment-line__nextline__label {
+				.segment-timeline__part__nextline__label {
 					color: $general-next-color;
 					display: block;
 
-					.segment-timeline__segment-line__nextline__label__carriage-return {
+					.segment-timeline__part__nextline__label__carriage-return {
 						> svg {
 							fill: $general-next-color;
 						}
@@ -1501,7 +1501,7 @@ body.vertical-overflow-only {
 	}
 
 	.segment-timeline__next-preview {
-		.segment-timeline__segment-line .segment-timeline__output-group .segment-timeline__layer .segment-timeline__layer-item .segment-timeline__layer-item__label {
+		.segment-timeline__part .segment-timeline__output-group .segment-timeline__layer .segment-timeline__layer-item .segment-timeline__layer-item__label {
 			max-width: calc(100% - 0.6em);
 		}
 	}
@@ -1693,11 +1693,11 @@ body.vertical-overflow-only {
 		}
 
 		> .segment-timeline__timeline-container > .segment-timeline__timeline, > .segment-timeline__next-preview {
-			.segment-timeline__segment-line {
-				.segment-timeline__segment-line__nextline {
+			.segment-timeline__part {
+				.segment-timeline__part__nextline {
 					top: -1em;
 
-					.segment-timeline__segment-line__nextline__label {
+					.segment-timeline__part__nextline__label {
 						display: none;
 					}
 

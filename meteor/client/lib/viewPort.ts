@@ -1,14 +1,14 @@
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 import { SegmentTimelineElementId } from '../ui/SegmentTimeline/SegmentTimeline'
-import { SegmentLines } from '../../lib/collections/SegmentLines'
+import { Parts } from '../../lib/collections/Parts'
 
-export function scrollToSegmentLine (segmentLineId: string): boolean {
+export function scrollToPart (partId: string): boolean {
 	// TODO: do scrolling within segment as well?
 
-	let segmentLine = SegmentLines.findOne(segmentLineId)
-	if (segmentLine) {
-		return scrollToSegment(segmentLine.segmentId)
+	let part = Parts.findOne(partId)
+	if (part) {
+		return scrollToSegment(part.segmentId)
 	}
 	return false
 }

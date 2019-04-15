@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
+import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import {
@@ -31,7 +31,7 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowS
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { SegmentLineNote, NoteType } from '../../lib/api/notes'
+import { PartNote, NoteType } from '../../lib/api/notes'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
@@ -84,91 +84,91 @@ export function selectShowStyleVariant (studio: StudioInstallation, ingestRundow
  * @param rundownId Id of the Rundown
  */
 export function afterRemoveSegment (segmentId: string, rundownId: string) {
-	// Remove the segment lines:
-	saveIntoDb(SegmentLines, {
+	// Remove the parts:
+	saveIntoDb(Parts, {
 		rundownId: rundownId,
 		segmentId: segmentId
 	},[],{
-		remove (segmentLine) {
-			removeSegmentLine(segmentLine.rundownId, segmentLine)
+		remove (part) {
+			removePart(part.rundownId, part)
 		}
 	})
 }
-export function removeSegmentLine (rundownId: string, segmentLineOrId: DBSegmentLine | string, replacedBySegmentLine?: DBSegmentLine) {
-	let segmentLineToRemove: DBSegmentLine | undefined = (
-		_.isString(segmentLineOrId) ?
-			SegmentLines.findOne(segmentLineOrId) :
-			segmentLineOrId
+export function removePart (rundownId: string, partOrId: DBPart | string, replacedByPart?: DBPart) {
+	let partToRemove: DBPart | undefined = (
+		_.isString(partOrId) ?
+			Parts.findOne(partOrId) :
+			partOrId
 	)
-	if (segmentLineToRemove) {
-		SegmentLines.remove(segmentLineToRemove._id)
-		afterRemoveSegmentLine(segmentLineToRemove, replacedBySegmentLine)
+	if (partToRemove) {
+		Parts.remove(partToRemove._id)
+		afterRemovePart(partToRemove, replacedByPart)
 		updateTimelineFromMosData(rundownId)
 
-		if (replacedBySegmentLine) {
-			SegmentLines.update({
-				rundownId: segmentLineToRemove.rundownId,
-				afterSegmentLine: segmentLineToRemove._id
+		if (replacedByPart) {
+			Parts.update({
+				rundownId: partToRemove.rundownId,
+				afterPart: partToRemove._id
 			}, {
 				$set: {
-					afterSegmentLine: replacedBySegmentLine._id,
+					afterPart: replacedByPart._id,
 				}
 			}, {
 				multi: true
 			})
 		} else {
-			SegmentLines.remove({
-				rundownId: segmentLineToRemove.rundownId,
-				afterSegmentLine: segmentLineToRemove._id
+			Parts.remove({
+				rundownId: partToRemove.rundownId,
+				afterPart: partToRemove._id
 			})
 		}
 	}
 }
-export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
+export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 	// TODO - what about adlibs?
 	Pieces.remove({
-		segmentLineId: removedSegmentLine._id
+		partId: removedPart._id
 	})
-	updateExpectedMediaItems(removedSegmentLine.rundownId, removedSegmentLine._id)
+	updateExpectedMediaItems(removedPart.rundownId, removedPart._id)
 
-	let rundown = Rundowns.findOne(removedSegmentLine.rundownId)
+	let rundown = Rundowns.findOne(removedPart.rundownId)
 	if (rundown) {
 		// If the replaced segment is next-to-be-played out,
 		// instead make the next-to-be-played-out item the one in it's place
 		if (
 			rundown.active &&
-			rundown.nextSegmentLineId === removedSegmentLine._id
+			rundown.nextPartId === removedPart._id
 		) {
-			if (!replacedBySegmentLine) {
-				let segmentLineBefore = fetchBefore(SegmentLines, {
-					rundownId: removedSegmentLine.rundownId
-				}, removedSegmentLine._rank)
+			if (!replacedByPart) {
+				let partBefore = fetchBefore(Parts, {
+					rundownId: removedPart.rundownId
+				}, removedPart._rank)
 
-				let nextSegmentLineInLine = fetchAfter(SegmentLines, {
-					rundownId: removedSegmentLine.rundownId,
-					_id: {$ne: removedSegmentLine._id}
-				}, segmentLineBefore ? segmentLineBefore._rank : null)
+				let nextPartInLine = fetchAfter(Parts, {
+					rundownId: removedPart.rundownId,
+					_id: {$ne: removedPart._id}
+				}, partBefore ? partBefore._rank : null)
 
-				if (nextSegmentLineInLine) {
-					replacedBySegmentLine = nextSegmentLineInLine
+				if (nextPartInLine) {
+					replacedByPart = nextPartInLine
 				}
 			}
-			ServerPlayoutAPI.rundownSetNext(rundown._id, replacedBySegmentLine ? replacedBySegmentLine._id : null)
+			ServerPlayoutAPI.rundownSetNext(rundown._id, replacedByPart ? replacedByPart._id : null)
 		}
 	}
 }
-export function updateSegmentLines (rundownId: string) {
-	let segmentLines0 = SegmentLines.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
+export function updateParts (rundownId: string) {
+	let parts0 = Parts.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
 
-	let segmentLines: Array<SegmentLine> = []
-	let segmentLinesToInsert: {[id: string]: Array<SegmentLine>} = {}
+	let parts: Array<Part> = []
+	let partsToInsert: {[id: string]: Array<Part>} = {}
 
-	_.each(segmentLines0, (sl) => {
-		if (sl.afterSegmentLine) {
-			if (!segmentLinesToInsert[sl.afterSegmentLine]) segmentLinesToInsert[sl.afterSegmentLine] = []
-			segmentLinesToInsert[sl.afterSegmentLine].push(sl)
+	_.each(parts0, (part) => {
+		if (part.afterPart) {
+			if (!partsToInsert[part.afterPart]) partsToInsert[part.afterPart] = []
+			partsToInsert[part.afterPart].push(part)
 		} else {
-			segmentLines.push(sl)
+			parts.push(part)
 		}
 	})
 
@@ -176,55 +176,57 @@ export function updateSegmentLines (rundownId: string) {
 	while (hasAddedAnything) {
 		hasAddedAnything = false
 
-		_.each(segmentLinesToInsert, (sls, slId) => {
+		_.each(partsToInsert, (sls, partId) => {
 
-			let segmentLineBefore: SegmentLine | null = null
-			let segmentLineAfter: SegmentLine | null = null
+			let partBefore: Part | null = null
+			let partAfter: Part | null = null
 			let insertI = -1
-			_.each(segmentLines, (sl, i) => {
-				if (sl._id === slId) {
-					segmentLineBefore = sl
+			_.each(parts, (part, i) => {
+				if (part._id === partId) {
+					partBefore = part
+
 					insertI = i + 1
-				} else if (segmentLineBefore && !segmentLineAfter) {
-					segmentLineAfter = sl
+				} else if (partBefore && !partAfter) {
+					partAfter = part
+
 				}
 			})
 
-			if (segmentLineBefore) {
+			if (partBefore) {
 
 				if (insertI !== -1) {
-					_.each(sls, (sl, i) => {
-						let newRank = getRank(segmentLineBefore, segmentLineAfter, i, sls.length)
+					_.each(sls, (part, i) => {
+						let newRank = getRank(partBefore, partAfter, i, sls.length)
 
-						if (sl._rank !== newRank) {
-							sl._rank = newRank
-							SegmentLines.update(sl._id, {$set: {_rank: sl._rank}})
+						if (part._rank !== newRank) {
+							part._rank = newRank
+							Parts.update(part._id, {$set: {_rank: part._rank}})
 						}
-						segmentLines.splice(insertI, 0, sl)
+						parts.splice(insertI, 0, part)
 						insertI++
 						hasAddedAnything = true
 					})
 				}
-				delete segmentLinesToInsert[slId]
+				delete partsToInsert[partId]
 			}
 		})
 	}
 
-	return segmentLines
+	return parts
 }
 /**
- * Converts a segmentLine into a Segment
+ * Converts a part into a Segment
  * @param story MOS Sory
  * @param rundownId Rundown id of the story
  * @param rank Rank of the story
  */
-export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSegment {
+export function convertToSegment (part: Part, rank: number): DBSegment {
 	// let slugParts = (story.Slug || '').toString().split(';')
-	let slugParts = segmentLine.title.split(';')
+	let slugParts = part.title.split(';')
 
 	return {
-		_id: segmentId(segmentLine.rundownId, segmentLine.title, rank),
-		rundownId: segmentLine.rundownId,
+		_id: segmentId(part.rundownId, part.title, rank),
+		rundownId: part.rundownId,
 		_rank: rank,
 		externalId: 'N/A', // to be removed?
 		name: slugParts[0],
@@ -238,36 +240,36 @@ export function segmentId (rundownId: string, storySlug: string, rank: number): 
 	return getHash(id)
 }
 export function updateSegments (rundownId: string) {
-	// using SegmentLines, determine which segments are to be created
-	// let segmentLines = SegmentLines.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
-	let segmentLines = updateSegmentLines(rundownId)
+	// using Parts, determine which segments are to be created
+	// let parts = Parts.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
+	let parts = updateParts(rundownId)
 
 	let prevSlugParts: string[] = []
 	let segment: DBSegment
 	let segments: Array<DBSegment> = []
 	let rankSegment = 0
-	let segmentLineUpdates: {[id: string]: Partial<DBSegmentLine>} = {}
-	_.each(segmentLines, (segmentLine: SegmentLine) => {
-		let slugParts = segmentLine.title.split(';')
+	let partUpdates: {[id: string]: Partial<DBPart>} = {}
+	_.each(parts, (part: Part) => {
+		let slugParts = part.title.split(';')
 
 		if (slugParts[0] !== prevSlugParts[0]) {
-			segment = convertToSegment(segmentLine, rankSegment++)
+			segment = convertToSegment(part, rankSegment++)
 			segments.push(segment)
 		}
-		if (segmentLine.segmentId !== segment._id) {
-			logger.debug(segmentLine)
-			logger.debug(segmentLine._id + ' old segmentId: ' + segmentLine.segmentId + ', new: ' + segment._id )
-			segmentLineUpdates[segmentLine._id] = { segmentId: segment._id }
+		if (part.segmentId !== segment._id) {
+			logger.debug(part)
+			logger.debug(part._id + ' old segmentId: ' + part.segmentId + ', new: ' + segment._id )
+			partUpdates[part._id] = { segmentId: segment._id }
 		}
 
 		prevSlugParts = slugParts
 	})
 
-	// Update SegmentLines:
-	_.each(segmentLineUpdates, (modifier, id: string) => {
+	// Update Parts:
+	_.each(partUpdates, (modifier, id: string) => {
 
-		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
-		SegmentLines.update(id, {$set: modifier})
+		logger.info('added Part to segment ' + modifier['segmentId'])
+		Parts.update(id, {$set: modifier})
 	})
 	// Update Segments:
 	saveIntoDb(Segments, {
@@ -285,13 +287,13 @@ export function updateSegments (rundownId: string) {
 		}
 	})
 }
-export function updateAffectedSegmentLines (rundown: Rundown, affectedSegmentLineIds: Array<string>) {
+export function updateAffectedParts (rundown: Rundown, affectedPartIds: Array<string>) {
 
 	// Update the affected segments:
 	let affectedSegmentIds = _.uniq(
 		_.pluck(
-			SegmentLines.find({ // fetch assigned segmentIds
-				_id: {$in: affectedSegmentLineIds} // _.pluck(affectedSegmentLineIds, '_id')}
+			Parts.find({ // fetch assigned segmentIds
+				_id: {$in: affectedPartIds} // _.pluck(affectedPartIds, '_id')}
 			}).fetch(),
 		'segmentId')
 	)
@@ -302,75 +304,75 @@ export function updateAffectedSegmentLines (rundown: Rundown, affectedSegmentLin
 	})
 
 	if (changed) {
-		updateTimelineFromMosData(rundown._id, affectedSegmentLineIds)
+		updateTimelineFromMosData(rundown._id, affectedPartIds)
 	}
 }
 function updateWithinSegment (rundown: Rundown, segmentId: string): boolean {
 	let segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, 'Segment "' + segmentId + '" not found!')
 
-	let segmentLines = rundown.getSegmentLines({
+	let parts = rundown.getParts({
 		segmentId: segment._id
 	})
 
 	let changed = false
-	_.each(segmentLines, (segmentLine) => {
-		changed = changed || updateSegmentLine(rundown, segmentLine)
+	_.each(parts, (part) => {
+		changed = changed || updatePart(rundown, part)
 	})
 
 	runPostProcessBlueprint(rundown, segment)
 
 	return changed
 }
-function updateSegmentLine (rundown: Rundown, segmentLine: SegmentLine): boolean {
+function updatePart (rundown: Rundown, part: Part): boolean {
 	// TODO: determine that the data source is MOS, and THEN call updateStory:
-	let story = rundown.fetchCache(CachePrefix.INGEST_PART + segmentLine._id)
+	let story = rundown.fetchCache(CachePrefix.INGEST_PART + part._id)
 	if (story) {
-		return updateStory(rundown, segmentLine, story)
+		return updateStory(rundown, part, story)
 	} else {
-		logger.warn('Unable to update segmentLine "' + segmentLine._id + '", story cache not found')
+		logger.warn('Unable to update part "' + part._id + '", story cache not found')
 		return false
 	}
 }
 export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// let showStyleBase = rundown.getShowStyleBase()
 
-	// const segmentLines = segment.getSegmentLines()
-	// if (segmentLines.length === 0) {
+	// const parts = segment.getParts()
+	// if (parts.length === 0) {
 	// 	return undefined
 	// }
 
-	// const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
+	// const firstPart = parts.sort((a, b) => b._rank = a._rank)[0]
 
 	// const context = new SegmentContext(rundown, segment)
 	// context.handleNotesExternally = true
 
 	// let resultPiece: Piece[] | undefined = undefined
-	// let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
-	// let notes: SegmentLineNote[] = []
+	// let resultSlUpdates: IBlueprintPostProcessPart[] | undefined = undefined
+	// let notes: PartNote[] = []
 	// try {
 	// 	const blueprints = loadShowStyleBlueprints(showStyleBase)
 	// 	let result = blueprints.getSegmentPost(context)
-	// 	resultPiece = postProcessPieces(context, result.pieces, 'post-process', firstSegmentLine._id)
-	// 	resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
+	// 	resultPiece = postProcessPieces(context, result.pieces, 'post-process', firstPart._id)
+	// 	resultSlUpdates = result.partUpdates // TODO - validate/filter/tidy?
 	// 	notes = context.getNotes()
 	// } catch (e) {
 	// 	logger.error(e.stack ? e.stack : e.toString())
 	// 	// throw e
 	// 	notes = [{
-	// 		type: SegmentLineNoteType.ERROR,
+	// 		type: PartNoteType.ERROR,
 	// 		origin: {
 	// 			name: '',
 	// 			rundownId: context.rundown._id,
 	// 			segmentId: segment._id,
-	// 			segmentLineId: '',
+	// 			partId: '',
 	// 		},
 	// 		message: 'Internal Server Error'
 	// 	}]
 	// 	resultPiece = undefined
 	// }
 
-	// const slIds = segmentLines.map(sl => sl._id)
+	// const partIds = parts.map(part => part._id)
 
 	// let changedPiece: {
 	// 	added: number,
@@ -396,7 +398,7 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 
 	// 	changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
 	// 		rundownId: rundown._id,
-	// 		segmentLineId: { $in: slIds },
+	// 		partId: { $in: partIds },
 	// 		fromPostProcess: true,
 	// 	}, resultPiece || [], {
 	// 		afterInsert (piece) {
@@ -414,12 +416,12 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// if (resultSlUpdates) {
 	// 	// At the moment this only affects the UI, so doesnt need to report 'anythingChanged'
 
-	// 	let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
-	// 		_id: sl._id,
+	// 	let ps = resultSlUpdates.map(part => asyncCollectionUpdate(Parts, {
+	// 		_id: part._id,
 	// 		rundownId: rundown._id
 	// 	}, {
 	// 		$set: {
-	// 			displayDurationGroup: sl.displayDurationGroup || ''
+	// 			displayDurationGroup: part.displayDurationGroup || ''
 	// 		}
 	// 	}))
 	// 	waitForPromiseAll(ps)
@@ -428,8 +430,8 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// // if anything was changed
 	// const anythingChanged = (changedPiece.added > 0 || changedPiece.removed > 0 || changedPiece.updated > 0)
 	// if (anythingChanged) {
-	// 	_.each(slIds, (slId) => {
-	// 		updateExpectedMediaItems(rundown._id, slId)
+	// 	_.each(partIds, (partId) => {
+	// 		updateExpectedMediaItems(rundown._id, partId)
 	// 	})
 	// }
 	// return anythingChanged

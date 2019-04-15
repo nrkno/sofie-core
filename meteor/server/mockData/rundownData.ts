@@ -8,7 +8,7 @@ import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
-import { SegmentLines } from '../../lib/collections/SegmentLines'
+import { Parts } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterLine } from '../api/playout'
 
 // These are temporary method to fill the rundown database with some sample data
@@ -66,7 +66,7 @@ setMeteorMethods({
 		const rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-		const prevSl = previousSlId ? SegmentLines.findOne(previousSlId) : undefined
+		const prevSl = previousSlId ? Parts.findOne(previousSlId) : undefined
 
 		updateSourceLayerInfinitesAfterLine(rundown, prevSl, runToEnd)
 

@@ -125,7 +125,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 											<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedInPoint || 0)}</span>
 											{this.props.piece.infiniteMode ?
 												(
-													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextSegmentLine && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
+													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextPart && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
 													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
 													(this.props.piece.infiniteMode === PieceLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
 												)

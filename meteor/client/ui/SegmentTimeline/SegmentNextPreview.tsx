@@ -7,7 +7,7 @@ import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
 
 import {
-	SegmentLineUi,
+	PartUi,
 	IOutputLayerUi,
 	ISourceLayerUi,
 	PieceUi
@@ -17,7 +17,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {
 	rundown: Rundown
-	segmentLine?: SegmentLineUi
+	part?: PartUi
 	outputGroups?: {
 		[key: string]: IOutputLayerUi
 	},
@@ -38,17 +38,17 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 					<div className='segment-timeline__layer' key={id}>
 						{layer.followingItems && layer.followingItems
 							.filter((piece) => {
-								// filter only pieces belonging to this segment line
-								return this.props.segmentLine && ((piece.segmentLineId === this.props.segmentLine._id) ?
+								// filter only pieces belonging to this part
+								return this.props.part && ((piece.partId === this.props.part._id) ?
 									// filter only pieces, that have not yet been linked to parent items
 									((piece as PieceUi).linked !== true) ?
 										true :
-										// (this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((piece as PieceUi).renderedInPoint || 0)))
+										// (this.props.scrollLeft >= ((this.props.part.startsAt || 0) + ((piece as PieceUi).renderedInPoint || 0)))
 										true
 									: false)
 							})
 							.map((piece) => {
-								return this.props.segmentLine && (
+								return this.props.part && (
 									<SourceLayerItemContainer key={piece._id}
 										{...this.props}
 										// The following code is fine, just withTracker HOC messing with available props
@@ -62,12 +62,12 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 										piece={piece}
 										layer={layer}
 										outputLayer={outputLayer}
-										segmentLine={this.props.segmentLine}
-										segmentLineStartsAt={0}
-										segmentLineDuration={1}
+										part={this.props.part}
+										partStartsAt={0}
+										partDuration={1}
 										timeScale={1}
 										relative={true}
-										autoNextSegmentLine={false}
+										autoNextPart={false}
 										liveLinePadding={0}
 										scrollLeft={0}
 										scrollWidth={1}
@@ -104,9 +104,9 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 			return null
 		}
 	}
-	renderSegmentLine () {
+	renderPart () {
 		return (
-			<div className='segment-timeline__segment-line' data-mos-id={this.props.segmentLine ? this.props.segmentLine._id : '(NONE)'}>
+			<div className='segment-timeline__part' data-mos-id={this.props.part ? this.props.part._id : '(NONE)'}>
 				{this.renderOutputGroups()}
 			</div>
 		)
@@ -114,7 +114,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 	render () {
 		return <React.Fragment>
 			<div className='segment-timeline__next-preview'>
-				{this.props.segmentLine && this.renderSegmentLine()}
+				{this.props.part && this.renderPart()}
 			</div>
 			<div className='segment-timeline__next-preview-background'>
 			</div>

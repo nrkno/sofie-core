@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -22,33 +22,33 @@ export namespace RundownTiming {
 		remainingRundownDuration?: number
 		// this is the tottal duration of the rundown: as planned for the unplayed content, and as-run for the played-out
 		asPlayedRundownDuration?: number
-		// SegmentLine ID is the key for these dictionaries
-		// this is the countdown to each of the segment lines relative to the current on air segment line.
-		segmentLineCountdown?: {
+		// Part ID is the key for these dictionaries
+		// this is the countdown to each of the parts relative to the current on air part.
+		partCountdown?: {
 			[key: string]: number
 		}
-		// the calculated durations of each of the Segment Lines: as-planned/as-run depending on state
-		segmentLineDurations?: {
+		// the calculated durations of each of the Parts: as-planned/as-run depending on state
+		partDurations?: {
 			[key: string]: number
 		}
-		// the offset of each of the Segment Lines from the beginning of the Rundown
-		segmentLineStartsAt?: {
+		// the offset of each of the Parts from the beginning of the Rundown
+		partStartsAt?: {
 			[key: string]: number
 		}
-		// same as segmentLineStartsAt, but will include display duration overrides (such as minimal display width for an Segment Line, etc.)
-		segmentLineDisplayStartsAt?: {
+		// same as partStartsAt, but will include display duration overrides (such as minimal display width for an Part, etc.)
+		partDisplayStartsAt?: {
 			[key: string]: number
 		}
-		// same as segmentLineDurations, but will include display duration overrides (such as minimal display width for an Segment Line, etc.)
-		segmentLineDisplayDurations?: {
+		// same as partDurations, but will include display duration overrides (such as minimal display width for an Part, etc.)
+		partDisplayDurations?: {
 			[key: string]: number
 		}
-		// As-played durations of each segment-line. Will be 0, if not yet played. Will be counted from start to now if currently playing.
-		segmentLinePlayed?: {
+		// As-played durations of each part. Will be 0, if not yet played. Will be counted from start to now if currently playing.
+		partPlayed?: {
 			[key: string]: number
 		}
-		// Expected durations of each of the segment-lines or the as-played duration, if the Segment Line does not have an expected duration.
-		segmentLineExpectedDurations?: {
+		// Expected durations of each of the parts or the as-played duration, if the Part does not have an expected duration.
+		partExpectedDurations?: {
 			[key: string]: number
 		}
 	}
@@ -63,9 +63,9 @@ const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be 
 
 interface IRundownTimingProviderProps {
 	rundown?: Rundown
-	// segmentLines: Array<SegmentLine>
+	// parts: Array<Part>
 	refreshInterval?: number // the interval for high-resolution timing events. If undefined, it will fall back onto TIMING_DEFAULT_REFRESH_INTERVAL
-	defaultDuration?: number // the fallback duration for Segment Lines that have no as-played duration of their own
+	defaultDuration?: number // the fallback duration for Parts that have no as-played duration of their own
 }
 interface IRundownTimingProviderChildContext {
 	durations: RundownTiming.RundownTimingContext
@@ -73,14 +73,14 @@ interface IRundownTimingProviderChildContext {
 interface IRundownTimingProviderState {
 }
 interface IRundownTimingProviderTrackedProps {
-	segmentLines: Array<SegmentLine>
+	parts: Array<Part>
 }
 
 export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
-	let segmentLines: Array<SegmentLine> = []
+	let parts: Array<Part> = []
 	if (props.rundown) {
-		segmentLines = SegmentLines.find({
+		parts = Parts.find({
 			'rundownId': props.rundown._id,
 		}, {
 			sort: {
@@ -89,7 +89,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 		}).fetch()
 	}
 	return {
-		segmentLines
+		parts
 	}
 })(class extends MeteorReactComponent<IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState> implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
 	static childContextTypes = {
@@ -166,7 +166,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 
 		let debugConsole = ''
 
-		const { rundown, segmentLines } = this.props
+		const { rundown, parts } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
 		// look at the comments on RundownTimingContext to understand what these do
 		const segLineDurations: {
@@ -194,15 +194,15 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 
 		let now = getCurrentTime()
 
-		if (rundown && segmentLines) {
-			segmentLines.forEach((item, itIndex) => {
+		if (rundown && parts) {
+			parts.forEach((item, itIndex) => {
 				// add piece to accumulator
 				const aIndex = linearSegLines.push([item._id, waitAccumulator]) - 1
 
 				// if this is next segementLine, clear previous countdowns and clear accumulator
-				if (rundown.nextSegmentLineId === item._id) {
+				if (rundown.nextPartId === item._id) {
 					nextAIndex = aIndex
-				} else if (rundown.currentSegmentLineId === item._id) {
+				} else if (rundown.currentPartId === item._id) {
 					currentAIndex = aIndex
 				}
 
@@ -225,16 +225,16 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 
 				const playOffset = item.timings && item.timings.playOffset && _.last(item.timings.playOffset) || 0
 
-				// Display Duration groups are groups of two or more Segment Lines, where some of them have an expectedDuration and some have 0.
-				// Then, some of them will have a displayDuration. The expectedDurations are pooled together, the segmentLines with
+				// Display Duration groups are groups of two or more Parts, where some of them have an expectedDuration and some have 0.
+				// Then, some of them will have a displayDuration. The expectedDurations are pooled together, the parts with
 				// display durations will take up that much time in the Rundown. The left-over time from the display duration group
-				// will be used by Segment Lines without expectedDurations.
+				// will be used by Parts without expectedDurations.
 				let memberOfDisplayDurationGroup = false // using a separate displayDurationGroup processing flag simplifies implementation
 				if (item.displayDurationGroup && (
 					// either this is not the first element of the displayDurationGroup
 					(displayDurationGroups[item.displayDurationGroup]) ||
 					// or there is a following member of this displayDurationGroup
-					(segmentLines[itIndex + 1] && segmentLines[itIndex + 1].displayDurationGroup === item.displayDurationGroup)
+					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === item.displayDurationGroup)
 				)) {
 					displayDurationGroups[item.displayDurationGroup] = (displayDurationGroups[item.displayDurationGroup] || 0) + (item.expectedDuration || 0)
 					displayDuration = Math.min(item.displayDuration || item.expectedDuration || 0, item.expectedDuration || 0) || displayDurationGroups[item.displayDurationGroup]
@@ -263,7 +263,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 				segLineDisplayDurations[item._id] = segLineDisplayDuration
 				startsAtAccumulator += segLineDurations[item._id]
 				displayStartsAtAccumulator += segLineDisplayDuration || this.props.defaultDuration || 3000
-				// waitAccumulator is used to calculate the countdowns for Segment Lines relative to the current Segment Line
+				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
 				if (memberOfDisplayDurationGroup) {
@@ -276,7 +276,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 				if (!item.startedPlayback) {
 					remainingRundownDuration += item.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
-				} else if (item.startedPlayback && lastStartedPlayback && !item.duration && rundown.currentSegmentLineId === item._id && lastStartedPlayback + (item.expectedDuration || 0) > now) {
+				} else if (item.startedPlayback && lastStartedPlayback && !item.duration && rundown.currentPartId === item._id && lastStartedPlayback + (item.expectedDuration || 0) > now) {
 					// console.log((now - item.startedPlayback))
 					remainingRundownDuration += (item.expectedDuration || 0) - (now - lastStartedPlayback)
 				}
@@ -292,8 +292,8 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 					localAccum = linearSegLines[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					linearSegLines[i][1] = currentRemaining
 				} else { // these are lines after next line
-					// we take whatever value this line has, subtract the value as set on the Next Segment Line
-					// (note that the Next Segment Line value will be using currentRemaining as the countdown)
+					// we take whatever value this line has, subtract the value as set on the Next Part
+					// (note that the Next Part value will be using currentRemaining as the countdown)
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
 					linearSegLines[i][1] = (linearSegLines[i][1] || 0) - localAccum + currentRemaining
@@ -312,13 +312,13 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 			totalRundownDuration,
 			remainingRundownDuration,
 			asPlayedRundownDuration,
-			segmentLineCountdown: _.object(linearSegLines),
-			segmentLineDurations: segLineDurations,
-			segmentLinePlayed: segLinePlayed,
-			segmentLineStartsAt: segLineStartsAt,
-			segmentLineDisplayStartsAt: segLineDisplayStartsAt,
-			segmentLineExpectedDurations: segLineExpectedDurations,
-			segmentLineDisplayDurations: segLineDisplayDurations
+			partCountdown: _.object(linearSegLines),
+			partDurations: segLineDurations,
+			partPlayed: segLinePlayed,
+			partStartsAt: segLineStartsAt,
+			partDisplayStartsAt: segLineDisplayStartsAt,
+			partExpectedDurations: segLineExpectedDurations,
+			partDisplayDurations: segLineDisplayDurations
 		})
 	}
 
@@ -403,28 +403,28 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | Functi
 	}
 }
 
-interface ISegmentLineCountdownProps {
-	segmentLineId?: string
+interface IPartCountdownProps {
+	partId?: string
 	timingDurations?: RundownTiming.RundownTimingContext
 	hideOnZerundown?: boolean
 }
-interface ISegmentLineCountdownState {
+interface IPartCountdownState {
 }
-export const SegmentLineCountdown = withTiming<ISegmentLineCountdownProps, ISegmentLineCountdownState>()(
-class extends React.Component<WithTiming<ISegmentLineCountdownProps>, ISegmentLineCountdownState> {
+export const PartCountdown = withTiming<IPartCountdownProps, IPartCountdownState>()(
+class extends React.Component<WithTiming<IPartCountdownProps>, IPartCountdownState> {
 	render () {
 		return (<span>
-			{this.props.segmentLineId &&
+			{this.props.partId &&
 				this.props.timingDurations &&
-				this.props.timingDurations.segmentLineCountdown &&
-				this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] !== undefined &&
-				(this.props.hideOnZerundown !== true || this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] > 0) &&
-					RundownUtils.formatTimeToShortTime(this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId])}
+				this.props.timingDurations.partCountdown &&
+				this.props.timingDurations.partCountdown[this.props.partId] !== undefined &&
+				(this.props.hideOnZerundown !== true || this.props.timingDurations.partCountdown[this.props.partId] > 0) &&
+					RundownUtils.formatTimeToShortTime(this.props.timingDurations.partCountdown[this.props.partId])}
 		</span>)
 	}
 })
 interface ISegmentDurationProps {
-	segmentLineIds: Array<string>
+	partIds: Array<string>
 }
 interface ISegmentDurationState {
 }
@@ -433,16 +433,16 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 
 		render () {
 			if (
-				this.props.segmentLineIds &&
-				this.props.timingDurations.segmentLineExpectedDurations &&
-				this.props.timingDurations.segmentLinePlayed
+				this.props.partIds &&
+				this.props.timingDurations.partExpectedDurations &&
+				this.props.timingDurations.partPlayed
 			) {
-				let segmentLineExpectedDurations = this.props.timingDurations.segmentLineExpectedDurations
-				let segmentLinePlayed = this.props.timingDurations.segmentLinePlayed
+				let partExpectedDurations = this.props.timingDurations.partExpectedDurations
+				let partPlayed = this.props.timingDurations.partPlayed
 
-				const duration = this.props.segmentLineIds.reduce((memo, item) => {
-					return segmentLineExpectedDurations[item] !== undefined ?
-						memo + Math.max(0, segmentLineExpectedDurations[item] - (segmentLinePlayed[item] || 0)) :
+				const duration = this.props.partIds.reduce((memo, item) => {
+					return partExpectedDurations[item] !== undefined ?
+						memo + Math.max(0, partExpectedDurations[item] - (partPlayed[item] || 0)) :
 						memo
 				}, 0)
 
@@ -455,15 +455,15 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 		}
 	})
 
-export function computeSegmentDuration (timingDurations: RundownTiming.RundownTimingContext, segmentLineIds: Array<string>): number {
-	let segmentLineDurations = timingDurations.segmentLineDurations
+export function computeSegmentDuration (timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>): number {
+	let partDurations = timingDurations.partDurations
 
-	if (segmentLineDurations === undefined) return 0
+	if (partDurations === undefined) return 0
 
-	return segmentLineIds.reduce((memo, item) => {
-		return segmentLineDurations ?
-				segmentLineDurations[item] !== undefined ?
-				memo + segmentLineDurations[item] :
+	return partIds.reduce((memo, item) => {
+		return partDurations ?
+				partDurations[item] !== undefined ?
+				memo + partDurations[item] :
 				memo
 			: 0
 	}, 0)

@@ -47,6 +47,6 @@ export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettings
 	type: PlayoutDeviceType.PHAROS
 	options: {
 		host: string,
-		ssl?: boolean
+		spart?: boolean
 	}
 }

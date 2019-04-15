@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../api/rundown'
 import { TimelineTransition } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
-import { SegmentLineTimings } from './SegmentLines'
+import { PartTimings } from './Parts'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -45,10 +45,10 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	adLibSourceId?: string
 	/** If this item has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
 	dynamicallyInserted?: boolean,
-	/** The time the system started playback of this segment line, null if not yet played back (milliseconds since epoch) */
+	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
-	timings?: SegmentLineTimings
+	timings?: PartTimings
 
 	isTransition?: boolean
 	extendOnHold?: boolean
@@ -57,7 +57,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 export interface Piece extends PieceGeneric, IBlueprintPiece {
 	// -----------------------------------------------------------------------
 
-	segmentLineId: string
+	partId: string
 	expectedDuration: number | string
 	/** This is a backup of the original expectedDuration of the item, so that the normal field can be modified during playback and restored afterwards */
 	originalExpectedDuration?: number | string
@@ -78,7 +78,7 @@ export interface Piece extends PieceGeneric, IBlueprintPiece {
 	 */
 	stoppedPlayback?: number
 
-	/** This is set when the item isn't infinite, but should overflow it's duration onto the adjacent (not just next) segment line on take */
+	/** This is set when the item isn't infinite, but should overflow it's duration onto the adjacent (not just next) part on take */
 	overflows?: boolean
 }
 
@@ -89,7 +89,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Pieces._ensureIndex({
 			rundownId: 1,
-			segmentLineId: 1
+			partId: 1
 		})
 	}
 })

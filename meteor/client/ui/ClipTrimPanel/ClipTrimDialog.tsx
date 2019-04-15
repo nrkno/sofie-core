@@ -40,7 +40,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 		this.props.onClose && this.props.onClose()
 		doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
 			this.props.rundownId,
-			this.props.selectedPiece.segmentLineId,
+			this.props.selectedPiece.partId,
 			this.props.selectedPiece._id,
 			this.state.inPoint,
 			this.state.duration
@@ -55,7 +55,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 					studioInstallationId={this.props.studioInstallation._id}
 					rundownId={this.props.rundownId}
 					pieceId={this.props.selectedPiece._id}
-					segmentLineId={this.props.selectedPiece.segmentLineId}
+					partId={this.props.selectedPiece.partId}
 					inPoint={this.state.inPoint}
 					duration={this.state.duration}
 					onChange={this.handleChange}

@@ -22,7 +22,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AdLibPieces._ensureIndex({
 			rundownId: 1,
-			segmentLineId: 1,
+			partId: 1,
 			_rank: 1
 		})
 	}

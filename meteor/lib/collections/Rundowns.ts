@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
-import { SegmentLines, SegmentLine } from './SegmentLines'
+import { Parts, Part } from './Parts'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { Pieces, Piece } from './Pieces'
@@ -51,16 +51,16 @@ export interface DBRundown extends IBlueprintRundownDB {
 	airStatus?: string
 	// There should be something like a Owner user here somewhere?
 	active?: boolean
-	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
-	currentSegmentLineId: string | null
-	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
-	nextSegmentLineId: string | null
+	/** the id of the Live Part - if empty, no part in this rundown is live */
+	currentPartId: string | null
+	/** the id of the Next Part - if empty, no segment will follow Live Part */
+	nextPartId: string | null
 	/** The time offset of the next line */
 	nextTimeOffset?: number | null
-	/** if nextSegmentLineId was set manually (ie from a user action) */
-	nextSegmentLineManual?: boolean
-	/** the id of the Previous Segment Line */
-	previousSegmentLineId: string | null
+	/** if nextPartId was set manually (ie from a user action) */
+	nextPartManual?: boolean
+	/** the id of the Previous Part */
+	previousPartId: string | null
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
@@ -100,10 +100,10 @@ export class Rundown implements DBRundown {
 	public rehearsal?: boolean
 	public unsynced?: boolean
 	public unsyncedTime?: Time
-	public previousSegmentLineId: string | null
-	public nextSegmentLineManual?: boolean
-	public currentSegmentLineId: string | null
-	public nextSegmentLineId: string | null
+	public previousPartId: string | null
+	public nextPartManual?: boolean
+	public currentPartId: string | null
+	public nextPartId: string | null
 	public nextTimeOffset?: number
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
@@ -148,10 +148,10 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 	}
-	getSegmentLines (selector?: MongoSelector<SegmentLine>, options?: FindOptions) {
+	getParts (selector?: MongoSelector<Part>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
-		return SegmentLines.find(
+		return Parts.find(
 			_.extend({
 				rundownId: this._id
 			}, selector),
@@ -163,7 +163,7 @@ export class Rundown implements DBRundown {
 	remove () {
 		Rundowns.remove(this._id)
 		Segments.remove({rundownId: this._id})
-		SegmentLines.remove({rundownId: this._id})
+		Parts.remove({rundownId: this._id})
 		Pieces.remove({ rundownId: this._id})
 		AdLibPieces.remove({ rundownId: this._id})
 		RundownBaselineItems.remove({ rundownId: this._id})
@@ -210,17 +210,17 @@ export class Rundown implements DBRundown {
 		let timings: Array<{
 			time: Time,
 			type: string,
-			segmentLine: string,
+			part: string,
 			elapsed: Time
 		}> = []
-		_.each(this.getSegmentLines(), (sl: SegmentLine) => {
-			_.each(sl.getTimings(), (t) => {
+		_.each(this.getParts(), (part: Part) => {
+			_.each(part.getTimings(), (t) => {
 
 				timings.push({
 					time: t.time,
 					elapsed: t.elapsed,
 					type: t.type,
-					segmentLine: sl._id
+					part: part._id
 				})
 			})
 		})
@@ -231,7 +231,7 @@ export class Rundown implements DBRundown {
 		// Do fetches in parallell:
 		let ps: [
 			Promise<{ segments: Segment[], segmentsMap: any }>,
-			Promise<{ segmentLines: SegmentLine[], segmentLinesMap: any } >,
+			Promise<{ parts: Part[], partsMap: any } >,
 			Promise<Piece[]>
 		] = [
 			makePromise(() => {
@@ -240,21 +240,22 @@ export class Rundown implements DBRundown {
 				return { segments, segmentsMap }
 			}),
 			makePromise(() => {
-				let segmentLines = _.map(this.getSegmentLines(), (sl) => {
+				let parts = _.map(this.getParts(), (part) => {
 					// Override member function to use cached data instead:
-					sl.getAllPieces = () => {
+					part.getAllPieces = () => {
 						return _.map(_.filter(pieces, (piece) => {
 							return (
-								piece.segmentLineId === sl._id
+								piece.partId === part._id
 							)
-						}), (sl) => {
-							return _.clone(sl)
+						}), (part) => {
+							return _.clone(part)
 						})
 					}
-					return sl
+					return part
+
 				})
-				let segmentLinesMap = normalizeArray(segmentLines, '_id')
-				return { segmentLines, segmentLinesMap }
+				let partsMap = normalizeArray(parts, '_id')
+				return { parts, partsMap }
 			}),
 			makePromise(() => {
 				return Pieces.find({ rundownId: this._id }).fetch()
@@ -263,16 +264,16 @@ export class Rundown implements DBRundown {
 		let r = waitForPromiseAll(ps as any)
 		let segments: Segment[] 				= r[0].segments
 		let segmentsMap 				 		= r[0].segmentsMap
-		let segmentLinesMap 					= r[1].segmentLinesMap
-		let segmentLines: SegmentLine[]			= r[1].segmentLines
+		let partsMap 					= r[1].partsMap
+		let parts: Part[]			= r[1].parts
 		let pieces: Piece[] = r[2]
 
 		return {
 			rundown: this,
 			segments,
 			segmentsMap,
-			segmentLines,
-			segmentLinesMap,
+			parts,
+			partsMap,
 			pieces
 		}
 	}
@@ -292,8 +293,8 @@ export interface RundownData {
 	rundown: Rundown
 	segments: Array<Segment>
 	segmentsMap: {[id: string]: Segment}
-	segmentLines: Array<SegmentLine>
-	segmentLinesMap: {[id: string]: SegmentLine}
+	parts: Array<Part>
+	partsMap: {[id: string]: Part}
 	pieces: Array<Piece>
 }
 

@@ -18,7 +18,7 @@ import {
 	ISourceLayerUi,
 	IOutputLayerUi,
 	SegmentUi,
-	SegmentLineUi,
+	PartUi,
 	PieceUi
 } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
@@ -28,9 +28,9 @@ interface IPropsHeader {
 	outputLayer: IOutputLayerUi
 	mediaPreviewUrl: string
 	// segment: SegmentUi
-	segmentLine: SegmentLineUi
-	segmentLineStartsAt: number
-	segmentLineDuration: number
+	part: PartUi
+	partStartsAt: number
+	partDuration: number
 	piece: PieceUi
 	rundown: Rundown
 	timeScale: number
@@ -42,7 +42,7 @@ interface IPropsHeader {
 	relative?: boolean
 	outputGroupCollapsed: boolean
 	followLiveLine: boolean
-	autoNextSegmentLine: boolean
+	autoNextPart: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
@@ -108,8 +108,8 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 						if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
 							segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
 						} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
-							if (props.segmentLine && props.segmentLine.startedPlayback && props.segmentLine.getLastStartedPlayback()) {
-								segmentCopy.renderedInPoint = getCurrentTime() - (props.segmentLine.getLastStartedPlayback() || 0)
+							if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
+								segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
 							} else {
 								segmentCopy.renderedInPoint = 0
 							}
@@ -122,7 +122,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 						segmentCopy.renderedDuration = (
 							timelineObj.duration !== 0 ?
 							timelineObj.duration :
-							(props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+							(props.partDuration - (segmentCopy.renderedInPoint || 0))
 						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)

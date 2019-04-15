@@ -14,10 +14,10 @@ import {
 	DBRundown
 } from '../../../lib/collections/Rundowns'
 import {
-	SegmentLine,
-	SegmentLines,
-	DBSegmentLine
-} from '../../../lib/collections/SegmentLines'
+	Part,
+	Parts,
+	DBPart
+} from '../../../lib/collections/Parts'
 import {
 	Piece,
 	Pieces
@@ -37,13 +37,13 @@ import {
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { selectShowStyleVariant, afterRemoveSegment, afterRemoveSegmentLine } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
-import { postProcessSegmentLineBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -163,12 +163,12 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 			},
 
 			// omit the below fields
-			previousSegmentLineId: null,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null,
+			previousPartId: null,
+			currentPartId: null,
+			nextPartId: null,
 			created: 0,
 			modified: 0,
-		}), ['previousSegmentLineId', 'currentSegmentLineId', 'nextSegmentLineId', 'created', 'modified'])
+		}), ['previousPartId', 'currentPartId', 'nextPartId', 'created', 'modified'])
 	)
 
 	// Save rundown into database:
@@ -213,7 +213,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 	const baselineItem: RundownBaselineItem = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
-		objects: postProcessSegmentLineBaselineItems(blueprintRundownContext, rundownRes.baseline)
+		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 
 	saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
@@ -227,14 +227,14 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 		rundownId: dbRundown._id
 	}, adlibItems)
 
-	const existingRundownParts = SegmentLines.find({
+	const existingRundownParts = Parts.find({
 		rundownId: rundownId,
 		dynamicallyInserted: false
 	}).fetch()
 
 	const existingSegments = Segments.find({ rundown: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
-	const segmentLines: DBSegmentLine[] = []
+	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
 
@@ -250,7 +250,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 
 		const res2 = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
 		segments.push(res2.newSegment)
-		segmentLines.push(...res2.segmentLines)
+		parts.push(...res2.parts)
 		segmentPieces.push(...res2.segmentPieces)
 		adlibPieces.push(...res2.adlibPieces)
 	})
@@ -270,11 +270,11 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 			afterRemoveSegment(segment._id, segment.rundownId)
 		}
 	})
-	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
+	saveIntoDb<Part, DBPart>(Parts, {
 		rundownId: rundownId,
-	}, segmentLines, {
-		afterRemove (segmentLine) {
-			afterRemoveSegmentLine(segmentLine)
+	}, parts, {
+		afterRemove (part) {
+			afterRemovePart(part)
 		}
 	})
 
@@ -345,7 +345,7 @@ function generateSegmentContents (
 	context: RundownContext,
 	ingestSegment: IngestSegment,
 	existingSegment: DBSegment | undefined,
-	existingParts: DBSegmentLine[],
+	existingParts: DBPart[],
 	blueprintRes: BlueprintResultSegment) {
 
 	const rundownId = context.rundownId
@@ -371,18 +371,18 @@ function generateSegmentContents (
 		// TODO - log for ui?
 	}
 
-	const segmentLines: DBSegmentLine[] = []
+	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
 
-	// SegmentLines
+	// Parts
 	for (let blueprintPart of knownParts) {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
 		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
 		// TODO - this loop needs to handle virtual parts properly
 
 		const existingPart = _.find(existingParts, p => p._id === partId)
-		const part = literal<DBSegmentLine>({
+		const part = literal<DBPart>({
 			// TODO - priorities of these are wrong?
 			...(existingPart || {}),
 			...blueprintPart.part,
@@ -391,7 +391,7 @@ function generateSegmentContents (
 			segmentId: newSegment._id,
 			_rank: sourcePart.rank
 		})
-		segmentLines.push(part)
+		parts.push(part)
 
 		// Update pieces
 		const pieces = postProcessPieces(context, blueprintPart.pieces, '', part._id) // TODO - blueprint id?
@@ -403,7 +403,7 @@ function generateSegmentContents (
 
 	return {
 		newSegment,
-		segmentLines,
+		parts,
 		segmentPieces,
 		adlibPieces
 	}
@@ -425,7 +425,7 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 		_id: segmentId,
 		rundownId: rundown._id,
 	})
-	const existingParts = SegmentLines.find({
+	const existingParts = Parts.find({
 		rundownId: rundown._id,
 		segmentId: segmentId
 	}).fetch()
@@ -433,25 +433,25 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 	const context = new SegmentContext(rundown, studioInstallation, existingParts)
 	const res = blueprint.getSegment(context, ingestSegment)
 
-	const { segmentLines, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
+	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
 
 	Segments.upsert({
 		_id: segmentId,
 		rundownId: rundown._id
 	}, newSegment)
 
-	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
+	saveIntoDb<Part, DBPart>(Parts, {
 		rundownId: rundown._id,
 		segmentId: segmentId,
-	}, segmentLines, {
-		afterRemove (segmentLine) {
-			afterRemoveSegmentLine(segmentLine)
+	}, parts, {
+		afterRemove (part) {
+			afterRemovePart(part)
 		}
 	})
 
 	const changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: rundown._id,
-		segmentLineId: { $in: segmentLines.map(p => p._id) },
+		partId: { $in: parts.map(p => p._id) },
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, segmentPieces, {
 		afterInsert (piece) {
@@ -468,7 +468,7 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 
 	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 		rundownId: rundown._id,
-		segmentLineId: { $in: segmentLines.map(p => p._id) },
+		partId: { $in: parts.map(p => p._id) },
 	}, adlibPieces, {
 		afterInsert (adLibPiece) {
 			logger.debug('inserted adLibPiece ' + adLibPiece._id)
@@ -601,8 +601,8 @@ export namespace RundownInput {
 
 		if (canBeUpdated(rundown, segmentInternalId)) {
 			Promise.all([
-				asyncCollectionRemove(SegmentLines, { segmentId: segmentInternalId }),
-				// TODO - cleanup other SL contents
+				asyncCollectionRemove(Parts, { segmentId: segmentInternalId }),
+				// TODO - cleanup other part contents
 				asyncCollectionRemove(Segments, segmentInternalId)
 			])
 		}
@@ -642,76 +642,76 @@ export namespace RundownInput {
 		}
 	}
 
-	export function dataSegmentLineDelete (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string) {
+	export function dataPartDelete (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentLineDelete', rundownId, segmentId, segmentLineId)
+		logger.info('dataPartDelete', rundownId, segmentId, partId)
 
 		check(rundownId, String)
 		check(segmentId, String)
-		check(segmentLineId, String)
+		check(partId, String)
 
 		updateDeviceLastDataReceived(deviceId)
 
 		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
-		const partInternalId = getPartId(rundown._id, segmentLineId)
+		const partInternalId = getPartId(rundown._id, partId)
 
 		if (canBeUpdated(rundown, segmentInternalId, partInternalId)) {
-			const segmentLine = SegmentLines.findOne({
+			const part = Parts.findOne({
 				_id: partInternalId,
 				segmentId: segmentInternalId,
 				rundownId: rundown._id
 			})
-			if (!segmentLine) throw new Meteor.Error(404, 'Part not found')
+			if (!part) throw new Meteor.Error(404, 'Part not found')
 
 			// Blueprints will handle the deletion of the SL
 			const ingestSegment = loadCachedSegmentData(rundown._id, segmentInternalId)
-			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
+			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partId)
 
 			updateOrCreateSegmentFromPayload(studioInstallation, rundown, ingestSegment)
 		}
 	}
 
-	function dataSegmentLineCreateOrUpdate (peripheralDevice: PeripheralDevice, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	function dataPartCreateOrUpdate (peripheralDevice: PeripheralDevice, rundownId: string, segmentId: string, partId: string, newStory: any) {
 		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
 
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
-		const partInternalId = getPartId(rundown._id, segmentLineId)
+		const partInternalId = getPartId(rundown._id, partId)
 
 		if (canBeUpdated(rundown, segmentInternalId, partInternalId)) {
 			// Blueprints will handle the creation of the SL
 			const ingestSegment = loadCachedSegmentData(rundown._id, segmentInternalId)
-			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
+			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partId)
 			ingestSegment.parts.push(mutatePart(newStory))
 
 			updateOrCreateSegmentFromPayload(studioInstallation, rundown, ingestSegment)
 		}
 	}
-	export function dataSegmentLineCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	export function dataPartCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentLineCreate', rundownId, segmentId, segmentLineId, newStory)
+		logger.info('dataPartCreate', rundownId, segmentId, partId, newStory)
 
 		check(rundownId, String)
 		check(segmentId, String)
-		check(segmentLineId, String)
+		check(partId, String)
 		check(newStory, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		dataSegmentLineCreateOrUpdate(peripheralDevice, rundownId, segmentId, segmentLineId, newStory)
+		dataPartCreateOrUpdate(peripheralDevice, rundownId, segmentId, partId, newStory)
 	}
-	export function dataSegmentLineUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	export function dataPartUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentLineUpdate', rundownId, segmentId, segmentLineId, newStory)
+		logger.info('dataPartUpdate', rundownId, segmentId, partId, newStory)
 
 		check(rundownId, String)
 		check(segmentId, String)
-		check(segmentLineId, String)
+		check(partId, String)
 		check(newStory, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		dataSegmentLineCreateOrUpdate(peripheralDevice, rundownId, segmentId, segmentLineId, newStory)
+		dataPartCreateOrUpdate(peripheralDevice, rundownId, segmentId, partId, newStory)
 	}
 }
 
@@ -757,14 +757,14 @@ methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, devi
 	return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
 }
 // TODO - these need renaming
-methods[PeripheralDeviceAPI.methods.dataPieceDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string) => {
-	return RundownInput.dataSegmentLineDelete(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId)
+methods[PeripheralDeviceAPI.methods.dataPieceDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string) => {
+	return RundownInput.dataPartDelete(this, deviceId, deviceToken, rundownId, segmentId, partId)
 }
-methods[PeripheralDeviceAPI.methods.dataPieceCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
-	return RundownInput.dataSegmentLineCreate(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId, newStory)
+methods[PeripheralDeviceAPI.methods.dataPieceCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
+	return RundownInput.dataPartCreate(this, deviceId, deviceToken, rundownId, segmentId, partId, newStory)
 }
-methods[PeripheralDeviceAPI.methods.dataPieceUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
-	return RundownInput.dataSegmentLineUpdate(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId, newStory)
+methods[PeripheralDeviceAPI.methods.dataPieceUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
+	return RundownInput.dataPartUpdate(this, deviceId, deviceToken, rundownId, segmentId, partId, newStory)
 }
 
 setMeteorMethods(methods)

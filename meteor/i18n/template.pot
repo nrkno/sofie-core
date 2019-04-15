@@ -359,7 +359,7 @@ msgstr ""
 
 msgid ""
 "Are you sure you want to re-sync the Rundown?\n"
-"(If the currently playing Segment Line has been changed, this can affect "
+"(If the currently playing Part has been changed, this can affect "
 "the output.)"
 msgstr ""
 

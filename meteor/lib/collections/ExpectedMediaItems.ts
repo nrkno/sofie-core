@@ -14,8 +14,8 @@ export interface ExpectedMediaItem {
 	/** The rundown id that is the source of this MediaItem */
 	rundownId: string
 
-	/** The segment line id that is the source of this Media Item */
-	segmentLineId: string
+	/** The part id that is the source of this Media Item */
+	partId: string
 
 	/** The studio installation this ExpectedMediaItem was generated in */
 	studioInstallationId: string
@@ -46,7 +46,7 @@ Meteor.startup(() => {
 		})
 		ExpectedMediaItems._ensureIndex({
 			rundownId: 1,
-			segmentLineId: 1
+			partId: 1
 		})
 	}
 })

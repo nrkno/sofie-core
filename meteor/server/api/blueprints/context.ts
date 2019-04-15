@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { getHash, formatDateAsTimecode, formatDurationAsTimecode } from '../../../lib/lib'
-import { SegmentLineNote, SegmentLineNoteType, SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
+import { PartNote, PartNoteType, Part, DBPart } from '../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
 import {
@@ -22,7 +22,7 @@ import {
 	IBlueprintPiece,
 	IBlueprintSegmentDB,
 	IngestRundown,
-	IBlueprintSegmentLineDB,
+	IBlueprintPartDB,
 	IngestPart
 } from 'tv-automation-sofie-blueprints-integration'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
@@ -71,20 +71,20 @@ export class NotesContext extends CommonContext implements INotesContext {
 	protected _rundownId: string
 	private _contextName: string
 	private _segmentId?: string
-	private _segmentLineId?: string
+	private _partId?: string
 
-	private savedNotes: Array<SegmentLineNote> = []
+	private savedNotes: Array<PartNote> = []
 
 	constructor (
 		contextName: string,
 		rundownId: string,
 		segmentId?: string,
-		segmentLineId?: string,
+		partId?: string,
 	) {
 		super(
 			rundownId +
 			(
-				segmentLineId ? '_' + segmentLineId :
+				partId ? '_' + partId :
 				(
 					segmentId ? '_' + segmentId : ''
 				)
@@ -95,7 +95,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		// TODO - we should fill these in just before inserting into the DB instead
 		this._rundownId	= rundownId
 		this._segmentId			= segmentId
-		this._segmentLineId		= segmentLineId
+		this._partId		= partId
 
 	}
 	/** Throw Error and display message to the user in the GUI */
@@ -103,7 +103,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		check(message, String)
 		logger.error('Error from blueprint: ' + message)
 		this._pushNote(
-			SegmentLineNoteType.ERROR,
+			PartNoteType.ERROR,
 			message
 		)
 		throw new Meteor.Error(500, message)
@@ -112,7 +112,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	warning (message: string) {
 		check(message, String)
 		this._pushNote(
-			SegmentLineNoteType.WARNING,
+			PartNoteType.WARNING,
 			message
 		)
 	}
@@ -123,10 +123,10 @@ export class NotesContext extends CommonContext implements INotesContext {
 		let ids: string[] = []
 		if (this._rundownId) ids.push('rundownId: ' + this._rundownId)
 		if (this._segmentId) ids.push('segmentId: ' + this._segmentId)
-		if (this._segmentLineId) ids.push('segmentLineId: ' + this._segmentLineId)
+		if (this._partId) ids.push('partId: ' + this._partId)
 		return ids.join(',')
 	}
-	private _pushNote (type: SegmentLineNoteType, message: string) {
+	private _pushNote (type: PartNoteType, message: string) {
 		if (this.handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
@@ -134,12 +134,12 @@ export class NotesContext extends CommonContext implements INotesContext {
 					name: this._getLoggerName(),
 					rundownId: this._rundownId,
 					segmentId: this._segmentId,
-					segmentLineId: this._segmentLineId
+					partId: this._partId
 				},
 				message: message
 			})
 		} else {
-			if (type === SegmentLineNoteType.WARNING) {
+			if (type === PartNoteType.WARNING) {
 				logger.warn(`Warning from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
 			} else {
 				logger.error(`Error from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
@@ -188,12 +188,12 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	private notes: NotesContext
 
-	constructor (studioInstallation: StudioInstallation, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, rundownId?: string, segmentId?: string, segmentLineId?: string) {
+	constructor (studioInstallation: StudioInstallation, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, rundownId?: string, segmentId?: string, partId?: string) {
 		super(studioInstallation)
 
 		this.showStyleBaseId = showStyleBaseId
 		this.showStyleVariantId = showStyleVariantId
-		this.notes = new NotesContext(contextName || studioInstallation.name, rundownId || '', segmentId, segmentLineId)
+		this.notes = new NotesContext(contextName || studioInstallation.name, rundownId || '', segmentId, partId)
 	}
 
 	getShowStyleBase (): ShowStyleBase {
@@ -243,8 +243,8 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 	rundownId: string
 	rundown: Rundown
 
-	constructor (rundown: Rundown, studioInstallation?: StudioInstallation, contextName?: string, segmentId?: string, segmentLineId?: string) {
-		super(studioInstallation || rundown.getStudioInstallation(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, segmentLineId)
+	constructor (rundown: Rundown, studioInstallation?: StudioInstallation, contextName?: string, segmentId?: string, partId?: string) {
+		super(studioInstallation || rundown.getStudioInstallation(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
 
 		this.rundownId = rundown._id
 		this.rundown = rundown
@@ -255,7 +255,7 @@ export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArgu
 export class SegmentContext extends RundownContext implements ISegmentContext {
 	private runtimeArguments: BlueprintRuntimeArgumentsSet
 
-	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBSegmentLine[]) {
+	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[]) {
 		super(rundown, studioInstallation)
 
 		if (_.isArray(runtimeArguments)) {
@@ -298,9 +298,9 @@ export class EventContext extends CommonContext implements IEventContext {
 }
 
 export class PartEventContext extends RundownContext implements IPartEventContext {
-	part: IBlueprintSegmentLineDB
+	part: IBlueprintPartDB
 
-	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, part: IBlueprintSegmentLineDB) {
+	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, part: IBlueprintPartDB) {
 		super(rundown, studioInstallation)
 
 		this.part = part
@@ -343,25 +343,25 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 			})[0]
 		}
 	}
-	/** Get all segmentLines in this rundown */
-	getSegmentLines (): Array<SegmentLine> {
-		return this.rundown.getSegmentLines()
+	/** Get all parts in this rundown */
+	getParts (): Array<Part> {
+		return this.rundown.getParts()
 	}
-	/** Get the segmentLine related to this AsRunEvent */
-	getSegmentLine (id?: string): SegmentLine | undefined {
-		id = id || this.asRunEvent.segmentLineId
+	/** Get the part related to this AsRunEvent */
+	getPart (id?: string): Part | undefined {
+		id = id || this.asRunEvent.partId
 		check(id, String)
 		if (id) {
-			return this.rundown.getSegmentLines({
+			return this.rundown.getParts({
 				_id: id
 			})[0]
 		}
 	}
-	/** Get the mos story related to a segmentLine */
-	getStoryForSegmentLine (segmentLine: SegmentLine): IngestPart {
-		let segmentLineId = segmentLine._id
-		check(segmentLineId, String)
-		return this.rundown.fetchCache(CachePrefix.INGEST_PART + segmentLineId)
+	/** Get the mos story related to a part */
+	getStoryForPart (part: Part): IngestPart {
+		let partId = part._id
+		check(partId, String)
+		return this.rundown.fetchCache(CachePrefix.INGEST_PART + partId)
 	}
 	/** Get the mos story related to the rundown */
 	getStoryForRundown (): IngestRundown {
@@ -382,15 +382,15 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/**
-	 * Returns pieces in a segmentLine
-	 * @param id Id of segmentLine to fetch items in
+	 * Returns pieces in a part
+	 * @param id Id of part to fetch items in
 	 */
-	getPieces (segmentLineId: string): Array<IBlueprintPiece> {
-		check(segmentLineId, String)
-		if (segmentLineId) {
+	getPieces (partId: string): Array<IBlueprintPiece> {
+		check(partId, String)
+		if (partId) {
 			return Pieces.find({
 				rundownId: this.rundown._id,
-				segmentLineId: segmentLineId
+				partId: partId
 			}).fetch()
 		}
 		return []
@@ -409,7 +409,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		let ids: string[] = []
 		if (this.rundownId) ids.push('rundownId: ' + this.rundownId)
 		if (this.asRunEvent.segmentId) ids.push('segmentId: ' + this.asRunEvent.segmentId)
-		if (this.asRunEvent.segmentLineId) ids.push('segmentLineId: ' + this.asRunEvent.segmentLineId)
+		if (this.asRunEvent.partId) ids.push('partId: ' + this.asRunEvent.partId)
 		if (this.asRunEvent.pieceId) ids.push('pieceId: ' + this.asRunEvent.pieceId)
 		if (this.asRunEvent.timelineObjectId) ids.push('timelineObjectId: ' + this.asRunEvent.timelineObjectId)
 		return ids.join(',')

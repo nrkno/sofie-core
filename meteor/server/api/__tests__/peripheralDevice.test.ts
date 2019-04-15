@@ -6,7 +6,7 @@ import {} from 'mocha'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import {
@@ -16,7 +16,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 import { getCurrentTime, literal } from '../../../lib/lib'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
-import { rundownId, segmentLineId, getRO } from '../integration/mos'
+import { rundownId, partId, getRO } from '../integration/mos'
 import { segmentId } from '../rundown'
 
 const expect = chai.expect
@@ -527,7 +527,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 	beforeEach(function () {
 		StubCollections.stub(Rundowns)
 		StubCollections.stub(Segments)
-		StubCollections.stub(SegmentLines)
+		StubCollections.stub(Parts)
 		StubCollections.stub(Pieces)
 
 		let rundownID = rundownId(new MOS.MosString128('rundown0'))
@@ -540,9 +540,9 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			showStyleVariantId: 'variant0',
 			name: 'test rundown',
 			created: 1000,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null,
-			previousSegmentLineId: null,
+			currentPartId: null,
+			nextPartId: null,
+			previousPartId: null,
 			dataSource: 'mock',
 			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
@@ -556,18 +556,18 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			name: 'Fire',
 			number: ''
 		})
-		SegmentLines.insert({
-			_id: segmentLineId(segmentID, new MOS.MosString128('segmentLine000')),
+		Parts.insert({
+			_id: partId(segmentID, new MOS.MosString128('part000')),
 			_rank: 0,
-			mosId: 'segmentLine000',
+			mosId: 'part000',
 			segmentId: segmentID,
 			rundownId: rundownID,
 			slug: ''
 		})
-		SegmentLines.insert({
-			_id: segmentLineId(segmentID, new MOS.MosString128('segmentLine001')),
+		Parts.insert({
+			_id: partId(segmentID, new MOS.MosString128('part001')),
 			_rank: 1,
-			mosId: 'segmentLine001',
+			mosId: 'part001',
 			segmentId: segmentID,
 			rundownId: rundownID,
 			slug: ''
@@ -597,9 +597,9 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			showStyleVariantId: 'variant0',
 			name: 'test rundown 1',
 			created: 2000,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null,
-			previousSegmentLineId: null,
+			currentPartId: null,
+			nextPartId: null,
+			previousPartId: null,
 			dataSource: 'mock',
 			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
@@ -620,9 +620,9 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			showStyleVariantId: 'variant0',
 			name: 'test rundown 2',
 			created: 2000,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null,
-			previousSegmentLineId: null,
+			currentPartId: null,
+			nextPartId: null,
+			previousPartId: null,
 			dataSource: 'mock',
 			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
@@ -658,27 +658,27 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			let segment = getSegment(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'))
 		}).to.throw()
 	})
-	it('getSegmentLine', function () {
-		let segmentLine = getSegmentLine(
+	it('getPart', function () {
+		let part = getPart(
 			new MOS.MosString128('rundown0'),
 			new MOS.MosString128('segment00'),
-			new MOS.MosString128('segmentLine000')
+			new MOS.MosString128('part000')
 		)
 
-		expect(segmentLine).to.be.an('object')
-		expect(segmentLine._id).to.be.equal('rundown_rundown0_segment00_segmentLine000')
-		expect(segmentLine.mosId).to.be.equal('segmentLine000')
+		expect(part).to.be.an('object')
+		expect(part._id).to.be.equal('rundown_rundown0_segment00_part000')
+		expect(part.mosId).to.be.equal('part000')
 
 		expect(() => {
-			let segmentLine = getSegmentLine(new MOS.MosString128('rundown0'), new MOS.MosString128('segment00'), new MOS.MosString128('unknown'))
+			let part = getPart(new MOS.MosString128('rundown0'), new MOS.MosString128('segment00'), new MOS.MosString128('unknown'))
 		}).to.throw()
 
 		expect(() => {
-			let segmentLine = getSegmentLine(new MOS.MosString128('rundown0'), new MOS.MosString128('unknown'), new MOS.MosString128('segmentLine000'))
+			let part = getPart(new MOS.MosString128('rundown0'), new MOS.MosString128('unknown'), new MOS.MosString128('part000'))
 		}).to.throw()
 
 		expect(() => {
-			let segmentLine = getSegmentLine(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'), new MOS.MosString128('segmentLine000'))
+			let part = getPart(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'), new MOS.MosString128('part000'))
 		}).to.throw()
 	})
 	it('convertToSegment', function () {
@@ -691,16 +691,16 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(segment.rundownId).to.equal('rundown_rundown0')
 		expect(segment._rank).to.equal(123)
 	})
-	it('convertToSegmentLine', function () {
+	it('convertToPart', function () {
 
 		let item = xmlApiData.rundownElementAction_insert_item_Items[0]
-		let segmentLine = convertToSegmentLine(item, 'rundown_rundown0', 'segment00', 123)
+		let part = convertToPart(item, 'rundown_rundown0', 'segment00', 123)
 
-		expect(segmentLine).to.be.an('object')
-		expect(segmentLine.mosId).to.equal(item.ID.toString())
-		expect(segmentLine.rundownId).to.equal('rundown_rundown0')
-		expect(segmentLine.segmentId).to.equal('segment00')
-		expect(segmentLine._rank).to.equal(123)
+		expect(part).to.be.an('object')
+		expect(part.mosId).to.equal(item.ID.toString())
+		expect(part.rundownId).to.equal('rundown_rundown0')
+		expect(part.segmentId).to.equal('segment00')
+		expect(part._rank).to.equal(123)
 	})
 	it('insertSegment', function () {
 		let story = xmlApiData.rundownElementAction_insert_story_Stories[0]
@@ -714,14 +714,14 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(dbSegment._rank).to.equal(123)
 		expect(dbSegment.rundownId).to.equal('rundown_rundown0')
 
-		let dbSegmentLines = SegmentLines.find({
+		let dbParts = Parts.find({
 			rundownId: dbSegment.rundownId,
 			segmentId: dbSegment._id
 		},mod).fetch()
 
-		expect(dbSegmentLines).to.have.length(story.Items.length)
+		expect(dbParts).to.have.length(story.Items.length)
 
-		expect(dbSegmentLines[0]._id).to.equal( segmentLineId(dbSegment._id, story.Items[0].ID))
+		expect(dbParts[0]._id).to.equal( partId(dbSegment._id, story.Items[0].ID))
 	})
 	it('removeSegment', function () {
 		let dbSegment = Segments.findOne(segmentId('rundown_rundown0','',  new MOS.MosString128('segment00')))
@@ -729,14 +729,14 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(dbSegment.mosId).to.equal('segment00')
 		expect(dbSegment.rundownId).to.equal('rundown_rundown0')
 		expect(
-			SegmentLines.find({segmentId: dbSegment._id}).fetch().length
+			Parts.find({segmentId: dbSegment._id}).fetch().length
 		).to.be.greaterThan(0)
 
 		removeSegment( dbSegment._id, dbSegment.rundownId)
 
 		expect(Segments.find(dbSegment._id).fetch()).to.have.length(0)
 		expect(
-			SegmentLines.find({segmentId: dbSegment._id}).fetch()
+			Parts.find({segmentId: dbSegment._id}).fetch()
 		).to.have.length(0)
 	})
 	it('fetchBefore & fetchAfter', function () {
@@ -795,7 +795,7 @@ describe('peripheralDevice: MOS API methods', function () {
 	beforeEach(function () {
 		StubCollections.stub(Rundowns)
 		StubCollections.stub(Segments)
-		StubCollections.stub(SegmentLines)
+		StubCollections.stub(Parts)
 		StubCollections.stub(Pieces)
 	})
 	afterEach(function () {
@@ -821,13 +821,13 @@ describe('peripheralDevice: MOS API methods', function () {
 		let dbSegment = dbSegments[0]
 		expect(dbSegment.mosId).to.equal(story.ID.toString())
 
-		let dbSegmentLines = SegmentLines.find({
+		let dbParts = Parts.find({
 			rundownId: dbRundown._id,
 			segmentId: dbSegment._id
 		}, mod).fetch()
-		expect(dbSegmentLines).to.have.length(story.Items.length)
-		let dbSegmentLine = dbSegmentLines[0]
-		expect(dbSegmentLine.mosId).to.equal(item.ID.toString())
+		expect(dbParts).to.have.length(story.Items.length)
+		let dbPart = dbParts[0]
+		expect(dbPart.mosId).to.equal(item.ID.toString())
 	})
 	it('mosRundownDelete', function () {
 		// Test data:
@@ -846,7 +846,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		expect(Segments.find({
 			rundownId: rundownID
 		}).fetch()).to.have.length(0)
-		expect(SegmentLines.find({
+		expect(Parts.find({
 			rundownId: rundownID
 		}).fetch()).to.have.length(0)
 		expect(Pieces.find({
@@ -987,26 +987,26 @@ describe('peripheralDevice: MOS API methods', function () {
 			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
 		let segmentID = segmentId(rundownId(rundown.ID), story.ID)
-		let segmentLineID = segmentLineId(segmentID, item.ID)
+		let partID = partId(segmentID, item.ID)
 		// first create the rundown:
 		ServerPeripheralDeviceAPI.mosRundownCreate(rundown)
 		// Set status:
 		ServerPeripheralDeviceAPI.mosRundownItemStatus(status0)
-		expect(SegmentLines.findOne(segmentLineID).status).to.be.equal(status0.Status)
+		expect(Parts.findOne(partID).status).to.be.equal(status0.Status)
 		ServerPeripheralDeviceAPI.mosRundownItemStatus(status1)
-		expect(SegmentLines.findOne(segmentLineID).status).to.be.equal(status1.Status)
+		expect(Parts.findOne(partID).status).to.be.equal(status1.Status)
 		expect(() => {
 			ServerPeripheralDeviceAPI.mosRundownItemStatus(statusUnknown0)
 		}).to.throw(/404/)
-		expect(SegmentLines.findOne(segmentLineID).status).to.be.equal(status1.Status) // keep the previous status
+		expect(Parts.findOne(partID).status).to.be.equal(status1.Status) // keep the previous status
 		expect(() => {
 			ServerPeripheralDeviceAPI.mosRundownItemStatus(statusUnknown1)
 		}).to.throw(/404/)
-		expect(SegmentLines.findOne(segmentLineID).status).to.be.equal(status1.Status) // keep the previous status
+		expect(Parts.findOne(partID).status).to.be.equal(status1.Status) // keep the previous status
 		expect(() => {
 			ServerPeripheralDeviceAPI.mosRundownItemStatus(statusUnknown2)
 		}).to.throw(/404/)
-		expect(SegmentLines.findOne(segmentLineID).status).to.be.equal(status1.Status) // keep the previous status
+		expect(Parts.findOne(partID).status).to.be.equal(status1.Status) // keep the previous status
 	})
 	it('mosRundownStoryInsert', function () {
 		// Test data:
@@ -1053,14 +1053,14 @@ describe('peripheralDevice: MOS API methods', function () {
 		ServerPeripheralDeviceAPI.mosRundownCreate(rundown)
 		let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
 		let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-		let dbSegmentLines0 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
+		let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
 
 		// Insert item:
 		ServerPeripheralDeviceAPI.mosRundownItemInsert(action0, items0)
-		let dbSegmentLines1 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-		expect(dbSegmentLines1.length).to.be.greaterThan(dbSegmentLines0.length)
-		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length + items0.length)
-		expect(dbSegmentLines1[0].mosId).to.equal(items0[0].ID.toString())
+		let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
+		expect(dbParts1.length).to.be.greaterThan(dbParts0.length)
+		expect(dbParts1.length).to.equal(dbParts0.length + items0.length)
+		expect(dbParts1[0].mosId).to.equal(items0[0].ID.toString())
 
 	})
 	it('mosRundownStoryReplace', function () {
@@ -1107,13 +1107,13 @@ describe('peripheralDevice: MOS API methods', function () {
 		ServerPeripheralDeviceAPI.mosRundownCreate(rundown)
 		let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
 		let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-		let dbSegmentLines0 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
+		let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
 
 		// Replace item:
 		ServerPeripheralDeviceAPI.mosRundownItemReplace(action0, items0)
-		let dbSegmentLines1 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length - 1 + items0.length)
-		expect(dbSegmentLines1[0].mosId).to.equal(items0[0].ID.toString())
+		let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
+		expect(dbParts1.length).to.equal(dbParts0.length - 1 + items0.length)
+		expect(dbParts1[0].mosId).to.equal(items0[0].ID.toString())
 
 	})
 	it('mosRundownStoryMove', function () {
@@ -1161,14 +1161,14 @@ describe('peripheralDevice: MOS API methods', function () {
 
 		let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
 		let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-		let dbSegmentLines0 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
+		let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
 
 		// Move item:
-		ServerPeripheralDeviceAPI.mosRundownItemMove(action0, [new MOS.MosString128(dbSegmentLines0[0].mosId)])
-		let dbSegmentLines1 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length)
-		expect(dbSegmentLines1[0].mosId).to.equal(dbSegmentLines0[1].mosId)
-		expect(dbSegmentLines1[1].mosId).to.equal(dbSegmentLines0[0].mosId)
+		ServerPeripheralDeviceAPI.mosRundownItemMove(action0, [new MOS.MosString128(dbParts0[0].mosId)])
+		let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
+		expect(dbParts1.length).to.equal(dbParts0.length)
+		expect(dbParts1[0].mosId).to.equal(dbParts0[1].mosId)
+		expect(dbParts1[1].mosId).to.equal(dbParts0[0].mosId)
 
 	})
 	it('mosRundownStoryDelete', function () {
@@ -1215,12 +1215,12 @@ describe('peripheralDevice: MOS API methods', function () {
 
 		let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
 		let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-		let dbSegmentLines0 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
+		let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
 
 		// Delete item:
-		ServerPeripheralDeviceAPI.mosRundownItemDelete(action0, [new MOS.MosString128(dbSegmentLines0[0].mosId)])
-		let dbSegmentLines1 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length - 1)
+		ServerPeripheralDeviceAPI.mosRundownItemDelete(action0, [new MOS.MosString128(dbParts0[0].mosId)])
+		let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
+		expect(dbParts1.length).to.equal(dbParts0.length - 1)
 
 	})
 	it('mosRundownStorySwap', function () {
@@ -1271,14 +1271,14 @@ describe('peripheralDevice: MOS API methods', function () {
 
 		let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
 		let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-		let dbSegmentLines0 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
+		let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
 
 		// Swap items:
 		ServerPeripheralDeviceAPI.mosRundownItemSwap(action1, item0.ID, items0[0].ID)
-		let dbSegmentLines1 = SegmentLines.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length)
-		expect(dbSegmentLines1[0].mosId).to.equal(dbSegmentLines0[1].mosId)
-		expect(dbSegmentLines1[1].mosId).to.equal(dbSegmentLines0[0].mosId)
+		let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
+		expect(dbParts1.length).to.equal(dbParts0.length)
+		expect(dbParts1[0].mosId).to.equal(dbParts0[1].mosId)
+		expect(dbParts1[1].mosId).to.equal(dbParts0[0].mosId)
 
 	})
 	it('mosRundownReadyToAir', function () {

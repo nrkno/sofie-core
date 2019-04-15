@@ -6,15 +6,15 @@ import { Pieces, PieceGeneric } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, literal, getCurrentTime, getHash } from '../../lib/lib'
-import { SegmentLines } from '../../lib/collections/SegmentLines'
+import { Parts } from '../../lib/collections/Parts'
 import { setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
 
-export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
-= syncFunctionIgnore(function updateExpectedMediaItems (rundownId: string, slId: string) {
+export const updateExpectedMediaItems: (rundownId: string, partId: string) => void
+= syncFunctionIgnore(function updateExpectedMediaItems (rundownId: string, partId: string) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) {
@@ -26,13 +26,13 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 	}
 	const studioInstallationId = rundown.studioInstallationId
 
-	const sl = SegmentLines.findOne(slId)
-	if (!sl) {
+	const part = Parts.findOne(partId)
+	if (!part) {
 		const removedItems = ExpectedMediaItems.remove({
 			rundownId: rundownId,
-			segmentLineId: slId
+			partId: partId
 		})
-		logger.info(`Removed ${removedItems} expected media items for deleted segmentLine "${slId}"`)
+		logger.info(`Removed ${removedItems} expected media items for deleted part "${partId}"`)
 		return
 	}
 
@@ -43,18 +43,18 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 	// })
 	const slis = Pieces.find({
 		rundownId: rundown._id,
-		segmentLineId: sl._id
+		partId: part._id
 	})
 	const slali = AdLibPieces.find({
 		rundownId: rundown._id,
-		segmentLineId: sl._id
+		partId: part._id
 	})
 
 	function iterateOnPieceLike (doc: PieceGeneric, prefix: string) {
 		if (doc.content && doc.content.fileName && doc.content.path && doc.content.mediaFlowIds) {
 			(doc.content.mediaFlowIds as string[]).forEach(function (flow) {
 				eMIs.push(literal<ExpectedMediaItem>({
-					_id: getHash(prefix + '_' + doc._id + '_' + flow + '_' + rundownId + '_' + slId),
+					_id: getHash(prefix + '_' + doc._id + '_' + flow + '_' + rundownId + '_' + partId),
 					disabled: false,
 					lastSeen: getCurrentTime(),
 					mediaFlowId: flow,
@@ -62,7 +62,7 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 					url: this[1].toString(),
 
 					rundownId: rundownId,
-					segmentLineId: slId,
+					partId: partId,
 					studioInstallationId: studioInstallationId
 				}))
 			}, [doc.content.fileName, doc.content.path])
@@ -75,11 +75,11 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 
 	saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(ExpectedMediaItems, {
 		rundownId: rundown._id,
-		segmentLineId: sl._id
+		partId: part._id
 	}, eMIs)
 })
 
-function insertExpectedObject (fileName: string, url: string, mediaFlowId: string, rundownId: string, segmentLineId: string) {
+function insertExpectedObject (fileName: string, url: string, mediaFlowId: string, rundownId: string, partId: string) {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found.`)
 
@@ -91,14 +91,14 @@ function insertExpectedObject (fileName: string, url: string, mediaFlowId: strin
 		path: fileName,
 		url,
 		rundownId,
-		segmentLineId,
+		partId,
 		studioInstallationId: rundown.studioInstallationId
 	})
 }
 
 let methods = {}
-methods['insertExpected'] = (fileName, url, mediaFlowId, rundownId, segmentLineId) => {
-	return insertExpectedObject(fileName, url, mediaFlowId, rundownId, segmentLineId)
+methods['insertExpected'] = (fileName, url, mediaFlowId, rundownId, partId) => {
+	return insertExpectedObject(fileName, url, mediaFlowId, rundownId, partId)
 }
 
 // Apply methods:

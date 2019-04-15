@@ -16,7 +16,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
@@ -36,7 +36,7 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
-import { scrollToSegmentLine, scrollToPosition, scrollToSegment } from '../lib/viewPort'
+import { scrollToPart, scrollToPosition, scrollToSegment } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
@@ -518,7 +518,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		this.reloadRundown(e)
 	}
 	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
-		// "forward" = to next SegmentLine
+		// "forward" = to next Part
 		this.moveNext(e, 1, 0)
 	}
 	keyMoveNextBack = (e: ExtendedKeyboardEvent) => {
@@ -571,8 +571,8 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			if (this.props.rundown.active) {
 				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
-						const segmentLineId = response.result
-						if (segmentLineId) scrollToSegmentLine(segmentLineId)
+						const partId = response.result
+						if (partId) scrollToPart(partId)
 					}
 				})
 			}
@@ -765,8 +765,8 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err) => {
 				if (!err) {
-					if (this.props.rundown && this.props.rundown.nextSegmentLineId) {
-						scrollToSegmentLine(this.props.rundown.nextSegmentLineId)
+					if (this.props.rundown && this.props.rundown.nextPartId) {
+						scrollToPart(this.props.rundown.nextPartId)
 					}
 				}
 			})
@@ -976,7 +976,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	let rundown = Rundowns.findOne({ _id: rundownId })
 	let studioInstallation = rundown && StudioInstallations.findOne({ _id: rundown.studioInstallationId })
-	// let rundownDurations = calculateDurations(rundown, segmentLines)
+	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownId: rundownId,
 		rundown: rundown,
@@ -1066,7 +1066,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.subscribe('segments', {
 			rundownId: rundownId
 		})
-		this.subscribe('segmentLines', {
+		this.subscribe('parts', {
 			rundownId: rundownId
 		})
 		this.subscribe('pieces', {
@@ -1129,7 +1129,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
 		if (this.props.rundown &&
-			prevProps.rundown && prevProps.rundown.currentSegmentLineId !== this.props.rundown.currentSegmentLineId &&
+			prevProps.rundown && prevProps.rundown.currentPartId !== this.props.rundown.currentPartId &&
 			this.state.manualSetAsNext) {
 
 			this.setState({
@@ -1143,8 +1143,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			})
 		} else if (this.props.rundown &&
 			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
-			this.props.rundown.nextSegmentLineId) {
-			scrollToSegmentLine(this.props.rundown.nextSegmentLineId)
+			this.props.rundown.nextPartId) {
+			scrollToPart(this.props.rundown.nextPartId)
 		}
 
 		if (typeof this.props.rundown !== typeof this.props.rundown ||
@@ -1191,9 +1191,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				const combos = i.hotkeys.split(',')
 				_.each(combos, (combo: string) => {
 					const handler = (e: KeyboardEvent) => {
-						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextSegmentLineId) {
-							doUserAction(t, e, UserActionAPI.methods.toggleSegmentLineArgument, [
-								this.props.rundown._id, this.props.rundown.nextSegmentLineId, i.property, i.value
+						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
+							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+								this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
 							])
 						}
 					}
@@ -1309,12 +1309,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}, 400)
 	}
 	onGoToLiveSegment = () => {
-		if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentSegmentLineId &&
-			this.props.rundown.nextSegmentLineId) {
+		if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentPartId &&
+			this.props.rundown.nextPartId) {
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToSegmentLine(this.props.rundown.nextSegmentLineId)
+			scrollToPart(this.props.rundown.nextPartId)
 			// allow for the scroll to finish
 			Meteor.setTimeout(() => {
 				this.setState({
@@ -1341,10 +1341,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onSetNext = (segmentLine: SegmentLine, e: any, offset?: number) => {
+	onSetNext = (part: Part, e: any, offset?: number) => {
 		const {t} = this.props
-		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.rundown) {
-			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, segmentLine._id, offset], () => {
+		if (this.state.studioMode && part && part._id && this.props.rundown) {
+			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, part._id, offset], () => {
 				this.setState({
 					manualSetAsNext: true
 				})
@@ -1354,8 +1354,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const {t} = this.props
-		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, item._id])
+		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentPartId) {
+			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.rundown._id, this.props.rundown.currentPartId, item._id])
 		}
 	}
 
@@ -1364,10 +1364,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			let segmentId = e.sourceLocator.segmentId
 
 			if (!segmentId) {
-				if (e.sourceLocator.segmentLineId) {
-					let segmentLine = SegmentLines.findOne(e.sourceLocator.segmentLineId)
-					if (segmentLine) {
-						segmentId = segmentLine.segmentId
+				if (e.sourceLocator.partId) {
+					let part = Parts.findOne(e.sourceLocator.partId)
+					if (part) {
+						segmentId = part.segmentId
 					}
 				}
 			}

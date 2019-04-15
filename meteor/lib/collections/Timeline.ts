@@ -81,11 +81,11 @@ export interface TimelineObjGroup extends TimelineObjGeneric {
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
 
-export interface TimelineObjGroupSegmentLine extends TimelineObjGroupRundown {
-	isSegmentLineGroup: true
+export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
+	isPartGroup: true
 }
-export interface TimelineObjSegmentLineAbstract extends TimelineObjRundown { // used for sending callbacks
-	slId?: string
+export interface TimelineObjPartAbstract extends TimelineObjRundown { // used for sending callbacks
+	partId?: string
 }
 export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used for sending callbacks
 	pieceId?: string

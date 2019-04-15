@@ -16,14 +16,14 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 	   if (!transformedObj.content) transformedObj.content = {}
 	   if (!transformedObj.content.objects) transformedObj.content.objects = []
 
-		if (obj['slId']) {
+		if (obj['partId']) {
 			// Will cause a callback to be called, when the object starts to play:
-			transformedObj.content.callBack = 'segmentLinePlaybackStarted'
+			transformedObj.content.callBack = 'partPlaybackStarted'
 			transformedObj.content.callBackData = {
 				rundownId: obj.rundownId,
-				slId: obj['slId']
+				partId: obj['partId']
 			}
-			transformedObj.content.callBackStopped = 'segmentLinePlaybackStopped'
+			transformedObj.content.callBackStopped = 'partPlaybackStopped'
 	   }
 		if (obj['pieceId']) {
 			// Will cause a callback to be called, when the object starts to play:

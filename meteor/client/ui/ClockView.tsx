@@ -9,8 +9,8 @@ import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 
 import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
-import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { Parts, Part } from '../../lib/collections/Parts'
+import { PartUi } from './SegmentTimeline/SegmentTimelineContainer'
 
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime, objectPathGet, extendMandadory } from '../../lib/lib'
@@ -19,7 +19,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 
 interface SegmentUi extends Segment {
-	items: Array<SegmentLineUi>
+	items: Array<PartUi>
 }
 
 interface TimeMap {
@@ -65,21 +65,21 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 		if (rundown) {
 			segments = _.map(rundown.getSegments(), (segment) => {
 				const displayDurationGroups: _.Dictionary<number> = {}
-				const segmentLines = segment.getSegmentLines()
+				const parts = segment.getParts()
 				let displayDuration = 0
 
 				return extendMandadory<Segment, SegmentUi>(segment, {
-					items: _.map(segmentLines, (sl, index) => {
-						if (sl.displayDurationGroup && (
-							(displayDurationGroups[sl.displayDurationGroup]) ||
+					items: _.map(parts, (part, index) => {
+						if (part.displayDurationGroup && (
+							(displayDurationGroups[part.displayDurationGroup]) ||
 							// or there is a following member of this displayDurationGroup
-							(segmentLines[index + 1] && segmentLines[index + 1].displayDurationGroup === sl.displayDurationGroup))) {
-							displayDurationGroups[sl.displayDurationGroup] = (displayDurationGroups[sl.displayDurationGroup] || 0) + ((sl.expectedDuration || 0) - (sl.duration || 0))
-							displayDuration = Math.max(0, Math.min(sl.displayDuration || sl.expectedDuration || 0, sl.expectedDuration || 0) || displayDurationGroups[sl.displayDurationGroup])
+							(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))) {
+							displayDurationGroups[part.displayDurationGroup] = (displayDurationGroups[part.displayDurationGroup] || 0) + ((part.expectedDuration || 0) - (part.duration || 0))
+							displayDuration = Math.max(0, Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) || displayDurationGroups[part.displayDurationGroup])
 						}
-						return extendMandadory<SegmentLine, SegmentLineUi>(sl, {
+						return extendMandadory<Part, PartUi>(part, {
 							items: [],
-							renderedDuration: sl.expectedDuration ? 0 : displayDuration,
+							renderedDuration: part.expectedDuration ? 0 : displayDuration,
 							startsAt: 0,
 							willProbablyAutoNext: false
 						})
@@ -101,7 +101,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			this.subscribe('segments', {
 				rundownId: this.props.rundownId
 			})
-			this.subscribe('segmentLines', {
+			this.subscribe('parts', {
 				rundownId: this.props.rundownId
 			})
 		}
@@ -110,41 +110,41 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			const { rundown, segments } = this.props
 
 			if (rundown && this.props.rundownId && this.props.segments) {
-				let currentSegmentLine: SegmentLineUi | undefined
+				let currentPart: PartUi | undefined
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
-							if (item._id === rundown.currentSegmentLineId) {
-								currentSegmentLine = item
+							if (item._id === rundown.currentPartId) {
+								currentPart = item
 							}
 						}
 					}
 				}
 				let currentSegmentDuration = 0
-				if (currentSegmentLine) {
-					currentSegmentDuration += currentSegmentLine.renderedDuration || currentSegmentLine.expectedDuration || 0
-					currentSegmentDuration += -1 * (currentSegmentLine.duration || 0)
-					if (!currentSegmentLine.duration && currentSegmentLine.startedPlayback) {
-						currentSegmentDuration += -1 * (getCurrentTime() - (currentSegmentLine.getLastStartedPlayback() || 0))
+				if (currentPart) {
+					currentSegmentDuration += currentPart.renderedDuration || currentPart.expectedDuration || 0
+					currentSegmentDuration += -1 * (currentPart.duration || 0)
+					if (!currentPart.duration && currentPart.startedPlayback) {
+						currentSegmentDuration += -1 * (getCurrentTime() - (currentPart.getLastStartedPlayback() || 0))
 					}
 				}
 
-				let nextSegmentLine
+				let nextPart
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
-							if (item._id === rundown.nextSegmentLineId) {
-								nextSegmentLine = item
+							if (item._id === rundown.nextPartId) {
+								nextPart = item
 							}
 						}
 					}
 				}
 				// let nextSegmentDuration = 0
-				// if (nextSegmentLine) {
-				// 	nextSegmentDuration += nextSegmentLine.expectedDuration || 0
-				// 	nextSegmentDuration += -1 * (nextSegmentLine.duration || 0)
-				// 	if (!nextSegmentLine.duration && nextSegmentLine.startedPlayback) {
-				// 		nextSegmentDuration += -1 * (getCurrentTime() - nextSegmentLine.startedPlayback)
+				// if (nextPart) {
+				// 	nextSegmentDuration += nextPart.expectedDuration || 0
+				// 	nextSegmentDuration += -1 * (nextPart.duration || 0)
+				// 	if (!nextPart.duration && nextPart.startedPlayback) {
+				// 		nextSegmentDuration += -1 * (getCurrentTime() - nextPart.startedPlayback)
 				// 	}
 				// }
 
@@ -155,16 +155,16 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
-							{currentSegmentLine ?
+							{currentPart ?
 								<React.Fragment>
 									<div className='clocks-segment-icon clocks-current-segment-icon'>
-										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+										<SegmentItemIconContainer segmentItemId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									</div>
 									<div className='clocks-segment-title clocks-current-segment-title'>
-										{currentSegmentLine.title.split(';')[0]}
+										{currentPart.title.split(';')[0]}
 									</div>
-									<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.title} segmentItemId={currentSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+									<div className='clocks-part-title clocks-segment-title clocks-current-segment-title'>
+										<SegmentItemNameContainer partSlug={currentPart.title} segmentItemId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									</div>
 									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 										<Timediff time={currentSegmentDuration} />
@@ -177,21 +177,21 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						</div>
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
 							<div className='clocks-segment-icon'>
-								{nextSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+								{nextPart ?
+									<SegmentItemIconContainer segmentItemId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 								: ''}
 							</div>
 							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
-									{currentSegmentLine && currentSegmentLine.autoNext ?
+									{currentPart && currentPart.autoNext ?
 									<div style={{display: 'inline-block', height: '18vh'}}>
 										<img style={{height: '12vh', paddingTop: '2vh'}} src='/icons/auto-presenter-screen.svg' />
 									</div> : ''}
-									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
+									{nextPart ? nextPart.slug.split(';')[0] : '_'}
 								</div>
-								<div className='clocks-segment-title clocks-segmentline-title'>
-									{nextSegmentLine ?
-										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+								<div className='clocks-segment-title clocks-part-title'>
+									{nextPart ?
+										<SegmentItemNameContainer partSlug={nextPart.slug} segmentItemId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									: '_'}
 								</div>
 							</div>
@@ -217,7 +217,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 	key: string
 	rundown: Rundown
 	segments: Array<Segment>
-	segmentLines: Array<SegmentLine>
+	parts: Array<Part>
 	match: {
 		params: {
 			studioId: string
@@ -251,12 +251,12 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			'_rank': 1
 		}
 	}).fetch() : undefined
-	let segmentLines = rundown ? SegmentLines.find({ rundownId: rundown._id }).fetch() : undefined
-	// let rundownDurations = calculateDurations(rundown, segmentLines)
+	let parts = rundown ? Parts.find({ rundownId: rundown._id }).fetch() : undefined
+	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundown,
 		segments,
-		segmentLines
+		parts
 	}
 })(
 class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
@@ -282,7 +282,7 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 			this.subscribe('segments', {
 				rundownId: rundown._id
 			})
-			this.subscribe('segmentLines', {
+			this.subscribe('parts', {
 				rundownId: rundown._id
 			})
 			this.subscribe('pieces', {

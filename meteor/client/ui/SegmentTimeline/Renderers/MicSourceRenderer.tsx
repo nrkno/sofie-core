@@ -51,7 +51,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 
 			if (this.itemPosition + scriptReadTime !== this.linePosition) {
-				this.linePosition = Math.min(this.itemPosition + scriptReadTime, this.props.segmentLineDuration * this.props.timeScale)
+				this.linePosition = Math.min(this.itemPosition + scriptReadTime, this.props.partDuration * this.props.timeScale)
 				this.repositionLine()
 			}
 		}
@@ -70,7 +70,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			super.componentWillReceiveProps(nextProps, nextContext)
 		}
 
-		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
+		if ((nextProps.partDuration !== this.props.partDuration) ||
 			(nextProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
 			(nextProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
 			(nextProps.piece.duration !== this.props.piece.duration) ||

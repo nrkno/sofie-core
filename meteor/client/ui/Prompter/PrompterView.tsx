@@ -13,7 +13,7 @@ import { parse as queryStringParse } from 'query-string'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { objectPathGet, firstIfArray } from '../../../lib/lib'
-import { SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Parts } from '../../../lib/collections/Parts'
 import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import * as classNames from 'classnames'
 import { Segments } from '../../../lib/collections/Segments'
@@ -58,7 +58,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	scrollSpeed: number = window.innerHeight * 2 // px per second
 	scrollSpeedMultiplier: number = 1
 
-	autoScrollPreviousSegmentLineId: string | null = null
+	autoScrollPreviousPartId: string | null = null
 
 	scrollDirection2: number = 0
 
@@ -128,8 +128,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		if (this.configOptions.followTake ) {
 			if (rundown) {
 
-				if (rundown.currentSegmentLineId !== this.autoScrollPreviousSegmentLineId) {
-					this.autoScrollPreviousSegmentLineId = rundown.currentSegmentLineId
+				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
+					this.autoScrollPreviousPartId = rundown.currentPartId
 
 					this.scrollToCurrent()
 				}
@@ -201,30 +201,30 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 			const anchors = $('.scroll-anchor')
 
-			let currentSegmentLineElement: JQuery<HTMLElement> | null = null
-			let currentSegmentLineElementAfter: JQuery<HTMLElement> | null = null
-			let nextSegmentLineElement: JQuery<HTMLElement> | null = null
-			let nextSegmentLineElementAfter: JQuery<HTMLElement> | null = null
+			let currentPartElement: JQuery<HTMLElement> | null = null
+			let currentPartElementAfter: JQuery<HTMLElement> | null = null
+			let nextPartElement: JQuery<HTMLElement> | null = null
+			let nextPartElementAfter: JQuery<HTMLElement> | null = null
 
 			for (let i = 0; i < anchors.length; i++) {
 				const el = anchors[i]
 				const next = anchors[i + 1]
 
-				if (rundown.currentSegmentLineId && el.className.match('.segmentLine-' + rundown.currentSegmentLineId ) ) {
-					currentSegmentLineElement = $(el)
-					currentSegmentLineElementAfter = $(next) || null
+				if (rundown.currentPartId && el.className.match('.part-' + rundown.currentPartId ) ) {
+					currentPartElement = $(el)
+					currentPartElementAfter = $(next) || null
 				}
-				if (rundown.nextSegmentLineId && el.className.match('.segmentLine-' + rundown.nextSegmentLineId ) ) {
-					nextSegmentLineElement = $(el)
-					nextSegmentLineElementAfter = $(next) || null
+				if (rundown.nextPartId && el.className.match('.part-' + rundown.nextPartId ) ) {
+					nextPartElement = $(el)
+					nextPartElementAfter = $(next) || null
 				}
 			}
 
-			const currentPositionStart 	= currentSegmentLineElement 		? (currentSegmentLineElement.offset() 		|| {top: undefined}).top : null
-			const currentPositionEnd 	= currentSegmentLineElementAfter 	? (currentSegmentLineElementAfter.offset() 	|| {top: undefined}).top : null
+			const currentPositionStart 	= currentPartElement 		? (currentPartElement.offset() 		|| {top: undefined}).top : null
+			const currentPositionEnd 	= currentPartElementAfter 	? (currentPartElementAfter.offset() 	|| {top: undefined}).top : null
 
-			// const nextPositionStart 	= nextSegmentLineElement 			? (nextSegmentLineElement.offset() 		|| {top: undefined}).top : null
-			const nextPositionEnd 		= nextSegmentLineElementAfter 		? (nextSegmentLineElementAfter.offset() 	|| {top: undefined}).top : null
+			// const nextPositionStart 	= nextPartElement 			? (nextPartElement.offset() 		|| {top: undefined}).top : null
+			const nextPositionEnd 		= nextPartElementAfter 		? (nextPartElementAfter.offset() 	|| {top: undefined}).top : null
 
 			if (currentPositionEnd && currentPositionEnd < positionTop) {
 				// Display take "^" indicator
@@ -337,8 +337,8 @@ interface IPrompterProps {
 }
 interface IPrompterTrackedProps {
 	rundown: Rundown | undefined,
-	currentSegmentLineId: string,
-	nextSegmentLineId: string,
+	currentPartId: string,
+	nextPartId: string,
 	prompterData: PrompterData
 }
 interface IPrompterState {
@@ -352,8 +352,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	return {
 		rundown: rundown,
-		currentSegmentLineId: rundown && rundown.currentSegmentLineId || '',
-		nextSegmentLineId: rundown && rundown.nextSegmentLineId || '',
+		currentPartId: rundown && rundown.currentPartId || '',
+		nextPartId: rundown && rundown.nextPartId || '',
 		prompterData
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
@@ -371,7 +371,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		this.subscribe('rundowns', 	{_id: 				this.props.rundownId})
 		this.subscribe('segments', 			{rundownId: 	this.props.rundownId})
-		this.subscribe('segmentLines', 		{rundownId: 	this.props.rundownId})
+		this.subscribe('parts', 		{rundownId: 	this.props.rundownId})
 		this.subscribe('pieces', 	{rundownId: 	this.props.rundownId})
 
 	}
@@ -380,14 +380,14 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		let divs: any[] = []
 		let previousSegmentId = ''
-		let previousSegmentLineId = ''
+		let previousPartId = ''
 		_.each(prompterData.lines, (line, i: number) => {
 
 			let currentNextLine: 'current' | 'next' | null = null
 
 			currentNextLine = (
-				this.props.currentSegmentLineId === line.segmentLineId ? 'current' :
-				this.props.nextSegmentLineId 	=== line.segmentLineId ? 'next' :
+				this.props.currentPartId === line.partId ? 'current' :
+				this.props.nextPartId 	=== line.partId ? 'next' :
 				null
 			)
 
@@ -401,26 +401,26 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							'prompter-segment',
 							'scroll-anchor',
 							'segment-' + line.segmentId,
-							'segmentLine-' + line.segmentLineId,
+							'part-' + line.partId,
 							currentNextLine
 						)}
 					>
 						{ segment ? segment.name : 'N/A' }
 					</div>
 				)
-			} else if (line.segmentLineId !== previousSegmentLineId) {
+			} else if (line.partId !== previousPartId) {
 
-				let segmentLine = SegmentLines.findOne(line.segmentLineId)
-				let title: string = segmentLine ? segmentLine.title : 'N/A'
+				let part = Parts.findOne(line.partId)
+				let title: string = part ? part.title : 'N/A'
 				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
 				divs.push(
 					<div
-						key={'segmentLine_' + i}
+						key={'part_' + i}
 						className={classNames(
-							'prompter-segmentLine',
+							'prompter-part',
 							'scroll-anchor',
-							'segmentLine-' + line.segmentLineId,
+							'part-' + line.partId,
 							currentNextLine
 						)}
 					>
@@ -429,7 +429,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				)
 			}
 			previousSegmentId = line.segmentId
-			previousSegmentLineId = line.segmentLineId
+			previousPartId = line.partId
 
 			divs.push(
 				<div

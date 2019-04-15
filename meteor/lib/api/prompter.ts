@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
-import { SegmentLine } from '../collections/SegmentLines'
+import { Part } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
 export enum PrompterMethods {
@@ -12,7 +12,7 @@ export enum PrompterMethods {
 export interface PrompterDataLine {
 	text: string
 	segmentId: string
-	segmentLineId: string
+	partId: string
 }
 export interface PrompterData {
 	lines: Array<PrompterDataLine>
@@ -27,16 +27,16 @@ export namespace PrompterAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		let segmentLines = rundown.getSegmentLines()
+		let parts = rundown.getParts()
 
 		let data: PrompterData = {
 			lines: []
 		}
 
-		_.each(segmentLines, (sl: SegmentLine) => {
+		_.each(parts, (part: Part) => {
 			let hasSentInThisLine = false
 
-			_.each(sl.getAllPieces(), (piece) => {
+			_.each(part.getAllPieces(), (piece) => {
 
 				if (
 					piece.content &&
@@ -46,8 +46,8 @@ export namespace PrompterAPI {
 					if (content.fullScript) {
 						data.lines.push({
 							text: content.fullScript,
-							segmentId: sl.segmentId,
-							segmentLineId: sl._id
+							segmentId: part.segmentId,
+							partId: part._id
 						})
 						hasSentInThisLine = true
 					}
@@ -58,8 +58,8 @@ export namespace PrompterAPI {
 				// insert an empty line
 				data.lines.push({
 					text: '',
-					segmentId: sl.segmentId,
-					segmentLineId: sl._id
+					segmentId: part.segmentId,
+					partId: part._id
 				})
 			}
 		})

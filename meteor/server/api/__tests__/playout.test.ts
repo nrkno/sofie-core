@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import {} from 'mocha'
 
 import { Rundown, DBRundown, RundownData } from '../../../lib/collections/Rundowns'
-import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
+import { Part, DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 
 import { buildTimelineObjsForRundown } from '../playout'
@@ -25,24 +25,24 @@ function createEmptyRundownData () {
 		name: 'Mock',
 		created: 0,
 		modified: 0,
-		previousSegmentLineId: null,
-		currentSegmentLineId: null,
-		nextSegmentLineId: null,
+		previousPartId: null,
+		currentPartId: null,
+		nextPartId: null,
 		dataSource: ''
 	}
 	const rundownData: RundownData = {
 		rundown: rundown as Rundown,
 		segments: [],
 		segmentsMap: {},
-		segmentLines: [],
-		segmentLinesMap: {},
+		parts: [],
+		partsMap: {},
 		pieces: []
 	}
 	return rundownData
 }
 
-function createEmptySegmentLine (id: string, rundownData: RundownData) {
-	const sl: DBSegmentLine = {
+function createEmptyPart (id: string, rundownData: RundownData) {
+	const part: DBPart = {
 		_id: id,
 		_rank: 1,
 		mosId: '',
@@ -51,24 +51,24 @@ function createEmptySegmentLine (id: string, rundownData: RundownData) {
 		slug: '',
 		typeVariant: ''
 	}
-	const sl2 = sl as SegmentLine
-	sl2.getAllPieces = () => {
-		return rundownData.pieces.filter(i => i.segmentLineId === sl2._id)
+	const part2 = part as Part
+	part2.getAllPieces = () => {
+		return rundownData.pieces.filter(i => i.partId === part2._id)
 	}
-	sl2.getLastStartedPlayback = () => {
-		if (sl2.startedPlayback && sl2.timings && sl2.timings.startedPlayback) {
-			return _.last(sl2.timings.startedPlayback)
+	part2.getLastStartedPlayback = () => {
+		if (part2.startedPlayback && part2.timings && part2.timings.startedPlayback) {
+			return _.last(part2.timings.startedPlayback)
 		}
 
 		return undefined
 	}
 
-	return sl2
+	return part2
 }
 
-function addStartedPlayback (sl: SegmentLine, time: number) {
-	if (!sl.timings) {
-		sl.timings = {
+function addStartedPlayback (part: Part, time: number) {
+	if (!part.timings) {
+		part.timings = {
 			take: [],
 			takeDone: [],
 			takeOut: [],
@@ -78,15 +78,15 @@ function addStartedPlayback (sl: SegmentLine, time: number) {
 		}
 	}
 
-	sl.startedPlayback = true
-	sl.timings.startedPlayback.push(time)
+	part.startedPlayback = true
+	part.timings.startedPlayback.push(time)
 }
 
-function createEmptyPiece (id: string, slId: string) {
+function createEmptyPiece (id: string, partId: string) {
 	const piece: Piece = {
 		_id: id,
 		mosId: id,
-		segmentLineId: slId,
+		partId: partId,
 		rundownId: '',
 		name: 'Mock Piece',
 		trigger: {
@@ -117,13 +117,13 @@ describe('playout: buildTimelineObjsForRundown', function () {
 
 	it('Simple rundown', function () {
 		const rundownData = createEmptyRundownData()
-		rundownData.segmentLinesMap = {
-			a: createEmptySegmentLine('a', rundownData),
-			b: createEmptySegmentLine('b', rundownData)
+		rundownData.partsMap = {
+			a: createEmptyPart('a', rundownData),
+			b: createEmptyPart('b', rundownData)
 		}
-		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
-		rundownData.rundown.previousSegmentLineId = 'a'
-		rundownData.rundown.currentSegmentLineId = 'b'
+		rundownData.parts = _.values(rundownData.partsMap)
+		rundownData.rundown.previousPartId = 'a'
+		rundownData.rundown.currentPartId = 'b'
 
 		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
@@ -141,21 +141,21 @@ describe('playout: buildTimelineObjsForRundown', function () {
 	function createBasicTransitionScenario (prerollDuration: number, transitionPrerollDuration: number, transitionKeepaliveDuration: number) {
 		const rundownData = createEmptyRundownData()
 
-		const slA = createEmptySegmentLine('a', rundownData)
-		slA.expectedDuration = 1000
-		addStartedPlayback(slA, 700)
+		const partA = createEmptyPart('a', rundownData)
+		partA.expectedDuration = 1000
+		addStartedPlayback(partA, 700)
 
-		const slB = createEmptySegmentLine('b', rundownData)
-		addStartedPlayback(slB, 5000)
-		slB.expectedDuration = 4000
-		slB.prerollDuration = prerollDuration
-		slB.transitionPrerollDuration = transitionPrerollDuration
-		slB.transitionKeepaliveDuration = transitionKeepaliveDuration
-		slB.autoNext = true
-		slB.autoNextOverlap = 500
+		const partB = createEmptyPart('b', rundownData)
+		addStartedPlayback(partB, 5000)
+		partB.expectedDuration = 4000
+		partB.prerollDuration = prerollDuration
+		partB.transitionPrerollDuration = transitionPrerollDuration
+		partB.transitionKeepaliveDuration = transitionKeepaliveDuration
+		partB.autoNext = true
+		partB.autoNextOverlap = 500
 
-		const slC = createEmptySegmentLine('c', rundownData)
-		slC.expectedDuration = 0
+		const partC = createEmptyPart('c', rundownData)
+		partC.expectedDuration = 0
 
 		const pieceA1 = createEmptyPiece('a_1', 'a')
 		const pieceB1 = createEmptyPiece('b_1', 'b')
@@ -163,20 +163,20 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		pieceBTrans.isTransition = true
 		pieceBTrans.expectedDuration = 2500
 
-		rundownData.segmentLinesMap = {
-			a: slA,
-			b: slB,
-			c: slC
+		rundownData.partsMap = {
+			a: partA,
+			b: partB,
+			c: partC
 		}
-		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.parts = _.values(rundownData.partsMap)
 		rundownData.pieces = [
 			pieceA1,
 			pieceB1, pieceBTrans
 		]
 
-		rundownData.rundown.previousSegmentLineId = 'a'
-		rundownData.rundown.currentSegmentLineId = 'b'
-		rundownData.rundown.nextSegmentLineId = 'c'
+		rundownData.rundown.previousPartId = 'a'
+		rundownData.rundown.currentPartId = 'b'
+		rundownData.rundown.nextPartId = 'c'
 
 		return rundownData
 	}
@@ -184,17 +184,17 @@ describe('playout: buildTimelineObjsForRundown', function () {
 	function createBasicNextTransitionScenario (prerollDuration: number, transitionPrerollDuration: number, transitionKeepaliveDuration: number) {
 		const rundownData = createEmptyRundownData()
 
-		const slA = createEmptySegmentLine('a', rundownData)
-		slA.expectedDuration = 1000
-		addStartedPlayback(slA, 700)
-		slA.autoNext = true
-		slA.autoNextOverlap = 670
+		const partA = createEmptyPart('a', rundownData)
+		partA.expectedDuration = 1000
+		addStartedPlayback(partA, 700)
+		partA.autoNext = true
+		partA.autoNextOverlap = 670
 
-		const slB = createEmptySegmentLine('b', rundownData)
-		slB.expectedDuration = 0
-		slB.prerollDuration = prerollDuration
-		slB.transitionPrerollDuration = transitionPrerollDuration
-		slB.transitionKeepaliveDuration = transitionKeepaliveDuration
+		const partB = createEmptyPart('b', rundownData)
+		partB.expectedDuration = 0
+		partB.prerollDuration = prerollDuration
+		partB.transitionPrerollDuration = transitionPrerollDuration
+		partB.transitionKeepaliveDuration = transitionKeepaliveDuration
 
 		const pieceA1 = createEmptyPiece('a_1', 'a')
 		const pieceB1 = createEmptyPiece('b_1', 'b')
@@ -202,18 +202,18 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		pieceBTrans.isTransition = true
 		pieceBTrans.expectedDuration = 2500
 
-		rundownData.segmentLinesMap = {
-			a: slA,
-			b: slB
+		rundownData.partsMap = {
+			a: partA,
+			b: partB
 		}
-		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.parts = _.values(rundownData.partsMap)
 		rundownData.pieces = [
 			pieceA1,
 			pieceB1, pieceBTrans
 		]
 
-		rundownData.rundown.currentSegmentLineId = 'a'
-		rundownData.rundown.nextSegmentLineId = 'b'
+		rundownData.rundown.currentPartId = 'a'
+		rundownData.rundown.nextPartId = 'b'
 
 		return rundownData
 	}
@@ -221,40 +221,41 @@ describe('playout: buildTimelineObjsForRundown', function () {
 	function createBasicCutScenario (autoNext: boolean) {
 		const rundownData = createEmptyRundownData()
 
-		const slA = createEmptySegmentLine('a', rundownData)
-		slA.expectedDuration = 1000
-		addStartedPlayback(slA, 700)
+		const partA = createEmptyPart('a', rundownData)
+		partA.expectedDuration = 1000
+		addStartedPlayback(partA, 700)
 
-		const slB = createEmptySegmentLine('b', rundownData)
-		addStartedPlayback(slB, 5000)
-		slB.expectedDuration = 4000
-		slB.prerollDuration = 250 // content starts this far into the sl
+		const partB = createEmptyPart('b', rundownData)
+		addStartedPlayback(partB, 5000)
+		partB.expectedDuration = 4000
+		partB.prerollDuration = 250 // content starts this far into the part
+
 		if (autoNext) {
-			slB.autoNext = true
-			slB.autoNextOverlap = 500
+			partB.autoNext = true
+			partB.autoNextOverlap = 500
 		}
 
-		const slC = createEmptySegmentLine('c', rundownData)
-		slC.expectedDuration = 0
-		slC.prerollDuration = 350
+		const partC = createEmptyPart('c', rundownData)
+		partC.expectedDuration = 0
+		partC.prerollDuration = 350
 
 		const pieceA1 = createEmptyPiece('a_1', 'a')
 		const pieceB1 = createEmptyPiece('b_1', 'b')
 
-		rundownData.segmentLinesMap = {
-			a: slA,
-			b: slB,
-			c: slC
+		rundownData.partsMap = {
+			a: partA,
+			b: partB,
+			c: partC
 		}
-		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.parts = _.values(rundownData.partsMap)
 		rundownData.pieces = [
 			pieceA1,
 			pieceB1
 		]
 
-		rundownData.rundown.previousSegmentLineId = 'a'
-		rundownData.rundown.currentSegmentLineId = 'b'
-		rundownData.rundown.nextSegmentLineId = 'c'
+		rundownData.rundown.previousPartId = 'a'
+		rundownData.rundown.currentPartId = 'b'
+		rundownData.rundown.nextPartId = 'c'
 
 		return rundownData
 	}

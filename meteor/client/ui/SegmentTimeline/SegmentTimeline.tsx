@@ -9,13 +9,13 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
+import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import {
 	SegmentDuration,
-	SegmentLineCountdown,
+	PartCountdown,
 	RundownTiming
 } from '../RundownView/RundownTiming'
 
@@ -37,7 +37,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
-import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType } from '../../../lib/api/notes'
 
 interface IProps {
 	key: string
@@ -45,8 +45,8 @@ interface IProps {
 	rundown: Rundown,
 	followLiveSegments: boolean,
 	studioInstallation: StudioInstallation
-	segmentLines: Array<SegmentLineUi>
-	segmentNotes: Array<SegmentLineNote>
+	parts: Array<PartUi>
+	segmentNotes: Array<PartNote>
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -64,7 +64,7 @@ interface IProps {
 	liveLineHistorySize: number,
 	livePosition: number,
 	displayTimecode: number,
-	autoNextSegmentLine: boolean,
+	autoNextPart: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
@@ -74,7 +74,7 @@ interface IProps {
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: NoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
-	followingSegmentLine: SegmentLineUi | undefined
+	followingPart: PartUi | undefined
 	isLastSegment: boolean
 }
 interface IStateHeader {
@@ -129,13 +129,13 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		let total = 0
 		if (this.context && this.context.durations) {
 			const durations = this.context.durations as RundownTiming.RundownTimingContext
-			this.props.segmentLines.forEach((item) => {
-				// total += durations.segmentLineDurations ? durations.segmentLineDurations[item._id] : (item.duration || item.renderedDuration || 1)
-				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.segmentLineDisplayDurations && durations.segmentLineDisplayDurations[item._id] || 0)
+			this.props.parts.forEach((item) => {
+				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
+				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[item._id] || 0)
 				total += duration
 			})
 		} else {
-			total = RundownUtils.getSegmentDuration(this.props.segmentLines)
+			total = RundownUtils.getSegmentDuration(this.props.parts)
 		}
 		return total
 	}
@@ -145,9 +145,9 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	}
 
 	renderZoomTimeline () {
-		return this.props.segmentLines.map((segmentLine, index, array) => {
+		return this.props.parts.map((part, index, array) => {
 			return (
-				<SegmentTimelineLine key={segmentLine._id}
+				<SegmentTimelineLine key={part._id}
 					segment={this.props.segment}
 					rundown={this.props.rundown}
 					studioInstallation={this.props.studioInstallation}
@@ -158,11 +158,11 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					timeScale={1}
 					relative={true}
 					totalSegmentDuration={this.getSegmentDuration()}
-					segmentLine={segmentLine}
+					part={part}
 					followLiveLine={this.props.followLiveLine}
-					autoNextSegmentLine={this.props.autoNextSegmentLine}
+					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.segment._id === this.props.rundown.currentSegmentLineId && segmentLine.startedPlayback && segmentLine.getLastStartedPlayback() ? this.props.livePosition - (segmentLine.getLastStartedPlayback() || 0) : null}
+					livePosition={this.props.segment._id === this.props.rundown.currentPartId && part.startedPlayback && part.getLastStartedPlayback() ? this.props.livePosition - (part.getLastStartedPlayback() || 0) : null}
 					isLastInSegment={false}
 					isLastSegment={false} />
 			)
@@ -371,7 +371,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	getSegmentContext = (props) => {
 		const ctx = {
 			segment: this.props.segment,
-			segmentLine: this.props.segmentLines.length > 0 ? this.props.segmentLines[0] : null
+			part: this.props.parts.length > 0 ? this.props.parts[0] : null
 		}
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
@@ -382,7 +382,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	getSegmentDuration () {
-		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
+		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) || 0
 	}
 
 	timelineStyle () {
@@ -424,8 +424,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
 					})}>
 						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
-						{!this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
-						{this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
+						{!this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
+						{this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
 						{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 							<div className='segment-timeline__liveline__status segment-timeline__liveline__status--hold'>{t('Hold')}</div>
 							: null
@@ -438,24 +438,24 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	renderTimeline () {
 		return <React.Fragment>
-			{this.props.segmentLines.map((segmentLine, index) => {
+			{this.props.parts.map((part, index) => {
 				return (
-					<SegmentTimelineLine key={segmentLine._id}
+					<SegmentTimelineLine key={part._id}
 						{...this.props}
 						onItemClick={this.props.onItemClick}
 						onItemDoubleClick={this.props.onItemDoubleClick}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
-						firstSegmentLineInSegment={this.props.segmentLines[0]}
+						firstPartInSegment={this.props.parts[0]}
 						isLastSegment={this.props.isLastSegment}
-						isLastInSegment={index === (this.props.segmentLines.length - 1)}
-						segmentLine={segmentLine} />
+						isLastInSegment={index === (this.props.parts.length - 1)}
+						part={part} />
 				)
 			})}
 		</React.Fragment>
 	}
 
 	renderEndOfSegment () {
-		return <div className='segment-timeline__segment-line segment-timeline__segment-line--end-of-segment'></div>
+		return <div className='segment-timeline__part segment-timeline__part--end-of-segment'></div>
 	}
 
 	renderOutputLayerControls () {
@@ -494,7 +494,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render () {
-		let notes: Array<SegmentLineNote> = this.props.segmentNotes
+		let notes: Array<PartNote> = this.props.segmentNotes
 
 		const {t} = this.props
 
@@ -555,23 +555,23 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{this.props.rundown && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
+					{this.props.rundown && this.props.parts && this.props.parts.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
-							segmentLineIds={this.props.segmentLines.filter(item => item.duration === undefined).map(item => item._id)}
+							partIds={this.props.parts.filter(item => item.duration === undefined).map(item => item._id)}
 						/>
 					}
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					 {this.props.rundown && this.props.segmentLines && this.props.segmentLines.length > 0 &&
-						<SegmentLineCountdown
-							segmentLineId={
+					 {this.props.rundown && this.props.parts && this.props.parts.length > 0 &&
+						<PartCountdown
+							partId={
 								(
 									!this.props.isLiveSegment &&
 									(
 										this.props.isNextSegment ?
-										this.props.rundown.nextSegmentLineId :
-										this.props.segmentLines[0]._id
+										this.props.rundown.nextPartId :
+										this.props.parts[0]._id
 									)
 								) || undefined }
 							hideOnZerundown={true}
@@ -606,7 +606,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						isCollapsed={this.props.isCollapsed}
 						outputGroups={this.props.segment.outputLayers}
 						sourceLayers={this.props.segment.sourceLayers}
-						segmentLine={this.props.followingSegmentLine} />
+						part={this.props.followingPart} />
 				</ErrorBoundary> */}
 				<ErrorBoundary>
 					<SegmentTimelineZoom

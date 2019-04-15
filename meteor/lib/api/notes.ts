@@ -9,7 +9,7 @@ export interface GenericNote {
 		name: string,
 		rundownId?: string,
 		segmentId?: string,
-		segmentLineId?: string,
+		partId?: string,
 		pieceId?: string
 	},
 	message: string
@@ -22,13 +22,13 @@ export interface RundownNote extends GenericNote {
 	},
 	message: string
 }
-export interface SegmentLineNote extends GenericNote {
+export interface PartNote extends GenericNote {
 	type: NoteType,
 	origin: {
 		name: string,
 		rundownId: string,
 		segmentId?: string,
-		segmentLineId?: string,
+		partId?: string,
 		pieceId?: string
 	},
 	message: string

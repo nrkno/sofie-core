@@ -225,39 +225,41 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 	getSourceLayer (sourceLayerId: string): ISourceLayer | undefined {
 		check(sourceLayerId, String)
-		return _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
+		return _.find(this.showStyleBase.sourceLayers, part => part._id === sourceLayerId)
 	}
 	insertSourceLayer (sourceLayerId: string, layer: OmitId<ISourceLayer>): string {
 		if (sourceLayerId) {
-			let oldLayer = _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
+			let oldLayer = _.find(this.showStyleBase.sourceLayers, part => part._id === sourceLayerId)
 			if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${sourceLayerId}" already exists!`)
 		}
 
-		let sl: ISourceLayer = _.extend(layer, {
+		let part: ISourceLayer = _.extend(layer, {
 			_id: sourceLayerId
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
 		}, {$push: {
-			sourceLayers: sl
+			sourceLayers: part
+
 		}})
 		if (!this.showStyleBase.sourceLayers) this.showStyleBase.sourceLayers = []
-		this.showStyleBase.sourceLayers.push(sl) // Update local
-		return sl._id
+		this.showStyleBase.sourceLayers.push(part) // Update local
+		return part._id
 	}
 	updateSourceLayer (sourceLayerId: string, layer: Partial<ISourceLayer>): void {
 		check(sourceLayerId, String)
-		let sl = _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId) as ISourceLayer
-		if (!sl) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
+		let part = _.find(this.showStyleBase.sourceLayers, part => part._id === sourceLayerId) as ISourceLayer
+		if (!part) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
 
 		_.each(layer, (value, key: keyof ISourceLayer) => {
-			sl[key] = value // Update local object
+			part[key] = value // Update local object
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
 			'sourceLayers._id': sourceLayerId
 		}, {$set: {
-			'sourceLayers.$' : sl
+			'sourceLayers.$' : part
+
 		}})
 
 	}
@@ -276,40 +278,42 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 	getOutputLayer (outputLayerId: string): IOutputLayer | undefined {
 		check(outputLayerId, String)
-		return _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId)
+		return _.find(this.showStyleBase.outputLayers, part => part._id === outputLayerId)
 	}
 	insertOutputLayer (outputLayerId: string, layer: OmitId<IOutputLayer>): string {
 		if (outputLayerId) {
-			let oldLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId)
+			let oldLayer = _.find(this.showStyleBase.outputLayers, part => part._id === outputLayerId)
 			if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${outputLayerId}" already exists!`)
 		}
 
-		let sl: IOutputLayer = _.extend(layer, {
+		let part: IOutputLayer = _.extend(layer, {
 			_id: outputLayerId
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
 		}, {$push: {
-			outputLayers: sl
+			outputLayers: part
+
 		}})
 		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = []
-		this.showStyleBase.outputLayers.push(sl) // Update local
-		return sl._id
+		this.showStyleBase.outputLayers.push(part) // Update local
+		return part._id
 	}
 	updateOutputLayer (outputLayerId: string, layer: Partial<IOutputLayer>): void {
 		check(outputLayerId, String)
-		let sl: IOutputLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
-		if (!sl) throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" not found`)
+		let part: IOutputLayer = _.find(this.showStyleBase.outputLayers, part => part._id === outputLayerId) as IOutputLayer
+		if (!part) throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" not found`)
 
 		_.each(layer, (value, key: keyof IOutputLayer) => {
 			// @ts-ignore Type 'undefined' is not assignable to type 'ConfigItemValue'
-			sl[key] = value // Update local
+			part[key] = value // Update local
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
 			'outputLayers._id': outputLayerId
 		}, {$set: {
-			'outputLayers.$' : sl
+			'outputLayers.$' : part
+
 		}})
 	}
 	removeOutputLayer (outputLayerId: string): void {

@@ -19,22 +19,22 @@ import {
 import { RundownAPI } from '../../../lib/api/rundown'
 import { Timeline } from 'timeline-state-resolver-types'
 
-export function postProcessPieces (innerContext: IRundownContext, pieces: IBlueprintPiece[], blueprintId: string, segmentLineId: string): Piece[] {
+export function postProcessPieces (innerContext: IRundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
 	let i = 0
-	let segmentLinesUniqueIds: { [id: string]: true } = {}
+	let partsUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
 		let item: Piece = {
 			rundownId: innerContext.rundown._id,
-			segmentLineId: segmentLineId,
+			partId: partId,
 			status: RundownAPI.LineItemStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
-		if (!item._id) item._id = innerContext.getHashId(`${blueprintId}_${segmentLineId}_piece_${i++}`)
-		if (!item.externalId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": externalId not set for piece in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item._id) item._id = innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)
+		if (!item.externalId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": externalId not set for piece in ' + partId + '! ("' + innerContext.unhashId(item._id) + '")')
 
-		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of pieces must be unique! ("' + innerContext.unhashId(item._id) + '")')
-		segmentLinesUniqueIds[item._id] = true
+		if (partsUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of pieces must be unique! ("' + innerContext.unhashId(item._id) + '")')
+		partsUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
@@ -54,24 +54,24 @@ export function postProcessPieces (innerContext: IRundownContext, pieces: IBluep
 	})
 }
 
-export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: string, segmentLineId?: string): AdLibPiece[] {
+export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: string, partId?: string): AdLibPiece[] {
 	let i = 0
-	let segmentLinesUniqueIds: { [id: string]: true } = {}
+	let partsUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
 		let item: AdLibPiece = {
-			_id: innerContext.getHashId(`${blueprintId}_${segmentLineId}_adlib_piece_${i++}`),
+			_id: innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`),
 			rundownId: innerContext.rundown._id,
-			segmentLineId: segmentLineId,
+			partId: partId,
 			status: RundownAPI.LineItemStatusCode.UNKNOWN,
 			trigger: undefined,
 			disabled: false,
 			...itemOrig
 		}
 
-		if (!item.externalId) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": externalId not set for piece in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item.externalId) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": externalId not set for piece in ' + partId + '! ("' + innerContext.unhashId(item._id) + '")')
 
-		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of pieces must be unique! ("' + innerContext.unhashId(item._id) + '")')
-		segmentLinesUniqueIds[item._id] = true
+		if (partsUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of pieces must be unique! ("' + innerContext.unhashId(item._id) + '")')
+		partsUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
@@ -117,7 +117,7 @@ function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): Ti
 	return item
 }
 
-export function postProcessSegmentLineBaselineItems (innerContext: RundownContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
+export function postProcessPartBaselineItems (innerContext: RundownContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 

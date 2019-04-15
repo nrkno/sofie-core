@@ -20,7 +20,7 @@ import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { RundownDataCache, RundownDataCacheObj } from '../../lib/collections/RundownDataCache'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { Part, Parts } from '../../lib/collections/Parts'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
@@ -58,7 +58,7 @@ interface RundownSnapshot {
 	mosData: Array<RundownDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	segments: Array<Segment>
-	segmentLines: Array<SegmentLine>
+	parts: Array<Part>
 	pieces: Array<Piece>
 	adLibPieces: Array<AdLibPiece>
 	mediaObjects: Array<MediaObject>
@@ -108,7 +108,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	const userActions = UserActionsLog.find({ args: { $regex: `.*"${rundownId}".*` } }).fetch()
 
 	const segments = Segments.find({ rundownId }).fetch()
-	const segmentLines = SegmentLines.find({ rundownId }).fetch()
+	const parts = Parts.find({ rundownId }).fetch()
 	const pieces = Pieces.find({ rundownId }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId }).fetch()
 	const mediaObjectIds: Array<string> = [
@@ -116,7 +116,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 		...adLibPieces.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
-	const expectedMediaItems = ExpectedMediaItems.find({ segmentLineId: { $in: segmentLines.map(i => i._id)}}).fetch()
+	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id)}}).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -135,7 +135,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 		mosData,
 		userActions,
 		segments,
-		segmentLines,
+		parts,
 		pieces,
 		adLibPieces,
 		mediaObjects,
@@ -384,8 +384,8 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	}
 
 	snapshot.rundown.active					= ( dbRundown ? dbRundown.active : false)
-	snapshot.rundown.currentSegmentLineId		= ( dbRundown ? dbRundown.currentSegmentLineId : null)
-	snapshot.rundown.nextSegmentLineId			= ( dbRundown ? dbRundown.nextSegmentLineId : null)
+	snapshot.rundown.currentPartId		= ( dbRundown ? dbRundown.currentPartId : null)
+	snapshot.rundown.nextPartId			= ( dbRundown ? dbRundown.nextPartId : null)
 	snapshot.rundown.currentPlayingStoryStatus = ( dbRundown ? dbRundown.currentPlayingStoryStatus : undefined)
 
 	const studios = StudioInstallations.find().fetch()
@@ -401,11 +401,11 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	saveIntoDb(RundownDataCache, {rundownId: rundownId}, snapshot.mosData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
 	saveIntoDb(Segments, {rundownId: rundownId}, snapshot.segments)
-	saveIntoDb(SegmentLines, {rundownId: rundownId}, snapshot.segmentLines)
+	saveIntoDb(Parts, {rundownId: rundownId}, snapshot.parts)
 	saveIntoDb(Pieces, {rundownId: rundownId}, snapshot.pieces)
 	saveIntoDb(AdLibPieces, {rundownId: rundownId}, snapshot.adLibPieces)
 	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
-	saveIntoDb(ExpectedMediaItems, {segmentLineId: {$in: snapshot.segmentLines.map(i => i._id)}}, snapshot.expectedMediaItems)
+	saveIntoDb(ExpectedMediaItems, {partId: {$in: snapshot.parts.map(i => i._id)}}, snapshot.expectedMediaItems)
 
 	logger.info(`Restore done`)
 }

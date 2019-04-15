@@ -17,12 +17,12 @@
 		position: relative;
 		display: inline-block;
 
-		.rundown__overview__segment__segment-line:first-child {
+		.rundown__overview__segment__part:first-child {
 			border-left: 1px solid rgba(0, 0, 0, 0.5);
 		}
 	}
 	
-	.rundown__overview__segment__segment-line__live-shade {
+	.rundown__overview__segment__part__live-shade {
 		position: absolute;
 		top: 0;
 		left: -1.5em;
@@ -33,7 +33,7 @@
 		pointer-events: none;
 	}
 
-	.rundown__overview__segment__segment-line {
+	.rundown__overview__segment__part {
 		position: relative;
 		display: inline-block;
 		vertical-align: top;
@@ -69,7 +69,7 @@
 			background: $segment-title-background-color-has-played;
 		}
 
-		.rundown__overview__segment__segment-line__live-line {
+		.rundown__overview__segment__part__live-line {
 			position: absolute;
 			top: -1.5em;
 			left: 0;
@@ -80,7 +80,7 @@
 			z-index: 4;
 		}
 
-		.rundown__overview__segment__segment-line__next-line {
+		.rundown__overview__segment__part__next-line {
 			position: absolute;
 			top: -5px;
 			left: 0;
@@ -93,7 +93,7 @@
 	}
 
 	.rundown__overview__segment {
-		.rundown__overview__segment__segment-line__label {
+		.rundown__overview__segment__part__label {
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -109,14 +109,14 @@
 			overflow: hidden;
 			z-index: 1;
 
-			>.rundown__overview__segment__segment-line__label__duration {
+			>.rundown__overview__segment__part__label__duration {
 				font-weight: 200;
 				margin-left: 0.5em;
 			}
 		}
 
 		&.next {
-			.rundown__overview__segment__segment-line {
+			.rundown__overview__segment__part {
 				background: $general-next-color;
 				font-weight: 500;
 				text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
@@ -124,7 +124,7 @@
 		}
 
 		&.live {
-			.rundown__overview__segment__segment-line {
+			.rundown__overview__segment__part {
 				color: $segment-title-text-color-live;
 				background: $general-live-color;
 				font-weight: 500;
@@ -133,20 +133,20 @@
 		}
 
 		&:hover {
-			.rundown__overview__segment__segment-line__label {
+			.rundown__overview__segment__part__label {
 				z-index: 5;
 				background: #333;
 				max-width: none !important;
 			}
 
 			&.next {
-				.rundown__overview__segment__segment-line__label {
+				.rundown__overview__segment__part__label {
 					background: #008500;
 				}
 			}
 
 			&.live {
-				.rundown__overview__segment__segment-line__label {
+				.rundown__overview__segment__part__label {
 					background: #850000;
 				}
 			}

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Segment } from '../../../lib/collections/Segments'
-import { SegmentLine } from '../../../lib/collections/SegmentLines'
+import { Part } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
@@ -234,8 +234,8 @@ export interface AdLibPieceUi extends AdLibPiece {
 }
 
 export interface SegmentUi extends Segment {
-	/** Pieces belonging to this segment line */
-	segLines: Array<SegmentLine>
+	/** Pieces belonging to this part */
+	segLines: Array<Part>
 	items?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
@@ -420,7 +420,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.rundown && this.props.rundown.currentSegmentLineId && this.props.rundown.active) {
+		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
 			const { t } = this.props
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyItemStart, [this.props.rundown._id, sourceLayerId])
 		}
@@ -446,18 +446,18 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			return
 		}
 
-		if (this.props.rundown && this.props.rundown.currentSegmentLineId && aSLine.isGlobal) {
+		if (this.props.rundown && this.props.rundown.currentPartId && aSLine.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, aSLine._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 
-		if (this.props.rundown && this.props.rundown.currentSegmentLineId) {
+		if (this.props.rundown && this.props.rundown.currentPartId) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, sourceLayer._id])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
 		}
 	}
 

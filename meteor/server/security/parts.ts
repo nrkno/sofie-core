@@ -1,8 +1,8 @@
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
+import { Parts, Part } from '../../lib/collections/Parts'
 
 // Setup rules:
-SegmentLines.allow({
-	insert (userId: string, doc: SegmentLine): boolean {
+Parts.allow({
+	insert (userId: string, doc: Part): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

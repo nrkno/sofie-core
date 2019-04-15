@@ -4,7 +4,7 @@ import * as $ from 'jquery'
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
-	SegmentLineUi,
+	PartUi,
 	PieceUi
 } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -33,9 +33,9 @@ export interface ISourceLayerItemProps {
 	outputLayer: IOutputLayerUi
 	mediaPreviewUrl: string
 	// segment: SegmentUi
-	segmentLine: SegmentLineUi
-	segmentLineStartsAt: number
-	segmentLineDuration: number
+	part: PartUi
+	partStartsAt: number
+	partDuration: number
 	piece: PieceUi
 	timeScale: number
 	isLiveLine: boolean
@@ -45,7 +45,7 @@ export interface ISourceLayerItemProps {
 	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	followLiveLine: boolean
-	autoNextSegmentLine: boolean
+	autoNextPart: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
 	outputGroupCollapsed: boolean
@@ -103,7 +103,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		} else {
 			const maxLabelWidth = this.props.piece.maxLabelWidth
 
-			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
+			if (this.props.part && this.props.partStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
 				let piece = this.props.piece
 
 				let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
@@ -111,16 +111,16 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 				const inPoint = piece.renderedInPoint || 0
 				const duration = (Number.isFinite(piece.renderedDuration || 0)) ?
-					piece.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
-					this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0
+					piece.renderedDuration || this.props.partDuration || this.props.part.renderedDuration || 0 :
+					this.props.partDuration || this.props.part.renderedDuration || 0
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
 				if (this.props.followLiveLine && this.props.isLiveLine) {
 					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
-					if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) > (inPoint + this.props.segmentLineStartsAt + inTransitionDuration + (this.state.leftAnchoredWidth / this.props.timeScale)) &&
-						this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) < (inPoint + duration + this.props.segmentLineStartsAt - outTransitionDuration)) {
-						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
+					if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) > (inPoint + this.props.partStartsAt + inTransitionDuration + (this.state.leftAnchoredWidth / this.props.timeScale)) &&
+						this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) < (inPoint + duration + this.props.partStartsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) * this.props.timeScale
 
 						// console.log(this.state.itemElement)
 
@@ -137,8 +137,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						return styleObj
 					} else if ((this.state.rightAnchoredWidth < this.state.elementWidth) &&
 						(this.state.leftAnchoredWidth < this.state.elementWidth) &&
-						(this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.segmentLineStartsAt - outTransitionDuration))) {
-						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
+						(this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.partStartsAt - outTransitionDuration))) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
@@ -152,9 +152,9 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						return styleObj
 					}
 				} else {
-					if (this.props.scrollLeft > (inPoint + this.props.segmentLineStartsAt + inTransitionDuration) &&
-						this.props.scrollLeft < (inPoint + duration + this.props.segmentLineStartsAt - outTransitionDuration)) {
-						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
+					if (this.props.scrollLeft > (inPoint + this.props.partStartsAt + inTransitionDuration) &&
+						this.props.scrollLeft < (inPoint + duration + this.props.partStartsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
@@ -182,21 +182,21 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
+			if (this.props.part && this.props.partStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
 				let piece = this.props.piece
 
 				// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
 				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
 
 				const inPoint = piece.renderedInPoint || 0
-				const duration = (piece.infiniteMode || piece.renderedDuration === 0) ? (this.props.segmentLineDuration - inPoint) : Math.min((piece.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
+				const duration = (piece.infiniteMode || piece.renderedDuration === 0) ? (this.props.partDuration - inPoint) : Math.min((piece.renderedDuration || 0), this.props.partDuration - inPoint)
 				const outPoint = inPoint + duration
 
 				// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLineStartsAt) &&
-					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLineStartsAt)) {
-					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
+				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.partStartsAt) &&
+					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.partStartsAt)) {
+					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.partStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
 						'transform': 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
@@ -212,10 +212,10 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		let piece = this.props.piece
 
 		const expectedDurationNumber = (typeof piece.expectedDuration === 'number' ? piece.expectedDuration || 0 : 0)
-		let itemDuration = Math.min(piece.durationOverride || piece.duration || piece.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (piece.renderedInPoint || 0))
+		let itemDuration = Math.min(piece.durationOverride || piece.duration || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
 
 		if (piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal && !piece.cropped && !piece.duration && !piece.durationOverride) {
-			itemDuration = this.props.segmentLineDuration - (piece.renderedInPoint || 0)
+			itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 		}
 
@@ -229,18 +229,18 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
 
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
-		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
+		// If not, as-run part "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
 
-		// let liveLinePadding = this.props.autoNextSegmentLine ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
+		// let liveLinePadding = this.props.autoNextPart ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
 		const itemDuration = this.getItemDuration()
 
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode
-				'left': (((piece.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
-				'width': ((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
+				'left': (((piece.renderedInPoint || 0)) / (this.props.partDuration || 1) * 100).toString() + '%',
+				'width': ((itemDuration) / (this.props.partDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
@@ -267,7 +267,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	}
 
 	componentWillReceiveProps (nextProps: ISourceLayerItemProps) {
-		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
+		if ((nextProps.partDuration !== this.props.partDuration) ||
 			(nextProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
 			(nextProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
 			(nextProps.piece.duration !== this.props.piece.duration) ||
@@ -309,8 +309,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
 				console.log('accept', inputResult)
 				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
-					this.props.segmentLine.rundownId,
-					this.props.segmentLine._id,
+					this.props.part.rundownId,
+					this.props.part._id,
 					this.props.piece._id,
 					inputResult.inPoint,
 					inputResult.outPoint
@@ -464,7 +464,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineStartsAt, this.props.segmentLineDuration, this.props.piece)
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.part, this.props.partStartsAt, this.props.partDuration, this.props.piece)
 		}
 	}
 
@@ -503,7 +503,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.piece.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
+								{this.props.piece.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
 							</div>
 						)
 					}

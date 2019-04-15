@@ -22,11 +22,11 @@ interface IPropsHeader {
 }
 
 interface INamePropsHeader extends IPropsHeader {
-	segmentLineSlug: string
+	partSlug: string
 }
 
 export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) => {
-	let items = Pieces.find({ segmentLineId: props.segmentItemId }).fetch()
+	let items = Pieces.find({ partId: props.segmentItemId }).fetch()
 
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
@@ -76,13 +76,13 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 					return this.props.piece.name
 			}
 		}
-		return this.props.segmentLineSlug.split(';')[1] || ''
+		return this.props.partSlug.split(';')[1] || ''
 	}
 })
 
 export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
-	let items = Pieces.find({ segmentLineId: props.segmentItemId }).fetch()
+	let items = Pieces.find({ partId: props.segmentItemId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}

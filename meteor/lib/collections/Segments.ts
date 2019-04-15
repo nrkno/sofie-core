@@ -1,12 +1,12 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
-import { SegmentLines } from './SegmentLines'
+import { Parts } from './Parts'
 import { Rundowns } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
-import { SegmentLineNote } from '../api/notes'
+import { PartNote } from '../api/notes'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends IBlueprintSegmentDB {
@@ -21,7 +21,7 @@ export interface DBSegment extends IBlueprintSegmentDB {
 	expanded?: boolean
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<SegmentLineNote>
+	notes?: Array<PartNote>
 }
 export class Segment implements DBSegment {
 	public _id: string
@@ -32,7 +32,7 @@ export class Segment implements DBSegment {
 	public metaData?: { [key: string]: any }
 	public status?: string
 	public expanded?: boolean
-	public notes?: Array<SegmentLineNote>
+	public notes?: Array<PartNote>
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {
@@ -42,10 +42,10 @@ export class Segment implements DBSegment {
 	getRundown () {
 		return Rundowns.findOne(this.rundownId)
 	}
-	getSegmentLines (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
-		return SegmentLines.find(
+		return Parts.find(
 			_.extend({
 				rundownId: this.rundownId,
 				segmentId: this._id
@@ -55,11 +55,11 @@ export class Segment implements DBSegment {
 			}, options)
 		).fetch()
 	}
-	getNotes (includeSegmentLines?: boolean, runtimeNotes?: boolean) {
-		let notes: Array<SegmentLineNote> = []
+	getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
+		let notes: Array<PartNote> = []
 
-		if (includeSegmentLines) {
-			const lines = this.getSegmentLines()
+		if (includeParts) {
+			const lines = this.getParts()
 			_.each(lines, l => {
 				notes = notes.concat(l.getNotes(runtimeNotes))
 			})

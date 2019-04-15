@@ -10,7 +10,7 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Parts } from '../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
@@ -22,7 +22,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
-import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType } from '../../../lib/api/notes'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -32,7 +32,7 @@ export interface RONotificationEvent {
 		name: string,
 		rundownId?: string,
 		segmentId?: string,
-		segmentLineId?: string,
+		partId?: string,
 		pieceId?: string
 	}
 }
@@ -153,7 +153,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								action: () => {
 									doModalDialog({
 										title: t('Re-sync Rundown'),
-										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Segment Line has been changed, this can affect the output.)'),
+										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output.)'),
 										onAccept: () => {
 											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId])
 										}
@@ -257,8 +257,8 @@ class RundownViewNotifier extends WithManagedTracker {
 			const newNoteIds: Array<string> = []
 			_.flatten(_.compact(segments.map(i => i.getNotes(true).map(j => _.extend(j, {
 				rank: i._rank
-			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
-				const id = item.message + '-' + (item.origin.pieceId || item.origin.segmentLineId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
+			}))))).forEach((item: PartNote & {rank: number}) => {
+				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: t('Show issue'),
@@ -303,20 +303,20 @@ class RundownViewNotifier extends WithManagedTracker {
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
-				const segmentLine = SegmentLines.findOne(item.segmentLineId)
-				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
-				if (sourceLayer && segmentLine) {
+				const part = Parts.findOne(item.partId)
+				const segment = part ? Segments.findOne(part.segmentId) : undefined
+				if (sourceLayer && part) {
 					this.autorun(() => {
 						// console.log('RundownViewNotifier 5-1')
 						const { status, message } = checkPieceContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.LineItemStatusCode.OK) && (status !== RundownAPI.LineItemStatusCode.UNKNOWN) && (status !== RundownAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
-							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
+							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.partId, getCurrentTime(), true, [
 								{
 									label: t('Show issue'),
 									type: 'default'
 								}
-							], segmentLine._rank)
+							], part._rank)
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':
@@ -327,7 +327,7 @@ class RundownViewNotifier extends WithManagedTracker {
 													name: item.name,
 													rundownId: item.rundownId,
 													pieceId: item._id,
-													segmentLineId: item.segmentLineId
+													partId: item.partId
 												}
 											})
 										}

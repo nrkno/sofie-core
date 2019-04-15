@@ -5,7 +5,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment } from '../../../lib/collections/Segments'
-import { SegmentLine } from '../../../lib/collections/SegmentLines'
+import { Part } from '../../../lib/collections/Parts'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
@@ -223,8 +223,8 @@ export interface AdLibPieceUi extends AdLibPiece {
 }
 
 export interface SegmentUi extends Segment {
-	/** Pieces belonging to this segment line */
-	segLines: Array<SegmentLine>
+	/** Pieces belonging to this part */
+	segLines: Array<Part>
 	items?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
@@ -270,17 +270,17 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	const uiSegments = props.rundown ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
-		seg.segLines = segSource.getSegmentLines()
+		seg.segLines = segSource.getParts()
 		let segmentAdLibItems: Array<AdLibPiece> = []
 		seg.segLines.forEach((segLine) => {
-			if (segLine._id === props.rundown.currentSegmentLineId) {
+			if (segLine._id === props.rundown.currentPartId) {
 				seg.isLive = true
 				liveSegment = seg
 			}
-			if (segLine._id === props.rundown.nextSegmentLineId) {
+			if (segLine._id === props.rundown.nextPartId) {
 				seg.isNext = true
 			}
-			segmentAdLibItems = segmentAdLibItems.concat(segLine.getSegmentLinesAdLibItems())
+			segmentAdLibItems = segmentAdLibItems.concat(segLine.getPartsAdLibItems())
 		})
 		seg.items = segmentAdLibItems
 
@@ -326,7 +326,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe('segments', {
 			rundownId: this.props.rundown._id
 		})
-		this.subscribe('segmentLines', {
+		this.subscribe('parts', {
 			rundownId: this.props.rundown._id
 		})
 		this.subscribe('adLibPieces', {
@@ -432,16 +432,16 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.rundown && this.props.rundown.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentAdLibLineItemStart, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, aSLine._id, queue || false])
+		if (this.props.rundown && this.props.rundown.currentPartId) {
+			doUserAction(t, e, UserActionAPI.methods.segmentAdLibLineItemStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.rundown && this.props.rundown.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, sourceLayer._id])
+		if (this.props.rundown && this.props.rundown.currentPartId) {
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
 		}
 	}
 

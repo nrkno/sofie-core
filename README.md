@@ -51,7 +51,7 @@ For the purpose of running the system in a studio environment, there are additio
 
 ## Studio mode
 
-In general, you will want to limit the amount of client stations that have full control of the studio (such as activating rundowns, taking segment lines, ad-libbing, etc.). In order to mark a given client station (browser) as a Studio Control station, you should append `?studio=1` to any query string, for example:
+In general, you will want to limit the amount of client stations that have full control of the studio (such as activating rundowns, taking parts, ad-libbing, etc.). In order to mark a given client station (browser) as a Studio Control station, you should append `?studio=1` to any query string, for example:
 
 ```http://localhost:3000/?studio=1```
 

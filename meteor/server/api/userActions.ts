@@ -8,8 +8,8 @@ import {
 } from '../../lib/collections/Rundowns'
 import { getCurrentTime } from '../../lib/lib'
 import {
-	SegmentLines, SegmentLine
-} from '../../lib/collections/SegmentLines'
+	Parts, Part
+} from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout'
 import { UserActionAPI } from '../../lib/api/userActions'
@@ -49,22 +49,22 @@ export function take (rundownId: string): ClientAPI.ClientResponse {
 	if (!rundown.active) {
 		return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
 	}
-	if (!rundown.nextSegmentLineId) {
-		return ClientAPI.responseError('No Next point found, please set a segmentLine as Next before doing a TAKE.')
+	if (!rundown.nextPartId) {
+		return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
 	}
-	if (rundown.currentSegmentLineId) {
-		const currentSegmentLine = SegmentLines.findOne(rundown.currentSegmentLineId)
-		if (currentSegmentLine && currentSegmentLine.timings) {
-			const lastStartedPlayback = currentSegmentLine.timings.startedPlayback ? currentSegmentLine.timings.startedPlayback[currentSegmentLine.timings.startedPlayback.length - 1] : 0
-			const lastTake = currentSegmentLine.timings.take ? currentSegmentLine.timings.take[currentSegmentLine.timings.take.length - 1] : 0
+	if (rundown.currentPartId) {
+		const currentPart = Parts.findOne(rundown.currentPartId)
+		if (currentPart && currentPart.timings) {
+			const lastStartedPlayback = currentPart.timings.startedPlayback ? currentPart.timings.startedPlayback[currentPart.timings.startedPlayback.length - 1] : 0
+			const lastTake = currentPart.timings.take ? currentPart.timings.take[currentPart.timings.take.length - 1] : 0
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
-				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
+				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPart._id}: ${getCurrentTime() - lastStartedPlayback}`)
 				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 			}
 		} else {
-			throw new Meteor.Error(404, `SegmentLine "${rundown.currentSegmentLineId}", set as currentSegmentLine in "${rundownId}", not found!`)
+			throw new Meteor.Error(404, `Part "${rundown.currentPartId}", set as currentPart in "${rundownId}", not found!`)
 		}
 	}
 	return ServerPlayoutAPI.rundownTake(rundown)
@@ -75,14 +75,14 @@ export function setNext (rundownId: string, nextSlId: string | null, setManually
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	if (!rundown.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a segmentLine as Next')
+	if (!rundown.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
 
-	let nextSegmentLine: SegmentLine | undefined
+	let nextPart: Part | undefined
 	if (nextSlId) {
-		nextSegmentLine = SegmentLines.findOne(nextSlId)
-		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+		nextPart = Parts.findOne(nextSlId)
+		if (!nextPart) throw new Meteor.Error(404, `Part "${nextSlId}" not found!`)
 
-		if (nextSegmentLine.invalid) return ClientAPI.responseError('SegmentLine is marked as invalid, cannot set as next.')
+		if (nextPart.invalid) return ClientAPI.responseError('Part is marked as invalid, cannot set as next.')
 	}
 
 	if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) {
@@ -107,8 +107,8 @@ export function moveNext (
 	}
 
 	if (!currentNextPieceId) {
-		if (!rundown.nextSegmentLineId) {
-			return ClientAPI.responseError('Rundown has no next segmentLine!')
+		if (!rundown.nextPartId) {
+			return ClientAPI.responseError('Rundown has no next part!')
 		}
 	}
 	return ClientAPI.responseSuccess(
@@ -189,19 +189,19 @@ export function disableNextPiece (rundownId: string, undo?: boolean) {
 		ServerPlayoutAPI.rundownDisableNextPiece(rundownId, undo)
 	)
 }
-export function toggleSegmentLineArgument (rundownId: string, slId: string, property: string, value: string) {
+export function togglePartArgument (rundownId: string, partId: string, property: string, value: string) {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`SegmentLine-arguments can't be toggled while Rundown is in Hold mode!`)
+		return ClientAPI.responseError(`Part-arguments can't be toggled while Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownToggleSegmentLineArgument(rundownId, slId, property, value)
+		ServerPlayoutAPI.rundownTogglePartArgument(rundownId, partId, property, value)
 	)
 }
-export function pieceTakeNow (rundownId: string, slId: string, pieceId: string) {
+export function pieceTakeNow (rundownId: string, partId: string, pieceId: string) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 	check(pieceId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -214,48 +214,48 @@ export function pieceTakeNow (rundownId: string, slId: string, pieceId: string) 
 	}) as Piece
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
-	let segLine = SegmentLines.findOne({
-		_id: slId,
+	let segLine = Parts.findOne({
+		_id: partId,
 		rundownId: rundownId
 	})
-	if (!segLine) throw new Meteor.Error(404, `SegmentLine "${slId}" not found!`)
-	if (rundown.currentSegmentLineId !== segLine._id) return ClientAPI.responseError(`SegmentLine AdLib Items can be only placed in a current segment line!`)
+	if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+	if (rundown.currentPartId !== segLine._id) return ClientAPI.responseError(`Part AdLib Items can be only placed in a current part!`)
 
 	let showStyleBase = rundown.getShowStyleBase()
 	const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
-	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`SegmentLine "${slId}" is not a GRAPHICS item!`)
+	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`Part "${pieceId}" is not a GRAPHICS item!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.pieceTakeNow(rundownId, slId, pieceId)
+		ServerPlayoutAPI.pieceTakeNow(rundownId, partId, pieceId)
 	)
 }
-export function pieceSetInOutPoints (rundownId: string, slId: string, pieceId: string, inPoint: number, duration: number) {
+export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId: string, inPoint: number, duration: number) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 	check(pieceId, String)
 	check(inPoint, Number)
 	check(duration, Number)
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	const sl = SegmentLines.findOne(slId)
-	if (!sl) throw new Meteor.Error(404, `SegmentLine "${slId}" not found!`)
-	if (rundown && rundown.active && sl.status === 'PLAY') {
-		return ClientAPI.responseError(`SegmentLine cannot be active while setting in/out!`) // @todo: un-hardcode
+	const part = Parts.findOne(partId)
+	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+	if (rundown && rundown.active && part.status === 'PLAY') {
+		return ClientAPI.responseError(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
-	const slCache = RundownDataCache.findOne(rundownId + '_fullStory' + slId)
-	if (!slCache) throw new Meteor.Error(404, `SegmentLine Cache for "${slId}" not found!`)
+	const partCache = RundownDataCache.findOne(rundownId + '_fullStory' + partId)
+	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
 	const piece = Pieces.findOne(pieceId)
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	return ClientAPI.responseSuccess(
-		replaceStoryItem(rundown, piece, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
+		replaceStoryItem(rundown, piece, partCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
 	)
 
 }
-export function segmentAdLibLineItemStart (rundownId: string, slId: string, slaiId: string, queue: boolean) {
+export function segmentAdLibLineItemStart (rundownId: string, partId: string, slaiId: string, queue: boolean) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 	check(slaiId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -266,12 +266,12 @@ export function segmentAdLibLineItemStart (rundownId: string, slId: string, slai
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibLineItemStart(rundownId, slId, slaiId, queue)
+		ServerPlayoutAPI.segmentAdLibLineItemStart(rundownId, partId, slaiId, queue)
 	)
 }
-export function sourceLayerOnLineStop (rundownId: string, slId: string, sourceLayerId: string) {
+export function sourceLayerOnLineStop (rundownId: string, partId: string, sourceLayerId: string) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 	check(sourceLayerId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -279,12 +279,12 @@ export function sourceLayerOnLineStop (rundownId: string, slId: string, sourceLa
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerOnLineStop(rundownId, slId, sourceLayerId)
+		ServerPlayoutAPI.sourceLayerOnLineStop(rundownId, partId, sourceLayerId)
 	)
 }
-export function rundownBaselineAdLibItemStart (rundownId: string, slId: string, robaliId: string, queue: boolean) {
+export function rundownBaselineAdLibItemStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 	check(robaliId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -294,12 +294,12 @@ export function rundownBaselineAdLibItemStart (rundownId: string, slId: string, 
 		return ClientAPI.responseError(`Can't start AdLib item when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibItemStart(rundownId, slId, robaliId, queue)
+		ServerPlayoutAPI.rundownBaselineAdLibItemStart(rundownId, partId, robaliId, queue)
 	)
 }
-export function segmentAdLibLineItemStop (rundownId: string, slId: string, pieceId: string) {
+export function segmentAdLibLineItemStop (rundownId: string, partId: string, pieceId: string) {
 	check(rundownId, String)
-	check(slId, String)
+	check(partId, String)
 	check(pieceId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -307,7 +307,7 @@ export function segmentAdLibLineItemStop (rundownId: string, slId: string, piece
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, slId, pieceId)
+		ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, partId, pieceId)
 	)
 }
 export function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
@@ -317,7 +317,7 @@ export function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: st
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
-	if (!rundown.currentSegmentLineId) return ClientAPI.responseError(`No segmentLine is playing, please Take a segmentLine before starting a sticky.item.`)
+	if (!rundown.currentPartId) return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky.item.`)
 
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.sourceLayerStickyItemStart(rundownId, sourceLayerId)
@@ -329,13 +329,13 @@ export function activateHold (rundownId: string) {
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-	if (!rundown.currentSegmentLineId) return ClientAPI.responseError(`No segmentLine is currently playing, please Take a segmentLine before activating Hold mode!`)
-	if (!rundown.nextSegmentLineId) return ClientAPI.responseError(`No segmentLine is set as Next, please set a Next before activating Hold mode!`)
+	if (!rundown.currentPartId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
+	if (!rundown.nextPartId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
 
-	let currentSegmentLine = SegmentLines.findOne({_id: rundown.currentSegmentLineId})
-	if (!currentSegmentLine) throw new Meteor.Error(404, `Segment Line "${rundown.currentSegmentLineId}" not found!`)
-	let nextSegmentLine = SegmentLines.findOne({_id: rundown.nextSegmentLineId})
-	if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${rundown.nextSegmentLineId}" not found!`)
+	let currentPart = Parts.findOne({_id: rundown.currentPartId})
+	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
+	let nextPart = Parts.findOne({_id: rundown.nextPartId})
+	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
 	if (rundown.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
 	}
@@ -431,8 +431,8 @@ let methods: UserMethods = {}
 methods[UserActionAPI.methods.take] = function (rundownId: string): ClientAPI.ClientResponse {
 	return take.call(this, rundownId)
 }
-methods[UserActionAPI.methods.setNext] = function (rundownId: string, slId: string, timeOffset?: number): ClientAPI.ClientResponse {
-	return setNext.call(this, rundownId, slId, true, timeOffset)
+methods[UserActionAPI.methods.setNext] = function (rundownId: string, partId: string, timeOffset?: number): ClientAPI.ClientResponse {
+	return setNext.call(this, rundownId, partId, true, timeOffset)
 }
 methods[UserActionAPI.methods.moveNext] = function (rundownId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse {
 	return moveNext.call(this, rundownId, horisontalDelta, verticalDelta, true)
@@ -458,26 +458,26 @@ methods[UserActionAPI.methods.reloadData] = function (rundownId: string): Client
 methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
 	return disableNextPiece.call(this, rundownId, undo)
 }
-methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (rundownId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse {
-	return toggleSegmentLineArgument.call(this, rundownId, slId, property, value)
+methods[UserActionAPI.methods.togglePartArgument] = function (rundownId: string, partId: string, property: string, value: string): ClientAPI.ClientResponse {
+	return togglePartArgument.call(this, rundownId, partId, property, value)
 }
-methods[UserActionAPI.methods.pieceTakeNow] = function (rundownId: string, slId: string, pieceId: string): ClientAPI.ClientResponse {
-	return pieceTakeNow.call(this, rundownId, slId, pieceId)
+methods[UserActionAPI.methods.pieceTakeNow] = function (rundownId: string, partId: string, pieceId: string): ClientAPI.ClientResponse {
+	return pieceTakeNow.call(this, rundownId, partId, pieceId)
 }
-methods[UserActionAPI.methods.setInOutPoints] = function (rundownId: string, slId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
-	return pieceSetInOutPoints(rundownId, slId, pieceId, inPoint, duration)
+methods[UserActionAPI.methods.setInOutPoints] = function (rundownId: string, partId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
+	return pieceSetInOutPoints(rundownId, partId, pieceId, inPoint, duration)
 }
-methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (rundownId: string, slId: string, salliId: string, queue: boolean) {
-	return segmentAdLibLineItemStart.call(this, rundownId, slId, salliId, queue)
+methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (rundownId: string, partId: string, salliId: string, queue: boolean) {
+	return segmentAdLibLineItemStart.call(this, rundownId, partId, salliId, queue)
 }
-methods[UserActionAPI.methods.sourceLayerOnLineStop] = function (rundownId: string, slId: string, sourceLayerId: string) {
-	return sourceLayerOnLineStop.call(this, rundownId, slId, sourceLayerId)
+methods[UserActionAPI.methods.sourceLayerOnLineStop] = function (rundownId: string, partId: string, sourceLayerId: string) {
+	return sourceLayerOnLineStop.call(this, rundownId, partId, sourceLayerId)
 }
-methods[UserActionAPI.methods.baselineAdLibItemStart] = function (rundownId: string, slId: string, robaliId: string, queue: boolean) {
-	return rundownBaselineAdLibItemStart.call(this, rundownId, slId, robaliId, queue)
+methods[UserActionAPI.methods.baselineAdLibItemStart] = function (rundownId: string, partId: string, robaliId: string, queue: boolean) {
+	return rundownBaselineAdLibItemStart.call(this, rundownId, partId, robaliId, queue)
 }
-methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (rundownId: string, slId: string, pieceId: string) {
-	return segmentAdLibLineItemStop.call(this, rundownId, slId, pieceId)
+methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (rundownId: string, partId: string, pieceId: string) {
+	return segmentAdLibLineItemStop.call(this, rundownId, partId, pieceId)
 }
 methods[UserActionAPI.methods.sourceLayerStickyItemStart] = function (rundownId: string, sourceLayerId: string) {
 	return sourceLayerStickyItemStart.call(this, rundownId, sourceLayerId)

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import {} from 'mocha'
 
 import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { SegmentLine, DBSegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Part, DBPart, Parts } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { updateSourceLayerInfinitesAfterLineInner } from '../playout'
@@ -27,9 +27,9 @@ function setupMockRO (mockRundown: MockRO) {
 		rundownId: mockRundown.rundown._id
 	}, mockRundown.segments)
 
-	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
+	saveIntoDb<Part, DBPart>(Parts, {
 		rundownId: mockRundown.rundown._id
-	}, mockRundown.segmentLines)
+	}, mockRundown.parts)
 
 	saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: mockRundown.rundown._id
@@ -62,7 +62,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const grouped = _.groupBy(_.filter(allPieces, piece => piece.infiniteId), piece => piece.infiniteId)
 		const actualInfinites: {[key: string]: string[]} = {}
 		_.each(grouped, (items, key) => {
-			actualInfinites[key] = _.map(items, item => item.segmentLineId).sort()
+			actualInfinites[key] = _.map(items, item => item.partId).sort()
 		})
 
 		// console.log(JSON.stringify(actualInfinites, undefined, 3))
@@ -241,7 +241,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(afterPieceIds).to.eql(origPieceIds)
 	})
 
-	it('Ensure PieceLifespan.OutOnNextSegmentLine creates nothing', function () {
+	it('Ensure PieceLifespan.OutOnNextPart creates nothing', function () {
 		const rundown = setupMockRO(testRO1)
 		expect(rundown).to.not.be.undefined
 
@@ -250,7 +250,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		// Make everything be non-infinite
 		Pieces.update({ rundownId: rundown._id }, {
 			$set: {
-				infiniteMode: PieceLifespan.OutOnNextSegmentLine
+				infiniteMode: PieceLifespan.OutOnNextPart
 			}
 		}, { multi: true})
 
@@ -287,7 +287,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 				infiniteId: pieceId
 			}, {
 				sort: {
-					segmentLineId: 1
+					partId: 1
 				}
 			}).map(piece => piece.infiniteMode)
 		}
@@ -322,7 +322,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 				infiniteId: pieceId
 			}, {
 				sort: {
-					segmentLineId: 1
+					partId: 1
 				}
 			}).map(piece => piece.name)
 
@@ -358,10 +358,10 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		const origPieceIds: string[] = Pieces.find({ rundownId: rundown._id }).map(piece => piece._id)
 
-		const prevSegmentLine = SegmentLines.findOne(prevSlId)
-		expect(prevSegmentLine).not.undefined
+		const prevPart = Parts.findOne(prevSlId)
+		expect(prevPart).not.undefined
 
-		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('') // TODO - this should stop before the end!
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevPart)).eq('') // TODO - this should stop before the end!
 
 		// Expect the ids to all be the same
 		const afterPieceIds: string[] = Pieces.find({ rundownId: rundown._id }).map(piece => piece._id)
@@ -384,7 +384,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 				infiniteId: pieceId
 			}, {
 				sort: {
-					segmentLineId: 1
+					partId: 1
 				}
 			}).map(piece => piece.infiniteMode)
 		}
@@ -400,11 +400,11 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			}
 		})
 
-		const prevSegmentLine = SegmentLines.findOne(prevSlId)
-		expect(prevSegmentLine).not.undefined
+		const prevPart = Parts.findOne(prevSlId)
+		expect(prevPart).not.undefined
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevPart)).eq('')
 
 		// It is expected that there are 2 more piece now
 		const afterModes = getInfiniteModes(pieceId)
@@ -431,7 +431,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const newPiece = literal<Piece>({
 			_id: 'test_klokke_break',
 			rundownId : rundown._id,
-			segmentLineId : currentSlId,
+			partId : currentSlId,
 			status : -1,
 			externalId : '',
 			name : 'split klokke',
@@ -451,11 +451,11 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		const expectedPieceIds = ['test_klokke_break', 'test_klokke_break_3_qhlFEIYlESrvZYxbk3ie_5_z0_'].concat(origPieceIds)
 
-		const prevSegmentLine = SegmentLines.findOne(prevSlId)
-		expect(prevSegmentLine).not.undefined
+		const prevPart = Parts.findOne(prevSlId)
+		expect(prevPart).not.undefined
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevPart)).eq('')
 
 		const afterPieceIds: string[] = Pieces.find({ rundownId: rundown._id }).map(piece => piece._id)
 
@@ -497,10 +497,10 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 		const origPieceIds: string[] = Pieces.find({ rundownId: rundown._id }).map(piece => piece._id)
 
-		const prevSegmentLine = SegmentLines.findOne(prevSlId)
-		expect(prevSegmentLine).not.undefined
+		const prevPart = Parts.findOne(prevSlId)
+		expect(prevPart).not.undefined
 
-		// Move the 'blocker' to abs0, means that the infinite logic will not include an extension in the sl before the blocker
+		// Move the 'blocker' to abs0, means that the infinite logic will not include an extension in the part before the blocker
 		Pieces.update(pieceId, {
 			$set: {
 				trigger: {
@@ -511,7 +511,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevPart)).eq('')
 
 		const midPieceIds: string[] = Pieces.find({ rundownId: rundown._id }).map(piece => piece._id)
 
@@ -522,7 +522,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		// Now remove the blocker and it should basically just come back
 		Pieces.remove(pieceId)
-		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevPart)).eq('')
 
 		const afterPieceIds: string[] = Pieces.find({ rundownId: rundown._id }).map(piece => piece._id)
 		expect(afterPieceIds).contains('9wPCrktBThPitm0JiE7FIOuoRJo__nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_')
@@ -537,12 +537,12 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		const infId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
-		const slId = 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_'
+		const partId = 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_'
 
 		// Update a single piece
 
 		expect(Pieces.update({
-			segmentLineId: slId,
+			partId: partId,
 			infiniteId: infId
 		}, {
 			$set: {
@@ -556,7 +556,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const infiniteParts = Pieces.find({ infiniteId: infId }).fetch()
 		expect(infiniteParts).lengthOf(2)
 
-		const partWithDuration = Pieces.findOne({ infiniteId: infId, segmentLineId: slId })
+		const partWithDuration = Pieces.findOne({ infiniteId: infId, partId: partId })
 		expect(partWithDuration).not.undefined
 		expect(partWithDuration.durationOverride).not.undefined
 

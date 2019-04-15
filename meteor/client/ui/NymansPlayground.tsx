@@ -10,7 +10,7 @@ import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { TimelineState } from 'superfly-timeline'
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
+import { Parts, Part } from '../../lib/collections/Parts'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { Resolver, Enums } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
@@ -40,7 +40,7 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 				this.subscribe('segments', {
 					rundownId: activeRO._id
 				})
-				this.subscribe('segmentLines', {
+				this.subscribe('parts', {
 					rundownId: activeRO._id
 				})
 				this.subscribe('pieces', {
@@ -152,8 +152,8 @@ class extends MeteorReactComponent<IRundowns> {
 				<div>status: {makeTableOfObject(rundown.status)}</div>
 				<div>airStatus: {makeTableOfObject(rundown.airStatus)}</div>
 
-				<div>currentSegmentLineId: {rundown.currentSegmentLineId}</div>
-				<div>nextSegmentLineId: {rundown.nextSegmentLineId}</div>
+				<div>currentPartId: {rundown.currentPartId}</div>
+				<div>nextPartId: {rundown.nextPartId}</div>
 
 				<div>
 					<ComponentSegments rundownId={rundown._id} />
@@ -203,7 +203,7 @@ class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegm
 				<div>ID: <i>{segment._id}</i></div>
 				<div>Name: <i>{segment.name}</i></div>
 				<div>
-				<ComponentSegmentLines segmentId={segment._id} />
+				<ComponentParts segmentId={segment._id} />
 				</div>
 			</div>
 		))
@@ -219,36 +219,36 @@ class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegm
 		)
 	}
 })
-interface ISegmentLineProps {
+interface IPartProps {
 	segmentId?: string
 }
-interface ISegmentLineState {
+interface IPartState {
 }
-interface ISegmentLineTrackedState {
-	segmentLines: Array<SegmentLine>
+interface IPartTrackedState {
+	parts: Array<Part>
 }
-export const ComponentSegmentLines = withTracker<ISegmentLineProps, ISegmentLineState, ISegmentLineTrackedState>((props: ISegmentLineProps) => {
+export const ComponentParts = withTracker<IPartProps, IPartState, IPartTrackedState>((props: IPartProps) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
 	return {
-		segmentLines: (
+		parts: (
 			props.segmentId ?
-			SegmentLines.find({
+			Parts.find({
 				segmentId: props.segmentId
 			}, { sort: { _rank: 1 } }).fetch()
 			: []
 		)
 	}
 })(
-class extends MeteorReactComponent<ISegmentLineProps & ISegmentLineTrackedState, ISegmentLineState> {
+class extends MeteorReactComponent<IPartProps & IPartTrackedState, IPartState> {
 	renderROs () {
 
-		return this.props.segmentLines.map((segmentLine) => (
-			<div key={segmentLine._id}>
-				<b>SegmentLine</b>
-				<div>ID: <i>{segmentLine._id}</i></div>
-				<div>externalId: <i>{segmentLine.externalId}</i></div>
+		return this.props.parts.map((part) => (
+			<div key={part._id}>
+				<b>Part</b>
+				<div>ID: <i>{part._id}</i></div>
+				<div>externalId: <i>{part.externalId}</i></div>
 			</div>
 		))
 	}

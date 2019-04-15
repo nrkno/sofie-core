@@ -38,12 +38,12 @@ export interface InitOptions {
 }
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 
-export interface SegmentLinePlaybackStartedResult {
+export interface PartPlaybackStartedResult {
 	rundownId: string,
-	slId: string,
+	partId: string,
 	time: number
 }
-export type SegmentLinePlaybackStoppedResult = SegmentLinePlaybackStartedResult
+export type PartPlaybackStoppedResult = PartPlaybackStartedResult
 export interface PiecePlaybackStartedResult {
 	rundownId: string,
 	pieceId: string,
@@ -68,8 +68,8 @@ export enum methods {
 	'getTime'				= 'systemTime.getTime',
 
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
-	'segmentLinePlaybackStarted' 	= 'peripheralDevice.rundown.segmentLinePlaybackStarted',
-	'segmentLinePlaybackStopped' 	= 'peripheralDevice.rundown.segmentLinePlaybackStopped',
+	'partPlaybackStarted' 	= 'peripheralDevice.rundown.partPlaybackStarted',
+	'partPlaybackStopped' 	= 'peripheralDevice.rundown.partPlaybackStopped',
 	'piecePlaybackStarted'= 'peripheralDevice.rundown.piecePlaybackStarted',
 	'piecePlaybackStopped'= 'peripheralDevice.rundown.piecePlaybackStopped',
 

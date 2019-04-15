@@ -19,7 +19,7 @@ export enum PubSub {
 	adLibPieces = 'adLibPieces',
 	pieces = 'pieces',
 	piecesSimple = 'piecesSimple',
-	segmentLines = 'segmentLines',
+	parts = 'parts',
 	segments = 'segments',
 	showStyleBases = 'showStyleBases',
 	showStyleVariants = 'showStyleVariants',

@@ -4,7 +4,7 @@ import { Pieces, Piece } from './collections/Pieces'
 import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray, extendMandadory } from './lib'
 import { Segment } from './collections/Segments'
-import { SegmentLine, SegmentLines } from './collections/SegmentLines'
+import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
@@ -22,8 +22,8 @@ export interface SegmentExtended extends Segment {
 	}
 }
 
-export interface SegmentLineExtended extends SegmentLine {
-	/** Pieces belonging to this segment line */
+export interface PartExtended extends Part {
+	/** Pieces belonging to this part */
 	items: Array<PieceExtended>
 	renderedDuration: number
 	startsAt: number
@@ -47,7 +47,7 @@ interface IPieceExtendedDictionary {
 export interface PieceExtended extends Piece {
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
-	/** Output layer that this segment line uses */
+	/** Output layer that this part uses */
 	outputLayer?: IOutputLayerExtended
 	/** Position in timeline, relative to the beginning of the segment */
 	renderedInPoint: number | null
@@ -55,9 +55,9 @@ export interface PieceExtended extends Piece {
 	renderedDuration: number | null
 	/** If set, the item was cropped in runtime by another item following it */
 	cropped?: boolean
-	/** This item is being continued by another, linked, item in another SegmentLine */
+	/** This item is being continued by another, linked, item in another Part */
 	continuedByRef?: PieceExtended
-	/** This item is continuing another, linked, item in another SegmentLine */
+	/** This item is continuing another, linked, item in another Part */
 	continuesRef?: PieceExtended
 	/** Maximum width of a label so as not to appear underneath the following item */
 	maxLabelWidth?: number
@@ -65,52 +65,52 @@ export interface PieceExtended extends Piece {
 
 export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundown, segment: Segment, checkFollowingSegment?: boolean): {
 	segmentExtended: SegmentExtended,
-	segmentLines: Array<SegmentLineExtended>,
+	parts: Array<PartExtended>,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
-	currentLiveSegmentLine: SegmentLineExtended | undefined,
+	currentLivePart: PartExtended | undefined,
 	hasRemoteItems: boolean,
 	hasGuestItems: boolean,
 	hasAlreadyPlayed: boolean,
-	autoNextSegmentLine: boolean
-	followingSegmentLine: SegmentLineExtended | undefined
+	autoNextPart: boolean
+	followingPart: PartExtended | undefined
 } {
 	let isLiveSegment = false
 	let isNextSegment = false
-	let currentLiveSegmentLine: SegmentLineExtended | undefined = undefined
-	// let nextSegmentLine: SegmentLineExtended | undefined = undefined
+	let currentLivePart: PartExtended | undefined = undefined
+	// let nextPart: PartExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 	let hasGuestItems = false
-	let followingSegmentLine: SegmentLineExtended | undefined = undefined
+	let followingPart: PartExtended | undefined = undefined
 
-	let autoNextSegmentLine = false
+	let autoNextPart = false
 
 	let segmentExtended = _.clone(segment) as SegmentExtended
 	segmentExtended.outputLayers = {}
 	segmentExtended.sourceLayers = {}
 
-	// fetch all the segment lines for the segment
-	let segmentLinesE: Array<SegmentLineExtended> = []
-	// let segmentLines = segment.getSegmentLines()
-	const segmentLines = segment.getSegmentLines()
+	// fetch all the parts for the segment
+	let partsE: Array<PartExtended> = []
+	// let parts = segment.getParts()
+	const parts = segment.getParts()
 
-	if (segmentLines.length > 0) {
+	if (parts.length > 0) {
 		if (checkFollowingSegment) {
-			let followingSLines = SegmentLines.find({
+			let followingSLines = Parts.find({
 				rundownId: segment.rundownId,
 				_rank: {
-					$gt: segmentLines[segmentLines.length - 1]._rank
+					$gt: parts[parts.length - 1]._rank
 				}
 			}, { sort: { _rank: 1 }, limit: 1 }).fetch()
 			if (followingSLines.length > 0) {
 				let followingSLine = followingSLines[0]
 
 				let pieces = Pieces.find({
-					segmentLineId: followingSLine._id
+					partId: followingSLine._id
 				}).fetch()
 
-				followingSegmentLine = extendMandadory<SegmentLine, SegmentLineExtended>(followingSLine, {
+				followingPart = extendMandadory<Part, PartExtended>(followingSLine, {
 					items: _.map(pieces, (piece) => {
 						return extendMandadory<Piece, PieceExtended>(piece, {
 							// sourceLayer: ISourceLayerExtended,
@@ -181,13 +181,13 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let startsAt = 0
-		let previousSegmentLine: SegmentLineExtended
-		// fetch all the pieces for the segment lines
-		segmentLinesE = _.map(segmentLines, (segmentLine, itIndex) => {
-			let slTimeline: SuperTimeline.UnresolvedTimeline = []
+		let previousPart: PartExtended
+		// fetch all the pieces for the parts
+		partsE = _.map(parts, (part, itIndex) => {
+			let partTimeline: SuperTimeline.UnresolvedTimeline = []
 
-			let segmentLineE: SegmentLineExtended = extendMandadory(segmentLine, {
-				items: _.map(Pieces.find({ segmentLineId: segmentLine._id }).fetch(), (piece) => {
+			let partE: PartExtended = extendMandadory(part, {
+				items: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
 					return extendMandadory<Piece, PieceExtended>(piece, {
 						renderedDuration: 0,
 						renderedInPoint: 0
@@ -196,39 +196,39 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				renderedDuration: 0,
 				startsAt: 0,
 				willProbablyAutoNext: (
-						(previousSegmentLine || {}).autoNext || false
+						(previousPart || {}).autoNext || false
 					) && (
-						(previousSegmentLine || {}).expectedDuration !== 0
+						(previousPart || {}).expectedDuration !== 0
 					)
 			})
 
-			if (rundown.currentSegmentLineId === segmentLineE._id) {
+			if (rundown.currentPartId === partE._id) {
 				isLiveSegment = true
-				currentLiveSegmentLine = segmentLineE
+				currentLivePart = partE
 			}
-			if (rundown.nextSegmentLineId === segmentLineE._id) {
+			if (rundown.nextPartId === partE._id) {
 				isNextSegment = true
 				// next is only auto, if current has a duration
-				// nextSegmentLine = segmentLineE
+				// nextPart = partE
 			}
-			autoNextSegmentLine = (
-				currentLiveSegmentLine ?
-				currentLiveSegmentLine.autoNext || false : false
+			autoNextPart = (
+				currentLivePart ?
+				currentLivePart.autoNext || false : false
 			) && (
 				(
-					currentLiveSegmentLine &&
-					currentLiveSegmentLine.expectedDuration !== undefined
+					currentLivePart &&
+					currentLivePart.expectedDuration !== undefined
 				) ?
-				currentLiveSegmentLine.expectedDuration !== 0 :
+				currentLivePart.expectedDuration !== 0 :
 				false
 			)
 
-			if (segmentLineE.startedPlayback !== undefined) {
+			if (partE.startedPlayback !== undefined) {
 				hasAlreadyPlayed = true
 			}
 
-			_.each<PieceExtended>(segmentLineE.items, (piece) => {
-				slTimeline.push({
+			_.each<PieceExtended>(partE.items, (piece) => {
+				partTimeline.push({
 					id: getPieceGroupId(piece),
 					trigger: offsetTrigger(piece.trigger, TIMELINE_TEMP_OFFSET),
 					duration: piece.durationOverride || piece.duration || piece.expectedDuration || 0,
@@ -257,9 +257,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						sourceLayer = sourceLayers[piece.sourceLayerId]
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
-							let sl = sourceLayer as ISourceLayerExtended
-							sl.items = []
-							outputLayer.sourceLayers.push(sl)
+							let part = sourceLayer as ISourceLayerExtended
+							part.items = []
+							outputLayer.sourceLayers.push(part)
 						}
 					}
 
@@ -288,9 +288,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 			// SuperTimeline.Resolver.setTraceLevel(SuperTimeline.TraceLevel.TRACE)
 
-			let slRTimeline = SuperTimeline.Resolver.getTimelineInWindow(slTimeline)
+			let partRTimeline = SuperTimeline.Resolver.getTimelineInWindow(partTimeline)
 			let furthestDuration = 0
-			slRTimeline.resolved.forEach((tlItem) => {
+			partRTimeline.resolved.forEach((tlItem) => {
 				let piece = piecesLookup[tlItem.content.id] // Timeline actually has copies of the content object, instead of the object itself
 				piece.renderedDuration = tlItem.resolved.outerDuration || null
 
@@ -303,24 +303,24 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				}
 			})
 
-			segmentLineE.renderedDuration = segmentLineE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
+			partE.renderedDuration = partE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
 
-			if (segmentLineE.displayDurationGroup && (
+			if (partE.displayDurationGroup && (
 				// either this is not the first element of the displayDurationGroup
-				(displayDurationGroups[segmentLineE.displayDurationGroup] !== undefined) ||
+				(displayDurationGroups[partE.displayDurationGroup] !== undefined) ||
 				// or there is a following member of this displayDurationGroup
-				(segmentLines[itIndex + 1] && segmentLines[itIndex + 1].displayDurationGroup === segmentLineE.displayDurationGroup)
+				(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === partE.displayDurationGroup)
 			)) {
-				displayDurationGroups[segmentLineE.displayDurationGroup] = (displayDurationGroups[segmentLineE.displayDurationGroup] || 0) + (segmentLineE.expectedDuration || 0)
-				segmentLineE.renderedDuration = segmentLineE.duration || Math.min(segmentLineE.displayDuration || 0, segmentLineE.expectedDuration || 0) || displayDurationGroups[segmentLineE.displayDurationGroup]
-				displayDurationGroups[segmentLineE.displayDurationGroup] = Math.max(0, displayDurationGroups[segmentLineE.displayDurationGroup] - (segmentLineE.duration || segmentLineE.renderedDuration))
+				displayDurationGroups[partE.displayDurationGroup] = (displayDurationGroups[partE.displayDurationGroup] || 0) + (partE.expectedDuration || 0)
+				partE.renderedDuration = partE.duration || Math.min(partE.displayDuration || 0, partE.expectedDuration || 0) || displayDurationGroups[partE.displayDurationGroup]
+				displayDurationGroups[partE.displayDurationGroup] = Math.max(0, displayDurationGroups[partE.displayDurationGroup] - (partE.duration || partE.renderedDuration))
 			}
 
-			segmentLineE.startsAt = startsAt
-			startsAt = segmentLineE.startsAt + (segmentLineE.renderedDuration || 0)
+			partE.startsAt = startsAt
+			startsAt = partE.startsAt + (partE.renderedDuration || 0)
 
-			previousSegmentLine = segmentLineE
-			return segmentLineE
+			previousPart = partE
+			return partE
 		})
 
 		const resolveDuration = (item: PieceExtended): number => {
@@ -329,15 +329,15 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber) + childDuration
 		}
 
-		_.each<SegmentLineExtended>(segmentLinesE, (segmentLine) => {
-			if (segmentLine.items) {
-				_.each<PieceExtended>(segmentLine.items, (item) => {
+		_.each<PartExtended>(partsE, (part) => {
+			if (part.items) {
+				_.each<PieceExtended>(part.items, (item) => {
 					if (item.continuedByRef) {
 						item.renderedDuration = resolveDuration(item)
 					}
 				})
 
-				const itemsByLayer = _.groupBy(segmentLine.items, (item) => {
+				const itemsByLayer = _.groupBy(part.items, (item) => {
 					return item.outputLayerId + '_' + item.sourceLayerId
 				})
 				_.each(itemsByLayer, (layerItems, outputSourceCombination) => {
@@ -364,9 +364,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			}
 		})
 
-		if (followingSegmentLine && followingSegmentLine.items) {
-			_.each<PieceExtended>(followingSegmentLine.items, (piece) => {
-				// match output layers in following segment line, but do not mark as used
+		if (followingPart && followingPart.items) {
+			_.each<PieceExtended>(followingPart.items, (piece) => {
+				// match output layers in following part, but do not mark as used
 				// we only care about output layers used in this segment.
 				let outputLayer = outputLayers[piece.outputLayerId] as IOutputLayerExtended | undefined
 				piece.outputLayer = outputLayer
@@ -381,9 +381,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						sourceLayer = sourceLayers[piece.sourceLayerId]
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
-							let sl = sourceLayer as ISourceLayerExtended
-							sl.items = []
-							outputLayer.sourceLayers.push(sl)
+							let part = sourceLayer as ISourceLayerExtended
+							part.items = []
+							outputLayer.sourceLayers.push(part)
 						}
 					}
 				} else {
@@ -400,27 +400,27 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		segmentExtended.outputLayers = outputLayers
 		segmentExtended.sourceLayers = sourceLayers
 
-		if (isNextSegment && !isLiveSegment && !autoNextSegmentLine && rundown.currentSegmentLineId) {
-			const currentOtherSegmentLine = SegmentLines.findOne(rundown.currentSegmentLineId)
-			if (currentOtherSegmentLine && currentOtherSegmentLine.expectedDuration && currentOtherSegmentLine.autoNext) {
-				autoNextSegmentLine = true
+		if (isNextSegment && !isLiveSegment && !autoNextPart && rundown.currentPartId) {
+			const currentOtherPart = Parts.findOne(rundown.currentPartId)
+			if (currentOtherPart && currentOtherPart.expectedDuration && currentOtherPart.autoNext) {
+				autoNextPart = true
 			}
 		}
 	}
 	return {
 		segmentExtended,
-		segmentLines: segmentLinesE,
+		parts: partsE,
 		isLiveSegment,
-		currentLiveSegmentLine,
+		currentLivePart,
 		isNextSegment,
 		hasAlreadyPlayed,
 		hasGuestItems,
 		hasRemoteItems,
-		autoNextSegmentLine,
-		followingSegmentLine
+		autoNextPart,
+		followingPart
 	}
 
-	// get the segment line immediately after the last segment
+	// get the part immediately after the last segment
 
 }
 
@@ -436,7 +436,7 @@ function offsetTrigger (
 	} else {
 		if (trigger.type === SuperTimeline.TriggerType.TIME_ABSOLUTE && trigger.value === 'now') {
 			return _.extend({}, trigger, {
-				// value: segmentLine.startedPlayback ? getCurrentTime() - segmentLine.startedPlayback : offset
+				// value: part.startedPlayback ? getCurrentTime() - part.startedPlayback : offset
 				value: offset
 			})
 		} else {

@@ -3,7 +3,7 @@ import * as React from 'react'
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
-	SegmentLineUi,
+	PartUi,
 	PieceUi
 } from '../SegmentTimelineContainer'
 
@@ -17,8 +17,8 @@ export interface ICustomLayerItemProps {
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	segmentLine: SegmentLineUi
-	segmentLineDuration: number // 0 if unknown
+	part: PartUi
+	partDuration: number // 0 if unknown
 	piece: PieceUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
@@ -69,7 +69,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration()
 		}
-		return this.props.segmentLineDuration
+		return this.props.partDuration
 	}
 
 	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {
@@ -80,8 +80,8 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 
 	renderOverflowTimeLabel () {
 		const vtContent = this.props.piece.content as VTContent
-		if (!this.props.piece.duration && this.props.piece.content && vtContent.sourceDuration && ((this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration) > (this.props.segmentLineDuration || 0)) {
-			let time = (this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
+		if (!this.props.piece.duration && this.props.piece.content && vtContent.sourceDuration && ((this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration) > (this.props.partDuration || 0)) {
+			let time = (this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
 			// only display differences greater than 1 second
 			return (time > 0) ? (
 				<div className='segment-timeline__layer-item__label label-overflow-time'>
@@ -94,7 +94,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 	renderInfiniteItemContentEnded () {
 		const content = this.props.piece.content as VTContent
 		const seek = content && content.seek ? content.seek : 0
-		if (this.props.piece.infiniteMode && content && content.sourceDuration && (this.props.piece.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.segmentLineDuration || 0)) {
+		if (this.props.piece.infiniteMode && content && content.sourceDuration && (this.props.piece.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.partDuration || 0)) {
 			return <div className='segment-timeline__layer-item__source-finished' style={{'left': ((content.sourceDuration - seek) * this.props.timeScale).toString() + 'px'}}></div>
 		}
 		return null

@@ -99,7 +99,7 @@
     "This rundown has been unpublished from Sofie.": "Denne køyreplanen er ikkje lenger tilgjengeleg i Sofie.",
     "Re-sync": "Synkroniser",
     "Re-sync Rundown": "Tilbakestill køyreplanen",
-    "Are you sure you want to re-sync the Rundown?\n(If the currently playing Segment Line has been changed, this can affect the output.)": "Er du sikker på at du vil tilbakestille denne køyreplanen?\n(Dette vil nullstille alle utgangar.)",
+    "Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output.)": "Er du sikker på at du vil tilbakestille denne køyreplanen?\n(Dette vil nullstille alle utgangar.)",
     "Just now": "No",
     "Less than a minute ago": "Under eitt minutt sidan",
     "Less than five minutes ago": "Under fem minutt sidan",

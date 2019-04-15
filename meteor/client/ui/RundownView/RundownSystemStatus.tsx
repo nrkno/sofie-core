@@ -10,9 +10,9 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
-import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType } from '../../../lib/api/notes'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -73,7 +73,7 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
-	notes: Array<SegmentLineNote>
+	notes: Array<PartNote>
 	mosStatus: PeripheralDeviceAPI.StatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
@@ -162,7 +162,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 
 	let segments = props.rundown.getSegments()
 
-	let notes: Array<SegmentLineNote> = []
+	let notes: Array<PartNote> = []
 	_.each(segments, s => {
 		notes = notes.concat(s.getNotes(true, true))
 	})
@@ -230,16 +230,16 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 
 	}
-	clickNote (e, note: SegmentLineNote) {
+	clickNote (e, note: PartNote) {
 		e.preventDefault()
 
 		let segmentId = note.origin.segmentId
 
 		if (!segmentId) {
-			if (note.origin.segmentLineId) {
-				let segmentLine = SegmentLines.findOne(note.origin.segmentLineId)
-				if (segmentLine) {
-					segmentId = segmentLine.segmentId
+			if (note.origin.partId) {
+				let part = Parts.findOne(note.origin.partId)
+				if (part) {
+					segmentId = part.segmentId
 				}
 			}
 		}

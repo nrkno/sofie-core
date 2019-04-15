@@ -15,10 +15,10 @@ import {
 	DBRundown
 } from '../../../lib/collections/Rundowns'
 import {
-	SegmentLine,
-	SegmentLines,
-	DBSegmentLine
-} from '../../../lib/collections/SegmentLines'
+	Part,
+	Parts,
+	DBPart
+} from '../../../lib/collections/Parts'
 import {
 	Piece,
 	Pieces
@@ -55,21 +55,21 @@ import {
 	Methods
 } from '../../methods'
 import {
-	afterRemoveSegmentLine,
+	afterRemovePart,
 	updateSegments,
-	updateAffectedSegmentLines,
-	removeSegmentLine,
+	updateAffectedParts,
+	removePart,
 	runPostProcessBlueprint,
 	ServerRundownAPI,
 	selectShowStyleVariant
 } from '../rundown'
 import { syncFunction } from '../../codeControl'
-import { IBlueprintSegmentLine, SegmentLineHoldMode, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPart, PartHoldMode, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadShowStyleBlueprints } from '../blueprints/cache'
-import { postProcessAdLibPieces, postProcessPieces, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
+import { postProcessAdLibPieces, postProcessPieces, postProcessPartBaselineItems } from '../blueprints/postProcess'
 import { ShowStyleContext, RundownContext } from '../blueprints/context'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
@@ -82,7 +82,7 @@ export function rundownId (rundownId: MOS.MosString128, original?: boolean): str
 	let id = 'rundown_' + (rundownId['_str'] || rundownId.toString())
 	return (original ? id : getHash(id))
 }
-export function segmentLineId (rundownId: string, storyId: MOS.MosString128): string {
+export function partId (rundownId: string, storyId: MOS.MosString128): string {
 	let id = rundownId + '_' + storyId.toString()
 	return getHash(id)
 }
@@ -114,18 +114,18 @@ export function getRO (rundownID: MOS.MosString128): Rundown {
 // 	} else throw new Meteor.Error(404, 'Segment ' + id + ' not found')
 // }
 /**
- * Returns a SegmentLine (aka an Item), throws error if not found
+ * Returns a Part (aka an Item), throws error if not found
  * @param rundownId
- * @param segmentLineId
+ * @param partId
  */
-export function getSegmentLine (rundownID: MOS.MosString128, storyID: MOS.MosString128): SegmentLine {
-	let id = segmentLineId(rundownId(rundownID), storyID)
-	let segmentLine = SegmentLines.findOne({
+export function getPart (rundownID: MOS.MosString128, storyID: MOS.MosString128): Part {
+	let id = partId(rundownId(rundownID), storyID)
+	let part = Parts.findOne({
 		rundownId: rundownId( rundownID ),
 		_id: id
 	})
-	if (segmentLine) {
-		return segmentLine
+	if (part) {
+		return part
 	} else {
 		let rundown = getRO(rundownID)
 		if (rundown) {
@@ -138,20 +138,20 @@ export function getSegmentLine (rundownID: MOS.MosString128, storyID: MOS.MosStr
 				}
 			})
 		}
-		throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (rundown: ' + rundownID + ', story: ' + storyID + ')')
+		throw new Meteor.Error(404, 'Part ' + id + ' not found (rundown: ' + rundownID + ', story: ' + storyID + ')')
 	}
 }
 
 /**
- * Converts an Item into a SegmentLine
+ * Converts an Item into a Part
  * @param item MOS Item
  * @param rundownId Rundown id of the item
  * @param segmentId Segment / Story id of the item
  * @param rank Rank of the story
  */
-export function convertToSegmentLine (story: MOS.IMOSStory, rundownId: string, rank: number): DBSegmentLine {
+export function convertToPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
 	return {
-		_id: segmentLineId(rundownId, story.ID),
+		_id: partId(rundownId, story.ID),
 		rundownId: rundownId,
 		segmentId: '', // to be coupled later
 		_rank: rank,
@@ -163,37 +163,38 @@ export function convertToSegmentLine (story: MOS.IMOSStory, rundownId: string, r
 	}
 }
 /**
- * Merge an old segmentLine with a new one (to be used together with (after) convertToSegmentLine )
- * @param newSegmentLine
- * @param existingSegmentLine
+ * Merge an old part with a new one (to be used together with (after) convertToPart )
+ * @param newPart
+ * @param existingPart
  */
-export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegmentLine?: DBSegmentLine): DBSegmentLine {
-	if (existingSegmentLine) {
-		if (existingSegmentLine._id !== newSegmentLine._id) {
-			throw new Meteor.Error(500, `mergeSegmentLine: ids differ: ${newSegmentLine._id}, ${existingSegmentLine._id}`)
+export function mergePart (newPart: DBPart, existingPart?: DBPart): DBPart {
+	if (existingPart) {
+		if (existingPart._id !== newPart._id) {
+			throw new Meteor.Error(500, `mergePart: ids differ: ${newPart._id}, ${existingPart._id}`)
 		}
 
-		newSegmentLine = _.extend({}, existingSegmentLine, _.omit(newSegmentLine, ['segmentId']))
+		newPart = _.extend({}, existingPart, _.omit(newPart, ['segmentId']))
 
-		newSegmentLine.typeVariant = existingSegmentLine.typeVariant || newSegmentLine.typeVariant // typeVariant is set in the blueprints
-		newSegmentLine.subTypeVariant = existingSegmentLine.subTypeVariant || newSegmentLine.subTypeVariant // subTypeVariant is set in the blueprints
+		newPart.typeVariant = existingPart.typeVariant || newPart.typeVariant // typeVariant is set in the blueprints
+		newPart.subTypeVariant = existingPart.subTypeVariant || newPart.subTypeVariant // subTypeVariant is set in the blueprints
 	}
-	return newSegmentLine
+	return newPart
 }
 /**
- * Insert a new SegmentLine (aka an Item)
+ * Insert a new Part (aka an Item)
  * @param item The item to be inserted
  * @param rundownId The id of the Rundown
  * @param segmentId The id of the Segment / Story
- * @param rank The new rank of the SegmentLine
+ * @param rank The new rank of the Part
  */
-export function upsertSegmentLine (story: MOS.IMOSStory, rundownId: string, rank: number): DBSegmentLine {
-	let sl = convertToSegmentLine(story, rundownId, rank)
-	SegmentLines.upsert(sl._id, {$set: sl}) // insert, or update
-	afterInsertUpdateSegmentLine(story, rundownId)
-	return sl
+export function upsertPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
+	let part = convertToPart(story, rundownId, rank)
+	Parts.upsert(part._id, {$set: part}) // insert, or update
+	afterInsertUpdatePart(story, rundownId)
+	return part
+
 }
-export function afterInsertUpdateSegmentLine (story: MOS.IMOSStory, rundownId: string) {
+export function afterInsertUpdatePart (story: MOS.IMOSStory, rundownId: string) {
 	// nothing
 }
 
@@ -237,26 +238,26 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MOS.IMOSROFullStory) => boolean
-= syncFunction(function updateStory (rundown: Rundown, segmentLine: SegmentLine, story: MOS.IMOSROFullStory): boolean {
+export const updateStory: (rundown: Rundown, part: Part, story: MOS.IMOSROFullStory) => boolean
+= syncFunction(function updateStory (rundown: Rundown, part: Part, story: MOS.IMOSROFullStory): boolean {
 	let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
 	if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + rundown.showStyleBaseId + '" not found!')
 
-	const context = new SegmentLineContext(rundown, segmentLine, story)
+	const context = new PartContext(rundown, part, story)
 	context.handleNotesExternally = true
 
-	let resultSl: IBlueprintSegmentLine | undefined = undefined
+	let resultSl: IBlueprintPart | undefined = undefined
 	let resultPiece: Piece[] | undefined = undefined
 	let resultAdlibPiece: AdLibPiece[] | undefined = undefined
-	let notes: SegmentLineNote[] = []
+	let notes: PartNote[] = []
 	try {
 		const blueprints = loadShowStyleBlueprints(showStyleBase)
-		let result = blueprints.getSegmentLine(context, story) // TODO: refactor this
+		let result = blueprints.getPart(context, story) // TODO: refactor this
 
  		if (result) {
-			resultAdlibPiece = postProcessAdLibPieces(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)
-			resultPiece = postProcessPieces(context, result.pieces, result.segmentLine.typeVariant, segmentLine._id)
-			resultSl = result.segmentLine
+			resultAdlibPiece = postProcessAdLibPieces(context, result.adLibItems, result.part.typeVariant, part._id)
+			resultPiece = postProcessPieces(context, result.pieces, result.part.typeVariant, part._id)
+			resultSl = result.part
 		}
 
  		notes = context.getNotes()
@@ -267,8 +268,8 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 			type: NoteType.ERROR,
 			origin: {
 				name: '',				rundownId: context.rundown._id,
-				segmentId: (context.segmentLine as DBSegmentLine).segmentId,
-				segmentLineId: context.segmentLine._id,
+				segmentId: (context.part as DBPart).segmentId,
+				partId: context.part._id,
 			},
 			message: 'Internal Server Error'
 		}],
@@ -286,7 +287,7 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 		removed: 0
 	}
 	if (resultSl) {
-		SegmentLines.update(segmentLine._id, {$set: {
+		Parts.update(part._id, {$set: {
 			expectedDuration:		resultSl.expectedDuration || 0,
 			notes: 					notes,
 			autoNext: 				resultSl.autoNext || false,
@@ -299,7 +300,7 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 			updateStoryStatus:		resultSl.updateStoryStatus || false,
 			typeVariant:			resultSl.typeVariant || '',
 			subTypeVariant:			resultSl.subTypeVariant || '',
-			holdMode: 				resultSl.holdMode || SegmentLineHoldMode.NONE,
+			holdMode: 				resultSl.holdMode || PartHoldMode.NONE,
 			classes: 				resultSl.classes || [],
 			classesForNext: 		resultSl.classesForNext || [],
 			displayDurationGroup: 	resultSl.displayDurationGroup || '', // TODO - or unset?
@@ -307,7 +308,7 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 			invalid: 				resultSl.invalid || false
 		}})
 	} else {
-		SegmentLines.update(segmentLine._id, {$set: {
+		Parts.update(part._id, {$set: {
 			notes: notes,
 			invalid: true
 		}})
@@ -316,7 +317,7 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 	if (resultPiece) {
 		changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
 			rundownId: rundown._id,
-			segmentLineId: segmentLine._id,
+			partId: part._id,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 		}, resultPiece || [], {
 			afterInsert (piece) {
@@ -339,14 +340,14 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 			afterRemove (piece) {
 				logger.debug('deleted piece ' + piece._id)
 				// @todo: handle this:
-				// afterRemovePiece(segmentLine._id)
+				// afterRemovePiece(part._id)
 			}
 		})
 	}
 	if (resultAdlibPiece) {
 		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 			rundownId: rundown._id,
-			segmentLineId: segmentLine._id,
+			partId: part._id,
 			// fromPostProcess: { $ne: true }, // do not affect postProcess items
 		}, resultAdlibPiece || [], {
 			afterInsert (adLibPiece) {
@@ -369,14 +370,14 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 			afterRemove (adLibPiece) {
 				logger.debug('deleted piece ' + adLibPiece._id)
 				// @todo: handle this:
-				// afterRemovePiece(segmentLine._id)
+				// afterRemovePiece(part._id)
 			}
 		})
 	}
 
 	if (resultPiece || resultAdlibPiece) {
 		try {
-			updateExpectedMediaItems(rundown._id, segmentLine._id)
+			updateExpectedMediaItems(rundown._id, part._id)
 		} catch (e) {
 			logger.error('Error updating expectedMediaItems: ' + e.toString())
 		}
@@ -387,20 +388,20 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 	// return this.core.mosManipulate(P.methods.mosRundownReadyToAir, story)
 })
 
-export function sendStoryStatus (rundown: Rundown, takeSegmentLine: SegmentLine | null) {
+export function sendStoryStatus (rundown: Rundown, takePart: Part | null) {
 
 	if (rundown.currentPlayingStoryStatus) {
 		setStoryStatus(rundown.peripheralDeviceId, rundown, rundown.currentPlayingStoryStatus, MOS.IMOSObjectStatus.STOP)
 		.catch(e => logger.error(e))
 	}
-	if (takeSegmentLine) {
-		setStoryStatus(rundown.peripheralDeviceId, rundown, takeSegmentLine.externalId, MOS.IMOSObjectStatus.PLAY)
+	if (takePart) {
+		setStoryStatus(rundown.peripheralDeviceId, rundown, takePart.externalId, MOS.IMOSObjectStatus.PLAY)
 		.catch(e => logger.error(e))
 
 		Rundowns.update(this._id, {$set: {
-			currentPlayingStoryStatus: takeSegmentLine.externalId
+			currentPlayingStoryStatus: takePart.externalId
 		}})
-		rundown.currentPlayingStoryStatus = takeSegmentLine.externalId
+		rundown.currentPlayingStoryStatus = takePart.externalId
 	} else {
 		Rundowns.update(this._id, {$unset: {
 			currentPlayingStoryStatus: 1
@@ -452,9 +453,9 @@ export const reloadRundown: (rundown: Rundown) => void = Meteor.wrapAsync(
 		}, 'triggerGetRundown', rundown.externalId)
 	}
 )
-export function replaceStoryItem (rundown: Rundown, piece: Piece, slCache: RundownDataCacheObj, inPoint: number, duration: number) {
+export function replaceStoryItem (rundown: Rundown, piece: Piece, partCache: RundownDataCacheObj, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
-		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
+		const story = partCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
 		story.EditorialStart = inPoint
 		story.EditorialDuration = duration
 
@@ -464,7 +465,7 @@ export function replaceStoryItem (rundown: Rundown, piece: Piece, slCache: Rundo
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
 			if (err) reject(err)
 			else resolve()
-		}, 'replaceStoryItem', slCache.data.RundownId, slCache.data.ID, story)
+		}, 'replaceStoryItem', partCache.data.RundownId, partCache.data.ID, story)
 	})
 }
 
@@ -533,12 +534,12 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 			},
 
 			// omit the below fields
-			previousSegmentLineId: null,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null,
+			previousPartId: null,
+			currentPartId: null,
+			nextPartId: null,
 			created: 0,
 			modified: 0,
-		}), ['previousSegmentLineId', 'currentSegmentLineId', 'nextSegmentLineId', 'created', 'modified'])
+		}), ['previousPartId', 'currentPartId', 'nextPartId', 'created', 'modified'])
 	)
 	// Save rundown into database:
 	saveIntoDb(Rundowns, {
@@ -568,7 +569,7 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 	const baselineItem: RundownBaselineItem = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
-		objects: postProcessSegmentLineBaselineItems(blueprintRundownContext, rundownRes.baseline)
+		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 
 	saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
@@ -584,13 +585,13 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 
 	// Save Stories into database:
 
-	let existingSegmentLines = dbRundown.getSegmentLines()
+	let existingParts = dbRundown.getParts()
 
-	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
+	// Note: a number of X stories will result in (<=X) Segments and X Parts
 	// let segments: DBSegment[] = []
-	let segmentLines: DBSegmentLine[] = []
+	let parts: DBPart[] = []
 	// let rankSegment = 0
-	let rankSegmentLine = 0
+	let rankPart = 0
 	// let prevSlugParts: string[] = []
 	// let segment: DBSegment
 	_.each(rundown.Stories, (story: MOS.IMOSStory) => {
@@ -603,47 +604,47 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 		// }
 		if (dbRundown) {
 			// join new data with old:
-			let segmentLine = convertToSegmentLine(story, dbRundown._id, rankSegmentLine++)
-			let existingSegmentLine = _.find(existingSegmentLines, (sl) => {
-				return sl._id === segmentLine._id
+			let part = convertToPart(story, dbRundown._id, rankPart++)
+			let existingPart = _.find(existingParts, (part) => {
+				return part._id === part._id
 			})
-			segmentLine = mergeSegmentLine(segmentLine, existingSegmentLine)
+			part = mergePart(part, existingPart)
 
-			segmentLines.push(segmentLine)
+			parts.push(part)
 		} else throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
 		// prevSlugParts = slugParts
 	})
-	// logger.debug('segmentLines', segmentLines)
+	// logger.debug('parts', parts)
 	// logger.debug('---------------')
-	// logger.debug(SegmentLines.find({rundownId: dbRundown._id}).fetch())
-	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
+	// logger.debug(Parts.find({rundownId: dbRundown._id}).fetch())
+	saveIntoDb<Part, DBPart>(Parts, {
 		rundownId: dbRundown._id
-	}, segmentLines, {
+	}, parts, {
 		beforeDiff (obj, oldObj) {
 			let o = _.extend({}, obj, {
 				segmentId: oldObj.segmentId
 			})
 			return o
 		},
-		afterInsert (segmentLine) {
-			// logger.debug('inserted segmentLine ' + segmentLine._id)
+		afterInsert (part) {
+			// logger.debug('inserted part ' + part._id)
 			// @todo: have something here?
 			// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
 				// afterInsertUpdateSegment (story, rundownId(rundown.ID))
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
-		afterUpdate (segmentLine) {
-			// logger.debug('updated segmentLine ' + segmentLine._id)
+		afterUpdate (part) {
+			// logger.debug('updated part ' + part._id)
 			// @todo: have something here?
 			// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
 			// 	afterInsertUpdateSegment (story, rundownId(rundown.ID))
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
-		afterRemove (segmentLine) {
-			afterRemoveSegmentLine(segmentLine)
+		afterRemove (part) {
+			afterRemovePart(part)
 		}
 	})
 	updateSegments(rundownId(rundown.ID))
@@ -761,13 +762,13 @@ export namespace MosIntegration {
 
 		// @ts-ignore
 		logger.debug(status)
-		// Save Stories (aka SegmentLine ) status into database:
-		let segmentLine = SegmentLines.findOne({
-			_id: 			segmentLineId(rundownId(status.RundownId), status.ID),
+		// Save Stories (aka Part ) status into database:
+		let part = Parts.findOne({
+			_id: 			partId(rundownId(status.RundownId), status.ID),
 			rundownId: rundown._id
 		})
-		if (segmentLine) {
-			SegmentLines.update(segmentLine._id, {$set: {
+		if (part) {
+			Parts.update(part._id, {$set: {
 				status: status.Status
 			}})
 		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in rundown ' + status.RundownId + ' not found')
@@ -780,16 +781,16 @@ export namespace MosIntegration {
 		/*
 		// Save status of Item database:
 		let segmentID = segmentId(rundownId(status.RundownId), status.StoryId)
-		let segmentLine = SegmentLineIte.findOne({
-			_id: 			segmentLineId(segmentID, status.ID),
+		let part = PartIte.findOne({
+			_id: 			partId(segmentID, status.ID),
 			segmentId: 		segmentID,
 			rundownId: rundownId(status.RundownId)
 		})
-		if (segmentLine) {
-			SegmentLines.update(segmentLine._id, {$set: {
+		if (part) {
+			Parts.update(part._id, {$set: {
 				status: status.Status
 			}})
-		} else throw new Meteor.Error(404, 'SegmentLine ' + status.ID + ' in segment ' + status.StoryId + ' in rundown ' + status.RundownId + ' not found')
+		} else throw new Meteor.Error(404, 'Part ' + status.ID + ' in segment ' + status.StoryId + ' in rundown ' + status.RundownId + ' not found')
 		*/
 	}
 	export function mosRundownStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
@@ -802,40 +803,40 @@ export namespace MosIntegration {
 
 		// @ts-ignore		logger.debug(
 		logger.debug(Action, Stories)
-		// insert a story (aka SegmentLine) before another story:
-		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RundownID, Action.StoryID) : null)
+		// insert a story (aka Part) before another story:
+		let partAfter = (Action.StoryID ? getPart(Action.RundownID, Action.StoryID) : null)
 
 		// let newRankMax
 		// let newRankMin
-		let segmentLineBeforeOrLast: DBSegmentLine | undefined = (
-			segmentLineAfter ?
-				fetchBefore(SegmentLines,
+		let partBeforeOrLast: DBPart | undefined = (
+			partAfter ?
+				fetchBefore(Parts,
 					{ rundownId: rundown._id },
-					segmentLineAfter._rank
+					partAfter._rank
 				) :
-				fetchBefore(SegmentLines,
+				fetchBefore(Parts,
 					{ rundownId: rundown._id },
 					null
 				)
 		)
-		let affectedSegmentLineIds: Array<string> = []
-		let firstInsertedSegmentLine: DBSegmentLine | undefined
+		let affectedPartIds: Array<string> = []
+		let firstInsertedPart: DBPart | undefined
 		_.each(Stories, (story: MOS.IMOSROStory, i: number) => {
 			logger.info('insert story ' + story.ID)
-			let rank = getRank(segmentLineBeforeOrLast, segmentLineAfter, i, Stories.length)
+			let rank = getRank(partBeforeOrLast, partAfter, i, Stories.length)
 			// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-			let segmentLine = upsertSegmentLine(story, rundown._id, rank)
-			affectedSegmentLineIds.push(segmentLine._id)
-			if (!firstInsertedSegmentLine) firstInsertedSegmentLine = segmentLine
+			let part = upsertPart(story, rundown._id, rank)
+			affectedPartIds.push(part._id)
+			if (!firstInsertedPart) firstInsertedPart = part
 		})
 
-		if (segmentLineAfter && rundown.nextSegmentLineId === segmentLineAfter._id && firstInsertedSegmentLine && !rundown.nextSegmentLineManual) {
-			// Move up next-point to the first inserted segmentLine
-			ServerPlayoutAPI.rundownSetNext(rundown._id, firstInsertedSegmentLine._id)
+		if (partAfter && rundown.nextPartId === partAfter._id && firstInsertedPart && !rundown.nextPartManual) {
+			// Move up next-point to the first inserted part
+			ServerPlayoutAPI.rundownSetNext(rundown._id, firstInsertedPart._id)
 		}
 
 		updateSegments(rundown._id)
-		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
+		updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRundownItemInsert (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -843,29 +844,29 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
-		// insert an item (aka SegmentLine ## TODO ##Line) before another story:
+		// insert an item (aka Part ## TODO ##Line) before another story:
 		let rundown = getRO(Action.RundownID)
 		let segment = getSegment(Action.RundownID, Action.StoryID)
-		let segmentLineAfter = (Action.ItemID ? getSegmentLine(Action.RundownID, Action.StoryID, Action.ItemID) : null)
+		let partAfter = (Action.ItemID ? getPart(Action.RundownID, Action.StoryID, Action.ItemID) : null)
 
-		let segmentLineBeforeOrLast
+		let partBeforeOrLast
 		let newRankMax
 		let newRankMin
-		if (segmentLineAfter) {
-			segmentLineBeforeOrLast = fetchBefore(SegmentLines,
+		if (partAfter) {
+			partBeforeOrLast = fetchBefore(Parts,
 				{ rundownId: rundown._id, segmentId: segment._id },
-				segmentLineAfter._rank
+				partAfter._rank
 			)
 		} else {
-			segmentLineBeforeOrLast = fetchBefore(SegmentLines,
+			partBeforeOrLast = fetchBefore(Parts,
 				{ rundownId: rundown._id, segmentId: segment._id },
 				null
 			)
 		}
 		_.each(Items, (item: MOS.IMOSItem, i: number) => {
-			let rank = getRank(segmentLineBeforeOrLast, segmentLineAfter, i, Items.length)
+			let rank = getRank(partBeforeOrLast, partAfter, i, Items.length)
 			// let rank = newRankMin + ( i / Items.length ) * (newRankMax - newRankMin)
-			insertSegmentLine(item, rundown._id, segment._id, rank)
+			insertPart(item, rundown._id, segment._id, rank)
 		})
 		*/
 	}
@@ -878,35 +879,36 @@ export namespace MosIntegration {
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
-		// Replace a Story (aka a SegmentLine) with one or more Stories
-		let segmentLineToReplace = getSegmentLine(Action.RundownID, Action.StoryID)
+		// Replace a Story (aka a Part) with one or more Stories
+		let partToReplace = getPart(Action.RundownID, Action.StoryID)
 
-		let segmentLineBefore = fetchBefore(SegmentLines, { rundownId: rundown._id }, segmentLineToReplace._rank)
-		let segmentLineAfter = fetchAfter(SegmentLines, { rundownId: rundown._id }, segmentLineToReplace._rank)
+		let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, partToReplace._rank)
+		let partAfter = fetchAfter(Parts, { rundownId: rundown._id }, partToReplace._rank)
 
-		let affectedSegmentLineIds: Array<string> = []
+		let affectedPartIds: Array<string> = []
 
-		let insertedSegmentLineIds: {[id: string]: boolean} = {}
-		let firstInsertedSegmentLine: DBSegmentLine | undefined
+		let insertedPartIds: {[id: string]: boolean} = {}
+		let firstInsertedPart: DBPart | undefined
 		_.each(Stories, (story: MOS.IMOSROStory, i: number) => {
 			logger.info('insert story ' + story.ID)
-			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
-			let sl = upsertSegmentLine(story, rundown._id, rank)
-			insertedSegmentLineIds[sl._id] = true
-			affectedSegmentLineIds.push(sl._id)
-			if (!firstInsertedSegmentLine) firstInsertedSegmentLine = sl
+			let rank = getRank(partBefore, partAfter, i, Stories.length)
+			let part = upsertPart(story, rundown._id, rank)
+			insertedPartIds[part._id] = true
+			affectedPartIds.push(part._id)
+			if (!firstInsertedPart) firstInsertedPart = part
+
 		})
 
 		updateSegments(rundown._id)
 
-		if (!insertedSegmentLineIds[segmentLineToReplace._id]) {
-			// ok, the segmentline to replace wasn't in the inserted segment lines
+		if (!insertedPartIds[partToReplace._id]) {
+			// ok, the part to replace wasn't in the inserted parts
 			// remove it then:
-			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(rundown._id, segmentLineToReplace, firstInsertedSegmentLine)
+			affectedPartIds.push(partToReplace._id)
+			removePart(rundown._id, partToReplace, firstInsertedPart)
 		}
 
-		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
+		updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRundownItemReplace (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -914,18 +916,18 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
-		// Replace an item (aka SegmentLine ## TODO ##Line) with one or more items
+		// Replace an item (aka Part ## TODO ##Line) with one or more items
 		let rundown = getRO(Action.RundownID)
-		let segmentLineToReplace = getSegmentLine(Action.RundownID, Action.StoryID, Action.ItemID)
+		let partToReplace = getPart(Action.RundownID, Action.StoryID, Action.ItemID)
 
-		let segmentLineBefore = fetchBefore(SegmentLines, { rundownId: rundown._id, segmentId: segmentLineToReplace.segmentId }, segmentLineToReplace._rank)
-		let segmentLineAfter = fetchAfter(SegmentLines, { rundownId: rundown._id, segmentId: segmentLineToReplace.segmentId }, segmentLineToReplace._rank)
+		let partBefore = fetchBefore(Parts, { rundownId: rundown._id, segmentId: partToReplace.segmentId }, partToReplace._rank)
+		let partAfter = fetchAfter(Parts, { rundownId: rundown._id, segmentId: partToReplace.segmentId }, partToReplace._rank)
 
-		removeSegmentLine(segmentLineToReplace._id)
+		removePart(partToReplace._id)
 
 		_.each(Items, (item: MOS.IMOSItem, i: number) => {
-			let rank = getRank (segmentLineBefore, segmentLineAfter, i, Items.length)
-			insertSegmentLine(item, rundown._id, rank)
+			let rank = getRank (partBefore, partAfter, i, Items.length)
+			insertPart(item, rundown._id, rank)
 		})
 		*/
 	}
@@ -939,55 +941,55 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
+		// Move Stories (aka Part ## TODO ##Lines) to before a story
 
-		let currentSegmentLine: SegmentLine | undefined = undefined
+		let currentPart: Part | undefined = undefined
 		let onAirNextWindowWidth: number | undefined = undefined
 		let nextPosition: number | undefined = undefined
-		if (rundown.currentSegmentLineId) {
-			let nextSegmentLine: SegmentLine | undefined = undefined
-			currentSegmentLine = SegmentLines.findOne(rundown.currentSegmentLineId)
-			if (rundown.nextSegmentLineId) nextSegmentLine = SegmentLines.findOne(rundown.nextSegmentLineId)
-			if (currentSegmentLine) {
-				const segmentLines = rundown.getSegmentLines({
+		if (rundown.currentPartId) {
+			let nextPart: Part | undefined = undefined
+			currentPart = Parts.findOne(rundown.currentPartId)
+			if (rundown.nextPartId) nextPart = Parts.findOne(rundown.nextPartId)
+			if (currentPart) {
+				const parts = rundown.getParts({
 					_rank: _.extend({
-						$gte: currentSegmentLine._rank
-					}, nextSegmentLine ? {
-						$lte: nextSegmentLine._rank
+						$gte: currentPart._rank
+					}, nextPart ? {
+						$lte: nextPart._rank
 					} : {})
 				})
-				onAirNextWindowWidth = segmentLines.length
+				onAirNextWindowWidth = parts.length
 			}
-		} else if (rundown.nextSegmentLineId) {
-			let nextSegmentLine: SegmentLine | undefined = undefined
-			nextSegmentLine = SegmentLines.findOne(rundown.nextSegmentLineId)
-			if (nextSegmentLine) {
-				const segmentLines = rundown.getSegmentLines({
+		} else if (rundown.nextPartId) {
+			let nextPart: Part | undefined = undefined
+			nextPart = Parts.findOne(rundown.nextPartId)
+			if (nextPart) {
+				const parts = rundown.getParts({
 					_rank: {
-						$lte: nextSegmentLine._rank
+						$lte: nextPart._rank
 					}
 				})
-				nextPosition = segmentLines.length
+				nextPosition = parts.length
 			}
 		}
 
-		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RundownID, Action.StoryID) : null)
-		let segmentLineBefore = fetchBefore(SegmentLines, { rundownId: rundown._id }, (segmentLineAfter ? segmentLineAfter._rank : null))
+		let partAfter = (Action.StoryID ? getPart(Action.RundownID, Action.StoryID) : null)
+		let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, (partAfter ? partAfter._rank : null))
 
-		// console.log('Inserting between: ' + (segmentLineBefore ? segmentLineBefore._rank : 'X') + ' - ' + segmentLineAfter._rank)
+		// console.log('Inserting between: ' + (partBefore ? partBefore._rank : 'X') + ' - ' + partAfter._rank)
 
-		let affectedSegmentLineIds: Array<string> = []
-		if (segmentLineAfter) affectedSegmentLineIds.push(segmentLineAfter._id)
-		if (segmentLineBefore) affectedSegmentLineIds.push(segmentLineBefore._id)
+		let affectedPartIds: Array<string> = []
+		if (partAfter) affectedPartIds.push(partAfter._id)
+		if (partBefore) affectedPartIds.push(partBefore._id)
 		_.each(Stories, (storyId: MOS.MosString128, i: number) => {
-			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
-			SegmentLines.update(segmentLineId(rundown._id, storyId), {$set: {
+			let rank = getRank(partBefore, partAfter, i, Stories.length)
+			Parts.update(partId(rundown._id, storyId), {$set: {
 				_rank: rank
 			}})
 		})
 
 		updateSegments(rundown._id)
-		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
+		updateAffectedParts(rundown, affectedPartIds)
 
 		// Meteor.call('playout_storiesMoved', rundown._id, onAirNextWindowWidth, nextPosition)
 		ServerPlayoutAPI.rundownStoriesMoved(rundown._id, onAirNextWindowWidth, nextPosition)
@@ -1000,14 +1002,14 @@ export namespace MosIntegration {
 		/*
 		// Move Items (#####) to before a story
 		let rundown = getRO(Action.RundownID)
-		let segmentLineAfter = getSegmentLine(Action.RundownID, Action.StoryID, Action.ItemID)
-		let segmentLineBefore = fetchBefore(SegmentLines,
-			{ rundownId: rundown._id, segmentId: segmentLineAfter.segmentId},
-			segmentLineAfter._rank)
+		let partAfter = getPart(Action.RundownID, Action.StoryID, Action.ItemID)
+		let partBefore = fetchBefore(Parts,
+			{ rundownId: rundown._id, segmentId: partAfter.segmentId},
+			partAfter._rank)
 
 		_.each(Items, (itemId: MOS.MosString128, i: number) => {
-			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Items.length)
-			SegmentLines.update(segmentLineId(segmentId, itemId), {$set: {
+			let rank = getRank(partBefore, partAfter, i, Items.length)
+			Parts.update(partId(segmentId, itemId), {$set: {
 				_rank: rank
 			}})
 		})
@@ -1022,16 +1024,16 @@ export namespace MosIntegration {
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
-		// Delete Stories (aka SegmentLine)
-		let affectedSegmentLineIds: Array<string> = []
+		// Delete Stories (aka Part)
+		let affectedPartIds: Array<string> = []
 		_.each(Stories, (storyId: MOS.MosString128, i: number) => {
 			logger.debug('remove story ' + storyId)
-			let slId = segmentLineId(rundown._id, storyId)
-			affectedSegmentLineIds.push(slId)
-			removeSegmentLine(rundown._id, slId)
+			let partId = partId(rundown._id, storyId)
+			affectedPartIds.push(partId)
+			removePart(rundown._id, partId)
 		})
 		updateSegments(rundown._id)
-		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
+		updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRundownItemDelete (id: string, token: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -1039,10 +1041,10 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
-		// Delete Items (aka SegmentLine ## TODO ##LinesLines)
+		// Delete Items (aka Part ## TODO ##LinesLines)
 		let rundown = getRO(Action.RundownID)
 		_.each(Items, (itemId: MOS.MosString128, i: number) => {
-			removeSegmentLine( segmentLineId(segmentId(rundown._id, Action.StoryID), itemId))
+			removePart( partId(segmentId(rundown._id, Action.StoryID), itemId))
 		})
 		*/
 	}
@@ -1055,24 +1057,24 @@ export namespace MosIntegration {
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, StoryID0, StoryID1)
-		// Swap Stories (aka SegmentLine)
+		// Swap Stories (aka Part)
 
-		let segmentLine0 = getSegmentLine(Action.RundownID, StoryID0)
-		let segmentLine1 = getSegmentLine(Action.RundownID, StoryID1)
+		let part0 = getPart(Action.RundownID, StoryID0)
+		let part1 = getPart(Action.RundownID, StoryID1)
 
-		SegmentLines.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
-		SegmentLines.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
+		Parts.update(part0._id, {$set: {_rank: part1._rank}})
+		Parts.update(part1._id, {$set: {_rank: part0._rank}})
 
-		if (rundown.nextSegmentLineId === segmentLine0._id) {
-			// Change nexted segmentLine
-			ServerPlayoutAPI.rundownSetNext(rundown._id, segmentLine1._id)
-		} else if (rundown.nextSegmentLineId === segmentLine1._id) {
-			// Change nexted segmentLine
-			ServerPlayoutAPI.rundownSetNext(rundown._id, segmentLine0._id)
+		if (rundown.nextPartId === part0._id) {
+			// Change nexted part
+			ServerPlayoutAPI.rundownSetNext(rundown._id, part1._id)
+		} else if (rundown.nextPartId === part1._id) {
+			// Change nexted part
+			ServerPlayoutAPI.rundownSetNext(rundown._id, part0._id)
 		}
 
 		updateSegments(rundown._id)
-		updateAffectedSegmentLines(rundown, [segmentLine0._id, segmentLine1._id])
+		updateAffectedParts(rundown, [part0._id, part1._id])
 	}
 	export function mosRundownItemSwap (id: string, token: string, Action: MOS.IMOSStoryAction, ItemID0: MOS.MosString128, ItemID1: MOS.MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -1080,14 +1082,14 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, ItemID0, ItemID1)
 		/*
-		// Swap Stories (aka SegmentLine ## TODO ##Lines)
+		// Swap Stories (aka Part ## TODO ##Lines)
 		let rundown = getRO(Action.RundownID)
 
-		let segmentLine0 = getSegmentLine(Action.RundownID, Action.StoryID, ItemID0)
-		let segmentLine1 = getSegmentLine(Action.RundownID, Action.StoryID, ItemID1)
+		let part0 = getPart(Action.RundownID, Action.StoryID, ItemID0)
+		let part1 = getPart(Action.RundownID, Action.StoryID, ItemID1)
 
-		Segments.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
-		Segments.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
+		Segments.update(part0._id, {$set: {_rank: part1._rank}})
+		Segments.update(part1._id, {$set: {_rank: part0._rank}})
 		*/
 	}
 	export function mosRundownReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {
@@ -1119,20 +1121,20 @@ export namespace MosIntegration {
 		// logger.debug(story)
 		// Update db with the full story:
 		// let segment = getSegment(story.RundownId, story.ID)
-		let segmentLine = getSegmentLine(story.RundownId, story.ID)
+		let part = getPart(story.RundownId, story.ID)
 
 		// cache the Data
-		rundown.saveCache(CachePrefix.INGEST_PART + segmentLine._id, story)
-		const changed = updateStory(rundown, segmentLine, story)
+		rundown.saveCache(CachePrefix.INGEST_PART + part._id, story)
+		const changed = updateStory(rundown, part, story)
 
-		const segment = segmentLine.getSegment()
+		const segment = part.getSegment()
 		if (segment) {
 			// this could be run after the segment, if we were capable of limiting that
 			runPostProcessBlueprint(rundown, segment)
 		}
 
 		if (changed) {
-			updateTimelineFromMosData(segmentLine.rundownId, [ segmentLine._id ])
+			updateTimelineFromMosData(part.rundownId, [ part._id ])
 		}
 	}
 }

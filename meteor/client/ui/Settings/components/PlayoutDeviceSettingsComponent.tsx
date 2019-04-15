@@ -270,7 +270,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 						<div className='mod mvs mhs'>
 							<label className='field'>
 								{t('Enable SSL')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.ssl'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
 					</React.Fragment>)

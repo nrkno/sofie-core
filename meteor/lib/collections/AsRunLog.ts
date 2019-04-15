@@ -11,7 +11,7 @@ export interface AsRunLogEventBase {
 	studioId: string,
 	rundownId: string,
 	segmentId?: string,
-	segmentLineId?: string,
+	partId?: string,
 	pieceId?: string,
 	timelineObjectId?: string
 

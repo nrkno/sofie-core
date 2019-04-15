@@ -97,7 +97,7 @@
     "Show Hotkeys": "Vise hurtigtaster",
     "Take a Snapshot": "Lagre et snapshot",
     "This rundown has been unpublished from Sofie.": "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie.",
-    "Are you sure you want to re-sync the Rundown?\n(If the currently playing Segment Line has been changed, this can affect the output.)": "Er du sikker på at du vil tilbakestille denne kjøreplanen?\n(Dette vil nullstille alle utganger.)",
+    "Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output.)": "Er du sikker på at du vil tilbakestille denne kjøreplanen?\n(Dette vil nullstille alle utganger.)",
     "Just now": "Nå",
     "Less than a minute ago": "Under ett minutt siden",
     "Less than five minutes ago": "Under fem minutter siden",

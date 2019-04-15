@@ -78,7 +78,7 @@ function userActionMethodName (
 		case UserActionAPI.methods.reloadData: return 'Reloading rundown data'
 
 		case UserActionAPI.methods.disableNextPiece: return 'Disabling next piece'
-		case UserActionAPI.methods.toggleSegmentLineArgument: return 'Toggling SegmentLine-Argument'
+		case UserActionAPI.methods.togglePartArgument: return 'Toggling Part-Argument'
 		case UserActionAPI.methods.pieceTakeNow: return 'Taking Piece'
 
 		case UserActionAPI.methods.segmentAdLibLineItemStart: return 'Starting AdLib Item'

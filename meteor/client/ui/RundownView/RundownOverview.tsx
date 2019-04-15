@@ -5,17 +5,17 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, extendMandadory } from '../../../lib/lib'
-import { SegmentLineUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RundownTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { SegmentLineExtended } from '../../../lib/Rundown'
-import { SegmentLine } from '../../../lib/collections/SegmentLines'
+import { PartExtended } from '../../../lib/Rundown'
+import { Part } from '../../../lib/collections/Parts'
 
 interface SegmentUi extends Segment {
-	items: Array<SegmentLineUi>
+	items: Array<PartUi>
 }
 
 interface ISegmentPropsHeader {
@@ -26,8 +26,8 @@ interface ISegmentPropsHeader {
 	segmentStartsAt?: TimeMap
 }
 
-interface ISegmentLinePropsHeader {
-	segmentLine: SegmentLineUi
+interface IPartPropsHeader {
+	part: PartUi
 	totalDuration: number
 	segmentLiveDurations?: TimeMap
 	segmentStartsAt?: TimeMap
@@ -40,28 +40,28 @@ interface TimeMap {
 	[key: string]: number
 }
 
-const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegmentLinePropsHeader) => {
+const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
 	return (
 		<ErrorBoundary>
-			<div className={ClassNames('rundown__overview__segment__segment-line', {
+			<div className={ClassNames('rundown__overview__segment__part', {
 				'live': props.isLive,
 				'next': props.isNext,
 
-				'has-played': (props.segmentLine.startedPlayback && (props.segmentLine.getLastStartedPlayback() || 0) > 0 && (props.segmentLine.duration || 0) > 0)
+				'has-played': (props.part.startedPlayback && (props.part.getLastStartedPlayback() || 0) > 0 && (props.part.duration || 0) > 0)
 			})}
 				style={{
-					'width': (((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0)) / (props.segmentDuration || 0)) * 100) + '%'
+					'width': (((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.part._id] || 0, props.part.duration || props.part.expectedDuration || 0)) / (props.segmentDuration || 0)) * 100) + '%'
 				}}
 			>
 				{ props.isNext &&
-					<div className='rundown__overview__segment__segment-line__next-line'>
+					<div className='rundown__overview__segment__part__next-line'>
 					</div>
 				}
 				{ props.isLive &&
-					<div className='rundown__overview__segment__segment-line__live-line'
+					<div className='rundown__overview__segment__part__live-line'
 						style={{
-							'left': (((getCurrentTime() - (props.segmentLine.getLastStartedPlayback() || 0)) /
-								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%'
+							'left': (((getCurrentTime() - (props.part.getLastStartedPlayback() || 0)) /
+								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.part._id] || 0, props.part.duration || props.part.expectedDuration || 0))) * 100) + '%'
 						}}>
 					</div>
 				}
@@ -75,31 +75,31 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 
 	return props.segment.items && (
 		<div className={ClassNames('rundown__overview__segment', {
-			'next': props.segment.items.find((i) => i._id === props.rundown.nextSegmentLineId) ? true : false,
-			'live': props.segment.items.find((i) => i._id === props.rundown.currentSegmentLineId) ? true : false
+			'next': props.segment.items.find((i) => i._id === props.rundown.nextPartId) ? true : false,
+			'live': props.segment.items.find((i) => i._id === props.rundown.currentPartId) ? true : false
 		})} style={{
 			'width': ((segmentDuration || 0) / props.totalDuration * 100) + '%'
 		}}>
 			{ props.segment.items.map((item, index) => {
 				return (
-					<SegmentLineOverview segmentLine={item}
+					<PartOverview part={item}
 						key={item._id}
 						totalDuration={props.totalDuration}
 						segmentLiveDurations={props.segmentLiveDurations}
 						segmentStartsAt={props.segmentStartsAt}
-						isLive={props.rundown.currentSegmentLineId === item._id}
-						isNext={props.rundown.nextSegmentLineId === item._id}
+						isLive={props.rundown.currentPartId === item._id}
+						isNext={props.rundown.nextPartId === item._id}
 						segmentDuration={segmentDuration}
 						 />
 				)
 			}) }
 			{ props.segment.name &&
-				<div className='rundown__overview__segment__segment-line__label' style={{
+				<div className='rundown__overview__segment__part__label' style={{
 					'maxWidth': '100%'
 				}}>
 					{props.segment.name}
 					{segmentDuration && _.isNumber(segmentDuration) &&
-						<span className='rundown__overview__segment__segment-line__label__duration'>{RundownUtils.formatDiffToTimecode(segmentDuration, false, false, false, false, true)}</span>
+						<span className='rundown__overview__segment__part__label__duration'>{RundownUtils.formatDiffToTimecode(segmentDuration, false, false, false, false, true)}</span>
 					}
 				</div>
 			}
@@ -127,15 +127,15 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 	if (rundown) {
 		segments = _.map(rundown.getSegments(), (segment) => {
 			return extendMandadory<Segment, SegmentUi>(segment, {
-				items: _.map(segment.getSegmentLines(), (sl) => {
-					let sle = extendMandadory<SegmentLine, SegmentLineExtended>(sl, {
+				items: _.map(segment.getParts(), (part) => {
+					let sle = extendMandadory<Part, PartExtended>(part, {
 						items: [],
 						renderedDuration: 0,
 						startsAt: 0,
 						willProbablyAutoNext: false
 					})
 
-					return extendMandadory<SegmentLineExtended, SegmentLineUi>(sle, {})
+					return extendMandadory<PartExtended, PartUi>(sle, {})
 				})
 			})
 		})
@@ -158,9 +158,9 @@ class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOver
 								segment={item}
 								key={item._id}
 								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.rundown.expectedDuration || 1)}
-								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}}
+								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
 								rundown={this.props.rundown}
-								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.segmentLineStartsAt) || {}}
+								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
 								/>
 						}
 					})

@@ -16,7 +16,7 @@ export namespace UserActionAPI {
 		'reloadData' 							= 'userAction.reloadData',
 
 		'disableNextPiece'			= 'userAction.disableNextPiece',
-		'toggleSegmentLineArgument'				= 'userAction.toggleSegmentLineArgument',
+		'togglePartArgument'				= 'userAction.togglePartArgument',
 		'pieceTakeNow'				= 'userAction.pieceTakeNow',
 		'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
 
@@ -32,7 +32,7 @@ export namespace UserActionAPI {
 		'saveEvaluation' 						= 'userAction.saveEvaluation',
 
 		// 'rundownStoriesMoved'						= 'userAction.rundownStoriesMoved',
-		// 'segmentLinePlaybackStartedCallback'	= 'userAction.segmentLinePlaybackStartedCallback',
+		// 'partPlaybackStartedCallback'	= 'userAction.partPlaybackStartedCallback',
 		// 'piecePlaybackStartedCallback'= 'userAction.piecePlaybackStartedCallback',
 
 		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',

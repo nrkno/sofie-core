@@ -10,15 +10,15 @@ import { RundownAPI } from '../api/rundown'
 import { checkPieceContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
 import {
-	IBlueprintSegmentLineDB,
-	SegmentLineHoldMode,
+	IBlueprintPartDB,
+	PartHoldMode,
 	BlueprintRuntimeArguments,
-	IBlueprintSegmentLineDBTimings,
+	IBlueprintPartDBTimings,
 } from 'tv-automation-sofie-blueprints-integration'
-import { SegmentLineNote, NoteType } from '../api/notes'
+import { PartNote, NoteType } from '../api/notes'
 
 /** A "Line" in NRK Lingo. */
-export interface DBSegmentLine extends IBlueprintSegmentLineDB {
+export interface DBPart extends IBlueprintPartDB {
 	/** Position inside the segment */
 	_rank: number
 
@@ -27,45 +27,45 @@ export interface DBSegmentLine extends IBlueprintSegmentLineDB {
 
 	status?: string
 
-	/** Whether the sl has started playback (the most recent time it was played).
+	/** Whether the part has started playback (the most recent time it was played).
 	 * This is reset each time setAsNext is used.
 	 * This is set from a callback from the playout gateway
 	 */
 	startedPlayback?: boolean
-	/** Whether the sl has stopped playback (the most recent time it was played & stopped).
+	/** Whether the part has stopped playback (the most recent time it was played & stopped).
 	 * This is set from a callback from the playout gateway
 	 */
 	stoppedPlayback?: boolean
 
-	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds.
-	 * This is set when Take:ing the next segmentLine
+	/** The time the system played back this part, null if not yet finished playing, in milliseconds.
+	 * This is set when Take:ing the next part
 	 */
 	duration?: number
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<SegmentLineNote>
-	/** if the segmentLine is inserted after another (for adlibbing) */
-	afterSegmentLine?: string
-	/** if the segmentLine was dunamically inserted (adlib) */
+	notes?: Array<PartNote>
+	/** if the part is inserted after another (for adlibbing) */
+	afterPart?: string
+	/** if the part was dunamically inserted (adlib) */
 	dynamicallyInserted?: boolean
 
-	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an SL */
+	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an part */
 	runtimeArguments?: BlueprintRuntimeArguments
-	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
+	/** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
 	dirty?: boolean
 }
-export interface SegmentLineTimings extends IBlueprintSegmentLineDBTimings {
-	// TODO: remove these, as they are duplicates with IBlueprintSegmentLineDBTimings
+export interface PartTimings extends IBlueprintPartDBTimings {
+	// TODO: remove these, as they are duplicates with IBlueprintPartDBTimings
 
-	/** Point in time the SegmentLine stopped playing (ie the time of the playout) */
+	/** Point in time the Part stopped playing (ie the time of the playout) */
 	stoppedPlayback: Array<Time>,
-	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
+	/** Point in time the Part was set as Next (ie the time of the user action) */
 	next: Array<Time>,
 	/** The playback offset that was set for the last take */
 	playOffset: Array<Time>
 }
 
-export class SegmentLine implements DBSegmentLine {
+export class Part implements DBPart {
 	public _id: string
 	public _rank: number
 	public title: string
@@ -89,10 +89,10 @@ export class SegmentLine implements DBSegmentLine {
 	public duration?: number
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
-	public timings?: SegmentLineTimings
-	public holdMode?: SegmentLineHoldMode
-	public notes?: Array<SegmentLineNote>
-	public afterSegmentLine?: string
+	public timings?: PartTimings
+	public holdMode?: PartHoldMode
+	public notes?: Array<PartNote>
+	public afterPart?: string
 	public dirty?: boolean
 
 	public runtimeArguments?: BlueprintRuntimeArguments
@@ -101,7 +101,7 @@ export class SegmentLine implements DBSegmentLine {
 	public classes?: Array<string>
 	public classesForNext?: Array<string>
 
-	constructor (document: DBSegmentLine) {
+	constructor (document: DBPart) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
@@ -118,7 +118,7 @@ export class SegmentLine implements DBSegmentLine {
 		return Pieces.find(
 			_.extend({
 				rundownId: this.rundownId,
-				segmentLineId: this._id
+				partId: this._id
 			}, selector),
 			_.extend({
 				sort: {_rank: 1}
@@ -129,13 +129,13 @@ export class SegmentLine implements DBSegmentLine {
 		return this.getPieces()
 	}
 
-	getSegmentLinesAdLibItems (selector?: MongoSelector<Piece>, options?: FindOptions) {
+	getPartsAdLibItems (selector?: MongoSelector<Piece>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(
 			_.extend({
 				rundownId: this.rundownId,
-				segmentLineId: this._id
+				partId: this._id
 			}, selector),
 			_.extend({
 				sort: { _rank: 1 }
@@ -169,8 +169,8 @@ export class SegmentLine implements DBSegmentLine {
 		)
 
 	}
-	getNotes (runtimeNotes?: boolean): Array<SegmentLineNote> {
-		let notes: Array<SegmentLineNote> = []
+	getNotes (runtimeNotes?: boolean): Array<PartNote> {
+		let notes: Array<PartNote> = []
 		notes = notes.concat(this.notes || [])
 
 		if (runtimeNotes) {
@@ -178,13 +178,13 @@ export class SegmentLine implements DBSegmentLine {
 			const rundown = this.getRundown()
 			const si = rundown && rundown.getStudioInstallation()
 			const showStyleBase = rundown && rundown.getShowStyleBase()
-			const slLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+			const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
 			_.each(items, (item) => {
 				// TODO: check statuses (like media availability) here
 
-				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
-					const sl = slLookup[item.sourceLayerId]
-					const st = checkPieceContentStatus(item, sl, si ? si.config : [])
+				if (partLookup && item.sourceLayerId && partLookup[item.sourceLayerId]) {
+					const part = partLookup[item.sourceLayerId]
+					const st = checkPieceContentStatus(item, part, si ? si.config : [])
 					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
@@ -192,7 +192,7 @@ export class SegmentLine implements DBSegmentLine {
 								name: 'Media Check',
 								rundownId: this.rundownId,
 								segmentId: this.segmentId,
-								segmentLineId: this._id,
+								partId: this._id,
 								pieceId: item._id
 							},
 							message: st.message || ''
@@ -219,17 +219,17 @@ export class SegmentLine implements DBSegmentLine {
 	}
 }
 
-export const SegmentLines: TransformedCollection<SegmentLine, DBSegmentLine>
-	= new Mongo.Collection<SegmentLine>('segmentLines', {transform: (doc) => applyClassToDocument(SegmentLine, doc) })
-registerCollection('SegmentLines', SegmentLines)
+export const Parts: TransformedCollection<Part, DBPart>
+	= new Mongo.Collection<Part>('parts', {transform: (doc) => applyClassToDocument(Part, doc) })
+registerCollection('Parts', Parts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		SegmentLines._ensureIndex({
+		Parts._ensureIndex({
 			rundownId: 1,
 			segmentId: 1,
 			_rank: 1
 		})
-		SegmentLines._ensureIndex({
+		Parts._ensureIndex({
 			rundownId: 1,
 			_rank: 1
 		})
