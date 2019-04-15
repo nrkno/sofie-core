@@ -20,7 +20,7 @@ import Settings from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
-import { ActiveROView } from './ActiveROView'
+import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
 import { NymansPlayground } from './NymansPlayground'
@@ -100,11 +100,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route exact path='/' component={RundownList} />
 							<Route path='/rundowns' component={RundownList} />
 							<Route path='/rundown/:rundownId' component={RundownView} />
-							<Route path='/activeRundown/:studioId' component={ActiveROView} />
+							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
-							{/* <Route path='/activeRundown' component={ActiveROView} /> */}
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
-							{/* <Route path='/countdowns/presenter' component={ClockView} /> */}
 							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />

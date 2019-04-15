@@ -29,7 +29,7 @@ interface ITrackedProps {
 interface IState {
 	subsReady: boolean
 }
-export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
 	let studioId = objectPathGet(props, 'match.params.studioId')
 	let studio
@@ -47,7 +47,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		studio,
 		studioId
 	}
-})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	constructor (props) {
 		super(props)
@@ -121,7 +121,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 			)
 		} else {
 			if (this.props.rundown) {
-				return <RundownView rundownId={this.props.rundown._id} inActiveROView={true} />
+				return <RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {

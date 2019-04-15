@@ -17,7 +17,7 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { Methods, setMeteorMethods } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
+import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprints } from './cache'
 
 export function insertBlueprint (type?: BlueprintManifestType, name?: string): string {
@@ -91,7 +91,7 @@ function uploadBlueprint (blueprintId: string, body: string, blueprintName: stri
 	parseVersion(blueprintManifest.blueprintVersion)
 	parseVersion(blueprintManifest.integrationVersion)
 	parseVersion(blueprintManifest.TSRVersion)
-	parseVersion(blueprintManifest.minimumCoreVersion)
+	parseRange(blueprintManifest.minimumCoreVersion)
 
 	const existing = Blueprints.findOne(newBlueprint._id)
 	if (existing && existing.blueprintType && existing.blueprintType !== newBlueprint.blueprintType) {

@@ -25,7 +25,7 @@ interface INamePropsHeader extends IPropsHeader {
 	partSlug: string
 }
 
-export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) => {
+export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 	let items = Pieces.find({ partId: props.segmentItemId }).fetch()
 
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
@@ -80,7 +80,7 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 	}
 })
 
-export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
+export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
 	let items = Pieces.find({ partId: props.segmentItemId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)

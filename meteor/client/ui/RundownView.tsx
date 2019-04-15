@@ -106,7 +106,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 
 interface ITimingWarningProps {
 	rundown: Rundown
-	inActiveROView?: boolean
+	inActiveRundownView?: boolean
 	studioMode: boolean
 	oneMinuteBeforeAction: (e: Event) => void
 }
@@ -139,7 +139,7 @@ const WarningDisplay = translate()(timer(5000)(
 				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.rundown.expectedStart &&
 				// but it's not horribly in the past
 				getCurrentTime() < this.props.rundown.expectedStart + (this.props.rundown.expectedDuration || 60 * 60 * 1000) &&
-				!this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+				!this.props.inActiveRundownView && !this.state.plannedStartCloseShown) {
 
 				this.setState({
 					plannedStartCloseShow: true,
@@ -318,7 +318,7 @@ interface IRundownHeaderProps {
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
-	inActiveROView?: boolean
+	inActiveRundownView?: boolean
 }
 
 interface IRundownHeaderState {
@@ -891,7 +891,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				}}>
 					<WarningDisplay
 						studioMode={this.props.studioMode}
-						inActiveROView={this.props.inActiveROView}
+						inActiveRundownView={this.props.inActiveRundownView}
 						rundown={this.props.rundown}
 						oneMinuteBeforeAction={this.resetAndActivateRundown}
 					/>
@@ -933,7 +933,7 @@ interface IProps {
 		}
 	}
 	rundownId?: string
-	inActiveROView?: boolean
+	inActiveRundownView?: boolean
 }
 
 interface IState {
@@ -1612,7 +1612,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
-									inActiveROView={this.props.inActiveROView} />
+									inActiveRundownView={this.props.inActiveRundownView} />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu
