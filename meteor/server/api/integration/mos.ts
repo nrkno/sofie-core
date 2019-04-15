@@ -679,10 +679,11 @@ export namespace MosIntegration {
 		logger.debug(rundown)
 		handleRundownData(rundown, peripheralDevice, 'rundownReplace')
 	}
-	export function mosRundownDelete (id: string, token: string, rundownId: MOS.MosString128, force?: boolean) {
+	export function mosRundownDelete (id: string, token: string, rundownIdStr: string, force?: boolean) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRundownDelete ' + rundownId.toString())
+		logger.info('mosRundownDelete ' + rundownIdStr)
 
+		const rundownId = new MOS.MosString128(rundownIdStr)
 		let rundown = getRO(rundownId)
 		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)

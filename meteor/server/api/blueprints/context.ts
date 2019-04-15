@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { getHash, formatDateAsTimecode, formatDurationAsTimecode } from '../../../lib/lib'
-import { PartNote, PartNoteType, Part, DBPart } from '../../../lib/collections/Parts'
+import { Part, DBPart } from '../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
 import {
@@ -33,6 +33,7 @@ import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../../lib/collections/RundownDataCache'
 import { Pieces } from '../../../lib/collections/Pieces'
+import { PartNote, NoteType } from '../../../lib/api/notes'
 
 /** Common */
 
@@ -103,7 +104,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		check(message, String)
 		logger.error('Error from blueprint: ' + message)
 		this._pushNote(
-			PartNoteType.ERROR,
+			NoteType.ERROR,
 			message
 		)
 		throw new Meteor.Error(500, message)
@@ -112,7 +113,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	warning (message: string) {
 		check(message, String)
 		this._pushNote(
-			PartNoteType.WARNING,
+			NoteType.WARNING,
 			message
 		)
 	}
@@ -126,7 +127,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		if (this._partId) ids.push('partId: ' + this._partId)
 		return ids.join(',')
 	}
-	private _pushNote (type: PartNoteType, message: string) {
+	private _pushNote (type: NoteType, message: string) {
 		if (this.handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
@@ -139,7 +140,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 				message: message
 			})
 		} else {
-			if (type === PartNoteType.WARNING) {
+			if (type === NoteType.WARNING) {
 				logger.warn(`Warning from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
 			} else {
 				logger.error(`Error from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)

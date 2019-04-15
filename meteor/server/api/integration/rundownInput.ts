@@ -81,7 +81,7 @@ function mutateRundown (rundown: any): IngestRundown {
 	}
 }
 
-function rundownId (studioId: string, externalId: string) {
+function getRundownId (studioId: string, externalId: string) {
 	return getHash(`${studioId}_${externalId}`)
 }
 function getSegmentId (rundownId: string, segmentExternalId: string) {
@@ -124,7 +124,7 @@ function getStudio (peripheralDevice: PeripheralDevice): Studio {
 function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
 	const studio = getStudio(peripheralDevice)
 
-	const rundownId = rundownId(studio._id, ingestRundown.externalId)
+	const rundownId = getRundownId(studio._id, ingestRundown.externalId)
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!canBeUpdated(existingDbRundown)) return
 
@@ -531,7 +531,7 @@ function loadCachedSegmentData (rundownId: string, segmentId: string): IngestSeg
 
 function getStudioAndRO (peripheralDevice: PeripheralDevice, externalId: string) {
 	const studio = getStudio(peripheralDevice)
-	const rundown = Rundowns.findOne(rundownId(studio._id, externalId))
+	const rundown = Rundowns.findOne(getRundownId(studio._id, externalId))
 	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
 	return {

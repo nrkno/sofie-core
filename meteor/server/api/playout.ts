@@ -56,9 +56,9 @@ import { logger } from '../logging'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
+	getPartGroupId,
+	getPartFirstObjectId,
 	getPieceGroupId,
-	getSlGroupId,
-	getSlFirstObjectId,
 	getPieceFirstObjectId,
 	IConfigItem,
 	LookaheadMode,
@@ -500,16 +500,16 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
-	function getPreviousPart (rundown: DBRundown, part: DBPart) {
+	function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
 		return Parts.findOne({
-			rundownId: rundown._id,
-			_rank: { $lt: part._rank }
+			rundownId: dbRundown._id,
+			_rank: { $lt: dbPart._rank }
 		}, { sort: { _rank: -1 } })
 	}
-	function refreshPart (rundown: DBRundown, part: DBPart) {
-		const rundown = new Rundown(rundown)
-		const story = rundown.fetchCache(CachePrefix.INGEST_PART + part._id)
-		const part = new Part(part)
+	function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
+		const rundown = new Rundown(dbRundown)
+		const story = rundown.fetchCache(CachePrefix.INGEST_PART + dbPart._id)
+		const part = new Part(dbPart)
 		updateStory(rundown, part, story)
 
 		const segment = part.getSegment()
@@ -518,7 +518,7 @@ export namespace ServerPlayoutAPI {
 			runPostProcessBlueprint(rundown, segment)
 		}
 
-		const prevLine = getPreviousPart(rundown, part)
+		const prevLine = getPreviousPart(dbRundown, part)
 		updateSourceLayerInfinitesAfterLine(rundown, prevLine)
 	}
 	function setNextPart (
@@ -1277,7 +1277,7 @@ export namespace ServerPlayoutAPI {
 
 		let showStyleBase = rundown.getShowStyleBase()
 		const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
-		if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
+		if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Piece "${pieceId}" is not a GRAPHICS item!`)
 
 		let newPiece = convertAdLibToSLineItem(piece, part, false)
 		if (newPiece.content && newPiece.content.timelineObjects) {
@@ -2391,7 +2391,7 @@ function partStoppedPlaying (rundownId: string, part: Part, stoppedPlayingTime: 
 
 function createPartGroup (part: Part, duration: number | string): TimelineObjGroupPart & TimelineObjRundown {
 	let partGrp = literal<TimelineObjGroupPart & TimelineObjRundown>({
-		_id: getSlGroupId(part),
+		_id: getPartGroupId(part),
 		id: '',
 		siId: '', // added later
 		rundownId: part.rundownId,
@@ -2420,7 +2420,7 @@ function createPartGroupFirstObject (
 	previousPart?: Part
 ): TimelineObjPartAbstract {
 	return literal<TimelineObjPartAbstract>({
-		_id: getSlFirstObjectId(part),
+		_id: getPartFirstObjectId(part),
 		id: '',
 		siId: '', // added later
 		rundownId: part.rundownId,
@@ -3211,7 +3211,7 @@ export function buildTimelineObjsForRundown (rundownData: RundownData, baselineI
 
 			if (previousPart.getLastStartedPlayback()) {
 				const prevSlOverlapDuration = calcSlKeepaliveDuration(previousPart, currentPart, true)
-				previousPartGroup = createPartGroup(previousPart, `#${getSlGroupId(currentPart)}.start + ${prevSlOverlapDuration} - #.start`)
+				previousPartGroup = createPartGroup(previousPart, `#${getPartGroupId(currentPart)}.start + ${prevSlOverlapDuration} - #.start`)
 				previousPartGroup.priority = -1
 				previousPartGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 					type: TriggerType.TIME_ABSOLUTE,
@@ -3231,7 +3231,7 @@ export function buildTimelineObjsForRundown (rundownData: RundownData, baselineI
 
 				// If autonext with an overlap, keep the previous line alive for the specified overlap
 				if (previousPart.autoNext && previousPart.autoNextOverlap) {
-					previousPartGroup.duration = `#${getSlGroupId(currentPart)}.start + ${previousPart.autoNextOverlap || 0} - #.start`
+					previousPartGroup.duration = `#${getPartGroupId(currentPart)}.start + ${previousPart.autoNextOverlap || 0} - #.start`
 				}
 
 				timelineObjs = timelineObjs.concat(prevObjs)
@@ -3253,7 +3253,7 @@ export function buildTimelineObjsForRundown (rundownData: RundownData, baselineI
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let item of currentInfiniteItems) {
 			const infiniteGroup = createPartGroup(currentPart, item.expectedDuration || 0)
-			infiniteGroup._id = getSlGroupId(item._id) + '_infinite'
+			infiniteGroup._id = getPartGroupId(item._id) + '_infinite'
 			infiniteGroup.priority = 1
 
 			const groupClasses: string[] = ['current_part']

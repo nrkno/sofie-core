@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
-import { MOS } from 'tv-automation-sofie-blueprints-integration'
 
 export interface RundownCacheBackup {
 	type: 'rundownCache'
@@ -33,7 +32,7 @@ export function restoreRundown (backup: RundownCacheBackup) {
 
 	// Delete the existing copy, to ensure this is a clean import
 	try {
-		Meteor.call(PeripheralDeviceAPI.methods.mosRundownDelete, id, token, new MOS.MosString128(rundownCreates[0].data.ID))
+		Meteor.call(PeripheralDeviceAPI.methods.mosRundownDelete, id, token, rundownCreates[0].data.ID)
 	} catch (e) {
 		// Ignore. likely doesnt exist
 	}

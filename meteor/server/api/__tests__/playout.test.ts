@@ -7,7 +7,7 @@ import { Part, DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 
 import { buildTimelineObjsForRundown } from '../playout'
-import { getSlGroupId, getSlFirstObjectId, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
+import { getPartGroupId, getPartFirstObjectId, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
 
@@ -129,12 +129,12 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(res).not.empty
 
 		// Not defined as no startedPlayback on a
-		const grpA = res.find(o => o._id === getSlGroupId('a'))
+		const grpA = res.find(o => o._id === getPartGroupId('a'))
 		expect(grpA).undefined
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
-		const objB = res.find(o => o._id === getSlFirstObjectId('b'))
+		const objB = res.find(o => o._id === getPartFirstObjectId('b'))
 		expect(objB).not.undefined
 	})
 
@@ -269,21 +269,21 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			'previous_' + getSlGroupId('a'),
+			'previous_' + getPartGroupId('a'),
 			'previous_' + getPieceGroupId('a_1'),
 			'previous_' + getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1')
 		].sort())
 
-		const grpA = res.find(o => o._id === 'previous_' + getSlGroupId('a'))
+		const grpA = res.find(o => o._id === 'previous_' + getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
-		expect(grpA.duration).eql(`#${getSlGroupId('b')}.start + 250 - #.start`)
+		expect(grpA.duration).eql(`#${getPartGroupId('b')}.start + 250 - #.start`)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
 		expect(grpB.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 5000 })
 		expect(grpB.duration).eql(0)
@@ -303,23 +303,23 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			'previous_' + getSlGroupId('a'),
+			'previous_' + getPartGroupId('a'),
 			'previous_' + getPieceGroupId('a_1'),
 			'previous_' + getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
-			getSlGroupId('c'),
-			getSlFirstObjectId('c')
+			getPartGroupId('c'),
+			getPartFirstObjectId('c')
 		].sort())
 
-		const grpA = res.find(o => o._id === 'previous_' + getSlGroupId('a'))
+		const grpA = res.find(o => o._id === 'previous_' + getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
-		expect(grpA.duration).eql(`#${getSlGroupId('b')}.start + 250 - #.start`)
+		expect(grpA.duration).eql(`#${getPartGroupId('b')}.start + 250 - #.start`)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
 		expect(grpB.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 5000 })
 		expect(grpB.duration).eql(4750)
@@ -329,9 +329,9 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(grpB1.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 0 })
 		expect(grpB1.duration).eql(0)
 
-		const grpC = res.find(o => o._id === getSlGroupId('c'))
+		const grpC = res.find(o => o._id === getPartGroupId('c'))
 		expect(grpC).not.undefined
-		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('b')}.end - 850` })
+		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('b')}.end - 850` })
 		expect(grpC.duration).eql(0)
 	})
 
@@ -344,25 +344,25 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			'previous_' + getSlGroupId('a'),
+			'previous_' + getPartGroupId('a'),
 			'previous_' + getPieceGroupId('a_1'),
 			'previous_' + getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans'),
-			getSlGroupId('c'),
-			getSlFirstObjectId('c')
+			getPartGroupId('c'),
+			getPartFirstObjectId('c')
 		].sort())
 
-		const grpA = res.find(o => o._id === 'previous_' + getSlGroupId('a'))
+		const grpA = res.find(o => o._id === 'previous_' + getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
-		expect(grpA.duration).eql(`#${getSlGroupId('b')}.start + 400 - #.start`)
+		expect(grpA.duration).eql(`#${getPartGroupId('b')}.start + 400 - #.start`)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
 		expect(grpB.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 5000 })
 		expect(grpB.duration).eql(5000)
@@ -377,9 +377,9 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(grpB1.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPieceGroupId('b_trans')}.start + 200` })
 		expect(grpB1.duration).eql(0)
 
-		const grpC = res.find(o => o._id === getSlGroupId('c'))
+		const grpC = res.find(o => o._id === getPartGroupId('c'))
 		expect(grpC).not.undefined
-		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('b')}.end - 500` })
+		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('b')}.end - 500` })
 		expect(grpC.duration).eql(0)
 	})
 
@@ -392,25 +392,25 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			'previous_' + getSlGroupId('a'),
+			'previous_' + getPartGroupId('a'),
 			'previous_' + getPieceGroupId('a_1'),
 			'previous_' + getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans'),
-			getSlGroupId('c'),
-			getSlFirstObjectId('c')
+			getPartGroupId('c'),
+			getPartFirstObjectId('c')
 		].sort())
 
-		const grpA = res.find(o => o._id === 'previous_' + getSlGroupId('a'))
+		const grpA = res.find(o => o._id === 'previous_' + getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
-		expect(grpA.duration).eql(`#${getSlGroupId('b')}.start + 500 - #.start`)
+		expect(grpA.duration).eql(`#${getPartGroupId('b')}.start + 500 - #.start`)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
 		expect(grpB.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 5000 })
 		expect(grpB.duration).eql(5000)
@@ -425,9 +425,9 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(grpB1.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPieceGroupId('b_trans')}.start + 200` })
 		expect(grpB1.duration).eql(0)
 
-		const grpC = res.find(o => o._id === getSlGroupId('c'))
+		const grpC = res.find(o => o._id === getPartGroupId('c'))
 		expect(grpC).not.undefined
-		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('b')}.end - 500` })
+		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('b')}.end - 500` })
 		expect(grpC.duration).eql(0)
 	})
 
@@ -440,25 +440,25 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			'previous_' + getSlGroupId('a'),
+			'previous_' + getPartGroupId('a'),
 			'previous_' + getPieceGroupId('a_1'),
 			'previous_' + getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans'),
-			getSlGroupId('c'),
-			getSlFirstObjectId('c')
+			getPartGroupId('c'),
+			getPartFirstObjectId('c')
 		].sort())
 
-		const grpA = res.find(o => o._id === 'previous_' + getSlGroupId('a'))
+		const grpA = res.find(o => o._id === 'previous_' + getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
-		expect(grpA.duration).eql(`#${getSlGroupId('b')}.start + 400 - #.start`)
+		expect(grpA.duration).eql(`#${getPartGroupId('b')}.start + 400 - #.start`)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
 		expect(grpB.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 5000 })
 		expect(grpB.duration).eql(4800)
@@ -473,9 +473,9 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(grpB1.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPieceGroupId('b_trans')}.start - 200` })
 		expect(grpB1.duration).eql(0)
 
-		const grpC = res.find(o => o._id === getSlGroupId('c'))
+		const grpC = res.find(o => o._id === getPartGroupId('c'))
 		expect(grpC).not.undefined
-		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('b')}.end - 500` })
+		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('b')}.end - 500` })
 		expect(grpC.duration).eql(0)
 	})
 
@@ -488,25 +488,25 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			'previous_' + getSlGroupId('a'),
+			'previous_' + getPartGroupId('a'),
 			'previous_' + getPieceGroupId('a_1'),
 			'previous_' + getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans'),
-			getSlGroupId('c'),
-			getSlFirstObjectId('c')
+			getPartGroupId('c'),
+			getPartFirstObjectId('c')
 		].sort())
 
-		const grpA = res.find(o => o._id === 'previous_' + getSlGroupId('a'))
+		const grpA = res.find(o => o._id === 'previous_' + getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
-		expect(grpA.duration).eql(`#${getSlGroupId('b')}.start + 600 - #.start`)
+		expect(grpA.duration).eql(`#${getPartGroupId('b')}.start + 600 - #.start`)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
 		expect(grpB.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 5000 })
 		expect(grpB.duration).eql(4800)
@@ -521,9 +521,9 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(grpB1.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPieceGroupId('b_trans')}.start - 200` })
 		expect(grpB1.duration).eql(0)
 
-		const grpC = res.find(o => o._id === getSlGroupId('c'))
+		const grpC = res.find(o => o._id === getPartGroupId('c'))
 		expect(grpC).not.undefined
-		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('b')}.end - 500` })
+		expect(grpC.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('b')}.end - 500` })
 		expect(grpC.duration).eql(0)
 	})
 
@@ -536,26 +536,26 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			getSlGroupId('a'),
-			getSlFirstObjectId('a'),
+			getPartGroupId('a'),
+			getPartFirstObjectId('a'),
 			getPieceGroupId('a_1'),
 			getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans')
 		].sort())
 
-		const grpA = res.find(o => o._id === getSlGroupId('a'))
+		const grpA = res.find(o => o._id === getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
 		expect(grpA.duration).eql(1670)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
-		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('a')}.end - 1070` })
+		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('a')}.end - 1070` })
 		expect(grpB.duration).eql(0)
 
 		const grpBTrans = res.find(o => o._id === getPieceGroupId('b_trans'))
@@ -578,26 +578,26 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			getSlGroupId('a'),
-			getSlFirstObjectId('a'),
+			getPartGroupId('a'),
+			getPartFirstObjectId('a'),
 			getPieceGroupId('a_1'),
 			getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans')
 		].sort())
 
-		const grpA = res.find(o => o._id === getSlGroupId('a'))
+		const grpA = res.find(o => o._id === getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
 		expect(grpA.duration).eql(1670)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
-		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('a')}.end - 1170` })
+		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('a')}.end - 1170` })
 		expect(grpB.duration).eql(0)
 
 		const grpBTrans = res.find(o => o._id === getPieceGroupId('b_trans'))
@@ -620,26 +620,26 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			getSlGroupId('a'),
-			getSlFirstObjectId('a'),
+			getPartGroupId('a'),
+			getPartFirstObjectId('a'),
 			getPieceGroupId('a_1'),
 			getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans')
 		].sort())
 
-		const grpA = res.find(o => o._id === getSlGroupId('a'))
+		const grpA = res.find(o => o._id === getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
 		expect(grpA.duration).eql(1670)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
-		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('a')}.end - 1070` })
+		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('a')}.end - 1070` })
 		expect(grpB.duration).eql(0)
 
 		const grpBTrans = res.find(o => o._id === getPieceGroupId('b_trans'))
@@ -662,26 +662,26 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
 			'mock_status',
-			getSlGroupId('a'),
-			getSlFirstObjectId('a'),
+			getPartGroupId('a'),
+			getPartFirstObjectId('a'),
 			getPieceGroupId('a_1'),
 			getPieceFirstObjectId('a_1'),
-			getSlGroupId('b'),
-			getSlFirstObjectId('b'),
+			getPartGroupId('b'),
+			getPartFirstObjectId('b'),
 			getPieceGroupId('b_1'),
 			getPieceFirstObjectId('b_1'),
 			getPieceGroupId('b_trans'),
 			getPieceFirstObjectId('b_trans')
 		].sort())
 
-		const grpA = res.find(o => o._id === getSlGroupId('a'))
+		const grpA = res.find(o => o._id === getPartGroupId('a'))
 		expect(grpA).not.undefined
 		expect(grpA.trigger).eql({ type: TriggerType.TIME_ABSOLUTE, value: 700 })
 		expect(grpA.duration).eql(1670)
 
-		const grpB = res.find(o => o._id === getSlGroupId('b'))
+		const grpB = res.find(o => o._id === getPartGroupId('b'))
 		expect(grpB).not.undefined
-		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getSlGroupId('a')}.end - 1270` })
+		expect(grpB.trigger).eql({ type: TriggerType.TIME_RELATIVE, value: `#${getPartGroupId('a')}.end - 1270` })
 		expect(grpB.duration).eql(0)
 
 		const grpBTrans = res.find(o => o._id === getPieceGroupId('b_trans'))

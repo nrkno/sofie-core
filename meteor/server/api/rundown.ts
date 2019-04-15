@@ -11,15 +11,9 @@ import {
 	getRank,
 	fetchAfter,
 	getCurrentTime,
-	getHash,
-	asyncCollectionUpdate,
-	waitForPromiseAll
+	getHash
 } from '../../lib/lib'
 import { logger } from '../logging'
-import {
-	postProcessPieces,
-	SegmentContext
-} from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RundownDataCache'
 import { updateStory, reloadRundown } from './integration/mos'
@@ -31,7 +25,6 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowS
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { PartNote, NoteType } from '../../lib/api/notes'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
@@ -360,7 +353,7 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// 	logger.error(e.stack ? e.stack : e.toString())
 	// 	// throw e
 	// 	notes = [{
-	// 		type: PartNoteType.ERROR,
+	// 		type: NoteType.ERROR,
 	// 		origin: {
 	// 			name: '',
 	// 			rundownId: context.rundown._id,
