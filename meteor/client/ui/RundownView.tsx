@@ -1072,7 +1072,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.subscribe('segmentLineItems', {
 			rundownId: rundownId
 		})
-		this.subscribe('segmentLineAdLibItems', {
+		this.subscribe('adLibPieces', {
 			rundownId: rundownId
 		})
 		this.autorun(() => {

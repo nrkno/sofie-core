@@ -3,24 +3,24 @@ import { SegmentLineItemGeneric } from './SegmentLineItems'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintSegmentLineAdLibItem, BaseContent } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 
-export interface SegmentLineAdLibItem extends SegmentLineItemGeneric, IBlueprintSegmentLineAdLibItem {
+export interface AdLibPiece extends SegmentLineItemGeneric, IBlueprintAdLibPiece {
 	expectedDuration: number | string
 
 	/** The object describing the item in detail */
-	content?: BaseContent // TODO: Temporary, should be put into IBlueprintSegmentLineAdLibItem
+	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
 	trigger: undefined
 	disabled: false
 }
 
-export const SegmentLineAdLibItems: TransformedCollection<SegmentLineAdLibItem, SegmentLineAdLibItem>
-	= new Mongo.Collection<SegmentLineAdLibItem>('segmentLineAdLibItems')
-registerCollection('SegmentLineAdLibItems', SegmentLineAdLibItems)
+export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece>
+	= new Mongo.Collection<AdLibPiece>('adLibPieces')
+registerCollection('AdLibPieces', AdLibPieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		SegmentLineAdLibItems._ensureIndex({
+		AdLibPieces._ensureIndex({
 			rundownId: 1,
 			segmentLineId: 1,
 			_rank: 1

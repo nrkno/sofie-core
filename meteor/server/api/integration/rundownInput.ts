@@ -43,10 +43,10 @@ import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
-import { postProcessSegmentLineBaselineItems, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../blueprints/postProcess'
+import { postProcessSegmentLineBaselineItems, postProcessAdLibPieces, postProcessSegmentLineItems } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IngestDataCacheObj, IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { updateSourceLayerInfinitesAfterLine } from '../playout'
 const PackageInfo = require('../../../package.json')
@@ -222,7 +222,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
-	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
+	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibItems, {
 		rundownId: dbRundown._id
 	}, adlibItems)
@@ -236,7 +236,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 	const segments: DBSegment[] = []
 	const segmentLines: DBSegmentLine[] = []
 	const segmentPieces: SegmentLineItem[] = []
-	const adlibPieces: SegmentLineAdLibItem[] = []
+	const adlibPieces: AdLibPiece[] = []
 
 	const blueprint = getBlueprintOfRundown(dbRundown)
 
@@ -294,18 +294,18 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 		}
 	})
 
-	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 		rundownId: rundownId,
 	}, adlibPieces, {
-		afterInsert (segmentLineAdLibItem) {
-			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-			logger.debug(segmentLineAdLibItem)
+		afterInsert (adLibPiece) {
+			logger.debug('inserted adLibPiece ' + adLibPiece._id)
+			logger.debug(adLibPiece)
 		},
-		afterUpdate (segmentLineAdLibItem) {
-			logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+		afterUpdate (adLibPiece) {
+			logger.debug('updated segmentLineItem ' + adLibPiece._id)
 		},
-		afterRemove (segmentLineAdLibItem) {
-			logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+		afterRemove (adLibPiece) {
+			logger.debug('deleted segmentLineItem ' + adLibPiece._id)
 		}
 	})
 }
@@ -373,7 +373,7 @@ function generateSegmentContents (
 
 	const segmentLines: DBSegmentLine[] = []
 	const segmentPieces: SegmentLineItem[] = []
-	const adlibPieces: SegmentLineAdLibItem[] = []
+	const adlibPieces: AdLibPiece[] = []
 
 	// SegmentLines
 	for (let blueprintPart of knownParts) {
@@ -397,7 +397,7 @@ function generateSegmentContents (
 		const pieces = postProcessSegmentLineItems(context, blueprintPart.pieces, '', part._id) // TODO - blueprint id?
 		segmentPieces.push(...pieces)
 
-		const adlibs = postProcessSegmentLineAdLibItems(context, blueprintPart.adLibPieces, '', part._id) // TODO - blueprint id?
+		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, '', part._id) // TODO - blueprint id?
 		adlibPieces.push(...adlibs)
 	}
 
@@ -466,19 +466,19 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 		}
 	})
 
-	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 		rundownId: rundown._id,
 		segmentLineId: { $in: segmentLines.map(p => p._id) },
 	}, adlibPieces, {
-		afterInsert (segmentLineAdLibItem) {
-			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-			logger.debug(segmentLineAdLibItem)
+		afterInsert (adLibPiece) {
+			logger.debug('inserted adLibPiece ' + adLibPiece._id)
+			logger.debug(adLibPiece)
 		},
-		afterUpdate (segmentLineAdLibItem) {
-			logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+		afterUpdate (adLibPiece) {
+			logger.debug('updated segmentLineItem ' + adLibPiece._id)
 		},
-		afterRemove (segmentLineAdLibItem) {
-			logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+		afterRemove (adLibPiece) {
+			logger.debug('deleted segmentLineItem ' + adLibPiece._id)
 		}
 	})
 

@@ -1,8 +1,8 @@
-import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 
 // Setup rules:
-SegmentLineAdLibItems.allow({
-	insert (userId: string, doc: SegmentLineAdLibItem): boolean {
+AdLibPieces.allow({
+	insert (userId: string, doc: AdLibPiece): boolean {
 		return true // TODO: Decide rules
 	},
 	update (userId, doc, fields, modifier) {

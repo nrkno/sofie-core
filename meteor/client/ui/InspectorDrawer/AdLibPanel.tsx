@@ -6,7 +6,7 @@ import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -28,9 +28,9 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
-	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi, queue: boolean, e: ExtendedKeyboardEvent) => void
-	selectedItem: SegmentLineAdLibItemUi | undefined
+	onSelectAdLib: (aSLine: AdLibPieceUi) => void
+	onToggleAdLib: (aSLine: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
+	selectedItem: AdLibPieceUi | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 	showStyleBase: ShowStyleBase
@@ -115,7 +115,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 								if (item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) return true
 								return false
 							}).
-							map((item: SegmentLineAdLibItemUi) => {
+							map((item: AdLibPieceUi) => {
 								return (
 									<AdLibListItem
 										key={item._id}
@@ -216,7 +216,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	}
 })
 
-export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
+export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
 	isGlobal?: boolean
 	isHidden?: boolean
@@ -225,7 +225,7 @@ export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 export interface SegmentUi extends Segment {
 	/** Segment line items belonging to this segment line */
 	segLines: Array<SegmentLine>
-	items?: Array<SegmentLineAdLibItemUi>
+	items?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
 }
@@ -243,7 +243,7 @@ interface IProps {
 }
 
 interface IState {
-	selectedItem: SegmentLineAdLibItem | undefined
+	selectedItem: AdLibPiece | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
@@ -271,7 +271,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	const uiSegments = props.rundown ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
-		let segmentAdLibItems: Array<SegmentLineAdLibItem> = []
+		let segmentAdLibItems: Array<AdLibPiece> = []
 		seg.segLines.forEach((segLine) => {
 			if (segLine._id === props.rundown.currentSegmentLineId) {
 				seg.isLive = true
@@ -329,7 +329,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe('segmentLines', {
 			rundownId: this.props.rundown._id
 		})
-		this.subscribe('segmentLineAdLibItems', {
+		this.subscribe('adLibPieces', {
 			rundownId: this.props.rundown._id
 		})
 		this.subscribe('rundownBaselineAdLibItems', {
@@ -412,14 +412,14 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	onSelectAdLib = (aSLine: SegmentLineAdLibItemUi) => {
+	onSelectAdLib = (aSLine: AdLibPieceUi) => {
 		// console.log(aSLine)
 		this.setState({
 			selectedItem: aSLine
 		})
 	}
 
-	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi, queue: boolean, e: any) => {
+	onToggleAdLib = (aSLine: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
 		if (aSLine.invalid) {

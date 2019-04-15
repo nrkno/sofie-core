@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
-import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { extendMandadory, getHash } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
@@ -12,7 +12,7 @@ import { Meteor } from 'meteor/meteor'
 import {
 	TimelineObjectCoreExt,
 	IBlueprintSegmentLineItem,
-	IBlueprintSegmentLineAdLibItem,
+	IBlueprintAdLibPiece,
 	RundownContext as IRundownContext,
 	RundownContext,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -54,11 +54,11 @@ export function postProcessSegmentLineItems (innerContext: IRundownContext, segm
 	})
 }
 
-export function postProcessSegmentLineAdLibItems (innerContext: IRundownContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
+export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: string, segmentLineId?: string): AdLibPiece[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
-		let item: SegmentLineAdLibItem = {
+	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
+		let item: AdLibPiece = {
 			_id: innerContext.getHashId(`${blueprintId}_${segmentLineId}_adlib_sli_${i++}`),
 			rundownId: innerContext.rundown._id,
 			segmentLineId: segmentLineId,

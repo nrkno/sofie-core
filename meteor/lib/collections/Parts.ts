@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { Rundowns } from './Rundowns'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
-import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
+import { AdLibPieces } from './AdLibPieces'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
 import { RundownAPI } from '../api/rundown'
@@ -132,7 +132,7 @@ export class SegmentLine implements DBSegmentLine {
 	getSegmentLinesAdLibItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
-		return SegmentLineAdLibItems.find(
+		return AdLibPieces.find(
 			_.extend({
 				rundownId: this.rundownId,
 				segmentLineId: this._id

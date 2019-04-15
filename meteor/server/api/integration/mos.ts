@@ -39,9 +39,9 @@ import {
 	StudioInstallation
 } from '../../../lib/collections/StudioInstallations'
 import {
-	SegmentLineAdLibItem,
-	SegmentLineAdLibItems
-} from '../../../lib/collections/SegmentLineAdLibItems'
+	AdLibPiece,
+	AdLibPieces
+} from '../../../lib/collections/AdLibPieces'
 import {
 	ShowStyleBases
 } from '../../../lib/collections/ShowStyleBases'
@@ -69,7 +69,7 @@ import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 import { loadShowStyleBlueprints } from '../blueprints/cache'
-import { postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
+import { postProcessAdLibPieces, postProcessSegmentLineItems, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
 import { ShowStyleContext, RundownContext } from '../blueprints/context'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
@@ -247,14 +247,14 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 
 	let resultSl: IBlueprintSegmentLine | undefined = undefined
 	let resultSli: SegmentLineItem[] | undefined = undefined
-	let resultAdlibSli: SegmentLineAdLibItem[] | undefined = undefined
+	let resultAdlibSli: AdLibPiece[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadShowStyleBlueprints(showStyleBase)
 		let result = blueprints.getSegmentLine(context, story) // TODO: refactor this
 
  		if (result) {
-			resultAdlibSli = postProcessSegmentLineAdLibItems(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)
+			resultAdlibSli = postProcessAdLibPieces(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)
 			resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, result.segmentLine.typeVariant, segmentLine._id)
 			resultSl = result.segmentLine
 		}
@@ -344,30 +344,30 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 		})
 	}
 	if (resultAdlibSli) {
-		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 			rundownId: rundown._id,
 			segmentLineId: segmentLine._id,
 			// fromPostProcess: { $ne: true }, // do not affect postProcess items
 		}, resultAdlibSli || [], {
-			afterInsert (segmentLineAdLibItem) {
-				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-				logger.debug(segmentLineAdLibItem)
+			afterInsert (adLibPiece) {
+				logger.debug('inserted adLibPiece ' + adLibPiece._id)
+				logger.debug(adLibPiece)
 				// @todo: have something here?
 				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
 				// afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
-			afterUpdate (segmentLineAdLibItem) {
-				logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+			afterUpdate (adLibPiece) {
+				logger.debug('updated segmentLineItem ' + adLibPiece._id)
 				// @todo: have something here?
 				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
 				// 	afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
-			afterRemove (segmentLineAdLibItem) {
-				logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+			afterRemove (adLibPiece) {
+				logger.debug('deleted segmentLineItem ' + adLibPiece._id)
 				// @todo: handle this:
 				// afterRemoveSegmentLineItem(segmentLine._id)
 			}
@@ -577,7 +577,7 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
-	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
+	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibItems, {
 		rundownId: dbRundown._id
 	}, adlibItems)

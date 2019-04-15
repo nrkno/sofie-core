@@ -5,7 +5,7 @@ import { check, Match } from 'meteor/check'
 import { Rundowns, Rundown, RundownHoldState, RundownData, DBRundown } from '../../lib/collections/Rundowns'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { RundownBaselineItems, RundownBaselineItem } from '../../lib/collections/RundownBaselineItems'
 import { getCurrentTime,
 	saveIntoDb,
@@ -1330,7 +1330,7 @@ export namespace ServerPlayoutAPI {
 		if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
 		}
-		let adLibItem = SegmentLineAdLibItems.findOne({
+		let adLibItem = AdLibPieces.findOne({
 			_id: slaiId,
 			rundownId: rundownId
 		})
@@ -1422,7 +1422,7 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioInstallationId)
 		}
 	})
-	export function adlibQueueInsertSegmentLine (rundown: Rundown, slId: string, sladli: SegmentLineAdLibItem) {
+	export function adlibQueueInsertSegmentLine (rundown: Rundown, slId: string, sladli: AdLibPiece) {
 
 		// let segmentLines = rundown.getSegmentLines()
 		logger.info('adlibQueueInsertSegmentLine')
@@ -2288,10 +2288,10 @@ const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOn
 	updateSourceLayerInfinitesAfterLine(rundown, segLine)
 })
 
-function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLineAdLibItem {
+function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): AdLibPiece {
 	// const oldId = segmentLineItem._id
 	const newId = Random.id()
-	const newAdLibItem = literal<SegmentLineAdLibItem>(_.extend(
+	const newAdLibItem = literal<AdLibPiece>(_.extend(
 		segmentLineItem,
 		{
 			_id: newId,
@@ -2330,7 +2330,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 	return newAdLibItem
 }
 
-function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineItem, segmentLine: SegmentLine, queue: boolean): SegmentLineItem {
+function convertAdLibToSLineItem (adLibItem: AdLibPiece | SegmentLineItem, segmentLine: SegmentLine, queue: boolean): SegmentLineItem {
 	// const oldId = adLibItem._id
 	const newId = Random.id()
 	const newSLineItem = literal<SegmentLineItem>(_.extend(

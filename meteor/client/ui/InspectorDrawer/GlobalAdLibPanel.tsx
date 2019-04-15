@@ -5,7 +5,7 @@ import { translate } from 'react-i18next'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
@@ -30,13 +30,13 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 interface IListViewPropsHeader {
-	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	onSelectAdLib: (aSLine: AdLibPieceUi) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi, queue: boolean, e: any) => void
-	selectedItem: SegmentLineAdLibItemUi | undefined
+	onToggleAdLib: (aSLine: AdLibPieceUi, queue: boolean, e: any) => void
+	selectedItem: AdLibPieceUi | undefined
 	filter: string | undefined
 	showStyleBase: ShowStyleBase
-	rundownAdLibs: Array<SegmentLineAdLibItemUi>
+	rundownAdLibs: Array<AdLibPieceUi>
 }
 
 interface IListViewStateHeader {
@@ -227,7 +227,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	}
 })
 
-export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
+export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
 	isGlobal?: boolean
 	isHidden?: boolean
@@ -236,7 +236,7 @@ export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 export interface SegmentUi extends Segment {
 	/** Segment line items belonging to this segment line */
 	segLines: Array<SegmentLine>
-	items?: Array<SegmentLineAdLibItemUi>
+	items?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
 }
@@ -253,14 +253,14 @@ interface IProps {
 }
 
 interface IState {
-	selectedItem: SegmentLineAdLibItem | undefined
+	selectedItem: AdLibPiece | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
 }
 interface ITrackedProps {
 	sourceLayerLookup: ISourceLayerLookup
-	rundownAdLibs: Array<SegmentLineAdLibItemUi>
+	rundownAdLibs: Array<AdLibPieceUi>
 }
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
@@ -279,7 +279,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
-	let rundownAdLibs: Array<SegmentLineAdLibItemUi> = []
+	let rundownAdLibs: Array<AdLibPieceUi> = []
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
@@ -287,7 +287,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		let rundownAdLibItems = RundownBaselineAdLibItems.find({ rundownId: props.rundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
 		rundownAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
-			const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)
+			const uiAdLib: AdLibPieceUi = _.clone(item)
 			uiAdLib.isGlobal = true
 
 			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
@@ -426,14 +426,14 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 	}
 
-	onSelectAdLib = (aSLine: SegmentLineAdLibItemUi) => {
+	onSelectAdLib = (aSLine: AdLibPieceUi) => {
 		// console.log(aSLine)
 		this.setState({
 			selectedItem: aSLine
 		})
 	}
 
-	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi, queue: boolean, e: any) => {
+	onToggleAdLib = (aSLine: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
 		if (aSLine.invalid) {

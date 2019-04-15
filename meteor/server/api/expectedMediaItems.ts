@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { SegmentLineItems, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
-import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, literal, getCurrentTime, getHash } from '../../lib/lib'
 import { SegmentLines } from '../../lib/collections/SegmentLines'
@@ -45,7 +45,7 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 		rundownId: rundown._id,
 		segmentLineId: sl._id
 	})
-	const slali = SegmentLineAdLibItems.find({
+	const slali = AdLibPieces.find({
 		rundownId: rundown._id,
 		segmentLineId: sl._id
 	})

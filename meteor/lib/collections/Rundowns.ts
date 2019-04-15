@@ -8,7 +8,7 @@ import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RundownDataCache } from './RundownDataCache'
 import { Meteor } from 'meteor/meteor'
-import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
+import { AdLibPieces } from './AdLibPieces'
 import { RundownBaselineItems } from './RundownBaselineItems'
 import { RundownBaselineAdLibItems } from './RundownBaselineAdLibItems'
 import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
@@ -165,7 +165,7 @@ export class Rundown implements DBRundown {
 		Segments.remove({rundownId: this._id})
 		SegmentLines.remove({rundownId: this._id})
 		SegmentLineItems.remove({ rundownId: this._id})
-		SegmentLineAdLibItems.remove({ rundownId: this._id})
+		AdLibPieces.remove({ rundownId: this._id})
 		RundownBaselineItems.remove({ rundownId: this._id})
 		RundownBaselineAdLibItems.remove({ rundownId: this._id})
 		this.removeCache()

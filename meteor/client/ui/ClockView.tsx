@@ -291,7 +291,7 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 			this.subscribe('showStyleBases', {
 				_id: rundown.showStyleBaseId
 			})
-			this.subscribe('segmentLineAdLibItems', {
+			this.subscribe('adLibPieces', {
 				rundownId: rundown._id
 			})
 		}

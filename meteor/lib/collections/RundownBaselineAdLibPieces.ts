@@ -1,10 +1,10 @@
 import { Mongo } from 'meteor/mongo'
-import { SegmentLineAdLibItem } from './SegmentLineAdLibItems'
+import { AdLibPiece } from './AdLibPieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-export interface RundownBaselineAdLibItem extends SegmentLineAdLibItem {
+export interface RundownBaselineAdLibItem extends AdLibPiece {
 }
 
 export const RundownBaselineAdLibItems: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>

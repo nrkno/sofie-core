@@ -16,7 +16,7 @@ export enum PubSub {
 	rundownBaselineAdLibItems = 'rundownBaselineAdLibItems',
 	rundownDataCache = 'rundownDataCache',
 	rundowns = 'rundowns',
-	segmentLineAdLibItems = 'segmentLineAdLibItems',
+	adLibPieces = 'adLibPieces',
 	segmentLineItems = 'segmentLineItems',
 	segmentLineItemsSimple = 'segmentLineItemsSimple',
 	segmentLines = 'segmentLines',

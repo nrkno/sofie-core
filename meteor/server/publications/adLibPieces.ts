@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 
 import { RundownSecurity } from '../security/rundowns'
-import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 
-meteorPublish(PubSub.segmentLineAdLibItems, function (selector, token) {
+meteorPublish(PubSub.adLibPieces, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = {
 		fields: {
@@ -13,7 +13,7 @@ meteorPublish(PubSub.segmentLineAdLibItems, function (selector, token) {
 		}
 	}
 	if (RundownSecurity.allowReadAccess(selector, token, this)) {
-		return SegmentLineAdLibItems.find(selector, modifier)
+		return AdLibPieces.find(selector, modifier)
 	}
 	return null
 })
