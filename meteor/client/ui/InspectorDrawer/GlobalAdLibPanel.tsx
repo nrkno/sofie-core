@@ -6,7 +6,7 @@ import { Segment } from '../../../lib/collections/Segments'
 import { Part } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
+import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -264,7 +264,7 @@ interface ITrackedProps {
 }
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	meteorSubscribe(PubSub.rundownBaselineAdLibItems, {
+	meteorSubscribe(PubSub.rundownBaselineAdLibPieces, {
 		rundownId: props.rundown._id
 	})
 	meteorSubscribe(PubSub.showStyleBases, {
@@ -284,7 +284,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
 	if (props.rundown) {
-		let rundownAdLibItems = RundownBaselineAdLibItems.find({ rundownId: props.rundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
+		let rundownAdLibItems = RundownBaselineAdLibPieces.find({ rundownId: props.rundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
 		rundownAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: AdLibPieceUi = _.clone(item)

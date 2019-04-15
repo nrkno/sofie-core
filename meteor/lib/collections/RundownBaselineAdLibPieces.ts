@@ -7,12 +7,12 @@ import { Meteor } from 'meteor/meteor'
 export interface RundownBaselineAdLibItem extends AdLibPiece {
 }
 
-export const RundownBaselineAdLibItems: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
-	= new Mongo.Collection<RundownBaselineAdLibItem>('rundownBaselineAdLibItems')
-registerCollection('RundownBaselineAdLibItems', RundownBaselineAdLibItems)
+export const RundownBaselineAdLibPieces: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
+	= new Mongo.Collection<RundownBaselineAdLibItem>('rundownBaselineAdLibPieces')
+registerCollection('RundownBaselineAdLibPieces', RundownBaselineAdLibPieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		RundownBaselineAdLibItems._ensureIndex({
+		RundownBaselineAdLibPieces._ensureIndex({
 			rundownId: 1
 		})
 	}

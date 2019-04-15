@@ -69,7 +69,7 @@ import {
 	TimelineObjectCoreExt,
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../lib/collections/RundownBaselineAdLibItems'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { CachePrefix } from '../../lib/collections/RundownDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -408,7 +408,7 @@ export namespace ServerPlayoutAPI {
 			rundownId: rundown._id
 		})
 
-		RundownBaselineAdLibItems.remove({
+		RundownBaselineAdLibPieces.remove({
 			rundownId: rundown._id
 		})
 
@@ -1370,11 +1370,11 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioId)
 		}
 	})
-	export const rundownBaselineAdLibItemStart = syncFunction(function rundownBaselineAdLibItemStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
+	export const rundownBaselineAdLibPiecestart = syncFunction(function rundownBaselineAdLibPiecestart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
 		check(rundownId, String)
 		check(partId, String)
 		check(robaliId, String)
-		logger.debug('rundownBaselineAdLibItemStart')
+		logger.debug('rundownBaselineAdLibPiecestart')
 
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -1383,7 +1383,7 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(403, `Part Ad Lib Items can not be used in combination with hold!`)
 		}
 
-		let adLibItem = RundownBaselineAdLibItems.findOne({
+		let adLibItem = RundownBaselineAdLibPieces.findOne({
 			_id: robaliId,
 			rundownId: rundownId
 		})
@@ -1777,8 +1777,8 @@ methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, p
 methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (rundownId: string, partId: string, salliId: string, queue: boolean) => {
 	return ServerPlayoutAPI.segmentAdLibLineItemStart(rundownId, partId, salliId, queue)
 }
-methods[PlayoutAPI.methods.rundownBaselineAdLibItemStart] = (rundownId: string, partId: string, robaliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.rundownBaselineAdLibItemStart(rundownId, partId, robaliId, queue)
+methods[PlayoutAPI.methods.rundownBaselineAdLibPiecestart] = (rundownId: string, partId: string, robaliId: string, queue: boolean) => {
+	return ServerPlayoutAPI.rundownBaselineAdLibPiecestart(rundownId, partId, robaliId, queue)
 }
 methods[PlayoutAPI.methods.segmentAdLibLineItemStop] = (rundownId: string, partId: string, pieceId: string) => {
 	return ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, partId, pieceId)

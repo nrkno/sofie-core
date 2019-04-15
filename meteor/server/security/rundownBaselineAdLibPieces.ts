@@ -1,7 +1,7 @@
-import { RundownBaselineAdLibItems, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibItems'
+import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
 
 // Setup rules:
-RundownBaselineAdLibItems.allow({
+RundownBaselineAdLibPieces.allow({
 	insert (userId: string, doc: RundownBaselineAdLibItem): boolean {
 		return true // TODO: Decide rules
 	},

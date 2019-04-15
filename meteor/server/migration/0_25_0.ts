@@ -20,7 +20,6 @@ addMigrationSteps( '0.25.0', [
 		}
 	)
 
-
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',

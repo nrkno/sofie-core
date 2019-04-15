@@ -332,7 +332,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe('adLibPieces', {
 			rundownId: this.props.rundown._id
 		})
-		this.subscribe('rundownBaselineAdLibItems', {
+		this.subscribe('rundownBaselineAdLibPieces', {
 			rundownId: this.props.rundown._id
 		})
 		meteorSubscribe(PubSub.studios, {

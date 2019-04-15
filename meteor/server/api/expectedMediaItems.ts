@@ -38,7 +38,7 @@ export const updateExpectedMediaItems: (rundownId: string, partId: string) => vo
 
 	const eMIs: ExpectedMediaItem[] = []
 
-	// const robalis = RundownBaselineAdLibItems.find({
+	// const robalis = RundownBaselineAdLibPieces.find({
 	// 	rundownId: rundown._id
 	// })
 	const slis = Pieces.find({

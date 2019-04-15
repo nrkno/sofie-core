@@ -73,7 +73,7 @@ import { postProcessAdLibPieces, postProcessPieces, postProcessPartBaselineItems
 import { ShowStyleContext, RundownContext } from '../blueprints/context'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 const PackageInfo = require('../../../package.json')
 
 export function rundownId (rundownId: MOS.MosString128, original?: boolean): string {
@@ -579,7 +579,7 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
-	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibItems, {
+	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces, {
 		rundownId: dbRundown._id
 	}, adlibItems)
 

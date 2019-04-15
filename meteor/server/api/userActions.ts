@@ -282,7 +282,7 @@ export function sourceLayerOnLineStop (rundownId: string, partId: string, source
 		ServerPlayoutAPI.sourceLayerOnLineStop(rundownId, partId, sourceLayerId)
 	)
 }
-export function rundownBaselineAdLibItemStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
+export function rundownBaselineAdLibPiecestart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
 	check(rundownId, String)
 	check(partId, String)
 	check(robaliId, String)
@@ -294,7 +294,7 @@ export function rundownBaselineAdLibItemStart (rundownId: string, partId: string
 		return ClientAPI.responseError(`Can't start AdLib item when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibItemStart(rundownId, partId, robaliId, queue)
+		ServerPlayoutAPI.rundownBaselineAdLibPiecestart(rundownId, partId, robaliId, queue)
 	)
 }
 export function segmentAdLibLineItemStop (rundownId: string, partId: string, pieceId: string) {
@@ -474,7 +474,7 @@ methods[UserActionAPI.methods.sourceLayerOnLineStop] = function (rundownId: stri
 	return sourceLayerOnLineStop.call(this, rundownId, partId, sourceLayerId)
 }
 methods[UserActionAPI.methods.baselineAdLibItemStart] = function (rundownId: string, partId: string, robaliId: string, queue: boolean) {
-	return rundownBaselineAdLibItemStart.call(this, rundownId, partId, robaliId, queue)
+	return rundownBaselineAdLibPiecestart.call(this, rundownId, partId, robaliId, queue)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (rundownId: string, partId: string, pieceId: string) {
 	return segmentAdLibLineItemStop.call(this, rundownId, partId, pieceId)

@@ -13,7 +13,7 @@ export enum PubSub {
 	peripheralDevices = 'peripheralDevices',
 	peripheralDevicesAndSubDevices = ' peripheralDevicesAndSubDevices',
 	recordedFiles = 'recordedFiles',
-	rundownBaselineAdLibItems = 'rundownBaselineAdLibItems',
+	rundownBaselineAdLibPieces = 'rundownBaselineAdLibPieces',
 	rundownDataCache = 'rundownDataCache',
 	rundowns = 'rundowns',
 	adLibPieces = 'adLibPieces',
