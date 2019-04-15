@@ -130,10 +130,12 @@ function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?
 	return true
 }
 
-function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
+export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 	if (rundown) {
+		logger.info('Removing rundown ' + rundown._id)
+
 		if (canBeUpdated(rundown)) {
 			rundown.remove()
 		} else {
@@ -435,7 +437,7 @@ function updateSegmentFromIngestData (
 
 }
 
-function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
+export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
@@ -458,7 +460,7 @@ function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalI
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
-function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newStory: any) {
+export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newStory: any) {
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 
@@ -474,7 +476,6 @@ function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalI
 
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
-
 }
 
 function getStudioAndRundown (peripheralDevice: PeripheralDevice, externalId: string) {

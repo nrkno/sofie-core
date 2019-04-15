@@ -111,7 +111,6 @@ function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegmen
 	})
 
 	_.each(ingestSegment.parts, part => {
-		const partId = getPartId(rundownId, part.externalId)
 		cacheEntries.push(generateCacheForPart(rundownId, segmentExternalId, part))
 	})
 
