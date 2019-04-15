@@ -214,12 +214,12 @@ export function pieceTakeNow (rundownId: string, partId: string, pieceId: string
 	}) as Piece
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
-	let segLine = Parts.findOne({
+	let part = Parts.findOne({
 		_id: partId,
 		rundownId: rundownId
 	})
-	if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-	if (rundown.currentPartId !== segLine._id) return ClientAPI.responseError(`Part AdLib Items can be only placed in a current part!`)
+	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+	if (rundown.currentPartId !== part._id) return ClientAPI.responseError(`Part AdLib Items can be only placed in a current part!`)
 
 	let showStyleBase = rundown.getShowStyleBase()
 	const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)

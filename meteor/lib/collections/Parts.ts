@@ -129,7 +129,7 @@ export class Part implements DBPart {
 		return this.getPieces()
 	}
 
-	getPartsAdLibItems (selector?: MongoSelector<Piece>, options?: FindOptions) {
+	getAdLibPieces (selector?: MongoSelector<Piece>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(

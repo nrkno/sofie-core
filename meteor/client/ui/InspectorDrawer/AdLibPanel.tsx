@@ -272,15 +272,15 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getParts()
 		let segmentAdLibItems: Array<AdLibPiece> = []
-		seg.segLines.forEach((segLine) => {
-			if (segLine._id === props.rundown.currentPartId) {
+		seg.segLines.forEach((part) => {
+			if (part._id === props.rundown.currentPartId) {
 				seg.isLive = true
 				liveSegment = seg
 			}
-			if (segLine._id === props.rundown.nextPartId) {
+			if (part._id === props.rundown.nextPartId) {
 				seg.isNext = true
 			}
-			segmentAdLibItems = segmentAdLibItems.concat(segLine.getPartsAdLibItems())
+			segmentAdLibItems = segmentAdLibItems.concat(part.getAdLibPieces())
 		})
 		seg.items = segmentAdLibItems
 

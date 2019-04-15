@@ -1268,18 +1268,18 @@ export namespace ServerPlayoutAPI {
 		}) as Piece
 		if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
-		let segLine = Parts.findOne({
+		let part = Parts.findOne({
 			_id: partId,
 			rundownId: rundownId
 		})
-		if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-		if (rundown.currentPartId !== segLine._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
+		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+		if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
 
 		let showStyleBase = rundown.getShowStyleBase()
 		const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 		if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
 
-		let newPiece = convertAdLibToSLineItem(piece, segLine, false)
+		let newPiece = convertAdLibToSLineItem(piece, part, false)
 		if (newPiece.content && newPiece.content.timelineObjects) {
 			newPiece.content.timelineObjects = prefixAllObjectIds(
 				_.compact(
@@ -1297,8 +1297,8 @@ export namespace ServerPlayoutAPI {
 		}
 
 		// disable the original piece if from the same SL
-		if (piece.partId === segLine._id) {
-			const pieces = getResolvedPieces(segLine)
+		if (piece.partId === part._id) {
+			const pieces = getResolvedPieces(part)
 			const resPiece = pieces.find(item => item._id === piece._id)
 
 			if (piece.startedPlayback && piece.startedPlayback <= getCurrentTime()) {
@@ -1315,8 +1315,8 @@ export namespace ServerPlayoutAPI {
 		}
 		Pieces.insert(newPiece)
 
-		cropInfinitesOnLayer(rundown, segLine, newPiece)
-		stopInfinitesRunningOnLayer(rundown, segLine, newPiece.sourceLayerId)
+		cropInfinitesOnLayer(rundown, part, newPiece)
+		stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 		updateTimeline(rundown.studioId)
 	}
 	export const segmentAdLibLineItemStart = syncFunction(function segmentAdLibLineItemStart (rundownId: string, partId: string, slaiId: string, queue: boolean) {
@@ -1344,13 +1344,13 @@ export namespace ServerPlayoutAPI {
 			// insert a NEW, adlibbed part after this part
 			partId = adlibQueueInsertPart (rundown, partId, adLibItem )
 		}
-		let segLine = Parts.findOne({
+		let part = Parts.findOne({
 			_id: partId,
 			rundownId: rundownId
 		})
-		if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-		if (!queue && rundown.currentPartId !== segLine._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
-		let newPiece = convertAdLibToSLineItem(adLibItem, segLine, queue)
+		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+		if (!queue && rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
+		let newPiece = convertAdLibToSLineItem(adLibItem, part, queue)
 		Pieces.insert(newPiece)
 
 		// logger.debug('adLibItemStart', newPiece)
@@ -1358,15 +1358,15 @@ export namespace ServerPlayoutAPI {
 			// keep infinite sLineItems
 			Pieces.find({ rundownId: rundownId, partId: orgSlId }).forEach(piece => {
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-					let newPiece = convertAdLibToSLineItem(piece, segLine!, queue)
+					let newPiece = convertAdLibToSLineItem(piece, part!, queue)
 					Pieces.insert(newPiece)
 				}
 			})
 
 			ServerPlayoutAPI.rundownSetNext(rundown._id, partId)
 		} else {
-			cropInfinitesOnLayer(rundown, segLine, newPiece)
-			stopInfinitesRunningOnLayer(rundown, segLine, newPiece.sourceLayerId)
+			cropInfinitesOnLayer(rundown, part, newPiece)
+			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 			updateTimeline(rundown.studioId)
 		}
 	})
@@ -1394,14 +1394,14 @@ export namespace ServerPlayoutAPI {
 			partId = adlibQueueInsertPart (rundown, partId, adLibItem )
 		}
 
-		let segLine = Parts.findOne({
+		let part = Parts.findOne({
 			_id: partId,
 			rundownId: rundownId
 		})
-		if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-		if (!queue && rundown.currentPartId !== segLine._id) throw new Meteor.Error(403, `Rundown Baseline Ad Lib Items can be only placed in a current part!`)
+		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+		if (!queue && rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Rundown Baseline Ad Lib Items can be only placed in a current part!`)
 
-		let newPiece = convertAdLibToSLineItem(adLibItem, segLine, queue)
+		let newPiece = convertAdLibToSLineItem(adLibItem, part, queue)
 		Pieces.insert(newPiece)
 		// logger.debug('adLibItemStart', newPiece)
 
@@ -1410,15 +1410,15 @@ export namespace ServerPlayoutAPI {
 			Pieces.find({ rundownId: rundownId, partId: orgSlId }).forEach(piece => {
 				console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-					let newPiece = convertAdLibToSLineItem(piece, segLine!, queue)
+					let newPiece = convertAdLibToSLineItem(piece, part!, queue)
 					Pieces.insert(newPiece)
 				}
 			})
 
 			ServerPlayoutAPI.rundownSetNext(rundown._id, partId)
 		} else {
-			cropInfinitesOnLayer(rundown, segLine, newPiece)
-			stopInfinitesRunningOnLayer(rundown, segLine, newPiece.sourceLayerId)
+			cropInfinitesOnLayer(rundown, part, newPiece)
+			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 			updateTimeline(rundown.studioId)
 		}
 	})
@@ -1461,11 +1461,11 @@ export namespace ServerPlayoutAPI {
 
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		let segLine = Parts.findOne({
+		let part = Parts.findOne({
 			_id: partId,
 			rundownId: rundownId
 		})
-		if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 		let alCopyItem = Pieces.findOne({
 			_id: pieceId,
 			rundownId: rundownId
@@ -1478,13 +1478,13 @@ export namespace ServerPlayoutAPI {
 		if (!alCopyItem) throw new Meteor.Error(404, `Part Ad Lib Copy Item "${pieceId}" not found!`)
 		if (!alCopyItemTObj) throw new Meteor.Error(404, `Part Ad Lib Copy Item "${pieceId}" not found in the playout Timeline!`)
 		if (!rundown.active) throw new Meteor.Error(403, `Part Ad Lib Copy Items can be only manipulated in an active rundown!`)
-		if (rundown.currentPartId !== segLine._id) throw new Meteor.Error(403, `Part Ad Lib Copy Items can be only manipulated in a current part!`)
+		if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Copy Items can be only manipulated in a current part!`)
 		if (!alCopyItem.dynamicallyInserted) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a dynamic Piece!`)
 		if (!alCopyItem.adLibSourceId) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a Part Ad Lib Copy Item!`)
 
 		// The ad-lib item positioning will be relative to the startedPlayback of the part
-		if (segLine.startedPlayback) {
-			parentOffset = segLine.getLastStartedPlayback() || parentOffset
+		if (part.startedPlayback) {
+			parentOffset = part.getLastStartedPlayback() || parentOffset
 		}
 
 		let newExpectedDuration = 1 // smallest, non-zerundown duration
@@ -1558,17 +1558,17 @@ export namespace ServerPlayoutAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 		if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-		let segLine = Parts.findOne({
+		let part = Parts.findOne({
 			_id: partId,
 			rundownId: rundownId
 		})
-		if (!segLine) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-		if (rundown.currentPartId !== segLine._id) throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
-		if (!segLine.getLastStartedPlayback()) throw new Meteor.Error(405, `Part "${partId}" has yet to start playback!`)
+		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+		if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
+		if (!part.getLastStartedPlayback()) throw new Meteor.Error(405, `Part "${partId}" has yet to start playback!`)
 
 		const now = getCurrentTime()
-		const relativeNow = now - (segLine.getLastStartedPlayback() || 0)
-		const orderedItems = getResolvedPieces(segLine)
+		const relativeNow = now - (part.getLastStartedPlayback() || 0)
+		const orderedItems = getResolvedPieces(part)
 
 		// console.log(JSON.stringify(orderedItems.filter(i => i.sourceLayerId === sourceLayerId).map(i => {
 		//  	return {
@@ -1582,8 +1582,8 @@ export namespace ServerPlayoutAPI {
 			if (!i.durationOverride) {
 				let newExpectedDuration: number | undefined = undefined
 
-				if (i.infiniteId && i.infiniteId !== i._id && segLine) {
-					let segLineStarted = segLine.getLastStartedPlayback()
+				if (i.infiniteId && i.infiniteId !== i._id && part) {
+					let segLineStarted = part.getLastStartedPlayback()
 					if (segLineStarted) {
 						newExpectedDuration = now - segLineStarted
 					}
@@ -1605,7 +1605,7 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 
-		updateSourceLayerInfinitesAfterLine(rundown, segLine)
+		updateSourceLayerInfinitesAfterLine(rundown, part)
 
 		updateTimeline(rundown.studioId)
 	}
@@ -2273,8 +2273,8 @@ const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (rundown
 	waitForPromiseAll(ps)
 })
 
-const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, segLine: Part, sourceLayer: string) {
-	let remainingLines = rundown.getParts().filter(l => l._rank > segLine._rank)
+const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, part: Part, sourceLayer: string) {
+	let remainingLines = rundown.getParts().filter(l => l._rank > part._rank)
 	for (let line of remainingLines) {
 		let continuations = line.getAllPieces().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
 		if (continuations.length === 0) {
@@ -2285,7 +2285,7 @@ const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOn
 	}
 
 	// ensure adlib is extended correctly if infinite
-	updateSourceLayerInfinitesAfterLine(rundown, segLine)
+	updateSourceLayerInfinitesAfterLine(rundown, part)
 })
 
 function convertSLineToAdLibItem (piece: Piece): AdLibPiece {
