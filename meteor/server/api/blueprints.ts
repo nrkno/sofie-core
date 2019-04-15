@@ -69,7 +69,7 @@ import { getShowStyleCompound, ShowStyleVariants, ShowStyleVariant } from '../..
 import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
-import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../methods'
 import { parseVersion, ICoreSystem, CoreSystem, SYSTEM_ID, parseRange } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
@@ -1392,4 +1392,4 @@ methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
 methods[BlueprintAPI.methods.assignSystemBlueprint] = (id?: string) => {
 	return assignSystemBlueprint(id)
 }
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

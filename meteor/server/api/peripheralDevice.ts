@@ -12,7 +12,8 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
 import { syncFunction } from '../codeControl'
-import { setMeteorMethods, wrapMethods, Methods } from '../methods'
+import { setMeteorMethods, Methods } from '../methods'
+import { wrapMethods } from '../lib'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {

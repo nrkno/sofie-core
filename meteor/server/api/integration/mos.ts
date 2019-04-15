@@ -59,7 +59,6 @@ import {
 import { CachePrefix, RunningOrderDataCacheObj } from '../../../lib/collections/RunningOrderDataCache'
 import {
 	setMeteorMethods,
-	wrapMethods,
 	Methods
 } from '../../methods'
 import {
@@ -1212,4 +1211,4 @@ methods[PeripheralDeviceAPI.methods.mosRoFullStory] = (deviceId: string, deviceT
 	return MosIntegration.mosRoFullStory(deviceId, deviceToken, story)
 }
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

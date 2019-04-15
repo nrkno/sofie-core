@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { logger } from './logging'
 
 export interface Methods {
 	[method: string]: Function
@@ -55,28 +54,6 @@ export function setMeteorMethods (orgMethods: Methods): void {
 		}
 	})
 	Meteor.methods(methods)
-}
-/**
- * Wraps the methods so the thrown errors are formatted nicely
- * @param methods
- */
-export function wrapMethods (methods: Methods): Methods {
-	let methodsOut: Methods = {}
-	_.each(methods, (fcn: Function, key) => {
-		methodsOut[key] = (...args: any[]) => {
-			// logger.info('------- Method call -------')
-			// logger.info(key)
-			// logger.info(args)
-			// logger.info('---------------------------')
-			try {
-				return fcn.apply(null, args)
-			} catch (e) {
-				logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
-				throw e
-			}
-		}
-	})
-	return methodsOut
 }
 export function getRunningMethods () {
 	return runningMethods

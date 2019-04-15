@@ -832,6 +832,34 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 	return arr
 }
 /**
+ * Push a value into a object, and ensure the array exists
+ * @param obj Object
+ * @param path Path to array in object
+ * @param valueToPush Value to push onto array
+ */
+export function setOntoPath<T> (obj: Object, path: string, valueToSet: T): void {
+	if (!path) throw new Meteor.Error(500, 'parameter path missing')
+
+	let attrs = path.split('.')
+
+	let lastAttr = _.last(attrs)
+	let attrsExceptLast = attrs.slice(0, -1)
+
+	let o = obj
+	_.each(attrsExceptLast, (attr) => {
+
+		if (!_.has(o,attr)) {
+			o[attr] = {}
+		} else {
+			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+		}
+		o = o[attr]
+	})
+	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
+
+	o[lastAttr] = valueToSet
+}
+/**
  * Replaces all invalid characters in order to make the path a valid one
  * @param path
  */

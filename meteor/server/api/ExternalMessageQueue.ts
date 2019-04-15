@@ -17,13 +17,14 @@ import {
 	getCurrentTime,
 	removeNullyProperties
 } from '../../lib/lib'
-import { setMeteorMethods, Methods, wrapMethods } from '../methods'
+import { setMeteorMethods, Methods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
+import { wrapMethods } from '../lib'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {

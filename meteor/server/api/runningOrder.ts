@@ -6,14 +6,27 @@ import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
+import {
+	saveIntoDb,
+	fetchBefore,
+	getRank,
+	fetchAfter,
+	getCurrentTime,
+	getHash,
+	asyncCollectionUpdate,
+	waitForPromiseAll
+} from '../../lib/lib'
 import { logger } from '../logging'
-import { loadShowStyleBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
+import {
+	loadShowStyleBlueprints,
+	postProcessSegmentLineItems,
+	SegmentContext
+} from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { updateExpectedMediaItems } from './expectedMediaItems'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -477,4 +490,4 @@ methods[RunningOrderAPI.methods.runningOrderNeedsUpdating] = (roId: string) => {
 	return ClientRunningOrderAPI.runningOrderNeedsUpdating(roId)
 }
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

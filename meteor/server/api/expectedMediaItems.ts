@@ -7,7 +7,7 @@ import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibIte
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, literal, getCurrentTime, getHash } from '../../lib/lib'
 import { SegmentLines } from '../../lib/collections/SegmentLines'
-import { wrapMethods, setMeteorMethods } from '../methods'
+import { setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
 
@@ -102,4 +102,4 @@ methods['insertExpected'] = (fileName, url, mediaFlowId, runningOrderId, segment
 }
 
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)
