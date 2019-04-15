@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { logger } from './logging'
 
 export interface Methods {
 	[method: string]: Function
@@ -47,6 +48,7 @@ export function setMeteorMethods (orgMethods: Methods): void {
 					}
 
 				} catch (err) {
+					logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
 					delete runningMethods[methodId]
 					throw err
 				}

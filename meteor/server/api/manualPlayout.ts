@@ -6,7 +6,6 @@ import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { afterUpdateTimeline } from './playout'
-import { wrapMethods } from '../lib'
 
 function insertTimelineObject (studioId: string, timelineObject: TimelineObjGeneric) {
 	let id = studioId + (timelineObject._id || timelineObject.id)
@@ -48,4 +47,4 @@ methods[ManualPlayoutAPI.methods.removeTimelineObject] = (studioId: string, id: 
 }
 
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

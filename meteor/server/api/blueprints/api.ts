@@ -16,7 +16,7 @@ import { Random } from 'meteor/random'
 import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
-import { Methods, setMeteorMethods, wrapMethods } from '../../methods'
+import { Methods, setMeteorMethods } from '../../methods'
 import { parseVersion, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprints } from './cache'
 
@@ -222,4 +222,4 @@ methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
 methods[BlueprintAPI.methods.assignSystemBlueprint] = (id?: string) => {
 	return assignSystemBlueprint(id)
 }
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

@@ -5,7 +5,6 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { setMeteorMethods, Methods } from '../../methods'
-import { wrapMethods } from '../../lib'
 
 export namespace MediaScannerIntegration {
 	export function getMediaObjectRevisions (id: string, token: string, collectionId: string) {
@@ -56,4 +55,4 @@ methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId: string, devi
 	return MediaScannerIntegration.updateMediaObject(deviceId, deviceToken, collectionId, id, doc)
 }
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

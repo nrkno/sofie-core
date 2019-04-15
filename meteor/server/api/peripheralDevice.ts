@@ -12,7 +12,6 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
 import { setMeteorMethods, Methods } from '../methods'
-import { wrapMethods } from '../lib'
 import { Picker } from 'meteor/meteorhacks:picker'
 import { IncomingMessage, ServerResponse } from 'http'
 import * as bodyParser from 'body-parser'
@@ -451,7 +450,7 @@ methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId: string, deviceTo
 }
 
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)
 
 // temporary functions:
 setMeteorMethods({

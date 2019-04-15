@@ -74,7 +74,6 @@ import { ShowStyleContext, RunningOrderContext } from '../blueprints/context'
 import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
 import { Random } from 'meteor/random'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
-import { SegmentLineContext } from '../blueprints'
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
@@ -252,7 +251,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadShowStyleBlueprints(showStyleBase)
-		let result = blueprints.getSegmentLine(context, story)
+		let result = blueprints.getSegmentLine(context, story) // TODO: refactor this
 
  		if (result) {
 			resultAdlibSli = postProcessSegmentLineAdLibItems(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)

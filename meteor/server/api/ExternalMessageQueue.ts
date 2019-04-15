@@ -24,7 +24,6 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
-import { wrapMethods } from '../lib'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -242,4 +241,4 @@ methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) =
 	}
 }
 
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

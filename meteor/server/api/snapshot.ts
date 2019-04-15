@@ -42,7 +42,7 @@ import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { Methods, setMeteorMethods } from '../methods'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
-import { fsWriteFile, fsReadFile, fsUnlinkFile, wrapMethods } from '../lib'
+import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { restoreRunningOrder } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -555,4 +555,4 @@ methods[SnapshotFunctionsAPI.REMOVE_SNAPSHOT] = (snapshotId: string) => {
 	return removeSnapshot(snapshotId)
 }
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

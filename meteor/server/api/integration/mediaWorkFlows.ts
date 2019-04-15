@@ -7,7 +7,6 @@ import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWor
 import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import { setMeteorMethods, Methods } from '../../methods'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { wrapMethods } from '../../lib'
 
 export namespace MediaManagerIntegration {
 
@@ -117,4 +116,4 @@ methods[PeripheralDeviceAPI.methods.updateMediaWorkFlowStep] = (deviceId: string
 	return MediaManagerIntegration.updateMediaWorkFlowStep(deviceId, deviceToken, docId, obj)
 }
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

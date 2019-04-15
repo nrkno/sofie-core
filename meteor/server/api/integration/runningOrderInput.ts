@@ -31,7 +31,8 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import {
-	Methods, setMeteorMethods, wrapMethods
+	Methods,
+	setMeteorMethods
 } from '../../methods'
 import { IngestRunningOrder, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
@@ -766,4 +767,4 @@ methods[PeripheralDeviceAPI.methods.dataSegmentLineItemUpdate] = (deviceId: stri
 	return RunningOrderInput.dataSegmentLineUpdate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
 }
 
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)
