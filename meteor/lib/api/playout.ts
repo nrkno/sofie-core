@@ -22,7 +22,7 @@ export namespace PlayoutAPI {
 		'piecePlaybackStartedCallback' = 'playout.piecePlaybackStartedCallback',
 		'pieceTakeNow' = 'playout.pieceTakeNow',
 		'segmentAdLibLineItemStart' = 'playout.segmentAdLibLineItemStart',
-		'rundownBaselineAdLibPiecestart' = 'playout.rundownBaselineAdLibPiecestart',
+		'rundownBaselineAdLibPieceStart' = 'playout.rundownBaselineAdLibPieceStart',
 		'segmentAdLibLineItemStop' = 'playout.segmentAdLibLineItemStop',
 		'sourceLayerOnLineStop' = 'playout.sourceLayerOnLineStop',
 		'sourceLayerStickyItemStart' = 'playout.sourceLayerStickyItemStart',

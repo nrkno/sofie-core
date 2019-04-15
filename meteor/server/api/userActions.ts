@@ -26,7 +26,7 @@ import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
-import { RundownDataCache } from '../../lib/collections/RundownDataCache'
+import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { replaceStoryItem } from './integration/mos'
 
 const MINIMUM_TAKE_SPAN = 1000
@@ -243,7 +243,7 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	if (rundown && rundown.active && part.status === 'PLAY') {
 		return ClientAPI.responseError(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
-	const partCache = RundownDataCache.findOne(rundownId + '_fullStory' + partId)
+	const partCache = IngestDataCache.findOne(rundownId + '_fullStory' + partId)
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
 	const piece = Pieces.findOne(pieceId)
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
@@ -282,7 +282,7 @@ export function sourceLayerOnLineStop (rundownId: string, partId: string, source
 		ServerPlayoutAPI.sourceLayerOnLineStop(rundownId, partId, sourceLayerId)
 	)
 }
-export function rundownBaselineAdLibPiecestart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
+export function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
 	check(rundownId, String)
 	check(partId, String)
 	check(robaliId, String)
@@ -294,7 +294,7 @@ export function rundownBaselineAdLibPiecestart (rundownId: string, partId: strin
 		return ClientAPI.responseError(`Can't start AdLib item when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibPiecestart(rundownId, partId, robaliId, queue)
+		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownId, partId, robaliId, queue)
 	)
 }
 export function segmentAdLibLineItemStop (rundownId: string, partId: string, pieceId: string) {
@@ -474,7 +474,7 @@ methods[UserActionAPI.methods.sourceLayerOnLineStop] = function (rundownId: stri
 	return sourceLayerOnLineStop.call(this, rundownId, partId, sourceLayerId)
 }
 methods[UserActionAPI.methods.baselineAdLibItemStart] = function (rundownId: string, partId: string, robaliId: string, queue: boolean) {
-	return rundownBaselineAdLibPiecestart.call(this, rundownId, partId, robaliId, queue)
+	return rundownBaselineAdLibPieceStart.call(this, rundownId, partId, robaliId, queue)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (rundownId: string, partId: string, pieceId: string) {
 	return segmentAdLibLineItemStop.call(this, rundownId, partId, pieceId)

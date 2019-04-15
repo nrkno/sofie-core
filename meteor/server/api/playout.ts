@@ -1370,11 +1370,11 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioId)
 		}
 	})
-	export const rundownBaselineAdLibPiecestart = syncFunction(function rundownBaselineAdLibPiecestart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
+	export const rundownBaselineAdLibPieceStart = syncFunction(function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
 		check(rundownId, String)
 		check(partId, String)
 		check(robaliId, String)
-		logger.debug('rundownBaselineAdLibPiecestart')
+		logger.debug('rundownBaselineAdLibPieceStart')
 
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -1777,8 +1777,8 @@ methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, p
 methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (rundownId: string, partId: string, salliId: string, queue: boolean) => {
 	return ServerPlayoutAPI.segmentAdLibLineItemStart(rundownId, partId, salliId, queue)
 }
-methods[PlayoutAPI.methods.rundownBaselineAdLibPiecestart] = (rundownId: string, partId: string, robaliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.rundownBaselineAdLibPiecestart(rundownId, partId, robaliId, queue)
+methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownId: string, partId: string, robaliId: string, queue: boolean) => {
+	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownId, partId, robaliId, queue)
 }
 methods[PlayoutAPI.methods.segmentAdLibLineItemStop] = (rundownId: string, partId: string, pieceId: string) => {
 	return ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, partId, pieceId)

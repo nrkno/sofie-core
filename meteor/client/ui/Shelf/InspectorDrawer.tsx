@@ -18,12 +18,12 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
-export enum InspectorPanelTabs {
+export enum ShelfTabs {
 	ADLIB = 'adlib',
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys'
 }
-export interface InspectorDrawerProps {
+export interface ShelfProps {
 	isExpanded: boolean
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
@@ -44,15 +44,15 @@ export interface InspectorDrawerProps {
 }
 
 interface IState {
-	drawerHeight: string
+	shelfHeight: string
 	overrideHeight: number | undefined
 	moving: boolean
-	selectedTab: InspectorPanelTabs
+	selectedTab: ShelfTabs
 }
 
 const CLOSE_MARGIN = 45
 
-export class InspectorDrawerBase extends React.Component<Translated<InspectorDrawerProps>, IState> {
+export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	private _mouseStart: {
 		x: number
 		y: number
@@ -77,22 +77,22 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		global?: boolean
 	}> = []
 
-	constructor (props: Translated<InspectorDrawerProps>) {
+	constructor (props: Translated<ShelfProps>) {
 		super(props)
 
 		this.state = {
 			moving: false,
-			drawerHeight: localStorage.getItem('rundownView.inspectorDrawer.drawerHeight') || '50vh',
+			shelfHeight: localStorage.getItem('rundownView.inspectorDrawer.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: InspectorPanelTabs.ADLIB
+			selectedTab: ShelfTabs.ADLIB
 		}
 
 		const { t } = props
 
 		this.bindKeys = [
 			{
-				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_DRAWER,
-				up: this.keyToggleDrawer,
+				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
+				up: this.keyToggleShelf,
 				label: t('Toggle Drawer')
 			},
 			// {
@@ -144,8 +144,8 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		})
 	}
 
-	componentDidUpdate (prevProps: InspectorDrawerProps, prevState: IState) {
-		if ((prevProps.isExpanded !== this.props.isExpanded) || (prevState.drawerHeight !== this.state.drawerHeight)) {
+	componentDidUpdate (prevProps: ShelfProps, prevState: IState) {
+		if ((prevProps.isExpanded !== this.props.isExpanded) || (prevState.shelfHeight !== this.state.shelfHeight)) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
 				// console.log(this.state.expanded, this.getHeight())
 				this.props.onChangeBottomMargin(this.getHeight() || '0px')
@@ -154,7 +154,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 	}
 
 	getHeight (): string {
-		const top = parseFloat(this.state.drawerHeight.substr(0, this.state.drawerHeight.length - 2))
+		const top = parseFloat(this.state.shelfHeight.substr(0, this.state.shelfHeight.length - 2))
 		return this.props.isExpanded ? (100 - top).toString() + 'vh' : '0px'
 	}
 
@@ -162,7 +162,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		return this.state.overrideHeight ?
 			((this.state.overrideHeight / window.innerHeight) * 100) + 'vh' :
 			((newState !== undefined ? newState : this.props.isExpanded) ?
-				this.state.drawerHeight
+				this.state.shelfHeight
 				:
 				undefined)
 	}
@@ -184,8 +184,8 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		this.blurActiveElement()
 	}
 
-	keyToggleDrawer = () => {
-		this.toggleDrawer()
+	keyToggleShelf = () => {
+		this.toggleShelf()
 	}
 
 	blurActiveElement = () => {
@@ -197,7 +197,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		}
 	}
 
-	toggleDrawer = () => {
+	toggleShelf = () => {
 		this.blurActiveElement()
 		this.props.onChangeExpanded(!this.props.isExpanded)
 	}
@@ -231,7 +231,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
-		localStorage.setItem('rundownView.inspectorDrawer.drawerHeight', this.state.drawerHeight)
+		localStorage.setItem('rundownView.inspectorDrawer.drawerHeight', this.state.shelfHeight)
 	}
 
 	dragHandle = (e: MouseEvent) => {
@@ -261,7 +261,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		})
 	}
 
-	switchTab (tab: InspectorPanelTabs) {
+	switchTab (tab: ShelfTabs) {
 		this.setState({
 			selectedTab: tab
 		})
@@ -270,25 +270,25 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 	render () {
 		const { t } = this.props
 		return (
-			<div className='rundown-view__inspector-drawer dark' style={this.getStyle()}>
-				<div className='rundown-view__inspector-drawer__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
+			<div className='rundown-view__shelf dark' style={this.getStyle()}>
+				<div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>
-				<div className='rundown-view__inspector-drawer__tabs'>
-					<div className={ClassNames('rundown-view__inspector-drawer__tabs__tab', {
-						'selected': this.state.selectedTab === InspectorPanelTabs.ADLIB
-					})} onClick={(e) => this.switchTab(InspectorPanelTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
-					<div className={ClassNames('rundown-view__inspector-drawer__tabs__tab', {
-						'selected': this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB
-					})} onClick={(e) => this.switchTab(InspectorPanelTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
-					<div className={ClassNames('rundown-view__inspector-drawer__tabs__tab', {
-						'selected': this.state.selectedTab === InspectorPanelTabs.SYSTEM_HOTKEYS
-					})} onClick={(e) => this.switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
+				<div className='rundown-view__shelf__tabs'>
+					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+						'selected': this.state.selectedTab === ShelfTabs.ADLIB
+					})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
+					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+						'selected': this.state.selectedTab === ShelfTabs.GLOBAL_ADLIB
+					})} onClick={(e) => this.switchTab(ShelfTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
+					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+						'selected': this.state.selectedTab === ShelfTabs.SYSTEM_HOTKEYS
+					})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
 				</div>
-				<div className='rundown-view__inspector-drawer__panel super-dark'>
-					<AdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.ADLIB} {...this.props}></AdLibPanel>
-					<GlobalAdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
-					<HotkeyHelpPanel visible={this.state.selectedTab === InspectorPanelTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+				<div className='rundown-view__shelf__panel super-dark'>
+					<AdLibPanel visible={this.state.selectedTab === ShelfTabs.ADLIB} {...this.props}></AdLibPanel>
+					<GlobalAdLibPanel visible={this.state.selectedTab === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+					<HotkeyHelpPanel visible={this.state.selectedTab === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
 				</div>
 			</div>
 		)
@@ -297,4 +297,4 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 
 export const InspectorDrawer = translate(undefined, {
 	withRef: true
-})(InspectorDrawerBase)
+})(ShelfBase)

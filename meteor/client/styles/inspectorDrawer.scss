@@ -1,6 +1,6 @@
 $inspector-drawer-tabs-height: 2.3em;
 
-.rundown-view__inspector-drawer {
+.rundown-view__shelf {
 	position: fixed;
 	display: flex;
 	flex-direction: column;
@@ -14,7 +14,7 @@ $inspector-drawer-tabs-height: 2.3em;
     z-index: 291;
     box-shadow: 0 0 20px #000;
 
-	.rundown-view__inspector-drawer__handle {
+	.rundown-view__shelf__handle {
 		position: absolute;
 		top: 0;
 		left: 50%;
@@ -38,7 +38,7 @@ $inspector-drawer-tabs-height: 2.3em;
 		}
 	}
 
-	.rundown-view__inspector-drawer__tabs {
+	.rundown-view__shelf__tabs {
 		flex: 0 0;
 		display: flex;
 		flex-direction: row;
@@ -46,7 +46,7 @@ $inspector-drawer-tabs-height: 2.3em;
 		justify-items: left;
 		min-height: $inspector-drawer-tabs-height;
 
-		.rundown-view__inspector-drawer__tabs__tab {
+		.rundown-view__shelf__tabs__tab {
 			position: relative;
 			flex: 1 1;
 			max-width: 7em;
@@ -82,7 +82,7 @@ $inspector-drawer-tabs-height: 2.3em;
 		}
 	}
 
-	.rundown-view__inspector-drawer__panel {
+	.rundown-view__shelf__panel {
 		flex: 1 1;
 		position: relative;
 

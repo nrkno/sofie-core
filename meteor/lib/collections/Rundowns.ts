@@ -14,7 +14,7 @@ import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
-import { IngestDataCache } from './IngestDataCache';
+import { IngestDataCache } from './IngestDataCache'
 
 export enum RundownHoldState {
 	NONE = 0,

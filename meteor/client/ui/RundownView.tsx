@@ -207,7 +207,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
 	RUNDOWN_RESET_RUNDOWN = 'mod+shift+f12',
 	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
-	RUNDOWN_TOGGLE_DRAWER = 'tab',
+	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNDOWN_NEXT_FORWARD = 'f9',
 	RUNDOWN_NEXT_DOWN = 'f10',
