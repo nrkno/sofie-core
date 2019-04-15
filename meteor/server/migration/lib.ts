@@ -231,3 +231,42 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 		overrideSteps: [id]
 	}
 }
+
+export function renamePropertiesInCollection<T extends any> (
+	id: string,
+	collection: Mongo.Collection<T>,
+	collectionName: string,
+	renames: {[oldName: string]: string}
+) {
+	const m: any = {
+		$or: []
+	}
+	_.each(_.keys(renames), (oldAttr) => {
+		const o = {}
+		o[oldAttr] = {$exists: true}
+		m.$or.push(o)
+	})
+	return {
+		id: id,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objCount = collection.find(m).count()
+			if (objCount > 0) return `${objCount} documents in ${collectionName} needs to be updated`
+			return false
+		},
+		migrate: () => {
+			collection.find(m).forEach((doc) => {
+				_.each(renames, (newAttr, oldAttr) => {
+					if (newAttr && oldAttr && newAttr !== oldAttr) {
+						if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
+							doc[newAttr] = doc[oldAttr]
+						}
+						delete doc[oldAttr]
+					}
+				})
+				collection.update(doc._id, doc)
+			})
+			//
+		}
+	}
+}
