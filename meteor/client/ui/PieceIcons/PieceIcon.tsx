@@ -16,7 +16,7 @@ import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 interface IPropsHeader {
-	segmentItemId: string
+	partId: string
 	rundownId: string
 	showStyleBaseId: string
 }
@@ -26,7 +26,7 @@ interface INamePropsHeader extends IPropsHeader {
 }
 
 export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
-	let items = Pieces.find({ partId: props.segmentItemId }).fetch()
+	let items = Pieces.find({ partId: props.partId }).fetch()
 
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
@@ -82,7 +82,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
-	let items = Pieces.find({ partId: props.segmentItemId }).fetch()
+	let items = Pieces.find({ partId: props.partId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}

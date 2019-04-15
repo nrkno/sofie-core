@@ -157,14 +157,14 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						<div className='clocks-half clocks-top'>
 							{currentPart ?
 								<React.Fragment>
-									<div className='clocks-segment-icon clocks-current-segment-icon'>
-										<PieceIconContainer segmentItemId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+									<div className='clocks-part-icon clocks-current-segment-icon'>
+										<PieceIconContainer partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									</div>
-									<div className='clocks-segment-title clocks-current-segment-title'>
+									<div className='clocks-part-title clocks-current-segment-title'>
 										{currentPart.title.split(';')[0]}
 									</div>
-									<div className='clocks-part-title clocks-segment-title clocks-current-segment-title'>
-										<PieceNameContainer partSlug={currentPart.title} segmentItemId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+									<div className='clocks-part-title clocks-part-title clocks-current-segment-title'>
+										<PieceNameContainer partSlug={currentPart.title} partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									</div>
 									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 										<Timediff time={currentSegmentDuration} />
@@ -176,22 +176,22 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 							}
 						</div>
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
-							<div className='clocks-segment-icon'>
+							<div className='clocks-part-icon'>
 								{nextPart ?
-									<PieceIconContainer segmentItemId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+									<PieceIconContainer partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 								: ''}
 							</div>
 							<div className='clocks-bottom-top'>
-								<div className='clocks-segment-title'>
+								<div className='clocks-part-title'>
 									{currentPart && currentPart.autoNext ?
 									<div style={{display: 'inline-block', height: '18vh'}}>
 										<img style={{height: '12vh', paddingTop: '2vh'}} src='/icons/auto-presenter-screen.svg' />
 									</div> : ''}
 									{nextPart ? nextPart.slug.split(';')[0] : '_'}
 								</div>
-								<div className='clocks-segment-title clocks-part-title'>
+								<div className='clocks-part-title clocks-part-title'>
 									{nextPart ?
-										<PieceNameContainer partSlug={nextPart.slug} segmentItemId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+										<PieceNameContainer partSlug={nextPart.slug} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									: '_'}
 								</div>
 							</div>
