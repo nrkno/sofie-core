@@ -544,7 +544,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			nextSegmentLineId: null,
 			previousSegmentLineId: null,
 			dataSource: 'mock',
-			mosDeviceId: 'testMosDevice',
+			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
 		})
 		let segmentID = segmentId(roID, '', 0)
@@ -601,7 +601,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			nextSegmentLineId: null,
 			previousSegmentLineId: null,
 			dataSource: 'mock',
-			mosDeviceId: 'testMosDevice',
+			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
 		})
 		Segments.insert({
@@ -624,7 +624,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			nextSegmentLineId: null,
 			previousSegmentLineId: null,
 			dataSource: 'mock',
-			mosDeviceId: 'testMosDevice',
+			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
 		})
 	})

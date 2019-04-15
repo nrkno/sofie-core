@@ -14,11 +14,11 @@ export interface MockRO {
 export const testRO1: MockRO = {
 	runningOrder: new RunningOrder(literal<DBRunningOrder>({
 		_id: 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-		mosId: '',
+		externalId: '',
 		studioInstallationId: '',
 		showStyleBaseId: '',
 		showStyleVariantId: '',
-		mosDeviceId: '',
+		peripheralDeviceId: '',
 		name: 'Infinite Mock 1',
 		created: 0,
 		modified: 0,
@@ -39,70 +39,70 @@ export const testRO1: MockRO = {
 			'_id': '6kb7AuZaDD5Ao_CGeOoYNgjk4uU_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'BYVEKST AVTALE'
 		},
 		{
 			'_id': 'tIvBNK46jZgZ6RbB8G7Q0RwttIY_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 0,
-			'mosId': '',
+			'externalId': '',
 			'name': 'VIGNETT'
 		},
 		{
 			'_id': 'sjZOWRQEV4YMFCCEVo24IG8yHzg_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 2,
-			'mosId': '',
+			'externalId': '',
 			'name': 'GJEST'
 		},
 		{
 			'_id': '5gnIW3D21_T_OBA8I9VVT_L3DIE_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 3,
-			'mosId': '',
+			'externalId': '',
 			'name': 'SYKKEL VEI'
 		},
 		{
 			'_id': 'PZ7S4nZrGfQYcjN6G21kkAn9PxY_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 4,
-			'mosId': '',
+			'externalId': '',
 			'name': 'PADLERE'
 		},
 		{
 			'_id': 'KfgYowajVA_cXg8UzQE3MRrdWOM_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 6,
-			'mosId': '',
+			'externalId': '',
 			'name': 'KOMMER 2055'
 		},
 		{
 			'_id': 'MXqlF3LNzJeAHkkLozXc5jNJwEE_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 5,
-			'mosId': '',
+			'externalId': '',
 			'name': 'DIREKTE PUNKT FESTIVAL'
 		},
 		{
 			'_id': '18J8ymz6_XVRPRyBkqEh4a_HT_k_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 7,
-			'mosId': '',
+			'externalId': '',
 			'name': 'SEERBILDE'
 		},
 		{
 			'_id': 'mMTQmzfQViEj2LHGSOdl1NvdWFQ_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 8,
-			'mosId': '',
+			'externalId': '',
 			'name': 'VÆRET'
 		},
 		{
 			'_id': 'sC4hfTUMutgKQnG_QrH0nBjbP_0_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'_rank': 9,
-			'mosId': '',
+			'externalId': '',
 			'name': 'TAKK FOR IDAG'
 		}
 	]
@@ -113,8 +113,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'tIvBNK46jZgZ6RbB8G7Q0RwttIY_',
 			'_rank': 0,
-			'mosId': '',
-			'slug': 'VIGNETT;Vignett',
+			'externalId': '',
+			'title': 'VIGNETT;Vignett',
 			'typeVariant': 'vignett',
 			'expectedDuration': 13240,
 			'subTypeVariant': ''
@@ -124,8 +124,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'tIvBNK46jZgZ6RbB8G7Q0RwttIY_',
 			'_rank': 1,
-			'mosId': '',
-			'slug': 'VIGNETT;Head 1',
+			'externalId': '',
+			'title': 'VIGNETT;Head 1',
 			'typeVariant': 'head',
 			'expectedDuration': 8880,
 			'subTypeVariant': ''
@@ -135,8 +135,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'tIvBNK46jZgZ6RbB8G7Q0RwttIY_',
 			'_rank': 2,
-			'mosId': '',
-			'slug': 'VIGNETT;Head 2',
+			'externalId': '',
+			'title': 'VIGNETT;Head 2',
 			'typeVariant': 'head',
 			'expectedDuration': 19960,
 			'subTypeVariant': ''
@@ -146,8 +146,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'tIvBNK46jZgZ6RbB8G7Q0RwttIY_',
 			'_rank': 3,
-			'mosId': '',
-			'slug': 'VIGNETT;Velkommen med super',
+			'externalId': '',
+			'title': 'VIGNETT;Velkommen med super',
 			'typeVariant': 'kam',
 			'expectedDuration': 4880,
 			'subTypeVariant': ''
@@ -157,8 +157,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '6kb7AuZaDD5Ao_CGeOoYNgjk4uU_',
 			'_rank': 4,
-			'mosId': '',
-			'slug': 'BYVEKST AVTALE;intro -',
+			'externalId': '',
+			'title': 'BYVEKST AVTALE;intro -',
 			'typeVariant': 'kam',
 			'expectedDuration': 14000,
 			'subTypeVariant': ''
@@ -168,8 +168,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '6kb7AuZaDD5Ao_CGeOoYNgjk4uU_',
 			'_rank': 5,
-			'mosId': '',
-			'slug': 'BYVEKST AVTALE;BYVEKST-AVTALE-300818-SL',
+			'externalId': '',
+			'title': 'BYVEKST AVTALE;BYVEKST-AVTALE-300818-SL',
 			'typeVariant': 'full',
 			'expectedDuration': 8560,
 			'subTypeVariant': ''
@@ -179,8 +179,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'sjZOWRQEV4YMFCCEVo24IG8yHzg_',
 			'_rank': 6,
-			'mosId': '',
-			'slug': 'GJEST;Intro',
+			'externalId': '',
+			'title': 'GJEST;Intro',
 			'typeVariant': 'kam',
 			'expectedDuration': 4880,
 			'subTypeVariant': ''
@@ -190,8 +190,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '5gnIW3D21_T_OBA8I9VVT_L3DIE_',
 			'_rank': 8,
-			'mosId': '',
-			'slug': 'SYKKEL VEI;intro -',
+			'externalId': '',
+			'title': 'SYKKEL VEI;intro -',
 			'typeVariant': 'kam',
 			'expectedDuration': 13000,
 			'subTypeVariant': ''
@@ -201,8 +201,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'sjZOWRQEV4YMFCCEVo24IG8yHzg_',
 			'_rank': 7,
-			'mosId': '',
-			'slug': 'GJEST;GJEST-',
+			'externalId': '',
+			'title': 'GJEST;GJEST-',
 			'typeVariant': 'kam',
 			'expectedDuration': 29880,
 			'subTypeVariant': ''
@@ -212,8 +212,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '5gnIW3D21_T_OBA8I9VVT_L3DIE_',
 			'_rank': 9,
-			'mosId': '',
-			'slug': 'SYKKEL VEI;SYKKEL-VEI-310818-SL',
+			'externalId': '',
+			'title': 'SYKKEL VEI;SYKKEL-VEI-310818-SL',
 			'typeVariant': 'full',
 			'expectedDuration': 110920,
 			'subTypeVariant': ''
@@ -223,8 +223,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'PZ7S4nZrGfQYcjN6G21kkAn9PxY_',
 			'_rank': 10,
-			'mosId': '',
-			'slug': 'PADLERE;Kamera - ikke skriv her',
+			'externalId': '',
+			'title': 'PADLERE;Kamera - ikke skriv her',
 			'typeVariant': 'kam',
 			'expectedDuration': 3000,
 			'subTypeVariant': ''
@@ -234,8 +234,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'PZ7S4nZrGfQYcjN6G21kkAn9PxY_',
 			'_rank': 11,
-			'mosId': '',
-			'slug': 'PADLERE;PADLERE-300818S-SL',
+			'externalId': '',
+			'title': 'PADLERE;PADLERE-300818S-SL',
 			'typeVariant': 'stk',
 			'expectedDuration': 21000,
 			'subTypeVariant': ''
@@ -245,8 +245,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'PZ7S4nZrGfQYcjN6G21kkAn9PxY_',
 			'_rank': 12,
-			'mosId': '',
-			'slug': 'PADLERE;PADLERE-300818F-SL',
+			'externalId': '',
+			'title': 'PADLERE;PADLERE-300818F-SL',
 			'typeVariant': 'full',
 			'expectedDuration': 9240,
 			'subTypeVariant': ''
@@ -256,8 +256,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'MXqlF3LNzJeAHkkLozXc5jNJwEE_',
 			'_rank': 13,
-			'mosId': '',
-			'slug': 'DIREKTE PUNKT FESTIVAL;intro -',
+			'externalId': '',
+			'title': 'DIREKTE PUNKT FESTIVAL;intro -',
 			'typeVariant': 'kam',
 			'expectedDuration': 9000,
 			'subTypeVariant': ''
@@ -267,8 +267,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'MXqlF3LNzJeAHkkLozXc5jNJwEE_',
 			'_rank': 15,
-			'mosId': '',
-			'slug': 'DIREKTE PUNKT FESTIVAL;Split',
+			'externalId': '',
+			'title': 'DIREKTE PUNKT FESTIVAL;Split',
 			'typeVariant': 'split',
 			'expectedDuration': 4000,
 			'subTypeVariant': '',
@@ -279,8 +279,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'MXqlF3LNzJeAHkkLozXc5jNJwEE_',
 			'_rank': 14,
-			'mosId': '',
-			'slug': 'DIREKTE PUNKT FESTIVAL;PUNKTFESTIVALE-300818S-SL',
+			'externalId': '',
+			'title': 'DIREKTE PUNKT FESTIVAL;PUNKTFESTIVALE-300818S-SL',
 			'typeVariant': 'stk',
 			'expectedDuration': 11800,
 			'subTypeVariant': ''
@@ -290,8 +290,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'MXqlF3LNzJeAHkkLozXc5jNJwEE_',
 			'_rank': 16,
-			'mosId': '',
-			'slug': 'DIREKTE PUNKT FESTIVAL;Live',
+			'externalId': '',
+			'title': 'DIREKTE PUNKT FESTIVAL;Live',
 			'typeVariant': 'dir',
 			'expectedDuration': 0,
 			'subTypeVariant': ''
@@ -301,8 +301,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'KfgYowajVA_cXg8UzQE3MRrdWOM_',
 			'_rank': 17,
-			'mosId': '',
-			'slug': 'KOMMER 2055;Kamera - ikke skriv her',
+			'externalId': '',
+			'title': 'KOMMER 2055;Kamera - ikke skriv her',
 			'typeVariant': 'kam',
 			'expectedDuration': 0,
 			'subTypeVariant': ''
@@ -312,8 +312,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'KfgYowajVA_cXg8UzQE3MRrdWOM_',
 			'_rank': 18,
-			'mosId': '',
-			'slug': 'KOMMER 2055;STK',
+			'externalId': '',
+			'title': 'KOMMER 2055;STK',
 			'typeVariant': 'stk',
 			'expectedDuration': 15000,
 			'subTypeVariant': ''
@@ -323,8 +323,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'KfgYowajVA_cXg8UzQE3MRrdWOM_',
 			'_rank': 19,
-			'mosId': '',
-			'slug': 'KOMMER 2055;SYNK',
+			'externalId': '',
+			'title': 'KOMMER 2055;SYNK',
 			'typeVariant': 'full',
 			'expectedDuration': 15000,
 			'subTypeVariant': ''
@@ -334,8 +334,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '18J8ymz6_XVRPRyBkqEh4a_HT_k_',
 			'_rank': 20,
-			'mosId': '',
-			'slug': 'SEERBILDE;Kamera - ikke skriv her',
+			'externalId': '',
+			'title': 'SEERBILDE;Kamera - ikke skriv her',
 			'typeVariant': 'kam',
 			'expectedDuration': 3000,
 			'subTypeVariant': ''
@@ -345,8 +345,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '18J8ymz6_XVRPRyBkqEh4a_HT_k_',
 			'_rank': 21,
-			'mosId': '',
-			'slug': 'SEERBILDE;SEERBILDE',
+			'externalId': '',
+			'title': 'SEERBILDE;SEERBILDE',
 			'typeVariant': 'grafikk',
 			'expectedDuration': 15000,
 			'subTypeVariant': ''
@@ -356,8 +356,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'mMTQmzfQViEj2LHGSOdl1NvdWFQ_',
 			'_rank': 22,
-			'mosId': '',
-			'slug': 'VÆRET;Kamera - ikke skriv her',
+			'externalId': '',
+			'title': 'VÆRET;Kamera - ikke skriv her',
 			'typeVariant': 'kam',
 			'expectedDuration': 0,
 			'subTypeVariant': ''
@@ -367,8 +367,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'mMTQmzfQViEj2LHGSOdl1NvdWFQ_',
 			'_rank': 23,
-			'mosId': '',
-			'slug': 'VÆRET;VERET-LØRDAG-310818S-SL',
+			'externalId': '',
+			'title': 'VÆRET;VERET-LØRDAG-310818S-SL',
 			'typeVariant': 'grafikk',
 			'expectedDuration': 15000,
 			'subTypeVariant': ''
@@ -378,8 +378,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'mMTQmzfQViEj2LHGSOdl1NvdWFQ_',
 			'_rank': 24,
-			'mosId': '',
-			'slug': 'VÆRET;VERET-SØNDAG-310818S-SL',
+			'externalId': '',
+			'title': 'VÆRET;VERET-SØNDAG-310818S-SL',
 			'typeVariant': 'stk',
 			'expectedDuration': 0,
 			'subTypeVariant': ''
@@ -389,8 +389,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'sC4hfTUMutgKQnG_QrH0nBjbP_0_',
 			'_rank': 25,
-			'mosId': '',
-			'slug': 'TAKK FOR IDAG;tekst - takk for nå.',
+			'externalId': '',
+			'title': 'TAKK FOR IDAG;tekst - takk for nå.',
 			'typeVariant': 'kam',
 			'expectedDuration': 5000,
 			'subTypeVariant': ''
@@ -400,8 +400,8 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': 'sC4hfTUMutgKQnG_QrH0nBjbP_0_',
 			'_rank': 26,
-			'mosId': '',
-			'slug': 'TAKK FOR IDAG;SLUTTKREDITT LUKKING',
+			'externalId': '',
+			'title': 'TAKK FOR IDAG;SLUTTKREDITT LUKKING',
 			'typeVariant': 'kam',
 			'expectedDuration': 13540,
 			'subTypeVariant': ''
@@ -413,7 +413,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'GuR5i3ccRRKVhdOtOmgzP8Coeqs_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Vignett',
 			'trigger': {
 				'type': 0,
@@ -431,7 +431,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'GuR5i3ccRRKVhdOtOmgzP8Coeqs_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Vignett bed',
 			'trigger': {
 				'type': 0,
@@ -450,7 +450,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'GuR5i3ccRRKVhdOtOmgzP8Coeqs_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Record',
 			'trigger': {
 				'type': 0,
@@ -469,7 +469,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '(…||…nye bomstasjoner.\n)',
 			'trigger': {
 				'type': 0,
@@ -489,7 +489,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'HEAD-BYVEKST-300818S-SL',
 			'trigger': {
 				'type': 0,
@@ -510,7 +510,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W1',
 			'trigger': {
 				'type': 0,
@@ -529,7 +529,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Frykter tap av millioner',
 			'trigger': {
 				'type': 1,
@@ -549,7 +549,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'qGi_A8A0NtZoSgNnYZVNI_Vb700_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '(Skriv tekst her:…||…til jobb.\n.',
 			'trigger': {
 				'type': 0,
@@ -569,7 +569,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'qGi_A8A0NtZoSgNnYZVNI_Vb700_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'zz-tirsdag-b_000_15481653457966',
 			'trigger': {
 				'type': 0,
@@ -590,7 +590,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'qGi_A8A0NtZoSgNnYZVNI_Vb700_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W1',
 			'trigger': {
 				'type': 0,
@@ -609,7 +609,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'qGi_A8A0NtZoSgNnYZVNI_Vb700_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Ny sykkelvei til 80 millioner',
 			'trigger': {
 				'type': 1,
@@ -629,7 +629,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '2',
 			'trigger': {
 				'type': 0,
@@ -648,7 +648,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '[AUTOMATION:CG\\programTab\\blah blah blah\\breaking\\Of…||…blah blah\\breaking\\Of doom\\\\\\\\\\2000:auto:5000\\AUTOMATIC]',
 			'trigger': {
 				'type': 0,
@@ -668,7 +668,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W1p',
 			'trigger': {
 				'type': 0,
@@ -687,7 +687,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '50 Logo (00:00, Auto/Manual)',
 			'trigger': {
 				'type': 1,
@@ -707,7 +707,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '51 Klokke (00:00, Auto/Manual)',
 			'trigger': {
 				'type': 1,
@@ -727,7 +727,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Lars Eie',
 			'trigger': {
 				'type': 1,
@@ -747,7 +747,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 0,
@@ -759,15 +759,14 @@ export const testRO1: MockRO = {
 			'virtual': true,
 			'content': {
 				'timelineObjects': []
-			},
-			'fromPostProcess': true
+			}
 		},
 		{
 			'_id': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ__bed_fade',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Vignett Bed Fade',
 			'trigger': {
 				'type': 0,
@@ -778,15 +777,14 @@ export const testRO1: MockRO = {
 			'expectedDuration': 160,
 			'content': {
 				'timelineObjects': []
-			},
-			'fromPostProcess': true
+			}
 		},
 		{
 			'_id': '6a0SIN5JtjSSL_XofAJoRCoaMPA_',
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'kjW9GfMhvvh_CdSnBrnQmd9WBOk_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '2',
 			'trigger': {
 				'type': 0,
@@ -805,7 +803,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'kjW9GfMhvvh_CdSnBrnQmd9WBOk_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '[AUTOMATION:CG\\mainStrap\\Julian Waller\\Breaker of…||…statlige millioner. /S/',
 			'trigger': {
 				'type': 0,
@@ -825,7 +823,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '2yKRioTfVGnRztaYBn3uW013U7M_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'blah blah blah -2dB',
 			'trigger': {
 				'type': 0,
@@ -846,7 +844,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '2yKRioTfVGnRztaYBn3uW013U7M_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Anne Wirsching, reporter',
 			'trigger': {
 				'type': 1,
@@ -866,7 +864,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '2yKRioTfVGnRztaYBn3uW013U7M_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Harald Furre, ordfører Kristiansand (H)',
 			'trigger': {
 				'type': 1,
@@ -886,7 +884,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '2yKRioTfVGnRztaYBn3uW013U7M_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Foto/redigering:, Anne Wirsching',
 			'trigger': {
 				'type': 1,
@@ -906,7 +904,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '2yKRioTfVGnRztaYBn3uW013U7M_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Mette Gundersen, gruppeleder, Arbeiderpartiet, Kristiansand',
 			'trigger': {
 				'type': 1,
@@ -926,7 +924,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'IomGMc7Zfwxem69eqqvlMjRSj9E_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '1',
 			'trigger': {
 				'type': 0,
@@ -945,7 +943,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'IomGMc7Zfwxem69eqqvlMjRSj9E_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W1',
 			'trigger': {
 				'type': 0,
@@ -964,7 +962,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'R0HMkiSy38MascKSmom2ovahStc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '2',
 			'trigger': {
 				'type': 0,
@@ -983,7 +981,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'R0HMkiSy38MascKSmom2ovahStc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W1',
 			'trigger': {
 				'type': 0,
@@ -1002,7 +1000,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'R0HMkiSy38MascKSmom2ovahStc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Gjest',
 			'trigger': {
 				'type': 0,
@@ -1021,7 +1019,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'saTW13T4_wBQQIXXw9J1dRU0XXw_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Det har kostet…||…ta sykkelen fatt.',
 			'trigger': {
 				'type': 0,
@@ -1041,7 +1039,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'saTW13T4_wBQQIXXw9J1dRU0XXw_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '2',
 			'trigger': {
 				'type': 0,
@@ -1060,7 +1058,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'saTW13T4_wBQQIXXw9J1dRU0XXw_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'RM1',
 			'trigger': {
 				'type': 0,
@@ -1081,7 +1079,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'SYKKELVEI-II-310818-SL',
 			'trigger': {
 				'type': 0,
@@ -1102,7 +1100,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Hans Erik Weiby, reporter',
 			'trigger': {
 				'type': 1,
@@ -1122,7 +1120,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Eva Høiby',
 			'trigger': {
 				'type': 1,
@@ -1142,7 +1140,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Kirsten Falch',
 			'trigger': {
 				'type': 1,
@@ -1162,7 +1160,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Jørgen Haugland Kristiansen, varaordfører, Kristiansand (Krf)',
 			'trigger': {
 				'type': 1,
@@ -1182,7 +1180,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Dagfinn Fløystad, avdelingsdirektør, Statens Vegvesen',
 			'trigger': {
 				'type': 1,
@@ -1202,7 +1200,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Foto/redigering:, Hans Erik Weiby',
 			'trigger': {
 				'type': 1,
@@ -1222,7 +1220,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'BNx_pjsUS_NZmV8z_YmAT_C0riU_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '1',
 			'trigger': {
 				'type': 0,
@@ -1241,7 +1239,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'BNx_pjsUS_NZmV8z_YmAT_C0riU_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '||…[Merknad:Ikke slriv her]',
 			'trigger': {
 				'type': 0,
@@ -1261,7 +1259,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'rUiB1GP4V671z_rYY03v1eM_icQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Har seilt hele Norskekysten',
 			'trigger': {
 				'type': 1,
@@ -1281,7 +1279,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'rUiB1GP4V671z_rYY03v1eM_icQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'PADLERE-300818S-SL',
 			'infiniteMode': 1,
 			'trigger': {
@@ -1302,7 +1300,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'rUiB1GP4V671z_rYY03v1eM_icQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '22 Sted/Arkiv (00:00=>00:05, Auto/Auto)',
 			'trigger': {
 				'type': 1,
@@ -1322,7 +1320,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'rUiB1GP4V671z_rYY03v1eM_icQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Elin Ellingsvik Vegestøl…||…langs med kajakk.',
 			'trigger': {
 				'type': 0,
@@ -1342,7 +1340,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '3_qhlFEIYlESrvZYxbk3ie_5_z0_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'PADLERE-300818F-SL',
 			'trigger': {
 				'type': 0,
@@ -1363,7 +1361,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '3_qhlFEIYlESrvZYxbk3ie_5_z0_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W2',
 			'trigger': {
 				'type': 0,
@@ -1382,7 +1380,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '3_qhlFEIYlESrvZYxbk3ie_5_z0_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Elin Ellingsvik Vegestøl',
 			'trigger': {
 				'type': 1,
@@ -1402,7 +1400,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'Q5fb7VHFWQZjgdUQ_AD9QZjrknk_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '1',
 			'trigger': {
 				'type': 0,
@@ -1421,7 +1419,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'Q5fb7VHFWQZjgdUQ_AD9QZjrknk_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'I dag åpner…||…inn- og utland.',
 			'trigger': {
 				'type': 0,
@@ -1441,7 +1439,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'W3bcE_DKgzZwoq17RsaKBn3__yc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'W3',
 			'trigger': {
 				'type': 0,
@@ -1460,7 +1458,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'W3bcE_DKgzZwoq17RsaKBn3__yc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'PUNKTFESTIVALE-300818S-SL',
 			'trigger': {
 				'type': 0,
@@ -1480,7 +1478,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'W3bcE_DKgzZwoq17RsaKBn3__yc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Kristiansand',
 			'trigger': {
 				'type': 1,
@@ -1500,7 +1498,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'W3bcE_DKgzZwoq17RsaKBn3__yc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '10 Tema|Vanlig (00:00, Auto/OnNext)',
 			'trigger': {
 				'type': 1,
@@ -1520,7 +1518,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'BX_SmzfT60bQ2_6VGHxKuzjKZdg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'K1 RM1',
 			'trigger': {
 				'type': 0,
@@ -1540,7 +1538,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'BX_SmzfT60bQ2_6VGHxKuzjKZdg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '10 Tema|Vanlig (00:00, Auto/OnNext)',
 			'trigger': {
 				'type': 1,
@@ -1560,7 +1558,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'BX_SmzfT60bQ2_6VGHxKuzjKZdg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Kristiansand',
 			'trigger': {
 				'type': 1,
@@ -1580,7 +1578,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'BX_SmzfT60bQ2_6VGHxKuzjKZdg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Og, kollega Janne…||…med Punkt festivalen?',
 			'trigger': {
 				'type': 0,
@@ -1600,7 +1598,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'kPKjHD_z3qXD35LqPOD314lOSPo_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'RM 1',
 			'trigger': {
 				'type': 0,
@@ -1619,7 +1617,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'MTwVEbe90uguNcecrum5tqVLzWg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '||…[Merknad:Ikke slriv her]',
 			'trigger': {
 				'type': 0,
@@ -1639,7 +1637,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'MTwVEbe90uguNcecrum5tqVLzWg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '2',
 			'trigger': {
 				'type': 0,
@@ -1658,7 +1656,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nArzKAkxPONWUVchEVB4o1Q4VsE_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '||…]',
 			'trigger': {
 				'type': 0,
@@ -1678,7 +1676,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nArzKAkxPONWUVchEVB4o1Q4VsE_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '10 Tema|Vanlig (00:00, Auto/OnNext)',
 			'trigger': {
 				'type': 1,
@@ -1698,7 +1696,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'nArzKAkxPONWUVchEVB4o1Q4VsE_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'blah blah blah',
 			'infiniteMode': 1,
 			'trigger': {
@@ -1719,7 +1717,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'UoSeVe3h1b67aSun_UMUSSz9NZw_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'blah blah blah +3dB',
 			'trigger': {
 				'type': 0,
@@ -1740,7 +1738,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'UoSeVe3h1b67aSun_UMUSSz9NZw_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '||…]',
 			'trigger': {
 				'type': 0,
@@ -1760,7 +1758,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'cq9VY7XbnFhpZGSr0q5tfvOx5gs_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '1',
 			'trigger': {
 				'type': 0,
@@ -1779,7 +1777,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'gRQFPOgXaV7r_WqgNCPqVcAvsGc_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Utsikt fra Vogts villa',
 			'trigger': {
 				'type': 0,
@@ -1798,7 +1796,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'zZPFW5kV_Cy1w_NeZX7nvAGxFSQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '1',
 			'trigger': {
 				'type': 0,
@@ -1817,7 +1815,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'zZPFW5kV_Cy1w_NeZX7nvAGxFSQ_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '||…[Merknad:Ikke slriv her]',
 			'trigger': {
 				'type': 0,
@@ -1837,7 +1835,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': '1WWrqgLIvlxNE4ciwOSL2Qn2yCI_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Utsikt fra Vogts villa',
 			'trigger': {
 				'type': 0,
@@ -1856,7 +1854,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'jh3nz3Le_21YJMCMTZ_uwp6smDY_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'VERET-SØNDAG-310818S-SL',
 			'infiniteMode': 1,
 			'trigger': {
@@ -1877,7 +1875,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'jh3nz3Le_21YJMCMTZ_uwp6smDY_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'M12',
 			'trigger': {
 				'type': 0,
@@ -1896,7 +1894,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'jh3nz3Le_21YJMCMTZ_uwp6smDY_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'Værdata er levert av Meteorologisk institutt',
 			'trigger': {
 				'type': 1,
@@ -1916,7 +1914,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'gtWWWXdaRUM3KfiXAWoRUN879a8_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'nrk.no/sorlandet',
 			'trigger': {
 				'type': 1,
@@ -1936,7 +1934,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'gtWWWXdaRUM3KfiXAWoRUN879a8_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '1',
 			'trigger': {
 				'type': 0,
@@ -1955,7 +1953,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '4',
 			'trigger': {
 				'type': 0,
@@ -1974,7 +1972,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': 'M12',
 			'trigger': {
 				'type': 0,
@@ -1993,7 +1991,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2012,7 +2010,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2031,7 +2029,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2050,7 +2048,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2069,7 +2067,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2088,7 +2086,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2107,7 +2105,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2126,7 +2124,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,
@@ -2145,7 +2143,7 @@ export const testRO1: MockRO = {
 			'runningOrderId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentLineId': 'ESeI8e10J9XgRKIVYfs9BHu_mMg_',
 			'status': -1,
-			'mosId': '',
+			'externalId': '',
 			'name': '',
 			'trigger': {
 				'type': 1,

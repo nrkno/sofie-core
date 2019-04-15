@@ -13,6 +13,7 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
+import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -52,6 +53,10 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					/>
 				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 					return <MediaManagerSettingsComponent
+						device={this.props.device}
+					/>
+				case 4: // PeripheralDeviceAPI.DeviceType.SPREADSHEET: // TODO
+					return <SpreadsheetSettingsComponent
 						device={this.props.device}
 					/>
 			}

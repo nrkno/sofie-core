@@ -161,10 +161,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
 									</div>
 									<div className='clocks-segment-title clocks-current-segment-title'>
-										{currentSegmentLine.slug.split(';')[0]}
+										{currentSegmentLine.title.split(';')[0]}
 									</div>
 									<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
+										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.title} segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
 									</div>
 									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 										<Timediff time={currentSegmentDuration} />

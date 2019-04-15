@@ -7,7 +7,8 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { translate } from 'react-i18next'
-import { PeripheralDevices, PlayoutDeviceSettings, MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -83,7 +84,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 	}
 
 	addNewDevice = () => {
-		let settings = this.props.device.settings as PlayoutDeviceSettings || {}
+		let settings = this.props.device.settings as MosDeviceSettings || {}
 		// find free key name
 		let newDeviceId = 'mosDevice'
 		let iter = 0
@@ -217,7 +218,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 
 	render () {
 		const { t, subDevices } = this.props
-		const settings = this.props.device.settings as PlayoutDeviceSettings
+		const settings = this.props.device.settings as MosDeviceSettings
 		return (<div>
 			<div>
 				<label className='field'>

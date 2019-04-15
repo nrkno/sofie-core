@@ -10,49 +10,22 @@ import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
 import {
-	IMessageBlueprintSegmentLine,
-	IMessageBlueprintSegmentLineTimings,
+	IBlueprintSegmentLineDB,
 	SegmentLineHoldMode,
 	BlueprintRuntimeArguments,
-	MOS
+	IBlueprintSegmentLineDBTimings,
 } from 'tv-automation-sofie-blueprints-integration'
 import { SegmentLineNote, NoteType } from '../api/notes'
 
 /** A "Line" in NRK Lingo. */
-export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
-	_id: string
-  /** Position inside the segment */
+export interface DBSegmentLine extends IBlueprintSegmentLineDB {
+	/** Position inside the segment */
 	_rank: number
-  /** ID of the source object in MOS */
-	mosId: string
-  /** The segment ("Title") this line belongs to */
-	segmentId: string
-  /** The running order this line belongs to */
+
+	/** The running order this line belongs to */
 	runningOrderId: string
-	/** When something bad has happened, we can mark the SL as invalid, which will prevent the user from TAKE:ing it */
-	invalid?: boolean
-	/** The story Slug (like a title, but slimier) */
-	slug: string
-	/** Should this item should progress to the next automatically */
-	autoNext?: boolean
-	/** How much this sl should overrun into next on autonext (eg vignett out transition) */
-	autoNextOverlap?: number
-	/** How long to before this sl is ready to take over from the previous */
-	prerollDuration?: number
-	/** How long to before this sl is ready to take over from the previous (during transition) */
-	transitionPrerollDuration?: number | null
-	/** How long to keep the old sl alive during the transition */
-	transitionKeepaliveDuration?: number | null
-	/** Should we block a transition at the out of this SegmentLine */
-	disableOutTransition?: boolean
-	/** If true, the story status (yellow line) will be updated upon next:ing  */
-	updateStoryStatus?: boolean
 
-	metaData?: Array<MOS.IMOSExternalMetaData>
-	status?: MOS.IMOSObjectStatus
-
-	/** Expected duration of the line, in milliseconds */
-	expectedDuration?: number
+	status?: string
 
 	/** Whether the sl has started playback (the most recent time it was played).
 	 * This is reset each time setAsNext is used.
@@ -69,17 +42,6 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	 */
 	duration?: number
 
-	/** The type of the segmentLiene, could be the name of the blueprint that created it */
-	typeVariant: string
-	/** The subtype fo the segmentLine */
-	subTypeVariant?: string
-
-	/** Playout timings, in here we log times when playout happens */
-	timings?: SegmentLineTimings
-
-	/** Whether this segment line supports being used in HOLD */
-	holdMode?: SegmentLineHoldMode
-
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentLineNote>
 	/** if the segmentLine is inserted after another (for adlibbing) */
@@ -92,15 +54,9 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
 	dirty?: boolean
 }
-export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings {
-	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
-	take: Array<Time>,
-	/** Point in time the "take" action has finished executing */
-	takeDone: Array<Time>,
-	/** Point in time the SegmentLine started playing (ie the time of the playout) */
-	startedPlayback: Array<Time>,
-	/** Point in time the SegmentLine stopped playing (ie the time of the user action) */
-	takeOut: Array<Time>,
+export interface SegmentLineTimings extends IBlueprintSegmentLineDBTimings {
+	// TODO: remove these, as they are duplicates with IBlueprintSegmentLineDBTimings
+
 	/** Point in time the SegmentLine stopped playing (ie the time of the playout) */
 	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
@@ -112,19 +68,19 @@ export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings 
 export class SegmentLine implements DBSegmentLine {
 	public _id: string
 	public _rank: number
-	public mosId: string
+	public title: string
+	public externalId: string
 	public segmentId: string
 	public runningOrderId: string
 	public invalid: boolean
-	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
 	public prerollDuration?: number
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
 	public transitionDuration?: number | null
-	public metaData?: Array<MOS.IMOSExternalMetaData>
-	public status?: MOS.IMOSObjectStatus
+	public metaData?: { [key: string]: any }
+	public status?: string
 	public expectedDuration?: number
 	public displayDuration?: number
 	public displayDurationGroup?: string

@@ -9,14 +9,18 @@ meteorPublish(PubSub.peripheralDevices, function (selector, token) {
 
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 
-	const modifier = {
-		fields: {
-			token: 0
-		}
-	}
-
 	if (PeripheralDeviceSecurity.allowReadAccess(selector, token, this)) {
 
+		const modifier = {
+			fields: {
+				token: 0,
+				secretSettings: 0
+			}
+		}
+		if (selector._id && token) {
+			// in this case, send the secretSettings:
+			delete modifier.fields.secretSettings
+		}
 		return PeripheralDevices.find(selector, modifier)
 
 	}
@@ -29,6 +33,13 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector) {
 
 	const parents = PeripheralDevices.find(selector).fetch()
 
+	const modifier = {
+		fields: {
+			token: 0,
+			secretSettings: 0
+		}
+	}
+
 	const cursor = PeripheralDevices.find({
 		$or: [
 			{
@@ -36,7 +47,7 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector) {
 			},
 			selector
 		]
-	})
+	}, modifier)
 
 	return cursor
 })

@@ -411,7 +411,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			} else if (line.segmentLineId !== previousSegmentLineId) {
 
 				let segmentLine = SegmentLines.findOne(line.segmentLineId)
-				let title: string = segmentLine ? segmentLine.slug : 'N/A'
+				let title: string = segmentLine ? segmentLine.title : 'N/A'
 				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
 				divs.push(

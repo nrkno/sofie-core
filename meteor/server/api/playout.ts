@@ -66,21 +66,9 @@ import {
 	SegmentLineItemLifespan,
 	SegmentLineHoldMode,
 	TimelineObjHoldMode,
-	MOS,
 	TimelineObjectCoreExt,
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
-import {
-	loadShowStyleBlueprints,
-	postProcessSegmentLineAdLibItems,
-	postProcessSegmentLineBaselineItems,
-	RunningOrderContext,
-	getBlueprintOfRunningOrder,
-	SegmentLineContext,
-	loadStudioBlueprints,
-	StudioContext,
-	postProcessStudioBaselineObjects
-} from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -105,6 +93,9 @@ import {
 	reportSegmentLineItemHasStopped
 } from './asRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
+import { getBlueprintOfRunningOrder, loadStudioBlueprints } from './blueprints/cache'
+import { RunningOrderContext, StudioContext, PartEventContext } from './blueprints/context'
+import { postProcessStudioBaselineObjects } from './blueprints/postProcess'
 const PackageInfo = require('../../package.json')
 
 export namespace ServerPlayoutAPI {
@@ -375,48 +366,12 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 
-		if (wasInactive) {
-
-			logger.info('Building baseline items...')
-
-			const showStyleBase = runningOrder.getShowStyleBase()
-			let blueprint = loadShowStyleBlueprints(showStyleBase)
-
-			const context = new RunningOrderContext(runningOrder)
-
-			const res = blueprint.getBaseline(context)
-			const baselineItems = postProcessSegmentLineBaselineItems(context, res.baselineItems)
-			const adlibItems = postProcessSegmentLineAdLibItems(context, res.adLibItems, 'baseline')
-
-			// TODO - should any notes be logged as a warning, or is that done already?
-
-			if (baselineItems) {
-				logger.info(`... got ${baselineItems.length} items from baseline.`)
-
-				const baselineItem: RunningOrderBaselineItem = {
-					_id: Random.id(7),
-					runningOrderId: runningOrder._id,
-					objects: baselineItems
-				}
-
-				saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-					runningOrderId: runningOrder._id
-				}, [baselineItem])
-			}
-
-			if (adlibItems) {
-				logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
-				saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-					runningOrderId: runningOrder._id
-				}, adlibItems)
-			}
-		}
 		updateTimeline(studio._id)
 
 		Meteor.defer(() => {
 			let bp = getBlueprintOfRunningOrder(runningOrder)
 			if (bp.onRunningOrderActivate) {
-				Promise.resolve(bp.onRunningOrderActivate(new RunningOrderContext(runningOrder)))
+				Promise.resolve(bp.onRunningOrderActivate(new RunningOrderContext(runningOrder, studio)))
 				.catch(logger.error)
 			}
 		})
@@ -553,7 +508,7 @@ export namespace ServerPlayoutAPI {
 	}
 	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
 		const ro = new RunningOrder(runningOrder)
-		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as MOS.IMOSROFullStory
+		const story = ro.fetchCache(CachePrefix.INGEST_PART + segmentLine._id)
 		const sl = new SegmentLine(segmentLine)
 		updateStory(ro, sl, story)
 
@@ -705,7 +660,7 @@ export namespace ServerPlayoutAPI {
 		if (blueprint.onPreTake) {
 			try {
 				waitForPromise(
-					Promise.resolve(blueprint.onPreTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+					Promise.resolve(blueprint.onPreTake(new PartEventContext(runningOrder, undefined, takeSegmentLine)))
 					.catch(logger.error)
 				)
 			} catch (e) {
@@ -791,13 +746,13 @@ export namespace ServerPlayoutAPI {
 			// let bp = getBlueprintOfRunningOrder(runningOrder)
 			if (firstTake) {
 				if (blueprint.onRunningOrderFirstTake) {
-					Promise.resolve(blueprint.onRunningOrderFirstTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+					Promise.resolve(blueprint.onRunningOrderFirstTake(new PartEventContext(runningOrder, undefined, takeSegmentLine)))
 					.catch(logger.error)
 				}
 			}
 
 			if (blueprint.onPostTake) {
-				Promise.resolve(blueprint.onPostTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+				Promise.resolve(blueprint.onPostTake(new PartEventContext(runningOrder, undefined, takeSegmentLine)))
 				.catch(logger.error)
 			}
 		})
@@ -1485,10 +1440,10 @@ export namespace ServerPlayoutAPI {
 		SegmentLines.insert({
 			_id: newSegmentLineId,
 			_rank: 99999, // something high, so it will be placed last
-			mosId: '',
+			externalId: '',
 			segmentId: segmentLine.segmentId,
 			runningOrderId: ro._id,
-			slug: sladli.name,
+			title: sladli.name,
 			dynamicallyInserted: true,
 			afterSegmentLine: segmentLine._id,
 			typeVariant: 'adlib'

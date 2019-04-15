@@ -578,7 +578,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						/>
 					 }
 				</div>
-				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
+				<div className='segment-timeline__mos-id'>{this.props.segment.externalId}</div>
 				<div className='segment-timeline__output-layers'>
 					{this.renderOutputLayerControls()}
 				</div>

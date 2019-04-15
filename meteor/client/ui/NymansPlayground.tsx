@@ -141,7 +141,7 @@ class extends MeteorReactComponent<IRunningOrders> {
 				<div>ID: <i>{ro._id}</i></div>
 				<div>Created: {ro.created}</div>
 
-				<div>mosId: {ro.mosId}</div>
+				<div>externalId: {ro.externalId}</div>
 				<div>studioInstallationId: {ro.studioInstallationId}</div>
 				<div>showStyleBaseId: {ro.showStyleBaseId}</div>
 				<div>showStyleVariantId: {ro.showStyleVariantId}</div>
@@ -248,7 +248,7 @@ class extends MeteorReactComponent<ISegmentLineProps & ISegmentLineTrackedState,
 			<div key={segmentLine._id}>
 				<b>SegmentLine</b>
 				<div>ID: <i>{segmentLine._id}</i></div>
-				<div>MosId: <i>{segmentLine.mosId}</i></div>
+				<div>externalId: <i>{segmentLine.externalId}</i></div>
 			</div>
 		))
 	}

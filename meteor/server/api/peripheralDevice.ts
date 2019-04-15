@@ -11,9 +11,13 @@ import { logger } from '../logging'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
-import { syncFunction } from '../codeControl'
 import { setMeteorMethods, Methods } from '../methods'
 import { wrapMethods } from '../lib'
+import { Picker } from 'meteor/meteorhacks:picker'
+import { IncomingMessage, ServerResponse } from 'http'
+import * as bodyParser from 'body-parser'
+import { parse as parseUrl } from 'url'
+import { syncFunction } from '../codeControl'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -262,7 +266,81 @@ export namespace ServerPeripheralDeviceAPI {
 		let cb = args.slice(-1)[0] // the last argument in ...args
 		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
 	})
+
+	export function requestUserAuthToken (id: string, token: string, authUrl: string) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+
+		check(authUrl, String)
+
+		PeripheralDevices.update(peripheralDevice._id, {$set: {
+			accessTokenUrl: authUrl
+		}})
+	}
+	export function storeAccessToken (id: string, token: string, accessToken: any) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+
+		PeripheralDevices.update(peripheralDevice._id, {$set: {
+			accessTokenUrl: '',
+			'secretSettings.accessToken': accessToken,
+			'settings.secretAccessToken' : true
+		}})
+	}
 }
+
+const postRoute = Picker.filter((req, res) => req.method === 'POST')
+postRoute.middleware(bodyParser.text({
+	type: 'text/javascript',
+	limit: '1mb'
+}))
+postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let deviceId = decodeURIComponent(params.deviceId)
+
+	let url = parseUrl(req.url || '', true)
+
+	let fileNames = url.query['name'] || undefined
+	let fileName: string = (
+		_.isArray(fileNames) ?
+		fileNames[0] :
+		fileNames
+	) || ''
+
+	check(deviceId, String)
+	check(fileName, String)
+
+	// console.log('Upload of file', fileName, deviceId)
+
+	let content = ''
+	try {
+		const peripheralDevice = PeripheralDevices.findOne(deviceId) // TODO: a better security model is needed here. Token is a no-go, but something else to verify the user?
+		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice ${deviceId} not found`)
+
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
+
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Upload credentials: Invalid request body')
+
+		logger.info('Upload credentails, ' + body.length + ' bytes')
+
+		const credentials = JSON.parse(body)
+
+		PeripheralDevices.update(peripheralDevice._id, {$set: {
+			'secretSettings.credentials' : credentials,
+			'settings.secretCredentials' : true
+		}})
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Upload credentials failed: ' + e)
+	}
+
+	res.end(content)
+})
 
 /**
  * Insert a Story (aka a Segment) into the database
@@ -350,6 +428,13 @@ methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken
 }
 methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
 	return ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r)
+}
+
+methods[PeripheralDeviceAPI.methods.requestUserAuthToken] = (deviceId: string, deviceToken: string, authUrl: string) => {
+	return ServerPeripheralDeviceAPI.requestUserAuthToken(deviceId, deviceToken, authUrl)
+}
+methods[PeripheralDeviceAPI.methods.storeAccessToken] = (deviceId: string, deviceToken: string, authToken: any) => {
+	return ServerPeripheralDeviceAPI.storeAccessToken(deviceId, deviceToken, authToken)
 }
 
 // --------------------

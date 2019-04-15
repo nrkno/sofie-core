@@ -24,9 +24,10 @@ import {
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { logger } from '../../lib/logging'
-import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
 import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
+import { getBlueprintOfRunningOrder } from './blueprints/cache'
+import { AsRunEventContext } from './blueprints/context'
 
 const EVENT_WAIT_TIME = 500
 
@@ -63,13 +64,13 @@ function handleEvent (event: AsRunLogEvent): void {
 		try {
 			if (event.runningOrderId) {
 
-				let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
+				const runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
 				if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${event.runningOrderId}" not found!`)
 
 				let bp = getBlueprintOfRunningOrder(runningOrder)
 
 				if (bp.onAsRunEvent) {
-					const context = new AsRunEventContext(runningOrder, event)
+					const context = new AsRunEventContext(runningOrder, undefined, event)
 
 					Promise.resolve(bp.onAsRunEvent(context))
 					.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {

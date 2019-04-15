@@ -363,6 +363,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)
 	}
 }
+
 function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 	logger.info(`Restoring from runningOrder snapshot "${snapshot.snapshot.name}"`)
 	let runningOrderId = snapshot.runningOrderId
