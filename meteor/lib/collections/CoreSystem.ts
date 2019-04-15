@@ -111,6 +111,9 @@ export function parseVersion (v: string | Version): Version {
 	return valid
 }
 export function parseExpectedVersion (v: string | Version): Version {
+	if ((v + '').match(/git:\/\//)) {
+		return '0.0.0'
+	}
 	let v2 = semver.coerce(v)
 	if (!v2) throw new Meteor.Error(500, `Bad expected version: "${v}"`)
 	const valid = semver.valid(v2)
