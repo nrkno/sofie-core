@@ -14,13 +14,11 @@ interface IProps {
 	}>
 }
 
-export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends React.Component<Translated<IProps>> {
-	private _isMacLike: boolean = false
+const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
+export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends React.Component<Translated<IProps>> {
 	constructor (props: Translated<IProps>) {
 		super(props)
-
-		this._isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 	}
 
 	render () {
@@ -31,7 +29,7 @@ export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends Rea
 						{this.props.hotkeys.concat(this.props.showStyleBase.hotkeyLegend || []).map((hotkey) =>
 							<div className='adlib-panel__hotkeys__hotkey' key={hotkey.key}>
 								<div className='adlib-panel__hotkeys__hotkey__keys'>
-									{mousetrapHelper.shortcutLabel(hotkey.key, this._isMacLike)}
+									{mousetrapHelper.shortcutLabel(hotkey.key, _isMacLike)}
 								</div>
 								<div className='adlib-panel__hotkeys__hotkey__action'>
 									{hotkey.label}
