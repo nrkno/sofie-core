@@ -41,7 +41,7 @@ import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudio } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudio, updateDeviceLastDataReceived } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
 const PackageInfo = require('../../../package.json')
 
@@ -143,7 +143,7 @@ function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExtern
 		}
 	}
 }
-function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: any, dataSource: string) {
+export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: any, dataSource: string) {
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const ingestRundown: IngestRundown = mutateRundown(rundownData)
 
@@ -486,14 +486,6 @@ function getStudioAndRundown (peripheralDevice: PeripheralDevice, externalId: st
 		rundown,
 		studio
 	}
-}
-
-function updateDeviceLastDataReceived (deviceId: string) {
-	PeripheralDevices.update(deviceId, {
-		$set: {
-			lastDataReceived: getCurrentTime()
-		}
-	})
 }
 
 function generateSegmentContents (

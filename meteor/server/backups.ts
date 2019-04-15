@@ -32,18 +32,18 @@ export function restoreRundown (backup: RundownCacheBackup) {
 
 	// Delete the existing copy, to ensure this is a clean import
 	try {
-		Meteor.call(PeripheralDeviceAPI.methods.mosRundownDelete, id, token, rundownCreates[0].data.ID)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, rundownCreates[0].data.ID)
 	} catch (e) {
 		// Ignore. likely doesnt exist
 	}
 
 	// Create the rundown
-	Meteor.call(PeripheralDeviceAPI.methods.mosRundownCreate, id, token, rundownCreates[0].data)
+	Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token, rundownCreates[0].data)
 
 	// // Import each story
 	_.each(stories, (story) => {
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.mosRundownFullStory, id, token, story.data)
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, story.data)
 		} catch (e) {
 			// Ignore.
 		}

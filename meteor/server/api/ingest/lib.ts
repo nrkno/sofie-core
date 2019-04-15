@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash } from '../../../lib/lib'
+import { getHash, getCurrentTime } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
@@ -12,7 +12,6 @@ export function getSegmentId (rundownId: string, segmentExternalId: string) {
 export function getPartId (rundownId: string, partExternalId: string) {
 	return getHash(`${rundownId}_part_${partExternalId}`)
 }
-
 
 function getStudioId (peripheralDevice: PeripheralDevice): string | undefined {
 	if (peripheralDevice.studioId) {
@@ -34,4 +33,12 @@ export function getStudio (peripheralDevice: PeripheralDevice): Studio {
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
 	return studio
+}
+
+export function updateDeviceLastDataReceived (deviceId: string) {
+	PeripheralDevices.update(deviceId, {
+		$set: {
+			lastDataReceived: getCurrentTime()
+		}
+	})
 }

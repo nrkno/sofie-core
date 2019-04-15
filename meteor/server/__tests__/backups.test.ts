@@ -34,9 +34,9 @@ describe('backups', () => {
 
 		})
 
-		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownDelete] = jest.fn()
-		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownCreate] = jest.fn()
-		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownFullStory] = jest.fn()
+		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoDelete] = jest.fn()
+		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoCreate] = jest.fn()
+		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoFullStory] = jest.fn()
 
 		restoreRundown({
 			type: 'rundownCache',
@@ -61,8 +61,8 @@ describe('backups', () => {
 			]
 		})
 
-		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownDelete]).toHaveBeenCalledTimes(1)
-		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownCreate]).toHaveBeenCalledTimes(1)
-		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownFullStory]).toHaveBeenCalledTimes(1)
+		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoDelete]).toHaveBeenCalledTimes(1)
+		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoCreate]).toHaveBeenCalledTimes(1)
+		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoFullStory]).toHaveBeenCalledTimes(1)
 	})
 })
