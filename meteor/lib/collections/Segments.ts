@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
 import { SegmentLines } from './SegmentLines'
-import { RunningOrders } from './RunningOrders'
+import { Rundowns } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
@@ -10,12 +10,12 @@ import { SegmentLineNote } from '../api/notes'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends IBlueprintSegmentDB {
-	/** Position inside running order */
+	/** Position inside rundown */
 	_rank: number
 	/** ID of the source object in the gateway */
 	externalId: string
-	/** The running order this segment belongs to */
-	runningOrderId: string
+	/** The rundown this segment belongs to */
+	rundownId: string
 
 	status?: string
 	expanded?: boolean
@@ -27,7 +27,7 @@ export class Segment implements DBSegment {
 	public _id: string
 	public _rank: number
 	public externalId: string
-	public runningOrderId: string
+	public rundownId: string
 	public name: string
 	public metaData?: { [key: string]: any }
 	public status?: string
@@ -39,15 +39,15 @@ export class Segment implements DBSegment {
 			this[key] = document[key]
 		})
 	}
-	getRunningOrder () {
-		return RunningOrders.findOne(this.runningOrderId)
+	getRundown () {
+		return Rundowns.findOne(this.rundownId)
 	}
 	getSegmentLines (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLines.find(
 			_.extend({
-				runningOrderId: this.runningOrderId,
+				rundownId: this.rundownId,
 				segmentId: this._id
 			}, selector),
 			_.extend({
@@ -77,7 +77,7 @@ registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
-			runningOrderId: 1,
+			rundownId: 1,
 			_rank: 1
 		})
 	}

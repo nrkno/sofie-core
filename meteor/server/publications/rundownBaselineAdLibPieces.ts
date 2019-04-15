@@ -1,19 +1,19 @@
 import { Meteor } from 'meteor/meteor'
 
-import { RunningOrderSecurity } from '../security/runningOrders'
-import { RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
+import { RundownSecurity } from '../security/rundowns'
+import { RundownBaselineAdLibItems } from '../../lib/collections/RundownBaselineAdLibItems'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 
-meteorPublish(PubSub.runningOrderBaselineAdLibItems, function (selector, token) {
+meteorPublish(PubSub.rundownBaselineAdLibItems, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = {
 		fields: {
 			token: 0
 		}
 	}
-	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
-		return RunningOrderBaselineAdLibItems.find(selector, modifier)
+	if (RundownSecurity.allowReadAccess(selector, token, this)) {
+		return RundownBaselineAdLibItems.find(selector, modifier)
 	}
 	return null
 })

@@ -9,10 +9,10 @@ import {
 	PeripheralDevice
 } from '../../../lib/collections/PeripheralDevices'
 import {
-	RunningOrder,
-	RunningOrders,
-	DBRunningOrder
-} from '../../../lib/collections/RunningOrders'
+	Rundown,
+	Rundowns,
+	DBRundown
+} from '../../../lib/collections/Rundowns'
 import {
 	SegmentLine,
 	SegmentLines,
@@ -34,17 +34,17 @@ import {
 	Methods,
 	setMeteorMethods
 } from '../../methods'
-import { IngestRunningOrder, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { selectShowStyleVariant, afterRemoveSegment, afterRemoveSegmentLine } from '../runningOrder'
-import { loadShowStyleBlueprints, getBlueprintOfRunningOrder } from '../blueprints/cache'
-import { ShowStyleContext, RunningOrderContext, SegmentContext } from '../blueprints/context'
+import { selectShowStyleVariant, afterRemoveSegment, afterRemoveSegmentLine } from '../rundown'
+import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
+import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
-import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
+import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
 import { postProcessSegmentLineBaselineItems, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../blueprints/postProcess'
-import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 import { IngestDataCacheObj, IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
@@ -71,29 +71,29 @@ function mutateSegment (segment: any): IngestSegment {
 	}
 }
 
-function mutateRunningOrder (runningOrder: any): IngestRunningOrder {
+function mutateRundown (rundown: any): IngestRundown {
 	return {
-		externalId: runningOrder.id,
-		name: runningOrder.name,
+		externalId: rundown.id,
+		name: rundown.name,
 		type: 'external',
-		payload: _.omit(runningOrder, 'sections'),
-		segments: _.values(runningOrder.sections || {}).map(mutateSegment)
+		payload: _.omit(rundown, 'sections'),
+		segments: _.values(rundown.sections || {}).map(mutateSegment)
 	}
 }
 
-function roId (studioInstallationId: string, externalId: string) {
+function rundownId (studioInstallationId: string, externalId: string) {
 	return getHash(`${studioInstallationId}_${externalId}`)
 }
-function getSegmentId (runningOrderId: string, segmentExternalId: string) {
-	return getHash(`${runningOrderId}_segment_${segmentExternalId}`)
+function getSegmentId (rundownId: string, segmentExternalId: string) {
+	return getHash(`${rundownId}_segment_${segmentExternalId}`)
 }
-function getPartId (runningOrderId: string, partExternalId: string) {
-	return getHash(`${runningOrderId}_part_${partExternalId}`)
+function getPartId (rundownId: string, partExternalId: string) {
+	return getHash(`${rundownId}_part_${partExternalId}`)
 }
 
-function canBeUpdated (runningOrder: RunningOrder | undefined, segmentId?: string, partId?: string) {
-	if (!runningOrder) return true
-	if (runningOrder.unsynced) return false
+function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?: string) {
+	if (!rundown) return true
+	if (rundown.unsynced) return false
 
 	// TODO
 	return true
@@ -121,32 +121,32 @@ function getStudioInstallation (peripheralDevice: PeripheralDevice): StudioInsta
 	return studioInstallation
 }
 
-function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunningOrder: IngestRunningOrder, dataSource: string) {
+function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
 	const studioInstallation = getStudioInstallation(peripheralDevice)
 
-	const runningOrderId = roId(studioInstallation._id, ingestRunningOrder.externalId)
-	const existingDbRo = RunningOrders.findOne(runningOrderId)
-	if (!canBeUpdated(existingDbRo)) return
+	const rundownId = rundownId(studioInstallation._id, ingestRundown.externalId)
+	const existingDbRundown = Rundowns.findOne(rundownId)
+	if (!canBeUpdated(existingDbRundown)) return
 
-	logger.info((existingDbRo ? 'Updating' : 'Adding') + ' RO ' + runningOrderId)
+	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
 
-	const showStyle = selectShowStyleVariant(studioInstallation, ingestRunningOrder)
+	const showStyle = selectShowStyleVariant(studioInstallation, ingestRundown)
 	if (!showStyle) {
-		logger.warn('Studio blueprint rejected RO')
+		logger.warn('Studio blueprint rejected rundown')
 		return
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
 	const blueprintContext = new ShowStyleContext(studioInstallation, showStyle.base._id, showStyle.variant._id)
-	const roRes = showStyleBlueprint.getRunningOrder(blueprintContext, ingestRunningOrder)
+	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
 
 	const showStyleBlueprintDb = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
 
-	const dbROData: DBRunningOrder = _.extend(existingDbRo || {},
-		_.omit(literal<DBRunningOrder>({
-			...roRes.runningOrder,
-			_id: runningOrderId,
-			externalId: ingestRunningOrder.externalId,
+	const dbROData: DBRundown = _.extend(existingDbRundown || {},
+		_.omit(literal<DBRundown>({
+			...rundownRes.rundown,
+			_id: rundownId,
+			externalId: ingestRundown.externalId,
 			studioInstallationId: studioInstallation._id,
 			peripheralDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,
@@ -155,9 +155,9 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 			unsynced: false,
 
 			importVersions: {
-				studioInstallation: studioInstallation._runningOrderVersionHash,
-				showStyleBase: showStyle.base._runningOrderVersionHash,
-				showStyleVariant: showStyle.variant._runningOrderVersionHash,
+				studioInstallation: studioInstallation._rundownVersionHash,
+				showStyleBase: showStyle.base._rundownVersionHash,
+				showStyleVariant: showStyle.variant._rundownVersionHash,
 				blueprint: showStyleBlueprintDb.blueprintVersion,
 				core: PackageInfo.version,
 			},
@@ -171,8 +171,8 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 		}), ['previousSegmentLineId', 'currentSegmentLineId', 'nextSegmentLineId', 'created', 'modified'])
 	)
 
-	// Save RO into database:
-	saveIntoDb(RunningOrders, {
+	// Save rundown into database:
+	saveIntoDb(Rundowns, {
 		_id: dbROData._id
 	}, [dbROData], {
 		beforeInsert: (o) => {
@@ -186,66 +186,66 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 		}
 	})
 
-	const dbRo = RunningOrders.findOne(dbROData._id)
-	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
+	const dbRundown = Rundowns.findOne(dbROData._id)
+	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 	// cache the Data
 	const cacheEntries: IngestDataCacheObj[] = []
 	cacheEntries.push({
-		_id: dbRo._id,
-		type: IngestCacheType.RUNNINGORDER,
-		runningOrderId: dbRo._id,
+		_id: dbRundown._id,
+		type: IngestCacheType.RUNDOWN,
+		rundownId: dbRundown._id,
 		modified: getCurrentTime(),
 		data: {
-			...ingestRunningOrder,
+			...ingestRundown,
 			segments: []
 		}
 	})
-	_.each(ingestRunningOrder.segments, s => cacheEntries.push(...generateCacheForSegment(dbRo._id, s)))
+	_.each(ingestRundown.segments, s => cacheEntries.push(...generateCacheForSegment(dbRundown._id, s)))
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache, {
-		runningOrderId: dbRo._id,
+		rundownId: dbRundown._id,
 	}, cacheEntries)
 
 	// Save the baseline
-	const blueprintRoContext = new RunningOrderContext(dbRo, studioInstallation)
-	logger.info(`Building baseline items for ${dbRo._id}...`)
-	logger.info(`... got ${roRes.baseline.length} items from baseline.`)
+	const blueprintRundownContext = new RundownContext(dbRundown, studioInstallation)
+	logger.info(`Building baseline items for ${dbRundown._id}...`)
+	logger.info(`... got ${rundownRes.baseline.length} items from baseline.`)
 
-	const baselineItem: RunningOrderBaselineItem = {
+	const baselineItem: RundownBaselineItem = {
 		_id: Random.id(7),
-		runningOrderId: dbRo._id,
-		objects: postProcessSegmentLineBaselineItems(blueprintRoContext, roRes.baseline)
+		rundownId: dbRundown._id,
+		objects: postProcessSegmentLineBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 
-	saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-		runningOrderId: dbRo._id,
+	saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
+		rundownId: dbRundown._id,
 	}, [baselineItem])
 
 	// Save the global adlibs
-	logger.info(`... got ${roRes.globalAdLibPieces.length} adLib items from baseline.`)
-	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRoContext, roRes.globalAdLibPieces, 'baseline')
-	saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-		runningOrderId: dbRo._id
+	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
+	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
+	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibItems, {
+		rundownId: dbRundown._id
 	}, adlibItems)
 
-	const existingRoParts = SegmentLines.find({
-		runningOrderId: runningOrderId,
+	const existingRundownParts = SegmentLines.find({
+		rundownId: rundownId,
 		dynamicallyInserted: false
 	}).fetch()
 
-	const existingSegments = Segments.find({ runningOrder: dbRo._id }).fetch()
+	const existingSegments = Segments.find({ rundown: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const segmentLines: DBSegmentLine[] = []
 	const segmentPieces: SegmentLineItem[] = []
 	const adlibPieces: SegmentLineAdLibItem[] = []
 
-	const blueprint = getBlueprintOfRunningOrder(dbRo)
+	const blueprint = getBlueprintOfRundown(dbRundown)
 
-	_.each(ingestRunningOrder.segments, (ingestSegment: IngestSegment) => {
-		const segmentId = getSegmentId(runningOrderId, ingestSegment.externalId)
+	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
+		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 		const existingSegment = _.find(existingSegments, s => s._id === segmentId)
-		const existingParts = existingRoParts.filter(p => p.segmentId === segmentId)
+		const existingParts = existingRundownParts.filter(p => p.segmentId === segmentId)
 
-		const context = new SegmentContext(dbRo, studioInstallation, existingParts)
+		const context = new SegmentContext(dbRundown, studioInstallation, existingParts)
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const res2 = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
@@ -257,7 +257,7 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 
 	// Update Segments:
 	saveIntoDb(Segments, {
-		runningOrderId: runningOrderId
+		rundownId: rundownId
 	}, segments, {
 		afterInsert (segment) {
 			logger.info('inserted segment ' + segment._id)
@@ -267,11 +267,11 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 		},
 		afterRemove (segment) {
 			logger.info('removed segment ' + segment._id)
-			afterRemoveSegment(segment._id, segment.runningOrderId)
+			afterRemoveSegment(segment._id, segment.rundownId)
 		}
 	})
 	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 	}, segmentLines, {
 		afterRemove (segmentLine) {
 			afterRemoveSegmentLine(segmentLine)
@@ -279,7 +279,7 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 	})
 
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, segmentPieces, {
 		afterInsert (segmentLineItem) {
@@ -295,7 +295,7 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 	})
 
 	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 	}, adlibPieces, {
 		afterInsert (segmentLineAdLibItem) {
 			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
@@ -310,13 +310,13 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 	})
 }
 
-function generateCacheForSegment (runningOrderId: string, ingestSegment: IngestSegment): IngestDataCacheObj[] {
-	const segmentId = getSegmentId(runningOrderId, ingestSegment.externalId)
+function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegment): IngestDataCacheObj[] {
+	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const cacheEntries: IngestDataCacheObj[] = []
 	cacheEntries.push({
-		_id: `${runningOrderId}_${segmentId}`,
+		_id: `${rundownId}_${segmentId}`,
 		type: IngestCacheType.SEGMENT,
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		segmentId: segmentId,
 		modified: getCurrentTime(),
 		data: {
@@ -326,11 +326,11 @@ function generateCacheForSegment (runningOrderId: string, ingestSegment: IngestS
 	})
 
 	_.each(ingestSegment.parts, p => {
-		const partId = getPartId(runningOrderId, p.externalId)
+		const partId = getPartId(rundownId, p.externalId)
 		cacheEntries.push({
-			_id: `${runningOrderId}_${partId}`,
+			_id: `${rundownId}_${partId}`,
 			type: IngestCacheType.PART,
-			runningOrderId: runningOrderId,
+			rundownId: rundownId,
 			segmentId: segmentId,
 			partId: partId,
 			modified: getCurrentTime(),
@@ -342,20 +342,20 @@ function generateCacheForSegment (runningOrderId: string, ingestSegment: IngestS
 }
 
 function generateSegmentContents (
-	context: RunningOrderContext,
+	context: RundownContext,
 	ingestSegment: IngestSegment,
 	existingSegment: DBSegment | undefined,
 	existingParts: DBSegmentLine[],
 	blueprintRes: BlueprintResultSegment) {
 
-	const runningOrderId = context.runningOrderId
-	const segmentId = getSegmentId(runningOrderId, ingestSegment.externalId)
+	const rundownId = context.rundownId
+	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 
 	const newSegment = literal<DBSegment>({
 		...(existingSegment || {}),
 		...blueprintRes.segment,
 		_id: segmentId,
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		externalId: ingestSegment.externalId,
 		_rank: ingestSegment.rank,
 	})
@@ -377,7 +377,7 @@ function generateSegmentContents (
 
 	// SegmentLines
 	for (let blueprintPart of knownParts) {
-		const partId = getPartId(runningOrderId, blueprintPart.part.externalId)
+		const partId = getPartId(rundownId, blueprintPart.part.externalId)
 		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
 		// TODO - this loop needs to handle virtual parts properly
 
@@ -387,7 +387,7 @@ function generateSegmentContents (
 			...(existingPart || {}),
 			...blueprintPart.part,
 			_id: partId,
-			runningOrderId: runningOrderId,
+			rundownId: rundownId,
 			segmentId: newSegment._id,
 			_rank: sourcePart.rank
 		})
@@ -409,39 +409,39 @@ function generateSegmentContents (
 	}
 }
 
-function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallation, runningOrder: RunningOrder, ingestSegment: IngestSegment) {
-	const segmentId = getSegmentId(runningOrder._id, ingestSegment.externalId)
+function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallation, rundown: Rundown, ingestSegment: IngestSegment) {
+	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 
 	// cache the Data
-	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(runningOrder._id, ingestSegment)
+	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundown._id, ingestSegment)
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache, {
-		runningOrderId: runningOrder._id,
+		rundownId: rundown._id,
 		segmentId: segmentId,
 	}, cacheEntries)
 
-	const blueprint = getBlueprintOfRunningOrder(runningOrder)
+	const blueprint = getBlueprintOfRundown(rundown)
 
 	const existingSegment = Segments.findOne({
 		_id: segmentId,
-		runningOrderId: runningOrder._id,
+		rundownId: rundown._id,
 	})
 	const existingParts = SegmentLines.find({
-		runningOrderId: runningOrder._id,
+		rundownId: rundown._id,
 		segmentId: segmentId
 	}).fetch()
 
-	const context = new SegmentContext(runningOrder, studioInstallation, existingParts)
+	const context = new SegmentContext(rundown, studioInstallation, existingParts)
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { segmentLines, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
 
 	Segments.upsert({
 		_id: segmentId,
-		runningOrderId: runningOrder._id
+		rundownId: rundown._id
 	}, newSegment)
 
 	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
-		runningOrderId: runningOrder._id,
+		rundownId: rundown._id,
 		segmentId: segmentId,
 	}, segmentLines, {
 		afterRemove (segmentLine) {
@@ -450,7 +450,7 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 	})
 
 	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-		runningOrderId: runningOrder._id,
+		rundownId: rundown._id,
 		segmentLineId: { $in: segmentLines.map(p => p._id) },
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, segmentPieces, {
@@ -467,7 +467,7 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 	})
 
 	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
-		runningOrderId: runningOrder._id,
+		rundownId: rundown._id,
 		segmentLineId: { $in: segmentLines.map(p => p._id) },
 	}, adlibPieces, {
 		afterInsert (segmentLineAdLibItem) {
@@ -484,13 +484,13 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 
 }
 
-function loadCachedRunningOrderData (runningOrderId: string): IngestRunningOrder {
-	const cacheEntries = IngestDataCache.find({ runningOrderId: runningOrderId }).fetch()
+function loadCachedRundownData (rundownId: string): IngestRundown {
+	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
-	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNNINGORDER)
-	if (!baseEntry) throw new Meteor.Error(500, 'Failed to find cached runningOrder')
+	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
+	if (!baseEntry) throw new Meteor.Error(500, 'Failed to find cached rundown')
 
-	const ingestRunningOrder = baseEntry.data as IngestRunningOrder
+	const ingestRundown = baseEntry.data as IngestRundown
 
 	const segmentMap = _.groupBy(cacheEntries, e => e.segmentId)
 	_.each(segmentMap, objs => {
@@ -502,16 +502,16 @@ function loadCachedRunningOrderData (runningOrderId: string): IngestRunningOrder
 					ingestSegment.parts.push(e.data)
 				}
 			})
-			ingestRunningOrder.segments.push(ingestSegment)
+			ingestRundown.segments.push(ingestSegment)
 		}
 	})
 
-	return ingestRunningOrder
+	return ingestRundown
 }
 
-function loadCachedSegmentData (runningOrderId: string, segmentId: string): IngestSegment {
+function loadCachedSegmentData (rundownId: string, segmentId: string): IngestSegment {
 	const cacheEntries = IngestDataCache.find({
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		segmentId: segmentId,
 	}).fetch()
 
@@ -531,11 +531,11 @@ function loadCachedSegmentData (runningOrderId: string, segmentId: string): Inge
 
 function getStudioInstallationAndRO (peripheralDevice: PeripheralDevice, externalId: string) {
 	const studioInstallation = getStudioInstallation(peripheralDevice)
-	const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, externalId))
-	if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
+	const rundown = Rundowns.findOne(rundownId(studioInstallation._id, externalId))
+	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
 	return {
-		runningOrder,
+		rundown,
 		studioInstallation
 	}
 }
@@ -548,58 +548,58 @@ function updateDeviceLastDataReceived (deviceId: string) {
 	})
 }
 
-export namespace RunningOrderInput {
+export namespace RundownInput {
 	// TODO - this all needs guards to avoid race conditions with stuff running in playout.ts (which should be removed from there)
 
-	export function dataRunningOrderDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string) {
+	export function dataRundownDelete (self: any, deviceId: string, deviceToken: string, rundownId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataRunningOrderDelete', runningOrderId)
+		logger.info('dataRundownDelete', rundownId)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
-		if (canBeUpdated(runningOrder) && runningOrder) {
-			runningOrder.remove()
+		const { rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		if (canBeUpdated(rundown) && rundown) {
+			rundown.remove()
 		}
 	}
-	export function dataRunningOrderCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) {
+	export function dataRundownCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, rundownData: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataRunningOrderCreate', runningOrderId, runningOrderData)
+		console.log('dataRundownCreate', rundownId, rundownData)
 
-		check(runningOrderId, String)
-		check(runningOrderData, Object)
+		check(rundownId, String)
+		check(rundownData, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		handleRunningOrderData(peripheralDevice, mutateRunningOrder(runningOrderData), 'dataRunningOrderCreate')
+		handleRundownData(peripheralDevice, mutateRundown(rundownData), 'dataRundownCreate')
 	}
-	export function dataRunningOrderUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) {
+	export function dataRundownUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, rundownData: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataRunningOrderUpdate', runningOrderId, runningOrderData)
+		logger.info('dataRundownUpdate', rundownId, rundownData)
 
-		check(runningOrderId, String)
-		check(runningOrderData, Object)
+		check(rundownId, String)
+		check(rundownData, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		handleRunningOrderData(peripheralDevice, mutateRunningOrder(runningOrderData), 'dataRunningOrderUpdate')
+		handleRundownData(peripheralDevice, mutateRundown(rundownData), 'dataRundownUpdate')
 	}
 
-	export function dataSegmentDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string) {
+	export function dataSegmentDelete (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentDelete', runningOrderId, segmentId)
+		logger.info('dataSegmentDelete', rundownId, segmentId)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 		check(segmentId, String)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
-		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+		const { rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 
-		if (canBeUpdated(runningOrder, segmentInternalId)) {
+		if (canBeUpdated(rundown, segmentInternalId)) {
 			Promise.all([
 				asyncCollectionRemove(SegmentLines, { segmentId: segmentInternalId }),
 				// TODO - cleanup other SL contents
@@ -607,164 +607,164 @@ export namespace RunningOrderInput {
 			])
 		}
 	}
-	export function dataSegmentCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) {
+	export function dataSegmentCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentCreate', runningOrderId, segmentId, newSection)
+		logger.info('dataSegmentCreate', rundownId, segmentId, newSection)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 		check(segmentId, String)
 		check(newSection, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
-		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 
-		if (canBeUpdated(runningOrder, segmentInternalId)) {
-			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, mutateSegment(newSection))
+		if (canBeUpdated(rundown, segmentInternalId)) {
+			updateOrCreateSegmentFromPayload(studioInstallation, rundown, mutateSegment(newSection))
 		}
 	}
-	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) {
+	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentUpdate', runningOrderId, segmentId, newSection)
+		logger.info('dataSegmentUpdate', rundownId, segmentId, newSection)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 		check(segmentId, String)
 		check(newSection, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
-		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 
-		if (canBeUpdated(runningOrder, segmentInternalId)) {
-			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, mutateSegment(newSection))
+		if (canBeUpdated(rundown, segmentInternalId)) {
+			updateOrCreateSegmentFromPayload(studioInstallation, rundown, mutateSegment(newSection))
 		}
 	}
 
-	export function dataSegmentLineDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string) {
+	export function dataSegmentLineDelete (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentLineDelete', runningOrderId, segmentId, segmentLineId)
+		logger.info('dataSegmentLineDelete', rundownId, segmentId, segmentLineId)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 		check(segmentId, String)
 		check(segmentLineId, String)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
-		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
-		const partInternalId = getPartId(runningOrder._id, segmentLineId)
+		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const segmentInternalId = getSegmentId(rundown._id, segmentId)
+		const partInternalId = getPartId(rundown._id, segmentLineId)
 
-		if (canBeUpdated(runningOrder, segmentInternalId, partInternalId)) {
+		if (canBeUpdated(rundown, segmentInternalId, partInternalId)) {
 			const segmentLine = SegmentLines.findOne({
 				_id: partInternalId,
 				segmentId: segmentInternalId,
-				runningOrderId: runningOrder._id
+				rundownId: rundown._id
 			})
 			if (!segmentLine) throw new Meteor.Error(404, 'Part not found')
 
 			// Blueprints will handle the deletion of the SL
-			const ingestSegment = loadCachedSegmentData(runningOrder._id, segmentInternalId)
+			const ingestSegment = loadCachedSegmentData(rundown._id, segmentInternalId)
 			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
 
-			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, ingestSegment)
+			updateOrCreateSegmentFromPayload(studioInstallation, rundown, ingestSegment)
 		}
 	}
 
-	function dataSegmentLineCreateOrUpdate (peripheralDevice: PeripheralDevice, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
-		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
+	function dataSegmentLineCreateOrUpdate (peripheralDevice: PeripheralDevice, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) {
+		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
 
-		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
-		const partInternalId = getPartId(runningOrder._id, segmentLineId)
+		const segmentInternalId = getSegmentId(rundown._id, segmentId)
+		const partInternalId = getPartId(rundown._id, segmentLineId)
 
-		if (canBeUpdated(runningOrder, segmentInternalId, partInternalId)) {
+		if (canBeUpdated(rundown, segmentInternalId, partInternalId)) {
 			// Blueprints will handle the creation of the SL
-			const ingestSegment = loadCachedSegmentData(runningOrder._id, segmentInternalId)
+			const ingestSegment = loadCachedSegmentData(rundown._id, segmentInternalId)
 			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
 			ingestSegment.parts.push(mutatePart(newStory))
 
-			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, ingestSegment)
+			updateOrCreateSegmentFromPayload(studioInstallation, rundown, ingestSegment)
 		}
 	}
-	export function dataSegmentLineCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	export function dataSegmentLineCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentLineCreate', runningOrderId, segmentId, segmentLineId, newStory)
+		logger.info('dataSegmentLineCreate', rundownId, segmentId, segmentLineId, newStory)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 		check(segmentId, String)
 		check(segmentLineId, String)
 		check(newStory, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		dataSegmentLineCreateOrUpdate(peripheralDevice, runningOrderId, segmentId, segmentLineId, newStory)
+		dataSegmentLineCreateOrUpdate(peripheralDevice, rundownId, segmentId, segmentLineId, newStory)
 	}
-	export function dataSegmentLineUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	export function dataSegmentLineUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentLineUpdate', runningOrderId, segmentId, segmentLineId, newStory)
+		logger.info('dataSegmentLineUpdate', rundownId, segmentId, segmentLineId, newStory)
 
-		check(runningOrderId, String)
+		check(rundownId, String)
 		check(segmentId, String)
 		check(segmentLineId, String)
 		check(newStory, Object)
 
 		updateDeviceLastDataReceived(deviceId)
 
-		dataSegmentLineCreateOrUpdate(peripheralDevice, runningOrderId, segmentId, segmentLineId, newStory)
+		dataSegmentLineCreateOrUpdate(peripheralDevice, rundownId, segmentId, segmentLineId, newStory)
 	}
 }
 
 let methods: Methods = {
-	'debug_roRunBlueprints' (roId: string, deleteFirst?: boolean) {
-		check(roId, String)
+	'debug_rundownRunBlueprints' (rundownId: string, deleteFirst?: boolean) {
+		check(rundownId, String)
 
-		const ro = RunningOrders.findOne(roId)
-		if (!ro) throw new Meteor.Error(404, 'Running order not found')
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-		const ingestRunningOrder = loadCachedRunningOrderData(roId)
+		const ingestRundown = loadCachedRundownData(rundownId)
 
-		if (deleteFirst) ro.remove()
+		if (deleteFirst) rundown.remove()
 
-		const peripheralDevice = PeripheralDevices.findOne(ro.peripheralDeviceId)
-		if (!peripheralDevice) throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
+		const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'MOS Device not found to be used for mock rundown!')
 
-		handleRunningOrderData(peripheralDevice, ingestRunningOrder, ro.dataSource)
+		handleRundownData(peripheralDevice, ingestRundown, rundown.dataSource)
 
-		logger.info('debug_roRunBlueprints: infinites')
-		updateSourceLayerInfinitesAfterLine(ro)
+		logger.info('debug_rundownRunBlueprints: infinites')
+		updateSourceLayerInfinitesAfterLine(rundown)
 
-		logger.info('debug_roRunBlueprints: done')
+		logger.info('debug_rundownRunBlueprints: done')
 	}
 }
 
-methods[PeripheralDeviceAPI.methods.dataRunningOrderDelete] = (deviceId: string, deviceToken: string, runningOrderId: string) => {
-	return RunningOrderInput.dataRunningOrderDelete(this, deviceId, deviceToken, runningOrderId)
+methods[PeripheralDeviceAPI.methods.dataRundownDelete] = (deviceId: string, deviceToken: string, rundownId: string) => {
+	return RundownInput.dataRundownDelete(this, deviceId, deviceToken, rundownId)
 }
-methods[PeripheralDeviceAPI.methods.dataRunningOrderCreate] = (deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) => {
-	return RunningOrderInput.dataRunningOrderCreate(this, deviceId, deviceToken, runningOrderId, runningOrderData)
+methods[PeripheralDeviceAPI.methods.dataRundownCreate] = (deviceId: string, deviceToken: string, rundownId: string, rundownData: any) => {
+	return RundownInput.dataRundownCreate(this, deviceId, deviceToken, rundownId, rundownData)
 }
-methods[PeripheralDeviceAPI.methods.dataRunningOrderUpdate] = (deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) => {
-	return RunningOrderInput.dataRunningOrderUpdate(this, deviceId, deviceToken, runningOrderId, runningOrderData)
+methods[PeripheralDeviceAPI.methods.dataRundownUpdate] = (deviceId: string, deviceToken: string, rundownId: string, rundownData: any) => {
+	return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, rundownId, rundownData)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentDelete] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string) => {
-	return RunningOrderInput.dataSegmentDelete(this, deviceId, deviceToken, runningOrderId, segmentId)
+methods[PeripheralDeviceAPI.methods.dataSegmentDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string) => {
+	return RundownInput.dataSegmentDelete(this, deviceId, deviceToken, rundownId, segmentId)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentCreate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) => {
-	return RunningOrderInput.dataSegmentCreate(this, deviceId, deviceToken, runningOrderId, segmentId, newSection)
+methods[PeripheralDeviceAPI.methods.dataSegmentCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) => {
+	return RundownInput.dataSegmentCreate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) => {
-	return RunningOrderInput.dataSegmentUpdate(this, deviceId, deviceToken, runningOrderId, segmentId, newSection)
+methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) => {
+	return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
 }
 // TODO - these need renaming
-methods[PeripheralDeviceAPI.methods.dataSegmentLineItemDelete] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string) => {
-	return RunningOrderInput.dataSegmentLineDelete(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId)
+methods[PeripheralDeviceAPI.methods.dataSegmentLineItemDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string) => {
+	return RundownInput.dataSegmentLineDelete(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentLineItemCreate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) => {
-	return RunningOrderInput.dataSegmentLineCreate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
+methods[PeripheralDeviceAPI.methods.dataSegmentLineItemCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
+	return RundownInput.dataSegmentLineCreate(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId, newStory)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentLineItemUpdate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) => {
-	return RunningOrderInput.dataSegmentLineUpdate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
+methods[PeripheralDeviceAPI.methods.dataSegmentLineItemUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
+	return RundownInput.dataSegmentLineUpdate(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId, newStory)
 }
 
 setMeteorMethods(methods)

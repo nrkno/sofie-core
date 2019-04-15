@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { RundownAPI } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
@@ -16,7 +16,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { RunningOrders } from '../../../lib/collections/RunningOrders'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
@@ -25,19 +25,19 @@ import { i18nTranslator } from '../i18n'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
-export const reloadRunningOrderClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
+export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
 
 export interface RONotificationEvent {
 	sourceLocator: {
 		name: string,
-		roId?: string,
+		rundownId?: string,
 		segmentId?: string,
 		segmentLineId?: string,
 		segmentLineItemId?: string
 	}
 }
 
-class RunningOrderViewNotifier extends WithManagedTracker {
+class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierObject
 
@@ -47,42 +47,42 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	private _notes: _.Dictionary<Notification | undefined> = {}
 	private _notesDep: Tracker.Dependency
 
-	private _runningOrderStatus: _.Dictionary<Notification | undefined> = {}
-	private _runningOrderStatusDep: Tracker.Dependency
+	private _rundownStatus: _.Dictionary<Notification | undefined> = {}
+	private _rundownStatusDep: Tracker.Dependency
 
 	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
-	private _roImportVersionStatus: Notification | undefined = undefined
-	private _roImportVersionStatusDep: Tracker.Dependency
-	private _roImportVersionInterval: number | undefined = undefined
+	private _rundownImportVersionStatus: Notification | undefined = undefined
+	private _rundownImportVersionStatusDep: Tracker.Dependency
+	private _rundownImportVersionInterval: number | undefined = undefined
 
-	constructor (runningOrderId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
+	constructor (rundownId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
-		this._runningOrderStatusDep = new Tracker.Dependency()
+		this._rundownStatusDep = new Tracker.Dependency()
 		this._deviceStatusDep = new Tracker.Dependency()
-		this._roImportVersionStatusDep = new Tracker.Dependency()
+		this._rundownImportVersionStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
 			return this._notificationList
 		})
 		this.autorun(() => {
-			// console.log('RunningOrderViewNotifier 1')
-			const rRunningOrderId = runningOrderId
-			// console.log('rRunningOrderId: ' + rRunningOrderId)
+			// console.log('RundownViewNotifier 1')
+			const rRundownId = rundownId
+			// console.log('rRundownId: ' + rRundownId)
 
-			this.reactiveRunningOrderStatus(rRunningOrderId)
-			this.reactiveVersionStatus(rRunningOrderId)
+			this.reactiveRundownStatus(rRundownId)
+			this.reactiveVersionStatus(rRundownId)
 
-			if (rRunningOrderId) {
+			if (rRundownId) {
 				this.autorun(() => {
-					// console.log('RunningOrderViewNotifier 1-1')
+					// console.log('RundownViewNotifier 1-1')
 					if (showStyleBase && studioInstallation) {
-						this.reactiveMediaStatus(rRunningOrderId, showStyleBase, studioInstallation)
-						this.reactiveSLNotes(rRunningOrderId)
+						this.reactiveMediaStatus(rRundownId, showStyleBase, studioInstallation)
+						this.reactiveSLNotes(rRundownId)
 						this.reactivePeripheralDeviceStatus(studioInstallation._id)
 					} else {
 						this.cleanUpMediaStatus()
@@ -92,24 +92,24 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				this._mediaStatus = {}
 				this._deviceStatus = {}
 				this._notes = {}
-				this._roImportVersionStatus = undefined
+				this._rundownImportVersionStatus = undefined
 				this.cleanUpMediaStatus()
 			}
 		})
 
 		this.autorun((comp) => {
-			// console.log('RunningOrderViewNotifier 2')
+			// console.log('RundownViewNotifier 2')
 			this._mediaStatusDep.depend()
 			this._deviceStatusDep.depend()
-			this._runningOrderStatusDep.depend()
+			this._rundownStatusDep.depend()
 			this._notesDep.depend()
-			this._roImportVersionStatusDep.depend()
+			this._rundownImportVersionStatusDep.depend()
 
 			const notifications = _.compact(_.values(this._mediaStatus))
 				.concat(_.compact(_.values(this._deviceStatus)))
 				.concat(_.compact(_.values(this._notes)))
-				.concat(_.compact(_.values(this._runningOrderStatus)))
-				.concat(_.compact([this._roImportVersionStatus]))
+				.concat(_.compact(_.values(this._rundownStatus)))
+				.concat(_.compact([this._rundownImportVersionStatus]))
 
 			this._notificationList.set(
 				notifications
@@ -121,29 +121,29 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	stop () {
 		super.stop()
 
-		if (this._roImportVersionInterval) Meteor.clearInterval(this._roImportVersionInterval)
+		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
 
 		this._notifier.stop()
 	}
 
-	private reactiveRunningOrderStatus (runningOrderId: string | undefined) {
+	private reactiveRundownStatus (rundownId: string | undefined) {
 		const t = i18nTranslator
 		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
-			const runningOrder = RunningOrders.findOne(runningOrderId)
-			if (runningOrder) {
-				let unsyncedId = runningOrder._id + '_unsynced'
+			const rundown = Rundowns.findOne(rundownId)
+			if (rundown) {
+				let unsyncedId = rundown._id + '_unsynced'
 				let newNotification: Notification | undefined = undefined
 
-				if (runningOrder.unsynced) {
+				if (rundown.unsynced) {
 					newNotification = new Notification(
 						unsyncedId,
 						NoticeLevel.CRITICAL,
-						t('The Running Order has been UNSYNCED from ENPS! No data updates will currently come through.'),
-						'RunningOrder',
+						t('The Rundown has been UNSYNCED from ENPS! No data updates will currently come through.'),
+						'Rundown',
 						getCurrentTime(),
 						true,
 						[
@@ -152,10 +152,10 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 								type: 'primary',
 								action: () => {
 									doModalDialog({
-										title: t('Re-sync Running Order'),
-										message: t('Are you sure you want to re-sync the Running Order?\n(If the currently playing Segment Line has been changed, this can affect the output.)'),
+										title: t('Re-sync Rundown'),
+										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Segment Line has been changed, this can affect the output.)'),
 										onAccept: () => {
-											doUserAction(t, event, UserActionAPI.methods.resyncRunningOrder, [runningOrderId])
+											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId])
 										}
 									})
 								}
@@ -169,40 +169,40 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					)
 					newNoteIds.push(unsyncedId)
 				}
-				if (newNotification && !Notification.isEqual(this._runningOrderStatus[unsyncedId], newNotification)) {
-					this._runningOrderStatus[unsyncedId] = newNotification
-					this._runningOrderStatusDep.changed()
-				} else if (!newNotification && this._runningOrderStatus[unsyncedId]) {
-					delete this._runningOrderStatus[unsyncedId]
-					this._runningOrderStatusDep.changed()
+				if (newNotification && !Notification.isEqual(this._rundownStatus[unsyncedId], newNotification)) {
+					this._rundownStatus[unsyncedId] = newNotification
+					this._rundownStatusDep.changed()
+				} else if (!newNotification && this._rundownStatus[unsyncedId]) {
+					delete this._rundownStatus[unsyncedId]
+					this._rundownStatusDep.changed()
 				}
 
-				let roNotesId = runningOrder._id + '_ronotes_'
-				if (runningOrder.notes) {
-					runningOrder.notes.forEach((note) => {
-						const roNoteId = roNotesId + note.origin.name + '_' + note.origin.roId + '_' + note.message + '_' + note.type
+				let rundownNotesId = rundown._id + '_ronotes_'
+				if (rundown.notes) {
+					rundown.notes.forEach((note) => {
+						const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type
 						const newNotification = new Notification(
-							roNoteId,
+							rundownNoteId,
 							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							runningOrder.notes,
-							'RunningOrder',
+							rundown.notes,
+							'Rundown',
 							getCurrentTime(),
 							true,
 							[],
 							-1
 						)
-						if (!Notification.isEqual(this._runningOrderStatus[roNoteId], newNotification)) {
-							this._runningOrderStatus[roNoteId] = newNotification
-							this._runningOrderStatusDep.changed()
+						if (!Notification.isEqual(this._rundownStatus[rundownNoteId], newNotification)) {
+							this._rundownStatus[rundownNoteId] = newNotification
+							this._rundownStatusDep.changed()
 						}
-						newNoteIds.push(roNoteId)
+						newNoteIds.push(rundownNoteId)
 					})
 				}
 			}
 
 			_.difference(oldNoteIds, newNoteIds).forEach((item) => {
-				delete this._runningOrderStatus[item]
-				this._runningOrderStatusDep.changed()
+				delete this._rundownStatus[item]
+				this._rundownStatusDep.changed()
 			})
 
 			oldNoteIds = newNoteIds
@@ -217,7 +217,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
 		}
 		this.autorun(() => {
-			// console.log('RunningOrderViewNotifier 3')
+			// console.log('RundownViewNotifier 3')
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
 
@@ -244,21 +244,21 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveSLNotes (rRunningOrderId: string) {
+	private reactiveSLNotes (rRundownId: string) {
 		const t = i18nTranslator
 
 		let oldNoteIds: Array<string> = []
 		this.autorun(() => {
-			// console.log('RunningOrderViewNotifier 4')
+			// console.log('RundownViewNotifier 4')
 			const segments = Segments.find({
-				runningOrderId: rRunningOrderId
+				rundownId: rRundownId
 			}).fetch()
 
 			const newNoteIds: Array<string> = []
 			_.flatten(_.compact(segments.map(i => i.getNotes(true).map(j => _.extend(j, {
 				rank: i._rank
 			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
-				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.roId) + '-' + item.origin.name + '-' + item.type
+				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: t('Show issue'),
@@ -292,13 +292,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus (rRunningOrderId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
+	private reactiveMediaStatus (rRundownId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
 		const t = i18nTranslator
 
 		let oldItemIds: Array<string> = []
-		const rSegmentLineItems = reactiveData.getRSegmentLineItems(rRunningOrderId)
+		const rSegmentLineItems = reactiveData.getRSegmentLineItems(rRundownId)
 		this.autorun((comp: Tracker.Computation) => {
-			// console.log('RunningOrderViewNotifier 5')
+			// console.log('RundownViewNotifier 5')
 			const items = rSegmentLineItems.get()
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
@@ -307,10 +307,10 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
 				if (sourceLayer && segmentLine) {
 					this.autorun(() => {
-						// console.log('RunningOrderViewNotifier 5-1')
+						// console.log('RundownViewNotifier 5-1')
 						const { status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
-						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN) && (status !== RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
+						if ((status !== RundownAPI.LineItemStatusCode.OK) && (status !== RundownAPI.LineItemStatusCode.UNKNOWN) && (status !== RundownAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
 								{
 									label: t('Show issue'),
@@ -325,7 +325,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 											handler({
 												sourceLocator: {
 													name: item.name,
-													roId: item.runningOrderId,
+													rundownId: item.rundownId,
 													segmentLineItemId: item._id,
 													segmentLineId: item.segmentLineId
 												}
@@ -357,41 +357,41 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveVersionStatus (rRunningOrderId: string) {
+	private reactiveVersionStatus (rRundownId: string) {
 
 		const updatePeriod = 30000 // every 30s
 
-		if (this._roImportVersionInterval) Meteor.clearInterval(this._roImportVersionInterval)
-		this._roImportVersionInterval = rRunningOrderId ? Meteor.setInterval(() => this.updateVersionStatus(rRunningOrderId), updatePeriod) : undefined
+		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
+		this._rundownImportVersionInterval = rRundownId ? Meteor.setInterval(() => this.updateVersionStatus(rRundownId), updatePeriod) : undefined
 
 		this.autorun((comp: Tracker.Computation) => {
-			// console.log('RunningOrderViewNotifier 5')
+			// console.log('RundownViewNotifier 5')
 
-			// Track the RO as a dependency of this autorun
-			const runningOrder = RunningOrders.findOne(rRunningOrderId)
-			if (runningOrder) {
-				this.updateVersionStatus(runningOrder._id)
+			// Track the rundown as a dependency of this autorun
+			const rundown = Rundowns.findOne(rRundownId)
+			if (rundown) {
+				this.updateVersionStatus(rundown._id)
 			}
 		})
 	}
 
-	private updateVersionStatus (runningOrderId: string) {
+	private updateVersionStatus (rundownId: string) {
 		const t = i18nTranslator
 
-		// console.log('update_version_status, ' + runningOrderId)
+		// console.log('update_version_status, ' + rundownId)
 
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
-		Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, runningOrderId, (err: Error, versionMismatch: string) => {
+		Meteor.call(RundownAPI.methods.rundownNeedsUpdating, rundownId, (err: Error, versionMismatch: string) => {
 			let newNotification: Notification | undefined = undefined
 			if (err) {
-				newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + runningOrderId, getCurrentTime(), true, undefined, -1)
+				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'rundown_' + rundownId, getCurrentTime(), true, undefined, -1)
 			} else if (versionMismatch) {
-				newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + runningOrderId, getCurrentTime(), true, [
+				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), 'rundown_' + rundownId, getCurrentTime(), true, [
 					{
 						label: t('Reload ENPS Data'),
 						type: 'primary',
 						action: (e) => {
-							const reloadFunc = reloadRunningOrderClick.get()
+							const reloadFunc = reloadRundownClick.get()
 							if (reloadFunc) {
 								reloadFunc(e)
 							}
@@ -400,12 +400,12 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				], -1)
 			}
 
-			if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
-				this._roImportVersionStatus = newNotification
-				this._roImportVersionStatusDep.changed()
-			} else if (!newNotification && this._roImportVersionStatus) {
-				this._roImportVersionStatus = undefined
-				this._roImportVersionStatusDep.changed()
+			if (newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
+				this._rundownImportVersionStatus = newNotification
+				this._rundownImportVersionStatusDep.changed()
+			} else if (!newNotification && this._rundownImportVersionStatus) {
+				this._rundownImportVersionStatus = undefined
+				this._rundownImportVersionStatusDep.changed()
 			}
 		})
 	}
@@ -450,25 +450,25 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 interface IProps {
 	// match?: {
 	// 	params: {
-	// 		runningOrderId?: string
+	// 		rundownId?: string
 	// 		studioId?: string
 	// 	}
 	// }
-	runningOrderId: string,
+	rundownId: string,
 	studioInstallation: StudioInstallation
 	showStyleBase: ShowStyleBase
 }
 
-export const RunningOrderNotifier = class extends React.Component<IProps> {
-	private notifier: RunningOrderViewNotifier
+export const RundownNotifier = class extends React.Component<IProps> {
+	private notifier: RundownViewNotifier
 
 	constructor (props: IProps) {
 		super(props)
-		this.notifier = new RunningOrderViewNotifier(props.runningOrderId, props.showStyleBase, props.studioInstallation)
+		this.notifier = new RundownViewNotifier(props.rundownId, props.showStyleBase, props.studioInstallation)
 	}
 
 	shouldComponentUpdate (nextProps: IProps): boolean {
-		if ((this.props.runningOrderId === nextProps.runningOrderId) &&
+		if ((this.props.rundownId === nextProps.rundownId) &&
 			(this.props.showStyleBase._id === nextProps.showStyleBase._id) &&
 			(this.props.studioInstallation._id === nextProps.studioInstallation._id)) {
 			return false
@@ -478,7 +478,7 @@ export const RunningOrderNotifier = class extends React.Component<IProps> {
 
 	componentDidUpdate () {
 		this.notifier.stop()
-		this.notifier = new RunningOrderViewNotifier(this.props.runningOrderId, this.props.showStyleBase, this.props.studioInstallation)
+		this.notifier = new RundownViewNotifier(this.props.rundownId, this.props.showStyleBase, this.props.studioInstallation)
 	}
 
 	componentWillUnmount () {

@@ -18,14 +18,14 @@ import {
 	removeNullyProperties
 } from '../../lib/lib'
 import { setMeteorMethods, Methods } from '../methods'
-import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
 
-export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
+export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
 
 		// check the output:
@@ -41,7 +41,7 @@ export function queueExternalMessages (runningOrder: RunningOrder, messages: Arr
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
-			studioId: runningOrder.studioInstallationId,
+			studioId: rundown.studioInstallationId,
 			created: now,
 			tryCount: 0,
 			expires: now + 35 * 24 * 3600 * 1000, // 35 days
@@ -51,7 +51,7 @@ export function queueExternalMessages (runningOrder: RunningOrder, messages: Arr
 
 		// console.log('result', result)
 
-		if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
+		if (!rundown.rehearsal) { // Don't save the message when running rehearsals
 			ExternalMessageQueue.insert(message2)
 
 			triggerdoMessageQueue() // trigger processing of the queue

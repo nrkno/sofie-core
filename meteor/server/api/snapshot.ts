@@ -10,14 +10,14 @@ import { check, Match } from 'meteor/check'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import {
 	Snapshots,
-	SnapshotRunningOrder,
+	SnapshotRundown,
 	SnapshotType,
 	SnapshotSystem,
 	SnapshotDebug,
 	SnapshotBase
 } from '../../lib/collections/Snapshots'
-import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
-import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
+import { RundownDataCache, RundownDataCacheObj } from '../../lib/collections/RundownDataCache'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
@@ -44,18 +44,18 @@ import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
-import { restoreRunningOrder } from '../backups'
+import { restoreRundown } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-interface RunningOrderSnapshot {
+interface RundownSnapshot {
 	version: string
-	runningOrderId: string
-	snapshot: SnapshotRunningOrder
-	runningOrder: RunningOrder
-	mosData: Array<RunningOrderDataCacheObj>
+	rundownId: string
+	snapshot: SnapshotRundown
+	rundown: Rundown
+	mosData: Array<RundownDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	segments: Array<Segment>
 	segmentLines: Array<SegmentLine>
@@ -81,7 +81,7 @@ interface DebugSnapshot {
 	studioId?: string
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
-	activeRunningOrders: Array<RunningOrderSnapshot>
+	activeRundowns: Array<RundownSnapshot>
 	timeline: Array<TimelineObjGeneric>
 	userActionLog: Array<UserActionsLogItem>
 	deviceSnaphots: Array<DeviceSnapshot>
@@ -92,25 +92,25 @@ interface DeviceSnapshot {
 	replyTime: Time
 	content: any
 }
-type AnySnapshot = RunningOrderSnapshot | SystemSnapshot | DebugSnapshot
+type AnySnapshot = RundownSnapshot | SystemSnapshot | DebugSnapshot
 
 /**
- * Create a snapshot of all items related to a runningOrder
- * @param runningOrderId
+ * Create a snapshot of all items related to a rundown
+ * @param rundownId
  */
-function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapshot {
+function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	let snapshotId = Random.id()
-	logger.info(`Generating RunningOrder snapshot "${snapshotId}" for runningOrder "${runningOrderId}"`)
+	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${rundownId}"`)
 
-	const runningOrder = RunningOrders.findOne(runningOrderId)
-	if (!runningOrder) throw new Meteor.Error(404,`RunningOrder ${runningOrderId} not found`)
-	const mosData = RunningOrderDataCache.find({ roId: runningOrderId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
-	const userActions = UserActionsLog.find({ args: { $regex: `.*"${runningOrderId}".*` } }).fetch()
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404,`Rundown ${rundownId} not found`)
+	const mosData = RundownDataCache.find({ rundownId: rundownId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
+	const userActions = UserActionsLog.find({ args: { $regex: `.*"${rundownId}".*` } }).fetch()
 
-	const segments = Segments.find({ runningOrderId }).fetch()
-	const segmentLines = SegmentLines.find({ runningOrderId }).fetch()
-	const segmentLineItems = SegmentLineItems.find({ runningOrderId }).fetch()
-	const segmentLineAdLibItems = SegmentLineAdLibItems.find({ runningOrderId }).fetch()
+	const segments = Segments.find({ rundownId }).fetch()
+	const segmentLines = SegmentLines.find({ rundownId }).fetch()
+	const segmentLineItems = SegmentLineItems.find({ rundownId }).fetch()
+	const segmentLineAdLibItems = SegmentLineAdLibItems.find({ rundownId }).fetch()
 	const mediaObjectIds: Array<string> = [
 		...segmentLineItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName)),
 		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
@@ -121,17 +121,17 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		snapshot: {
 			_id: snapshotId,
 			created: getCurrentTime(),
-			type: SnapshotType.RUNNING_ORDER,
-			runningOrderId: runningOrderId,
-			studioId: runningOrder.studioInstallationId,
-			name: `RunningOrder_${runningOrder.name}_${runningOrder._id}_${formatDateTime(getCurrentTime())}`,
+			type: SnapshotType.RUNDOWN,
+			rundownId: rundownId,
+			studioId: rundown.studioInstallationId,
+			name: `Rundown_${rundown.name}_${rundown._id}_${formatDateTime(getCurrentTime())}`,
 			version: CURRENT_SYSTEM_VERSION
 		},
-		runningOrder,
+		rundown,
 		mosData,
 		userActions,
 		segments,
@@ -217,7 +217,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 }
 
 /**
- * Create a snapshot of active runningOrders related to a studio and all related data, for debug purposes
+ * Create a snapshot of active rundowns related to a studio and all related data, for debug purposes
  * @param studioId
  */
 function createDebugSnapshot (studioId: string): DebugSnapshot {
@@ -229,13 +229,13 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 
 	let systemSnapshot = createSystemSnapshot(studioId)
 
-	let activeROs = RunningOrders.find({
+	let activeROs = Rundowns.find({
 		studioInstallationId: studio._id,
 		active: true,
 	}).fetch()
 
-	let activeRoSnapshots = _.map(activeROs, (ro) => {
-		return createRunningOrderSnapshot(ro._id)
+	let activeRundownSnapshots = _.map(activeROs, (rundown) => {
+		return createRundownSnapshot(rundown._id)
 	})
 
 	let timeline = Timeline.find().fetch()
@@ -274,7 +274,7 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 			version: CURRENT_SYSTEM_VERSION
 		},
 		system: systemSnapshot,
-		activeRunningOrders: activeRoSnapshots,
+		activeRundowns: activeRundownSnapshots,
 		timeline: timeline,
 		userActionLog: userActionLogLatest,
 		deviceSnaphots: deviceSnaphots
@@ -355,8 +355,8 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
 
-	if (snapshot.snapshot.type === SnapshotType.RUNNING_ORDER) {
-		return restoreFromRunningOrderSnapshot(snapshot as RunningOrderSnapshot)
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) {
+		return restoreFromRundownSnapshot(snapshot as RundownSnapshot)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
@@ -364,46 +364,46 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
-	logger.info(`Restoring from runningOrder snapshot "${snapshot.snapshot.name}"`)
-	let runningOrderId = snapshot.runningOrderId
+function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
+	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
+	let rundownId = snapshot.rundownId
 
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	if (runningOrderId !== snapshot.runningOrder._id) throw new Meteor.Error(500, `Restore snapshot: runningOrderIds don\'t match, "${runningOrderId}", "${snapshot.runningOrder._id}!"`)
+	if (rundownId !== snapshot.rundown._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${rundownId}", "${snapshot.rundown._id}!"`)
 
-	let dbRunningOrder = RunningOrders.findOne(runningOrderId)
+	let dbRundown = Rundowns.findOne(rundownId)
 
-	if (dbRunningOrder && !dbRunningOrder.unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked RunningOrder!`)
+	if (dbRundown && !dbRundown.unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked Rundown!`)
 
-	if (!snapshot.runningOrder.unsynced) {
-		snapshot.runningOrder.unsynced = true
-		snapshot.runningOrder.unsyncedTime = getCurrentTime()
+	if (!snapshot.rundown.unsynced) {
+		snapshot.rundown.unsynced = true
+		snapshot.rundown.unsyncedTime = getCurrentTime()
 	}
 
-	snapshot.runningOrder.active					= ( dbRunningOrder ? dbRunningOrder.active : false)
-	snapshot.runningOrder.currentSegmentLineId		= ( dbRunningOrder ? dbRunningOrder.currentSegmentLineId : null)
-	snapshot.runningOrder.nextSegmentLineId			= ( dbRunningOrder ? dbRunningOrder.nextSegmentLineId : null)
-	snapshot.runningOrder.currentPlayingStoryStatus = ( dbRunningOrder ? dbRunningOrder.currentPlayingStoryStatus : undefined)
+	snapshot.rundown.active					= ( dbRundown ? dbRundown.active : false)
+	snapshot.rundown.currentSegmentLineId		= ( dbRundown ? dbRundown.currentSegmentLineId : null)
+	snapshot.rundown.nextSegmentLineId			= ( dbRundown ? dbRundown.nextSegmentLineId : null)
+	snapshot.rundown.currentPlayingStoryStatus = ( dbRundown ? dbRundown.currentPlayingStoryStatus : undefined)
 
 	const studios = StudioInstallations.find().fetch()
-	if (studios.length === 1) snapshot.runningOrder.studioInstallationId = studios[0]._id
+	if (studios.length === 1) snapshot.rundown.studioInstallationId = studios[0]._id
 
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	if (showStyleVariants.length === 1) {
-		snapshot.runningOrder.showStyleBaseId = showStyleVariants[0].showStyleBaseId
-		snapshot.runningOrder.showStyleVariantId = showStyleVariants[0]._id
+		snapshot.rundown.showStyleBaseId = showStyleVariants[0].showStyleBaseId
+		snapshot.rundown.showStyleVariantId = showStyleVariants[0]._id
 	}
 
-	saveIntoDb(RunningOrders, {_id: runningOrderId}, [snapshot.runningOrder])
-	saveIntoDb(RunningOrderDataCache, {roId: runningOrderId}, snapshot.mosData)
+	saveIntoDb(Rundowns, {_id: rundownId}, [snapshot.rundown])
+	saveIntoDb(RundownDataCache, {rundownId: rundownId}, snapshot.mosData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(Segments, {runningOrderId: runningOrderId}, snapshot.segments)
-	saveIntoDb(SegmentLines, {runningOrderId: runningOrderId}, snapshot.segmentLines)
-	saveIntoDb(SegmentLineItems, {runningOrderId: runningOrderId}, snapshot.segmentLineItems)
-	saveIntoDb(SegmentLineAdLibItems, {runningOrderId: runningOrderId}, snapshot.segmentLineAdLibItems)
+	saveIntoDb(Segments, {rundownId: rundownId}, snapshot.segments)
+	saveIntoDb(SegmentLines, {rundownId: rundownId}, snapshot.segmentLines)
+	saveIntoDb(SegmentLineItems, {rundownId: rundownId}, snapshot.segmentLineItems)
+	saveIntoDb(SegmentLineAdLibItems, {rundownId: rundownId}, snapshot.segmentLineAdLibItems)
 	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, {segmentLineId: {$in: snapshot.segmentLines.map(i => i._id)}}, snapshot.expectedMediaItems)
 
@@ -434,9 +434,9 @@ export function storeSystemSnapshot (studioId: string | null, reason: string) {
 	let s = createSystemSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function storeRunningOrderSnapshot (runningOrderId: string, reason: string) {
-	check(runningOrderId, String)
-	let s = createRunningOrderSnapshot(runningOrderId)
+export function storeRundownSnapshot (rundownId: string, reason: string) {
+	check(rundownId, String)
+	let s = createRundownSnapshot(rundownId)
 	return storeSnaphot(s, reason)
 }
 export function storeDebugSnapshot (studioId: string, reason: string) {
@@ -483,10 +483,10 @@ Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, respon
 		return createSystemSnapshot(params.studioId)
 	})
 })
-Picker.route('/snapshot/runningOrder/:runningOrderId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+Picker.route('/snapshot/rundown/:rundownId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
-		check(params.runningOrderId, String)
-		return createRunningOrderSnapshot(params.runningOrderId)
+		check(params.rundownId, String)
+		return createRundownSnapshot(params.rundownId)
 	})
 })
 Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
@@ -509,9 +509,9 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, response: Serv
 			snapshot = JSON.parse(snapshot)
 		}
 
-		if (snapshot.type === 'runningOrderCache' && snapshot.data) {
-			// special case (to be deprecated): runningOrder cached data
-			restoreRunningOrder(snapshot)
+		if (snapshot.type === 'rundownCache' && snapshot.data) {
+			// special case (to be deprecated): rundown cached data
+			restoreRundown(snapshot)
 
 		} else {
 			restoreFromSnapshot(snapshot)
@@ -542,8 +542,8 @@ let methods: Methods = {}
 methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId: string | null, reason: string) => {
 	return storeSystemSnapshot(studioId, reason)
 }
-methods[SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT] = (runningOrderId: string, reason: string) => {
-	return storeRunningOrderSnapshot(runningOrderId, reason)
+methods[SnapshotFunctionsAPI.STORE_RUNDOWN_SNAPSHOT] = (rundownId: string, reason: string) => {
+	return storeRundownSnapshot(rundownId, reason)
 }
 methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string, reason: string) => {
 	return storeDebugSnapshot(studioId, reason)

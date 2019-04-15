@@ -10,10 +10,10 @@ import {
 	PeripheralDevice
 } from '../../../lib/collections/PeripheralDevices'
 import {
-	RunningOrder,
-	RunningOrders,
-	DBRunningOrder
-} from '../../../lib/collections/RunningOrders'
+	Rundown,
+	Rundowns,
+	DBRundown
+} from '../../../lib/collections/Rundowns'
 import {
 	SegmentLine,
 	SegmentLines,
@@ -49,7 +49,7 @@ import {
 	ServerPlayoutAPI,
 	updateTimelineFromMosData
 } from '../playout'
-import { CachePrefix, RunningOrderDataCacheObj } from '../../../lib/collections/RunningOrderDataCache'
+import { CachePrefix, RundownDataCacheObj } from '../../../lib/collections/RundownDataCache'
 import {
 	setMeteorMethods,
 	Methods
@@ -60,53 +60,53 @@ import {
 	updateAffectedSegmentLines,
 	removeSegmentLine,
 	runPostProcessBlueprint,
-	ServerRunningOrderAPI,
+	ServerRundownAPI,
 	selectShowStyleVariant
-} from '../runningOrder'
+} from '../rundown'
 import { syncFunction } from '../../codeControl'
-import { IBlueprintSegmentLine, SegmentLineHoldMode, IngestRunningOrder } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintSegmentLine, SegmentLineHoldMode, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 import { loadShowStyleBlueprints } from '../blueprints/cache'
 import { postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
-import { ShowStyleContext, RunningOrderContext } from '../blueprints/context'
-import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
+import { ShowStyleContext, RundownContext } from '../blueprints/context'
+import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
-import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 const PackageInfo = require('../../../package.json')
 
-export function roId (roId: MOS.MosString128, original?: boolean): string {
-	// logger.debug('roId', roId)
-	if (!roId) throw new Meteor.Error(401, 'parameter roId missing!')
-	let id = 'ro_' + (roId['_str'] || roId.toString())
+export function rundownId (rundownId: MOS.MosString128, original?: boolean): string {
+	// logger.debug('rundownId', rundownId)
+	if (!rundownId) throw new Meteor.Error(401, 'parameter rundownId missing!')
+	let id = 'rundown_' + (rundownId['_str'] || rundownId.toString())
 	return (original ? id : getHash(id))
 }
-export function segmentLineId (runningOrderId: string, storyId: MOS.MosString128): string {
-	let id = runningOrderId + '_' + storyId.toString()
+export function segmentLineId (rundownId: string, storyId: MOS.MosString128): string {
+	let id = rundownId + '_' + storyId.toString()
 	return getHash(id)
 }
 /**
- * Returns a Running order, throws error if not found
- * @param roId Id of the Running order
+ * Returns a Rundown, throws error if not found
+ * @param rundownId Id of the Rundown
  */
-export function getRO (roID: MOS.MosString128): RunningOrder {
-	let id = roId(roID)
-	let ro = RunningOrders.findOne(id)
-	if (ro) {
-		ro.touch()
-		return ro
-	} else throw new Meteor.Error(404, 'RunningOrder ' + id + ' not found (ro: ' + roID + ')')
+export function getRO (rundownID: MOS.MosString128): Rundown {
+	let id = rundownId(rundownID)
+	let rundown = Rundowns.findOne(id)
+	if (rundown) {
+		rundown.touch()
+		return rundown
+	} else throw new Meteor.Error(404, 'Rundown ' + id + ' not found (rundown: ' + rundownID + ')')
 }
 /**
  * Returns a Segment (aka a Story), throws error if not found
- * @param roId Running order id
+ * @param rundownId Rundown id
  * @param segmentId Segment / Story id
  */
-// export function getSegment (roID: MOS.MosString128, storyID: MOS.MosString128, rank: number): Segment {
-// 	let id = segmentId(roId(roID), storyID, rank)
+// export function getSegment (rundownID: MOS.MosString128, storyID: MOS.MosString128, rank: number): Segment {
+// 	let id = segmentId(rundownId(rundownID), storyID, rank)
 // 	let segments = Segments.findOne({
-// 		runningOrderId: roId(roID),
+// 		rundownId: rundownId(rundownID),
 // 		_id: id
 // 	})
 // 	if (segments) {
@@ -115,44 +115,44 @@ export function getRO (roID: MOS.MosString128): RunningOrder {
 // }
 /**
  * Returns a SegmentLine (aka an Item), throws error if not found
- * @param roId
+ * @param rundownId
  * @param segmentLineId
  */
-export function getSegmentLine (roID: MOS.MosString128, storyID: MOS.MosString128): SegmentLine {
-	let id = segmentLineId(roId(roID), storyID)
+export function getSegmentLine (rundownID: MOS.MosString128, storyID: MOS.MosString128): SegmentLine {
+	let id = segmentLineId(rundownId(rundownID), storyID)
 	let segmentLine = SegmentLines.findOne({
-		runningOrderId: roId( roID ),
+		rundownId: rundownId( rundownID ),
 		_id: id
 	})
 	if (segmentLine) {
 		return segmentLine
 	} else {
-		let ro = getRO(roID)
-		if (ro) {
-			ro.appendNote({
+		let rundown = getRO(rundownID)
+		if (rundown) {
+			rundown.appendNote({
 				type: NoteType.ERROR,
 				message: 'There was an error when receiving MOS-data. This might be fixed by triggering a "Reload ENPS Data".',
 				origin: {
-					name: ro.name,
-					roId: ro._id
+					name: rundown.name,
+					rundownId: rundown._id
 				}
 			})
 		}
-		throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+		throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (rundown: ' + rundownID + ', story: ' + storyID + ')')
 	}
 }
 
 /**
  * Converts an Item into a SegmentLine
  * @param item MOS Item
- * @param runningOrderId Running order id of the item
+ * @param rundownId Rundown id of the item
  * @param segmentId Segment / Story id of the item
  * @param rank Rank of the story
  */
-export function convertToSegmentLine (story: MOS.IMOSStory, runningOrderId: string, rank: number): DBSegmentLine {
+export function convertToSegmentLine (story: MOS.IMOSStory, rundownId: string, rank: number): DBSegmentLine {
 	return {
-		_id: segmentLineId(runningOrderId, story.ID),
-		runningOrderId: runningOrderId,
+		_id: segmentLineId(rundownId, story.ID),
+		rundownId: rundownId,
 		segmentId: '', // to be coupled later
 		_rank: rank,
 		externalId: story.ID.toString(),
@@ -183,17 +183,17 @@ export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegment
 /**
  * Insert a new SegmentLine (aka an Item)
  * @param item The item to be inserted
- * @param runningOrderId The id of the Running order
+ * @param rundownId The id of the Rundown
  * @param segmentId The id of the Segment / Story
  * @param rank The new rank of the SegmentLine
  */
-export function upsertSegmentLine (story: MOS.IMOSStory, runningOrderId: string, rank: number): DBSegmentLine {
-	let sl = convertToSegmentLine(story, runningOrderId, rank)
+export function upsertSegmentLine (story: MOS.IMOSStory, rundownId: string, rank: number): DBSegmentLine {
+	let sl = convertToSegmentLine(story, rundownId, rank)
 	SegmentLines.upsert(sl._id, {$set: sl}) // insert, or update
-	afterInsertUpdateSegmentLine(story, runningOrderId)
+	afterInsertUpdateSegmentLine(story, rundownId)
 	return sl
 }
-export function afterInsertUpdateSegmentLine (story: MOS.IMOSStory, runningOrderId: string) {
+export function afterInsertUpdateSegmentLine (story: MOS.IMOSStory, rundownId: string) {
 	// nothing
 }
 
@@ -237,12 +237,12 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSROFullStory) => boolean
-= syncFunction(function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSROFullStory): boolean {
-	let showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
-	if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + ro.showStyleBaseId + '" not found!')
+export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MOS.IMOSROFullStory) => boolean
+= syncFunction(function updateStory (rundown: Rundown, segmentLine: SegmentLine, story: MOS.IMOSROFullStory): boolean {
+	let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+	if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + rundown.showStyleBaseId + '" not found!')
 
-	const context = new SegmentLineContext(ro, segmentLine, story)
+	const context = new SegmentLineContext(rundown, segmentLine, story)
 	context.handleNotesExternally = true
 
 	let resultSl: IBlueprintSegmentLine | undefined = undefined
@@ -266,7 +266,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 		notes = [{
 			type: NoteType.ERROR,
 			origin: {
-				name: '',				roId: context.runningOrder._id,
+				name: '',				rundownId: context.rundown._id,
 				segmentId: (context.segmentLine as DBSegmentLine).segmentId,
 				segmentLineId: context.segmentLine._id,
 			},
@@ -315,7 +315,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 
 	if (resultSli) {
 		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-			runningOrderId: ro._id,
+			rundownId: rundown._id,
 			segmentLineId: segmentLine._id,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 		}, resultSli || [], {
@@ -323,17 +323,17 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
 				logger.debug(segmentLineItem)
 				// @todo: have something here?
-				// let story: MOS.IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
-					// afterInsertUpdateSegment (story, roId(ro.ID))
+					// afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterUpdate (segmentLineItem) {
 				logger.debug('updated segmentLineItem ' + segmentLineItem._id)
 				// @todo: have something here?
-				// let story: MOS.IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
-				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// 	afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterRemove (segmentLineItem) {
@@ -345,7 +345,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	}
 	if (resultAdlibSli) {
 		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
-			runningOrderId: ro._id,
+			rundownId: rundown._id,
 			segmentLineId: segmentLine._id,
 			// fromPostProcess: { $ne: true }, // do not affect postProcess items
 		}, resultAdlibSli || [], {
@@ -353,17 +353,17 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 				logger.debug(segmentLineAdLibItem)
 				// @todo: have something here?
-				// let story: MOS.IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
-				// afterInsertUpdateSegment (story, roId(ro.ID))
+				// afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterUpdate (segmentLineAdLibItem) {
 				logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
 				// @todo: have something here?
-				// let story: MOS.IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
-				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// 	afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterRemove (segmentLineAdLibItem) {
@@ -376,7 +376,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 
 	if (resultSli || resultAdlibSli) {
 		try {
-			updateExpectedMediaItems(ro._id, segmentLine._id)
+			updateExpectedMediaItems(rundown._id, segmentLine._id)
 		} catch (e) {
 			logger.error('Error updating expectedMediaItems: ' + e.toString())
 		}
@@ -384,34 +384,34 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 
 	// if anything was changed
 	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
-	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
+	// return this.core.mosManipulate(P.methods.mosRundownReadyToAir, story)
 })
 
-export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine | null) {
+export function sendStoryStatus (rundown: Rundown, takeSegmentLine: SegmentLine | null) {
 
-	if (ro.currentPlayingStoryStatus) {
-		setStoryStatus(ro.peripheralDeviceId, ro, ro.currentPlayingStoryStatus, MOS.IMOSObjectStatus.STOP)
+	if (rundown.currentPlayingStoryStatus) {
+		setStoryStatus(rundown.peripheralDeviceId, rundown, rundown.currentPlayingStoryStatus, MOS.IMOSObjectStatus.STOP)
 		.catch(e => logger.error(e))
 	}
 	if (takeSegmentLine) {
-		setStoryStatus(ro.peripheralDeviceId, ro, takeSegmentLine.externalId, MOS.IMOSObjectStatus.PLAY)
+		setStoryStatus(rundown.peripheralDeviceId, rundown, takeSegmentLine.externalId, MOS.IMOSObjectStatus.PLAY)
 		.catch(e => logger.error(e))
 
-		RunningOrders.update(this._id, {$set: {
+		Rundowns.update(this._id, {$set: {
 			currentPlayingStoryStatus: takeSegmentLine.externalId
 		}})
-		ro.currentPlayingStoryStatus = takeSegmentLine.externalId
+		rundown.currentPlayingStoryStatus = takeSegmentLine.externalId
 	} else {
-		RunningOrders.update(this._id, {$unset: {
+		Rundowns.update(this._id, {$unset: {
 			currentPlayingStoryStatus: 1
 		}})
-		delete ro.currentPlayingStoryStatus
+		delete rundown.currentPlayingStoryStatus
 	}
 }
-function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {
+function setStoryStatus (deviceId: string, rundown: Rundown, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {
 	return new Promise((resolve, reject) => {
-		if (!ro.rehearsal) {
-			logger.debug('setStoryStatus', deviceId, ro.externalId, storyId, status)
+		if (!rundown.rehearsal) {
+			logger.debug('setStoryStatus', deviceId, rundown.externalId, storyId, status)
 			PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
 				logger.debug('reply', err, result)
 				if (err) {
@@ -419,62 +419,62 @@ function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, st
 				} else {
 					resolve(result)
 				}
-			}, 'setStoryStatus', ro.externalId, storyId, status)
+			}, 'setStoryStatus', rundown.externalId, storyId, status)
 		}
 	})
 }
-export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.wrapAsync(
-	function reloadRunningOrder (runningOrder: RunningOrder, cb: (err: Error | null) => void) {
-		logger.info('reloadRunningOrder ' + runningOrder._id)
+export const reloadRundown: (rundown: Rundown) => void = Meteor.wrapAsync(
+	function reloadRundown (rundown: Rundown, cb: (err: Error | null) => void) {
+		logger.info('reloadRundown ' + rundown._id)
 
-		if (!runningOrder.peripheralDeviceId) throw new Meteor.Error(400,'runningOrder.peripheralDeviceId missing!')
-		check(runningOrder.peripheralDeviceId, String)
+		if (!rundown.peripheralDeviceId) throw new Meteor.Error(400,'rundown.peripheralDeviceId missing!')
+		check(rundown.peripheralDeviceId, String)
 
-		const peripheralDevice = PeripheralDevices.findOne(runningOrder.peripheralDeviceId)
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.peripheralDeviceId + '" not found' )
+		const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found' )
 
-		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, ro: MOS.IMOSRunningOrder) => {
+		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, rundown: MOS.IMOSRundown) => {
 			// console.log('Response!')
 			if (err) {
 				logger.error(err)
 				cb(err)
 			} else {
 				try {
-					logger.info('triggerGetRunningOrder reply ' + ro.ID)
-					logger.debug(ro)
+					logger.info('triggerGetRundown reply ' + rundown.ID)
+					logger.debug(rundown)
 
-					handleRunningOrderData(ro, peripheralDevice, 'roList')
+					handleRundownData(rundown, peripheralDevice, 'rundownList')
 					cb(null)
 				} catch (e) {
 					cb(e)
 				}
 			}
-		}, 'triggerGetRunningOrder', runningOrder.externalId)
+		}, 'triggerGetRundown', rundown.externalId)
 	}
 )
-export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, duration: number) {
+export function replaceStoryItem (rundown: Rundown, segmentLineItem: SegmentLineItem, slCache: RundownDataCacheObj, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
 		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.externalId)[0].Content
 		story.EditorialStart = inPoint
 		story.EditorialDuration = duration
 
-		const peripheralDevice = PeripheralDevices.findOne(runningOrder.peripheralDeviceId)
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.peripheralDeviceId + '" not found' )
+		const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found' )
 
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
 			if (err) reject(err)
 			else resolve()
-		}, 'replaceStoryItem', slCache.data.RunningOrderId, slCache.data.ID, story)
+		}, 'replaceStoryItem', slCache.data.RundownId, slCache.data.ID, story)
 	})
 }
 
-function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
-	// Create or update a runningorder (ie from roCreate or roList)
+function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: PeripheralDevice, dataSource: string) {
+	// Create or update a rundown (ie from rundownCreate or rundownList)
 
-	let existingDbRo = RunningOrders.findOne(roId(ro.ID))
-	if (!isAvailableForMOS(existingDbRo)) return
+	let existingDbRundown = Rundowns.findOne(rundownId(rundown.ID))
+	if (!isAvailableForMOS(existingDbRundown)) return
 	updateMosLastDataReceived(peripheralDevice._id)
-	logger.info((existingDbRo ? 'Updating' : 'Adding') + ' RO ' + roId(ro.ID))
+	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId(rundown.ID))
 
 	let studioInstallationId = peripheralDevice.studioInstallationId
 	if (!studioInstallationId && peripheralDevice.parentDeviceId) {
@@ -490,44 +490,44 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
 	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
 
-	const ingestRo = literal<IngestRunningOrder>({
-		externalId: ro.ID.toString(),
-		name: ro.Slug.toString(),
+	const ingestRundown = literal<IngestRundown>({
+		externalId: rundown.ID.toString(),
+		name: rundown.Slug.toString(),
 		type: 'mos',
 		segments: [],
-		payload: ro
+		payload: rundown
 	})
 
-	const showStyle = selectShowStyleVariant(studioInstallation, ingestRo)
+	const showStyle = selectShowStyleVariant(studioInstallation, ingestRundown)
 	if (!showStyle) {
-		logger.warn('Studio blueprint rejected RO')
+		logger.warn('Studio blueprint rejected rundown')
 		return
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
 	const blueprintContext = new ShowStyleContext(studioInstallation, showStyle.base._id, showStyle.variant._id)
-	const roRes = showStyleBlueprint.getRunningOrder(blueprintContext, ingestRo)
+	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
 
 	let blueprint = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
 
-	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
-		_.omit(literal<DBRunningOrder>({
-			_id: roId(ro.ID),
-			externalId: ro.ID.toString(),
+	let dbROData: DBRundown = _.extend(existingDbRundown || {},
+		_.omit(literal<DBRundown>({
+			_id: rundownId(rundown.ID),
+			externalId: rundown.ID.toString(),
 			studioInstallationId: studioInstallation._id,
 			peripheralDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,
 			showStyleBaseId: showStyle.base._id,
-			name: ro.Slug.toString(),
-			expectedStart: formatTime(ro.EditorialStart),
-			expectedDuration: formatDuration(ro.EditorialDuration),
+			name: rundown.Slug.toString(),
+			expectedStart: formatTime(rundown.EditorialStart),
+			expectedDuration: formatDuration(rundown.EditorialDuration),
 			dataSource: dataSource,
 			unsynced: false,
 
 			importVersions: {
-				studioInstallation: studioInstallation._runningOrderVersionHash,
-				showStyleBase: showStyle.base._runningOrderVersionHash,
-				showStyleVariant: showStyle.variant._runningOrderVersionHash,
+				studioInstallation: studioInstallation._rundownVersionHash,
+				showStyleBase: showStyle.base._rundownVersionHash,
+				showStyleVariant: showStyle.variant._rundownVersionHash,
 				blueprint: blueprint.blueprintVersion,
 				core: PackageInfo.version,
 			},
@@ -540,8 +540,8 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			modified: 0,
 		}), ['previousSegmentLineId', 'currentSegmentLineId', 'nextSegmentLineId', 'created', 'modified'])
 	)
-	// Save RO into database:
-	saveIntoDb(RunningOrders, {
+	// Save rundown into database:
+	saveIntoDb(Rundowns, {
 		_id: dbROData._id
 	}, [dbROData], {
 		beforeInsert: (o) => {
@@ -555,36 +555,36 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 		}
 	})
 
-	let dbRo = RunningOrders.findOne(dbROData._id)
-	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
+	let dbRundown = Rundowns.findOne(dbROData._id)
+	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 	// cache the Data
-	dbRo.saveCache(CachePrefix.INGEST_RUNNINGORDER + dbRo._id, ro)
+	dbRundown.saveCache(CachePrefix.INGEST_RUNDOWN + dbRundown._id, rundown)
 
 	// Save the baseline
-	const blueprintRoContext = new RunningOrderContext(dbRo, studioInstallation)
-	logger.info(`Building baseline items for ${dbRo._id}...`)
-	logger.info(`... got ${roRes.baseline.length} items from baseline.`)
+	const blueprintRundownContext = new RundownContext(dbRundown, studioInstallation)
+	logger.info(`Building baseline items for ${dbRundown._id}...`)
+	logger.info(`... got ${rundownRes.baseline.length} items from baseline.`)
 
-	const baselineItem: RunningOrderBaselineItem = {
+	const baselineItem: RundownBaselineItem = {
 		_id: Random.id(7),
-		runningOrderId: dbRo._id,
-		objects: postProcessSegmentLineBaselineItems(blueprintRoContext, roRes.baseline)
+		rundownId: dbRundown._id,
+		objects: postProcessSegmentLineBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 
-	saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-		runningOrderId: dbRo._id,
+	saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
+		rundownId: dbRundown._id,
 	}, [baselineItem])
 
 	// Save the global adlibs
-	logger.info(`... got ${roRes.globalAdLibPieces.length} adLib items from baseline.`)
-	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRoContext, roRes.globalAdLibPieces, 'baseline')
-	saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-		runningOrderId: dbRo._id
+	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
+	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
+	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibItems, {
+		rundownId: dbRundown._id
 	}, adlibItems)
 
 	// Save Stories into database:
 
-	let existingSegmentLines = dbRo.getSegmentLines()
+	let existingSegmentLines = dbRundown.getSegmentLines()
 
 	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
 	// let segments: DBSegment[] = []
@@ -593,32 +593,32 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let rankSegmentLine = 0
 	// let prevSlugParts: string[] = []
 	// let segment: DBSegment
-	_.each(ro.Stories, (story: MOS.IMOSStory) => {
+	_.each(rundown.Stories, (story: MOS.IMOSStory) => {
 		// divide into
 		// let slugParts = (story.Slug || '').toString().split(';')
 
 		// if (slugParts[0] !== prevSlugParts[0]) {
-			// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
+			// segment = convertToSegment(story, rundownId(rundown.ID), rankSegment++)
 			// segments.push(segment)
 		// }
-		if (dbRo) {
+		if (dbRundown) {
 			// join new data with old:
-			let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
+			let segmentLine = convertToSegmentLine(story, dbRundown._id, rankSegmentLine++)
 			let existingSegmentLine = _.find(existingSegmentLines, (sl) => {
 				return sl._id === segmentLine._id
 			})
 			segmentLine = mergeSegmentLine(segmentLine, existingSegmentLine)
 
 			segmentLines.push(segmentLine)
-		} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
+		} else throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
 		// prevSlugParts = slugParts
 	})
 	// logger.debug('segmentLines', segmentLines)
 	// logger.debug('---------------')
-	// logger.debug(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
+	// logger.debug(SegmentLines.find({rundownId: dbRundown._id}).fetch())
 	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
-		runningOrderId: dbRo._id
+		rundownId: dbRundown._id
 	}, segmentLines, {
 		beforeDiff (obj, oldObj) {
 			let o = _.extend({}, obj, {
@@ -629,28 +629,28 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 		afterInsert (segmentLine) {
 			// logger.debug('inserted segmentLine ' + segmentLine._id)
 			// @todo: have something here?
-			// let story: MOS.IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+			// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
-				// afterInsertUpdateSegment (story, roId(ro.ID))
+				// afterInsertUpdateSegment (story, rundownId(rundown.ID))
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
 		afterUpdate (segmentLine) {
 			// logger.debug('updated segmentLine ' + segmentLine._id)
 			// @todo: have something here?
-			// let story: MOS.IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+			// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
-			// 	afterInsertUpdateSegment (story, roId(ro.ID))
+			// 	afterInsertUpdateSegment (story, rundownId(rundown.ID))
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
 		afterRemove (segmentLine) {
 			afterRemoveSegmentLine(segmentLine)
 		}
 	})
-	updateSegments(roId(ro.ID))
+	updateSegments(rundownId(rundown.ID))
 }
-function isAvailableForMOS (ro: RunningOrder | undefined): boolean {
-	if (ro && ro.unsynced) {
-		logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+function isAvailableForMOS (rundown: Rundown | undefined): boolean {
+	if (rundown && rundown.unsynced) {
+		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}
 	return true
@@ -663,66 +663,66 @@ function updateMosLastDataReceived (deviceId: string) {
 	})
 }
 export namespace MosIntegration {
-	export function mosRoCreate (id: string, token: string, ro: MOS.IMOSRunningOrder) {
+	export function mosRundownCreate (id: string, token: string, rundown: MOS.IMOSRundown) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		// logger.debug('mosRoCreate', ro)
-		logger.info('mosRoCreate ' + ro.ID)
-		logger.debug(ro)
+		// logger.debug('mosRundownCreate', rundown)
+		logger.info('mosRundownCreate ' + rundown.ID)
+		logger.debug(rundown)
 
-		handleRunningOrderData(ro, peripheralDevice, 'roCreate')
+		handleRundownData(rundown, peripheralDevice, 'rundownCreate')
 	}
-	export function mosRoReplace (id: string, token: string, ro: MOS.IMOSRunningOrder) {
+	export function mosRundownReplace (id: string, token: string, rundown: MOS.IMOSRundown) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoReplace ' + ro.ID)
+		logger.info('mosRundownReplace ' + rundown.ID)
 		// @ts-ignore
-		logger.debug(ro)
-		handleRunningOrderData(ro, peripheralDevice, 'roReplace')
+		logger.debug(rundown)
+		handleRundownData(rundown, peripheralDevice, 'rundownReplace')
 	}
-	export function mosRoDelete (id: string, token: string, runningOrderId: MOS.MosString128, force?: boolean) {
+	export function mosRundownDelete (id: string, token: string, rundownId: MOS.MosString128, force?: boolean) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoDelete ' + runningOrderId.toString())
+		logger.info('mosRundownDelete ' + rundownId.toString())
 
-		let ro = getRO(runningOrderId)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(rundownId)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
-		logger.info('Removing RO ' + roId(runningOrderId))
+		logger.info('Removing rundown ' + rundownId(rundownId))
 
-		if (ro) {
-			if (!ro.active || force === true) {
-				ServerRunningOrderAPI.removeRunningOrder(ro._id)
+		if (rundown) {
+			if (!rundown.active || force === true) {
+				ServerRundownAPI.removeRundown(rundown._id)
 			} else {
-				if (!ro.unsynced) {
-					ServerRunningOrderAPI.unsyncRunningOrder(ro._id)
+				if (!rundown.unsynced) {
+					ServerRundownAPI.unsyncRundown(rundown._id)
 				}
 			}
 
 		}
 	}
-	export function mosRoMetadata (id: string, token: string, roData: MOS.IMOSRunningOrderBase) {
+	export function mosRundownMetadata (id: string, token: string, rundownData: MOS.IMOSRundownBase) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoMetadata ' + roData.ID)
+		logger.info('mosRundownMetadata ' + rundownData.ID)
 
 		// @ts-ignore
-		logger.debug(roData)
-		let ro = getRO(roData.ID)
-		if (!isAvailableForMOS(ro)) return
+		logger.debug(rundownData)
+		let rundown = getRO(rundownData.ID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 
-		let m: Partial<DBRunningOrder> = {}
-		if (roData.MosExternalMetaData) m.metaData = roData.MosExternalMetaData
-		if (roData.Slug) 				m.name = roData.Slug.toString()
-		if (roData.EditorialStart) 		m.expectedStart = formatTime(roData.EditorialStart)
-		if (roData.EditorialDuration) 	m.expectedDuration = formatDuration(roData.EditorialDuration)
+		let m: Partial<DBRundown> = {}
+		if (rundownData.MosExternalMetaData) m.metaData = rundownData.MosExternalMetaData
+		if (rundownData.Slug) 				m.name = rundownData.Slug.toString()
+		if (rundownData.EditorialStart) 		m.expectedStart = formatTime(rundownData.EditorialStart)
+		if (rundownData.EditorialDuration) 	m.expectedDuration = formatDuration(rundownData.EditorialDuration)
 
 		if (!_.isEmpty(m)) {
-			RunningOrders.update(ro._id, {$set: m})
+			Rundowns.update(rundown._id, {$set: m})
 			// update data cache:
-			const cache = ro.fetchCache(CachePrefix.INGEST_RUNNINGORDER + roId(roData.ID),)
+			const cache = rundown.fetchCache(CachePrefix.INGEST_RUNDOWN + rundownId(rundownData.ID),)
 			if (cache) {
 				if (!cache.MosExternalMetaData) {
 					cache.MosExternalMetaData = []
 				}
-				_.each(roData.MosExternalMetaData || [], (md, key) => {
+				_.each(rundownData.MosExternalMetaData || [], (md, key) => {
 					if (!cache.MosExternalMetaData[key]) {
 						cache.MosExternalMetaData[key] = md
 					}
@@ -735,86 +735,86 @@ export namespace MosIntegration {
 				})
 			}
 
-			ro.saveCache(CachePrefix.INGEST_RUNNINGORDER + roId(roData.ID), cache)
+			rundown.saveCache(CachePrefix.INGEST_RUNDOWN + rundownId(rundownData.ID), cache)
 		}
 	}
-	export function mosRoStatus (id: string, token: string, status: MOS.IMOSRunningOrderStatus) {
+	export function mosRundownStatus (id: string, token: string, status: MOS.IMOSRundownStatus) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStatus ' + status.ID)
+		logger.info('mosRundownStatus ' + status.ID)
 
-		let ro = getRO(status.ID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(status.ID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(status)
-		RunningOrders.update(ro._id, {$set: {
+		Rundowns.update(rundown._id, {$set: {
 			status: status.Status
 		}})
 	}
-	export function mosRoStoryStatus (id: string, token: string, status: MOS.IMOSStoryStatus) {
+	export function mosRundownStoryStatus (id: string, token: string, status: MOS.IMOSStoryStatus) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStoryStatus ' + status.ID)
+		logger.info('mosRundownStoryStatus ' + status.ID)
 
-		let ro = getRO(status.RunningOrderId)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(status.RundownId)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 
 		// @ts-ignore
 		logger.debug(status)
 		// Save Stories (aka SegmentLine ) status into database:
 		let segmentLine = SegmentLines.findOne({
-			_id: 			segmentLineId(roId(status.RunningOrderId), status.ID),
-			runningOrderId: ro._id
+			_id: 			segmentLineId(rundownId(status.RundownId), status.ID),
+			rundownId: rundown._id
 		})
 		if (segmentLine) {
 			SegmentLines.update(segmentLine._id, {$set: {
 				status: status.Status
 			}})
-		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in RO ' + status.RunningOrderId + ' not found')
+		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in rundown ' + status.RundownId + ' not found')
 	}
-	export function mosRoItemStatus (id: string, token: string, status: MOS.IMOSItemStatus) {
+	export function mosRundownItemStatus (id: string, token: string, status: MOS.IMOSItemStatus) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn('mosRoItemStatus NOT IMPLEMENTED YET ' + status.ID)
+		logger.warn('mosRundownItemStatus NOT IMPLEMENTED YET ' + status.ID)
 		// @ts-ignore
 		logger.debug(status)
 		/*
 		// Save status of Item database:
-		let segmentID = segmentId(roId(status.RunningOrderId), status.StoryId)
+		let segmentID = segmentId(rundownId(status.RundownId), status.StoryId)
 		let segmentLine = SegmentLineIte.findOne({
 			_id: 			segmentLineId(segmentID, status.ID),
 			segmentId: 		segmentID,
-			runningOrderId: roId(status.RunningOrderId)
+			rundownId: rundownId(status.RundownId)
 		})
 		if (segmentLine) {
 			SegmentLines.update(segmentLine._id, {$set: {
 				status: status.Status
 			}})
-		} else throw new Meteor.Error(404, 'SegmentLine ' + status.ID + ' in segment ' + status.StoryId + ' in RO ' + status.RunningOrderId + ' not found')
+		} else throw new Meteor.Error(404, 'SegmentLine ' + status.ID + ' in segment ' + status.StoryId + ' in rundown ' + status.RundownId + ' not found')
 		*/
 	}
-	export function mosRoStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
+	export function mosRundownStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStoryInsert after ' + Action.StoryID)
+		logger.info('mosRundownStoryInsert after ' + Action.StoryID)
 
-		let ro = getRO(Action.RunningOrderID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(Action.RundownID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 
 		// @ts-ignore		logger.debug(
 		logger.debug(Action, Stories)
 		// insert a story (aka SegmentLine) before another story:
-		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
+		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RundownID, Action.StoryID) : null)
 
 		// let newRankMax
 		// let newRankMin
 		let segmentLineBeforeOrLast: DBSegmentLine | undefined = (
 			segmentLineAfter ?
 				fetchBefore(SegmentLines,
-					{ runningOrderId: ro._id },
+					{ rundownId: rundown._id },
 					segmentLineAfter._rank
 				) :
 				fetchBefore(SegmentLines,
-					{ runningOrderId: ro._id },
+					{ rundownId: rundown._id },
 					null
 				)
 		)
@@ -824,65 +824,65 @@ export namespace MosIntegration {
 			logger.info('insert story ' + story.ID)
 			let rank = getRank(segmentLineBeforeOrLast, segmentLineAfter, i, Stories.length)
 			// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-			let segmentLine = upsertSegmentLine(story, ro._id, rank)
+			let segmentLine = upsertSegmentLine(story, rundown._id, rank)
 			affectedSegmentLineIds.push(segmentLine._id)
 			if (!firstInsertedSegmentLine) firstInsertedSegmentLine = segmentLine
 		})
 
-		if (segmentLineAfter && ro.nextSegmentLineId === segmentLineAfter._id && firstInsertedSegmentLine && !ro.nextSegmentLineManual) {
+		if (segmentLineAfter && rundown.nextSegmentLineId === segmentLineAfter._id && firstInsertedSegmentLine && !rundown.nextSegmentLineManual) {
 			// Move up next-point to the first inserted segmentLine
-			ServerPlayoutAPI.roSetNext(ro._id, firstInsertedSegmentLine._id)
+			ServerPlayoutAPI.rundownSetNext(rundown._id, firstInsertedSegmentLine._id)
 		}
 
-		updateSegments(ro._id)
-		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
+		updateSegments(rundown._id)
+		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
 	}
-	export function mosRoItemInsert (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
+	export function mosRundownItemInsert (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn('mosRoItemInsert NOT SUPPORTED after ' + Action.ItemID)
+		logger.warn('mosRundownItemInsert NOT SUPPORTED after ' + Action.ItemID)
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
 		// insert an item (aka SegmentLine ## TODO ##Line) before another story:
-		let ro = getRO(Action.RunningOrderID)
-		let segment = getSegment(Action.RunningOrderID, Action.StoryID)
-		let segmentLineAfter = (Action.ItemID ? getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID) : null)
+		let rundown = getRO(Action.RundownID)
+		let segment = getSegment(Action.RundownID, Action.StoryID)
+		let segmentLineAfter = (Action.ItemID ? getSegmentLine(Action.RundownID, Action.StoryID, Action.ItemID) : null)
 
 		let segmentLineBeforeOrLast
 		let newRankMax
 		let newRankMin
 		if (segmentLineAfter) {
 			segmentLineBeforeOrLast = fetchBefore(SegmentLines,
-				{ runningOrderId: ro._id, segmentId: segment._id },
+				{ rundownId: rundown._id, segmentId: segment._id },
 				segmentLineAfter._rank
 			)
 		} else {
 			segmentLineBeforeOrLast = fetchBefore(SegmentLines,
-				{ runningOrderId: ro._id, segmentId: segment._id },
+				{ rundownId: rundown._id, segmentId: segment._id },
 				null
 			)
 		}
 		_.each(Items, (item: MOS.IMOSItem, i: number) => {
 			let rank = getRank(segmentLineBeforeOrLast, segmentLineAfter, i, Items.length)
 			// let rank = newRankMin + ( i / Items.length ) * (newRankMax - newRankMin)
-			insertSegmentLine(item, ro._id, segment._id, rank)
+			insertSegmentLine(item, rundown._id, segment._id, rank)
 		})
 		*/
 	}
-	export function mosRoStoryReplace (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
+	export function mosRundownStoryReplace (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStoryReplace ' + Action.StoryID)
+		logger.info('mosRundownStoryReplace ' + Action.StoryID)
 
-		let ro = getRO(Action.RunningOrderID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(Action.RundownID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 		// Replace a Story (aka a SegmentLine) with one or more Stories
-		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID)
+		let segmentLineToReplace = getSegmentLine(Action.RundownID, Action.StoryID)
 
-		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
-		let segmentLineAfter = fetchAfter(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
+		let segmentLineBefore = fetchBefore(SegmentLines, { rundownId: rundown._id }, segmentLineToReplace._rank)
+		let segmentLineAfter = fetchAfter(SegmentLines, { rundownId: rundown._id }, segmentLineToReplace._rank)
 
 		let affectedSegmentLineIds: Array<string> = []
 
@@ -891,50 +891,50 @@ export namespace MosIntegration {
 		_.each(Stories, (story: MOS.IMOSROStory, i: number) => {
 			logger.info('insert story ' + story.ID)
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
-			let sl = upsertSegmentLine(story, ro._id, rank)
+			let sl = upsertSegmentLine(story, rundown._id, rank)
 			insertedSegmentLineIds[sl._id] = true
 			affectedSegmentLineIds.push(sl._id)
 			if (!firstInsertedSegmentLine) firstInsertedSegmentLine = sl
 		})
 
-		updateSegments(ro._id)
+		updateSegments(rundown._id)
 
 		if (!insertedSegmentLineIds[segmentLineToReplace._id]) {
 			// ok, the segmentline to replace wasn't in the inserted segment lines
 			// remove it then:
 			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(ro._id, segmentLineToReplace, firstInsertedSegmentLine)
+			removeSegmentLine(rundown._id, segmentLineToReplace, firstInsertedSegmentLine)
 		}
 
-		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
+		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
 	}
-	export function mosRoItemReplace (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
+	export function mosRundownItemReplace (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn('mosRoItemReplace NOT IMPLEMENTED YET ' + Action.ItemID)
+		logger.warn('mosRundownItemReplace NOT IMPLEMENTED YET ' + Action.ItemID)
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
 		// Replace an item (aka SegmentLine ## TODO ##Line) with one or more items
-		let ro = getRO(Action.RunningOrderID)
-		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID)
+		let rundown = getRO(Action.RundownID)
+		let segmentLineToReplace = getSegmentLine(Action.RundownID, Action.StoryID, Action.ItemID)
 
-		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id, segmentId: segmentLineToReplace.segmentId }, segmentLineToReplace._rank)
-		let segmentLineAfter = fetchAfter(SegmentLines, { runningOrderId: ro._id, segmentId: segmentLineToReplace.segmentId }, segmentLineToReplace._rank)
+		let segmentLineBefore = fetchBefore(SegmentLines, { rundownId: rundown._id, segmentId: segmentLineToReplace.segmentId }, segmentLineToReplace._rank)
+		let segmentLineAfter = fetchAfter(SegmentLines, { rundownId: rundown._id, segmentId: segmentLineToReplace.segmentId }, segmentLineToReplace._rank)
 
 		removeSegmentLine(segmentLineToReplace._id)
 
 		_.each(Items, (item: MOS.IMOSItem, i: number) => {
 			let rank = getRank (segmentLineBefore, segmentLineAfter, i, Items.length)
-			insertSegmentLine(item, ro._id, rank)
+			insertSegmentLine(item, rundown._id, rank)
 		})
 		*/
 	}
-	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
+	export function mosRundownStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn ('mosRoStoryMove ' + Action.StoryID)
+		logger.warn ('mosRundownStoryMove ' + Action.StoryID)
 
-		let ro = getRO(Action.RunningOrderID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(Action.RundownID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
@@ -944,12 +944,12 @@ export namespace MosIntegration {
 		let currentSegmentLine: SegmentLine | undefined = undefined
 		let onAirNextWindowWidth: number | undefined = undefined
 		let nextPosition: number | undefined = undefined
-		if (ro.currentSegmentLineId) {
+		if (rundown.currentSegmentLineId) {
 			let nextSegmentLine: SegmentLine | undefined = undefined
-			currentSegmentLine = SegmentLines.findOne(ro.currentSegmentLineId)
-			if (ro.nextSegmentLineId) nextSegmentLine = SegmentLines.findOne(ro.nextSegmentLineId)
+			currentSegmentLine = SegmentLines.findOne(rundown.currentSegmentLineId)
+			if (rundown.nextSegmentLineId) nextSegmentLine = SegmentLines.findOne(rundown.nextSegmentLineId)
 			if (currentSegmentLine) {
-				const segmentLines = ro.getSegmentLines({
+				const segmentLines = rundown.getSegmentLines({
 					_rank: _.extend({
 						$gte: currentSegmentLine._rank
 					}, nextSegmentLine ? {
@@ -958,11 +958,11 @@ export namespace MosIntegration {
 				})
 				onAirNextWindowWidth = segmentLines.length
 			}
-		} else if (ro.nextSegmentLineId) {
+		} else if (rundown.nextSegmentLineId) {
 			let nextSegmentLine: SegmentLine | undefined = undefined
-			nextSegmentLine = SegmentLines.findOne(ro.nextSegmentLineId)
+			nextSegmentLine = SegmentLines.findOne(rundown.nextSegmentLineId)
 			if (nextSegmentLine) {
-				const segmentLines = ro.getSegmentLines({
+				const segmentLines = rundown.getSegmentLines({
 					_rank: {
 						$lte: nextSegmentLine._rank
 					}
@@ -971,8 +971,8 @@ export namespace MosIntegration {
 			}
 		}
 
-		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
-		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, (segmentLineAfter ? segmentLineAfter._rank : null))
+		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RundownID, Action.StoryID) : null)
+		let segmentLineBefore = fetchBefore(SegmentLines, { rundownId: rundown._id }, (segmentLineAfter ? segmentLineAfter._rank : null))
 
 		// console.log('Inserting between: ' + (segmentLineBefore ? segmentLineBefore._rank : 'X') + ' - ' + segmentLineAfter._rank)
 
@@ -981,28 +981,28 @@ export namespace MosIntegration {
 		if (segmentLineBefore) affectedSegmentLineIds.push(segmentLineBefore._id)
 		_.each(Stories, (storyId: MOS.MosString128, i: number) => {
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
-			SegmentLines.update(segmentLineId(ro._id, storyId), {$set: {
+			SegmentLines.update(segmentLineId(rundown._id, storyId), {$set: {
 				_rank: rank
 			}})
 		})
 
-		updateSegments(ro._id)
-		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
+		updateSegments(rundown._id)
+		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
 
-		// Meteor.call('playout_storiesMoved', ro._id, onAirNextWindowWidth, nextPosition)
-		ServerPlayoutAPI.roStoriesMoved(ro._id, onAirNextWindowWidth, nextPosition)
+		// Meteor.call('playout_storiesMoved', rundown._id, onAirNextWindowWidth, nextPosition)
+		ServerPlayoutAPI.rundownStoriesMoved(rundown._id, onAirNextWindowWidth, nextPosition)
 	}
-	export function mosRoItemMove (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.MosString128>) {
+	export function mosRundownItemMove (id: string, token: string, Action: MOS.IMOSItemAction, Items: Array<MOS.MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn('mosRoItemMove NOT IMPLEMENTED YET ' + Action.ItemID)
+		logger.warn('mosRundownItemMove NOT IMPLEMENTED YET ' + Action.ItemID)
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
 		// Move Items (#####) to before a story
-		let ro = getRO(Action.RunningOrderID)
-		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID)
+		let rundown = getRO(Action.RundownID)
+		let segmentLineAfter = getSegmentLine(Action.RundownID, Action.StoryID, Action.ItemID)
 		let segmentLineBefore = fetchBefore(SegmentLines,
-			{ runningOrderId: ro._id, segmentId: segmentLineAfter.segmentId},
+			{ rundownId: rundown._id, segmentId: segmentLineAfter.segmentId},
 			segmentLineAfter._rank)
 
 		_.each(Items, (itemId: MOS.MosString128, i: number) => {
@@ -1013,12 +1013,12 @@ export namespace MosIntegration {
 		})
 		*/
 	}
-	export function mosRoStoryDelete (id: string, token: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) {
+	export function mosRundownStoryDelete (id: string, token: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStoryDelete ' + Action.RunningOrderID)
+		logger.info('mosRundownStoryDelete ' + Action.RundownID)
 
-		let ro = getRO(Action.RunningOrderID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(Action.RundownID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
@@ -1026,174 +1026,174 @@ export namespace MosIntegration {
 		let affectedSegmentLineIds: Array<string> = []
 		_.each(Stories, (storyId: MOS.MosString128, i: number) => {
 			logger.debug('remove story ' + storyId)
-			let slId = segmentLineId(ro._id, storyId)
+			let slId = segmentLineId(rundown._id, storyId)
 			affectedSegmentLineIds.push(slId)
-			removeSegmentLine(ro._id, slId)
+			removeSegmentLine(rundown._id, slId)
 		})
-		updateSegments(ro._id)
-		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
+		updateSegments(rundown._id)
+		updateAffectedSegmentLines(rundown, affectedSegmentLineIds)
 	}
-	export function mosRoItemDelete (id: string, token: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) {
+	export function mosRundownItemDelete (id: string, token: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn('mosRoItemDelete NOT IMPLEMENTED YET ' + Action.StoryID)
+		logger.warn('mosRundownItemDelete NOT IMPLEMENTED YET ' + Action.StoryID)
 		// @ts-ignore
 		logger.debug(Action, Items)
 		/*
 		// Delete Items (aka SegmentLine ## TODO ##LinesLines)
-		let ro = getRO(Action.RunningOrderID)
+		let rundown = getRO(Action.RundownID)
 		_.each(Items, (itemId: MOS.MosString128, i: number) => {
-			removeSegmentLine( segmentLineId(segmentId(ro._id, Action.StoryID), itemId))
+			removeSegmentLine( segmentLineId(segmentId(rundown._id, Action.StoryID), itemId))
 		})
 		*/
 	}
-	export function mosRoStorySwap (id: string, token: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) {
+	export function mosRundownStorySwap (id: string, token: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
+		logger.info('mosRundownStorySwap ' + StoryID0 + ', ' + StoryID1)
 
-		let ro = getRO(Action.RunningOrderID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(Action.RundownID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, StoryID0, StoryID1)
 		// Swap Stories (aka SegmentLine)
 
-		let segmentLine0 = getSegmentLine(Action.RunningOrderID, StoryID0)
-		let segmentLine1 = getSegmentLine(Action.RunningOrderID, StoryID1)
+		let segmentLine0 = getSegmentLine(Action.RundownID, StoryID0)
+		let segmentLine1 = getSegmentLine(Action.RundownID, StoryID1)
 
 		SegmentLines.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
 		SegmentLines.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
 
-		if (ro.nextSegmentLineId === segmentLine0._id) {
+		if (rundown.nextSegmentLineId === segmentLine0._id) {
 			// Change nexted segmentLine
-			ServerPlayoutAPI.roSetNext(ro._id, segmentLine1._id)
-		} else if (ro.nextSegmentLineId === segmentLine1._id) {
+			ServerPlayoutAPI.rundownSetNext(rundown._id, segmentLine1._id)
+		} else if (rundown.nextSegmentLineId === segmentLine1._id) {
 			// Change nexted segmentLine
-			ServerPlayoutAPI.roSetNext(ro._id, segmentLine0._id)
+			ServerPlayoutAPI.rundownSetNext(rundown._id, segmentLine0._id)
 		}
 
-		updateSegments(ro._id)
-		updateAffectedSegmentLines(ro, [segmentLine0._id, segmentLine1._id])
+		updateSegments(rundown._id)
+		updateAffectedSegmentLines(rundown, [segmentLine0._id, segmentLine1._id])
 	}
-	export function mosRoItemSwap (id: string, token: string, Action: MOS.IMOSStoryAction, ItemID0: MOS.MosString128, ItemID1: MOS.MosString128) {
+	export function mosRundownItemSwap (id: string, token: string, Action: MOS.IMOSStoryAction, ItemID0: MOS.MosString128, ItemID1: MOS.MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn('mosRoItemSwap NOT IMPLEMENTED YET ' + ItemID0 + ', ' + ItemID1)
+		logger.warn('mosRundownItemSwap NOT IMPLEMENTED YET ' + ItemID0 + ', ' + ItemID1)
 		// @ts-ignore
 		logger.debug(Action, ItemID0, ItemID1)
 		/*
 		// Swap Stories (aka SegmentLine ## TODO ##Lines)
-		let ro = getRO(Action.RunningOrderID)
+		let rundown = getRO(Action.RundownID)
 
-		let segmentLine0 = getSegmentLine(Action.RunningOrderID, Action.StoryID, ItemID0)
-		let segmentLine1 = getSegmentLine(Action.RunningOrderID, Action.StoryID, ItemID1)
+		let segmentLine0 = getSegmentLine(Action.RundownID, Action.StoryID, ItemID0)
+		let segmentLine1 = getSegmentLine(Action.RundownID, Action.StoryID, ItemID1)
 
 		Segments.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
 		Segments.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
 		*/
 	}
-	export function mosRoReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {
+	export function mosRundownReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoReadyToAir ' + Action.ID)
+		logger.info('mosRundownReadyToAir ' + Action.ID)
 
-		let ro = getRO(Action.ID)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(Action.ID)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action)
-		// Set the ready to air status of a Running Order
+		// Set the ready to air status of a Rundown
 
-		RunningOrders.update(ro._id, {$set: {
+		Rundowns.update(rundown._id, {$set: {
 			airStatus: Action.Status
 		}})
 
 	}
-	export function mosRoFullStory (id: string, token: string, story: MOS.IMOSROFullStory ) {
+	export function mosRundownFullStory (id: string, token: string, story: MOS.IMOSROFullStory ) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoFullStory ' + story.ID)
+		logger.info('mosRundownFullStory ' + story.ID)
 
-		let ro = getRO(story.RunningOrderId)
-		if (!isAvailableForMOS(ro)) return
+		let rundown = getRO(story.RundownId)
+		if (!isAvailableForMOS(rundown)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 
 		fixIllegalObject(story)
 		// @ts-ignore
 		// logger.debug(story)
 		// Update db with the full story:
-		// let segment = getSegment(story.RunningOrderId, story.ID)
-		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
+		// let segment = getSegment(story.RundownId, story.ID)
+		let segmentLine = getSegmentLine(story.RundownId, story.ID)
 
 		// cache the Data
-		ro.saveCache(CachePrefix.INGEST_PART + segmentLine._id, story)
-		const changed = updateStory(ro, segmentLine, story)
+		rundown.saveCache(CachePrefix.INGEST_PART + segmentLine._id, story)
+		const changed = updateStory(rundown, segmentLine, story)
 
 		const segment = segmentLine.getSegment()
 		if (segment) {
 			// this could be run after the segment, if we were capable of limiting that
-			runPostProcessBlueprint(ro, segment)
+			runPostProcessBlueprint(rundown, segment)
 		}
 
 		if (changed) {
-			updateTimelineFromMosData(segmentLine.runningOrderId, [ segmentLine._id ])
+			updateTimelineFromMosData(segmentLine.rundownId, [ segmentLine._id ])
 		}
 	}
 }
 
 let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId: string, deviceToken: string, ro: MOS.IMOSRunningOrder) => {
-	return MosIntegration.mosRoCreate(deviceId, deviceToken, ro)
+methods[PeripheralDeviceAPI.methods.mosRundownCreate] = (deviceId: string, deviceToken: string, rundown: MOS.IMOSRundown) => {
+	return MosIntegration.mosRundownCreate(deviceId, deviceToken, rundown)
 }
-methods[PeripheralDeviceAPI.methods.mosRoReplace] = (deviceId: string, deviceToken: string, ro: MOS.IMOSRunningOrder) => {
-	return MosIntegration.mosRoReplace(deviceId, deviceToken, ro)
+methods[PeripheralDeviceAPI.methods.mosRundownReplace] = (deviceId: string, deviceToken: string, rundown: MOS.IMOSRundown) => {
+	return MosIntegration.mosRundownReplace(deviceId, deviceToken, rundown)
 }
-methods[PeripheralDeviceAPI.methods.mosRoDelete] = (deviceId: string, deviceToken: string, runningOrderId: MOS.MosString128, force?: boolean) => {
-	return MosIntegration.mosRoDelete(deviceId, deviceToken, runningOrderId, force)
+methods[PeripheralDeviceAPI.methods.mosRundownDelete] = (deviceId: string, deviceToken: string, rundownId: MOS.MosString128, force?: boolean) => {
+	return MosIntegration.mosRundownDelete(deviceId, deviceToken, rundownId, force)
 }
-methods[PeripheralDeviceAPI.methods.mosRoMetadata] = (deviceId: string, deviceToken: string, metadata: MOS.IMOSRunningOrderBase) => {
-	return MosIntegration.mosRoMetadata(deviceId, deviceToken, metadata)
+methods[PeripheralDeviceAPI.methods.mosRundownMetadata] = (deviceId: string, deviceToken: string, metadata: MOS.IMOSRundownBase) => {
+	return MosIntegration.mosRundownMetadata(deviceId, deviceToken, metadata)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStatus] = (deviceId: string, deviceToken: string, status: MOS.IMOSRunningOrderStatus) => {
-	return MosIntegration.mosRoStatus(deviceId, deviceToken, status)
+methods[PeripheralDeviceAPI.methods.mosRundownStatus] = (deviceId: string, deviceToken: string, status: MOS.IMOSRundownStatus) => {
+	return MosIntegration.mosRundownStatus(deviceId, deviceToken, status)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStoryStatus] = (deviceId: string, deviceToken: string, status: MOS.IMOSStoryStatus) => {
-	return MosIntegration.mosRoStoryStatus(deviceId, deviceToken, status)
+methods[PeripheralDeviceAPI.methods.mosRundownStoryStatus] = (deviceId: string, deviceToken: string, status: MOS.IMOSStoryStatus) => {
+	return MosIntegration.mosRundownStoryStatus(deviceId, deviceToken, status)
 }
-methods[PeripheralDeviceAPI.methods.mosRoItemStatus] = (deviceId: string, deviceToken: string, status: MOS.IMOSItemStatus) => {
-	return MosIntegration.mosRoItemStatus(deviceId, deviceToken, status)
+methods[PeripheralDeviceAPI.methods.mosRundownItemStatus] = (deviceId: string, deviceToken: string, status: MOS.IMOSItemStatus) => {
+	return MosIntegration.mosRundownItemStatus(deviceId, deviceToken, status)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStoryInsert] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) => {
-	return MosIntegration.mosRoStoryInsert(deviceId, deviceToken, Action, Stories)
+methods[PeripheralDeviceAPI.methods.mosRundownStoryInsert] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) => {
+	return MosIntegration.mosRundownStoryInsert(deviceId, deviceToken, Action, Stories)
 }
-methods[PeripheralDeviceAPI.methods.mosRoItemInsert] = (deviceId: string, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) => {
-	return MosIntegration.mosRoItemInsert(deviceId, deviceToken, Action, Items)
+methods[PeripheralDeviceAPI.methods.mosRundownItemInsert] = (deviceId: string, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) => {
+	return MosIntegration.mosRundownItemInsert(deviceId, deviceToken, Action, Items)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStoryReplace] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) => {
-	return MosIntegration.mosRoStoryReplace(deviceId, deviceToken, Action, Stories)
+methods[PeripheralDeviceAPI.methods.mosRundownStoryReplace] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) => {
+	return MosIntegration.mosRundownStoryReplace(deviceId, deviceToken, Action, Stories)
 }
-methods[PeripheralDeviceAPI.methods.mosRoItemReplace] = (deviceId: string, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) => {
-	return MosIntegration.mosRoItemReplace(deviceId, deviceToken, Action, Items)
+methods[PeripheralDeviceAPI.methods.mosRundownItemReplace] = (deviceId: string, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) => {
+	return MosIntegration.mosRundownItemReplace(deviceId, deviceToken, Action, Items)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStoryMove] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) => {
-	return MosIntegration.mosRoStoryMove(deviceId, deviceToken, Action, Stories)
+methods[PeripheralDeviceAPI.methods.mosRundownStoryMove] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) => {
+	return MosIntegration.mosRundownStoryMove(deviceId, deviceToken, Action, Stories)
 }
-methods[PeripheralDeviceAPI.methods.mosRoItemMove] = (deviceId: string, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.MosString128>) => {
-	return MosIntegration.mosRoItemMove(deviceId, deviceToken, Action, Items)
+methods[PeripheralDeviceAPI.methods.mosRundownItemMove] = (deviceId: string, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.MosString128>) => {
+	return MosIntegration.mosRundownItemMove(deviceId, deviceToken, Action, Items)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStoryDelete] = (deviceId: string, deviceToken: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) => {
-	return MosIntegration.mosRoStoryDelete(deviceId, deviceToken, Action, Stories)
+methods[PeripheralDeviceAPI.methods.mosRundownStoryDelete] = (deviceId: string, deviceToken: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) => {
+	return MosIntegration.mosRundownStoryDelete(deviceId, deviceToken, Action, Stories)
 }
-methods[PeripheralDeviceAPI.methods.mosRoItemDelete] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) => {
-	return MosIntegration.mosRoItemDelete(deviceId, deviceToken, Action, Items)
+methods[PeripheralDeviceAPI.methods.mosRundownItemDelete] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) => {
+	return MosIntegration.mosRundownItemDelete(deviceId, deviceToken, Action, Items)
 }
-methods[PeripheralDeviceAPI.methods.mosRoStorySwap] = (deviceId: string, deviceToken: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) => {
-	return MosIntegration.mosRoStorySwap(deviceId, deviceToken, Action, StoryID0, StoryID1)
+methods[PeripheralDeviceAPI.methods.mosRundownStorySwap] = (deviceId: string, deviceToken: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) => {
+	return MosIntegration.mosRundownStorySwap(deviceId, deviceToken, Action, StoryID0, StoryID1)
 }
-methods[PeripheralDeviceAPI.methods.mosRoItemSwap] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, ItemID0: MOS.MosString128, ItemID1: MOS.MosString128) => {
-	return MosIntegration.mosRoItemSwap(deviceId, deviceToken, Action, ItemID0, ItemID1)
+methods[PeripheralDeviceAPI.methods.mosRundownItemSwap] = (deviceId: string, deviceToken: string, Action: MOS.IMOSStoryAction, ItemID0: MOS.MosString128, ItemID1: MOS.MosString128) => {
+	return MosIntegration.mosRundownItemSwap(deviceId, deviceToken, Action, ItemID0, ItemID1)
 }
-methods[PeripheralDeviceAPI.methods.mosRoReadyToAir] = (deviceId: string, deviceToken: string, Action: MOS.IMOSROReadyToAir) => {
-	return MosIntegration.mosRoReadyToAir(deviceId, deviceToken, Action)
+methods[PeripheralDeviceAPI.methods.mosRundownReadyToAir] = (deviceId: string, deviceToken: string, Action: MOS.IMOSROReadyToAir) => {
+	return MosIntegration.mosRundownReadyToAir(deviceId, deviceToken, Action)
 }
-methods[PeripheralDeviceAPI.methods.mosRoFullStory] = (deviceId: string, deviceToken: string, story: MOS.IMOSROFullStory) => {
-	return MosIntegration.mosRoFullStory(deviceId, deviceToken, story)
+methods[PeripheralDeviceAPI.methods.mosRundownFullStory] = (deviceId: string, deviceToken: string, story: MOS.IMOSROFullStory) => {
+	return MosIntegration.mosRundownFullStory(deviceId, deviceToken, story)
 }
 // Apply methods:
 setMeteorMethods(methods)

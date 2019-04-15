@@ -2,7 +2,7 @@ import * as chai from 'chai'
 import * as _ from 'underscore'
 import {} from 'mocha'
 
-import { RunningOrder, DBRunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
+import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentLine, DBSegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 
@@ -11,43 +11,43 @@ import { TriggerType } from 'superfly-timeline'
 import { literal, saveIntoDb } from '../../../lib/lib'
 import { Segment, Segments, DBSegment } from '../../../lib/collections/Segments'
 import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { MockRO, testRO1 } from './playout-infinites-ro'
+import { MockRO, testRO1 } from './playout-infinites-rundown'
 
 const expect = chai.expect
 const assert = chai.assert
 
-function setupMockRO (mockRo: MockRO) {
-	// TODO - ensure mock RO looks valid?
+function setupMockRO (mockRundown: MockRO) {
+	// TODO - ensure mock rundown looks valid?
 
-	saveIntoDb<RunningOrder, DBRunningOrder>(RunningOrders, {
-		_id: mockRo.runningOrder._id
-	}, [mockRo.runningOrder])
+	saveIntoDb<Rundown, DBRundown>(Rundowns, {
+		_id: mockRundown.rundown._id
+	}, [mockRundown.rundown])
 
 	saveIntoDb<Segment, DBSegment>(Segments, {
-		runningOrderId: mockRo.runningOrder._id
-	}, mockRo.segments)
+		rundownId: mockRundown.rundown._id
+	}, mockRundown.segments)
 
 	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
-		runningOrderId: mockRo.runningOrder._id
-	}, mockRo.segmentLines)
+		rundownId: mockRundown.rundown._id
+	}, mockRundown.segmentLines)
 
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-		runningOrderId: mockRo.runningOrder._id
-	}, mockRo.segmentLineItems)
+		rundownId: mockRundown.rundown._id
+	}, mockRundown.segmentLineItems)
 
-	return RunningOrders.findOne(mockRo.runningOrder._id)
+	return Rundowns.findOne(mockRundown.rundown._id)
 }
 
 describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 	it('Full infinite generation', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const allSegmentLineItems = SegmentLineItems.find({ runningOrderId: ro._id }).fetch()
+		const allSegmentLineItems = SegmentLineItems.find({ rundownId: rundown._id }).fetch()
 		const insertedItems = allSegmentLineItems.filter(sli => origSegmentLineItemIds.indexOf(sli._id) === -1)
 		expect(insertedItems).lengthOf(85)
 
@@ -202,83 +202,83 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 	})
 
 	it('Ensure cleans up non-infinites', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		// Make everything be non-infinite
-		SegmentLineItems.update({ runningOrderId: ro._id }, {
+		SegmentLineItems.update({ rundownId: rundown._id }, {
 			$unset: {
 				infiniteMode: 1
 			}
 		}, { multi: true})
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
 	})
 
 	it('Ensure no mode creates nothing', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		// Make everything be non-infinite
-		SegmentLineItems.update({ runningOrderId: ro._id }, {
+		SegmentLineItems.update({ rundownId: rundown._id }, {
 			$unset: {
 				infiniteMode: 1
 			}
 		}, { multi: true})
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
 	})
 
 	it('Ensure SegmentLineItemLifespan.OutOnNextSegmentLine creates nothing', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		// Make everything be non-infinite
-		SegmentLineItems.update({ runningOrderId: ro._id }, {
+		SegmentLineItems.update({ rundownId: rundown._id }, {
 			$set: {
 				infiniteMode: SegmentLineItemLifespan.OutOnNextSegmentLine
 			}
 		}, { multi: true})
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
 	})
 
 	it('Ensure rerun makes no change', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		// Expect the ids to all be the same
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
 	})
 
 	it('Ensure line mode change propogates', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		const sliId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
 
@@ -303,16 +303,16 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		const afterModes = getInfiniteModes(sliId)
 		expect(afterModes).eql([3, 3, 0, 3])
 	})
 
 	it('Ensure line name change propogates', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		const sliId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
 
@@ -340,42 +340,42 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		checkInfiniteNames(sliId, 'new name')
 	})
 
 	it('Ensure setting prevLine makes no change', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
 		const sliId = 'M7Yw6rNvbRW8mgwbVWCo0CFpdBI_'
 		const prevSlId = 'BNx_pjsUS_NZmV8z_YmAT_C0riU_'
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		const prevSegmentLine = SegmentLines.findOne(prevSlId)
 		expect(prevSegmentLine).not.undefined
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('') // TODO - this should stop before the end!
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('') // TODO - this should stop before the end!
 
 		// Expect the ids to all be the same
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
 	})
 
 	it('Ensure prevLine updates current line', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
 		const sliId = 'M7Yw6rNvbRW8mgwbVWCo0CFpdBI_'
 		const prevSlId = 'BNx_pjsUS_NZmV8z_YmAT_C0riU_'
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		function getInfiniteModes (infiniteId: string) {
 			return SegmentLineItems.find({
@@ -401,7 +401,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(prevSegmentLine).not.undefined
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
 
 		// It is expected that there are 2 more sli now
 		const afterModes = getInfiniteModes(sliId)
@@ -410,24 +410,24 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		origSegmentLineItemIds.push('M7Yw6rNvbRW8mgwbVWCo0CFpdBI__Q5fb7VHFWQZjgdUQ_AD9QZjrknk_', 'M7Yw6rNvbRW8mgwbVWCo0CFpdBI__W3bcE_DKgzZwoq17RsaKBn3__yc_')
 
 		// Expect the ids to all be the same
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds.sort()).to.eql(origSegmentLineItemIds.sort())
 	})
 
 	it('Ensure update when adding infinite in the middle of another', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
 		const currentSlId = 'rUiB1GP4V671z_rYY03v1eM_icQ_'
 		const prevSlId = 'BNx_pjsUS_NZmV8z_YmAT_C0riU_'
 
 		// First generate
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		const newSli = literal<SegmentLineItem>({
 			_id: 'test_klokke_break',
-			runningOrderId : ro._id,
+			rundownId : rundown._id,
 			segmentLineId : currentSlId,
 			status : -1,
 			externalId : '',
@@ -452,9 +452,9 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(prevSegmentLine).not.undefined
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
 
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		const expectedMissing: string[] = [
 			'1Vf17ep1XE2bcAAUrokLfiAbohg__1WWrqgLIvlxNE4ciwOSL2Qn2yCI_',
@@ -482,17 +482,17 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(afterWithRemoved.sort()).eql(expectedSegmentLineItemIds.sort())
 	})
 
-	it('Ensure update when moving ro removing sli which breaks an infinite', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
+	it('Ensure update when moving rundown removing sli which breaks an infinite', function () {
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
 
 		const sliId = 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ__bed_fade'
 		const currentSlId = 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_'
 		const prevSlId = 'qGi_A8A0NtZoSgNnYZVNI_Vb700_'
 
 		// First generate
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
-		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
+		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		const prevSegmentLine = SegmentLines.findOne(prevSlId)
 		expect(prevSegmentLine).not.undefined
@@ -508,9 +508,9 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
 
-		const midSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const midSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 
 		// The last segment should be removed
 		expect(midSegmentLineItemIds).not.contains('9wPCrktBThPitm0JiE7FIOuoRJo__nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_')
@@ -519,9 +519,9 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		// Now remove the blocker and it should basically just come back
 		SegmentLineItems.remove(sliId)
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown, prevSegmentLine)).eq('')
 
-		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
+		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ rundownId: rundown._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).contains('9wPCrktBThPitm0JiE7FIOuoRJo__nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_')
 
 		// Should have same ids as the start
@@ -529,9 +529,9 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 	})
 
 	it('Ensure durationOverride value persists', function () {
-		const ro = setupMockRO(testRO1)
-		expect(ro).to.not.be.undefined
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		const rundown = setupMockRO(testRO1)
+		expect(rundown).to.not.be.undefined
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		const infId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
 		const slId = 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_'
@@ -547,7 +547,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})).eq(1)
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(rundown)).eq('')
 
 		const infiniteParts = SegmentLineItems.find({ infiniteId: infId }).fetch()
 		expect(infiniteParts).lengthOf(2)

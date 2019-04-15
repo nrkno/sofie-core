@@ -3,7 +3,7 @@ import { check, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
@@ -173,11 +173,11 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
+		check(r.rundownId, String)
 		check(r.slId, String)
 
-		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
-		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
+		// Meteor.call('playout_segmentLinePlaybackStart', r.rundownId, r.slId, r.time)
+		ServerPlayoutAPI.slPlaybackStartedCallback(r.rundownId, r.slId, r.time)
 	}
 	export function segmentLinePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStoppedResult) {
 		// This is called from the playout-gateway when an
@@ -185,10 +185,10 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
+		check(r.rundownId, String)
 		check(r.slId, String)
 
-		ServerPlayoutAPI.slPlaybackStoppedCallback(r.roId, r.slId, r.time)
+		ServerPlayoutAPI.slPlaybackStoppedCallback(r.rundownId, r.slId, r.time)
 	}
 	export function segmentLineItemPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -196,11 +196,11 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
+		check(r.rundownId, String)
 		check(r.sliId, String)
 
-		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
-		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
+		// Meteor.call('playout_segmentLineItemPlaybackStart', r.rundownId, r.sliId, r.time)
+		ServerPlayoutAPI.sliPlaybackStartedCallback(r.rundownId, r.sliId, r.time)
 	}
 	export function segmentLineItemPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -208,11 +208,11 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
+		check(r.rundownId, String)
 		check(r.sliId, String)
 
-		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
-		ServerPlayoutAPI.sliPlaybackStoppedCallback(r.roId, r.sliId, r.time)
+		// Meteor.call('playout_segmentLineItemPlaybackStart', r.rundownId, r.sliId, r.time)
+		ServerPlayoutAPI.sliPlaybackStoppedCallback(r.rundownId, r.sliId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -232,7 +232,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		// Make sure this never runs if this server isn't empty:
-		if (RunningOrders.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: RunningOrders not empty!')
+		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
 
 		if (really) {
 			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
@@ -344,41 +344,41 @@ postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMe
 /**
  * Insert a Story (aka a Segment) into the database
  * @param story The story to be inserted
- * @param runningOrderId The Running order id to insert into
+ * @param rundownId The Rundown id to insert into
  * @param rank The rank (position) to insert at
  */
-// export function insertSegment (story: IMOSROStory, runningOrderId: string, rank: number) {
+// export function insertSegment (story: IMOSROStory, rundownId: string, rank: number) {
 // 	let segment = convertToSegment(story, rank)
 // 	Segments.upsert(segment._id, {$set: _.omit(segment,['_id']) })
-// 	afterInsertUpdateSegment(story, runningOrderId)
+// 	afterInsertUpdateSegment(story, rundownId)
 // }
 /**
  * After a Story (aka a Segment) has been inserted / updated, handle its contents
  * @param story The Story that was inserted / updated
- * @param runningOrderId Id of the Running Order that contains the story
+ * @param rundownId Id of the Rundown that contains the story
  */
-// export function afterInsertUpdateSegment (story: IMOSROStory, runningOrderId: string) {
+// export function afterInsertUpdateSegment (story: IMOSROStory, rundownId: string) {
 	// Save Items (#####) into database:
 
 	/*
-	let segment = convertToSegment(story, runningOrderId, 0)
+	let segment = convertToSegment(story, rundownId, 0)
 	let rank = 0
 	saveIntoDb(SegmentLines, {
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		segmentId: segment._id
 	}, _.map(story.Items, (item: IMOSItem) => {
-		return convertToSegmentLine(item, runningOrderId, segment._id, rank++)
+		return convertToSegmentLine(item, rundownId, segment._id, rank++)
 	}), {
 		afterInsert (o) {
 			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
 			if (item) {
-				afterInsertUpdateSegmentLine(item, runningOrderId, segment._id)
+				afterInsertUpdateSegmentLine(item, rundownId, segment._id)
 			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
 		},
 		afterUpdate (o) {
 			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
 			if (item) {
-				afterInsertUpdateSegmentLine(item, runningOrderId, segment._id)
+				afterInsertUpdateSegmentLine(item, rundownId, segment._id)
 			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
 		},
 		afterRemove (o) {

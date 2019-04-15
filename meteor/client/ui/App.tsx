@@ -18,8 +18,8 @@ import {
 import Status from './Status'
 import Settings from './Settings'
 import TestTools from './TestTools'
-import { RunningOrderList } from './RunningOrderList'
-import { RunningOrderView } from './RunningOrderView'
+import { RundownList } from './RundownList'
+import { RundownView } from './RundownView'
 import { ActiveROView } from './ActiveROView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
@@ -82,13 +82,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		return (
 			<Router>
 				<div className='container-fluid'>
-					{/* Header switch - render the usual header for all pages but the running order view */}
+					{/* Header switch - render the usual header for all pages but the rundown view */}
 					<ErrorBoundary>
 						<Switch>
-							<Route path='/ro/:runningOrderId' component={NullComponent} />
+							<Route path='/rundown/:rundownId' component={NullComponent} />
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
-							<Route path='/activeRo' component={NullComponent} />
+							<Route path='/activeRundown' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
 							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} testingMode={this.state.testingMode} developerMode={this.state.developerMode} />} />
 						</Switch>
@@ -97,12 +97,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					<ErrorBoundary>
 						<Switch>
 							{/* <Route exact path='/' component={Dashboard} /> */}
-							<Route exact path='/' component={RunningOrderList} />
-							<Route path='/runningOrders' component={RunningOrderList} />
-							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
-							<Route path='/activeRo/:studioId' component={ActiveROView} />
+							<Route exact path='/' component={RundownList} />
+							<Route path='/rundowns' component={RundownList} />
+							<Route path='/rundown/:rundownId' component={RundownView} />
+							<Route path='/activeRundown/:studioId' component={ActiveROView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
-							{/* <Route path='/activeRo' component={ActiveROView} /> */}
+							{/* <Route path='/activeRundown' component={ActiveROView} /> */}
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							{/* <Route path='/countdowns/presenter' component={ClockView} /> */}
 							<Route path='/nymansPlayground' component={NymansPlayground} />

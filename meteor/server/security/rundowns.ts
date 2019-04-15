@@ -1,6 +1,6 @@
-import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 
-export namespace RunningOrderSecurity {
+export namespace RundownSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
@@ -12,8 +12,8 @@ export namespace RunningOrderSecurity {
 }
 // Setup rules:
 
-RunningOrders.allow({
-	insert (userId: string, doc: RunningOrder): boolean {
+Rundowns.allow({
+	insert (userId: string, doc: Rundown): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

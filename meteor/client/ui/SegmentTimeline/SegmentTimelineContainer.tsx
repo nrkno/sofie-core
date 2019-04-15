@@ -2,12 +2,12 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { getCurrentTime } from '../../../lib/lib'
-import { RunningOrderTiming, computeSegmentDuration } from '../RunningOrderView/RunningOrderTiming'
+import { RundownTiming, computeSegmentDuration } from '../RundownView/RundownTiming'
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
@@ -15,8 +15,8 @@ import { getResolvedSegment,
 	ISourceLayerExtended,
 	SegmentLineItemExtended,
 	SegmentLineExtended
-} from '../../../lib/RunningOrder'
-import { RunningOrderViewEvents } from '../RunningOrderView'
+} from '../../../lib/Rundown'
+import { RundownViewEvents } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
@@ -51,7 +51,7 @@ interface IProps {
 	segmentId: string,
 	studioInstallation: StudioInstallation,
 	showStyleBase: ShowStyleBase,
-	runningOrder: RunningOrder,
+	rundown: Rundown,
 	timeScale: number,
 	liveLineHistorySize: number
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -109,7 +109,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	let o = getResolvedSegment(props.showStyleBase, props.runningOrder, segment)
+	let o = getResolvedSegment(props.showStyleBase, props.rundown, segment)
 	let notes: Array<SegmentLineNote> = []
 	_.each(o.segmentLines, (sl) => {
 		notes = notes.concat(sl.getNotes(true))
@@ -144,17 +144,17 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	) {
 		return true
 	}
-	// Check running order changes that are important to the segment
+	// Check rundown changes that are important to the segment
 	if (
-		(typeof props.runningOrder !== typeof nextProps.runningOrder) ||
+		(typeof props.rundown !== typeof nextProps.rundown) ||
 		(
 			(
-				props.runningOrder.currentSegmentLineId !== nextProps.runningOrder.currentSegmentLineId ||
-				props.runningOrder.nextSegmentLineId !== nextProps.runningOrder.nextSegmentLineId
+				props.rundown.currentSegmentLineId !== nextProps.rundown.currentSegmentLineId ||
+				props.rundown.nextSegmentLineId !== nextProps.rundown.nextSegmentLineId
 			) && (
 				(data.segmentLines && (
-					data.segmentLines.find(i => (i._id === props.runningOrder.currentSegmentLineId) || (i._id === nextProps.runningOrder.currentSegmentLineId)) ||
-					data.segmentLines.find(i => (i._id === props.runningOrder.nextSegmentLineId) || (i._id === nextProps.runningOrder.nextSegmentLineId))
+					data.segmentLines.find(i => (i._id === props.rundown.currentSegmentLineId) || (i._id === nextProps.rundown.currentSegmentLineId)) ||
+					data.segmentLines.find(i => (i._id === props.rundown.nextSegmentLineId) || (i._id === nextProps.rundown.nextSegmentLineId))
 					)
 				)
 			)
@@ -181,7 +181,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	isLiveSegment: boolean
-	roCurrentSegmentId: string | null
+	rundownCurrentSegmentId: string | null
 	timelineDiv: HTMLDivElement
 
 	private _prevDisplayTime: number
@@ -190,8 +190,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		super(props)
 
 		this.state = {
-			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segmentId}.outputs`, {}),
-			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segmentId}`, false),
+			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`rundownView.segment.${props.segmentId}.outputs`, {}),
+			collapsed: CollapsedStateStorage.getItemBoolean(`rundownView.segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
@@ -212,16 +212,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentDidMount () {
-		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
+		this.rundownCurrentSegmentId = this.props.rundown.currentSegmentLineId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
 			this.startOnAirLine()
 		}
-		window.addEventListener(RunningOrderViewEvents.rewindsegments, this.onRewindSegment)
+		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	componentDidUpdate (prevProps) {
-		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
+		this.rundownCurrentSegmentId = this.props.rundown.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -232,12 +232,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.stopOnAirLine()
 		}
 
-		// rewind all scrollLeft's to 0 on running order activate
-		if (this.props.runningOrder && this.props.runningOrder.active && prevProps.runningOrder && !prevProps.runningOrder.active) {
+		// rewind all scrollLeft's to 0 on rundown activate
+		if (this.props.rundown && this.props.rundown.active && prevProps.rundown && !prevProps.rundown.active) {
 			this.setState({
 				scrollLeft: 0
 			})
-		} else if (this.props.runningOrder && !this.props.runningOrder.active && prevProps.runningOrder && prevProps.runningOrder.active) {
+		} else if (this.props.rundown && !this.props.rundown.active && prevProps.rundown && prevProps.rundown.active) {
 			this.setState({
 				livePosition: 0,
 				displayTimecode: 0
@@ -254,17 +254,17 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	componentWillUnmount () {
 		this._cleanUp()
 		this.stopOnAirLine()
-		window.removeEventListener(RunningOrderViewEvents.rewindsegments, this.onRewindSegment)
+		window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = {...this.state.collapsedOutputs}
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
-		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentId}.outputs`, collapsedOutputs)
+		CollapsedStateStorage.setItem(`rundownView.segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
 	onCollapseSegmentToggle = () => {
-		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentId}`, !this.state.collapsed)
+		CollapsedStateStorage.setItem(`rundownView.segment.${this.props.segmentId}`, !this.state.collapsed)
 		this.setState({ collapsed: !this.state.collapsed })
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
@@ -315,11 +315,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	startOnAirLine = () => {
-		window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
 	}
 
 	stopOnAirLine = () => {
-		window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
 	}
 
 	onFollowLiveLine = (state: boolean, event: any) => {
@@ -368,7 +368,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					case -10: text = 'Ten'; break
 				}
 				if (displayTime === 0 && this._prevDisplayTime === -1) {
-					text = 'Zero'
+					text = 'Zerundown'
 				}
 			}
 			this._prevDisplayTime = displayTime
@@ -395,7 +395,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onCollapseSegmentToggle={this.onCollapseSegmentToggle}
 				isCollapsed={this.state.collapsed}
 				scrollLeft={this.state.scrollLeft}
-				runningOrder={this.props.runningOrder}
+				rundown={this.props.rundown}
 				followLiveSegments={this.props.followLiveSegments}
 				isLiveSegment={this.props.isLiveSegment}
 				isNextSegment={this.props.isNextSegment}

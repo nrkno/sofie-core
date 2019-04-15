@@ -13,19 +13,19 @@ import * as Escape from 'react-escape'
 import Moment from 'react-moment'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
+import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
+import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
 import { SegmentTimelineContainer, SegmentLineItemUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer, InspectorDrawerBase, InspectorDrawerProps, InspectorPanelTabs } from './InspectorDrawer/InspectorDrawer'
-import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
-import { RunningOrderSystemStatus } from './RunningOrderView/RunningOrderSystemStatus'
+import { RundownOverview } from './RundownView/RundownOverview'
+import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
@@ -33,17 +33,17 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
-import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
+import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 import { scrollToSegmentLine, scrollToPosition, scrollToSegment } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
-import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
+import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI } from '../lib/clientAPI'
-import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier, reloadRunningOrderClick } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
@@ -98,14 +98,14 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 			return null
 		} else {
 			return (
-				<div className='running-order-view__focus-lost-frame'></div>
+				<div className='rundown-view__focus-lost-frame'></div>
 			)
 		}
 	}
 }
 
 interface ITimingWarningProps {
-	runningOrder: RunningOrder
+	rundown: Rundown
 	inActiveROView?: boolean
 	studioMode: boolean
 	oneMinuteBeforeAction: (e: Event) => void
@@ -127,18 +127,18 @@ const WarningDisplay = translate()(timer(5000)(
 		}
 
 		componentDidUpdate (prevProps: ITimingWarningProps) {
-			if ((this.props.runningOrder.active && !prevProps.runningOrder.active && this.props.runningOrder.rehearsal) ||
-				(this.props.runningOrder.rehearsal !== prevProps.runningOrder.rehearsal)) {
+			if ((this.props.rundown.active && !prevProps.rundown.active && this.props.rundown.rehearsal) ||
+				(this.props.rundown.rehearsal !== prevProps.rundown.rehearsal)) {
 				this.setState({
 					plannedStartCloseShown: false
 				})
 			}
 
-			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart &&
+			if (this.props.rundown.active && this.props.rundown.rehearsal && this.props.rundown.expectedStart &&
 				// the expectedStart is near
-				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart &&
+				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.rundown.expectedStart &&
 				// but it's not horribly in the past
-				getCurrentTime() < this.props.runningOrder.expectedStart + (this.props.runningOrder.expectedDuration || 60 * 60 * 1000) &&
+				getCurrentTime() < this.props.rundown.expectedStart + (this.props.rundown.expectedDuration || 60 * 60 * 1000) &&
 				!this.props.inActiveROView && !this.state.plannedStartCloseShown) {
 
 				this.setState({
@@ -165,7 +165,7 @@ const WarningDisplay = translate()(timer(5000)(
 		render () {
 			const { t } = this.props
 
-			if (!this.props.runningOrder) return null
+			if (!this.props.rundown) return null
 
 			return <ModalDialog
 				title={t('Start time is close')}
@@ -178,10 +178,10 @@ const WarningDisplay = translate()(timer(5000)(
 					this.props.studioMode &&
 					this.state.plannedStartCloseShow &&
 					!(
-						this.props.runningOrder.active &&
-						!this.props.runningOrder.rehearsal
+						this.props.rundown.active &&
+						!this.props.rundown.rehearsal
 					) &&
-					this.props.runningOrder.active
+					this.props.rundown.active
 				}
 			>
 				<p>{t('You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into playout mode?')}</p>
@@ -191,31 +191,31 @@ const WarningDisplay = translate()(timer(5000)(
 ) as React.StatelessComponent<Translated<ITimingWarningProps>>)
 
 interface ITimingDisplayProps {
-	runningOrder: RunningOrder
+	rundown: Rundown
 }
 
-export enum RunningOrderViewKbdShortcuts {
-	RUNNING_ORDER_TAKE = 'f12',
-	RUNNING_ORDER_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
-	RUNNING_ORDER_HOLD = 'h',
-	RUNNING_ORDER_ACTIVATE = '§',
-	RUNNING_ORDER_ACTIVATE2 = '\\',
-	RUNNING_ORDER_ACTIVATE3 = '|',
-	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
-	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
-	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
-	RUNNING_ORDER_REWIND_SEGMENTS = 'shift+home',
-	RUNNING_ORDER_RESET_RUNNING_ORDER = 'mod+shift+f12',
-	RUNNING_ORDER_RESET_RUNNING_ORDER2 = 'mod+shift+enter',
-	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
+export enum RundownViewKbdShortcuts {
+	RUNDOWN_TAKE = 'f12',
+	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
+	RUNDOWN_HOLD = 'h',
+	RUNDOWN_ACTIVATE = '§',
+	RUNDOWN_ACTIVATE2 = '\\',
+	RUNDOWN_ACTIVATE3 = '|',
+	RUNDOWN_ACTIVATE_REHEARSAL = 'mod+§',
+	RUNDOWN_DEACTIVATE = 'mod+shift+§',
+	RUNDOWN_GO_TO_LIVE = 'mod+home',
+	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
+	RUNDOWN_RESET_RUNDOWN = 'mod+shift+f12',
+	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
+	RUNDOWN_TOGGLE_DRAWER = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNNING_ORDER_NEXT_FORWARD = 'f9',
-	RUNNING_ORDER_NEXT_DOWN = 'f10',
-	RUNNING_ORDER_NEXT_BACK = 'shift+f9',
-	RUNNING_ORDER_NEXT_UP = 'shift+f10',
-	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
-	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNNING_ORDER_LOG_ERROR	= 'backspace'
+	RUNDOWN_NEXT_FORWARD = 'f9',
+	RUNDOWN_NEXT_DOWN = 'f10',
+	RUNDOWN_NEXT_BACK = 'shift+f9',
+	RUNDOWN_NEXT_UP = 'shift+f10',
+	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
+	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
+	RUNDOWN_LOG_ERROR	= 'backspace'
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -223,62 +223,62 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
 
-		if (!this.props.runningOrder) return null
+		if (!this.props.rundown) return null
 
 		return (
 			<div className='timing mod'>
-				{ this.props.runningOrder.startedPlayback && (this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
+				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
 					<span className='timing-clock plan-start left'>
 						<span className='timing-clock-label left'>{t('Started')}</span>
-						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.startedPlayback} />
+						<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.startedPlayback} />
 					</span> :
 					<span className='timing-clock plan-start left'>
 						<span className='timing-clock-label left'>{t('Planned Start')}</span>
-						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart} />
+						<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart} />
 					</span>
 				}
-				{ this.props.runningOrder.startedPlayback && (this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-					this.props.runningOrder.expectedStart &&
+				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
+					this.props.rundown.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
-							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
-							{RundownUtils.formatDiffToTimecode(this.props.runningOrder.startedPlayback - this.props.runningOrder.expectedStart, true, false, true, true, true)}
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
+							{RundownUtils.formatDiffToTimecode(this.props.rundown.startedPlayback - this.props.rundown.expectedStart, true, false, true, true, true)}
 						</span>
 					:
-					this.props.runningOrder.expectedStart &&
+					this.props.rundown.expectedStart &&
 						<span className={ClassNames('timing-clock countdown plan-start left', {
-							'heavy': getCurrentTime() > this.props.runningOrder.expectedStart
+							'heavy': getCurrentTime() > this.props.rundown.expectedStart
 						})}>
-							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
-							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.runningOrder.expectedStart, true, false, true, true, true)}
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
+							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundown.expectedStart, true, false, true, true, true)}
 						</span>
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
-					{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE ?
-						<div className='running-order__header-status running-order__header-status--hold'>{t('Hold')}</div>
+					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
+						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
 						: null
 					}
 				</span>
-				{ this.props.runningOrder.expectedDuration ?
+				{ this.props.rundown.expectedDuration ?
 					(<React.Fragment>
-						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
+						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
 							<span className='timing-clock plan-end right visual-last-child'>
 								<span className='timing-clock-label right'>{t('Planned End')}</span>
-								<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart + this.props.runningOrder.expectedDuration} />
+								<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart + this.props.rundown.expectedDuration} />
 							</span>
 						}
-						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
+						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
 							<span className='timing-clock countdown plan-end right'>
-								{RundownUtils.formatDiffToTimecode(getCurrentTime() - (this.props.runningOrder.expectedStart + this.props.runningOrder.expectedDuration), true, true, true)}
+								{RundownUtils.formatDiffToTimecode(getCurrentTime() - (this.props.rundown.expectedStart + this.props.rundown.expectedDuration), true, true, true)}
 							</span>
 						}
-						{this.props.runningOrder.expectedDuration &&
+						{this.props.rundown.expectedDuration &&
 							<span className={ClassNames('timing-clock heavy-light right', {
-								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.runningOrder.expectedDuration || 0),
-								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.runningOrder.expectedDuration || 0)
+								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.rundown.expectedDuration || 0),
+								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.rundown.expectedDuration || 0)
 							})}>
 								<span className='timing-clock-label right'>{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.runningOrder.expectedDuration, true, false, true, true, true, undefined, true)}
+								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.rundown.expectedDuration, true, false, true, true, true, undefined, true)}
 							</span>
 						}
 					</React.Fragment>) :
@@ -312,8 +312,8 @@ interface HotkeyDefinition {
 	label: string
 }
 
-interface IRunningOrderHeaderProps {
-	runningOrder: RunningOrder,
+interface IRundownHeaderProps {
+	rundown: Rundown,
 	studioInstallation: StudioInstallation,
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
@@ -321,12 +321,12 @@ interface IRunningOrderHeaderProps {
 	inActiveROView?: boolean
 }
 
-interface IRunningOrderHeaderState {
+interface IRundownHeaderState {
 	isError: boolean,
 	errorMessage?: string
 }
 
-const RunningOrderHeader = translate()(class extends React.Component<Translated<IRunningOrderHeaderProps>, IRunningOrderHeaderState> {
+const RundownHeader = translate()(class extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 	bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any
@@ -335,99 +335,99 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		global?: boolean
 		coolDown?: number
 	}> = []
-	constructor (props: Translated<IRunningOrderHeaderProps>) {
+	constructor (props: Translated<IRundownHeaderProps>) {
 		super(props)
 
 		const { t } = props
 		if (this.props.studioMode) {
 			this.bindKeys = [
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
+					key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
 					up: this.keyTake,
 					label: t('Take'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
+					key: RundownViewKbdShortcuts.RUNDOWN_TAKE2,
 					up: this.keyTake,
 					label: t('Take'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
+					key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
 					up: this.keyHold,
 					label: t('Hold')
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
+					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 					up: this.keyActivate,
 					label: t('Activate'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
+					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE2,
 					up: this.keyActivate,
 					label: t('Activate'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
+					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE3,
 					up: this.keyActivate,
 					label: t('Activate'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
+					key: RundownViewKbdShortcuts.RUNDOWN_DEACTIVATE,
 					up: this.keyDeactivate,
 					label: t('Deactivate'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
+					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE_REHEARSAL,
 					up: this.keyActivateRehearsal,
 					label: t('Activate (Rehearsal)'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER,
-					up: this.keyResetRunningOrder,
-					label: t('Reload Running Order'),
+					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
+					up: this.keyResetRundown,
+					label: t('Reload Rundown'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER2,
-					up: this.keyResetRunningOrder,
-					label: t('Reload Running Order'),
+					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
+					up: this.keyResetRundown,
+					label: t('Reload Rundown'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
 					label: t('Move Next forwards'),
 					global: true
 				},
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_DOWN,
 					up: this.keyMoveNextDown,
 					label: t('Move Next to the following segment'),
 					global: true
 				},
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_UP,
 					up: this.keyMoveNextUp,
 					label: t('Move Next to the previous segment'),
 					global: true
 				},
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_BACK,
 					up: this.keyMoveNextBack,
 					label: t('Move Next backwards'),
 					global: true
 				},
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DISABLE_NEXT_ELEMENT,
+					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItem,
 					label: t('Disable the next element'),
 					global: true
 				},
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT,
+					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItemUndo,
 					label: t('Undo Disable the next element'),
 					global: true
 				},
 				{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_LOG_ERROR,
+					key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
 					global: true,
@@ -460,10 +460,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.up) k.up(e)
 					lastUsed = Date.now()
-				}, 'keyup', 'RunningOrderHeader')
+				}, 'keyup', 'RundownHeader')
 				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
-				}, 'keydown', 'RunningOrderHeader')
+				}, 'keydown', 'RundownHeader')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
@@ -471,7 +471,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.down) k.down(e)
 					lastUsed = Date.now()
-				}, 'keydown', 'RunningOrderHeader')
+				}, 'keydown', 'RundownHeader')
 			}
 		})
 
@@ -479,17 +479,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			this.props.onRegisterHotkeys(this.bindKeys)
 		}
 
-		reloadRunningOrderClick.set(this.reloadRunningOrder)
+		reloadRundownClick.set(this.reloadRundown)
 	}
 
 	componentWillUnmount () {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keyup')
-				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keydown')
+				mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
 			}
 			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keydown')
+				mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
 			}
 		})
 	}
@@ -511,11 +511,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyDeactivate = (e: ExtendedKeyboardEvent) => {
 		this.deactivate(e)
 	}
-	keyResetRunningOrder = (e: ExtendedKeyboardEvent) => {
-		this.resetRunningOrder(e)
+	keyResetRundown = (e: ExtendedKeyboardEvent) => {
+		this.resetRundown(e)
 	}
-	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
-		this.reloadRunningOrder(e)
+	keyReloadRundown = (e: ExtendedKeyboardEvent) => {
+		this.reloadRundown(e)
 	}
 	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
 		// "forward" = to next SegmentLine
@@ -540,14 +540,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.disableNextSLIUndo(e)
 	}
 	keyLogError = (e: ExtendedKeyboardEvent) => {
-		this.takeRunningOrderSnapshot(e)
+		this.takeRundownSnapshot(e)
 	}
 
 	disableNextSLI = (e: any) => {
 		const { t } = this.props
 
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.runningOrder._id, false])
+			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.rundown._id, false])
 		}
 	}
 
@@ -555,21 +555,21 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const {t} = this.props
 
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.runningOrder._id, true])
+			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.rundown._id, true])
 		}
 	}
 
 	take = (e: any) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.take, [this.props.runningOrder._id])
+			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
 		}
 	}
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
-			if (this.props.runningOrder.active) {
-				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.runningOrder._id, horizonalDelta, verticalDelta], (err, response) => {
+			if (this.props.rundown.active) {
+				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
 						const segmentLineId = response.result
 						if (segmentLineId) scrollToSegmentLine(segmentLineId)
@@ -587,15 +587,15 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	hold = (e: any) => {
 		const {t} = this.props
-		if (this.props.studioMode && this.props.runningOrder.active) {
-			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.runningOrder._id])
+		if (this.props.studioMode && this.props.rundown.active) {
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id])
 		}
 	}
-	runningOrderShouldHaveStarted () {
-		return getCurrentTime() > (this.props.runningOrder.expectedStart || 0)
+	rundownShouldHaveStarted () {
+		return getCurrentTime() > (this.props.rundown.expectedStart || 0)
 	}
-	runningOrderShouldHaveEnded () {
-		return getCurrentTime() > (this.props.runningOrder.expectedStart || 0) + (this.props.runningOrder.expectedDuration || 0)
+	rundownShouldHaveEnded () {
+		return getCurrentTime() > (this.props.rundown.expectedStart || 0) + (this.props.rundown.expectedDuration || 0)
 	}
 
 	activate = (e: any) => {
@@ -605,28 +605,28 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (
 			this.props.studioMode &&
 			(
-				!this.props.runningOrder.active ||
+				!this.props.rundown.active ||
 				(
-					this.props.runningOrder.active &&
-					this.props.runningOrder.rehearsal
+					this.props.rundown.active &&
+					this.props.rundown.rehearsal
 				)
 			)
 		) {
 			let doActivate = (le: any) => {
-				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.runningOrder._id, false], (err, response) => {
+				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.rundown._id, false], (err, response) => {
 					if (!err) {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					}
 				})
 			}
-			if (!this.runningOrderShouldHaveStarted() ) {
+			if (!this.rundownShouldHaveStarted() ) {
 				// The broadcast hasn't started yet
 				doModalDialog({
-					title: this.props.runningOrder.name,
-					message: t('Do you want to activate this Running Order?'),
+					title: this.props.rundown.name,
+					message: t('Do you want to activate this Rundown?'),
 					onAccept: (le: any) => {
 						this.rewindSegments()
-						doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.runningOrder._id], (err, response) => {
+						doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id], (err, response) => {
 							if (!err) {
 								this.deferFlushAndRewindSegments()
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -634,14 +634,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						})
 					}
 				})
-			} else if (!this.runningOrderShouldHaveEnded() ) {
+			} else if (!this.rundownShouldHaveEnded() ) {
 				// The broadcast has started
 				doActivate(e)
 			} else {
 				// The broadcast has ended, going into active mode is probably not what you want to do
 				doModalDialog({
-					title: this.props.runningOrder.name,
-					message: t('The planned end time has passed, are you sure you want to activate this Running Order?'),
+					title: this.props.rundown.name,
+					message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
 					onAccept: (le: any) => {
 						doActivate(e)
 					}
@@ -656,33 +656,33 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (
 			this.props.studioMode &&
 			(
-				!this.props.runningOrder.active ||
+				!this.props.rundown.active ||
 				(
-					this.props.runningOrder.active &&
-					!this.props.runningOrder.rehearsal
+					this.props.rundown.active &&
+					!this.props.rundown.rehearsal
 				)
 			)
 		) {
 			let doActivateRehersal = () => {
-				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.runningOrder._id, true], (err, response) => {
+				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.rundown._id, true], (err, response) => {
 					if (!err) {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					}
 				})
 			}
-			if (!this.runningOrderShouldHaveStarted()) {
+			if (!this.rundownShouldHaveStarted()) {
 				// The broadcast hasn't started yet
-				if (!this.props.runningOrder.active) {
+				if (!this.props.rundown.active) {
 					// inactive, do the full preparation:
-					doUserAction(t, e, UserActionAPI.methods.prepareForBroadcast, [this.props.runningOrder._id], (err, response) => {
+					doUserAction(t, e, UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], (err, response) => {
 						if (!err) {
 							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 						}
 					})
-				} else if (!this.props.runningOrder.rehearsal) {
+				} else if (!this.props.rundown.rehearsal) {
 					// Active, and not in rehearsal
 					doModalDialog({
-						title: this.props.runningOrder.name,
+						title: this.props.rundown.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: () => {
 							doActivateRehersal()
@@ -693,10 +693,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				}
 			} else {
 				// The broadcast has started
-				if (!this.runningOrderShouldHaveEnded()) {
+				if (!this.rundownShouldHaveEnded()) {
 					// We are in the broadcast
 					doModalDialog({
-						title: this.props.runningOrder.name,
+						title: this.props.rundown.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: () => {
 							doActivateRehersal()
@@ -713,42 +713,42 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const { t } = this.props
 		if (e.persist) e.persist()
 
-		if (this.props.studioMode && this.props.runningOrder.active) {
-			if (this.runningOrderShouldHaveStarted()) {
-				if (this.props.runningOrder.rehearsal) {
+		if (this.props.studioMode && this.props.rundown.active) {
+			if (this.rundownShouldHaveStarted()) {
+				if (this.props.rundown.rehearsal) {
 					// We're in rehearsal mode
-					doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
+					doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 				} else {
 					doModalDialog({
-						title: this.props.runningOrder.name,
-						message: t('Are you sure you want to deactivate this Running Order?\n(This will clear the outputs)'),
+						title: this.props.rundown.name,
+						message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
 						onAccept: () => {
-							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
+							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 						}
 					})
 				}
 			} else {
 				// Do it right away
-				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
+				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 			}
 		}
 	}
 
-	resetRunningOrder = (e: any) => {
+	resetRundown = (e: any) => {
 		const { t } = this.props
 		if (e.persist) e.persist()
 
 		let doReset = () => {
 			this.rewindSegments() // Do a rewind right away
-			doUserAction(t, e, UserActionAPI.methods.resetRunningOrder, [this.props.runningOrder._id], () => {
+			doUserAction(t, e, UserActionAPI.methods.resetRundown, [this.props.rundown._id], () => {
 				this.deferFlushAndRewindSegments()
 			})
 		}
-		if ((this.props.runningOrder.active && !this.props.runningOrder.rehearsal)) {
-			// The running order is active and not in rehersal
+		if ((this.props.rundown.active && !this.props.rundown.rehearsal)) {
+			// The rundown is active and not in rehersal
 			doModalDialog({
-				title: this.props.runningOrder.name,
-				message: t('The running order can not be reset while it is active'),
+				title: this.props.rundown.name,
+				message: t('The rundown can not be reset while it is active'),
 				onAccept: () => {
 					// nothing
 				},
@@ -760,34 +760,34 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
-	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
+	reloadRundown = (e: any, changeRehearsal?: boolean) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err) => {
 				if (!err) {
-					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) {
-						scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+					if (this.props.rundown && this.props.rundown.nextSegmentLineId) {
+						scrollToSegmentLine(this.props.rundown.nextSegmentLineId)
 					}
 				}
 			})
 		}
 	}
 
-	takeRunningOrderSnapshot = (e) => {
+	takeRundownSnapshot = (e) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Taken by user'], undefined,
+			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'Taken by user'], undefined,
 				t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
 		}
 	}
 
-	resetAndActivateRunningOrder = (e: any) => {
+	resetAndActivateRundown = (e: any) => {
 		// Called from the ModalDialog, 1 minute before broadcast starts
 		if (this.props.studioMode) {
 			const {t} = this.props
 			this.rewindSegments() // Do a rewind right away
 
-			doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.runningOrder._id], (err) => {
+			doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id], (err) => {
 				if (!err) {
 					this.deferFlushAndRewindSegments()
 					if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -797,15 +797,15 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	rewindSegments () {
-		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 	}
 	deferFlushAndRewindSegments () {
 		// Do a rewind later, when the UI has updated
 		Meteor.defer(() => {
 			Tracker.flush()
 			Meteor.setTimeout(() => {
-				window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
-				window.dispatchEvent(new Event(RunningOrderViewEvents.goToTop))
+				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+				window.dispatchEvent(new Event(RundownViewEvents.goToTop))
 			}, 500)
 		})
 	}
@@ -814,17 +814,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const { t } = this.props
 		return <React.Fragment>
 			<Escape to='document'>
-				<ContextMenu id='running-order-context-menu'>
+				<ContextMenu id='rundown-context-menu'>
 					<div className='react-contextmenu-label'>
-						{this.props.runningOrder && this.props.runningOrder.name}
+						{this.props.rundown && this.props.rundown.name}
 					</div>
 					{
 						this.props.studioMode ?
 							<React.Fragment>
 								{
-									!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
+									!(this.props.rundown.active && this.props.rundown.rehearsal) ?
 										(
-											!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
+											!this.rundownShouldHaveStarted() && !this.props.rundown.active ?
 												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
 													{t('Prepare Studio and Activate (Rehearsal)')}
 												</MenuItem> :
@@ -838,37 +838,37 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										)
 								}
 								{
-									this.props.runningOrder.active ?
+									this.props.rundown.active ?
 										<MenuItem onClick={(e) => this.deactivate(e)}>
 											{t('Deactivate')}
 										</MenuItem> :
 										null
 								}
 								{
-									this.props.runningOrder.active ?
+									this.props.rundown.active ?
 										<MenuItem onClick={(e) => this.take(e)}>
 											{t('Take')}
 										</MenuItem> :
 										null
 								}
 								{
-									this.props.runningOrder.active ?
+									this.props.rundown.active ?
 										<MenuItem onClick={(e) => this.hold(e)}>
 											{t('Hold')}
 										</MenuItem> :
 										null
 								}
 								{
-									!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-										<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
-											{t('Reset Running Order')}
+									!(this.props.rundown.active && !this.props.rundown.rehearsal) ?
+										<MenuItem onClick={(e) => this.resetRundown(e)}>
+											{t('Reset Rundown')}
 										</MenuItem> :
 										null
 								}
-								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
+								<MenuItem onClick={(e) => this.reloadRundown(e)}>
 									{t('Reload ENPS Data')}
 								</MenuItem>
-								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
+								<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>
 									{t('Store Snapshot')}
 								</MenuItem>
 							</React.Fragment> :
@@ -880,20 +880,20 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					}
 				</ContextMenu>
 			</Escape>
-			<div className={ClassNames('header running-order', {
-				'active': this.props.runningOrder.active,
-				'not-active': !this.props.runningOrder.active,
+			<div className={ClassNames('header rundown', {
+				'active': this.props.rundown.active,
+				'not-active': !this.props.rundown.active,
 
-				'rehearsal': this.props.runningOrder.rehearsal
+				'rehearsal': this.props.rundown.rehearsal
 			})}>
-				<ContextMenuTrigger id='running-order-context-menu' attributes={{
+				<ContextMenuTrigger id='rundown-context-menu' attributes={{
 					className: 'flex-col col-timing horizontal-align-center'
 				}}>
 					<WarningDisplay
 						studioMode={this.props.studioMode}
 						inActiveROView={this.props.inActiveROView}
-						runningOrder={this.props.runningOrder}
-						oneMinuteBeforeAction={this.resetAndActivateRunningOrder}
+						rundown={this.props.rundown}
+						oneMinuteBeforeAction={this.resetAndActivateRundown}
 					/>
 					<div className='row first-row super-dark'>
 						<div className='flex-col left horizontal-align-left'>
@@ -904,17 +904,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						</div>
 						<div className='flex-col right horizontal-align-right'>
 							<div className='links mod close'>
-								<NavLink to='/runningOrders'>
+								<NavLink to='/rundowns'>
 									<CoreIcon id='nrk-close' />
 								</NavLink>
 							</div>
 						</div>
 						<TimingDisplay {...this.props} />
-						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
+						{this.props.studioInstallation && <RundownSystemStatus studioInstallation={this.props.studioInstallation} rundown={this.props.rundown} />}
 					</div>
 					<div className='row dark'>
-						<div className='col c12 running-order-overview'>
-							{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
+						<div className='col c12 rundown-overview'>
+							{ this.props.rundown && <RundownOverview rundownId={this.props.rundown._id} /> }
 						</div>
 					</div>
 				</ContextMenuTrigger>
@@ -929,10 +929,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 interface IProps {
 	match?: {
 		params: {
-			runningOrderId: string
+			rundownId: string
 		}
 	}
-	runningOrderId?: string
+	rundownId?: string
 	inActiveROView?: boolean
 }
 
@@ -952,41 +952,41 @@ interface IState {
 	selectedSegmentLineItem: SegmentLineItemUi | undefined
 }
 
-export enum RunningOrderViewEvents {
-	'rewindsegments'	=	'sofie:roRewindSegments',
+export enum RundownViewEvents {
+	'rewindsegments'	=	'sofie:rundownRewindSegments',
 	'goToLiveSegment'	=	'sofie:goToLiveSegment',
 	'goToTop'			=	'sofie:goToTop'
 }
 
 interface ITrackedProps {
-	runningOrderId: string
-	runningOrder?: RunningOrder
+	rundownId: string
+	rundown?: Rundown
 	segments: Array<Segment>
 	studioInstallation?: StudioInstallation
 	showStyleBase?: ShowStyleBase
 }
-export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
+export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
-	let runningOrderId
-	if (props.match && props.match.params.runningOrderId) {
-		runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
-	} else if (props.runningOrderId) {
-		runningOrderId = props.runningOrderId
+	let rundownId
+	if (props.match && props.match.params.rundownId) {
+		rundownId = decodeURIComponent(props.match.params.rundownId)
+	} else if (props.rundownId) {
+		rundownId = props.rundownId
 	}
 
-	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
-	let studioInstallation = runningOrder && StudioInstallations.findOne({ _id: runningOrder.studioInstallationId })
-	// let roDurations = calculateDurations(runningOrder, segmentLines)
+	let rundown = Rundowns.findOne({ _id: rundownId })
+	let studioInstallation = rundown && StudioInstallations.findOne({ _id: rundown.studioInstallationId })
+	// let rundownDurations = calculateDurations(rundown, segmentLines)
 	return {
-		runningOrderId: runningOrderId,
-		runningOrder: runningOrder,
-		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
+		rundownId: rundownId,
+		rundown: rundown,
+		segments: rundown ? Segments.find({ rundownId: rundown._id }, {
 			sort: {
 				'_rank': 1
 			}
 		}).fetch() : [],
 		studioInstallation: studioInstallation,
-		showStyleBase: runningOrder && ShowStyleBases.findOne(runningOrder.showStyleBaseId)
+		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId)
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1014,13 +1014,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.bindKeys = [
 			{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
+				key: RundownViewKbdShortcuts.RUNDOWN_GO_TO_LIVE,
 				up: this.onGoToLiveSegment,
 				label: t('Go to On Air line'),
 				global: true
 			},
 			{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_REWIND_SEGMENTS,
+				key: RundownViewKbdShortcuts.RUNDOWN_REWIND_SEGMENTS,
 				up: this.onRewindSegments,
 				label: t('Rewind segments to start'),
 				global: true
@@ -1058,31 +1058,31 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	componentWillMount () {
 		// Subscribe to data:
-		let runningOrderId = this.props.runningOrderId
+		let rundownId = this.props.rundownId
 
-		this.subscribe('runningOrders', {
-			_id: runningOrderId
+		this.subscribe('rundowns', {
+			_id: rundownId
 		})
 		this.subscribe('segments', {
-			runningOrderId: runningOrderId
+			rundownId: rundownId
 		})
 		this.subscribe('segmentLines', {
-			runningOrderId: runningOrderId
+			rundownId: rundownId
 		})
 		this.subscribe('segmentLineItems', {
-			runningOrderId: runningOrderId
+			rundownId: rundownId
 		})
 		this.subscribe('segmentLineAdLibItems', {
-			runningOrderId: runningOrderId
+			rundownId: rundownId
 		})
 		this.autorun(() => {
-			let runningOrder = RunningOrders.findOne(runningOrderId)
-			if (runningOrder) {
+			let rundown = Rundowns.findOne(rundownId)
+			if (rundown) {
 				this.subscribe('studioInstallations', {
-					_id: runningOrder.studioInstallationId
+					_id: rundown.studioInstallationId
 				})
 				this.subscribe('showStyleBases', {
-					_id: runningOrder.showStyleBaseId
+					_id: rundown.showStyleBaseId
 				})
 			}
 		})
@@ -1121,37 +1121,37 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 
-		roNotificationHandler.set(this.onRONotificationClick)
+		rundownNotificationHandler.set(this.onRONotificationClick)
 
-		window.addEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-		window.addEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
+		window.addEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+		window.addEventListener(RundownViewEvents.goToTop, this.onGoToTop)
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
-		if (this.props.runningOrder &&
-			prevProps.runningOrder && prevProps.runningOrder.currentSegmentLineId !== this.props.runningOrder.currentSegmentLineId &&
+		if (this.props.rundown &&
+			prevProps.rundown && prevProps.rundown.currentSegmentLineId !== this.props.rundown.currentSegmentLineId &&
 			this.state.manualSetAsNext) {
 
 			this.setState({
 				manualSetAsNext: false,
 				followLiveSegments: true
 			})
-		} else if (this.props.runningOrder &&
-			prevProps.runningOrder && prevProps.runningOrder.active && !this.props.runningOrder.active) {
+		} else if (this.props.rundown &&
+			prevProps.rundown && prevProps.rundown.active && !this.props.rundown.active) {
 			this.setState({
 				followLiveSegments: true
 			})
-		} else if (this.props.runningOrder &&
-			prevProps.runningOrder && !prevProps.runningOrder.active && this.props.runningOrder.active &&
-			this.props.runningOrder.nextSegmentLineId) {
-			scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+		} else if (this.props.rundown &&
+			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
+			this.props.rundown.nextSegmentLineId) {
+			scrollToSegmentLine(this.props.rundown.nextSegmentLineId)
 		}
 
-		if (typeof this.props.runningOrder !== typeof this.props.runningOrder ||
-			(this.props.runningOrder || {_id: ''})._id !== (prevProps.runningOrder || {_id: ''})._id ||
-			(this.props.runningOrder || {active: false}).active !== (prevProps.runningOrder || {active: false}).active ||
+		if (typeof this.props.rundown !== typeof this.props.rundown ||
+			(this.props.rundown || {_id: ''})._id !== (prevProps.rundown || {_id: ''})._id ||
+			(this.props.rundown || {active: false}).active !== (prevProps.rundown || {active: false}).active ||
 			this.state.studioMode !== prevState.studioMode) {
-			if (this.props.runningOrder && this.props.runningOrder.active && this.state.studioMode && !getDeveloperMode()) {
+			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
 				$(window).on('beforeunload', this.onBeforeUnload)
 			} else {
 				$(window).off('beforeunload', this.onBeforeUnload)
@@ -1191,9 +1191,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				const combos = i.hotkeys.split(',')
 				_.each(combos, (combo: string) => {
 					const handler = (e: KeyboardEvent) => {
-						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.nextSegmentLineId) {
+						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextSegmentLineId) {
 							doUserAction(t, e, UserActionAPI.methods.toggleSegmentLineArgument, [
-								this.props.runningOrder._id, this.props.runningOrder.nextSegmentLineId, i.property, i.value
+								this.props.rundown._id, this.props.rundown.nextSegmentLineId, i.property, i.value
 							])
 						}
 					}
@@ -1246,21 +1246,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 
-		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-		window.removeEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
+		window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+		window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)
 	}
 
 	onBeforeUnload = (e: any) => {
 		const {t} = this.props
 
 		e.preventDefault()
-		e.returnValue = t('This running order is now active. Are you sure you want to exit this screen?')
+		e.returnValue = t('This rundown is now active. Are you sure you want to exit this screen?')
 
-		return t('This running order is now active. Are you sure you want to exit this screen?')
+		return t('This rundown is now active. Are you sure you want to exit this screen?')
 	}
 
 	onRewindSegments = () => {
-		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
@@ -1272,7 +1272,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSegmentScroll = () => {
-		if (this.state.followLiveSegments && this.props.runningOrder && this.props.runningOrder.active) {
+		if (this.state.followLiveSegments && this.props.rundown && this.props.rundown.active) {
 			this.setState({
 				followLiveSegments: false
 			})
@@ -1281,7 +1281,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onWindowScroll = (e: JQuery.Event) => {
 		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
-		if (this.state.followLiveSegments && !isAutoScrolling && this.props.runningOrder && this.props.runningOrder.active) {
+		if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
 			this.setState({
 				followLiveSegments: false
 			})
@@ -1308,18 +1308,18 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}, 400)
 	}
 	onGoToLiveSegment = () => {
-		if (this.props.runningOrder && this.props.runningOrder.active && !this.props.runningOrder.currentSegmentLineId &&
-			this.props.runningOrder.nextSegmentLineId) {
+		if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentSegmentLineId &&
+			this.props.rundown.nextSegmentLineId) {
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+			scrollToSegmentLine(this.props.rundown.nextSegmentLineId)
 			// allow for the scroll to finish
 			Meteor.setTimeout(() => {
 				this.setState({
 					followLiveSegments: true
 				})
-				window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 			}, 400)
 		} else {
 			this.setState({
@@ -1342,8 +1342,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onSetNext = (segmentLine: SegmentLine, e: any, offset?: number) => {
 		const {t} = this.props
-		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.runningOrder) {
-			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.runningOrder._id, segmentLine._id, offset], () => {
+		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.rundown) {
+			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, segmentLine._id, offset], () => {
 				this.setState({
 					manualSetAsNext: true
 				})
@@ -1353,8 +1353,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onSLItemDoubleClick = (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const {t} = this.props
-		if (this.state.studioMode && item && item._id && this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentLineItemTakeNow, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, item._id])
+		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentSegmentLineId) {
+			doUserAction(t, e, UserActionAPI.methods.segmentLineItemTakeNow, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, item._id])
 		}
 	}
 
@@ -1397,7 +1397,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			return this.props.segments.map((segment, index, array) => {
 				if (
 					this.props.studioInstallation &&
-					this.props.runningOrder &&
+					this.props.rundown &&
 					this.props.showStyleBase
 				) {
 					return <ErrorBoundary key={segment._id}>
@@ -1406,7 +1406,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								showStyleBase={this.props.showStyleBase}
 								followLiveSegments={this.state.followLiveSegments}
 								segmentId={segment._id}
-								runningOrder={this.props.runningOrder}
+								rundown={this.props.rundown}
 								liveLineHistorySize={100}
 								timeScale={this.state.timeScale}
 								onTimeScaleChange={this.onTimeScaleChange}
@@ -1430,7 +1430,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	renderSegmentsList () {
 		const { t } = this.props
 
-		if (this.props.runningOrder) {
+		if (this.props.rundown) {
 			return (
 				<div className='segment-timeline-container'>
 					{this.renderSegments()}
@@ -1503,23 +1503,23 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 			}).fetch()
 			if (attachedPlayoutGateways.length === 0) {
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'), 'RunningOrderView'))
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'), 'RundownView'))
 				return
 			}
 			attachedPlayoutGateways.forEach((item) => {
 				PeripheralDevicesAPI.restartDevice(item, e).then(() => {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', {playoutDeviceName: item.name}), 'RunningOrderView'))
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', {playoutDeviceName: item.name}), 'RundownView'))
 				}).catch(() => {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', {playoutDeviceName: item.name}), 'RunningOrderView'))
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', {playoutDeviceName: item.name}), 'RundownView'))
 				})
 			})
 		}
 	}
 
-	onTakeRunningOrderSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const { t } = this.props
-		if (this.props.runningOrder) {
-			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'User requested log at' + getCurrentTime()], undefined,
+		if (this.props.rundown) {
+			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'User requested log at' + getCurrentTime()], undefined,
 				t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
 		}
 	}
@@ -1545,22 +1545,22 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		if (this.state.subsReady) {
 			if (
-				this.props.runningOrder &&
+				this.props.rundown &&
 				this.props.studioInstallation &&
 				this.props.showStyleBase
 			) {
 				return (
-					<RunningOrderTimingProvider
-						runningOrder={this.props.runningOrder}
+					<RundownTimingProvider
+						rundown={this.props.rundown}
 						defaultDuration={DEFAULT_DISPLAY_DURATION}>
-						<div className={ClassNames('running-order-view', {
+						<div className={ClassNames('rundown-view', {
 							'notification-center-open': this.state.isNotificationsCenterOpen
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
 								{ this.state.studioMode && <KeyboardFocusMarker /> }
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<RunningOrderFullscreenControls
+								<RundownFullscreenControls
 									isFollowingOnAir={this.state.followLiveSegments}
 									onFollowOnAir={this.onGoToLiveSegment}
 									onRewindSegments={this.onRewindSegments}
@@ -1593,7 +1593,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									{this.state.isSupportPanelOpen &&
 										<SupportPopUp>
 											<button className='btn btn-primary' onClick={this.onToggleHotkeys}>{t('Show Hotkeys')}</button>
-											<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
+											<button className='btn btn-primary' onClick={this.onTakeRundownSnapshot}>{t('Take a Snapshot')}</button>
 											<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 										</SupportPopUp>
 									}
@@ -1601,12 +1601,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							</ErrorBoundary>
 							<ErrorBoundary>
 								{ this.state.studioMode &&
-									<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
+									<Prompt when={this.props.rundown.active || false} message={t('This rundown is now active. Are you sure you want to exit this screen?')} />
 								}
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<RunningOrderHeader
-									runningOrder={this.props.runningOrder}
+								<RundownHeader
+									rundown={this.props.rundown}
 									studioInstallation={this.props.studioInstallation}
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
@@ -1616,7 +1616,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<ErrorBoundary>
 								<SegmentContextMenu
 									contextMenuContext={this.state.contextMenuContext}
-									runningOrder={this.props.runningOrder}
+									rundown={this.props.rundown}
 									onSetNext={this.onSetNext}
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
@@ -1624,7 +1624,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								{this.state.isClipTrimmerOpen && this.state.selectedSegmentLineItem && this.props.studioInstallation &&
 									<ClipTrimDialog
 										studioInstallation={this.props.studioInstallation}
-										runningOrderId={this.props.runningOrderId}
+										rundownId={this.props.rundownId}
 										selectedSegmentLineItem={this.state.selectedSegmentLineItem}
 										onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>
@@ -1633,7 +1633,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							{this.renderSegmentsList()}
 							<ErrorBoundary>
 								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
-									runningOrder={this.props.runningOrder}
+									rundown={this.props.rundown}
 								/> }
 							</ErrorBoundary>
 							<ErrorBoundary>
@@ -1643,15 +1643,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onChangeExpanded={this.onDrawerChangeExpanded}
 									segments={this.props.segments}
 									hotkeys={this.state.usedHotkeys}
-									runningOrder={this.props.runningOrder}
+									rundown={this.props.rundown}
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
 									onRegisterHotkeys={this.onRegisterHotkeys} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.props.runningOrder && this.props.studioInstallation && this.props.showStyleBase &&
-									<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioInstallation={this.props.studioInstallation} showStyleBase={this.props.showStyleBase} />
+								{this.props.rundown && this.props.studioInstallation && this.props.showStyleBase &&
+									<RundownNotifier rundownId={this.props.rundown._id} studioInstallation={this.props.studioInstallation} showStyleBase={this.props.showStyleBase} />
 								}
 							</ErrorBoundary>
 						</div>
@@ -1666,26 +1666,26 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							pointerEvents: 'none'
 						}}>
 						</div> */}
-					</RunningOrderTimingProvider>
+					</RundownTimingProvider>
 				)
 			} else {
 				return (
-					<div className='running-order-view running-order-view--unpublished'>
-						<div className='running-order-view__label'>
+					<div className='rundown-view rundown-view--unpublished'>
+						<div className='rundown-view__label'>
 							<p>
 								{
-									!this.props.runningOrder ?
-										t('This running order has been unpublished from Sofie.') :
+									!this.props.rundown ?
+										t('This rundown has been unpublished from Sofie.') :
 									!this.props.studioInstallation ?
-										t('Error: The studio of this RunningOrder was not found.') :
+										t('Error: The studio of this Rundown was not found.') :
 									!this.props.showStyleBase ?
-										t('Error: The ShowStyle of this RunningOrder was not found.') :
+										t('Error: The ShowStyle of this Rundown was not found.') :
 									t('Unknown error')
 								}
 							</p>
 							<p>
 								<Route render={({history}) => (
-									<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+									<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
 										{t('Return to list')}
 									</button>
 								)} />
@@ -1696,7 +1696,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		} else {
 			return (
-				<div className='running-order-view running-order-view--loading'>
+				<div className='rundown-view rundown-view--loading'>
 					<Spinner />
 				</div>
 			)

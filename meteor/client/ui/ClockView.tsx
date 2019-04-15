@@ -5,10 +5,10 @@ import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 
-import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
+import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 
@@ -26,14 +26,14 @@ interface TimeMap {
 	[key: string]: number
 }
 
-interface RunningOrderOverviewProps {
-	runningOrderId: string
+interface RundownOverviewProps {
+	rundownId: string
 	segmentLiveDurations?: TimeMap
 }
-interface RunningOrderOverviewState {
+interface RundownOverviewState {
 }
-interface RunningOrderOverviewTrackedProps {
-	runningOrder?: RunningOrder
+interface RundownOverviewTrackedProps {
+	rundown?: Rundown
 	segments: Array<SegmentUi>
 }
 
@@ -56,14 +56,14 @@ const Timediff = class extends React.Component<{ time: number}> {
 	}
 }
 
-const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
-	withTracker<WithTiming<RunningOrderOverviewProps & InjectedTranslateProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
+const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverviewState>()(
+	withTracker<WithTiming<RundownOverviewProps & InjectedTranslateProps>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
 
-		let ro: RunningOrder | undefined
-		if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
+		let rundown: Rundown | undefined
+		if (props.rundownId) rundown = Rundowns.findOne(props.rundownId)
 		let segments: Array<SegmentUi> = []
-		if (ro) {
-			segments = _.map(ro.getSegments(), (segment) => {
+		if (rundown) {
+			segments = _.map(rundown.getSegments(), (segment) => {
 				const displayDurationGroups: _.Dictionary<number> = {}
 				const segmentLines = segment.getSegmentLines()
 				let displayDuration = 0
@@ -90,31 +90,31 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 		}
 		return {
 			segments,
-			runningOrder: ro
+			rundown: rundown
 		}
 	})(
-	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps & InjectedTranslateProps>, RunningOrderOverviewState> {
+	class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
 		componentWillMount () {
-			this.subscribe('runningOrders', {
-				_id: this.props.runningOrderId
+			this.subscribe('rundowns', {
+				_id: this.props.rundownId
 			})
 			this.subscribe('segments', {
-				runningOrderId: this.props.runningOrderId
+				rundownId: this.props.rundownId
 			})
 			this.subscribe('segmentLines', {
-				runningOrderId: this.props.runningOrderId
+				rundownId: this.props.rundownId
 			})
 		}
 
 		render () {
-			const { runningOrder, segments } = this.props
+			const { rundown, segments } = this.props
 
-			if (runningOrder && this.props.runningOrderId && this.props.segments) {
+			if (rundown && this.props.rundownId && this.props.segments) {
 				let currentSegmentLine: SegmentLineUi | undefined
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
-							if (item._id === runningOrder.currentSegmentLineId) {
+							if (item._id === rundown.currentSegmentLineId) {
 								currentSegmentLine = item
 							}
 						}
@@ -133,7 +133,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
-							if (item._id === runningOrder.nextSegmentLineId) {
+							if (item._id === rundown.nextSegmentLineId) {
 								nextSegmentLine = item
 							}
 						}
@@ -148,8 +148,8 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 				// 	}
 				// }
 
-				const overUnderClock = runningOrder.expectedDuration ?
-					(this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration
+				const overUnderClock = rundown.expectedDuration ?
+					(this.props.timingDurations.asPlayedRundownDuration || 0) - rundown.expectedDuration
 					: (this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0)
 
 				return (
@@ -158,27 +158,27 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 							{currentSegmentLine ?
 								<React.Fragment>
 									<div className='clocks-segment-icon clocks-current-segment-icon'>
-										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
+										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									</div>
 									<div className='clocks-segment-title clocks-current-segment-title'>
 										{currentSegmentLine.title.split(';')[0]}
 									</div>
 									<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.title} segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
+										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.title} segmentItemId={currentSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									</div>
 									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 										<Timediff time={currentSegmentDuration} />
 									</div>
 								</React.Fragment> :
-								runningOrder.expectedStart && <div className='clocks-ro-countdown clocks-segment-countdown'>
-									<Timediff time={runningOrder.expectedStart - getCurrentTime()} />
+								rundown.expectedStart && <div className='clocks-rundown-countdown clocks-segment-countdown'>
+									<Timediff time={rundown.expectedStart - getCurrentTime()} />
 								</div>
 							}
 						</div>
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
 							<div className='clocks-segment-icon'>
 								{nextSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
+									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 								: ''}
 							</div>
 							<div className='clocks-bottom-top'>
@@ -191,13 +191,13 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								</div>
 								<div className='clocks-segment-title clocks-segmentline-title'>
 									{nextSegmentLine ?
-										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
+										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									: '_'}
 								</div>
 							</div>
 							<div className='clocks-rundown-bottom-bar'>
 								<div className='clocks-rundown-title'>
-									{runningOrder ? runningOrder.name : 'UNKNOWN'}
+									{rundown ? rundown.name : 'UNKNOWN'}
 								</div>
 								<div className={ClassNames('clocks-rundown-total', {
 									'over': (Math.floor(overUnderClock / 1000) >= 0)
@@ -215,7 +215,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string
-	runningOrder: RunningOrder
+	rundown: Rundown
 	segments: Array<Segment>
 	segmentLines: Array<SegmentLine>
 	match: {
@@ -230,8 +230,8 @@ interface IStateHeader {
 
 export const ClockView = translate()(withTracker(function (props: IPropsHeader) {
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let runningOrder = (
-		RunningOrders.findOne({
+	let rundown = (
+		Rundowns.findOne({
 			active: true,
 			studioInstallationId: studioId
 		})
@@ -246,15 +246,15 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 	// 	console.log('a')
 	// 	dep.changed()
 	// }, 3000)
-	let segments = runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
+	let segments = rundown ? Segments.find({ rundownId: rundown._id }, {
 		sort: {
 			'_rank': 1
 		}
 	}).fetch() : undefined
-	let segmentLines = runningOrder ? SegmentLines.find({ runningOrderId: runningOrder._id }).fetch() : undefined
-	// let roDurations = calculateDurations(runningOrder, segmentLines)
+	let segmentLines = rundown ? SegmentLines.find({ rundownId: rundown._id }).fetch() : undefined
+	// let rundownDurations = calculateDurations(rundown, segmentLines)
 	return {
-		runningOrder,
+		rundown,
 		segments,
 		segmentLines
 	}
@@ -267,32 +267,32 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 			this.subscribe('studioInstallations', {
 				_id: studioId
 			})
-			this.subscribe('runningOrders', {
+			this.subscribe('rundowns', {
 				active: true,
 				studioInstallationId: studioId
 			})
 		}
-		let runningOrder = (
-			RunningOrders.findOne({
+		let rundown = (
+			Rundowns.findOne({
 				active: true,
 				studioInstallationId: studioId
 			})
 		)
-		if (runningOrder) {
+		if (rundown) {
 			this.subscribe('segments', {
-				runningOrderId: runningOrder._id
+				rundownId: rundown._id
 			})
 			this.subscribe('segmentLines', {
-				runningOrderId: runningOrder._id
+				rundownId: rundown._id
 			})
 			this.subscribe('segmentLineItems', {
-				runningOrderId: runningOrder._id
+				rundownId: rundown._id
 			})
 			this.subscribe('showStyleBases', {
-				_id: runningOrder.showStyleBaseId
+				_id: rundown.showStyleBaseId
 			})
 			this.subscribe('segmentLineAdLibItems', {
-				runningOrderId: runningOrder._id
+				rundownId: rundown._id
 			})
 		}
 	}
@@ -305,18 +305,18 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 	render () {
 		const { t } = this.props
 
-		if (this.props.runningOrder) {
+		if (this.props.rundown) {
 			return (
-				<RunningOrderTimingProvider runningOrder={this.props.runningOrder} >
-					<ClockComponent runningOrderId={this.props.runningOrder._id} />
-				</RunningOrderTimingProvider>
+				<RundownTimingProvider rundown={this.props.rundown} >
+					<ClockComponent rundownId={this.props.rundown._id} />
+				</RundownTimingProvider>
 			)
 		} else {
 			return (
-				<div className='running-order-view running-order-view--unpublished'>
-					<div className='running-order-view__label'>
+				<div className='rundown-view rundown-view--unpublished'>
+					<div className='rundown-view__label'>
 						<p>
-							{t('There is no running order active in this studio.')}
+							{t('There is no rundown active in this studio.')}
 						</p>
 					</div>
 				</div>

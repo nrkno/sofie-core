@@ -7,18 +7,18 @@ export interface GenericNote {
 	type: NoteType,
 	origin: {
 		name: string,
-		roId?: string,
+		rundownId?: string,
 		segmentId?: string,
 		segmentLineId?: string,
 		segmentLineItemId?: string
 	},
 	message: string
 }
-export interface RunningOrderNote extends GenericNote {
+export interface RundownNote extends GenericNote {
 	type: NoteType,
 	origin: {
 		name: string,
-		roId: string,
+		rundownId: string,
 	},
 	message: string
 }
@@ -26,7 +26,7 @@ export interface SegmentLineNote extends GenericNote {
 	type: NoteType,
 	origin: {
 		name: string,
-		roId: string,
+		rundownId: string,
 		segmentId?: string,
 		segmentLineId?: string,
 		segmentLineItemId?: string

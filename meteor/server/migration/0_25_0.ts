@@ -13,7 +13,7 @@ addMigrationSteps( '0.25.0', [
 		AsRunLog,
 		'AsRunLog',
 		{
-			runningOrderId:		'rundownId',
+			rundownId:		'rundownId',
 			// segmentId:		'segmentId',
 			segmentLineId:		'partId',
 			segmentLineItemId:	'pieceId'

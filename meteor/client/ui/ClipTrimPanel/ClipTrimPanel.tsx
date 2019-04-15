@@ -13,7 +13,7 @@ import { getDeveloperMode } from '../../lib/localStorage';
 
 export interface IProps {
 	segmentLineItemId: string
-	runningOrderId: string
+	rundownId: string
 	segmentLineId: string
 	studioInstallationId: string
 

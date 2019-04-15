@@ -5,7 +5,7 @@ import { ensureCollectionProperty, ensureStudioConfig, setExpectedVersion } from
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -48,7 +48,7 @@ addMigrationSteps( '0.19.0', [
 					// @ts-ignore
 					hotkeyLegend: studio.hotkeyLegend,
 					config: [],
-					_runningOrderVersionHash: '',
+					_rundownVersionHash: '',
 				})
 
 				const variantId = Random.id()
@@ -57,7 +57,7 @@ addMigrationSteps( '0.19.0', [
 					name: 'Default variant',
 					showStyleBaseId: id,
 					config: [],
-					_runningOrderVersionHash: '',
+					_rundownVersionHash: '',
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
@@ -75,7 +75,7 @@ addMigrationSteps( '0.19.0', [
 					outputLayers: [],
 					sourceLayers: [],
 					config: [],
-					_runningOrderVersionHash: '',
+					_rundownVersionHash: '',
 				})
 
 				ShowStyleVariants.insert({
@@ -83,7 +83,7 @@ addMigrationSteps( '0.19.0', [
 					name: 'Default variant',
 					showStyleBaseId: 'show0',
 					config: [],
-					_runningOrderVersionHash: '',
+					_rundownVersionHash: '',
 				})
 			}
 		}
@@ -93,14 +93,14 @@ addMigrationSteps( '0.19.0', [
 	ensureCollectionProperty('ShowStyleBases', {}, 'config', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'runtimeArguments', []),
 	{
-		id: 'Move runningOrderArguments from StudioInstallation into ShowStyleBase',
+		id: 'Move rundownArguments from StudioInstallation into ShowStyleBase',
 		canBeRunAutomatically: true,
 		validate: () => {
 			const si = StudioInstallations.find().fetch()
 			let result: string | boolean = false
 			si.forEach((siItem) => {
 				if ((siItem as any).runtimeArguments && (siItem as any).runtimeArguments.length > 0) {
-					result = `Running Order Arguments set in a Studio Installation "${siItem._id}"`
+					result = `Rundown Arguments set in a Studio Installation "${siItem._id}"`
 				}
 			})
 			return result
@@ -149,20 +149,20 @@ addMigrationSteps( '0.19.0', [
 	ensureCollectionProperty('ShowStyleVariants', {}, 'config', []),
 
 	{ // Ensure rundowns have showStyleBaseId and showStyleVariandId set
-		id: 'runningOrders have showStyleBaseId and showStyleVariantId',
+		id: 'rundowns have showStyleBaseId and showStyleVariantId',
 		canBeRunAutomatically: true,
 		validate: () => {
-			const ros = RunningOrders.find({
+			const ros = Rundowns.find({
 				$or: [
 					{ showStyleBaseId: { $exists: false } },
 					{ showStyleVariantId: { $exists: false } }
 				]
 			}).fetch()
-			if (ros.length > 0) return 'Running orders need to be migrated to new ShowStyleBase and ShowStyleVariant'
+			if (ros.length > 0) return 'Rundowns need to be migrated to new ShowStyleBase and ShowStyleVariant'
 			return false
 		},
 		migrate: () => {
-			const ros = RunningOrders.find({
+			const ros = Rundowns.find({
 				$or: [
 					{ showStyleBaseId: { $exists: false } },
 					{ showStyleVariantId: { $exists: false } }
@@ -179,19 +179,19 @@ addMigrationSteps( '0.19.0', [
 					})
 
 					if (showStyleVariant) {
-						logger.info(`Migration: Switch RunningOrder "${item._id}" from showStyle to showStyleBase and showStyleVariant`)
+						logger.info(`Migration: Switch Rundown "${item._id}" from showStyle to showStyleBase and showStyleVariant`)
 
-						RunningOrders.update(item._id, {
+						Rundowns.update(item._id, {
 							$set: {
 								showStyleBaseId: showStyleBase._id,
 								showStyleVariantId: showStyleVariant._id
 							}
 						})
 					} else {
-						fail = `Migrating RO "${item._id}" failed, because a suitable showStyleVariant could not be found.`
+						fail = `Migrating rundown "${item._id}" failed, because a suitable showStyleVariant could not be found.`
 					}
 				} else {
-					fail = `Migrating RO "${item._id}" failed, because a suitable showStyleBase could not be found.`
+					fail = `Migrating rundown "${item._id}" failed, because a suitable showStyleBase could not be found.`
 				}
 			})
 			return fail

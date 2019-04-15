@@ -21,7 +21,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RecordedFiles._ensureIndex({
 			studioId: 1,
-			roId: 1,
+			rundownId: 1,
 		})
 	}
 })

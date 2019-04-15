@@ -7,7 +7,7 @@ import {
 	SegmentLineUi,
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { RundownAPI } from '../../../lib/api/rundown'
 import { SourceLayerType, SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
@@ -309,7 +309,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
 				console.log('accept', inputResult)
 				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
-					this.props.segmentLine.runningOrderId,
+					this.props.segmentLine.rundownId,
 					this.props.segmentLine._id,
 					this.props.segmentLineItem._id,
 					inputResult.inPoint,
@@ -485,9 +485,9 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
 					'next-is-touching': !!(this.props.segmentLineItem.cropped || (this.props.segmentLineItem.expectedDuration && _.isString(this.props.segmentLineItem.expectedDuration))),
 
-					'source-missing': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET,
-					'source-broken': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.UNKNOWN,
+					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_NOT_SET,
+					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
+					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN,
 					'disabled': this.props.segmentLineItem.disabled
 				})}
 					data-mos-id={this.props.segmentLineItem._id}

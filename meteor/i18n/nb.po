@@ -15,13 +15,13 @@ msgstr ""
 msgid "Return to list"
 msgstr "Gå tilbake til listen"
 
-msgid "There is no running order active in this studio."
+msgid "There is no rundown active in this studio."
 msgstr "Fant ingen aktive kjøreplaner for dette studioet."
 
 msgid "This studio doesn't exist."
 msgstr "Dette studioet finnes ikke."
 
-msgid "There are no active running orders."
+msgid "There are no active rundowns."
 msgstr "Fant ingen aktive kjøreplaner."
 
 msgid "Evaluation"
@@ -91,7 +91,7 @@ msgstr "Test test"
 msgid "Home"
 msgstr "Hjem"
 
-msgid "Running Orders"
+msgid "Rundowns"
 msgstr "Kjøreplaner"
 
 msgid "Nyman's Playground"
@@ -139,30 +139,30 @@ msgstr "Slett"
 msgid "Cancel"
 msgstr "Avbryt"
 
-msgid "Are you sure you want to delete running order \"{{runningOrderSlug}}\"?"
+msgid "Are you sure you want to delete rundown \"{{rundownSlug}}\"?"
 msgstr ""
-"Er du sikker på at du vil slette kjøreplanen {{runningOrderSlug}} fra Sofie?"
+"Er du sikker på at du vil slette kjøreplanen {{rundownSlug}} fra Sofie?"
 
 msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlingen kan ikke angres!"
 
-msgid "Re-Sync this running order?"
+msgid "Re-Sync this rundown?"
 msgstr "Synkroniser kjøreplanen med ENPS på nytt?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
 
 msgid ""
-"Are you sure you want to re-sync running order \"{{runningOrderSlug}}\" with "
+"Are you sure you want to re-sync rundown \"{{rundownSlug}}\" with "
 "MOS script?"
 msgstr ""
-"Er du sikker på at du vil synkronisere kjøreplanen \"{{runningOrderSlug}}\" "
+"Er du sikker på at du vil synkronisere kjøreplanen \"{{rundownSlug}}\" "
 "med MOS?"
 
 msgid "Re-sync with MOS"
 msgstr "Synkroniser med MOS"
 
-msgid "Running Order"
+msgid "Rundown"
 msgstr "Kjøreplan"
 
 msgid "ID"
@@ -241,7 +241,7 @@ msgstr "Deaktiver"
 msgid "Activate (Rehearsal)"
 msgstr "Aktiver testmodus"
 
-msgid "Reload Running Order"
+msgid "Reload Rundown"
 msgstr "Last inn kjøreplanen på nytt"
 
 msgid "Move Next forwards"
@@ -265,12 +265,12 @@ msgstr "Unskip neste super"
 msgid "Log Error"
 msgstr "Loggfør feil"
 
-msgid "Do you want to activate this Running Order?"
+msgid "Do you want to activate this Rundown?"
 msgstr "Vil du aktivere denne kjøreplanen?"
 
 msgid ""
 "The planned end time has passed, are you sure you want to activate this "
-"Running Order?"
+"Rundown?"
 msgstr ""
 "Det planlagte sluttidspunktet er passert, er du sikker på at du vil aktivere "
 "denne kjøreplan?"
@@ -279,23 +279,23 @@ msgid "Are you sure you want to activate Rehearsal Mode?"
 msgstr "Er du sikker på at du vil gå i testmodus?"
 
 msgid ""
-"Are you sure you want to deactivate this Running Order?\n"
+"Are you sure you want to deactivate this Rundown?\n"
 "(This will clear the outputs)"
 msgstr ""
 "Er du sikker på at du vil deaktivere denne kjøreplanen?\n"
 "(Dette vil nullstille alle utganger.)"
 
-msgid "The running order can not be reset while it is active"
+msgid "The rundown can not be reset while it is active"
 msgstr "En aktivert kjøreplan kan ikke tilbakestilles"
 
 msgid ""
-"A snapshot of the current Running Order has been created for troubleshooting."
+"A snapshot of the current Rundown has been created for troubleshooting."
 msgstr ""
 
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr "Forbered studio og aktiver testmodus"
 
-msgid "Reset Running Order"
+msgid "Reset Rundown"
 msgstr "Tilbakestill kjøreplanen"
 
 msgid "Reload ENPS Data"
@@ -326,7 +326,7 @@ msgid "Change to fullscreen mode"
 msgstr "Fullskjermmodus"
 
 msgid ""
-"This running order is now active. Are you sure you want to exit this screen?"
+"This rundown is now active. Are you sure you want to exit this screen?"
 msgstr "Denne kjøreplanen er aktiv. Er du sikker på at du vil avslutte?"
 
 msgid ""
@@ -349,31 +349,31 @@ msgstr "Lagre et snapshot"
 msgid "Restart Playout"
 msgstr ""
 
-msgid "This running order has been unpublished from Sofie."
+msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
 
-msgid "Error: The studio of this RunningOrder was not found."
+msgid "Error: The studio of this Rundown was not found."
 msgstr ""
 
-msgid "Error: The ShowStyle of this RunningOrder was not found."
+msgid "Error: The ShowStyle of this Rundown was not found."
 msgstr ""
 
 msgid "Unknown error"
 msgstr ""
 
 msgid ""
-"The Running Order has been UNSYNCED from ENPS! No data updates will "
+"The Rundown has been UNSYNCED from ENPS! No data updates will "
 "currently come through."
 msgstr ""
 
 msgid "Re-sync"
 msgstr ""
 
-msgid "Re-sync Running Order"
+msgid "Re-sync Rundown"
 msgstr ""
 
 msgid ""
-"Are you sure you want to re-sync the Running Order?\n"
+"Are you sure you want to re-sync the Rundown?\n"
 "(If the currently playing Segment Line has been changed, this can affect the "
 "output.)"
 msgstr ""
@@ -1419,17 +1419,17 @@ msgstr "new_config"
 #~ msgid "System messages"
 #~ msgstr "Systemmeldinger"
 
-#~ msgid "Running Order is active"
+#~ msgid "Rundown is active"
 #~ msgstr "Kjøreplanen er aktiv"
 
 #~ msgid ""
-#~ "Only a single Running Order can be active in a studio at the same time. "
-#~ "Please deactivate the other Running Order and try again."
+#~ "Only a single Rundown can be active in a studio at the same time. "
+#~ "Please deactivate the other Rundown and try again."
 #~ msgstr ""
 #~ "Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
 #~ "kjøreplanen, og prøv på nytt."
 
-#~ msgid "Are you sure you want to reset this Running Order?"
+#~ msgid "Are you sure you want to reset this Rundown?"
 #~ msgstr "Er du sikker på at du vil tilbakestille denne kjøreplan?"
 
 #~ msgid "Line Templates"

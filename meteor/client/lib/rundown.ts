@@ -4,7 +4,7 @@ import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
 export namespace RundownUtils {
-	function padZero (input: number, places?: number): string {
+	function padZerundown (input: number, places?: number): string {
 		places = places || 2
 		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
 	}
@@ -96,7 +96,7 @@ export namespace RundownUtils {
 			}
 		}
 
-		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZerundown(hours) + ':' : '') + padZerundown(minutes) + ':' + padZerundown(secondsRest)
 	}
 
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {

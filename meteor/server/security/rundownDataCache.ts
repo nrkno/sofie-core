@@ -1,9 +1,9 @@
-import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
+import { RundownDataCache, RundownDataCacheObj } from '../../lib/collections/RundownDataCache'
 
 // Setup rules:
 
-RunningOrderDataCache.allow({
-	insert (userId: string, doc: RunningOrderDataCacheObj): boolean {
+RundownDataCache.allow({
+	insert (userId: string, doc: RundownDataCacheObj): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

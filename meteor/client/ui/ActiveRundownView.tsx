@@ -5,11 +5,11 @@ import {
 	Route
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 
 import { Spinner } from '../lib/Spinner'
-import { RunningOrderView } from './RunningOrderView'
+import { RundownView } from './RundownView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
 
@@ -21,7 +21,7 @@ interface IProps {
 	}
 }
 interface ITrackedProps {
-	runningOrder?: RunningOrder
+	rundown?: Rundown
 	studioInstallation?: StudioInstallation
 	studioId?: string
 	// isReady: boolean
@@ -36,14 +36,14 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	if (studioId) {
 		studioInstallation = StudioInstallations.findOne(studioId)
 	}
-	const runningOrder = RunningOrders.findOne(_.extend({
+	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
 		studioInstallationId: studioId
 	}))
 
 	return {
-		runningOrder,
+		rundown,
 		studioInstallation,
 		studioId
 	}
@@ -57,7 +57,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	}
 
 	componentWillMount () {
-		this.subscribe('runningOrders', _.extend({
+		this.subscribe('rundowns', _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioInstallationId: this.props.studioId
@@ -94,14 +94,14 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		const { t } = this.props
 
 		return (
-			<div className='running-order-view running-order-view--unpublished'>
-				<div className='running-order-view__label'>
+			<div className='rundown-view rundown-view--unpublished'>
+				<div className='rundown-view__label'>
 					<p>
 						{message}
 					</p>
 					<p>
 						<Route render={({ history }) => (
-							<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+							<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
 								{t('Return to list')}
 							</button>
 						)} />
@@ -115,19 +115,19 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		const { t } = this.props
 		if (!this.state.subsReady) {
 			return (
-				<div className='running-order-view running-order-view--loading' >
+				<div className='rundown-view rundown-view--loading' >
 					<Spinner />
 				</div >
 			)
 		} else {
-			if (this.props.runningOrder) {
-				return <RunningOrderView runningOrderId={this.props.runningOrder._id} inActiveROView={true} />
+			if (this.props.rundown) {
+				return <RundownView rundownId={this.props.rundown._id} inActiveROView={true} />
 			} else if (this.props.studioInstallation) {
-				return this.renderMessage(t('There is no running order active in this studio.'))
+				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {
 				return this.renderMessage(t('This studio doesn\'t exist.'))
 			} else {
-				return this.renderMessage(t('There are no active running orders.'))
+				return this.renderMessage(t('There are no active rundowns.'))
 			}
 		}
 	}

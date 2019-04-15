@@ -264,7 +264,7 @@
     }
 }
 
-.running-order-view .notification-center-panel {
+.rundown-view .notification-center-panel {
     background: #eee;
     color: #000;
     top: 64px;
@@ -307,12 +307,12 @@
 }
 
 
-.running-order-view + .notification-pop-ups {
+.rundown-view + .notification-pop-ups {
     transition: 1s right ease-out;
     
 }
 
-.running-order-view.notification-center-open + .notification-pop-ups {
+.rundown-view.notification-center-open + .notification-pop-ups {
     right: 460px;
     transition: 1s right ease-out;
 }
@@ -326,16 +326,16 @@
         }
     }
 
-    .running-order-view {
+    .rundown-view {
         &.notification-center-open {
             padding-right: calc(#{$statusbar-width} + 25vw) !important;
-            > .header .running-order-overview {
+            > .header .rundown-overview {
                 padding-right: calc(#{$statusbar-width} + 25vw + 1.5em) !important;
             }
         }
     }
 
-    .running-order-view.notification-center-open + .notification-pop-ups {
+    .rundown-view.notification-center-open + .notification-pop-ups {
         right: calc(25vw + 85px);
     }
 }

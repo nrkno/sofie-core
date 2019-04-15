@@ -13,8 +13,8 @@ import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
@@ -27,7 +27,7 @@ export interface InspectorDrawerProps {
 	isExpanded: boolean
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
-	runningOrder: RunningOrder
+	rundown: Rundown
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -82,7 +82,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 
 		this.state = {
 			moving: false,
-			drawerHeight: localStorage.getItem('runningOrderView.inspectorDrawer.drawerHeight') || '50vh',
+			drawerHeight: localStorage.getItem('rundownView.inspectorDrawer.drawerHeight') || '50vh',
 			overrideHeight: undefined,
 			selectedTab: InspectorPanelTabs.ADLIB
 		}
@@ -91,12 +91,12 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 
 		this.bindKeys = [
 			{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TOGGLE_DRAWER,
+				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_DRAWER,
 				up: this.keyToggleDrawer,
 				label: t('Toggle Drawer')
 			},
 			// {
-			// 	key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_FOCUS,
+			// 	key: RundownViewKbdShortcuts.RUNDOWN_RESET_FOCUS,
 			// 	up: this.keyBlurActiveElement,
 			// 	label: t('Escape from filter search'),
 			// 	global: true
@@ -231,7 +231,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
-		localStorage.setItem('runningOrderView.inspectorDrawer.drawerHeight', this.state.drawerHeight)
+		localStorage.setItem('rundownView.inspectorDrawer.drawerHeight', this.state.drawerHeight)
 	}
 
 	dragHandle = (e: MouseEvent) => {
@@ -270,22 +270,22 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 	render () {
 		const { t } = this.props
 		return (
-			<div className='running-order-view__inspector-drawer dark' style={this.getStyle()}>
-				<div className='running-order-view__inspector-drawer__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
+			<div className='rundown-view__inspector-drawer dark' style={this.getStyle()}>
+				<div className='rundown-view__inspector-drawer__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>
-				<div className='running-order-view__inspector-drawer__tabs'>
-					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
+				<div className='rundown-view__inspector-drawer__tabs'>
+					<div className={ClassNames('rundown-view__inspector-drawer__tabs__tab', {
 						'selected': this.state.selectedTab === InspectorPanelTabs.ADLIB
 					})} onClick={(e) => this.switchTab(InspectorPanelTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
-					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
+					<div className={ClassNames('rundown-view__inspector-drawer__tabs__tab', {
 						'selected': this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB
 					})} onClick={(e) => this.switchTab(InspectorPanelTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
-					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
+					<div className={ClassNames('rundown-view__inspector-drawer__tabs__tab', {
 						'selected': this.state.selectedTab === InspectorPanelTabs.SYSTEM_HOTKEYS
 					})} onClick={(e) => this.switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
 				</div>
-				<div className='running-order-view__inspector-drawer__panel super-dark'>
+				<div className='rundown-view__inspector-drawer__panel super-dark'>
 					<AdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.ADLIB} {...this.props}></AdLibPanel>
 					<GlobalAdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
 					<HotkeyHelpPanel visible={this.state.selectedTab === InspectorPanelTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>

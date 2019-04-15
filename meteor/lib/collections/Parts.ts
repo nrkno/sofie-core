@@ -1,12 +1,12 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
-import { RunningOrders } from './RunningOrders'
+import { Rundowns } from './Rundowns'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
-import { RunningOrderAPI } from '../api/runningOrder'
+import { RundownAPI } from '../api/rundown'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -22,8 +22,8 @@ export interface DBSegmentLine extends IBlueprintSegmentLineDB {
 	/** Position inside the segment */
 	_rank: number
 
-	/** The running order this line belongs to */
-	runningOrderId: string
+	/** The rundown this line belongs to */
+	rundownId: string
 
 	status?: string
 
@@ -71,7 +71,7 @@ export class SegmentLine implements DBSegmentLine {
 	public title: string
 	public externalId: string
 	public segmentId: string
-	public runningOrderId: string
+	public rundownId: string
 	public invalid: boolean
 	public autoNext?: boolean
 	public autoNextOverlap?: number
@@ -106,8 +106,8 @@ export class SegmentLine implements DBSegmentLine {
 			this[key] = document[key]
 		})
 	}
-	getRunningOrder () {
-		return RunningOrders.findOne(this.runningOrderId)
+	getRundown () {
+		return Rundowns.findOne(this.rundownId)
 	}
 	getSegment () {
 		return Segments.findOne(this.segmentId)
@@ -117,7 +117,7 @@ export class SegmentLine implements DBSegmentLine {
 		options = options || {}
 		return SegmentLineItems.find(
 			_.extend({
-				runningOrderId: this.runningOrderId,
+				rundownId: this.rundownId,
 				segmentLineId: this._id
 			}, selector),
 			_.extend({
@@ -134,7 +134,7 @@ export class SegmentLine implements DBSegmentLine {
 		options = options || {}
 		return SegmentLineAdLibItems.find(
 			_.extend({
-				runningOrderId: this.runningOrderId,
+				rundownId: this.rundownId,
 				segmentLineId: this._id
 			}, selector),
 			_.extend({
@@ -175,9 +175,9 @@ export class SegmentLine implements DBSegmentLine {
 
 		if (runtimeNotes) {
 			const items = this.getSegmentLinesItems()
-			const ro = this.getRunningOrder()
-			const si = ro && ro.getStudioInstallation()
-			const showStyleBase = ro && ro.getShowStyleBase()
+			const rundown = this.getRundown()
+			const si = rundown && rundown.getStudioInstallation()
+			const showStyleBase = rundown && rundown.getShowStyleBase()
 			const slLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
 			_.each(items, (item) => {
 				// TODO: check statuses (like media availability) here
@@ -185,12 +185,12 @@ export class SegmentLine implements DBSegmentLine {
 				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
 					const sl = slLookup[item.sourceLayerId]
 					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
-					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
+					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
 							origin: {
 								name: 'Media Check',
-								roId: this.runningOrderId,
+								rundownId: this.rundownId,
 								segmentId: this.segmentId,
 								segmentLineId: this._id,
 								segmentLineItemId: item._id
@@ -225,12 +225,12 @@ registerCollection('SegmentLines', SegmentLines)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		SegmentLines._ensureIndex({
-			runningOrderId: 1,
+			rundownId: 1,
 			segmentId: 1,
 			_rank: 1
 		})
 		SegmentLines._ensureIndex({
-			runningOrderId: 1,
+			rundownId: 1,
 			_rank: 1
 		})
 	}

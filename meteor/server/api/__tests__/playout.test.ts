@@ -2,20 +2,20 @@ import * as chai from 'chai'
 import * as _ from 'underscore'
 import {} from 'mocha'
 
-import { RunningOrder, DBRunningOrder, RoData } from '../../../lib/collections/RunningOrders'
+import { Rundown, DBRundown, RundownData } from '../../../lib/collections/Rundowns'
 import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
 
-import { buildTimelineObjsForRunningOrder } from '../playout'
+import { buildTimelineObjsForRundown } from '../playout'
 import { getSlGroupId, getSlFirstObjectId, getSliGroupId, getSliFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
 import { TriggerType } from 'superfly-timeline'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 const expect = chai.expect
 const assert = chai.assert
 
-function createEmptyRoData () {
-	const ro: DBRunningOrder = {
+function createEmptyRundownData () {
+	const rundown: DBRundown = {
 		_id: 'mock',
 		mosId: '',
 		studioInstallationId: '',
@@ -30,30 +30,30 @@ function createEmptyRoData () {
 		nextSegmentLineId: null,
 		dataSource: ''
 	}
-	const roData: RoData = {
-		runningOrder: ro as RunningOrder,
+	const rundownData: RundownData = {
+		rundown: rundown as Rundown,
 		segments: [],
 		segmentsMap: {},
 		segmentLines: [],
 		segmentLinesMap: {},
 		segmentLineItems: []
 	}
-	return roData
+	return rundownData
 }
 
-function createEmptySegmentLine (id: string, roData: RoData) {
+function createEmptySegmentLine (id: string, rundownData: RundownData) {
 	const sl: DBSegmentLine = {
 		_id: id,
 		_rank: 1,
 		mosId: '',
 		segmentId: '',
-		runningOrderId: roData.runningOrder._id,
+		rundownId: rundownData.rundown._id,
 		slug: '',
 		typeVariant: ''
 	}
 	const sl2 = sl as SegmentLine
 	sl2.getAllSegmentLineItems = () => {
-		return roData.segmentLineItems.filter(i => i.segmentLineId === sl2._id)
+		return rundownData.segmentLineItems.filter(i => i.segmentLineId === sl2._id)
 	}
 	sl2.getLastStartedPlayback = () => {
 		if (sl2.startedPlayback && sl2.timings && sl2.timings.startedPlayback) {
@@ -87,13 +87,13 @@ function createEmptySegmentLineItem (id: string, slId: string) {
 		_id: id,
 		mosId: id,
 		segmentLineId: slId,
-		runningOrderId: '',
+		rundownId: '',
 		name: 'Mock SLI',
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
 		},
-		status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
+		status: RundownAPI.LineItemStatusCode.UNKNOWN,
 		sourceLayerId: 'source0',
 		outputLayerId: 'output0',
 		expectedDuration: 0,
@@ -104,27 +104,27 @@ function createEmptySegmentLineItem (id: string, slId: string) {
 	return sli
 }
 
-describe('playout: buildTimelineObjsForRunningOrder', function () {
+describe('playout: buildTimelineObjsForRundown', function () {
 
-	it('Empty RO', function () {
-		const roData = createEmptyRoData()
+	it('Empty rundown', function () {
+		const rundownData = createEmptyRundownData()
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).lengthOf(1)
 		expect(res[0]._id).to.eq('mock_status')
 	})
 
-	it('Simple RO', function () {
-		const roData = createEmptyRoData()
-		roData.segmentLinesMap = {
-			a: createEmptySegmentLine('a', roData),
-			b: createEmptySegmentLine('b', roData)
+	it('Simple rundown', function () {
+		const rundownData = createEmptyRundownData()
+		rundownData.segmentLinesMap = {
+			a: createEmptySegmentLine('a', rundownData),
+			b: createEmptySegmentLine('b', rundownData)
 		}
-		roData.segmentLines = _.values(roData.segmentLinesMap)
-		roData.runningOrder.previousSegmentLineId = 'a'
-		roData.runningOrder.currentSegmentLineId = 'b'
+		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.rundown.previousSegmentLineId = 'a'
+		rundownData.rundown.currentSegmentLineId = 'b'
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		// Not defined as no startedPlayback on a
@@ -138,13 +138,13 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	function createBasicTransitionScenario (prerollDuration: number, transitionPrerollDuration: number, transitionKeepaliveDuration: number) {
-		const roData = createEmptyRoData()
+		const rundownData = createEmptyRundownData()
 
-		const slA = createEmptySegmentLine('a', roData)
+		const slA = createEmptySegmentLine('a', rundownData)
 		slA.expectedDuration = 1000
 		addStartedPlayback(slA, 700)
 
-		const slB = createEmptySegmentLine('b', roData)
+		const slB = createEmptySegmentLine('b', rundownData)
 		addStartedPlayback(slB, 5000)
 		slB.expectedDuration = 4000
 		slB.prerollDuration = prerollDuration
@@ -153,7 +153,7 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 		slB.autoNext = true
 		slB.autoNextOverlap = 500
 
-		const slC = createEmptySegmentLine('c', roData)
+		const slC = createEmptySegmentLine('c', rundownData)
 		slC.expectedDuration = 0
 
 		const sliA1 = createEmptySegmentLineItem('a_1', 'a')
@@ -162,34 +162,34 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 		sliBTrans.isTransition = true
 		sliBTrans.expectedDuration = 2500
 
-		roData.segmentLinesMap = {
+		rundownData.segmentLinesMap = {
 			a: slA,
 			b: slB,
 			c: slC
 		}
-		roData.segmentLines = _.values(roData.segmentLinesMap)
-		roData.segmentLineItems = [
+		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.segmentLineItems = [
 			sliA1,
 			sliB1, sliBTrans
 		]
 
-		roData.runningOrder.previousSegmentLineId = 'a'
-		roData.runningOrder.currentSegmentLineId = 'b'
-		roData.runningOrder.nextSegmentLineId = 'c'
+		rundownData.rundown.previousSegmentLineId = 'a'
+		rundownData.rundown.currentSegmentLineId = 'b'
+		rundownData.rundown.nextSegmentLineId = 'c'
 
-		return roData
+		return rundownData
 	}
 
 	function createBasicNextTransitionScenario (prerollDuration: number, transitionPrerollDuration: number, transitionKeepaliveDuration: number) {
-		const roData = createEmptyRoData()
+		const rundownData = createEmptyRundownData()
 
-		const slA = createEmptySegmentLine('a', roData)
+		const slA = createEmptySegmentLine('a', rundownData)
 		slA.expectedDuration = 1000
 		addStartedPlayback(slA, 700)
 		slA.autoNext = true
 		slA.autoNextOverlap = 670
 
-		const slB = createEmptySegmentLine('b', roData)
+		const slB = createEmptySegmentLine('b', rundownData)
 		slB.expectedDuration = 0
 		slB.prerollDuration = prerollDuration
 		slB.transitionPrerollDuration = transitionPrerollDuration
@@ -201,30 +201,30 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 		sliBTrans.isTransition = true
 		sliBTrans.expectedDuration = 2500
 
-		roData.segmentLinesMap = {
+		rundownData.segmentLinesMap = {
 			a: slA,
 			b: slB
 		}
-		roData.segmentLines = _.values(roData.segmentLinesMap)
-		roData.segmentLineItems = [
+		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.segmentLineItems = [
 			sliA1,
 			sliB1, sliBTrans
 		]
 
-		roData.runningOrder.currentSegmentLineId = 'a'
-		roData.runningOrder.nextSegmentLineId = 'b'
+		rundownData.rundown.currentSegmentLineId = 'a'
+		rundownData.rundown.nextSegmentLineId = 'b'
 
-		return roData
+		return rundownData
 	}
 
 	function createBasicCutScenario (autoNext: boolean) {
-		const roData = createEmptyRoData()
+		const rundownData = createEmptyRundownData()
 
-		const slA = createEmptySegmentLine('a', roData)
+		const slA = createEmptySegmentLine('a', rundownData)
 		slA.expectedDuration = 1000
 		addStartedPlayback(slA, 700)
 
-		const slB = createEmptySegmentLine('b', roData)
+		const slB = createEmptySegmentLine('b', rundownData)
 		addStartedPlayback(slB, 5000)
 		slB.expectedDuration = 4000
 		slB.prerollDuration = 250 // content starts this far into the sl
@@ -233,35 +233,35 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 			slB.autoNextOverlap = 500
 		}
 
-		const slC = createEmptySegmentLine('c', roData)
+		const slC = createEmptySegmentLine('c', rundownData)
 		slC.expectedDuration = 0
 		slC.prerollDuration = 350
 
 		const sliA1 = createEmptySegmentLineItem('a_1', 'a')
 		const sliB1 = createEmptySegmentLineItem('b_1', 'b')
 
-		roData.segmentLinesMap = {
+		rundownData.segmentLinesMap = {
 			a: slA,
 			b: slB,
 			c: slC
 		}
-		roData.segmentLines = _.values(roData.segmentLinesMap)
-		roData.segmentLineItems = [
+		rundownData.segmentLines = _.values(rundownData.segmentLinesMap)
+		rundownData.segmentLineItems = [
 			sliA1,
 			sliB1
 		]
 
-		roData.runningOrder.previousSegmentLineId = 'a'
-		roData.runningOrder.currentSegmentLineId = 'b'
-		roData.runningOrder.nextSegmentLineId = 'c'
+		rundownData.rundown.previousSegmentLineId = 'a'
+		rundownData.rundown.currentSegmentLineId = 'b'
+		rundownData.rundown.nextSegmentLineId = 'c'
 
-		return roData
+		return rundownData
 	}
 
 	it('Overlap - no transition (cut)', function () {
-		const roData = createBasicCutScenario(false)
+		const rundownData = createBasicCutScenario(false)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -293,9 +293,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - no transition (cut) and autonext', function () {
-		const roData = createBasicCutScenario(true)
+		const rundownData = createBasicCutScenario(true)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -334,9 +334,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - "normal" transition with gap', function () {
-		const roData = createBasicTransitionScenario(300, 500, 400)
+		const rundownData = createBasicTransitionScenario(300, 500, 400)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -382,9 +382,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - "normal" transition no gap', function () {
-		const roData = createBasicTransitionScenario(300, 500, 500)
+		const rundownData = createBasicTransitionScenario(300, 500, 500)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -430,9 +430,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - "fast" transition with gap', function () {
-		const roData = createBasicTransitionScenario(500, 300, 200)
+		const rundownData = createBasicTransitionScenario(500, 300, 200)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -478,9 +478,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - "fast" transition no gap', function () {
-		const roData = createBasicTransitionScenario(500, 300, 400)
+		const rundownData = createBasicTransitionScenario(500, 300, 400)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -526,9 +526,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - next is "normal" transition with gap', function () {
-		const roData = createBasicNextTransitionScenario(300, 500, 400)
+		const rundownData = createBasicNextTransitionScenario(300, 500, 400)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -568,9 +568,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - next is "normal" transition no gap', function () {
-		const roData = createBasicNextTransitionScenario(300, 500, 500)
+		const rundownData = createBasicNextTransitionScenario(300, 500, 500)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -610,9 +610,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - next is "fast" transition with gap', function () {
-		const roData = createBasicNextTransitionScenario(500, 300, 200)
+		const rundownData = createBasicNextTransitionScenario(500, 300, 200)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
@@ -652,9 +652,9 @@ describe('playout: buildTimelineObjsForRunningOrder', function () {
 	})
 
 	it('Overlap - next is "fast" transition no gap', function () {
-		const roData = createBasicNextTransitionScenario(500, 300, 400)
+		const rundownData = createBasicNextTransitionScenario(500, 300, 400)
 
-		const res = buildTimelineObjsForRunningOrder(roData, [])
+		const res = buildTimelineObjsForRundown(rundownData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)

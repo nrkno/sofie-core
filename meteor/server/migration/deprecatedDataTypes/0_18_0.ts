@@ -10,7 +10,7 @@ export interface ShowStyle {
 	name: string
 	/** Map a template name to a runtime function? */
 	templateMappings: TemplateMappings | never[]
-	/** The name of the template to be run for the baseline state when the running order is activated */
+	/** The name of the template to be run for the baseline state when the rundown is activated */
 	baselineTemplate: string
 	/** The name of the template to be run to generate external messages upon TAKEs */
 	messageTemplate: string

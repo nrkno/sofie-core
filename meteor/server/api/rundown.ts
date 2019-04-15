@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
@@ -21,23 +21,23 @@ import {
 	SegmentContext
 } from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
-import { updateStory, reloadRunningOrder } from './integration/mos'
+import { CachePrefix } from '../../lib/collections/RundownDataCache'
+import { updateStory, reloadRundown } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
-import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { RundownAPI } from '../../lib/api/rundown'
 import { updateExpectedMediaItems } from './expectedMediaItems'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { SegmentLineNote, NoteType } from '../../lib/api/notes'
-import { IngestRunningOrder } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 const PackageInfo = require('../../package.json')
 
-export function selectShowStyleVariant (studio: StudioInstallation, ingestRo: IngestRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+export function selectShowStyleVariant (studio: StudioInstallation, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
@@ -48,7 +48,7 @@ export function selectShowStyleVariant (studio: StudioInstallation, ingestRo: In
 
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (studioBlueprint) {
-		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRo)
+		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRundown)
 		showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
 		if (showStyleId === null || !showStyleBase) {
 			return null
@@ -66,7 +66,7 @@ export function selectShowStyleVariant (studio: StudioInstallation, ingestRo: In
 		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 	}
 
-	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRo)
+	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
 	showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
 	if (variantId === null || !showStyleVariant) {
 		return null
@@ -81,20 +81,20 @@ export function selectShowStyleVariant (studio: StudioInstallation, ingestRo: In
 /**
  * After a Segment has beed removed, handle its contents
  * @param segmentId Id of the Segment
- * @param runningOrderId Id of the Running order
+ * @param rundownId Id of the Rundown
  */
-export function afterRemoveSegment (segmentId: string, runningOrderId: string) {
+export function afterRemoveSegment (segmentId: string, rundownId: string) {
 	// Remove the segment lines:
 	saveIntoDb(SegmentLines, {
-		runningOrderId: runningOrderId,
+		rundownId: rundownId,
 		segmentId: segmentId
 	},[],{
 		remove (segmentLine) {
-			removeSegmentLine(segmentLine.runningOrderId, segmentLine)
+			removeSegmentLine(segmentLine.rundownId, segmentLine)
 		}
 	})
 }
-export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine | string, replacedBySegmentLine?: DBSegmentLine) {
+export function removeSegmentLine (rundownId: string, segmentLineOrId: DBSegmentLine | string, replacedBySegmentLine?: DBSegmentLine) {
 	let segmentLineToRemove: DBSegmentLine | undefined = (
 		_.isString(segmentLineOrId) ?
 			SegmentLines.findOne(segmentLineOrId) :
@@ -103,11 +103,11 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 	if (segmentLineToRemove) {
 		SegmentLines.remove(segmentLineToRemove._id)
 		afterRemoveSegmentLine(segmentLineToRemove, replacedBySegmentLine)
-		updateTimelineFromMosData(roId)
+		updateTimelineFromMosData(rundownId)
 
 		if (replacedBySegmentLine) {
 			SegmentLines.update({
-				runningOrderId: segmentLineToRemove.runningOrderId,
+				rundownId: segmentLineToRemove.rundownId,
 				afterSegmentLine: segmentLineToRemove._id
 			}, {
 				$set: {
@@ -118,7 +118,7 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 			})
 		} else {
 			SegmentLines.remove({
-				runningOrderId: segmentLineToRemove.runningOrderId,
+				rundownId: segmentLineToRemove.rundownId,
 				afterSegmentLine: segmentLineToRemove._id
 			})
 		}
@@ -129,23 +129,23 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, repla
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
-	updateExpectedMediaItems(removedSegmentLine.runningOrderId, removedSegmentLine._id)
+	updateExpectedMediaItems(removedSegmentLine.rundownId, removedSegmentLine._id)
 
-	let ro = RunningOrders.findOne(removedSegmentLine.runningOrderId)
-	if (ro) {
+	let rundown = Rundowns.findOne(removedSegmentLine.rundownId)
+	if (rundown) {
 		// If the replaced segment is next-to-be-played out,
 		// instead make the next-to-be-played-out item the one in it's place
 		if (
-			ro.active &&
-			ro.nextSegmentLineId === removedSegmentLine._id
+			rundown.active &&
+			rundown.nextSegmentLineId === removedSegmentLine._id
 		) {
 			if (!replacedBySegmentLine) {
 				let segmentLineBefore = fetchBefore(SegmentLines, {
-					runningOrderId: removedSegmentLine.runningOrderId
+					rundownId: removedSegmentLine.rundownId
 				}, removedSegmentLine._rank)
 
 				let nextSegmentLineInLine = fetchAfter(SegmentLines, {
-					runningOrderId: removedSegmentLine.runningOrderId,
+					rundownId: removedSegmentLine.rundownId,
 					_id: {$ne: removedSegmentLine._id}
 				}, segmentLineBefore ? segmentLineBefore._rank : null)
 
@@ -153,12 +153,12 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, repla
 					replacedBySegmentLine = nextSegmentLineInLine
 				}
 			}
-			ServerPlayoutAPI.roSetNext(ro._id, replacedBySegmentLine ? replacedBySegmentLine._id : null)
+			ServerPlayoutAPI.rundownSetNext(rundown._id, replacedBySegmentLine ? replacedBySegmentLine._id : null)
 		}
 	}
 }
-export function updateSegmentLines (runningOrderId: string) {
-	let segmentLines0 = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+export function updateSegmentLines (rundownId: string) {
+	let segmentLines0 = SegmentLines.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
 
 	let segmentLines: Array<SegmentLine> = []
 	let segmentLinesToInsert: {[id: string]: Array<SegmentLine>} = {}
@@ -215,7 +215,7 @@ export function updateSegmentLines (runningOrderId: string) {
 /**
  * Converts a segmentLine into a Segment
  * @param story MOS Sory
- * @param runningOrderId Running order id of the story
+ * @param rundownId Rundown id of the story
  * @param rank Rank of the story
  */
 export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSegment {
@@ -223,8 +223,8 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 	let slugParts = segmentLine.title.split(';')
 
 	return {
-		_id: segmentId(segmentLine.runningOrderId, segmentLine.title, rank),
-		runningOrderId: segmentLine.runningOrderId,
+		_id: segmentId(segmentLine.rundownId, segmentLine.title, rank),
+		rundownId: segmentLine.rundownId,
 		_rank: rank,
 		externalId: 'N/A', // to be removed?
 		name: slugParts[0],
@@ -232,15 +232,15 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 	}
 	// logger.debug('story.Number', story.Number)
 }
-export function segmentId (roId: string, storySlug: string, rank: number): string {
+export function segmentId (rundownId: string, storySlug: string, rank: number): string {
 	let slugParts = storySlug.split(';')
-	let id = roId + '_' + slugParts[0] + '_' + rank
+	let id = rundownId + '_' + slugParts[0] + '_' + rank
 	return getHash(id)
 }
-export function updateSegments (runningOrderId: string) {
+export function updateSegments (rundownId: string) {
 	// using SegmentLines, determine which segments are to be created
-	// let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
-	let segmentLines = updateSegmentLines(runningOrderId)
+	// let segmentLines = SegmentLines.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
+	let segmentLines = updateSegmentLines(rundownId)
 
 	let prevSlugParts: string[] = []
 	let segment: DBSegment
@@ -271,7 +271,7 @@ export function updateSegments (runningOrderId: string) {
 	})
 	// Update Segments:
 	saveIntoDb(Segments, {
-		runningOrderId: runningOrderId
+		rundownId: rundownId
 	}, segments, {
 		afterInsert (segment) {
 			logger.info('inserted segment ' + segment._id)
@@ -281,11 +281,11 @@ export function updateSegments (runningOrderId: string) {
 		},
 		afterRemove (segment) {
 			logger.info('removed segment ' + segment._id)
-			afterRemoveSegment(segment._id, segment.runningOrderId)
+			afterRemoveSegment(segment._id, segment.rundownId)
 		}
 	})
 }
-export function updateAffectedSegmentLines (ro: RunningOrder, affectedSegmentLineIds: Array<string>) {
+export function updateAffectedSegmentLines (rundown: Rundown, affectedSegmentLineIds: Array<string>) {
 
 	// Update the affected segments:
 	let affectedSegmentIds = _.uniq(
@@ -298,42 +298,42 @@ export function updateAffectedSegmentLines (ro: RunningOrder, affectedSegmentLin
 
 	let changed = false
 	_.each(affectedSegmentIds, (segmentId) => {
-		changed = changed || updateWithinSegment(ro, segmentId )
+		changed = changed || updateWithinSegment(rundown, segmentId )
 	})
 
 	if (changed) {
-		updateTimelineFromMosData(ro._id, affectedSegmentLineIds)
+		updateTimelineFromMosData(rundown._id, affectedSegmentLineIds)
 	}
 }
-function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
+function updateWithinSegment (rundown: Rundown, segmentId: string): boolean {
 	let segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, 'Segment "' + segmentId + '" not found!')
 
-	let segmentLines = ro.getSegmentLines({
+	let segmentLines = rundown.getSegmentLines({
 		segmentId: segment._id
 	})
 
 	let changed = false
 	_.each(segmentLines, (segmentLine) => {
-		changed = changed || updateSegmentLine(ro, segmentLine)
+		changed = changed || updateSegmentLine(rundown, segmentLine)
 	})
 
-	runPostProcessBlueprint(ro, segment)
+	runPostProcessBlueprint(rundown, segment)
 
 	return changed
 }
-function updateSegmentLine (ro: RunningOrder, segmentLine: SegmentLine): boolean {
+function updateSegmentLine (rundown: Rundown, segmentLine: SegmentLine): boolean {
 	// TODO: determine that the data source is MOS, and THEN call updateStory:
-	let story = ro.fetchCache(CachePrefix.INGEST_PART + segmentLine._id)
+	let story = rundown.fetchCache(CachePrefix.INGEST_PART + segmentLine._id)
 	if (story) {
-		return updateStory(ro, segmentLine, story)
+		return updateStory(rundown, segmentLine, story)
 	} else {
 		logger.warn('Unable to update segmentLine "' + segmentLine._id + '", story cache not found')
 		return false
 	}
 }
-export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
-	// let showStyleBase = ro.getShowStyleBase()
+export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
+	// let showStyleBase = rundown.getShowStyleBase()
 
 	// const segmentLines = segment.getSegmentLines()
 	// if (segmentLines.length === 0) {
@@ -342,7 +342,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 
 	// const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
-	// const context = new SegmentContext(ro, segment)
+	// const context = new SegmentContext(rundown, segment)
 	// context.handleNotesExternally = true
 
 	// let resultSli: SegmentLineItem[] | undefined = undefined
@@ -361,7 +361,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	// 		type: SegmentLineNoteType.ERROR,
 	// 		origin: {
 	// 			name: '',
-	// 			roId: context.runningOrder._id,
+	// 			rundownId: context.rundown._id,
 	// 			segmentId: segment._id,
 	// 			segmentLineId: '',
 	// 		},
@@ -395,7 +395,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	// 	}
 
 	// 	changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-	// 		runningOrderId: ro._id,
+	// 		rundownId: rundown._id,
 	// 		segmentLineId: { $in: slIds },
 	// 		fromPostProcess: true,
 	// 	}, resultSli || [], {
@@ -416,7 +416,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 
 	// 	let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
 	// 		_id: sl._id,
-	// 		runningOrderId: ro._id
+	// 		rundownId: rundown._id
 	// 	}, {
 	// 		$set: {
 	// 			displayDurationGroup: sl.displayDurationGroup || ''
@@ -429,109 +429,109 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	// const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
 	// if (anythingChanged) {
 	// 	_.each(slIds, (slId) => {
-	// 		updateExpectedMediaItems(ro._id, slId)
+	// 		updateExpectedMediaItems(rundown._id, slId)
 	// 	})
 	// }
 	// return anythingChanged
 	return false
 }
-export function reloadRunningOrderData (runningOrder: RunningOrder) {
-	// TODO: determine that the runningOrder is Mos-driven, then call the function
-	return reloadRunningOrder(runningOrder)
+export function reloadRundownData (rundown: Rundown) {
+	// TODO: determine that the rundown is Mos-driven, then call the function
+	return reloadRundown(rundown)
 }
 /**
  * Removes a Segment from the database
  * @param story The story to be inserted
- * @param runningOrderId The Running order id to insert into
+ * @param rundownId The Rundown id to insert into
  * @param rank The rank (position) to insert at
  */
-export function removeSegment (segmentId: string, runningOrderId: string) {
+export function removeSegment (segmentId: string, rundownId: string) {
 	Segments.remove(segmentId)
-	afterRemoveSegment(segmentId, runningOrderId)
+	afterRemoveSegment(segmentId, rundownId)
 }
 
-export namespace ServerRunningOrderAPI {
-	export function removeRunningOrder (runningOrderId: string) {
-		check(runningOrderId, String)
-		logger.info('removeRunningOrder ' + runningOrderId)
+export namespace ServerRundownAPI {
+	export function removeRundown (rundownId: string) {
+		check(rundownId, String)
+		logger.info('removeRundown ' + rundownId)
 
-		let ro = RunningOrders.findOne(runningOrderId)
-		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
-		if (ro.active) throw new Meteor.Error(400,`Not allowed to remove an active RunningOrder "${runningOrderId}".`)
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		if (rundown.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}".`)
 
-		ro.remove()
+		rundown.remove()
 	}
-	export function resyncRunningOrder (runningOrderId: string) {
-		check(runningOrderId, String)
-		logger.info('resyncRunningOrder ' + runningOrderId)
+	export function resyncRundown (rundownId: string) {
+		check(rundownId, String)
+		logger.info('resyncRundown ' + rundownId)
 
-		let ro = RunningOrders.findOne(runningOrderId)
-		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
-		// if (ro.active) throw new Meteor.Error(400,`Not allowed to resync an active RunningOrder "${runningOrderId}".`)
-		RunningOrders.update(ro._id, {
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
+		Rundowns.update(rundown._id, {
 			$set: {
 				unsynced: false
 			}
 		})
 
-		Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false)
+		Meteor.call(PlayoutAPI.methods.reloadData, rundownId, false)
 	}
-	export function unsyncRunningOrder (runningOrderId: string) {
-		check(runningOrderId, String)
-		logger.info('unsyncRunningOrder ' + runningOrderId)
+	export function unsyncRundown (rundownId: string) {
+		check(rundownId, String)
+		logger.info('unsyncRundown ' + rundownId)
 
-		let ro = RunningOrders.findOne(runningOrderId)
-		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		RunningOrders.update(ro._id, {$set: {
+		Rundowns.update(rundown._id, {$set: {
 			unsynced: true,
 			unsyncedTime: getCurrentTime()
 		}})
 	}
 }
-export namespace ClientRunningOrderAPI {
-	export function runningOrderNeedsUpdating (runningOrderId: string) {
-		check(runningOrderId, String)
-		// logger.info('runningOrderNeedsUpdating ' + runningOrderId)
+export namespace ClientRundownAPI {
+	export function rundownNeedsUpdating (rundownId: string) {
+		check(rundownId, String)
+		// logger.info('rundownNeedsUpdating ' + rundownId)
 
-		let ro = RunningOrders.findOne(runningOrderId)
-		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
-		if (!ro.importVersions) return 'unknown'
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		if (!rundown.importVersions) return 'unknown'
 
-		if (ro.importVersions.core !== PackageInfo.version) return 'coreVersion'
+		if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
 
-		const showStyleVariant = ShowStyleVariants.findOne(ro.showStyleVariantId)
+		const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
 		if (!showStyleVariant) return 'missing showStyleVariant'
-		if (ro.importVersions.showStyleVariant !== (showStyleVariant._runningOrderVersionHash || 0)) return 'showStyleVariant'
+		if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0)) return 'showStyleVariant'
 
-		const showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
+		const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
 		if (!showStyleBase) return 'missing showStyleBase'
-		if (ro.importVersions.showStyleBase !== (showStyleBase._runningOrderVersionHash || 0)) return 'showStyleBase'
+		if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0)) return 'showStyleBase'
 
 		const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
 		if (!blueprint) return 'missing blueprint'
-		if (ro.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
+		if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
 
-		const si = StudioInstallations.findOne(ro.studioInstallationId)
+		const si = StudioInstallations.findOne(rundown.studioInstallationId)
 		if (!si) return 'missing studioInstallation'
-		if (ro.importVersions.studioInstallation !== (si._runningOrderVersionHash || 0)) return 'studioInstallation'
+		if (rundown.importVersions.studioInstallation !== (si._rundownVersionHash || 0)) return 'studioInstallation'
 
 		return undefined
 	}
 }
 
 let methods: Methods = {}
-methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
-	return ServerRunningOrderAPI.removeRunningOrder(roId)
+methods[RundownAPI.methods.removeRundown] = (rundownId: string) => {
+	return ServerRundownAPI.removeRundown(rundownId)
 }
-methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
-	return ServerRunningOrderAPI.resyncRunningOrder(roId)
+methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
+	return ServerRundownAPI.resyncRundown(rundownId)
 }
-methods[RunningOrderAPI.methods.unsyncRunningOrder] = (roId: string) => {
-	return ServerRunningOrderAPI.unsyncRunningOrder(roId)
+methods[RundownAPI.methods.unsyncRundown] = (rundownId: string) => {
+	return ServerRundownAPI.unsyncRundown(rundownId)
 }
-methods[RunningOrderAPI.methods.runningOrderNeedsUpdating] = (roId: string) => {
-	return ClientRunningOrderAPI.runningOrderNeedsUpdating(roId)
+methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: string) => {
+	return ClientRundownAPI.rundownNeedsUpdating(rundownId)
 }
 // Apply methods:
 setMeteorMethods(methods)

@@ -3,24 +3,24 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
-export namespace RunningOrderTiming {
+export namespace RundownTiming {
 	export enum Events {
-		'timeupdate'		= 'sofie:roTimeUpdate', // this event is emitted every now-and-then, generally to be used for simple displays
-		'timeupdateHR'		= 'sofie:roTimeUpdateHR' // this event is emmited with a very high resolution, to be used sparingly
+		'timeupdate'		= 'sofie:rundownTimeUpdate', // this event is emitted every now-and-then, generally to be used for simple displays
+		'timeupdateHR'		= 'sofie:rundownTimeUpdateHR' // this event is emmited with a very high resolution, to be used sparingly
 	}
 
-	export interface RunningOrderTimingContext { // this is the context object that will be passed to listening components
-		// this is the total duration of the running order as planned (using expectedDurations)
+	export interface RundownTimingContext { // this is the context object that will be passed to listening components
+		// this is the total duration of the rundown as planned (using expectedDurations)
 		totalRundownDuration?: number
-		// this is the content remaining to be played in the running order (based on the expectedDurations)
+		// this is the content remaining to be played in the rundown (based on the expectedDurations)
 		remainingRundownDuration?: number
-		// this is the tottal duration of the running order: as planned for the unplayed content, and as-run for the played-out
+		// this is the tottal duration of the rundown: as planned for the unplayed content, and as-run for the played-out
 		asPlayedRundownDuration?: number
 		// SegmentLine ID is the key for these dictionaries
 		// this is the countdown to each of the segment lines relative to the current on air segment line.
@@ -31,7 +31,7 @@ export namespace RunningOrderTiming {
 		segmentLineDurations?: {
 			[key: string]: number
 		}
-		// the offset of each of the Segment Lines from the beginning of the Running Order
+		// the offset of each of the Segment Lines from the beginning of the Rundown
 		segmentLineStartsAt?: {
 			[key: string]: number
 		}
@@ -54,34 +54,34 @@ export namespace RunningOrderTiming {
 	}
 
 	export interface InjectedROTimingProps {
-		timingDurations: RunningOrderTimingContext
+		timingDurations: RundownTimingContext
 	}
 }
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
 
-interface IRunningOrderTimingProviderProps {
-	runningOrder?: RunningOrder
+interface IRundownTimingProviderProps {
+	rundown?: Rundown
 	// segmentLines: Array<SegmentLine>
 	refreshInterval?: number // the interval for high-resolution timing events. If undefined, it will fall back onto TIMING_DEFAULT_REFRESH_INTERVAL
 	defaultDuration?: number // the fallback duration for Segment Lines that have no as-played duration of their own
 }
-interface IRunningOrderTimingProviderChildContext {
-	durations: RunningOrderTiming.RunningOrderTimingContext
+interface IRundownTimingProviderChildContext {
+	durations: RundownTiming.RundownTimingContext
 }
-interface IRunningOrderTimingProviderState {
+interface IRundownTimingProviderState {
 }
-interface IRunningOrderTimingProviderTrackedProps {
+interface IRundownTimingProviderTrackedProps {
 	segmentLines: Array<SegmentLine>
 }
 
-export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProviderProps, IRunningOrderTimingProviderState, IRunningOrderTimingProviderTrackedProps>(
+export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
 	let segmentLines: Array<SegmentLine> = []
-	if (props.runningOrder) {
+	if (props.rundown) {
 		segmentLines = SegmentLines.find({
-			'runningOrderId': props.runningOrder._id,
+			'rundownId': props.rundown._id,
 		}, {
 			sort: {
 				'_rank': 1
@@ -91,17 +91,17 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 	return {
 		segmentLines
 	}
-})(class extends MeteorReactComponent<IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps, IRunningOrderTimingProviderState> implements React.ChildContextProvider<IRunningOrderTimingProviderChildContext> {
+})(class extends MeteorReactComponent<IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState> implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
 	static childContextTypes = {
 		durations: PropTypes.object.isRequired
 	}
 
-	durations: RunningOrderTiming.RunningOrderTimingContext = {}
+	durations: RundownTiming.RundownTimingContext = {}
 	refreshTimer: number
 	refreshTimerInterval: number
 	refreshDecimator: number
 
-	constructor (props: IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps) {
+	constructor (props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 		super(props)
 
 		this.refreshTimerInterval = props.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
@@ -109,7 +109,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		this.refreshDecimator = 0
 	}
 
-	getChildContext (): IRunningOrderTimingProviderChildContext {
+	getChildContext (): IRundownTimingProviderChildContext {
 		return {
 			durations: this.durations
 		}
@@ -131,7 +131,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		this.onRefreshTimer()
 	}
 
-	componentWillReceiveProps(nextProps: IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps) {
+	componentWillReceiveProps(nextProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 		// change refresh interval if needed
 		if (this.refreshTimerInterval !== nextProps.refreshInterval && this.refreshTimer) {
 			this.refreshTimerInterval = nextProps.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
@@ -146,12 +146,12 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 	}
 
 	dispatchHREvent () {
-		const event = new Event(RunningOrderTiming.Events.timeupdateHR)
+		const event = new Event(RundownTiming.Events.timeupdateHR)
 		window.dispatchEvent(event)
 	}
 
 	dispatchEvent () {
-		const event = new Event(RunningOrderTiming.Events.timeupdate)
+		const event = new Event(RundownTiming.Events.timeupdate)
 		window.dispatchEvent(event)
 	}
 
@@ -166,9 +166,9 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 		let debugConsole = ''
 
-		const { runningOrder, segmentLines } = this.props
+		const { rundown, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
-		// look at the comments on RunningOrderTimingContext to understand what these do
+		// look at the comments on RundownTimingContext to understand what these do
 		const segLineDurations: {
 			[key: string]: number
 		} = {}
@@ -194,15 +194,15 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 		let now = getCurrentTime()
 
-		if (runningOrder && segmentLines) {
+		if (rundown && segmentLines) {
 			segmentLines.forEach((item, itIndex) => {
 				// add segmentLineItem to accumulator
 				const aIndex = linearSegLines.push([item._id, waitAccumulator]) - 1
 
 				// if this is next segementLine, clear previous countdowns and clear accumulator
-				if (runningOrder.nextSegmentLineId === item._id) {
+				if (rundown.nextSegmentLineId === item._id) {
 					nextAIndex = aIndex
-				} else if (runningOrder.currentSegmentLineId === item._id) {
+				} else if (rundown.currentSegmentLineId === item._id) {
 					currentAIndex = aIndex
 				}
 
@@ -227,7 +227,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 				// Display Duration groups are groups of two or more Segment Lines, where some of them have an expectedDuration and some have 0.
 				// Then, some of them will have a displayDuration. The expectedDurations are pooled together, the segmentLines with
-				// display durations will take up that much time in the RunningOrder. The left-over time from the display duration group
+				// display durations will take up that much time in the Rundown. The left-over time from the display duration group
 				// will be used by Segment Lines without expectedDurations.
 				let memberOfDisplayDurationGroup = false // using a separate displayDurationGroup processing flag simplifies implementation
 				if (item.displayDurationGroup && (
@@ -276,7 +276,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				if (!item.startedPlayback) {
 					remainingRundownDuration += item.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
-				} else if (item.startedPlayback && lastStartedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && lastStartedPlayback + (item.expectedDuration || 0) > now) {
+				} else if (item.startedPlayback && lastStartedPlayback && !item.duration && rundown.currentSegmentLineId === item._id && lastStartedPlayback + (item.expectedDuration || 0) > now) {
 					// console.log((now - item.startedPlayback))
 					remainingRundownDuration += (item.expectedDuration || 0) - (now - lastStartedPlayback)
 				}
@@ -331,7 +331,7 @@ export interface WithTimingOptions {
 	isHighResolution?: boolean
 	filter?: string | any[]
 }
-export type WithTiming<T> = T & RunningOrderTiming.InjectedROTimingProps
+export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
 
 export function withTiming<IProps, IState> (options?: WithTimingOptions | Function):
@@ -365,16 +365,16 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | Functi
 			componentDidMount () {
 				window.addEventListener(
 					expandedOptions.isHighResolution ?
-						RunningOrderTiming.Events.timeupdateHR :
-						RunningOrderTiming.Events.timeupdate
+						RundownTiming.Events.timeupdateHR :
+						RundownTiming.Events.timeupdate
 				, this.refreshComponent)
 			}
 
 			componentWillUnmount () {
 				window.removeEventListener(
 					expandedOptions.isHighResolution ?
-						RunningOrderTiming.Events.timeupdateHR :
-						RunningOrderTiming.Events.timeupdate
+						RundownTiming.Events.timeupdateHR :
+						RundownTiming.Events.timeupdate
 					, this.refreshComponent)
 			}
 
@@ -391,7 +391,7 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | Functi
 			}
 
 			render () {
-				const durations: RunningOrderTiming.RunningOrderTimingContext
+				const durations: RundownTiming.RundownTimingContext
 					= this.context.durations
 
 				const allProps: WithTiming<IProps> = _.extend({
@@ -405,8 +405,8 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | Functi
 
 interface ISegmentLineCountdownProps {
 	segmentLineId?: string
-	timingDurations?: RunningOrderTiming.RunningOrderTimingContext
-	hideOnZero?: boolean
+	timingDurations?: RundownTiming.RundownTimingContext
+	hideOnZerundown?: boolean
 }
 interface ISegmentLineCountdownState {
 }
@@ -418,7 +418,7 @@ class extends React.Component<WithTiming<ISegmentLineCountdownProps>, ISegmentLi
 				this.props.timingDurations &&
 				this.props.timingDurations.segmentLineCountdown &&
 				this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] !== undefined &&
-				(this.props.hideOnZero !== true || this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] > 0) &&
+				(this.props.hideOnZerundown !== true || this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] > 0) &&
 					RundownUtils.formatTimeToShortTime(this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId])}
 		</span>)
 	}
@@ -455,7 +455,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 		}
 	})
 
-export function computeSegmentDuration (timingDurations: RunningOrderTiming.RunningOrderTimingContext, segmentLineIds: Array<string>): number {
+export function computeSegmentDuration (timingDurations: RundownTiming.RundownTimingContext, segmentLineIds: Array<string>): number {
 	let segmentLineDurations = timingDurations.segmentLineDurations
 
 	if (segmentLineDurations === undefined) return 0

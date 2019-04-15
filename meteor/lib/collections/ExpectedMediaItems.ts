@@ -11,8 +11,8 @@ export interface ExpectedMediaItem {
 	/** Global path to the media object */
 	url: string
 
-	/** The running order id that is the source of this MediaItem */
-	runningOrderId: string
+	/** The rundown id that is the source of this MediaItem */
+	rundownId: string
 
 	/** The segment line id that is the source of this Media Item */
 	segmentLineId: string
@@ -45,7 +45,7 @@ Meteor.startup(() => {
 			mediaFlowId: 1
 		})
 		ExpectedMediaItems._ensureIndex({
-			runningOrderId: 1,
+			rundownId: 1,
 			segmentLineId: 1
 		})
 	}

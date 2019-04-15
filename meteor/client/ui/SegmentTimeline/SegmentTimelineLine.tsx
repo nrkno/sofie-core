@@ -4,7 +4,7 @@ import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import {
 	SegmentUi,
@@ -14,25 +14,25 @@ import {
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { RunningOrderTiming, WithTiming } from '../RunningOrderView/RunningOrderTiming'
+import { RundownTiming, WithTiming } from '../RundownView/RundownTiming'
 
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
-import { withTiming } from '../RunningOrderView/RunningOrderTiming'
+import { withTiming } from '../RundownView/RundownTiming'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
-export const SegmentTimelineLineElementId = 'running-order__segment__line__'
+export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 
 interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	runningOrder: RunningOrder
+	rundown: Rundown
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	mediaPreviewUrl: string
@@ -134,7 +134,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
-	runningOrder: RunningOrder
+	rundown: Rundown
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	mediaPreviewUrl: string
@@ -166,7 +166,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 				return <SourceLayer key={sourceLayer._id}
 					{...this.props}
 					layer={sourceLayer}
-					runningOrder={this.props.runningOrder}
+					rundown={this.props.rundown}
 					outputLayer={this.props.layer}
 					outputGroupCollapsed={this.props.collapsedOutputs[this.props.layer._id] === true}
 					segment={this.props.segment}
@@ -199,7 +199,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 
 interface IProps {
 	segment: SegmentUi
-	runningOrder: RunningOrder,
+	rundown: Rundown,
 	studioInstallation: StudioInstallation
 	segmentLine: SegmentLineUi
 	timeScale: number
@@ -247,8 +247,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
 
-		const isLive = (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id)
-		const isNext = (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+		const isLive = (this.props.rundown.currentSegmentLineId === this.props.segmentLine._id)
+		const isNext = (this.props.rundown.nextSegmentLineId === this.props.segmentLine._id)
 		const startedPlayback = this.props.segmentLine.startedPlayback
 
 		this.state = {
@@ -285,13 +285,13 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	componentWillReceiveProps (nextProps: IProps & RunningOrderTiming.InjectedROTimingProps) {
-		const isLive = (nextProps.runningOrder.currentSegmentLineId === nextProps.segmentLine._id)
-		const isNext = (nextProps.runningOrder.nextSegmentLineId === nextProps.segmentLine._id)
+	componentWillReceiveProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
+		const isLive = (nextProps.rundown.currentSegmentLineId === nextProps.segmentLine._id)
+		const isNext = (nextProps.rundown.nextSegmentLineId === nextProps.segmentLine._id)
 
 		const startedPlayback = nextProps.segmentLine.startedPlayback
 
-		const isDurationSettling = !!nextProps.runningOrder.active && !isLive && !!startedPlayback && !nextProps.segmentLine.duration
+		const isDurationSettling = !!nextProps.rundown.active && !isLive && !!startedPlayback && !nextProps.segmentLine.duration
 
 		const liveDuration =
 			((isLive || isDurationSettling) && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
@@ -372,11 +372,11 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
-							runningOrder={this.props.runningOrder}
+							rundown={this.props.rundown}
 							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
 							duration={this.getLineDuration()}
-							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
-							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
+							isLiveLine={this.props.rundown.currentSegmentLineId === segmentLine._id ? true : false}
+							isNextLine={this.props.rundown.nextSegmentLineId === segmentLine._id ? true : false}
 							timeScale={this.props.timeScale}
 							autoNextSegmentLine={this.props.autoNextSegmentLine}
 							liveLinePadding={this.getLiveLineTimePadding(this.props.timeScale)} />
@@ -400,7 +400,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	render () {
 		const { t } = this.props
 
-		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.runningOrder.nextSegmentLineId))
+		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.rundown.nextSegmentLineId))
 
 		if (this.isInsideViewport()) {
 			return (
@@ -419,7 +419,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					<div className={ClassNames('segment-timeline__segment-line__nextline', { // This is the base, basic line
 						'auto-next': this.props.segmentLine.willProbablyAutoNext,
 						'invalid': this.props.segmentLine.invalid,
-						'offset': !!this.props.runningOrder.nextTimeOffset
+						'offset': !!this.props.rundown.nextTimeOffset
 					})}>
 						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
 							'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
@@ -434,14 +434,14 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							)}
 						</div>
 					</div>
-					{this.props.runningOrder.nextTimeOffset && this.state.isNext && // This is the off-set line
+					{this.props.rundown.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__segment-line__nextline', {
 							'auto-next': this.props.segmentLine.willProbablyAutoNext,
 							'invalid': this.props.segmentLine.invalid
 						})} style={{
 							'left': (this.props.relative ?
-								((this.props.runningOrder.nextTimeOffset / (this.getLineDuration() || 1) * 100) + '%') :
-								((this.props.runningOrder.nextTimeOffset * this.props.timeScale) + 'px')),
+								((this.props.rundown.nextTimeOffset / (this.getLineDuration() || 1) * 100) + '%') :
+								((this.props.rundown.nextTimeOffset * this.props.timeScale) + 'px')),
 						}}>
 							<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
 								'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
@@ -469,7 +469,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
 						'auto-next': this.props.segmentLine.autoNext,
-						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.runningOrder.nextSegmentLineId),
+						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.rundown.nextSegmentLineId),
 						'show-end': isEndOfShow
 					})}>
 						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {

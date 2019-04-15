@@ -17,7 +17,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	/** Studio installation Id */
 	siId: string
-	roId?: string
+	rundownId?: string
 
 	objectType: TimelineObjType
 
@@ -38,11 +38,11 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Set when an object is on a virtual layer for lookahead, so that it can be routed correctly */
 	originalLLayer?: string | number
 }
-// export type TimelineObj = TimelineObjRunningOrder | TimelineObjRecording | TimelineObjManual | TimelineObjStat
+// export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 
 export enum TimelineObjType {
-	/** Objects played in a runningOrder */
-	RUNNINGORDER = 'ro',
+	/** Objects played in a rundown */
+	RUNDOWN = 'rundown',
 	/** Objects controlling recording */
 	RECORDING = 'record',
 	/** Objects controlling manual playback */
@@ -61,10 +61,10 @@ export interface TimelineObjStat extends TimelineObjGeneric {
 		objHash: string
 	}
 }
-export interface TimelineObjRunningOrder extends TimelineObjGeneric {
-	objectType: TimelineObjType.RUNNINGORDER
-	/** Running Order Id */
-	roId: string
+export interface TimelineObjRundown extends TimelineObjGeneric {
+	objectType: TimelineObjType.RUNDOWN
+	/** Rundown Id */
+	rundownId: string
 }
 export interface TimelineObjRecording extends TimelineObjGeneric {
 	objectType: TimelineObjType.RECORDING
@@ -79,15 +79,15 @@ export interface TimelineObjGroup extends TimelineObjGeneric {
 	}
 	isGroup: true
 }
-export type TimelineObjGroupRunningOrder = TimelineObjGroup & TimelineObjRunningOrder
+export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
 
-export interface TimelineObjGroupSegmentLine extends TimelineObjGroupRunningOrder {
+export interface TimelineObjGroupSegmentLine extends TimelineObjGroupRundown {
 	isSegmentLineGroup: true
 }
-export interface TimelineObjSegmentLineAbstract extends TimelineObjRunningOrder { // used for sending callbacks
+export interface TimelineObjSegmentLineAbstract extends TimelineObjRundown { // used for sending callbacks
 	slId?: string
 }
-export interface TimelineObjSegmentLineItemAbstract extends TimelineObjRunningOrder { // used for sending callbacks
+export interface TimelineObjSegmentLineItemAbstract extends TimelineObjRundown { // used for sending callbacks
 	sliId?: string
 }
 
@@ -99,7 +99,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
 			siId: 1,
-			roId: 1,
+			rundownId: 1,
 		})
 	}
 })

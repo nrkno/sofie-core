@@ -3,28 +3,28 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-export interface RunningOrderDataCacheObj {
+export interface RundownDataCacheObj {
 	_id: string,
 	modified: number,
-	/** Id of the Running Order */
-	roId: string,
+	/** Id of the Rundown */
+	rundownId: string,
 	data: any
 }
 
 export enum CachePrefix {
 	INGEST_PART = 'fullStory',
-	INGEST_RUNNINGORDER = 'roCreate',
+	INGEST_RUNDOWN = 'rundownCreate',
 	INGEST_SEGMENT = 'segment'
 }
 
 // TODO Deprecate?
-export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
-	= new Mongo.Collection<RunningOrderDataCacheObj>('runningorderdatacache')
-registerCollection('RunningOrderDataCache', RunningOrderDataCache)
+export const RundownDataCache: TransformedCollection<RundownDataCacheObj, RundownDataCacheObj>
+	= new Mongo.Collection<RundownDataCacheObj>('rundowndatacache')
+registerCollection('RundownDataCache', RundownDataCache)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		RunningOrderDataCache._ensureIndex({
-			roId: 1
+		RundownDataCache._ensureIndex({
+			rundownId: 1
 		})
 	}
 })

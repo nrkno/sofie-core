@@ -11,13 +11,13 @@ msgstr ""
 msgid "Return to list"
 msgstr ""
 
-msgid "There is no running order active in this studio."
+msgid "There is no rundown active in this studio."
 msgstr ""
 
 msgid "This studio doesn't exist."
 msgstr ""
 
-msgid "There are no active running orders."
+msgid "There are no active rundowns."
 msgstr ""
 
 msgid "Evaluation"
@@ -85,7 +85,7 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-msgid "Running Orders"
+msgid "Rundowns"
 msgstr ""
 
 msgid "Nyman's Playground"
@@ -133,27 +133,27 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-msgid "Are you sure you want to delete running order \"{{runningOrderSlug}}\"?"
+msgid "Are you sure you want to delete rundown \"{{rundownSlug}}\"?"
 msgstr ""
 
 msgid "Please note: This action is irreversible!"
 msgstr ""
 
-msgid "Re-Sync this running order?"
+msgid "Re-Sync this rundown?"
 msgstr ""
 
 msgid "Re-Sync"
 msgstr ""
 
 msgid ""
-"Are you sure you want to re-sync running order \"{{runningOrderSlug}}\" "
+"Are you sure you want to re-sync rundown \"{{rundownSlug}}\" "
 "with MOS script?"
 msgstr ""
 
 msgid "Re-sync with MOS"
 msgstr ""
 
-msgid "Running Order"
+msgid "Rundown"
 msgstr ""
 
 msgid "ID"
@@ -230,7 +230,7 @@ msgstr ""
 msgid "Activate (Rehearsal)"
 msgstr ""
 
-msgid "Reload Running Order"
+msgid "Reload Rundown"
 msgstr ""
 
 msgid "Move Next forwards"
@@ -254,34 +254,34 @@ msgstr ""
 msgid "Log Error"
 msgstr ""
 
-msgid "Do you want to activate this Running Order?"
+msgid "Do you want to activate this Rundown?"
 msgstr ""
 
 msgid ""
 "The planned end time has passed, are you sure you want to activate this "
-"Running Order?"
+"Rundown?"
 msgstr ""
 
 msgid "Are you sure you want to activate Rehearsal Mode?"
 msgstr ""
 
 msgid ""
-"Are you sure you want to deactivate this Running Order?\n"
+"Are you sure you want to deactivate this Rundown?\n"
 "(This will clear the outputs)"
 msgstr ""
 
-msgid "The running order can not be reset while it is active"
+msgid "The rundown can not be reset while it is active"
 msgstr ""
 
 msgid ""
-"A snapshot of the current Running Order has been created for "
+"A snapshot of the current Rundown has been created for "
 "troubleshooting."
 msgstr ""
 
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr ""
 
-msgid "Reset Running Order"
+msgid "Reset Rundown"
 msgstr ""
 
 msgid "Reload ENPS Data"
@@ -311,7 +311,7 @@ msgstr ""
 msgid "Change to fullscreen mode"
 msgstr ""
 
-msgid "This running order is now active. Are you sure you want to exit this screen?"
+msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
 msgid ""
@@ -334,31 +334,31 @@ msgstr ""
 msgid "Restart Playout"
 msgstr ""
 
-msgid "This running order has been unpublished from Sofie."
+msgid "This rundown has been unpublished from Sofie."
 msgstr ""
 
-msgid "Error: The studio of this RunningOrder was not found."
+msgid "Error: The studio of this Rundown was not found."
 msgstr ""
 
-msgid "Error: The ShowStyle of this RunningOrder was not found."
+msgid "Error: The ShowStyle of this Rundown was not found."
 msgstr ""
 
 msgid "Unknown error"
 msgstr ""
 
 msgid ""
-"The Running Order has been UNSYNCED from ENPS! No data updates will "
+"The Rundown has been UNSYNCED from ENPS! No data updates will "
 "currently come through."
 msgstr ""
 
 msgid "Re-sync"
 msgstr ""
 
-msgid "Re-sync Running Order"
+msgid "Re-sync Rundown"
 msgstr ""
 
 msgid ""
-"Are you sure you want to re-sync the Running Order?\n"
+"Are you sure you want to re-sync the Rundown?\n"
 "(If the currently playing Segment Line has been changed, this can affect "
 "the output.)"
 msgstr ""

@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -32,43 +32,43 @@ setMeteorMethods({
 		MediaObjects.remove({})
 	},
 
-	'debug_roSetStarttimeSoon' () {
-		let ro = RunningOrders.findOne({
+	'debug_rundownSetStarttimeSoon' () {
+		let rundown = Rundowns.findOne({
 			active: true
 		})
-		if (ro) {
-			RunningOrders.update(ro._id, {$set: {
+		if (rundown) {
+			Rundowns.update(rundown._id, {$set: {
 				expectedStart: getCurrentTime() + 70 * 1000
 			}})
 		}
 	},
 
-	'debug_removeRo' (id: string) {
-		logger.debug('Remove ro "' + id + '"')
+	'debug_removeRundown' (id: string) {
+		logger.debug('Remove rundown "' + id + '"')
 
-		const ro = RunningOrders.findOne(id)
-		if (ro) ro.remove()
+		const rundown = Rundowns.findOne(id)
+		if (rundown) rundown.remove()
 	},
 
 	'debug_removeAllRos' () {
-		logger.debug('Remove all runningOrders')
+		logger.debug('Remove all rundowns')
 
-		RunningOrders.find({}).forEach((ro) => {
-			ro.remove()
+		Rundowns.find({}).forEach((rundown) => {
+			rundown.remove()
 		})
 	},
 
-	'debug_updateSourceLayerInfinitesAfterLine' (roId: string, previousSlId?: string, runToEnd?: boolean) {
-		check(roId, String)
+	'debug_updateSourceLayerInfinitesAfterLine' (rundownId: string, previousSlId?: string, runToEnd?: boolean) {
+		check(rundownId, String)
 		if (previousSlId) check(previousSlId, String)
 		if (runToEnd !== undefined) check(runToEnd, Boolean)
 
-		const ro = RunningOrders.findOne(roId)
-		if (!ro) throw new Meteor.Error(404, 'Running order not found')
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
 		const prevSl = previousSlId ? SegmentLines.findOne(previousSlId) : undefined
 
-		updateSourceLayerInfinitesAfterLine(ro, prevSl, runToEnd)
+		updateSourceLayerInfinitesAfterLine(rundown, prevSl, runToEnd)
 
 		logger.info('debug_updateSourceLayerInfinitesAfterLine: done')
 	}

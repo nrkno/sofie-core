@@ -40,7 +40,7 @@ interface IState {
 	rewindHover: boolean
 }
 
-export class RunningOrderFullscreenControls extends React.Component<IProps, IState> {
+export class RundownFullscreenControls extends React.Component<IProps, IState> {
 
 	throttledRefreshFullScreenState: () => void
 
@@ -178,24 +178,24 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 
 	render () {
 		return (
-			<div className='running-order__fullscreen-controls'>
+			<div className='rundown__fullscreen-controls'>
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
 					<NotificationCenterPanelToggle onClick={this.props.onToggleNotifications} isOpen={this.props.isNotificationCenterOpen} />
-					<div className='running-order__fullscreen-controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
+					<div className='rundown__fullscreen-controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
 						<FontAwesomeIcon icon={faFastBackward} />
 					</div>
 					{!this.props.isFollowingOnAir &&
-						<div className='running-order__fullscreen-controls__button' role='button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
+						<div className='rundown__fullscreen-controls__button' role='button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
 							{this.state.onAirHover ?
 								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} /> :
 								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />}
 						</div>
 					}
 					{!this.state.isFullscreen &&
-						<div className='running-order__fullscreen-controls__label'>
-							<div className='running-order__fullscreen-controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
+						<div className='rundown__fullscreen-controls__label'>
+							<div className='rundown__fullscreen-controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
 						</div>
 					}
 					<SupportPopUpToggle onClick={this.props.onToggleSupportPanel} isOpen={this.props.isSupportPanelOpen} />

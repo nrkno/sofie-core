@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import * as $ from 'jquery'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
@@ -18,7 +18,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
+import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
@@ -237,7 +237,7 @@ interface ISourceLayerLookup {
 interface IProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
-	runningOrder: RunningOrder
+	rundown: Rundown
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 }
@@ -266,18 +266,18 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	let sourceHotKeyUse = {}
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
-	let segments: Array<Segment> = props.runningOrder.getSegments()
+	let segments: Array<Segment> = props.rundown.getSegments()
 
-	const uiSegments = props.runningOrder ? (segments as Array<SegmentUi>).map((segSource) => {
+	const uiSegments = props.rundown ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
 		let segmentAdLibItems: Array<SegmentLineAdLibItem> = []
 		seg.segLines.forEach((segLine) => {
-			if (segLine._id === props.runningOrder.currentSegmentLineId) {
+			if (segLine._id === props.rundown.currentSegmentLineId) {
 				seg.isLive = true
 				liveSegment = seg
 			}
-			if (segLine._id === props.runningOrder.nextSegmentLineId) {
+			if (segLine._id === props.rundown.nextSegmentLineId) {
 				seg.isNext = true
 			}
 			segmentAdLibItems = segmentAdLibItems.concat(segLine.getSegmentLinesAdLibItems())
@@ -324,22 +324,22 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	componentWillMount () {
 		this.subscribe('segments', {
-			runningOrderId: this.props.runningOrder._id
+			rundownId: this.props.rundown._id
 		})
 		this.subscribe('segmentLines', {
-			runningOrderId: this.props.runningOrder._id
+			rundownId: this.props.rundown._id
 		})
 		this.subscribe('segmentLineAdLibItems', {
-			runningOrderId: this.props.runningOrder._id
+			rundownId: this.props.rundown._id
 		})
-		this.subscribe('runningOrderBaselineAdLibItems', {
-			runningOrderId: this.props.runningOrder._id
+		this.subscribe('rundownBaselineAdLibItems', {
+			rundownId: this.props.rundown._id
 		})
 		meteorSubscribe(PubSub.studioInstallations, {
-			_id: this.props.runningOrder.studioInstallationId
+			_id: this.props.rundown.studioInstallationId
 		})
 		meteorSubscribe(PubSub.showStyleBases, {
-			_id: this.props.runningOrder.showStyleBaseId
+			_id: this.props.rundown.showStyleBaseId
 		})
 	}
 
@@ -393,7 +393,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
-						const queueHotkey = [RunningOrderViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
@@ -432,16 +432,16 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentAdLibLineItemStart, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false])
+		if (this.props.rundown && this.props.rundown.currentSegmentLineId) {
+			doUserAction(t, e, UserActionAPI.methods.segmentAdLibLineItemStart, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, aSLine._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id])
+		if (this.props.rundown && this.props.rundown.currentSegmentLineId) {
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, sourceLayer._id])
 		}
 	}
 
@@ -490,7 +490,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	render () {
 		if (this.props.visible) {
-			if (!this.props.uiSegments || !this.props.runningOrder) {
+			if (!this.props.uiSegments || !this.props.rundown) {
 				return <Spinner />
 			} else {
 				return (

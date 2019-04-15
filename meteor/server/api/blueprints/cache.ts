@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
 import { logger } from '../../logging'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
@@ -46,8 +46,8 @@ export function loadStudioBlueprints (studio: StudioInstallation): StudioBluepri
 	return blueprint
 }
 
-export function getBlueprintOfRunningOrder (runnningOrder: RunningOrder): ShowStyleBlueprintManifest {
-	if (!runnningOrder.showStyleBaseId) throw new Meteor.Error(400, `RunningOrder is missing showStyleBaseId!`)
+export function getBlueprintOfRundown (runnningOrder: Rundown): ShowStyleBlueprintManifest {
+	if (!runnningOrder.showStyleBaseId) throw new Meteor.Error(400, `Rundown is missing showStyleBaseId!`)
 	let showStyleBase = ShowStyleBases.findOne(runnningOrder.showStyleBaseId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${runnningOrder.showStyleBaseId}" not found!`)
 	return loadShowStyleBlueprints(showStyleBase)

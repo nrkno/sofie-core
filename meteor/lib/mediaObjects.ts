@@ -6,7 +6,7 @@ import {
 	IConfigItem,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { RunningOrderAPI } from './api/runningOrder'
+import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 
@@ -99,7 +99,7 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 
 export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
-	let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
+	let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
@@ -110,7 +110,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				const content = sli.content as VTContent
 				// If the fileName is not set...
 				if (!content.fileName) {
-					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET
+					newStatus = RundownAPI.LineItemStatusCode.SOURCE_NOT_SET
 					message = t('Source is not set')
 				} else {
 					const mediaObject = MediaObjects.findOne({
@@ -118,15 +118,15 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 					})
 					// If media object not found, then...
 					if (!mediaObject && content.fileName) {
-						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
+						newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
 						message = t('Source is missing: {{fileName}}', {fileName: content.fileName})
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
-						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
+						newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
 						message = t('Source doesn\'t have audio & video: {{fileName}}', {fileName: content.fileName})
 					}
 					if (mediaObject) {
-						if (!newStatus) newStatus = RunningOrderAPI.LineItemStatusCode.OK
+						if (!newStatus) newStatus = RundownAPI.LineItemStatusCode.OK
 						const messages: Array<String> = []
 
 						// Do a format check:
@@ -194,8 +194,8 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 						}
 
 						if (messages.length) {
-							if (newStatus === RunningOrderAPI.LineItemStatusCode.OK) {
-								newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
+							if (newStatus === RundownAPI.LineItemStatusCode.OK) {
+								newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
 								message = messages.join(', ')
 							} else {
 								message += ', ' + messages.join(', ')

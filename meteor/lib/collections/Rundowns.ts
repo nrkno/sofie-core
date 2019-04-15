@@ -6,24 +6,24 @@ import { SegmentLines, SegmentLine } from './SegmentLines'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
-import { RunningOrderDataCache } from './RunningOrderDataCache'
+import { RundownDataCache } from './RundownDataCache'
 import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
-import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
-import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
-import { IBlueprintRunningOrderDB } from 'tv-automation-sofie-blueprints-integration'
+import { RundownBaselineItems } from './RundownBaselineItems'
+import { RundownBaselineAdLibItems } from './RundownBaselineAdLibItems'
+import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { RunningOrderNote } from '../api/notes'
+import { RundownNote } from '../api/notes'
 
-export enum RunningOrderHoldState {
+export enum RundownHoldState {
 	NONE = 0,
 	PENDING = 1, // During STK
 	ACTIVE = 2, // During full, STK is played
 	COMPLETE = 3, // During full, full is played
 }
 
-export interface RunningOrderImportVersions {
+export interface RundownImportVersions {
 	studioInstallation: string
 	showStyleBase: string
 	showStyleVariant: string
@@ -33,19 +33,19 @@ export interface RunningOrderImportVersions {
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRunningOrder extends IBlueprintRunningOrderDB {
-	/** The id of the StudioInstallation this runningOrder is in */
+export interface DBRundown extends IBlueprintRundownDB {
+	/** The id of the StudioInstallation this rundown is in */
 	studioInstallationId: string
 
-	/** The ShowStyleBase this RunningOrder uses (its the parent of the showStyleVariant) */
+	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: string
 	/** The peripheral device the rundown originates from */
 	peripheralDeviceId: string
 	created: Time
 	modified: Time
 
-	/** Revisions/Versions of various docs that when changed require the user to reimport the RO */
-	importVersions: RunningOrderImportVersions
+	/** Revisions/Versions of various docs that when changed require the user to reimport the rundown */
+	importVersions: RundownImportVersions
 
 	status?: string
 	airStatus?: string
@@ -65,22 +65,22 @@ export interface DBRunningOrder extends IBlueprintRunningOrderDB {
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 
-	/** Is the running order in an unsynced (has been unpublished from ENPS) state? */
+	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
 	unsynced?: boolean
-	/** Timestamp of when RO was unsynced */
+	/** Timestamp of when rundown was unsynced */
 	unsyncedTime?: Time
 
 	/** Last sent storyStatus to MOS */
 	currentPlayingStoryStatus?: string
 
-	holdState?: RunningOrderHoldState
+	holdState?: RundownHoldState
 	/** What the source of the data was */
 	dataSource: string
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
-	notes?: Array<RunningOrderNote>
+	notes?: Array<RundownNote>
 }
-export class RunningOrder implements DBRunningOrder {
+export class Rundown implements DBRundown {
 	public _id: string
 	public externalId: string
 	public studioInstallationId: string
@@ -90,7 +90,7 @@ export class RunningOrder implements DBRunningOrder {
 	public name: string
 	public created: Time
 	public modified: Time
-	public importVersions: RunningOrderImportVersions
+	public importVersions: RundownImportVersions
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public metaData?: { [key: string]: any }
@@ -107,18 +107,18 @@ export class RunningOrder implements DBRunningOrder {
 	public nextTimeOffset?: number
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
-	public holdState?: RunningOrderHoldState
+	public holdState?: RundownHoldState
 	public dataSource: string
-	public notes?: Array<RunningOrderNote>
+	public notes?: Array<RundownNote>
 
-	constructor (document: DBRunningOrder) {
-		_.each(_.keys(document), (key: keyof DBRunningOrder) => {
+	constructor (document: DBRundown) {
+		_.each(_.keys(document), (key: keyof DBRundown) => {
 			this[key] = document[key]
 		})
 	}
 	getShowStyleCompound (): ShowStyleCompound {
 
-		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'RunningOrder has no show style attached!')
+		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
 		let ss = getShowStyleCompound(this.showStyleVariantId)
 		if (ss) {
 			return ss
@@ -130,7 +130,7 @@ export class RunningOrder implements DBRunningOrder {
 		return showStyleBase
 	}
 	getStudioInstallation (): StudioInstallation {
-		if (!this.studioInstallationId) throw new Meteor.Error(500,'RunningOrder is not in a studioInstallation!')
+		if (!this.studioInstallationId) throw new Meteor.Error(500,'Rundown is not in a studioInstallation!')
 		let si = StudioInstallations.findOne(this.studioInstallationId)
 		if (si) {
 			return si
@@ -141,7 +141,7 @@ export class RunningOrder implements DBRunningOrder {
 		options = options || {}
 		return Segments.find(
 			_.extend({
-				runningOrderId: this._id
+				rundownId: this._id
 			}, selector),
 			_.extend({
 				sort: {_rank: 1}
@@ -153,7 +153,7 @@ export class RunningOrder implements DBRunningOrder {
 		options = options || {}
 		return SegmentLines.find(
 			_.extend({
-				runningOrderId: this._id
+				rundownId: this._id
 			}, selector),
 			_.extend({
 				sort: {_rank: 1}
@@ -161,26 +161,26 @@ export class RunningOrder implements DBRunningOrder {
 		).fetch()
 	}
 	remove () {
-		RunningOrders.remove(this._id)
-		Segments.remove({runningOrderId: this._id})
-		SegmentLines.remove({runningOrderId: this._id})
-		SegmentLineItems.remove({ runningOrderId: this._id})
-		SegmentLineAdLibItems.remove({ runningOrderId: this._id})
-		RunningOrderBaselineItems.remove({ runningOrderId: this._id})
-		RunningOrderBaselineAdLibItems.remove({ runningOrderId: this._id})
+		Rundowns.remove(this._id)
+		Segments.remove({rundownId: this._id})
+		SegmentLines.remove({rundownId: this._id})
+		SegmentLineItems.remove({ rundownId: this._id})
+		SegmentLineAdLibItems.remove({ rundownId: this._id})
+		RundownBaselineItems.remove({ rundownId: this._id})
+		RundownBaselineAdLibItems.remove({ rundownId: this._id})
 		this.removeCache()
 	}
 	touch () {
 		if (getCurrentTime() - this.modified > 3600 * 1000 ) {
-			RunningOrders.update(this._id, {$set: {modified: getCurrentTime()}})
+			Rundowns.update(this._id, {$set: {modified: getCurrentTime()}})
 		}
 	}
 	saveCache (cacheId: string, data: any) {
 		if (!Meteor.isServer) throw new Meteor.Error('The "saveCache" method is available server-side only (sorry)')
 		let id = this._id + '_' + cacheId
-		RunningOrderDataCache.upsert(id, {$set: {
+		RundownDataCache.upsert(id, {$set: {
 			_id: id,
-			roId: this._id,
+			rundownId: this._id,
 			modified: getCurrentTime(),
 			data: data
 		}})
@@ -189,10 +189,10 @@ export class RunningOrder implements DBRunningOrder {
 		if (!Meteor.isServer) throw new Meteor.Error('The "removeCache" method is available server-side only (sorry)')
 		if (cacheId) {
 			let id = this._id + '_' + cacheId
-			RunningOrderDataCache.remove(id)
+			RundownDataCache.remove(id)
 		} else {
-			RunningOrderDataCache.remove({
-				roId: this._id
+			RundownDataCache.remove({
+				rundownId: this._id
 			})
 
 		}
@@ -200,7 +200,7 @@ export class RunningOrder implements DBRunningOrder {
 	fetchCache (cacheId: string): any | null {
 		if (!Meteor.isServer) throw new Meteor.Error('The "fetchCache" method is available server-side only (sorry)')
 		let id = this._id + '_' + cacheId
-		let c = RunningOrderDataCache.findOne(id)
+		let c = RundownDataCache.findOne(id)
 		if (c) {
 			return c.data
 		}
@@ -226,7 +226,7 @@ export class RunningOrder implements DBRunningOrder {
 		})
 		return timings
 	}
-	fetchAllData (): RoData {
+	fetchAllData (): RundownData {
 
 		// Do fetches in parallell:
 		let ps: [
@@ -257,7 +257,7 @@ export class RunningOrder implements DBRunningOrder {
 				return { segmentLines, segmentLinesMap }
 			}),
 			makePromise(() => {
-				return SegmentLineItems.find({ runningOrderId: this._id }).fetch()
+				return SegmentLineItems.find({ rundownId: this._id }).fetch()
 			})
 		]
 		let r = waitForPromiseAll(ps as any)
@@ -268,7 +268,7 @@ export class RunningOrder implements DBRunningOrder {
 		let segmentLineItems: SegmentLineItem[] = r[2]
 
 		return {
-			runningOrder: this,
+			rundown: this,
 			segments,
 			segmentsMap,
 			segmentLines,
@@ -276,20 +276,20 @@ export class RunningOrder implements DBRunningOrder {
 			segmentLineItems
 		}
 	}
-	getNotes (): Array<RunningOrderNote> {
-		let notes: Array<RunningOrderNote> = []
+	getNotes (): Array<RundownNote> {
+		let notes: Array<RundownNote> = []
 		notes = notes.concat(this.notes || [])
 
 		return notes
 	}
-	appendNote (note: RunningOrderNote): void {
-		RunningOrders.update(this._id, {$push: {
+	appendNote (note: RundownNote): void {
+		Rundowns.update(this._id, {$push: {
 			notes: note
 		}})
 	}
 }
-export interface RoData {
-	runningOrder: RunningOrder
+export interface RundownData {
+	rundown: Rundown
 	segments: Array<Segment>
 	segmentsMap: {[id: string]: Segment}
 	segmentLines: Array<SegmentLine>
@@ -297,13 +297,13 @@ export interface RoData {
 	segmentLineItems: Array<SegmentLineItem>
 }
 
-// export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
-export const RunningOrders: TransformedCollection<RunningOrder, DBRunningOrder>
-	= new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
-registerCollection('RunningOrders', RunningOrders)
+// export const Rundowns = new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
+export const Rundowns: TransformedCollection<Rundown, DBRundown>
+	= new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
+registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		RunningOrders._ensureIndex({
+		Rundowns._ensureIndex({
 			studioInstallationId: 1,
 			active: 1
 		})

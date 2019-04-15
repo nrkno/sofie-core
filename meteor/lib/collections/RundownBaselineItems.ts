@@ -4,21 +4,21 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { TimelineObjGeneric } from './Timeline'
 
-export interface RunningOrderBaselineItem {
+export interface RundownBaselineItem {
 	_id: string
-	/** The running order this item belongs to */
-	runningOrderId: string
+	/** The rundown this item belongs to */
+	rundownId: string
 
 	objects: TimelineObjGeneric[]
 }
 
-export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
-	= new Mongo.Collection<RunningOrderBaselineItem>('runningOrderBaselineItems')
-registerCollection('RunningOrderBaselineItems', RunningOrderBaselineItems)
+export const RundownBaselineItems: TransformedCollection<RundownBaselineItem, RundownBaselineItem>
+	= new Mongo.Collection<RundownBaselineItem>('rundownBaselineItems')
+registerCollection('RundownBaselineItems', RundownBaselineItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		RunningOrderBaselineItems._ensureIndex({
-			runningOrderId: 1
+		RundownBaselineItems._ensureIndex({
+			rundownId: 1
 		})
 	}
 })

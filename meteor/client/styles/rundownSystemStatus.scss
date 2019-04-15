@@ -1,6 +1,6 @@
 @import "colorScheme";
 
-.running-order-system-status {
+.rundown-system-status {
 	position: absolute;
 	font-size: 0.8em;
 	width: 350px;
@@ -10,7 +10,7 @@
 	transform: translate(-50%, 0);
 	z-index: 2;
 
-	.running-order-system-status__message {
+	.rundown-system-status__message {
 		position: absolute;
 		background: rgba(0,0,0,0.6);
 		padding: 0.5em;
@@ -22,7 +22,7 @@
 		z-index: 30;
 	}
 
-	.running-order-system-status__indicators {
+	.rundown-system-status__indicators {
 		display: flex;
 		position: absolute;
 		top: 5px;

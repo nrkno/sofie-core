@@ -8,8 +8,8 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	_id: string
 	/** Id of the studio this message originates from */
 	studioId: string
-	/** (Optional) id of the running order this message originates from */
-	roId?: string
+	/** (Optional) id of the rundown this message originates from */
+	rundownId?: string
 	/** At this time the message will be removed */
 	expires: Time
 	/** Time of message creation */

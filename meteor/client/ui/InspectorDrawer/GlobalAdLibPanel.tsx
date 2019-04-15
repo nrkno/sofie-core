@@ -4,9 +4,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { translate } from 'react-i18next'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
-import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
+import { RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -16,11 +16,11 @@ import * as faList from '@fortawesome/fontawesome-free-solid/faList'
 import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
+import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
@@ -36,7 +36,7 @@ interface IListViewPropsHeader {
 	selectedItem: SegmentLineAdLibItemUi | undefined
 	filter: string | undefined
 	showStyleBase: ShowStyleBase
-	roAdLibs: Array<SegmentLineAdLibItemUi>
+	rundownAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
 interface IListViewStateHeader {
@@ -96,12 +96,12 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		return (
 			<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
 			{
-				itemList.concat(this.props.roAdLibs).concat(this.props.showStyleBase.sourceLayers.filter(i => i.isSticky)
+				itemList.concat(this.props.rundownAdLibs).concat(this.props.showStyleBase.sourceLayers.filter(i => i.isSticky)
 					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
 						_id: layer._id,
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last ') + (layer.abbreviation || layer.name),
-						status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
+						status: RundownAPI.LineItemStatusCode.UNKNOWN,
 						layer: layer,
 						isSticky: true
 					})))
@@ -246,7 +246,7 @@ interface ISourceLayerLookup {
 }
 
 interface IProps {
-	runningOrder: RunningOrder
+	rundown: Rundown
 	showStyleBase: ShowStyleBase
 	visible: boolean
 	studioMode: boolean
@@ -260,15 +260,15 @@ interface IState {
 }
 interface ITrackedProps {
 	sourceLayerLookup: ISourceLayerLookup
-	roAdLibs: Array<SegmentLineAdLibItemUi>
+	rundownAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	meteorSubscribe(PubSub.runningOrderBaselineAdLibItems, {
-		runningOrderId: props.runningOrder._id
+	meteorSubscribe(PubSub.rundownBaselineAdLibItems, {
+		rundownId: props.rundown._id
 	})
 	meteorSubscribe(PubSub.showStyleBases, {
-		_id: props.runningOrder.showStyleBaseId
+		_id: props.rundown.showStyleBaseId
 	})
 
 	const sourceLayerLookup: ISourceLayerLookup = (
@@ -279,13 +279,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
-	let roAdLibs: Array<SegmentLineAdLibItemUi> = []
+	let rundownAdLibs: Array<SegmentLineAdLibItemUi> = []
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
-	if (props.runningOrder) {
-		let roAdLibItems = RunningOrderBaselineAdLibItems.find({ runningOrderId: props.runningOrder._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
-		roAdLibItems.forEach((item) => {
+	if (props.rundown) {
+		let rundownAdLibItems = RundownBaselineAdLibItems.find({ rundownId: props.rundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
+		rundownAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)
 			uiAdLib.isGlobal = true
@@ -309,13 +309,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 
 			// always add them to the list
-			roAdLibs.push(uiAdLib)
+			rundownAdLibs.push(uiAdLib)
 		})
 	}
 
 	return {
 		sourceLayerLookup,
-		roAdLibs
+		rundownAdLibs
 	}
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -357,8 +357,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			e.preventDefault()
 		}
 
-		if (this.props.roAdLibs) {
-			this.props.roAdLibs.forEach((item) => {
+		if (this.props.rundownAdLibs) {
+			this.props.rundownAdLibs.forEach((item) => {
 				if (item.hotkey) {
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
@@ -369,7 +369,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
-						const queueHotkey = [RunningOrderViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
@@ -420,9 +420,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
+		if (this.props.rundown && this.props.rundown.currentSegmentLineId && this.props.rundown.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyItemStart, [this.props.runningOrder._id, sourceLayerId])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyItemStart, [this.props.rundown._id, sourceLayerId])
 		}
 	}
 
@@ -446,18 +446,18 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			return
 		}
 
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
+		if (this.props.rundown && this.props.rundown.currentSegmentLineId && aSLine.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, aSLine._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
+		if (this.props.rundown && this.props.rundown.currentSegmentLineId) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, sourceLayer._id])
 		}
 	}
 
@@ -476,7 +476,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					onToggleSticky={this.onToggleStickyItem}
 					selectedItem={this.state.selectedItem}
 					showStyleBase={this.props.showStyleBase}
-					roAdLibs={this.props.roAdLibs}
+					rundownAdLibs={this.props.rundownAdLibs}
 					filter={this.state.filter} />
 			</React.Fragment>
 		)
@@ -484,7 +484,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	render () {
 		if (this.props.visible) {
-			if (!this.props.runningOrder) {
+			if (!this.props.rundown) {
 				return <Spinner />
 			} else {
 				return (

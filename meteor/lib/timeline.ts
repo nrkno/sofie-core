@@ -10,7 +10,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 	let transformObject = (obj: TimelineObjGeneric): TimelineContentObject => {
 		let transformedObj = clone(_.extend({
 		   id: obj['_id'],
-		   roId: obj['roId']
+		   rundownId: obj['rundownId']
 	   }, _.omit(obj, ['_id', 'id', 'deviceId', 'siId'])))
 
 	   if (!transformedObj.content) transformedObj.content = {}
@@ -20,7 +20,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			// Will cause a callback to be called, when the object starts to play:
 			transformedObj.content.callBack = 'segmentLinePlaybackStarted'
 			transformedObj.content.callBackData = {
-				roId: obj.roId,
+				rundownId: obj.rundownId,
 				slId: obj['slId']
 			}
 			transformedObj.content.callBackStopped = 'segmentLinePlaybackStopped'
@@ -29,7 +29,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			// Will cause a callback to be called, when the object starts to play:
 			transformedObj.content.callBack = 'segmentLineItemPlaybackStarted'
 			transformedObj.content.callBackData = {
-				roId: obj.roId,
+				rundownId: obj.rundownId,
 				sliId: obj['sliId']
 			}
 			transformedObj.content.callBackStopped = 'segmentLineItemPlaybackStopped'

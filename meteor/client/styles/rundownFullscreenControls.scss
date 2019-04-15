@@ -1,7 +1,7 @@
 @import "_colorScheme";
 @import "_variables";
 
-.running-order__fullscreen-controls {
+.rundown__fullscreen-controls {
 	position: fixed;
     padding-right: 5px;
     padding-left: 5px;
@@ -19,7 +19,7 @@
 		right: auto;
 	}
 
-	.running-order__fullscreen-controls__button {
+	.rundown__fullscreen-controls__button {
 		display: block;
 		border: none;
 		background: transparentize(#4B4B4B, 0.45);
@@ -32,11 +32,11 @@
 
 		cursor: pointer;
 
-		&.running-order__fullscreen-controls__button--inactive {
+		&.rundown__fullscreen-controls__button--inactive {
 			cursor: default;
 		}
 
-		&:not(.running-order__fullscreen-controls__button--inactive) {
+		&:not(.rundown__fullscreen-controls__button--inactive) {
 			&:active, &.active {
 				background: $ui-button-primary;
 				transition: 0s background;
@@ -52,7 +52,7 @@
 			transform: translate(-50%, -50%);
 		}
 
-		.running-order__fullscreen-controls__button__label {
+		.rundown__fullscreen-controls__button__label {
 			text-align: center;
 			user-select: none;
 			margin-top: 0.6em;
@@ -70,7 +70,7 @@
 		}
 	}
 
-	.running-order__fullscreen-controls__label {
+	.rundown__fullscreen-controls__label {
 		font-size: 0.6rem;
 		text-align: center;
 		user-select: none;

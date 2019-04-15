@@ -4,7 +4,7 @@ import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 export enum SnapshotType {
-	RUNNING_ORDER = 'runningorder',
+	RUNDOWN = 'rundown',
 	SYSTEM = 'system',
 	DEBUG = 'debug'
 }
@@ -24,10 +24,10 @@ export interface SnapshotItem extends SnapshotBase {
 	comment: string
 }
 
-export interface SnapshotRunningOrder extends SnapshotBase {
-	type: SnapshotType.RUNNING_ORDER
+export interface SnapshotRundown extends SnapshotBase {
+	type: SnapshotType.RUNDOWN
 	studioId: string
-	runningOrderId: string
+	rundownId: string
 }
 export interface SnapshotSystem extends SnapshotBase {
 	type: SnapshotType.SYSTEM

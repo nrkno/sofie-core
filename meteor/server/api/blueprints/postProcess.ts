@@ -4,7 +4,7 @@ import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibI
 import { extendMandadory, getHash } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
-	TimelineObjRunningOrder,
+	TimelineObjRundown,
 	TimelineObjType
 } from '../../../lib/collections/Timeline'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
@@ -13,20 +13,20 @@ import {
 	TimelineObjectCoreExt,
 	IBlueprintSegmentLineItem,
 	IBlueprintSegmentLineAdLibItem,
-	RunningOrderContext as IRunningOrderContext,
-	RunningOrderContext,
+	RundownContext as IRundownContext,
+	RundownContext,
 } from 'tv-automation-sofie-blueprints-integration'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { RundownAPI } from '../../../lib/api/rundown'
 import { Timeline } from 'timeline-state-resolver-types'
 
-export function postProcessSegmentLineItems (innerContext: IRunningOrderContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, segmentLineId: string): SegmentLineItem[] {
+export function postProcessSegmentLineItems (innerContext: IRundownContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, segmentLineId: string): SegmentLineItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
 		let item: SegmentLineItem = {
-			runningOrderId: innerContext.runningOrder._id,
+			rundownId: innerContext.rundown._id,
 			segmentLineId: segmentLineId,
-			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
@@ -39,7 +39,7 @@ export function postProcessSegmentLineItems (innerContext: IRunningOrderContext,
 		if (item.content && item.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const item = convertTimelineObject(innerContext.runningOrder._id, o)
+				const item = convertTimelineObject(innerContext.rundown._id, o)
 
 				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_' + (i++))
 
@@ -54,15 +54,15 @@ export function postProcessSegmentLineItems (innerContext: IRunningOrderContext,
 	})
 }
 
-export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
+export function postProcessSegmentLineAdLibItems (innerContext: IRundownContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
 		let item: SegmentLineAdLibItem = {
 			_id: innerContext.getHashId(`${blueprintId}_${segmentLineId}_adlib_sli_${i++}`),
-			runningOrderId: innerContext.runningOrder._id,
+			rundownId: innerContext.rundown._id,
 			segmentLineId: segmentLineId,
-			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
 			trigger: undefined,
 			disabled: false,
 			...itemOrig
@@ -76,7 +76,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 		if (item.content && item.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const item = convertTimelineObject(innerContext.runningOrder._id, o)
+				const item = convertTimelineObject(innerContext.rundown._id, o)
 
 				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_adlib_' + (i++))
 
@@ -91,7 +91,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 	})
 }
 
-export function postProcessStudioBaselineObjects (studio: StudioInstallation, objs: Timeline.TimelineObject[]): TimelineObjRunningOrder[] {
+export function postProcessStudioBaselineObjects (studio: StudioInstallation, objs: Timeline.TimelineObject[]): TimelineObjRundown[] {
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(objs, (o, i) => {
 		const item = convertTimelineObject('', o)
@@ -105,24 +105,24 @@ export function postProcessStudioBaselineObjects (studio: StudioInstallation, ob
 	})
 }
 
-function convertTimelineObject (runningOrderId: string, o: TimelineObjectCoreExt): TimelineObjRunningOrder {
-	let item: TimelineObjRunningOrder = extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
+function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): TimelineObjRundown {
+	let item: TimelineObjRundown = extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(o, {
 		_id: o.id,
 		siId: '', // set later
-		roId: runningOrderId,
-		objectType: TimelineObjType.RUNNINGORDER,
+		rundownId: rundownId,
+		objectType: TimelineObjType.RUNDOWN,
 	})
 	delete item['id']
 
 	return item
 }
 
-export function postProcessSegmentLineBaselineItems (innerContext: RunningOrderContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
+export function postProcessSegmentLineBaselineItems (innerContext: RundownContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 
 	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric): TimelineObjGeneric => {
-		const item: TimelineObjGeneric = convertTimelineObject(innerContext.runningOrder._id, o)
+		const item: TimelineObjGeneric = convertTimelineObject(innerContext.rundown._id, o)
 
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 

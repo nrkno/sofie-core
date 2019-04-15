@@ -5,7 +5,7 @@ import { TriggerType } from 'superfly-timeline'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { SourceLayerType, VTContent, LiveSpeakContent, getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
@@ -32,7 +32,7 @@ interface IPropsHeader {
 	segmentLineStartsAt: number
 	segmentLineDuration: number
 	segmentLineItem: SegmentLineItemUi
-	runningOrder: RunningOrder
+	rundown: Rundown
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -73,7 +73,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
+				this.subscribe('mediaObjects', this.props.rundown.studioInstallationId, {
 					mediaId: this.objId
 				})
 			}
@@ -134,7 +134,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.segmentLineItem.sourceLayer) {
 
-				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.runningOrder.getStudioInstallation().config)
+				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.rundown.getStudioInstallation().config)
 				if (status !== props.segmentLineItem.status || metadata) {
 					let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
 

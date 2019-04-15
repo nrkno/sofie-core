@@ -5,7 +5,7 @@ import { SegmentLineItemLifespan, getSliGroupId } from 'tv-automation-sofie-blue
 import { normalizeArray, extendMandadory } from './lib'
 import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
-import { RunningOrder } from './collections/RunningOrders'
+import { Rundown } from './collections/Rundowns'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
@@ -63,7 +63,7 @@ export interface SegmentLineItemExtended extends SegmentLineItem {
 	maxLabelWidth?: number
 }
 
-export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: RunningOrder, segment: Segment, checkFollowingSegment?: boolean): {
+export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundown, segment: Segment, checkFollowingSegment?: boolean): {
 	segmentExtended: SegmentExtended,
 	segmentLines: Array<SegmentLineExtended>,
 	isLiveSegment: boolean,
@@ -98,7 +98,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 	if (segmentLines.length > 0) {
 		if (checkFollowingSegment) {
 			let followingSLines = SegmentLines.find({
-				runningOrderId: segment.runningOrderId,
+				rundownId: segment.rundownId,
 				_rank: {
 					$gt: segmentLines[segmentLines.length - 1]._rank
 				}
@@ -202,11 +202,11 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 					)
 			})
 
-			if (runningOrder.currentSegmentLineId === segmentLineE._id) {
+			if (rundown.currentSegmentLineId === segmentLineE._id) {
 				isLiveSegment = true
 				currentLiveSegmentLine = segmentLineE
 			}
-			if (runningOrder.nextSegmentLineId === segmentLineE._id) {
+			if (rundown.nextSegmentLineId === segmentLineE._id) {
 				isNextSegment = true
 				// next is only auto, if current has a duration
 				// nextSegmentLine = segmentLineE
@@ -400,8 +400,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 		segmentExtended.outputLayers = outputLayers
 		segmentExtended.sourceLayers = sourceLayers
 
-		if (isNextSegment && !isLiveSegment && !autoNextSegmentLine && runningOrder.currentSegmentLineId) {
-			const currentOtherSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+		if (isNextSegment && !isLiveSegment && !autoNextSegmentLine && rundown.currentSegmentLineId) {
+			const currentOtherSegmentLine = SegmentLines.findOne(rundown.currentSegmentLineId)
 			if (currentOtherSegmentLine && currentOtherSegmentLine.expectedDuration && currentOtherSegmentLine.autoNext) {
 				autoNextSegmentLine = true
 			}

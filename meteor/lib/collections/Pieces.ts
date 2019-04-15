@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { RunningOrderAPI } from '../api/runningOrder'
+import { RundownAPI } from '../api/rundown'
 import { TimelineTransition } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
@@ -19,11 +19,11 @@ export interface SegmentLineItemGeneric extends IBlueprintSegmentLineItemGeneric
 	_id: string
 	/** ID of the source object in MOS */
 	externalId: string
-	/** The running order this item belongs to */
-	runningOrderId: string
+	/** The rundown this item belongs to */
+	rundownId: string
 
 	/** Playback availability status */
-	status: RunningOrderAPI.LineItemStatusCode
+	status: RundownAPI.LineItemStatusCode
 	/** Actual duration of the item, as played-back, in milliseconds. This value will be updated during playback for some types of items. */
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
@@ -43,7 +43,7 @@ export interface SegmentLineItemGeneric extends IBlueprintSegmentLineItemGeneric
 	continuesRefId?: string
 	/** If this item has been created play-time using an AdLibItem, this should be set to it's source item */
 	adLibSourceId?: string
-	/** If this item has been insterted during run of RO (such as adLibs). Df set, this won't be affected by updates from MOS */
+	/** If this item has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
 	dynamicallyInserted?: boolean,
 	/** The time the system started playback of this segment line, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
@@ -88,7 +88,7 @@ registerCollection('SegmentLineItems', SegmentLineItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		SegmentLineItems._ensureIndex({
-			runningOrderId: 1,
+			rundownId: 1,
 			segmentLineId: 1
 		})
 	}

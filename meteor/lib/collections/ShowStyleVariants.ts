@@ -16,7 +16,7 @@ export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
 	/** Config values are used by the Blueprints */
 	config: Array<IConfigItem>
 
-	_runningOrderVersionHash: string
+	_rundownVersionHash: string
 }
 
 export interface ShowStyleCompound extends ShowStyleBase {
@@ -49,7 +49,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public name: string
 	public showStyleBaseId: string
 	public config: Array<IConfigItem>
-	public _runningOrderVersionHash: string
+	public _rundownVersionHash: string
 
 	constructor (document: DBShowStyleVariant) {
 		_.each(_.keys(document), (key) => {
@@ -70,6 +70,6 @@ Meteor.startup(() => {
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(ShowStyleVariants, '_runningOrderVersionHash', ['config', 'showStyleBaseId'])
+		ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['config', 'showStyleBaseId'])
 	}
 })

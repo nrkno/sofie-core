@@ -3,13 +3,13 @@ import * as Escape from 'react-escape'
 import { translate } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 
 interface IProps {
 	onSetNext: (segmentLine: SegmentLine | undefined, e: any, offset?: number) => void
-	runningOrder?: RunningOrder
+	rundown?: Rundown
 	studioMode: boolean
 	contextMenuContext: any
 }
@@ -29,23 +29,23 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 		const startsAt = this.getSLStartsAt()
 
 		return (
-			this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
+			this.props.studioMode && this.props.rundown && this.props.rundown.active ?
 				<Escape to='document'>
 					<ContextMenu id='segment-timeline-context-menu'>
 						{segLine && !segLine.invalid && timecode !== null && <React.Fragment>
-							{startsAt !== null && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+							{startsAt !== null && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.rundown.currentSegmentLineId}>
 								<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 							</MenuItem>}
 							{(startsAt !== null && segLine) ? <React.Fragment>
-								<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+								<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.rundown.currentSegmentLineId}>
 									<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 								</MenuItem>
-								<MenuItem onClick={(e) => this.onPlayFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+								<MenuItem onClick={(e) => this.onPlayFromHere(segLine, e)} disabled={segLine._id === this.props.rundown.currentSegmentLineId}>
 									<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(timecode / 1000) * 1000)})
 								</MenuItem>
 							</React.Fragment> : null}
 						</React.Fragment>}
-						{segLine && timecode === null && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+						{segLine && timecode === null && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.rundown.currentSegmentLineId}>
 							<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
 						</MenuItem>}
 					</ContextMenu>

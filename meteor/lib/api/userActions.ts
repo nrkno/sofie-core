@@ -9,7 +9,7 @@ export namespace UserActionAPI {
 		'moveNext' 								= 'userAction.moveNext',
 
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
-		'resetRunningOrder' 					= 'userAction.resetRunningOrder',
+		'resetRundown' 					= 'userAction.resetRundown',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
 		'activate' 								= 'userAction.activate',
 		'deactivate' 							= 'userAction.deactivate',
@@ -31,14 +31,14 @@ export namespace UserActionAPI {
 
 		'saveEvaluation' 						= 'userAction.saveEvaluation',
 
-		// 'roStoriesMoved'						= 'userAction.roStoriesMoved',
+		// 'rundownStoriesMoved'						= 'userAction.rundownStoriesMoved',
 		// 'segmentLinePlaybackStartedCallback'	= 'userAction.segmentLinePlaybackStartedCallback',
 		// 'segmentLineItemPlaybackStartedCallback'= 'userAction.segmentLineItemPlaybackStartedCallback',
 
-		'storeRunningOrderSnapshot'				= 'userAction.storeRunningOrderSnapshot',
+		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',
 
-		'removeRunningOrder'					= 'userAction.removeRunningOrder',
-		'resyncRunningOrder'					= 'userAction.resyncRunningOrder',
+		'removeRundown'					= 'userAction.removeRundown',
+		'resyncRundown'					= 'userAction.resyncRundown',
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',

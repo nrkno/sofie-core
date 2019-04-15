@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
-import { RunningOrders } from '../collections/RunningOrders'
+import { Rundowns } from '../collections/Rundowns'
 import { SegmentLine } from '../collections/SegmentLines'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
@@ -20,14 +20,14 @@ export interface PrompterData {
 
 export namespace PrompterAPI {
 
-	export function getPrompterData (roId: string): PrompterData {
+	export function getPrompterData (rundownId: string): PrompterData {
 
-		check(roId, String)
+		check(rundownId, String)
 
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		let segmentLines = runningOrder.getSegmentLines()
+		let segmentLines = rundown.getSegmentLines()
 
 		let data: PrompterData = {
 			lines: []

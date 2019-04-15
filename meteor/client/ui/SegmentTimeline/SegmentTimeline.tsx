@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import * as $ from 'jquery'
 import { ContextMenuTrigger } from 'react-contextmenu'
 
-import { RunningOrder, RunningOrderHoldState } from '../../../lib/collections/RunningOrders'
+import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
@@ -16,8 +16,8 @@ import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import {
 	SegmentDuration,
 	SegmentLineCountdown,
-	RunningOrderTiming
-} from '../RunningOrderView/RunningOrderTiming'
+	RundownTiming
+} from '../RundownView/RundownTiming'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -42,7 +42,7 @@ import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 interface IProps {
 	key: string
 	segment: SegmentUi
-	runningOrder: RunningOrder,
+	rundown: Rundown,
 	followLiveSegments: boolean,
 	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
@@ -103,11 +103,11 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 
 	componentDidMount () {
 		this.checkTimingChange()
-		window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
 	}
 
 	componentWillUnmount () {
-		window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
 	}
 
 	onTimeupdate = () => {
@@ -128,7 +128,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	calculateSegmentDuration (): number {
 		let total = 0
 		if (this.context && this.context.durations) {
-			const durations = this.context.durations as RunningOrderTiming.RunningOrderTimingContext
+			const durations = this.context.durations as RundownTiming.RundownTimingContext
 			this.props.segmentLines.forEach((item) => {
 				// total += durations.segmentLineDurations ? durations.segmentLineDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.segmentLineDisplayDurations && durations.segmentLineDisplayDurations[item._id] || 0)
@@ -149,7 +149,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
 					segment={this.props.segment}
-					runningOrder={this.props.runningOrder}
+					rundown={this.props.rundown}
 					studioInstallation={this.props.studioInstallation}
 					collapsedOutputs={this.props.collapsedOutputs}
 					isCollapsed={this.props.isCollapsed}
@@ -162,7 +162,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					followLiveLine={this.props.followLiveLine}
 					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback && segmentLine.getLastStartedPlayback() ? this.props.livePosition - (segmentLine.getLastStartedPlayback() || 0) : null}
+					livePosition={this.props.segment._id === this.props.rundown.currentSegmentLineId && segmentLine.startedPlayback && segmentLine.getLastStartedPlayback() ? this.props.livePosition - (segmentLine.getLastStartedPlayback() || 0) : null}
 					isLastInSegment={false}
 					isLastSegment={false} />
 			)
@@ -242,7 +242,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 }
 
-export const SegmentTimelineElementId = 'running-order__segment__'
+export const SegmentTimelineElementId = 'rundown__segment__'
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
@@ -426,7 +426,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
 						{!this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
 						{this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
-						{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE ?
+						{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 							<div className='segment-timeline__liveline__status segment-timeline__liveline__status--hold'>{t('Hold')}</div>
 							: null
 						}
@@ -555,7 +555,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
+					{this.props.rundown && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
 							segmentLineIds={this.props.segmentLines.filter(item => item.duration === undefined).map(item => item._id)}
 						/>
@@ -563,18 +563,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+					 {this.props.rundown && this.props.segmentLines && this.props.segmentLines.length > 0 &&
 						<SegmentLineCountdown
 							segmentLineId={
 								(
 									!this.props.isLiveSegment &&
 									(
 										this.props.isNextSegment ?
-										this.props.runningOrder.nextSegmentLineId :
+										this.props.rundown.nextSegmentLineId :
 										this.props.segmentLines[0]._id
 									)
 								) || undefined }
-							hideOnZero={true}
+							hideOnZerundown={true}
 						/>
 					 }
 				</div>
@@ -601,7 +601,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</ErrorBoundary>
 				{/* <ErrorBoundary>
 					<SegmentNextPreview
-						runningOrder={this.props.runningOrder}
+						rundown={this.props.rundown}
 						collapsedOutputs={this.props.collapsedOutputs}
 						isCollapsed={this.props.isCollapsed}
 						outputGroups={this.props.segment.outputLayers}

@@ -6,7 +6,7 @@ import {
 	Route
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { parse as queryStringParse } from 'query-string'
 
@@ -40,7 +40,7 @@ interface IProps {
 	}
 }
 interface ITrackedProps {
-	runningOrder?: RunningOrder
+	rundown?: Rundown
 	studioInstallation?: StudioInstallation
 	studioId?: string
 	// isReady: boolean
@@ -97,7 +97,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentWillMount () {
-		this.subscribe('runningOrders', _.extend({
+		this.subscribe('rundowns', _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioInstallationId: this.props.studioId
@@ -123,13 +123,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.checkScrollToCurrent()
 	}
 	checkScrollToCurrent () {
-		let roId = this.props.runningOrder && this.props.runningOrder._id
-		let runningOrder = RunningOrders.findOne(roId || '')
+		let rundownId = this.props.rundown && this.props.rundown._id
+		let rundown = Rundowns.findOne(rundownId || '')
 		if (this.configOptions.followTake ) {
-			if (runningOrder) {
+			if (rundown) {
 
-				if (runningOrder.currentSegmentLineId !== this.autoScrollPreviousSegmentLineId) {
-					this.autoScrollPreviousSegmentLineId = runningOrder.currentSegmentLineId
+				if (rundown.currentSegmentLineId !== this.autoScrollPreviousSegmentLineId) {
+					this.autoScrollPreviousSegmentLineId = rundown.currentSegmentLineId
 
 					this.scrollToCurrent()
 				}
@@ -191,10 +191,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	checkCurrentTakeMarkers = () => {
 
-		let roId = this.props.runningOrder && this.props.runningOrder._id
-		let runningOrder = RunningOrders.findOne(roId || '')
+		let rundownId = this.props.rundown && this.props.rundown._id
+		let rundown = Rundowns.findOne(rundownId || '')
 
-		if (runningOrder) {
+		if (rundown) {
 
 			const positionTop = this.getScrollPosition() || 0
 			const positionBottom = positionTop + window.innerHeight
@@ -210,11 +210,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const el = anchors[i]
 				const next = anchors[i + 1]
 
-				if (runningOrder.currentSegmentLineId && el.className.match('.segmentLine-' + runningOrder.currentSegmentLineId ) ) {
+				if (rundown.currentSegmentLineId && el.className.match('.segmentLine-' + rundown.currentSegmentLineId ) ) {
 					currentSegmentLineElement = $(el)
 					currentSegmentLineElementAfter = $(next) || null
 				}
-				if (runningOrder.nextSegmentLineId && el.className.match('.segmentLine-' + runningOrder.nextSegmentLineId ) ) {
+				if (rundown.nextSegmentLineId && el.className.match('.segmentLine-' + rundown.nextSegmentLineId ) ) {
 					nextSegmentLineElement = $(el)
 					nextSegmentLineElementAfter = $(next) || null
 				}
@@ -269,14 +269,14 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const { t } = this.props
 
 		return (
-			<div className='running-order-view running-order-view--unpublished'>
-				<div className='running-order-view__label'>
+			<div className='rundown-view rundown-view--unpublished'>
+				<div className='rundown-view__label'>
 					<p>
 						{message}
 					</p>
 					<p>
 						<Route render={({ history }) => (
-							<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+							<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
 								{t('Return to list')}
 							</button>
 						)} />
@@ -294,17 +294,17 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 			{
 				!this.state.subsReady ?
-					<div className='running-order-view running-order-view--loading' >
+					<div className='rundown-view rundown-view--loading' >
 						<Spinner />
 					</div> :
 				(
-					this.props.runningOrder ?
-						<Prompter runningOrderId={this.props.runningOrder._id} config={this.configOptions} /> :
+					this.props.rundown ?
+						<Prompter rundownId={this.props.rundown._id} config={this.configOptions} /> :
 					this.props.studioInstallation ?
-						this.renderMessage(t('There is no running order active in this studio.')) :
+						this.renderMessage(t('There is no rundown active in this studio.')) :
 					this.props.studioId ?
 						this.renderMessage(t('This studio doesn\'t exist.')) :
-					this.renderMessage(t('There are no active running orders.'))
+					this.renderMessage(t('There are no active rundowns.'))
 				)
 			}
 		</React.Fragment>
@@ -317,26 +317,26 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	if (studioId) {
 		studioInstallation = StudioInstallations.findOne(studioId)
 	}
-	const runningOrder = RunningOrders.findOne(_.extend({
+	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
 		studioInstallationId: studioId
 	}))
 
 	return {
-		runningOrder,
+		rundown,
 		studioInstallation,
 		studioId,
-		// isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
+		// isReady: rundownSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
 	}
 })(PrompterViewInner)
 
 interface IPrompterProps {
-	runningOrderId: string
+	rundownId: string
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	runningOrder: RunningOrder | undefined,
+	rundown: Rundown | undefined,
 	currentSegmentLineId: string,
 	nextSegmentLineId: string,
 	prompterData: PrompterData
@@ -346,14 +346,14 @@ interface IPrompterState {
 }
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 
-	const runningOrder = RunningOrders.findOne(props.runningOrderId)
+	const rundown = Rundowns.findOne(props.rundownId)
 
-	let prompterData = PrompterAPI.getPrompterData(props.runningOrderId)
+	let prompterData = PrompterAPI.getPrompterData(props.rundownId)
 
 	return {
-		runningOrder: runningOrder,
-		currentSegmentLineId: runningOrder && runningOrder.currentSegmentLineId || '',
-		nextSegmentLineId: runningOrder && runningOrder.nextSegmentLineId || '',
+		rundown: rundown,
+		currentSegmentLineId: rundown && rundown.currentSegmentLineId || '',
+		nextSegmentLineId: rundown && rundown.nextSegmentLineId || '',
 		prompterData
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
@@ -369,10 +369,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	}
 	componentWillMount () {
 
-		this.subscribe('runningOrders', 	{_id: 				this.props.runningOrderId})
-		this.subscribe('segments', 			{runningOrderId: 	this.props.runningOrderId})
-		this.subscribe('segmentLines', 		{runningOrderId: 	this.props.runningOrderId})
-		this.subscribe('segmentLineItems', 	{runningOrderId: 	this.props.runningOrderId})
+		this.subscribe('rundowns', 	{_id: 				this.props.rundownId})
+		this.subscribe('segments', 			{rundownId: 	this.props.rundownId})
+		this.subscribe('segmentLines', 		{rundownId: 	this.props.rundownId})
+		this.subscribe('segmentLineItems', 	{rundownId: 	this.props.rundownId})
 
 	}
 
@@ -448,7 +448,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	render () {
 		const { t } = this.props
 
-		if (this.props.prompterData && this.props.runningOrder) {
+		if (this.props.prompterData && this.props.rundown) {
 			return (
 				<div
 					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
@@ -471,7 +471,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					</div>
 
 					<div className='prompter-break begin'>
-						{this.props.runningOrder.name}
+						{this.props.rundown.name}
 					</div>
 
 					{this.renderPrompterData(this.props.prompterData)}

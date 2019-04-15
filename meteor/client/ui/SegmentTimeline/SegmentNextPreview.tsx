@@ -4,7 +4,7 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 
 import {
 	SegmentLineUi,
@@ -16,7 +16,7 @@ import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {
-	runningOrder: RunningOrder
+	rundown: Rundown
 	segmentLine?: SegmentLineUi
 	outputGroups?: {
 		[key: string]: IOutputLayerUi
@@ -58,7 +58,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 										followLiveLine={false}
 										liveLineHistorySize={0}
 										livePosition={0}
-										runningOrder={this.props.runningOrder}
+										rundown={this.props.rundown}
 										segmentLineItem={segmentLineItem}
 										layer={layer}
 										outputLayer={outputLayer}

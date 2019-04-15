@@ -46,7 +46,7 @@ export interface DBStudioInstallation {
 
 	settings: IStudioInstallationSettings
 
-	_runningOrderVersionHash: string
+	_rundownVersionHash: string
 }
 
 export interface ITestToolsConfig {
@@ -70,7 +70,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public settings: IStudioInstallationSettings
 	public testToolsConfig?: ITestToolsConfig
 
-	public _runningOrderVersionHash: string
+	public _rundownVersionHash: string
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
@@ -96,6 +96,6 @@ registerCollection('StudioInstallations', StudioInstallations)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(StudioInstallations, '_runningOrderVersionHash', ['config'])
+		ObserveChangesForHash(StudioInstallations, '_rundownVersionHash', ['config'])
 	}
 })

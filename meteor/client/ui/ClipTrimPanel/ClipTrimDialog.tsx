@@ -9,7 +9,7 @@ import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 
 export interface IProps {
-	runningOrderId: string
+	rundownId: string
 	studioInstallation: StudioInstallation
 	selectedSegmentLineItem: SegmentLineItem
 
@@ -39,7 +39,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 	handleAccept = (e) => {
 		this.props.onClose && this.props.onClose()
 		doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
-			this.props.runningOrderId,
+			this.props.rundownId,
 			this.props.selectedSegmentLineItem.segmentLineId,
 			this.props.selectedSegmentLineItem._id,
 			this.state.inPoint,
@@ -53,7 +53,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 			onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}>
 				<ClipTrimPanel
 					studioInstallationId={this.props.studioInstallation._id}
-					runningOrderId={this.props.runningOrderId}
+					rundownId={this.props.rundownId}
 					segmentLineItemId={this.props.selectedSegmentLineItem._id}
 					segmentLineId={this.props.selectedSegmentLineItem.segmentLineId}
 					inPoint={this.state.inPoint}

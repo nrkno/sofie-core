@@ -8,7 +8,7 @@ import {
 	ICommonContext,
 	NotesContext as INotesContext,
 	ShowStyleContext as IShowStyleContext,
-	RunningOrderContext as IRunningOrderContext,
+	RundownContext as IRundownContext,
 	SegmentContext as ISegmentContext,
 	PartContext as IPartContext,
 	EventContext as IEventContext,
@@ -21,17 +21,17 @@ import {
 	BlueprintRuntimeArguments,
 	IBlueprintSegmentLineItem,
 	IBlueprintSegmentDB,
-	IngestRunningOrder,
+	IngestRundown,
 	IBlueprintSegmentLineDB,
 	IngestPart
 } from 'tv-automation-sofie-blueprints-integration'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { ConfigRef, compileStudioConfig } from './config'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
-import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
+import { CachePrefix } from '../../../lib/collections/RundownDataCache'
 import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 
 /** Common */
@@ -68,7 +68,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	/** If the notes will be handled externally (using .getNotes()), set this to true */
 	public handleNotesExternally: boolean = false
 
-	protected _runningOrderId: string
+	protected _rundownId: string
 	private _contextName: string
 	private _segmentId?: string
 	private _segmentLineId?: string
@@ -77,12 +77,12 @@ export class NotesContext extends CommonContext implements INotesContext {
 
 	constructor (
 		contextName: string,
-		runningOrderId: string,
+		rundownId: string,
 		segmentId?: string,
 		segmentLineId?: string,
 	) {
 		super(
-			runningOrderId +
+			rundownId +
 			(
 				segmentLineId ? '_' + segmentLineId :
 				(
@@ -93,7 +93,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		this._contextName		= contextName
 
 		// TODO - we should fill these in just before inserting into the DB instead
-		this._runningOrderId	= runningOrderId
+		this._rundownId	= rundownId
 		this._segmentId			= segmentId
 		this._segmentLineId		= segmentLineId
 
@@ -121,7 +121,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 	protected getLoggerIdentifier (): string {
 		let ids: string[] = []
-		if (this._runningOrderId) ids.push('roId: ' + this._runningOrderId)
+		if (this._rundownId) ids.push('rundownId: ' + this._rundownId)
 		if (this._segmentId) ids.push('segmentId: ' + this._segmentId)
 		if (this._segmentLineId) ids.push('segmentLineId: ' + this._segmentLineId)
 		return ids.join(',')
@@ -132,7 +132,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 				type: type,
 				origin: {
 					name: this._getLoggerName(),
-					roId: this._runningOrderId,
+					rundownId: this._rundownId,
 					segmentId: this._segmentId,
 					segmentLineId: this._segmentLineId
 				},
@@ -188,12 +188,12 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	private notes: NotesContext
 
-	constructor (studioInstallation: StudioInstallation, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, runningOrderId?: string, segmentId?: string, segmentLineId?: string) {
+	constructor (studioInstallation: StudioInstallation, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, rundownId?: string, segmentId?: string, segmentLineId?: string) {
 		super(studioInstallation)
 
 		this.showStyleBaseId = showStyleBaseId
 		this.showStyleVariantId = showStyleVariantId
-		this.notes = new NotesContext(contextName || studioInstallation.name, runningOrderId || '', segmentId, segmentLineId)
+		this.notes = new NotesContext(contextName || studioInstallation.name, rundownId || '', segmentId, segmentLineId)
 	}
 
 	getShowStyleBase (): ShowStyleBase {
@@ -237,26 +237,26 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 }
 
-/** Running Order */
+/** Rundown */
 
-export class RunningOrderContext extends ShowStyleContext implements IRunningOrderContext {
-	runningOrderId: string
-	runningOrder: RunningOrder
+export class RundownContext extends ShowStyleContext implements IRundownContext {
+	rundownId: string
+	rundown: Rundown
 
-	constructor (runningOrder: RunningOrder, studioInstallation?: StudioInstallation, contextName?: string, segmentId?: string, segmentLineId?: string) {
-		super(studioInstallation || runningOrder.getStudioInstallation(), runningOrder.showStyleBaseId, runningOrder.showStyleVariantId, contextName || runningOrder.name, runningOrder._id, segmentId, segmentLineId)
+	constructor (rundown: Rundown, studioInstallation?: StudioInstallation, contextName?: string, segmentId?: string, segmentLineId?: string) {
+		super(studioInstallation || rundown.getStudioInstallation(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, segmentLineId)
 
-		this.runningOrderId = runningOrder._id
-		this.runningOrder = runningOrder
+		this.rundownId = rundown._id
+		this.rundown = rundown
 	}
 }
 
 export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments }
-export class SegmentContext extends RunningOrderContext implements ISegmentContext {
+export class SegmentContext extends RundownContext implements ISegmentContext {
 	private runtimeArguments: BlueprintRuntimeArgumentsSet
 
-	constructor (runningOrder: RunningOrder, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBSegmentLine[]) {
-		super(runningOrder, studioInstallation)
+	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBSegmentLine[]) {
+		super(rundown, studioInstallation)
 
 		if (_.isArray(runtimeArguments)) {
 			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
@@ -277,11 +277,11 @@ export class SegmentContext extends RunningOrderContext implements ISegmentConte
 	}
 }
 
-export class PartContext extends RunningOrderContext implements IPartContext {
+export class PartContext extends RundownContext implements IPartContext {
 	private runtimeArguments: BlueprintRuntimeArguments
 
-	constructor (runningOrder: RunningOrder, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArguments) {
-		super(runningOrder, studioInstallation)
+	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArguments) {
+		super(rundown, studioInstallation)
 
 		this.runtimeArguments = runtimeArguments
 	}
@@ -297,38 +297,38 @@ export class EventContext extends CommonContext implements IEventContext {
 	// TDB: Certain actions that can be triggered in Core by the Blueprint
 }
 
-export class PartEventContext extends RunningOrderContext implements IPartEventContext {
+export class PartEventContext extends RundownContext implements IPartEventContext {
 	part: IBlueprintSegmentLineDB
 
-	constructor (runningOrder: RunningOrder, studioInstallation: StudioInstallation | undefined, part: IBlueprintSegmentLineDB) {
-		super(runningOrder, studioInstallation)
+	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, part: IBlueprintSegmentLineDB) {
+		super(rundown, studioInstallation)
 
 		this.part = part
 	}
 }
 
-export class AsRunEventContext extends RunningOrderContext implements IAsRunEventContext {
+export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 
 	public asRunEvent: AsRunLogEvent
 
-	constructor (runningOrder: RunningOrder, studioInstallation: StudioInstallation | undefined, asRunEvent: AsRunLogEvent) {
-		super(runningOrder, studioInstallation)
+	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, asRunEvent: AsRunLogEvent) {
+		super(rundown, studioInstallation)
 		this.asRunEvent = asRunEvent
 	}
 
-	/** Get all asRunEvents in the runningOrder */
+	/** Get all asRunEvents in the rundown */
 	getAllAsRunEvents (): Array<AsRunLogEvent> {
 		return AsRunLog.find({
-			runningOrderId: this.runningOrder._id
+			rundownId: this.rundown._id
 		}, {
 			sort: {
 				timestamp: 1
 			}
 		}).fetch()
 	}
-	/** Get all segments in this runningOrder */
+	/** Get all segments in this rundown */
 	getSegments (): Array<IBlueprintSegmentDB> {
-		return this.runningOrder.getSegments()
+		return this.rundown.getSegments()
 	}
 	/**
 	 * Returns a segment
@@ -338,21 +338,21 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 		id = id || this.asRunEvent.segmentId
 		check(id, String)
 		if (id) {
-			return this.runningOrder.getSegments({
+			return this.rundown.getSegments({
 				_id: id
 			})[0]
 		}
 	}
-	/** Get all segmentLines in this runningOrder */
+	/** Get all segmentLines in this rundown */
 	getSegmentLines (): Array<SegmentLine> {
-		return this.runningOrder.getSegmentLines()
+		return this.rundown.getSegmentLines()
 	}
 	/** Get the segmentLine related to this AsRunEvent */
 	getSegmentLine (id?: string): SegmentLine | undefined {
 		id = id || this.asRunEvent.segmentLineId
 		check(id, String)
 		if (id) {
-			return this.runningOrder.getSegmentLines({
+			return this.rundown.getSegmentLines({
 				_id: id
 			})[0]
 		}
@@ -361,11 +361,11 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	getStoryForSegmentLine (segmentLine: SegmentLine): IngestPart {
 		let segmentLineId = segmentLine._id
 		check(segmentLineId, String)
-		return this.runningOrder.fetchCache(CachePrefix.INGEST_PART + segmentLineId)
+		return this.rundown.fetchCache(CachePrefix.INGEST_PART + segmentLineId)
 	}
-	/** Get the mos story related to the runningOrder */
-	getStoryForRunningOrder (): IngestRunningOrder {
-		return this.runningOrder.fetchCache(CachePrefix.INGEST_RUNNINGORDER + this.runningOrder._id)
+	/** Get the mos story related to the rundown */
+	getStoryForRundown (): IngestRundown {
+		return this.rundown.fetchCache(CachePrefix.INGEST_RUNDOWN + this.rundown._id)
 	}
 	/**
 	 * Returns a segmentLineItem.
@@ -376,7 +376,7 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 		segmentLineItemId = segmentLineItemId || this.asRunEvent.segmentLineItemId
 		if (segmentLineItemId) {
 			return SegmentLineItems.findOne({
-				runningOrderId: this.runningOrder._id,
+				rundownId: this.rundown._id,
 				_id: segmentLineItemId
 			})
 		}
@@ -389,7 +389,7 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 		check(segmentLineId, String)
 		if (segmentLineId) {
 			return SegmentLineItems.find({
-				runningOrderId: this.runningOrder._id,
+				rundownId: this.rundown._id,
 				segmentLineId: segmentLineId
 			}).fetch()
 		}
@@ -407,7 +407,7 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	protected getLoggerIdentifier (): string {
 		// override NotesContext.getLoggerIdentifier
 		let ids: string[] = []
-		if (this.runningOrderId) ids.push('roId: ' + this.runningOrderId)
+		if (this.rundownId) ids.push('rundownId: ' + this.rundownId)
 		if (this.asRunEvent.segmentId) ids.push('segmentId: ' + this.asRunEvent.segmentId)
 		if (this.asRunEvent.segmentLineId) ids.push('segmentLineId: ' + this.asRunEvent.segmentLineId)
 		if (this.asRunEvent.segmentLineItemId) ids.push('segmentLineItemId: ' + this.asRunEvent.segmentLineItemId)

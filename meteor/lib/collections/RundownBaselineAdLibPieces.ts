@@ -4,16 +4,16 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-export interface RunningOrderBaselineAdLibItem extends SegmentLineAdLibItem {
+export interface RundownBaselineAdLibItem extends SegmentLineAdLibItem {
 }
 
-export const RunningOrderBaselineAdLibItems: TransformedCollection<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>
-	= new Mongo.Collection<RunningOrderBaselineAdLibItem>('runningOrderBaselineAdLibItems')
-registerCollection('RunningOrderBaselineAdLibItems', RunningOrderBaselineAdLibItems)
+export const RundownBaselineAdLibItems: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
+	= new Mongo.Collection<RundownBaselineAdLibItem>('rundownBaselineAdLibItems')
+registerCollection('RundownBaselineAdLibItems', RundownBaselineAdLibItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		RunningOrderBaselineAdLibItems._ensureIndex({
-			runningOrderId: 1
+		RundownBaselineAdLibItems._ensureIndex({
+			rundownId: 1
 		})
 	}
 })

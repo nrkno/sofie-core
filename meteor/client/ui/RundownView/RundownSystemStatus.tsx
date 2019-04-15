@@ -4,7 +4,7 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosDevice } from '../../../lib/collections/PeripheralDevices'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
@@ -56,7 +56,7 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 
 interface IProps {
 	studioInstallation: StudioInstallation
-	runningOrder: RunningOrder
+	rundown: Rundown
 }
 
 interface IState {
@@ -101,7 +101,7 @@ function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLine
 	return diff
 }
 
-export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => {
+export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 	const attachedDevices: PeripheralDevice[] = []
@@ -160,7 +160,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		offLine: playoutDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
 	}
 
-	let segments = props.runningOrder.getSegments()
+	let segments = props.rundown.getSegments()
 
 	let notes: Array<SegmentLineNote> = []
 	_.each(segments, s => {
@@ -265,8 +265,8 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		const playoutDisconnected = this.props.playoutDevices.offLine.filter(dev => !dev.connected)
 
 		return (
-			<div className='running-order-system-status'>
-				<div className='running-order-system-status__indicators'>
+			<div className='rundown-system-status'>
+				<div className='rundown-system-status__indicators'>
 					{
 						this.props.notes.length > 0 ?
 						<div onClick={e => this.clickNotes()} className={ClassNames('note-icon', 'warning', this.state.displayNotes ? 'display' : '')}>

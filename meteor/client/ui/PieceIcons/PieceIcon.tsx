@@ -17,7 +17,7 @@ import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 interface IPropsHeader {
 	segmentItemId: string
-	runningOrderId: string
+	rundownId: string
 	showStyleBaseId: string
 }
 
@@ -60,7 +60,7 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 
 	componentWillMount () {
 		this.subscribe('segmentLineItemsSimple', {
-			runningOrderId: this.props.runningOrderId
+			rundownId: this.props.rundownId
 		})
 		this.subscribe('showStyleBases', {
 			_id: this.props.showStyleBaseId
@@ -115,7 +115,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 
 	componentWillMount () {
 		this.subscribe('segmentLineItemsSimple', {
-			runningOrderId: this.props.runningOrderId
+			rundownId: this.props.rundownId
 		})
 		this.subscribe('showStyleBases', {
 			_id: this.props.showStyleBaseId

@@ -1,8 +1,8 @@
-import { RunningOrder } from '../collections/RunningOrders'
+import { Rundown } from '../collections/Rundowns'
 import { NoteType } from './notes'
 import * as _ from 'underscore'
 
-export namespace RunningOrderAPI {
+export namespace RundownAPI {
 	/** A generic list of playback availability statuses for a source layer/line item */
 	export enum LineItemStatusCode {
 		/** No status has been determined (yet) */
@@ -18,15 +18,15 @@ export namespace RunningOrderAPI {
 	}
 
 	export enum methods {
-		'removeRunningOrder' = 'rundown.removeRunningOrder',
-		'resyncRunningOrder' = 'rundown.resyncRunningOrder',
-		'unsyncRunningOrder' = 'rundown.unsyncRunningOrder',
-		'runningOrderNeedsUpdating' = 'rundown.runningOrderNeedsUpdating'
+		'removeRundown' = 'rundown.removeRundown',
+		'resyncRundown' = 'rundown.resyncRundown',
+		'unsyncRundown' = 'rundown.unsyncRundown',
+		'rundownNeedsUpdating' = 'rundown.rundownNeedsUpdating'
 	}
 }
 
-/** Run function in context of a runningOrder. If an error is encountered, the runnningOrder will be notified */
-export function runInRunningOrderContext<T> (ro: RunningOrder, fcn: () => T, errorInformMessage?: string): T {
+/** Run function in context of a rundown. If an error is encountered, the runnningOrder will be notified */
+export function runInRundownContext<T> (rundown: Rundown, fcn: () => T, errorInformMessage?: string): T {
 	try {
 		const result = fcn() as any
 		if (_.isObject(result) && result.then && result.catch) {
@@ -34,28 +34,28 @@ export function runInRunningOrderContext<T> (ro: RunningOrder, fcn: () => T, err
 
 			// Intercept the error, then throw:
 			result.catch((e) => {
-				handleRunningOrderContextError(ro, errorInformMessage, e)
+				handleRundownContextError(rundown, errorInformMessage, e)
 				throw e
 			})
 		}
 		return result
 	} catch (e) {
 		// Intercept the error, then throw:
-		handleRunningOrderContextError(ro, errorInformMessage, e)
+		handleRundownContextError(rundown, errorInformMessage, e)
 		throw e
 	}
 }
-function handleRunningOrderContextError (ro: RunningOrder, errorInformMessage: string | undefined, error: any) {
-	ro.appendNote({
+function handleRundownContextError (rundown: Rundown, errorInformMessage: string | undefined, error: any) {
+	rundown.appendNote({
 		type: NoteType.ERROR,
 		message: (
 			errorInformMessage ?
 			errorInformMessage :
-			'Something went wrong when processing data this runningOrder.'
+			'Something went wrong when processing data this rundown.'
 		) + `Error message: ${(error || 'N/A').toString()}`,
 		origin: {
-			name: ro.name,
-			roId: ro._id
+			name: rundown.name,
+			rundownId: rundown._id
 		}
 	})
 }

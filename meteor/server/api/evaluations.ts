@@ -3,7 +3,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
 
@@ -51,15 +51,15 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				let ro = RunningOrders.findOne(evaluation.runningOrderId)
+				let rundown = Rundowns.findOne(evaluation.rundownId)
 				let hostUrl = studio.settings.sofieUrl
 
 				slackMessage += (
 					'rundown ' +
 					(
-						hostUrl && ro ?
-						('*<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>*') :
-						(ro && ro.name || 'N/A')
+						hostUrl && rundown ?
+						('*<' + hostUrl + '/rundown/' + rundown._id + '|' + rundown.name + '>*') :
+						(rundown && rundown.name || 'N/A')
 					) +
 					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '' ) + '\n' +
 					evaluationMessage + '\n' +

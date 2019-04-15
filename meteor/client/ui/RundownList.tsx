@@ -5,7 +5,7 @@ import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-m
 import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
@@ -24,25 +24,25 @@ import { getAdminMode } from '../lib/localStorage'
 
 const PackageInfo = require('../../package.json')
 
-interface IRunningOrderListItemProps {
+interface IRundownListItemProps {
 	key: string,
-	runningOrder: RunningOrder
+	rundown: Rundown
 }
 
-interface IRunningOrderListItemStats {
+interface IRundownListItemStats {
 }
 
-export class RunningOrderListItem extends React.Component<Translated<IRunningOrderListItemProps>, IRunningOrderListItemStats> {
+export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemStats> {
 	constructor (props) {
 		super(props)
 	}
 
-	getRunningOrderLink (runningOrderId) {
+	getRundownLink (rundownId) {
 		// double encoding so that "/" are handled correctly
-		return '/ro/' + encodeURIComponent(encodeURIComponent(runningOrderId))
+		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
 	}
 
-	confirmDelete (runningOrder: RunningOrder) {
+	confirmDelete (rundown: Rundown) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -50,26 +50,26 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRunningOrder, [runningOrder._id])
+				doUserAction(t, e, UserActionAPI.methods.removeRundown, [rundown._id])
 			},
 			message: (
-				t('Are you sure you want to delete running order "{{name}}"?', { name: runningOrder.name }) + '\n' +
+				t('Are you sure you want to delete rundown "{{name}}"?', { name: rundown.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})
 	}
 
-	confirmReSyncRO (runningOrder: RunningOrder) {
+	confirmReSyncRO (rundown: Rundown) {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Re-Sync this running order?'),
+			title: t('Re-Sync this rundown?'),
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.resyncRunningOrder, [runningOrder._id])
+				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [rundown._id])
 			},
 			message: (
-				t('Are you sure you want to re-sync running order "{{name}}" with MOS script?', { name: runningOrder.name }) + '\n' +
+				t('Are you sure you want to re-sync rundown "{{name}}" with MOS script?', { name: rundown.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})
@@ -79,9 +79,9 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 		const { t } = this.props
 		return (
 			<React.Fragment>
-				<tr className='running-order-list-item'>
-					<th className='running-order-list-item__name'>
-						{this.props.runningOrder.active ?
+				<tr className='rundown-list-item'>
+					<th className='rundown-list-item__name'>
+						{this.props.rundown.active ?
 							<div className='origo-pulse small right mrs'>
 								<div className='pulse-marker'>
 									<div className='pulse-rays'></div>
@@ -90,54 +90,54 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 							</div>
 							: null
 						}
-						<Link to={this.getRunningOrderLink(this.props.runningOrder._id)}>{this.props.runningOrder.name}</Link>
+						<Link to={this.getRundownLink(this.props.rundown._id)}>{this.props.rundown.name}</Link>
 					</th>
-					<td className='running-order-list-item__id'>
-						{this.props.runningOrder._id}
+					<td className='rundown-list-item__id'>
+						{this.props.rundown._id}
 					</td>
-					<td className='running-order-list-item__created'>
-						<MomentFromNow>{this.props.runningOrder.created}</MomentFromNow>
+					<td className='rundown-list-item__created'>
+						<MomentFromNow>{this.props.rundown.created}</MomentFromNow>
 					</td>
-					<td className='running-order-list-item__airTime'>
-						{this.props.runningOrder.expectedStart &&
-							<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.runningOrder.expectedStart}</Moment>
+					<td className='rundown-list-item__airTime'>
+						{this.props.rundown.expectedStart &&
+							<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.rundown.expectedStart}</Moment>
 						}
 					</td>
-					<td className='running-order-list-item__duration'>
-						{this.props.runningOrder.expectedDuration &&
-							RundownUtils.formatDiffToTimecode(this.props.runningOrder.expectedDuration, false, false, true, false, true)
+					<td className='rundown-list-item__duration'>
+						{this.props.rundown.expectedDuration &&
+							RundownUtils.formatDiffToTimecode(this.props.rundown.expectedDuration, false, false, true, false, true)
 						}
 					</td>
-					<td className='running-order-list-item__status'>
-						{this.props.runningOrder.status}
+					<td className='rundown-list-item__status'>
+						{this.props.rundown.status}
 					</td>
-					<td className='running-order-list-item__air-status'>
-						{this.props.runningOrder.airStatus}
+					<td className='rundown-list-item__air-status'>
+						{this.props.rundown.airStatus}
 					</td>
-					<td className='running-order-list-item__actions'>
+					<td className='rundown-list-item__actions'>
 						{
-							this.props.runningOrder.unsynced || getAdminMode() ?
+							this.props.rundown.unsynced || getAdminMode() ?
 							<Tooltip overlay={t('Delete')} placement='top'>
-								<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.runningOrder)}>
+								<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.rundown)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</Tooltip> : null
 						}
 						{
-							this.props.runningOrder.unsynced ?
+							this.props.rundown.unsynced ?
 							<Tooltip overlay={t('Re-sync with MOS')} placement='top'>
-								<button className='action-btn' onClick={(e) => this.confirmReSyncRO(this.props.runningOrder)}>
+								<button className='action-btn' onClick={(e) => this.confirmReSyncRO(this.props.rundown)}>
 									<FontAwesomeIcon icon={faSync} />
 								</button>
 							</Tooltip> : null
 						}
 					</td>
 				</tr>
-				{this.props.runningOrder.startedPlayback && this.props.runningOrder.expectedDuration && this.props.runningOrder.active &&
+				{this.props.rundown.startedPlayback && this.props.rundown.expectedDuration && this.props.rundown.active &&
 					<tr className='hl expando-addon'>
 						<td colSpan={8}>
 							<ActiveProgressBar
-								runningOrder={this.props.runningOrder}
+								rundown={this.props.rundown}
 							/>
 						</td>
 					</tr>
@@ -147,23 +147,23 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 	}
 }
 
-interface IRunningOrdersListProps {
-	runningOrders: Array<RunningOrder>
+interface IRundownsListProps {
+	rundowns: Array<Rundown>
 }
 
-interface IRunningOrdersListState {
+interface IRundownsListState {
 	systemStatus?: StatusResponse
 }
 
-export const RunningOrderList = translateWithTracker(() => {
+export const RundownList = translateWithTracker(() => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
-		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
+		rundowns: Rundowns.find({}, { sort: { created: -1 } }).fetch()
 	}
 })(
-class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunningOrdersListState> {
+class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
 	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 
 	constructor (props) {
@@ -185,41 +185,41 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		})
 	}
 
-	renderRunningOrders (list: RunningOrder[]) {
-		return list.map((runningOrder) => (
-			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} t={this.props.t} />
+	renderRundowns (list: Rundown[]) {
+		return list.map((rundown) => (
+			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
 		))
 	}
 
-	renderUnsyncedRunningOrders (list: RunningOrder[]) {
-		return list.map((runningOrder) => (
-			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} t={this.props.t} />
+	renderUnsyncedRundowns (list: Rundown[]) {
+		return list.map((rundown) => (
+			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
 		))
 	}
 
 	componentWillMount () {
 		// Subscribe to data:
-		// TODO: make something clever here, to not load ALL the runningOrders
-		this.subscribe('runningOrders', {})
+		// TODO: make something clever here, to not load ALL the rundowns
+		this.subscribe('rundowns', {})
 	}
 
 	render () {
 		const { t } = this.props
 
-		const synced = this.props.runningOrders.filter(i => !i.unsynced)
-		const unsynced = this.props.runningOrders.filter(i => i.unsynced)
+		const synced = this.props.rundowns.filter(i => !i.unsynced)
+		const unsynced = this.props.rundowns.filter(i => i.unsynced)
 
 		return <React.Fragment>
 			<div className='mtl gutter'>
 				<header className='mvs'>
-					<h1>{t('Running Orders')}</h1>
+					<h1>{t('Rundowns')}</h1>
 				</header>
 				<div className='mod mvl'>
 					<table className='table system-status-table expando expando-tight'>
 						<thead>
 							<tr className='hl'>
 								<th className='c3'>
-									{t('Running Order')}
+									{t('Rundown')}
 								</th>
 								<th className='c2'>
 									{t('ID')}
@@ -245,7 +245,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 							</tr>
 						</thead>
 						<tbody>
-							{this.renderRunningOrders(synced)}
+							{this.renderRundowns(synced)}
 						</tbody>
 						{unsynced.length > 0 && <tbody>
 							<tr className='hl'>
@@ -255,7 +255,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 							</tr>
 						</tbody>}
 						<tbody>
-							{this.renderUnsyncedRunningOrders(unsynced)}
+							{this.renderUnsyncedRundowns(unsynced)}
 						</tbody>
 					</table>
 				</div>
@@ -304,15 +304,15 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 )
 
 interface IActiveProgressBarProps {
-	runningOrder: RunningOrder
+	rundown: Rundown
 }
 
 const ActiveProgressBar = timer(1000)(class extends React.Component<IActiveProgressBarProps> {
 	render () {
-		return (this.props.runningOrder.startedPlayback && this.props.runningOrder.expectedDuration ?
+		return (this.props.rundown.startedPlayback && this.props.rundown.expectedDuration ?
 			<div className='progress-bar'>
 				<div className='pb-indicator' style={{
-					'width': Math.min(((getCurrentTime() - this.props.runningOrder.startedPlayback) / this.props.runningOrder.expectedDuration) * 100, 100) + '%'
+					'width': Math.min(((getCurrentTime() - this.props.rundown.startedPlayback) / this.props.rundown.expectedDuration) * 100, 100) + '%'
 				}} />
 			</div> : null
 		)

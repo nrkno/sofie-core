@@ -4,7 +4,7 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 export enum IngestCacheType {
-	RUNNINGORDER = 'runningOrder',
+	RUNDOWN = 'rundown',
 	SEGMENT = 'segment',
 	PART = 'part',
 }
@@ -14,8 +14,8 @@ export interface IngestDataCacheObj {
 	modified: number,
 	type: IngestCacheType,
 
-	/** Id of the Running Order */
-	runningOrderId: string,
+	/** Id of the Rundown */
+	rundownId: string,
 	segmentId?: string,
 	partId?: string,
 
@@ -28,7 +28,7 @@ registerCollection('IngestDataCache', IngestDataCache)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		IngestDataCache._ensureIndex({
-			runningOrderId: 1
+			rundownId: 1
 		})
 	}
 })

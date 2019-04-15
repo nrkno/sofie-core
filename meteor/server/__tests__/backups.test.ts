@@ -1,10 +1,10 @@
 
-import { restoreRunningOrder } from '../backups'
+import { restoreRundown } from '../backups'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../lib/lib'
 import { StatusCode } from '../systemStatus'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { MeteorMock } from '../../__mocks__/meteor'
 
 jest.mock('meteor/meteor', require('../../__mocks__/meteor').setup, { virtual: true })
@@ -14,7 +14,7 @@ jest.mock('meteor/mongo', require('../../__mocks__/mongo').setup, { virtual: tru
 
 describe('backups', () => {
 
-	test('restoreRunningOrder', () => {
+	test('restoreRundown', () => {
 
 		PeripheralDevices.insert({
 			_id: 'mockMos',
@@ -34,17 +34,17 @@ describe('backups', () => {
 
 		})
 
-		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoDelete] = jest.fn()
-		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoCreate] = jest.fn()
-		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoFullStory] = jest.fn()
+		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownDelete] = jest.fn()
+		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownCreate] = jest.fn()
+		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownFullStory] = jest.fn()
 
-		restoreRunningOrder({
-			type: 'runningOrderCache',
+		restoreRundown({
+			type: 'rundownCache',
 			data: [
 				{
-					type: 'roCreate',
+					type: 'rundownCreate',
 					data: {
-						ID: 'ro0',
+						ID: 'rundown0',
 						Stories: [
 							{
 								ID: 'story0'
@@ -61,8 +61,8 @@ describe('backups', () => {
 			]
 		})
 
-		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoDelete]).toHaveBeenCalledTimes(1)
-		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoCreate]).toHaveBeenCalledTimes(1)
-		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoFullStory]).toHaveBeenCalledTimes(1)
+		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownDelete]).toHaveBeenCalledTimes(1)
+		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownCreate]).toHaveBeenCalledTimes(1)
+		expect(MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRundownFullStory]).toHaveBeenCalledTimes(1)
 	})
 })

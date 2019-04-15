@@ -46,12 +46,12 @@ For the purpose of running the system in a studio environment, there are additio
 |Path     |Function     |
 |---------|-------------|
 |`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
-|`/activeRo/:studioId`|Redirects to the running order currently active in a given studio|
+|`/activeRundown/:studioId`|Redirects to the rundown currently active in a given studio|
 |`/prompter/:studioId`|A simple prompter for the studio presenter|
 
 ## Studio mode
 
-In general, you will want to limit the amount of client stations that have full control of the studio (such as activating running orders, taking segment lines, ad-libbing, etc.). In order to mark a given client station (browser) as a Studio Control station, you should append `?studio=1` to any query string, for example:
+In general, you will want to limit the amount of client stations that have full control of the studio (such as activating rundowns, taking segment lines, ad-libbing, etc.). In order to mark a given client station (browser) as a Studio Control station, you should append `?studio=1` to any query string, for example:
 
 ```http://localhost:3000/?studio=1```
 

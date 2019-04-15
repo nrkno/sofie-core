@@ -1,7 +1,7 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { RunningOrders } from '../../../lib/collections/RunningOrders'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
@@ -10,10 +10,10 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
 export namespace reactiveData {
-	export function getRRunningOrderId (roId: string): ReactiveVar<string | undefined> {
+	export function getRRundownId (rundownId: string): ReactiveVar<string | undefined> {
 		const rVar = new ReactiveVar<string | undefined>(undefined)
 		Tracker.autorun(() => {
-			const rObj = RunningOrders.findOne(roId)
+			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
 				rVar.set(rObj._id)
 			} else {
@@ -24,10 +24,10 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRRunningOrderStudioId (roId: string): ReactiveVar<string | undefined> {
+	export function getRRundownStudioId (rundownId: string): ReactiveVar<string | undefined> {
 		const rVar = new ReactiveVar<string | undefined>(undefined)
 		Tracker.autorun(() => {
-			const rObj = RunningOrders.findOne(roId)
+			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
 				rVar.set(rObj.studioInstallationId)
 			} else {
@@ -38,10 +38,10 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRRunningOrderShowStyleBaseId (roId: string): ReactiveVar<string | undefined> {
+	export function getRRundownShowStyleBaseId (rundownId: string): ReactiveVar<string | undefined> {
 		const rVar = new ReactiveVar<string | undefined>(undefined)
 		Tracker.autorun(() => {
-			const rObj = RunningOrders.findOne(roId)
+			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
 				rVar.set(rObj.showStyleBaseId)
 			} else {
@@ -62,12 +62,12 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRSegmentLineItems (roId: string): ReactiveVar<SegmentLineItem[]> {
+	export function getRSegmentLineItems (rundownId: string): ReactiveVar<SegmentLineItem[]> {
 		const rVar = new ReactiveVar<SegmentLineItem[]>([])
 
 		Tracker.autorun(() => {
 			const slis = SegmentLineItems.find({
-				runningOrderId: roId
+				rundownId: rundownId
 			}).fetch()
 			rVar.set(slis)
 		})
