@@ -71,7 +71,6 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { CachePrefix } from '../../lib/collections/RundownDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/Rundown'
@@ -508,7 +507,8 @@ export namespace ServerPlayoutAPI {
 	}
 	function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 		const rundown = new Rundown(dbRundown)
-		const story = rundown.fetchCache(CachePrefix.INGEST_PART + dbPart._id)
+		// TODO
+		const story = {} // rundown.fetchCache(CachePrefix.INGEST_PART + dbPart._id)
 		const part = new Part(dbPart)
 		updateStory(rundown, part, story)
 

@@ -28,7 +28,7 @@ const mod = { // standard modifier
 
 // Note: The data below is copied straight from the test data in mos-connection
 let xmlApiData = {
-	'rundownCreate':  literal<MOS.IMOSRundown>({
+	'rundownCreate':  literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: MOS.MosString128,
@@ -92,7 +92,7 @@ let xmlApiData = {
 			})
 		]
 	}),
-	'rundownReplace':  literal<MOS.IMOSRundown>({
+	'rundownReplace':  literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: MOS.MosString128,
@@ -180,7 +180,7 @@ let xmlApiData = {
 		// Description: string
 		// mosExternalMetaData?: Array<IMOSExternalMetaData>
 	}),
-	'rundownMetadataReplace':  literal<MOS.IMOSRundownBase>({
+	'rundownMetadataReplace':  literal<MOS.IMOSRunningOrderBase>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: new MOS.MosString128(''),
@@ -191,7 +191,7 @@ let xmlApiData = {
 		// MacrundownOut?: new MOS.MosString128(''),
 		// MosExternalMetaData?: Array<IMOSExternalMetaData>
 	}),
-	'rundownElementStat_rundown':  literal<MOS.IMOSRundownStatus>({
+	'rundownElementStat_rundown':  literal<MOS.IMOSRunningOrderStatus>({
 		ID: new MOS.MosString128('5PM'),
 		Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
 		Time: new MOS.MosTime('2009-04-11T14:13:53')
@@ -873,17 +873,17 @@ describe('peripheralDevice: MOS API methods', function () {
 	it('mosRundownStatus', function () {
 		// Test data:
 		let rundown = xmlApiData.rundownCreate
-		let status0: MOS.IMOSRundownStatus = {
+		let status0: MOS.IMOSRunningOrderStatus = {
 			ID: rundown.ID,
 			Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
 			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let status1: MOS.IMOSRundownStatus = {
+		let status1: MOS.IMOSRunningOrderStatus = {
 			ID: rundown.ID,
 			Status: MOS.IMOSObjectStatus.READY,
 			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown: MOS.IMOSRundownStatus = {
+		let statusUnknown: MOS.IMOSRunningOrderStatus = {
 			ID: new MOS.MosString128('unknown'),
 			Status: MOS.IMOSObjectStatus.MOVED,
 			Time: new MOS.MosTime('2009-04-11T14:13:53')

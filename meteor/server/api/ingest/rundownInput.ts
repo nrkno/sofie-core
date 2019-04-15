@@ -29,7 +29,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studios, Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart, ServerRundownAPI } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -41,7 +41,7 @@ import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudio } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
 const PackageInfo = require('../../../package.json')
 
@@ -130,33 +130,17 @@ function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?
 	return true
 }
 
-function getStudioId (peripheralDevice: PeripheralDevice): string | undefined {
-	if (peripheralDevice.studioId) {
-		return peripheralDevice.studioId
-	}
-	if (peripheralDevice.parentDeviceId) {
-		// Also check the parent device:
-		const parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
-		if (parentDevice) {
-			return parentDevice.studioId
-		}
-	}
-	return undefined
-}
-function getStudio (peripheralDevice: PeripheralDevice): Studio {
-	const studioId = getStudioId(peripheralDevice)
-	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
-
-	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
-	return studio
-}
-
 function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
-	if (canBeUpdated(rundown) && rundown) {
-		rundown.remove()
+	if (rundown) {
+		if (canBeUpdated(rundown)) {
+			rundown.remove()
+		} else {
+			if (!rundown.unsynced) {
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			}
+		}
 	}
 }
 function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: any, dataSource: string) {
@@ -176,7 +160,7 @@ function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: 
 
 	updateRundownFromIngestData( studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
-export function updateRundownFromIngestData (
+function updateRundownFromIngestData (
 	studio: Studio,
 	existingDbRundown: Rundown | undefined,
 	ingestRundown: IngestRundown,
@@ -380,7 +364,7 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
-export function updateSegmentFromIngestData (
+function updateSegmentFromIngestData (
 	studio: Studio,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
@@ -416,7 +400,7 @@ export function updateSegmentFromIngestData (
 		}
 	})
 
-	const changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
+	saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: rundown._id,
 		partId: { $in: parts.map(p => p._id) },
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
