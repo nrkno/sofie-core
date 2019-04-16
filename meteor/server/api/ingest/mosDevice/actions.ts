@@ -1,12 +1,12 @@
 import * as MOS from 'mos-connection'
 import { logger } from '../../../logging'
-import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { check } from 'meteor/check'
+import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { Part } from '../../../../lib/collections/Parts'
 import { handleMosRundownData } from './ingest'
+import { Piece } from '../../../../lib/collections/Pieces';
+import { IngestPart } from 'tv-automation-sofie-blueprints-integration';
 
 export namespace MOSDeviceActions {
 	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => void = Meteor.wrapAsync(
@@ -58,6 +58,26 @@ export namespace MOSDeviceActions {
 					resolve(result)
 				}
 			}, 'setStoryStatus', rundown.externalId, storyId, status)
+		})
+	}
+
+	export function setPieceInOutPoint (rundown: Rundown, piece: Piece, partCache: IngestPart, inPoint: number, duration: number) {
+		return new Promise((resolve, reject) => {
+			if (!partCache.payload) throw new Meteor.Error(500, `Part Cache for "${partCache.externalId}" missing payload!`)
+			const mosPayload = partCache.payload as MOS.IMOSROFullStory
+			if (!mosPayload.Body) throw new Meteor.Error(500, `Part Cache for "${partCache.externalId}" missing FullStory content!`)
+
+			const story = mosPayload.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
+			story.EditorialStart = inPoint
+			story.EditorialDuration = duration
+
+			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found' )
+
+			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
+				if (err) reject(err)
+				else resolve()
+			}, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story)
 		})
 	}
 }

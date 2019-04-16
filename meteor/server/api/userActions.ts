@@ -18,7 +18,7 @@ import {
 } from '../../lib/collections/Evaluations'
 import { Studios } from '../../lib/collections/Studios'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -26,8 +26,9 @@ import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
-import { IngestDataCache } from '../../lib/collections/IngestDataCache'
+import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { replaceStoryItem } from './integration/mos'
+import { MOSDeviceActions } from './ingest/mosDevice/actions';
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -243,14 +244,18 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	if (rundown && rundown.active && part.status === 'PLAY') {
 		return ClientAPI.responseError(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
-	const partCache = IngestDataCache.findOne(rundownId + '_fullStory' + partId)
+	const partCache = IngestDataCache.findOne({
+		rundownId: rundown._id,
+		partId: part.externalId,
+		type: IngestCacheType.PART
+	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
 	const piece = Pieces.findOne(pieceId)
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	return ClientAPI.responseSuccess(
 		// TODO: replace this with a general, non-MOS specific method
-		replaceStoryItem(rundown, piece, partCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
+		MOSDeviceActions.setPieceInOutPoint(rundown, piece, partCache.data as IngestPart, inPoint / 1000, duration / 1000) // MOS data is in seconds
 	)
 
 }

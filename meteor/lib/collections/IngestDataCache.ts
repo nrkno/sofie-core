@@ -2,12 +2,14 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration';
 
 export enum IngestCacheType {
 	RUNDOWN = 'rundown',
 	SEGMENT = 'segment',
 	PART = 'part',
 }
+export type IngestCacheData = IngestRundown | IngestSegment | IngestPart
 
 export interface IngestDataCacheObj {
 	_id: string,
@@ -19,7 +21,7 @@ export interface IngestDataCacheObj {
 	segmentId?: string,
 	partId?: string,
 
-	data: any
+	data: IngestCacheData
 }
 
 export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDataCacheObj>

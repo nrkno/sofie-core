@@ -163,6 +163,7 @@ export class Rundown implements DBRundown {
 		).fetch()
 	}
 	remove () {
+		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		Rundowns.remove(this._id)
 		Segments.remove({rundownId: this._id})
 		Parts.remove({rundownId: this._id})
@@ -170,49 +171,13 @@ export class Rundown implements DBRundown {
 		AdLibPieces.remove({ rundownId: this._id})
 		RundownBaselineItems.remove({ rundownId: this._id})
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id})
-		this.removeCache()
+		IngestDataCache.remove({ rundownId: this._id })
 	}
 	touch () {
 		if (getCurrentTime() - this.modified > 3600 * 1000 ) {
 			Rundowns.update(this._id, {$set: {modified: getCurrentTime()}})
 		}
 	}
-	// TODO: refactor or remove
-	// saveCache (cacheId: string, data: any) {
-	// 	if (!Meteor.isServer) throw new Meteor.Error('The "saveCache" method is available server-side only (sorry)')
-	// 	let id = this._id + '_' + cacheId
-	// 	IngestDataCache.upsert(id, {$set: {
-	// 		_id: id,
-	// 		rundownId: this._id,
-	// 		modified: getCurrentTime(),
-	// 		data: data
-	// 	}})
-	// }
-	removeCache (cacheId?: string) {
-		if (!Meteor.isServer) throw new Meteor.Error('The "removeCache" method is available server-side only (sorry)')
-		if (cacheId) {
-			// let id = this._id + '_' + cacheId
-			IngestDataCache.remove({
-				_id: cacheId,
-				rundownId: this._id
-			})
-		} else {
-			IngestDataCache.remove({
-				rundownId: this._id
-			})
-
-		}
-	}
-	// TODO: refactor:
-	// fetchCache (cacheId: string): any | null {
-	// 	if (!Meteor.isServer) throw new Meteor.Error('The "fetchCache" method is available server-side only (sorry)')
-	// 	let id = this._id + '_' + cacheId
-	// 	let c = IngestDataCache.findOne(id)
-	// 	if (c) {
-	// 		return c.data
-	// 	}
-	// 	return null
-	// }
 	getTimings () {
 		let timings: Array<{
 			time: Time,

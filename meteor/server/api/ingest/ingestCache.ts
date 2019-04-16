@@ -9,7 +9,7 @@ export function loadCachedRundownData (rundownId: string): IngestRundown {
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
-	if (!baseEntry) throw new Meteor.Error(500, 'Failed to find cached rundown')
+	if (!baseEntry) throw new Meteor.Error(404, 'Failed to find cached rundown')
 
 	const ingestRundown = baseEntry.data as IngestRundown
 
@@ -20,7 +20,7 @@ export function loadCachedRundownData (rundownId: string): IngestRundown {
 			const ingestSegment = segmentEntry.data as IngestSegment
 			_.each(objs, e => {
 				if (e.type === IngestCacheType.PART) {
-					ingestSegment.parts.push(e.data)
+					ingestSegment.parts.push(e.data as IngestSegment)
 				}
 			})
 			ingestRundown.segments.push(ingestSegment)
@@ -45,7 +45,7 @@ export function loadCachedIngestSegment (rundownId: string, segmentId: string): 
 
 	_.each(cacheEntries, e => {
 		if (e.type === IngestCacheType.PART) {
-			ingestSegment.parts.push(e.data)
+			ingestSegment.parts.push(e.data as IngestPart)
 		}
 	})
 

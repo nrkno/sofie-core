@@ -2,17 +2,20 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getRundown, getSegmentId } from '../lib'
+import { getStudioFromDevice, getRundown, getSegmentId, canBeUpdated } from '../lib'
 import { getMosRundownId, getMosPartId, getSegmentExternalId, fixIllegalObject } from './lib'
 import { literal } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, removeSegment } from '../rundownInput'
 import { loadCachedRundownData, saveRundownCache } from '../ingestCache'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Parts } from '../../../../lib/collections/Parts'
 import { ServerPlayoutAPI } from '../../playout'
+import { loadShowStyleBlueprints } from '../../blueprints/cache'
+import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleContext } from '../../blueprints/context'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -59,7 +62,7 @@ function groupedPartsToSegments (mosRundownId: MOS.MosString128, groupedParts: {
 	}))
 }
 
-export function handleMosRundownData (mosRundown: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, createFresh: boolean) {
+export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRundown: MOS.IMOSRunningOrder, createFresh: boolean) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
@@ -74,11 +77,12 @@ export function handleMosRundownData (mosRundown: MOS.IMOSRunningOrder, peripher
 		const partIds = _.map(stories, s => s.externalId)
 		const partCache = IngestDataCache.find({
 			rundownId: rundownId,
-			partId: { $in: partIds }
+			partId: { $in: partIds },
+			type: IngestCacheType.PART
 		}).fetch()
 
 		const partCacheMap: { [id: string]: IngestPart } = {}
-		_.each(partCache, p => partCacheMap[p._id] = p.data)
+		_.each(partCache, p => partCacheMap[p._id] = p.data as IngestPart)
 
 		_.each(stories, s => {
 			const cached = partCacheMap[s.partId]
@@ -100,6 +104,32 @@ export function handleMosRundownData (mosRundown: MOS.IMOSRunningOrder, peripher
 
 	handleUpdatedRundown(peripheralDevice, ingestRundown, createFresh ? 'mosCreate' : 'mosList')
 }
+export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, rundownData: MOS.IMOSRunningOrderBase) {
+	const studio = getStudioFromDevice(peripheralDevice)
+
+	const rundown = getRundown(getMosRundownId(studio, rundownData.ID))
+	if (!canBeUpdated(rundown)) return // TODO - more stuff in this file need this guard?
+
+	// Load the blueprint to process the data
+	const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+	if (!showStyleBase) throw new Meteor.Error(500, `Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`)
+	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+
+	// Load the cached RO Data
+	const ingestRundown = loadCachedRundownData(rundown._id)
+	ingestRundown.payload = rundownData
+	// TODO - verify this dosnt lose data, it was doing more work before
+
+	const blueprintContext = new ShowStyleContext(studio, rundown.showStyleBaseId, rundown.showStyleVariantId)
+	const blueprintRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
+
+	// Save the update
+	Rundowns.update(rundown._id, {
+		$set: blueprintRes.rundown
+	})
+	saveRundownCache(rundown._id, ingestRundown) // TODO - make this more lightweight?
+}
+
 export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
 	fixIllegalObject(story)
 	// @ts-ignore
@@ -130,7 +160,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	ingestPart.payload = story
 
 	// Need the raw id, not the hashed copy
-	const segmentId = getSegmentExternalId(story.RunningOrderId, ingestPart, cachedSegment.data.rank)
+	const segmentId = getSegmentExternalId(story.RunningOrderId, ingestPart, (cachedSegment.data as IngestSegment).rank)
 
 	// Update db with the full story:
 	handleUpdatedPart(peripheralDevice, story.RunningOrderId.toString(), segmentId, story.ID.toString(), ingestPart)

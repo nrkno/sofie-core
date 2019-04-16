@@ -3,6 +3,7 @@ import { getHash, getCurrentTime } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
+import { logger } from '../../logging';
 
 export function getRundownId (studio: Studio, externalId: string) {
 	return getHash(`${studio._id}_${externalId}`)
@@ -69,7 +70,10 @@ function updateDeviceLastDataReceived (deviceId: string) {
 
 export function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?: string) {
 	if (!rundown) return true
-	if (rundown.unsynced) return false
+	if (rundown.unsynced) {
+		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
+		return false
+	}
 
 	// TODO
 	return true
