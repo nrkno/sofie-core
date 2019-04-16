@@ -31,6 +31,8 @@ export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
+	updateDeviceLastDataReceived(peripheralDevice._id)
+
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
 	return studio
@@ -57,7 +59,7 @@ export function getPeripheralDeviceFromRundown (rundown: Rundown): PeripheralDev
 	return device
 }
 
-export function updateDeviceLastDataReceived (deviceId: string) {
+function updateDeviceLastDataReceived (deviceId: string) {
 	PeripheralDevices.update(deviceId, {
 		$set: {
 			lastDataReceived: getCurrentTime()

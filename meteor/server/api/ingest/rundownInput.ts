@@ -39,7 +39,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../l
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, updateDeviceLastDataReceived, getRundown, getStudioFromRundown, canBeUpdated } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, getStudioFromRundown, canBeUpdated } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
 const PackageInfo = require('../../../package.json')
 
@@ -121,7 +121,6 @@ export namespace RundownInput {
 }
 
 export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 	if (rundown) {
 		logger.info('Removing rundown ' + rundown._id)
@@ -136,11 +135,9 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	}
 }
 export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: any, dataSource: string) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
-	const ingestRundown: IngestRundown = mutateRundown(rundownData)
-
 	const studio = getStudioFromDevice(peripheralDevice)
 
+	const ingestRundown: IngestRundown = mutateRundown(rundownData)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
 	const existingDbRundown = Rundowns.findOne(rundownId)
@@ -357,7 +354,6 @@ export function removeSegment (segmentId: string): Promise<any> {
 	])
 }
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	if (canBeUpdated(rundown, segmentId)) {
@@ -365,11 +361,9 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	}
 }
 function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentData: any) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
-	const ingestSegment: IngestSegment = mutateSegment(segmentData)
-
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 
+	const ingestSegment: IngestSegment = mutateSegment(segmentData)
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 
 	if (!canBeUpdated(rundown, segmentId)) return
@@ -470,8 +464,6 @@ export function updateSegmentFromIngestData (
 // }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
-
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, partExternalId)
@@ -493,7 +485,6 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newStory: any) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)

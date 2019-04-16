@@ -16,7 +16,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import { Studio } from '../../../lib/collections/Studios'
 import { setMeteorMethods, Methods } from '../../methods'
-import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown, canBeUpdated } from '../ingest/lib'
+import { getStudioFromDevice, getRundown, canBeUpdated } from '../ingest/lib'
 import { handleRemovedRundown } from '../ingest/rundownInput'
 import { getMosRundownId, getMosPartId } from '../ingest/mosDevice/lib'
 import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories } from '../ingest/mosDevice/ingest'
@@ -105,7 +105,6 @@ export namespace MosIntegration {
 		logger.debug(rundownData)
 		let rundown = getRO(studio, rundownData.ID)
 		if (!isAvailableForMOS(rundown)) return
-		updateDeviceLastDataReceived(peripheralDevice._id)
 
 		let m: Partial<DBRundown> = {}
 		if (rundownData.MosExternalMetaData) m.metaData = rundownData.MosExternalMetaData
@@ -146,8 +145,6 @@ export namespace MosIntegration {
 		const rundown = getRundown(getMosRundownId(studio, status.ID))
 		if (!canBeUpdated(rundown)) return
 
-		updateDeviceLastDataReceived(peripheralDevice._id)
-
 		Rundowns.update(rundown._id, {$set: {
 			status: status.Status
 		}})
@@ -160,8 +157,6 @@ export namespace MosIntegration {
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundown(getMosRundownId(studio, status.ID))
 		if (!canBeUpdated(rundown)) return
-
-		updateDeviceLastDataReceived(peripheralDevice._id)
 
 		// Save Stories (aka Part ) status into database:
 		const part = Parts.findOne({
@@ -181,51 +176,6 @@ export namespace MosIntegration {
 		logger.debug(Action, Stories)
 
 		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
-
-		// TODO - update next
-
-		// const studio = getStudioFromDevice(peripheralDevice)
-
-		// let rundown = getRO(studio, Action.RunningOrderID)
-		// if (!isAvailableForMOS(rundown)) return
-		// updateDeviceLastDataReceived(peripheralDevice._id)
-
-		// // @ts-ignore		logger.debug(
-		// logger.debug(Action, Stories)
-		// // insert a story (aka Part) before another story:
-		// let partAfter = (Action.StoryID ? getPart(studio, Action.RunningOrderID, Action.StoryID) : null)
-
-		// // let newRankMax
-		// // let newRankMin
-		// let partBeforeOrLast: DBPart | undefined = (
-		// 	partAfter ?
-		// 		fetchBefore(Parts,
-		// 			{ rundownId: rundown._id },
-		// 			partAfter._rank
-		// 		) :
-		// 		fetchBefore(Parts,
-		// 			{ rundownId: rundown._id },
-		// 			null
-		// 		)
-		// )
-		// let affectedPartIds: Array<string> = []
-		// let firstInsertedPart: DBPart | undefined
-		// _.each(Stories, (story: MOS.IMOSROStory, i: number) => {
-		// 	logger.info('insert story ' + story.ID)
-		// 	let rank = getRank(partBeforeOrLast, partAfter, i, Stories.length)
-		// 	// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-		// 	let part = upsertPart(story, rundown._id, rank)
-		// 	affectedPartIds.push(part._id)
-		// 	if (!firstInsertedPart) firstInsertedPart = part
-		// })
-
-		// if (partAfter && rundown.nextPartId === partAfter._id && firstInsertedPart && !rundown.nextPartManual) {
-		// 	// Move up next-point to the first inserted part
-		// 	ServerPlayoutAPI.rundownSetNext(rundown._id, firstInsertedPart._id)
-		// }
-
-		// updateSegments(rundown._id)
-		// updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRoStoryReplace (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -235,46 +185,6 @@ export namespace MosIntegration {
 
 		// TODO - test
 		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
-
-		// TODO - update next
-
-		// const studio = getStudioFromDevice(peripheralDevice)
-
-		// let rundown = getRO(studio, Action.RunningOrderID)
-		// if (!isAvailableForMOS(rundown)) return
-		// updateDeviceLastDataReceived(peripheralDevice._id)
-		// // @ts-ignore
-		// logger.debug(Action, Stories)
-		// // Replace a Story (aka a Part) with one or more Stories
-		// let partToReplace = getPart(studio, Action.RunningOrderID, Action.StoryID)
-
-		// let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, partToReplace._rank)
-		// let partAfter = fetchAfter(Parts, { rundownId: rundown._id }, partToReplace._rank)
-
-		// let affectedPartIds: Array<string> = []
-
-		// let insertedPartIds: {[id: string]: boolean} = {}
-		// let firstInsertedPart: DBPart | undefined
-		// _.each(Stories, (story: MOS.IMOSROStory, i: number) => {
-		// 	logger.info('insert story ' + story.ID)
-		// 	let rank = getRank(partBefore, partAfter, i, Stories.length)
-		// 	let part = upsertPart(story, rundown._id, rank)
-		// 	insertedPartIds[part._id] = true
-		// 	affectedPartIds.push(part._id)
-		// 	if (!firstInsertedPart) firstInsertedPart = part
-
-		// })
-
-		// updateSegments(rundown._id)
-
-		// if (!insertedPartIds[partToReplace._id]) {
-		// 	// ok, the part to replace wasn't in the inserted parts
-		// 	// remove it then:
-		// 	affectedPartIds.push(partToReplace._id)
-		// 	removePart(rundown._id, partToReplace, firstInsertedPart)
-		// }
-
-		// updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -283,7 +193,6 @@ export namespace MosIntegration {
 		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 
 		// TODO - update next etc
-
 
 		// // Move Stories (aka Part ## TODO ##Lines) to before a story
 
@@ -343,8 +252,6 @@ export namespace MosIntegration {
 		logger.info('mosRoStoryDelete ' + Action.RunningOrderID)
 
 		handleMosDeleteStory(peripheralDevice, Action.RunningOrderID, Stories)
-
-		// TODO - update next
 	}
 	export function mosRoStorySwap (id: string, token: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -352,34 +259,6 @@ export namespace MosIntegration {
 
 		// TODO - test
 		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
-
-		// TODO - update next
-
-		// const studio = getStudioFromDevice(peripheralDevice)
-
-		// let rundown = getRO(studio, Action.RunningOrderID)
-		// if (!isAvailableForMOS(rundown)) return
-		// updateDeviceLastDataReceived(peripheralDevice._id)
-		// // @ts-ignore
-		// logger.debug(Action, StoryID0, StoryID1)
-		// // Swap Stories (aka Part)
-
-		// let part0 = getPart(studio, Action.RunningOrderID, StoryID0)
-		// let part1 = getPart(studio, Action.RunningOrderID, StoryID1)
-
-		// Parts.update(part0._id, {$set: {_rank: part1._rank}})
-		// Parts.update(part1._id, {$set: {_rank: part0._rank}})
-
-		// if (rundown.nextPartId === part0._id) {
-		// 	// Change nexted part
-		// 	ServerPlayoutAPI.rundownSetNext(rundown._id, part1._id)
-		// } else if (rundown.nextPartId === part1._id) {
-		// 	// Change nexted part
-		// 	ServerPlayoutAPI.rundownSetNext(rundown._id, part0._id)
-		// }
-
-		// updateSegments(rundown._id)
-		// updateAffectedParts(rundown, [part0._id, part1._id])
 	}
 	export function mosRoReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -387,10 +266,8 @@ export namespace MosIntegration {
 		logger.debug(Action)
 
 		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundown(getMosRundownId(studio, status.ID))
+		const rundown = getRundown(getMosRundownId(studio, Action.ID))
 		if (!canBeUpdated(rundown)) return
-
-		updateDeviceLastDataReceived(peripheralDevice._id)
 
 		// Set the ready to air status of a Rundown
 		Rundowns.update(rundown._id, {$set: {

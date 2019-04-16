@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown, getSegmentId } from '../lib'
+import { getStudioFromDevice, getRundown, getSegmentId } from '../lib'
 import { getMosRundownId, getMosPartId, getSegmentExternalId, fixIllegalObject } from './lib'
 import { literal } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
@@ -11,6 +11,8 @@ import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, r
 import { loadCachedRundownData, saveRundownCache } from '../ingestCache'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
+import { Parts, Part } from '../../../../lib/collections/Parts';
+import { ServerPlayoutAPI } from '../../playout';
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -134,7 +136,6 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	handleUpdatedPart(peripheralDevice, story.RunningOrderId.toString(), segmentId, story.ID.toString(), ingestPart)
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, stories: Array<MOS.MosString128>) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundown = getRundown(getMosRundownId(studio, rundownId))
 
@@ -164,7 +165,6 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 	return ingestParts
 }
 export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, previousPartId: MOS.MosString128, removePrevious: boolean, newStories: MOS.IMOSROStory[]) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundown = getRundown(getMosRundownId(studio, rundownId))
 
@@ -177,15 +177,39 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId
 
 	// Update parts list with the changes
 	const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true))
-	ingestParts.splice(oldIndex + 1, 0, ...newParts)
+	ingestParts.splice(oldIndex, 0, ...newParts)
 	if (removePrevious) {
 		ingestParts.splice(oldIndex, 1)
 	}
 
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [previousPartIdStr], _.map(newParts, p => p.externalId))
+	const newPartIds = _.map(newParts, p => p.externalId)
+	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [previousPartIdStr], newPartIds)
+
+	// Update next if we inserted before the part that is next
+	// Note: the case where we remove the previous line is handled inside diffAndApplyChanges
+	if (!removePrevious && !rundown.nextPartManual && rundown.nextPartId) {
+		const previousPart = Parts.findOne({
+			rundownId: rundown._id,
+			externalId: previousPartIdStr
+		})
+		if (previousPart && rundown.nextPartId === previousPart._id) {
+			const newNextPart = Parts.findOne({
+				rundownId: rundown._id,
+				externalId: { $in: newPartIds },
+				_rank: { $gt: previousPart._rank }
+			}, {
+				sort: {
+					rank: 1
+				}
+			})
+			if (newNextPart) {
+				// Move up next-point to the first inserted part
+				ServerPlayoutAPI.rundownSetNext(rundown._id, newNextPart._id)
+			}
+		}
+	}
 }
 export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, story0: MOS.MosString128, story1: MOS.MosString128) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundown = getRundown(getMosRundownId(studio, rundownId))
 
@@ -206,9 +230,25 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId
 
 	// TODO - is this id usage correct?
 	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [], [story0.toString(), story1.toString()])
+
+	// Update next
+	if (!rundown.nextPartManual && rundown.nextPartId) {
+		const parts = Parts.find({
+			rundownId: rundown._id,
+			externalId: { $in: [ story0.toString(), story1.toString() ] }
+		}).fetch()
+		const nextPart = parts.find(p => p._id === rundown.nextPartId)
+		// One of the swapped was next so it should now be the other
+		if (nextPart) {
+			// Find the first part from the other Story (could be multiple)
+			const newNextPart = _.sortBy(parts, p => p._rank).find(p => p.externalId !== nextPart.externalId)
+			if (newNextPart) {
+				ServerPlayoutAPI.rundownSetNext(rundown._id, newNextPart._id)
+			}
+		}
+	}
 }
 export function handleMoveStories (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, insertBefore: MOS.MosString128, stories: MOS.MosString128[]) {
-	updateDeviceLastDataReceived(peripheralDevice._id)
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundown = getRundown(getMosRundownId(studio, rundownId))
 
@@ -260,9 +300,20 @@ function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundo
 	for (const i of segmentDiff.changed) {
 		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])
 	}
+
+	// Ensure the next-id is still valid
+	if (rundown.nextPartId) {
+		const nextPart = Parts.findOne({
+			rundownId: rundown._id,
+			_id: rundown.nextPartId
+		})
+		if (!nextPart) {
+			// TODO finish this
+		}
+	}
 }
 
-interface SegmentEntry {
+export interface SegmentEntry {
 	name: string
 	parts: string[]
 }
@@ -274,7 +325,7 @@ function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[]
 }
 
 // TODO - this really needs some tests...
-function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[], removedIds: string[], insertedIds: string[]) {
+export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[], removedIds: string[], insertedIds: string[]) {
 	const rankChanged: number[] = [] // New index
 	const unchanged: number[] = [] // New index
 	const removed: number[] = [] // Old index
