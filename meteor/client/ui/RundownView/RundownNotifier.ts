@@ -82,7 +82,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					// console.log('RundownViewNotifier 1-1')
 					if (showStyleBase && studio) {
 						this.reactiveMediaStatus(rRundownId, showStyleBase, studio)
-						this.reactiveSLNotes(rRundownId)
+						this.reactivePartNotes(rRundownId)
 						this.reactivePeripheralDeviceStatus(studio._id)
 					} else {
 						this.cleanUpMediaStatus()
@@ -244,7 +244,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveSLNotes (rRundownId: string) {
+	private reactivePartNotes (rRundownId: string) {
 		const t = i18nTranslator
 
 		let oldNoteIds: Array<string> = []
