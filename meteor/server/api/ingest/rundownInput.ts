@@ -569,7 +569,7 @@ function generateSegmentContents (
 		const existingPart = _.find(existingParts, p => p._id === partId)
 		const part = literal<DBPart>({
 			// TODO - priorities of these are wrong?
-			...(existingPart || {}),
+			..._.omit(existingPart || {}, 'invalid'),
 			...blueprintPart.part,
 			_id: partId,
 			rundownId: rundownId,

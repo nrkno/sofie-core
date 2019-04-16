@@ -15,38 +15,22 @@ import {
 } from '../../../lib/collections/Rundowns'
 import {
 	Part,
-	Parts,
-	DBPart
+	Parts
 } from '../../../lib/collections/Parts'
 import {
 	Piece,
 } from '../../../lib/collections/Pieces'
-import {
-	fetchBefore,
-	getRank,
-	fetchAfter,
-} from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-
 import { Studio } from '../../../lib/collections/Studios'
-import {
-	ServerPlayoutAPI,
-} from '../playout'
 import {
 	setMeteorMethods,
 	Methods
 } from '../../methods'
-import {
-	updateSegments,
-	updateAffectedParts,
-	removePart,
-} from '../rundown'
-import { NoteType } from '../../../lib/api/notes'
 import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown } from '../ingest/lib'
 import { handleRemovedRundown } from '../ingest/rundownInput'
 import { getMosRundownId, getMosPartId } from '../ingest/mosDevice/lib'
-import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories } from '../ingest/mosDevice/ingest'
+import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories } from '../ingest/mosDevice/ingest'
 
 /**
  * Returns a Rundown, throws error if not found
@@ -55,72 +39,6 @@ import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleI
 function getRO (studio: Studio, rundownID: MOS.MosString128): Rundown {
 	return getRundown(getMosRundownId(studio, rundownID))
 }
-/**
- * Returns a Part (aka an Item), throws error if not found
- * @param rundownId
- * @param partId
- */
-function getPart (studio: Studio, rundownID: MOS.MosString128, storyID: MOS.MosString128): Part {
-	let id = getMosPartId(getMosRundownId(studio, rundownID), storyID)
-	let part = Parts.findOne({
-		rundownId: getMosRundownId(studio, rundownID),
-		_id: id
-	})
-	if (part) {
-		return part
-	} else {
-		let rundown = getRO(studio, rundownID)
-		if (rundown) {
-			rundown.appendNote({
-				type: NoteType.ERROR,
-				message: 'There was an error when receiving MOS-data. This might be fixed by triggering a "Reload ENPS Data".',
-				origin: {
-					name: rundown.name,
-					rundownId: rundown._id
-				}
-			})
-		}
-		throw new Meteor.Error(404, 'Part ' + id + ' not found (rundown: ' + rundownID + ', story: ' + storyID + ')')
-	}
-}
-
-// /**
-//  * Converts an Item into a Part
-//  * @param item MOS Item
-//  * @param rundownId Rundown id of the item
-//  * @param segmentId Segment / Story id of the item
-//  * @param rank Rank of the story
-//  */
-// function convertToPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
-// 	return {
-// 		_id: getMosPartId(rundownId, story.ID),
-// 		rundownId: rundownId,
-// 		segmentId: '', // to be coupled later
-// 		_rank: rank,
-// 		externalId: story.ID.toString(),
-// 		title: (story.Slug || '').toString(),
-// 		typeVariant: ''
-// 		// expectedDuration: item.EditorialDuration,
-// 		// autoNext: item.Trigger === ??
-// 	}
-// }
-// /**
-//  * Insert a new Part (aka an Item)
-//  * @param item The item to be inserted
-//  * @param rundownId The id of the Rundown
-//  * @param segmentId The id of the Segment / Story
-//  * @param rank The new rank of the Part
-//  */
-// function upsertPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
-// 	let part = convertToPart(story, rundownId, rank)
-// 	Parts.upsert(part._id, {$set: part}) // insert, or update
-// 	afterInsertUpdatePart(story, rundownId)
-// 	return part
-
-// }
-// function afterInsertUpdatePart (story: MOS.IMOSStory, rundownId: string) {
-// 	// nothing
-// }
 
 function formatDuration (duration: any): number | undefined {
 	try {
@@ -272,7 +190,7 @@ export namespace MosIntegration {
 		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in rundown ' + status.RunningOrderId + ' not found')
 	}
 	export function mosRoStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryInsert after ' + Action.StoryID)
 		// @ts-ignore
 		logger.debug(Action, Stories)
@@ -330,6 +248,7 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
+		// TODO - test
 		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
 
 		// TODO - update next
@@ -373,69 +292,74 @@ export namespace MosIntegration {
 		// updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.warn ('mosRoStoryMove ' + Action.StoryID)
 
-		const studio = getStudioFromDevice(peripheralDevice)
+		// TODO - test
+		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 
-		let rundown = getRO(studio, Action.RunningOrderID)
-		if (!isAvailableForMOS(rundown)) return
-		updateDeviceLastDataReceived(peripheralDevice._id)
-		// @ts-ignore
-		logger.debug(Action, Stories)
+		// TODO - update next etc
 
-		// Move Stories (aka Part ## TODO ##Lines) to before a story
+		// const studio = getStudioFromDevice(peripheralDevice)
 
-		let currentPart: Part | undefined = undefined
-		let onAirNextWindowWidth: number | undefined = undefined
-		let nextPosition: number | undefined = undefined
-		if (rundown.currentPartId) {
-			let nextPart: Part | undefined = undefined
-			currentPart = Parts.findOne(rundown.currentPartId)
-			if (rundown.nextPartId) nextPart = Parts.findOne(rundown.nextPartId)
-			if (currentPart) {
-				const parts = rundown.getParts({
-					_rank: _.extend({
-						$gte: currentPart._rank
-					}, nextPart ? {
-						$lte: nextPart._rank
-					} : {})
-				})
-				onAirNextWindowWidth = parts.length
-			}
-		} else if (rundown.nextPartId) {
-			let nextPart: Part | undefined = undefined
-			nextPart = Parts.findOne(rundown.nextPartId)
-			if (nextPart) {
-				const parts = rundown.getParts({
-					_rank: {
-						$lte: nextPart._rank
-					}
-				})
-				nextPosition = parts.length
-			}
-		}
+		// let rundown = getRO(studio, Action.RunningOrderID)
+		// if (!isAvailableForMOS(rundown)) return
+		// updateDeviceLastDataReceived(peripheralDevice._id)
+		// // @ts-ignore
+		// logger.debug(Action, Stories)
 
-		let partAfter = (Action.StoryID ? getPart(studio, Action.RunningOrderID, Action.StoryID) : null)
-		let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, (partAfter ? partAfter._rank : null))
+		// // Move Stories (aka Part ## TODO ##Lines) to before a story
 
-		// console.log('Inserting between: ' + (partBefore ? partBefore._rank : 'X') + ' - ' + partAfter._rank)
+		// let currentPart: Part | undefined = undefined
+		// let onAirNextWindowWidth: number | undefined = undefined
+		// let nextPosition: number | undefined = undefined
+		// if (rundown.currentPartId) {
+		// 	let nextPart: Part | undefined = undefined
+		// 	currentPart = Parts.findOne(rundown.currentPartId)
+		// 	if (rundown.nextPartId) nextPart = Parts.findOne(rundown.nextPartId)
+		// 	if (currentPart) {
+		// 		const parts = rundown.getParts({
+		// 			_rank: _.extend({
+		// 				$gte: currentPart._rank
+		// 			}, nextPart ? {
+		// 				$lte: nextPart._rank
+		// 			} : {})
+		// 		})
+		// 		onAirNextWindowWidth = parts.length
+		// 	}
+		// } else if (rundown.nextPartId) {
+		// 	let nextPart: Part | undefined = undefined
+		// 	nextPart = Parts.findOne(rundown.nextPartId)
+		// 	if (nextPart) {
+		// 		const parts = rundown.getParts({
+		// 			_rank: {
+		// 				$lte: nextPart._rank
+		// 			}
+		// 		})
+		// 		nextPosition = parts.length
+		// 	}
+		// }
 
-		let affectedPartIds: Array<string> = []
-		if (partAfter) affectedPartIds.push(partAfter._id)
-		if (partBefore) affectedPartIds.push(partBefore._id)
-		_.each(Stories, (storyId: MOS.MosString128, i: number) => {
-			let rank = getRank(partBefore, partAfter, i, Stories.length)
-			Parts.update(getMosPartId(rundown._id, storyId), {$set: {
-				_rank: rank
-			}})
-		})
+		// let partAfter = (Action.StoryID ? getPart(studio, Action.RunningOrderID, Action.StoryID) : null)
+		// let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, (partAfter ? partAfter._rank : null))
 
-		updateSegments(rundown._id)
-		updateAffectedParts(rundown, affectedPartIds)
+		// // console.log('Inserting between: ' + (partBefore ? partBefore._rank : 'X') + ' - ' + partAfter._rank)
 
-		// Meteor.call('playout_storiesMoved', rundown._id, onAirNextWindowWidth, nextPosition)
-		ServerPlayoutAPI.rundownStoriesMoved(rundown._id, onAirNextWindowWidth, nextPosition)
+		// let affectedPartIds: Array<string> = []
+		// if (partAfter) affectedPartIds.push(partAfter._id)
+		// if (partBefore) affectedPartIds.push(partBefore._id)
+		// _.each(Stories, (storyId: MOS.MosString128, i: number) => {
+		// 	let rank = getRank(partBefore, partAfter, i, Stories.length)
+		// 	Parts.update(getMosPartId(rundown._id, storyId), {$set: {
+		// 		_rank: rank
+		// 	}})
+		// })
+
+		// updateSegments(rundown._id)
+		// updateAffectedParts(rundown, affectedPartIds)
+
+		// // Meteor.call('playout_storiesMoved', rundown._id, onAirNextWindowWidth, nextPosition)
+		// ServerPlayoutAPI.rundownStoriesMoved(rundown._id, onAirNextWindowWidth, nextPosition)
 	}
 	export function mosRoStoryDelete (id: string, token: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -446,9 +370,10 @@ export namespace MosIntegration {
 		// TODO - update next
 	}
 	export function mosRoStorySwap (id: string, token: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
 
+		// TODO - test
 		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 
 		// TODO - update next

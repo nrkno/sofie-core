@@ -50,7 +50,7 @@ function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string, parts:
 }
 function groupedPartsToSegments (mosRundownId: MOS.MosString128, groupedParts: { name: string, parts: IngestPart[]}[]): IngestSegment[] {
 	return _.map(groupedParts, (grp, i) => literal<IngestSegment>({
-		externalId: getSegmentExternalId(mosRundownId, grp.parts[0]),
+		externalId: getSegmentExternalId(mosRundownId, grp.parts[0], i),
 		name: grp.name,
 		rank: i,
 		parts: grp.parts,
@@ -103,6 +103,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	// @ts-ignore
 	// logger.debug(story)
 
+	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getMosRundownId(studio, story.RunningOrderId)
 	const partId = getMosPartId(rundownId, story.ID)
 	const cachedPart = IngestDataCache.findOne({
@@ -113,38 +114,26 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	if (!cachedPart || !cachedPart.segmentId) {
 		throw new Meteor.Error(500, 'Got MOSFullStory for an unknown Part')
 	}
+	const cachedSegment = IngestDataCache.findOne({
+		rundownId: rundownId,
+		segmentId: cachedPart.segmentId,
+		type: IngestCacheType.SEGMENT,
+	})
+	if (!cachedSegment) {
+		throw new Meteor.Error(500, 'Got MOSFullStory for an unknown Segment')
+	}
 
 	const ingestPart = cachedPart.data as IngestPart
 	ingestPart.name = story.Slug ? story.Slug.toString() : ''
 	ingestPart.payload = story
 
-	const segmentId = getSegmentExternalId(story.RunningOrderId, ingestPart)
+	// Need the raw id, not the hashed copy
+	const segmentId = getSegmentExternalId(story.RunningOrderId, ingestPart, cachedSegment.data.rank)
 
 	// Update db with the full story:
 	handleUpdatedPart(peripheralDevice, story.RunningOrderId.toString(), segmentId, story.ID.toString(), ingestPart)
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, stories: Array<MOS.MosString128>) {
-	// const studio = getStudioFromDevice(peripheralDevice)
-	// const rundownId = getMosRundownId(studio, roExternalId)
-	// const partIds = _.map(stories, s => getMosPartId(rundownId, s))
-
-	// const cachedParts = IngestDataCache.find({
-	// 	rundownId: rundownId,
-	// 	partId: { $in: partIds },
-	// 	type: IngestCacheType.PART,
-	// }).fetch()
-
-	// // const affectedSegments = []
-	// _.each(cachedParts, p => {
-	// 	const ingestPart = p.data as IngestPart
-	// 	const segmentId = getSegmentExternalId(roExternalId, ingestPart)
-	// 	handleRemovedPart(peripheralDevice, roExternalId.toString(), segmentId, ingestPart.externalId)
-	// 	// affectedSegments.push(segmentId)
-	// 	// TODO - performance could be improved by batching this better?
-	// })
-
-	// // TODO - update segments. eg, remove/combine
-
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundown = getRundown(getMosRundownId(studio, rundownId))
@@ -159,66 +148,6 @@ export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, rundow
 
 	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, filteredParts, storyIds, [])
 }
-// export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, previousPartId: MOS.MosString128, removePrevious: boolean, newStories: MOS.IMOSROStory[]) {
-// 	updateDeviceLastDataReceived(peripheralDevice._id)
-// 	const studio = getStudioFromDevice(peripheralDevice)
-// 	const rundown = getRundown(getMosRundownId(studio, rundownId))
-
-// 	const partId = getMosPartId(rundown._id, previousPartId)
-// 	const cachedPart = IngestDataCache.findOne({
-// 		rundownId: rundown._id,
-// 		partId: partId,
-// 		type: IngestCacheType.PART,
-// 	})
-// 	if (!cachedPart || !cachedPart.segmentId) {
-// 		throw new Meteor.Error(500, 'Got MOSFullStory for an unknown Part')
-// 	}
-
-// 	if (!canBeUpdated(rundown, cachedPart.segmentId, partId)) return
-
-// 	const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true))
-// 	const groupedNewParts = groupIngestParts(newParts)
-
-// 	// Blueprints will handle the changes
-// 	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, cachedPart.segmentId)
-// 	let oldIndex = ingestSegment.parts.findIndex(p => p.externalId === previousPartId.toString())
-// 	if (oldIndex === -1) throw new Meteor.Error(404, `Failed to find part ${previousPartId}`)
-
-// 	const removeCount = removePrevious ? 1 : 0
-// 	if (!removePrevious) oldIndex += 1
-
-// 	if (groupedNewParts[0].name === ingestSegment.name) {
-// 		// Replace if same segment name
-// 		ingestSegment.parts.splice(oldIndex, removeCount, ...groupedNewParts[0].parts)
-// 	} else {
-// 		// Just remove if different name
-// 		ingestSegment.parts.splice(oldIndex, removeCount)
-// 	}
-
-// 	// Update ranks
-// 	_.each(ingestSegment.parts, (p, i) => p.rank = i)
-
-// 	// Process new data
-// 	saveSegmentCache(rundown._id, ingestSegment.externalId, ingestSegment)
-// 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
-
-// 	// If there are more stories, then update following segments
-// 	if (groupedNewParts.length > 0) {
-// 		// const nextIngestSegment = IngestDataCache.findOne({
-// 		// 	rundownId: rundown._id,
-// 		// 	type: IngestCacheType.SEGMENT,
-// 		// })
-
-// 		// Now update with the rest of the stories
-// 		for (let i = 1; i < groupedNewParts.length; i++) {
-// 			const isLast = i === groupedNewParts.length - 1
-
-// 			// TODO
-// 		}
-
-// 		throw new Meteor.Error(500, 'not implemented')
-// 	}
-// }
 
 function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngestPart[] {
 	const ingestParts: AnnotatedIngestPart[] = []
@@ -278,6 +207,31 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId
 	// TODO - is this id usage correct?
 	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [], [story0.toString(), story1.toString()])
 }
+export function handleMoveStories (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, insertBefore: MOS.MosString128, stories: MOS.MosString128[]) {
+	updateDeviceLastDataReceived(peripheralDevice._id)
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundown = getRundown(getMosRundownId(studio, rundownId))
+
+	const ingestRundown = loadCachedRundownData(rundown._id)
+	const ingestParts = getAnnotatedIngestParts(ingestRundown)
+
+	// Get story data
+	const storyIds = _.map(stories, s => s.toString())
+	const movingParts = _.sortBy(ingestParts.filter(p => storyIds.indexOf(p.externalId) !== -1), p => storyIds.indexOf(p.externalId))
+
+	const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
+
+	// Find insert point
+	const insertBeforeStr = insertBefore ? insertBefore.toString() || '' : ''
+	const insertIndex = insertBeforeStr !== '' ? filteredParts.findIndex(p => p.externalId === insertBeforeStr) : filteredParts.length
+	if (insertIndex === -1) throw new Meteor.Error(404, `Failed to find story ${insertBefore}`)
+
+	// Reinsert parts
+	filteredParts.splice(insertIndex, 0, ...movingParts)
+
+	// TODO - is this id usage correct?
+	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [], storyIds)
+}
 
 function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundown: Rundown, ingestRundown: IngestRundown, ingestParts: AnnotatedIngestPart[], removedIds: string[], insertedIds: string[]) {
 	// Save the new parts list
@@ -293,16 +247,16 @@ function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundo
 	newIngestRundown.segments = ingestSegments
 	saveRundownCache(rundown._id, newIngestRundown)
 
-	// Update changed segments
-
-	// Update ranks
+	// Update segment ranks
 	// TODO
 
+	// Remove old segments
 	for (const i of segmentDiff.removed) {
 		const segmentId = getSegmentId(rundown._id, ingestRundown.segments[i].externalId)
 		// TODO - batch promise?
 		removeSegment(segmentId)
 	}
+	// Create/Update segments
 	for (const i of segmentDiff.changed) {
 		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])
 	}

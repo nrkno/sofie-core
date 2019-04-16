@@ -40,7 +40,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 	const context = new StudioConfigContext(studio)
 
 	const studioBlueprint = loadStudioBlueprints(studio)
-	if (studioBlueprint) {
+	if (studioBlueprint && studioBlueprint.getShowStyleId) {
 		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRundown)
 		showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
 		if (showStyleId === null || !showStyleBase) {

@@ -15,9 +15,8 @@ export function getMosPartId (rundownId: string, partMosId: MOS.MosString128) {
 	return getPartId(rundownId, partMosId.toString())
 }
 
-export function getSegmentExternalId (rundownId: MOS.MosString128, ingestPart: IngestPart) {
-	// TODO - this is not unique enough. multiple segments could have the same name
-	return `${rundownId.toString()}_${ingestPart.name.split(';')[0]}`
+export function getSegmentExternalId (rundownId: MOS.MosString128, ingestPart: IngestPart, rank: number) {
+	return `${rundownId.toString()}_${ingestPart.name.split(';')[0]}_${rank}`
 }
 
 export function fixIllegalObject (o: any) {
