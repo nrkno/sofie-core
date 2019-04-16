@@ -246,8 +246,8 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	} | undefined = undefined
 	if (blueprint.minimumCoreVersion) {
 		coreStatus = checkDatabaseVersion(
-			parseVersion(blueprint.minimumCoreVersion),
 			parseVersion(CURRENT_SYSTEM_VERSION),
+			parseExpectedVersion(blueprint.minimumCoreVersion),
 			'Blueprint does not support this version of core',
 			'blueprint.minimumCoreVersion',
 			'core system'
