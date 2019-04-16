@@ -20,12 +20,38 @@ export interface StatusObject {
 	statusCode: StatusCode,
 	messages?: Array<string>
 }
+/*
+// TODO: Refactor into this?
+export enum DeviceCategory {
+	SUBDEVICE = 'subdevice',
+	INGEST = 'ingest',
+	PLAYOUT = 'playout',
+	MEDIA_MANAGER = 'media_manager'
+}
+export enum DeviceType {
+	// Main devices:
+	MOS_GATEWAY = 'mos_gateway',
+	SPREADSHEET_GATEWAY = 'spreadsheet_gateway',
 
+	PLAYOUT_GATEWAY = 'playout_gateway',
+
+	MEDIA_MANAGER = 'media_manager',
+
+	// Sub-devices:
+	MOS_CONNECTION = 'mos_connection',
+
+	TSR_CASPARCG = 'tsr_casparcg',
+	TSR_ATEM = 'tsr_atem',
+	TSR_HTTPSEND = 'tsr_httpsend',
+	//etc..
+}
+*/
 export enum DeviceType {
 	MOSDEVICE = 0,
 	PLAYOUT = 1,
 	OTHER = 2, // i.e. sub-devices
 	MEDIA_MANAGER = 3,
+	SPREADSHEET = 4,
 }
 export interface InitOptions {
 	type: DeviceType
