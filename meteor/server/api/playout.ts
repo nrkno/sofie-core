@@ -79,8 +79,7 @@ import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { setMeteorMethods, Methods } from '../methods'
-import { updateParts, reloadRundownData } from './rundown'
-import { runPostProcessBlueprint } from '../../server/api/rundown'
+import { updateParts } from './rundown'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
 import {
@@ -508,16 +507,16 @@ export namespace ServerPlayoutAPI {
 	}
 	function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 		const rundown = new Rundown(dbRundown)
-		// TODO
+		// TODO reimplement
 		const story = {} // rundown.fetchCache(CachePrefix.INGEST_PART + dbPart._id)
 		const part = new Part(dbPart)
-		updateStory(rundown, part, story)
+		// updateStory(rundown, part, story)
 
-		const segment = part.getSegment()
-		if (segment) {
-			// this could be run after the segment, if we were capable of limiting that
-			runPostProcessBlueprint(rundown, segment)
-		}
+		// const segment = part.getSegment()
+		// if (segment) {
+		// 	// this could be run after the segment, if we were capable of limiting that
+		// 	runPostProcessBlueprint(rundown, segment)
+		// }
 
 		const prevLine = getPreviousPart(dbRundown, part)
 		updateSourceLayerInfinitesAfterLine(rundown, prevLine)

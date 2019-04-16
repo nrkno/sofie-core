@@ -45,7 +45,8 @@ export function getStudioFromRundown (rundown: Rundown): Studio {
 }
 export function getRundown (rundownId: string): Rundown {
 	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
+	if (!rundown) throw new Meteor.Error(404, 'Rundown ' + rundownId + ' not found')
+	rundown.touch()
 	return rundown
 }
 export function getPeripheralDeviceFromRundown (rundown: Rundown): PeripheralDevice {

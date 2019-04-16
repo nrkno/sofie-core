@@ -1,10 +1,12 @@
+import * as MOS from 'mos-connection'
 import { logger } from '../../../logging'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { check } from 'meteor/check'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { Part } from '../../../../lib/collections/Parts'
+import { handleMosRundownData } from './ingest'
 
 export namespace MOSDeviceActions {
 	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => void = Meteor.wrapAsync(
@@ -24,10 +26,10 @@ export namespace MOSDeviceActions {
 					cb(err)
 				} else {
 					try {
-						logger.info('triggerGetRundown reply ' + rundown.ID)
-						logger.debug(rundown)
+						logger.info('triggerGetRundown reply ' + mosRunningOrder.ID)
+						logger.debug(mosRunningOrder)
 
-						handleRundownData(mosRunningOrder, peripheralDevice, false)
+						handleMosRundownData(mosRunningOrder, peripheralDevice, false)
 						cb(null)
 					} catch (e) {
 						cb(e)
@@ -39,24 +41,21 @@ export namespace MOSDeviceActions {
 	export function notifyCurrentPlayingPart (
 		peripheralDevice: PeripheralDevice,
 		rundown: Rundown,
-		oldPlayingPart,
-		newPlayingPart
+		oldPlayingPart: Part | undefined,
+		newPlayingPart: Part | undefined
 	) {
-
-
-
 		if (oldPlayingPart) {
-			setStoryStatus(rundown.peripheralDeviceId, rundown, oldPlayingPart, MOS.IMOSObjectStatus.STOP)
+			setStoryStatus(rundown.peripheralDeviceId, rundown, oldPlayingPart.externalId, MOS.IMOSObjectStatus.STOP)
 			.catch(e => logger.error(e))
 		}
-		if (takePart) {
-			setStoryStatus(rundown.peripheralDeviceId, rundown, takePart.externalId, MOS.IMOSObjectStatus.PLAY)
+		if (newPlayingPart) {
+			setStoryStatus(rundown.peripheralDeviceId, rundown, newPlayingPart.externalId, MOS.IMOSObjectStatus.PLAY)
 			.catch(e => logger.error(e))
 
 			Rundowns.update(this._id, {$set: {
-				currentPlayingStoryStatus: takePart.externalId
+				currentPlayingStoryStatus: newPlayingPart.externalId
 			}})
-			rundown.notifiedCurrentPlayingPartExternalId = takePart.externalId
+			rundown.notifiedCurrentPlayingPartExternalId = newPlayingPart.externalId
 		} else {
 			Rundowns.update(this._id, {$unset: {
 				currentPlayingStoryStatus: 1
