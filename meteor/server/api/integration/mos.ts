@@ -145,42 +145,7 @@ function formatTime (time: any): number | undefined {
 	}
 }
 
-export function sendStoryStatus (rundown: Rundown, takePart: Part | null) {
 
-	if (rundown.currentPlayingStoryStatus) {
-		setStoryStatus(rundown.peripheralDeviceId, rundown, rundown.currentPlayingStoryStatus, MOS.IMOSObjectStatus.STOP)
-		.catch(e => logger.error(e))
-	}
-	if (takePart) {
-		setStoryStatus(rundown.peripheralDeviceId, rundown, takePart.externalId, MOS.IMOSObjectStatus.PLAY)
-		.catch(e => logger.error(e))
-
-		Rundowns.update(this._id, {$set: {
-			currentPlayingStoryStatus: takePart.externalId
-		}})
-		rundown.currentPlayingStoryStatus = takePart.externalId
-	} else {
-		Rundowns.update(this._id, {$unset: {
-			currentPlayingStoryStatus: 1
-		}})
-		delete rundown.currentPlayingStoryStatus
-	}
-}
-function setStoryStatus (deviceId: string, rundown: Rundown, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {
-	return new Promise((resolve, reject) => {
-		if (!rundown.rehearsal) {
-			logger.debug('setStoryStatus', deviceId, rundown.externalId, storyId, status)
-			PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
-				logger.debug('reply', err, result)
-				if (err) {
-					reject(err)
-				} else {
-					resolve(result)
-				}
-			}, 'setStoryStatus', rundown.externalId, storyId, status)
-		}
-	})
-}
 
 export function replaceStoryItem (rundown: Rundown, piece: Piece, partCache: {}, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {

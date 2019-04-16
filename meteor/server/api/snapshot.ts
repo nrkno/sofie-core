@@ -386,7 +386,7 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	snapshot.rundown.active					= ( dbRundown ? dbRundown.active : false)
 	snapshot.rundown.currentPartId		= ( dbRundown ? dbRundown.currentPartId : null)
 	snapshot.rundown.nextPartId			= ( dbRundown ? dbRundown.nextPartId : null)
-	snapshot.rundown.currentPlayingStoryStatus = ( dbRundown ? dbRundown.currentPlayingStoryStatus : undefined)
+	snapshot.rundown.notifiedCurrentPlayingPartExternalId = ( dbRundown ? dbRundown.notifiedCurrentPlayingPartExternalId : undefined)
 
 	const studios = Studios.find().fetch()
 	if (studios.length === 1) snapshot.rundown.studioId = studios[0]._id
