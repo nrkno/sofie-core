@@ -2,14 +2,14 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { Parts } from '../../../lib/collections/Parts'
-import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
-import { logger } from '../../logging'
-import { getStudioFromDevice, getRundown, canBeUpdated } from '../ingest/lib'
-import { handleRemovedRundown } from '../ingest/rundownInput'
-import { getMosRundownId, getMosPartId } from '../ingest/mosDevice/lib'
-import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories, handleMosRundownMetadata } from '../ingest/mosDevice/ingest'
+import { Rundowns } from '../../../../lib/collections/Rundowns'
+import { Parts } from '../../../../lib/collections/Parts'
+import { PeripheralDeviceSecurity } from '../../../security/peripheralDevices'
+import { logger } from '../../../logging'
+import { getStudioFromDevice, getRundown, canBeUpdated } from '../lib'
+import { handleRemovedRundown } from '../rundownInput'
+import { getMosRundownId, getMosPartId } from './lib'
+import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories, handleMosRundownMetadata } from './ingest'
 
 export namespace MosIntegration {
 	export function mosRoCreate (id: string, token: string, rundown: MOS.IMOSRunningOrder) {
