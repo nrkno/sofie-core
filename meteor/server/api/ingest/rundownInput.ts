@@ -455,19 +455,19 @@ export function updateSegmentFromIngestData (
 	return anythingChanged(changes)
 
 }
-/**
- * Re-create segment from cached data.
- * Returns true if data has changed
- */
-export function reCreateSegment (rundownId: string, segmentId: string): boolean {
-	// Recreate segment from cached data
+// /**
+//  * Re-create segment from cached data.
+//  * Returns true if data has changed
+//  */
+// export function reCreateSegment (rundownId: string, segmentId: string): boolean {
+// 	// Recreate segment from cached data
 
-	const rundown = getRundown(rundownId)
-	const studio = getStudioFromRundown(rundown)
+// 	const rundown = getRundown(rundownId)
+// 	const studio = getStudioFromRundown(rundown)
 
-	const ingestSegment = loadCachedIngestSegment(rundownId, segmentId)
-	return updateSegmentFromIngestData(studio, rundown, ingestSegment)
-}
+// 	const ingestSegment = loadCachedIngestSegment(rundownId, segmentId)
+// 	return updateSegmentFromIngestData(studio, rundown, ingestSegment)
+// }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
 	updateDeviceLastDataReceived(peripheralDevice._id)

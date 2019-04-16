@@ -7,8 +7,8 @@ import { getMosRundownId, getMosPartId, getSegmentExternalId, fixIllegalObject }
 import { literal } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
-import { handleUpdatedRundown, handleUpdatedPart, handleRemovedPart, updateSegmentFromIngestData, removeSegment } from '../rundownInput'
-import { loadCachedIngestSegment, saveSegmentCache, loadCachedRundownData, saveRundownCache } from '../ingestCache'
+import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, removeSegment } from '../rundownInput'
+import { loadCachedRundownData, saveRundownCache } from '../ingestCache'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 

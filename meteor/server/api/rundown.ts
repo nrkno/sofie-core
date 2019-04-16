@@ -26,7 +26,7 @@ import { Studios, Studio } from '../../lib/collections/Studios'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
-import { reCreateSegment } from './ingest/rundownInput'
+// import { reCreateSegment } from './ingest/rundownInput'
 import { IngestActions } from './ingest/actions'
 const PackageInfo = require('../../package.json')
 
@@ -204,100 +204,52 @@ export function updateParts (rundownId: string) {
 
 	return parts
 }
-/**
- * Converts a part into a Segment
- * @param story MOS Sory
- * @param rundownId Rundown id of the story
- * @param rank Rank of the story
- */
-export function convertToSegment (part: Part, rank: number): DBSegment {
-	// let slugParts = (story.Slug || '').toString().split(';')
-	let slugParts = part.title.split(';')
+// /**
+//  * Converts a part into a Segment
+//  * @param story MOS Sory
+//  * @param rundownId Rundown id of the story
+//  * @param rank Rank of the story
+//  */
+// export function convertToSegment (part: Part, rank: number): DBSegment {
+// 	// let slugParts = (story.Slug || '').toString().split(';')
+// 	let slugParts = part.title.split(';')
 
-	return {
-		_id: segmentId(part.rundownId, part.title, rank),
-		rundownId: part.rundownId,
-		_rank: rank,
-		externalId: 'N/A', // to be removed?
-		name: slugParts[0],
-		// number: (story.Number ? story.Number.toString() : '')
-	}
-	// logger.debug('story.Number', story.Number)
-}
-export function segmentId (rundownId: string, storySlug: string, rank: number): string {
-	let slugParts = storySlug.split(';')
-	let id = rundownId + '_' + slugParts[0] + '_' + rank
-	return getHash(id)
-}
-export function updateSegments (rundownId: string) {
-	// using Parts, determine which segments are to be created
-	// let parts = Parts.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
-	let parts = updateParts(rundownId)
+// 	return {
+// 		_id: segmentId(part.rundownId, part.title, rank),
+// 		rundownId: part.rundownId,
+// 		_rank: rank,
+// 		externalId: 'N/A', // to be removed?
+// 		name: slugParts[0],
+// 		// number: (story.Number ? story.Number.toString() : '')
+// 	}
+// 	// logger.debug('story.Number', story.Number)
+// }
+// export function segmentId (rundownId: string, storySlug: string, rank: number): string {
+// 	let slugParts = storySlug.split(';')
+// 	let id = rundownId + '_' + slugParts[0] + '_' + rank
+// 	return getHash(id)
+// }
+// export function updateAffectedParts (rundown: Rundown, affectedPartIds: Array<string>) {
 
-	let prevSlugParts: string[] = []
-	let segment: DBSegment
-	let segments: Array<DBSegment> = []
-	let rankSegment = 0
-	let partUpdates: {[id: string]: Partial<DBPart>} = {}
-	_.each(parts, (part: Part) => {
-		let slugParts = part.title.split(';')
+// 	// Update the affected segments:
+// 	let affectedSegmentIds = _.uniq(
+// 		_.map(
+// 			Parts.find({ // fetch assigned segmentIds
+// 				_id: {$in: affectedPartIds}
+// 			}).fetch(),
+// 			part => part.segmentId
+// 		)
+// 	)
 
-		if (slugParts[0] !== prevSlugParts[0]) {
-			segment = convertToSegment(part, rankSegment++)
-			segments.push(segment)
-		}
-		if (part.segmentId !== segment._id) {
-			logger.debug(part)
-			logger.debug(part._id + ' old segmentId: ' + part.segmentId + ', new: ' + segment._id )
-			partUpdates[part._id] = { segmentId: segment._id }
-		}
+// 	let changed = false
+// 	_.each(affectedSegmentIds, (segmentId) => {
+// 		changed = changed || reCreateSegment(rundown._id, segmentId)
+// 	})
 
-		prevSlugParts = slugParts
-	})
-
-	// Update Parts:
-	_.each(partUpdates, (modifier, id: string) => {
-
-		logger.info('added Part to segment ' + modifier['segmentId'])
-		Parts.update(id, {$set: modifier})
-	})
-	// Update Segments:
-	saveIntoDb(Segments, {
-		rundownId: rundownId
-	}, segments, {
-		afterInsert (segment) {
-			logger.info('inserted segment ' + segment._id)
-		},
-		afterUpdate (segment) {
-			logger.info('updated segment ' + segment._id)
-		},
-		afterRemove (segment) {
-			logger.info('removed segment ' + segment._id)
-			afterRemoveSegment(segment._id, segment.rundownId)
-		}
-	})
-}
-export function updateAffectedParts (rundown: Rundown, affectedPartIds: Array<string>) {
-
-	// Update the affected segments:
-	let affectedSegmentIds = _.uniq(
-		_.map(
-			Parts.find({ // fetch assigned segmentIds
-				_id: {$in: affectedPartIds}
-			}).fetch(),
-			part => part.segmentId
-		)
-	)
-
-	let changed = false
-	_.each(affectedSegmentIds, (segmentId) => {
-		changed = changed || reCreateSegment(rundown._id, segmentId)
-	})
-
-	if (changed) {
-		updateTimelineFromMosData(rundown._id, affectedPartIds)
-	}
-}
+// 	if (changed) {
+// 		updateTimelineFromMosData(rundown._id, affectedPartIds)
+// 	}
+// }
 /**
  * Removes a Segment from the database
  * @param story The story to be inserted

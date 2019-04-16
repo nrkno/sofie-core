@@ -1,32 +1,21 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
-
 import * as MOS from 'mos-connection'
 
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import {
-	PeripheralDevices,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import {
 	Rundown,
 	Rundowns,
 	DBRundown
 } from '../../../lib/collections/Rundowns'
-import {
-	Part,
-	Parts
-} from '../../../lib/collections/Parts'
-import {
-	Piece,
-} from '../../../lib/collections/Pieces'
+import { Parts } from '../../../lib/collections/Parts'
+import { Piece } from '../../../lib/collections/Pieces'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import { Studio } from '../../../lib/collections/Studios'
-import {
-	setMeteorMethods,
-	Methods
-} from '../../methods'
+import { setMeteorMethods, Methods } from '../../methods'
 import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown } from '../ingest/lib'
 import { handleRemovedRundown } from '../ingest/rundownInput'
 import { getMosRundownId, getMosPartId } from '../ingest/mosDevice/lib'
@@ -62,8 +51,6 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-
-
 
 export function replaceStoryItem (rundown: Rundown, piece: Piece, partCache: {}, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
