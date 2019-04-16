@@ -11,8 +11,8 @@ import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, r
 import { loadCachedRundownData, saveRundownCache } from '../ingestCache'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
-import { Parts, Part } from '../../../../lib/collections/Parts';
-import { ServerPlayoutAPI } from '../../playout';
+import { Parts } from '../../../../lib/collections/Parts'
+import { ServerPlayoutAPI } from '../../playout'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -147,7 +147,7 @@ export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, rundow
 
 	if (filteredParts.length === ingestParts.length) return // Nothing was removed
 
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, filteredParts, storyIds, [])
+	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, filteredParts)
 }
 
 function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngestPart[] {
@@ -183,7 +183,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId
 	}
 
 	const newPartIds = _.map(newParts, p => p.externalId)
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [previousPartIdStr], newPartIds)
+	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts)
 
 	// Update next if we inserted before the part that is next
 	// Note: the case where we remove the previous line is handled inside diffAndApplyChanges
@@ -228,8 +228,7 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId
 	ingestParts[story0Index] = ingestParts[story1Index]
 	ingestParts[story1Index] = tmp
 
-	// TODO - is this id usage correct?
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [], [story0.toString(), story1.toString()])
+	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts)
 
 	// Update next
 	if (!rundown.nextPartManual && rundown.nextPartId) {
@@ -269,18 +268,19 @@ export function handleMoveStories (peripheralDevice: PeripheralDevice, rundownId
 	// Reinsert parts
 	filteredParts.splice(insertIndex, 0, ...movingParts)
 
-	// TODO - is this id usage correct?
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts, [], storyIds)
+	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts)
 }
 
-function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundown: Rundown, ingestRundown: IngestRundown, ingestParts: AnnotatedIngestPart[], removedIds: string[], insertedIds: string[]) {
+function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundown: Rundown, ingestRundown: IngestRundown, ingestParts: AnnotatedIngestPart[]) {
 	// Save the new parts list
 	const groupedParts = groupIngestParts(ingestParts)
 	const ingestSegments = groupedPartsToSegments(rundownId, groupedParts)
 
 	const oldSegmentEntries = compileSegmentEntries(ingestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(ingestSegments)
-	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, removedIds, insertedIds)
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
+
+	console.log(JSON.stringify(newSegmentEntries, undefined, 4))
 
 	// Save new cache
 	const newIngestRundown = _.clone(ingestRundown)
@@ -324,61 +324,53 @@ function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[]
 	}))
 }
 
-// TODO - this really needs some tests...
-export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[], removedIds: string[], insertedIds: string[]) {
+export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[]) {
 	const rankChanged: number[] = [] // New index
 	const unchanged: number[] = [] // New index
 	const removed: number[] = [] // Old index
 	const changed: number[] = [] // New index
 
-	let oldIndex = 0
-	let newIndex = 0
-	while (oldIndex < oldSegmentEntries.length && newIndex < newSegmentEntries.length) {
-		const currentOld = oldSegmentEntries[oldIndex]
-		const currentNew = newSegmentEntries[newIndex]
+	// Convert to object to track their original index in the arrays
+	const unusedOldSegmentEntries = _.map(oldSegmentEntries, (e, i) => ({ e, i }))
+	const unusedNewSegmentEntries = _.map(newSegmentEntries, (e, i) => ({ e, i }))
 
-		if (_.isEqual(currentOld, currentNew)) {
-			// They are the same
-			if (oldIndex === newIndex) {
-				unchanged.push(newIndex)
+	let prune: number[] = []
+
+	// Deep compare
+	_.each(newSegmentEntries, (e, i) => {
+		const matching = unusedOldSegmentEntries.findIndex(o => _.isEqual(o.e, e))
+		if (matching !== -1) {
+			if (i === unusedOldSegmentEntries[matching].i) {
+				unchanged.push(i)
 			} else {
-				rankChanged.push(newIndex)
+				rankChanged.push(i)
 			}
-			newIndex++
-			oldIndex++
-			continue
+
+			unusedOldSegmentEntries.splice(matching, 1)
+			prune.push(i)
 		}
+	})
 
-		// Something is different.
-		if (currentNew.name === currentOld.name) {
-			// Just the contents
-			changed.push(newIndex)
-			oldIndex++
-			newIndex++
-			continue
+	// Remove any which were matching
+	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
+	prune = []
+
+	// Match any by name
+	_.each(unusedNewSegmentEntries, (e, i) => {
+		const matching = unusedOldSegmentEntries.findIndex(o => o.e.name === e.e.name)
+		if (matching !== -1) {
+			changed.push(e.i)
+			unusedOldSegmentEntries.splice(matching, 1)
+			prune.push(i)
 		}
+	})
 
-		// new segment?
-		const startsWithInserted = insertedIds.indexOf(_.first(currentNew.parts) as string) !== -1
-		const prevEndWithInserted = newIndex > 0 && insertedIds.indexOf(_.last(newSegmentEntries[newIndex - 1].parts) as string) !== -1
-		if (startsWithInserted || prevEndWithInserted) {
-			changed.push(newIndex)
-			newIndex++
-			continue
-		}
+	// Remove any which were matching
+	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
+	prune = []
 
-		// removed segment?
-		// TODO - is this safe to assume?
-		removed.push(oldIndex)
-		oldIndex++
-	}
-
-	for (;newIndex < newSegmentEntries.length; newIndex++) {
-		changed.push(newIndex)
-	}
-	for (;oldIndex < oldSegmentEntries.length; oldIndex++) {
-		removed.push(oldIndex)
-	}
+	changed.push(..._.map(unusedNewSegmentEntries, e => e.i))
+	removed.push(..._.map(unusedOldSegmentEntries, e => e.i))
 
 	return {
 		rankChanged,
