@@ -1287,7 +1287,7 @@ export namespace ServerPlayoutAPI {
 						return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 							// @ts-ignore _id
 							_id: obj.id || obj._id,
-							siId: '', // set later
+							studioId: '', // set later
 							objectType: TimelineObjType.RUNDOWN
 						})
 					})
@@ -2318,7 +2318,7 @@ function convertSLineToAdLibItem (piece: Piece): AdLibPiece {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 						// @ts-ignore _id
 						_id: obj.id || obj['_id'],
-						siId: '', // set later
+						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN
 					})
 				})
@@ -2358,7 +2358,7 @@ function convertAdLibToSLineItem (adLibItem: AdLibPiece | Piece, part: Part, que
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 					// @ts-ignore _id
 					_id: obj.id || obj['_id'],
-					siId: '',
+					studioId: '',
 					objectType: TimelineObjType.RUNDOWN
 				})
 			})
@@ -2393,7 +2393,7 @@ function createPartGroup (part: Part, duration: number | string): TimelineObjGro
 	let partGrp = literal<TimelineObjGroupPart & TimelineObjRundown>({
 		_id: getPartGroupId(part),
 		id: '',
-		siId: '', // added later
+		studioId: '', // added later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: {
@@ -2422,7 +2422,7 @@ function createPartGroupFirstObject (
 	return literal<TimelineObjPartAbstract>({
 		_id: getPartFirstObjectId(part),
 		id: '',
-		siId: '', // added later
+		studioId: '', // added later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: {
@@ -2449,7 +2449,7 @@ function createPieceGroupFirstObject (
 	return literal<TimelineObjPieceAbstract>({
 		_id: getPieceFirstObjectId(piece),
 		id: '',
-		siId: '', // added later
+		studioId: '', // added later
 		rundownId: piece.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: {
@@ -2482,7 +2482,7 @@ function createPieceGroup (
 		},
 		inGroup: partGroup && partGroup._id,
 		isGroup: true,
-		siId: '',
+		studioId: '',
 		rundownId: item.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: item.trigger,
@@ -2589,7 +2589,7 @@ function transformPartIntoTimeline (
 					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(o, {
 						// @ts-ignore _id
 						_id: o.id || o['_id'],
-						siId: '', // set later
+						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup._id : undefined,
 						rundownId: rundown._id,
 						objectType: TimelineObjType.RUNDOWN
@@ -2994,7 +2994,7 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time) => void
 
 	ps.push(makePromise(() => {
 		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
-			siId: studio._id,
+			studioId: studio._id,
 			statObject: { $ne: true }
 		}, timelineObjs, {
 			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
@@ -3036,7 +3036,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 
 				// remove anything not related to active rundown:
 				let promiseClearTimeline: Promise<void> = asyncCollectionRemove(Timeline, {
-					siId: studio._id,
+					studioId: studio._id,
 					rundownId: {
 						$not: {
 							$eq: activeRundown._id
@@ -3088,7 +3088,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 					studioBaseline.push(literal<TimelineObjRundown>({
 						_id: id,
 						id: id,
-						siId: '',
+						studioId: '',
 						rundownId: '',
 						objectType: TimelineObjType.RUNDOWN,
 						trigger: { type: 0, value: 0 },
@@ -3161,7 +3161,7 @@ export function buildTimelineObjsForRundown (rundownData: RundownData, baselineI
 	let activeRundown = rundownData.rundown
 
 	timelineObjs.push(literal<TimelineObjRundown>({
-		siId: '', // set later
+		studioId: '', // set later
 		id: '', // set later
 		objectType: TimelineObjType.RUNDOWN,
 		rundownId: rundownData.rundown._id,
@@ -3412,7 +3412,7 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 				let childFixed: TimelineObjGeneric = extendMandadory<TimelineTypes.TimelineObject, TimelineObjGeneric>(child, {
 					// @ts-ignore _id
 					_id: child.id || child['_id'],
-					siId: o.siId,
+					studioId: o.studioId,
 					objectType: o.objectType,
 					inGroup: o._id
 				})
@@ -3428,7 +3428,7 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 		o._id = o._id || o.id
 		if (!o._id) logger.error('TimelineObj missing _id attribute', o)
 		delete o.id
-		o.siId = studio._id
+		o.studioId = studio._id
 
 		fixObjectChildren(o)
 	})
@@ -3444,7 +3444,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
 		timelineObjs = Timeline.find({
-			siId: studio._id,
+			studioId: studio._id,
 			statObject: {$ne: true}
 		}).fetch()
 	}
@@ -3464,7 +3464,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	let statObj: TimelineObjStat = {
 		_id: magicId,
 		id: '',
-		siId: studio._id,
+		studioId: studio._id,
 		objectType: TimelineObjType.STAT,
 		statObject: true,
 		content: {

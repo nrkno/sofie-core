@@ -142,7 +142,7 @@ export namespace ServerPeripheralDeviceAPI {
 			let obj = Timeline.findOne(o.id)
 
 			if (obj) {
-				studioIds[obj.siId] = true
+				studioIds[obj.studioId] = true
 
 				Timeline.update({
 					_id: o.id

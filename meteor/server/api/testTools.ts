@@ -58,7 +58,7 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 		literal<TimelineObjCCGRecord & TimelineObjRecording>({
 			_id: IDs.record,
 			id: '',
-			siId: studio._id,
+			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
@@ -79,7 +79,7 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 		literal<TimelineObjCCGInput & TimelineObjRecording>({
 			_id: IDs.input,
 			id: '',
-			siId: studio._id,
+			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			trigger: {
 				type: TriggerType.LOGICAL,

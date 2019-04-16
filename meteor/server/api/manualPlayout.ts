@@ -12,7 +12,7 @@ function insertTimelineObject (studioId: string, timelineObject: TimelineObjGene
 	timelineObject._id = id
 	timelineObject.id = id
 
-	timelineObject.siId = studioId
+	timelineObject.studioId = studioId
 
 	let studio = Studios.findOne(studioId)
 
@@ -29,7 +29,7 @@ function removeTimelineObject (studioId: string, id: string) {
 
 	if (studio) {
 		Timeline.remove({
-			siId: studio._id,
+			studioId: studio._id,
 			_id: studioId + id
 		})
 

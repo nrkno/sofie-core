@@ -16,7 +16,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	// id: '',
 
 	/** Studio installation Id */
-	siId: string
+	studioId: string
 	rundownId?: string
 
 	objectType: TimelineObjType

@@ -108,7 +108,7 @@ export function postProcessStudioBaselineObjects (studio: Studio, objs: Timeline
 function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): TimelineObjRundown {
 	let item: TimelineObjRundown = extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(o, {
 		_id: o.id,
-		siId: '', // set later
+		studioId: '', // set later
 		rundownId: rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 	})

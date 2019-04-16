@@ -147,7 +147,7 @@ interface ITimelineVisualizerInStudioTrackedProps {
 export const TimelineVisualizerInStudio = translateWithTracker<ITimelineVisualizerInStudioProps, ITimelineVisualizerInStudioState, ITimelineVisualizerInStudioTrackedProps>((props: ITimelineVisualizerInStudioProps) => {
 	return {
 		timeline: Timeline.find({
-			siId: props.studioId
+			studioId: props.studioId
 		}).fetch()
 	}
 })(
