@@ -3,7 +3,7 @@ import { getHash, getCurrentTime } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
-import { logger } from '../../logging';
+import { logger } from '../../logging'
 
 export function getRundownId (studio: Studio, externalId: string) {
 	return getHash(`${studio._id}_${externalId}`)

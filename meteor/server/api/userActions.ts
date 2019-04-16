@@ -27,8 +27,7 @@ import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
-import { replaceStoryItem } from './integration/mos'
-import { MOSDeviceActions } from './ingest/mosDevice/actions';
+import { MOSDeviceActions } from './ingest/mosDevice/actions'
 
 const MINIMUM_TAKE_SPAN = 1000
 

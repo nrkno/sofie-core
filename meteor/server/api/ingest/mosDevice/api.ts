@@ -1,7 +1,7 @@
 import * as MOS from 'mos-connection'
 import { setMeteorMethods, Methods } from '../../../methods'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { MosIntegration } from '../../integration/mos'
+import { MosIntegration } from './mos'
 
 let methods: Methods = {}
 methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId: string, deviceToken: string, rundown: MOS.IMOSRunningOrder) => {
