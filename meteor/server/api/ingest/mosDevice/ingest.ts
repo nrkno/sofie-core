@@ -186,7 +186,7 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 		_.each(s.parts, p => {
 			ingestParts.push({
 				externalId: p.externalId,
-				partId: '', // TODO
+				partId: '', // Not used
 				segmentName: s.name,
 				ingest: p,
 			})
@@ -318,7 +318,7 @@ function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundo
 	saveRundownCache(rundown._id, newIngestRundown)
 
 	// Update segment ranks
-	// TODO
+	// TODO for any references in segmentDiff.rankChanged
 
 	// Remove old segments
 	for (const i of segmentDiff.removed) {
