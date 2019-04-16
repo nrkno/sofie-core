@@ -46,7 +46,7 @@ import { NoteType } from '../../../lib/api/notes'
 import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown } from '../ingest/lib'
 import { handleRemovedRundown } from '../ingest/rundownInput'
 import { getMosRundownId, getMosPartId } from '../ingest/mosDevice/lib'
-import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory } from '../ingest/mosDevice/ingest'
+import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories } from '../ingest/mosDevice/ingest'
 
 /**
  * Returns a Rundown, throws error if not found
@@ -84,43 +84,43 @@ function getPart (studio: Studio, rundownID: MOS.MosString128, storyID: MOS.MosS
 	}
 }
 
-/**
- * Converts an Item into a Part
- * @param item MOS Item
- * @param rundownId Rundown id of the item
- * @param segmentId Segment / Story id of the item
- * @param rank Rank of the story
- */
-function convertToPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
-	return {
-		_id: getMosPartId(rundownId, story.ID),
-		rundownId: rundownId,
-		segmentId: '', // to be coupled later
-		_rank: rank,
-		externalId: story.ID.toString(),
-		title: (story.Slug || '').toString(),
-		typeVariant: ''
-		// expectedDuration: item.EditorialDuration,
-		// autoNext: item.Trigger === ??
-	}
-}
-/**
- * Insert a new Part (aka an Item)
- * @param item The item to be inserted
- * @param rundownId The id of the Rundown
- * @param segmentId The id of the Segment / Story
- * @param rank The new rank of the Part
- */
-function upsertPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
-	let part = convertToPart(story, rundownId, rank)
-	Parts.upsert(part._id, {$set: part}) // insert, or update
-	afterInsertUpdatePart(story, rundownId)
-	return part
+// /**
+//  * Converts an Item into a Part
+//  * @param item MOS Item
+//  * @param rundownId Rundown id of the item
+//  * @param segmentId Segment / Story id of the item
+//  * @param rank Rank of the story
+//  */
+// function convertToPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
+// 	return {
+// 		_id: getMosPartId(rundownId, story.ID),
+// 		rundownId: rundownId,
+// 		segmentId: '', // to be coupled later
+// 		_rank: rank,
+// 		externalId: story.ID.toString(),
+// 		title: (story.Slug || '').toString(),
+// 		typeVariant: ''
+// 		// expectedDuration: item.EditorialDuration,
+// 		// autoNext: item.Trigger === ??
+// 	}
+// }
+// /**
+//  * Insert a new Part (aka an Item)
+//  * @param item The item to be inserted
+//  * @param rundownId The id of the Rundown
+//  * @param segmentId The id of the Segment / Story
+//  * @param rank The new rank of the Part
+//  */
+// function upsertPart (story: MOS.IMOSStory, rundownId: string, rank: number): DBPart {
+// 	let part = convertToPart(story, rundownId, rank)
+// 	Parts.upsert(part._id, {$set: part}) // insert, or update
+// 	afterInsertUpdatePart(story, rundownId)
+// 	return part
 
-}
-function afterInsertUpdatePart (story: MOS.IMOSStory, rundownId: string) {
-	// nothing
-}
+// }
+// function afterInsertUpdatePart (story: MOS.IMOSStory, rundownId: string) {
+// 	// nothing
+// }
 
 function formatDuration (duration: any): number | undefined {
 	try {
@@ -309,91 +309,103 @@ export namespace MosIntegration {
 	export function mosRoStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryInsert after ' + Action.StoryID)
-
-		const studio = getStudioFromDevice(peripheralDevice)
-
-		let rundown = getRO(studio, Action.RunningOrderID)
-		if (!isAvailableForMOS(rundown)) return
-		updateDeviceLastDataReceived(peripheralDevice._id)
-
-		// @ts-ignore		logger.debug(
-		logger.debug(Action, Stories)
-		// insert a story (aka Part) before another story:
-		let partAfter = (Action.StoryID ? getPart(studio, Action.RunningOrderID, Action.StoryID) : null)
-
-		// let newRankMax
-		// let newRankMin
-		let partBeforeOrLast: DBPart | undefined = (
-			partAfter ?
-				fetchBefore(Parts,
-					{ rundownId: rundown._id },
-					partAfter._rank
-				) :
-				fetchBefore(Parts,
-					{ rundownId: rundown._id },
-					null
-				)
-		)
-		let affectedPartIds: Array<string> = []
-		let firstInsertedPart: DBPart | undefined
-		_.each(Stories, (story: MOS.IMOSROStory, i: number) => {
-			logger.info('insert story ' + story.ID)
-			let rank = getRank(partBeforeOrLast, partAfter, i, Stories.length)
-			// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-			let part = upsertPart(story, rundown._id, rank)
-			affectedPartIds.push(part._id)
-			if (!firstInsertedPart) firstInsertedPart = part
-		})
-
-		if (partAfter && rundown.nextPartId === partAfter._id && firstInsertedPart && !rundown.nextPartManual) {
-			// Move up next-point to the first inserted part
-			ServerPlayoutAPI.rundownSetNext(rundown._id, firstInsertedPart._id)
-		}
-
-		updateSegments(rundown._id)
-		updateAffectedParts(rundown, affectedPartIds)
-	}
-	export function mosRoStoryReplace (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStoryReplace ' + Action.StoryID)
-
-		const studio = getStudioFromDevice(peripheralDevice)
-
-		let rundown = getRO(studio, Action.RunningOrderID)
-		if (!isAvailableForMOS(rundown)) return
-		updateDeviceLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
-		// Replace a Story (aka a Part) with one or more Stories
-		let partToReplace = getPart(studio, Action.RunningOrderID, Action.StoryID)
 
-		let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, partToReplace._rank)
-		let partAfter = fetchAfter(Parts, { rundownId: rundown._id }, partToReplace._rank)
+		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
 
-		let affectedPartIds: Array<string> = []
+		// TODO - update next
 
-		let insertedPartIds: {[id: string]: boolean} = {}
-		let firstInsertedPart: DBPart | undefined
-		_.each(Stories, (story: MOS.IMOSROStory, i: number) => {
-			logger.info('insert story ' + story.ID)
-			let rank = getRank(partBefore, partAfter, i, Stories.length)
-			let part = upsertPart(story, rundown._id, rank)
-			insertedPartIds[part._id] = true
-			affectedPartIds.push(part._id)
-			if (!firstInsertedPart) firstInsertedPart = part
+		// const studio = getStudioFromDevice(peripheralDevice)
 
-		})
+		// let rundown = getRO(studio, Action.RunningOrderID)
+		// if (!isAvailableForMOS(rundown)) return
+		// updateDeviceLastDataReceived(peripheralDevice._id)
 
-		updateSegments(rundown._id)
+		// // @ts-ignore		logger.debug(
+		// logger.debug(Action, Stories)
+		// // insert a story (aka Part) before another story:
+		// let partAfter = (Action.StoryID ? getPart(studio, Action.RunningOrderID, Action.StoryID) : null)
 
-		if (!insertedPartIds[partToReplace._id]) {
-			// ok, the part to replace wasn't in the inserted parts
-			// remove it then:
-			affectedPartIds.push(partToReplace._id)
-			removePart(rundown._id, partToReplace, firstInsertedPart)
-		}
+		// // let newRankMax
+		// // let newRankMin
+		// let partBeforeOrLast: DBPart | undefined = (
+		// 	partAfter ?
+		// 		fetchBefore(Parts,
+		// 			{ rundownId: rundown._id },
+		// 			partAfter._rank
+		// 		) :
+		// 		fetchBefore(Parts,
+		// 			{ rundownId: rundown._id },
+		// 			null
+		// 		)
+		// )
+		// let affectedPartIds: Array<string> = []
+		// let firstInsertedPart: DBPart | undefined
+		// _.each(Stories, (story: MOS.IMOSROStory, i: number) => {
+		// 	logger.info('insert story ' + story.ID)
+		// 	let rank = getRank(partBeforeOrLast, partAfter, i, Stories.length)
+		// 	// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
+		// 	let part = upsertPart(story, rundown._id, rank)
+		// 	affectedPartIds.push(part._id)
+		// 	if (!firstInsertedPart) firstInsertedPart = part
+		// })
 
-		updateAffectedParts(rundown, affectedPartIds)
+		// if (partAfter && rundown.nextPartId === partAfter._id && firstInsertedPart && !rundown.nextPartManual) {
+		// 	// Move up next-point to the first inserted part
+		// 	ServerPlayoutAPI.rundownSetNext(rundown._id, firstInsertedPart._id)
+		// }
+
+		// updateSegments(rundown._id)
+		// updateAffectedParts(rundown, affectedPartIds)
+	}
+	export function mosRoStoryReplace (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		logger.info('mosRoStoryReplace ' + Action.StoryID)
+		// @ts-ignore
+		logger.debug(Action, Stories)
+
+		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
+
+		// TODO - update next
+
+		// const studio = getStudioFromDevice(peripheralDevice)
+
+		// let rundown = getRO(studio, Action.RunningOrderID)
+		// if (!isAvailableForMOS(rundown)) return
+		// updateDeviceLastDataReceived(peripheralDevice._id)
+		// // @ts-ignore
+		// logger.debug(Action, Stories)
+		// // Replace a Story (aka a Part) with one or more Stories
+		// let partToReplace = getPart(studio, Action.RunningOrderID, Action.StoryID)
+
+		// let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, partToReplace._rank)
+		// let partAfter = fetchAfter(Parts, { rundownId: rundown._id }, partToReplace._rank)
+
+		// let affectedPartIds: Array<string> = []
+
+		// let insertedPartIds: {[id: string]: boolean} = {}
+		// let firstInsertedPart: DBPart | undefined
+		// _.each(Stories, (story: MOS.IMOSROStory, i: number) => {
+		// 	logger.info('insert story ' + story.ID)
+		// 	let rank = getRank(partBefore, partAfter, i, Stories.length)
+		// 	let part = upsertPart(story, rundown._id, rank)
+		// 	insertedPartIds[part._id] = true
+		// 	affectedPartIds.push(part._id)
+		// 	if (!firstInsertedPart) firstInsertedPart = part
+
+		// })
+
+		// updateSegments(rundown._id)
+
+		// if (!insertedPartIds[partToReplace._id]) {
+		// 	// ok, the part to replace wasn't in the inserted parts
+		// 	// remove it then:
+		// 	affectedPartIds.push(partToReplace._id)
+		// 	removePart(rundown._id, partToReplace, firstInsertedPart)
+		// }
+
+		// updateAffectedParts(rundown, affectedPartIds)
 	}
 	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -465,36 +477,42 @@ export namespace MosIntegration {
 		logger.info('mosRoStoryDelete ' + Action.RunningOrderID)
 
 		handleMosDeleteStory(peripheralDevice, Action.RunningOrderID, Stories)
+
+		// TODO - update next
 	}
 	export function mosRoStorySwap (id: string, token: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
 
-		const studio = getStudioFromDevice(peripheralDevice)
+		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 
-		let rundown = getRO(studio, Action.RunningOrderID)
-		if (!isAvailableForMOS(rundown)) return
-		updateDeviceLastDataReceived(peripheralDevice._id)
-		// @ts-ignore
-		logger.debug(Action, StoryID0, StoryID1)
-		// Swap Stories (aka Part)
+		// TODO - update next
 
-		let part0 = getPart(studio, Action.RunningOrderID, StoryID0)
-		let part1 = getPart(studio, Action.RunningOrderID, StoryID1)
+		// const studio = getStudioFromDevice(peripheralDevice)
 
-		Parts.update(part0._id, {$set: {_rank: part1._rank}})
-		Parts.update(part1._id, {$set: {_rank: part0._rank}})
+		// let rundown = getRO(studio, Action.RunningOrderID)
+		// if (!isAvailableForMOS(rundown)) return
+		// updateDeviceLastDataReceived(peripheralDevice._id)
+		// // @ts-ignore
+		// logger.debug(Action, StoryID0, StoryID1)
+		// // Swap Stories (aka Part)
 
-		if (rundown.nextPartId === part0._id) {
-			// Change nexted part
-			ServerPlayoutAPI.rundownSetNext(rundown._id, part1._id)
-		} else if (rundown.nextPartId === part1._id) {
-			// Change nexted part
-			ServerPlayoutAPI.rundownSetNext(rundown._id, part0._id)
-		}
+		// let part0 = getPart(studio, Action.RunningOrderID, StoryID0)
+		// let part1 = getPart(studio, Action.RunningOrderID, StoryID1)
 
-		updateSegments(rundown._id)
-		updateAffectedParts(rundown, [part0._id, part1._id])
+		// Parts.update(part0._id, {$set: {_rank: part1._rank}})
+		// Parts.update(part1._id, {$set: {_rank: part0._rank}})
+
+		// if (rundown.nextPartId === part0._id) {
+		// 	// Change nexted part
+		// 	ServerPlayoutAPI.rundownSetNext(rundown._id, part1._id)
+		// } else if (rundown.nextPartId === part1._id) {
+		// 	// Change nexted part
+		// 	ServerPlayoutAPI.rundownSetNext(rundown._id, part0._id)
+		// }
+
+		// updateSegments(rundown._id)
+		// updateAffectedParts(rundown, [part0._id, part1._id])
 	}
 	export function mosRoReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)

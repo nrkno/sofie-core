@@ -64,3 +64,11 @@ export function updateDeviceLastDataReceived (deviceId: string) {
 		}
 	})
 }
+
+export function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?: string) {
+	if (!rundown) return true
+	if (rundown.unsynced) return false
+
+	// TODO
+	return true
+}

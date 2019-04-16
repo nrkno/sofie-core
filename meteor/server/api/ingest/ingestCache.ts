@@ -27,6 +27,8 @@ export function loadCachedRundownData (rundownId: string): IngestRundown {
 		}
 	})
 
+	ingestRundown.segments = _.sortBy(ingestRundown.segments, s => s.rank)
+
 	return ingestRundown
 }
 
@@ -46,6 +48,8 @@ export function loadCachedIngestSegment (rundownId: string, segmentId: string): 
 			ingestSegment.parts.push(e.data)
 		}
 	})
+
+	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
 	return ingestSegment
 }

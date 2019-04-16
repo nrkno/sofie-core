@@ -1,10 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
-import {
-	PeripheralDevices,
-	PeripheralDevice
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import {
 	Rundown,
 	Rundowns,
@@ -30,7 +27,7 @@ import {
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart, ServerRundownAPI } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
@@ -41,9 +38,8 @@ import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, updateDeviceLastDataReceived, getRundown, getStudioFromRundown } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, updateDeviceLastDataReceived, getRundown, getStudioFromRundown, canBeUpdated } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
 const PackageInfo = require('../../../package.json')
 
@@ -122,14 +118,6 @@ export namespace RundownInput {
 		check(newStory, Object)
 		handleUpdatedPart(peripheralDevice, rundownId, segmentId, partId, newStory)
 	}
-}
-
-function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?: string) {
-	if (!rundown) return true
-	if (rundown.unsynced) return false
-
-	// TODO
-	return true
 }
 
 export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
@@ -361,16 +349,19 @@ export function reCreateRundown (rundownId: string): boolean {
 	return updateRundownFromIngestData(studio, rundown, ingestRundown)
 }
 
+export function removeSegment (segmentId: string): Promise<any> {
+	return Promise.all([
+		asyncCollectionRemove(Parts, { segmentId: segmentId }),
+		// TODO - cleanup other part contents
+		asyncCollectionRemove(Segments, segmentId)
+	])
+}
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	if (canBeUpdated(rundown, segmentId)) {
-		Promise.all([
-			asyncCollectionRemove(Parts, { segmentId: segmentId }),
-			// TODO - cleanup other part contents
-			asyncCollectionRemove(Segments, segmentId)
-		])
+		removeSegment(segmentId)
 	}
 }
 function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentData: any) {
@@ -393,7 +384,7 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
  * @param ingestSegment
  * @returns true if data has changed
  */
-function updateSegmentFromIngestData (
+export function updateSegmentFromIngestData (
 	studio: Studio,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
