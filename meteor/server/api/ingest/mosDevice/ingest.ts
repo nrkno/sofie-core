@@ -238,9 +238,9 @@ function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundo
 	const groupedParts = groupIngestParts(ingestParts)
 	const ingestSegments = groupedPartsToSegments(rundownId, groupedParts)
 
-	const oldStructure = compileStructure(ingestRundown.segments)
-	const newStructure = compileStructure(ingestSegments)
-	const segmentDiff = diffStructure(oldStructure, newStructure, removedIds, insertedIds)
+	const oldSegmentEntries = compileSegmentEntries(ingestRundown.segments)
+	const newSegmentEntries = compileSegmentEntries(ingestSegments)
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, removedIds, insertedIds)
 
 	// Save new cache
 	const newIngestRundown = _.clone(ingestRundown)
@@ -262,11 +262,11 @@ function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundo
 	}
 }
 
-interface Structure {
+interface SegmentEntry {
 	name: string
 	parts: string[]
 }
-function compileStructure (ingestSegments: IngestSegment[]): Structure[] {
+function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[] {
 	return _.map(ingestSegments, s => ({
 		name: s.name,
 		parts: _.map(s.parts, p => p.externalId)
@@ -274,7 +274,7 @@ function compileStructure (ingestSegments: IngestSegment[]): Structure[] {
 }
 
 // TODO - this really needs some tests...
-function diffStructure (oldStructure: Structure[], newStructure: Structure[], removedIds: string[], insertedIds: string[]) {
+function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[], removedIds: string[], insertedIds: string[]) {
 	const rankChanged: number[] = [] // New index
 	const unchanged: number[] = [] // New index
 	const removed: number[] = [] // Old index
@@ -282,9 +282,9 @@ function diffStructure (oldStructure: Structure[], newStructure: Structure[], re
 
 	let oldIndex = 0
 	let newIndex = 0
-	while (oldIndex < oldStructure.length && newIndex < newStructure.length) {
-		const currentOld = oldStructure[oldIndex]
-		const currentNew = newStructure[newIndex]
+	while (oldIndex < oldSegmentEntries.length && newIndex < newSegmentEntries.length) {
+		const currentOld = oldSegmentEntries[oldIndex]
+		const currentNew = newSegmentEntries[newIndex]
 
 		if (_.isEqual(currentOld, currentNew)) {
 			// They are the same
@@ -309,7 +309,7 @@ function diffStructure (oldStructure: Structure[], newStructure: Structure[], re
 
 		// new segment?
 		const startsWithInserted = insertedIds.indexOf(_.first(currentNew.parts) as string) !== -1
-		const prevEndWithInserted = newIndex > 0 && insertedIds.indexOf(_.last(newStructure[newIndex - 1].parts) as string) !== -1
+		const prevEndWithInserted = newIndex > 0 && insertedIds.indexOf(_.last(newSegmentEntries[newIndex - 1].parts) as string) !== -1
 		if (startsWithInserted || prevEndWithInserted) {
 			changed.push(newIndex)
 			newIndex++
@@ -322,10 +322,10 @@ function diffStructure (oldStructure: Structure[], newStructure: Structure[], re
 		oldIndex++
 	}
 
-	for (;newIndex < newStructure.length; newIndex++) {
+	for (;newIndex < newSegmentEntries.length; newIndex++) {
 		changed.push(newIndex)
 	}
-	for (;oldIndex < oldStructure.length; oldIndex++) {
+	for (;oldIndex < oldSegmentEntries.length; oldIndex++) {
 		removed.push(oldIndex)
 	}
 

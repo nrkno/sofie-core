@@ -16,7 +16,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import { Studio } from '../../../lib/collections/Studios'
 import { setMeteorMethods, Methods } from '../../methods'
-import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown } from '../ingest/lib'
+import { getStudioFromDevice, updateDeviceLastDataReceived, getRundown, canBeUpdated } from '../ingest/lib'
 import { handleRemovedRundown } from '../ingest/rundownInput'
 import { getMosRundownId, getMosPartId } from '../ingest/mosDevice/lib'
 import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories } from '../ingest/mosDevice/ingest'
@@ -78,7 +78,6 @@ function isAvailableForMOS (rundown: Rundown | undefined): boolean {
 export namespace MosIntegration {
 	export function mosRoCreate (id: string, token: string, rundown: MOS.IMOSRunningOrder) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		// logger.debug('mosRoCreate', rundown)
 		logger.info('mosRoCreate ' + rundown.ID)
 		logger.debug(rundown)
 
@@ -97,7 +96,7 @@ export namespace MosIntegration {
 		handleRemovedRundown(peripheralDevice, rundownId.toString())
 	}
 	export function mosRoMetadata (id: string, token: string, rundownData: MOS.IMOSRunningOrderBase) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoMetadata ' + rundownData.ID)
 
 		const studio = getStudioFromDevice(peripheralDevice)
@@ -139,35 +138,34 @@ export namespace MosIntegration {
 		}
 	}
 	export function mosRoStatus (id: string, token: string, status: MOS.IMOSRunningOrderStatus) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStatus ' + status.ID)
+		logger.debug(status)
 
 		const studio = getStudioFromDevice(peripheralDevice)
+		const rundown = getRundown(getMosRundownId(studio, status.ID))
+		if (!canBeUpdated(rundown)) return
 
-		let rundown = getRO(studio, status.ID)
-		if (!isAvailableForMOS(rundown)) return
 		updateDeviceLastDataReceived(peripheralDevice._id)
-		// @ts-ignore
-		logger.debug(status)
+
 		Rundowns.update(rundown._id, {$set: {
 			status: status.Status
 		}})
 	}
 	export function mosRoStoryStatus (id: string, token: string, status: MOS.IMOSStoryStatus) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryStatus ' + status.ID)
+		logger.debug(status)
 
 		const studio = getStudioFromDevice(peripheralDevice)
+		const rundown = getRundown(getMosRundownId(studio, status.ID))
+		if (!canBeUpdated(rundown)) return
 
-		let rundown = getRO(studio, status.RunningOrderId)
-		if (!isAvailableForMOS(rundown)) return
 		updateDeviceLastDataReceived(peripheralDevice._id)
 
-		// @ts-ignore
-		logger.debug(status)
 		// Save Stories (aka Part ) status into database:
-		let part = Parts.findOne({
-			_id: 			getMosPartId(getMosRundownId(studio, status.RunningOrderId), status.ID),
+		const part = Parts.findOne({
+			_id: getMosPartId(rundown._id, status.ID),
 			rundownId: rundown._id
 		})
 		if (part) {
@@ -282,18 +280,10 @@ export namespace MosIntegration {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.warn ('mosRoStoryMove ' + Action.StoryID)
 
-		// TODO - test
 		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 
 		// TODO - update next etc
 
-		// const studio = getStudioFromDevice(peripheralDevice)
-
-		// let rundown = getRO(studio, Action.RunningOrderID)
-		// if (!isAvailableForMOS(rundown)) return
-		// updateDeviceLastDataReceived(peripheralDevice._id)
-		// // @ts-ignore
-		// logger.debug(Action, Stories)
 
 		// // Move Stories (aka Part ## TODO ##Lines) to before a story
 
@@ -392,22 +382,20 @@ export namespace MosIntegration {
 		// updateAffectedParts(rundown, [part0._id, part1._id])
 	}
 	export function mosRoReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoReadyToAir ' + Action.ID)
+		logger.debug(Action)
 
 		const studio = getStudioFromDevice(peripheralDevice)
+		const rundown = getRundown(getMosRundownId(studio, status.ID))
+		if (!canBeUpdated(rundown)) return
 
-		let rundown = getRO(studio, Action.ID)
-		if (!isAvailableForMOS(rundown)) return
 		updateDeviceLastDataReceived(peripheralDevice._id)
-		// @ts-ignore
-		logger.debug(Action)
-		// Set the ready to air status of a Rundown
 
+		// Set the ready to air status of a Rundown
 		Rundowns.update(rundown._id, {$set: {
 			airStatus: Action.Status
 		}})
-
 	}
 	export function mosRoFullStory (id: string, token: string, story: MOS.IMOSROFullStory) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -421,7 +409,7 @@ export namespace MosIntegration {
 	 * An item is an object within a Part. These do not directly map to a Piece
 	 */
 	export function mosRoItemDelete (id: string, token: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.warn('mosRoItemDelete NOT IMPLEMENTED YET ' + Action.StoryID)
 		// @ts-ignore
 		logger.debug(Action, Items)
