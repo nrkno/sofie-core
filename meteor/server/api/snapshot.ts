@@ -192,7 +192,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 	const blueprints 		= Blueprints		.find(queryBlueprints).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
-		deviceId: {$in: _.pluck(devices, '_id')}
+		deviceId: {$in: _.map(devices, device => device._id)}
 	}).fetch()
 
 	logger.info(`Snapshot generation done`)
@@ -404,7 +404,7 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	saveIntoDb(Parts, {rundownId: rundownId}, snapshot.parts)
 	saveIntoDb(Pieces, {rundownId: rundownId}, snapshot.pieces)
 	saveIntoDb(AdLibPieces, {rundownId: rundownId}, snapshot.adLibPieces)
-	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
+	saveIntoDb(MediaObjects, {_id: {$in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id)}}, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, {partId: {$in: snapshot.parts.map(i => i._id)}}, snapshot.expectedMediaItems)
 
 	logger.info(`Restore done`)

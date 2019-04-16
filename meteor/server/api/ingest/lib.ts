@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 
 export function getRundownId (studio: Studio, externalId: string) {
 	return getHash(`${studio._id}_${externalId}`)
@@ -13,7 +14,7 @@ export function getPartId (rundownId: string, partExternalId: string) {
 	return getHash(`${rundownId}_part_${partExternalId}`)
 }
 
-function getStudioId (peripheralDevice: PeripheralDevice): string | undefined {
+function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}
@@ -26,13 +27,33 @@ function getStudioId (peripheralDevice: PeripheralDevice): string | undefined {
 	}
 	return undefined
 }
-export function getStudio (peripheralDevice: PeripheralDevice): Studio {
-	const studioId = getStudioId(peripheralDevice)
+export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio {
+	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
 	return studio
+}
+export function getStudioFromRundown (rundown: Rundown): Studio {
+	const studioId = rundown.studioId
+	if (!studioId) throw new Meteor.Error(500, 'Rundown "' + rundown._id + '" has no Studio')
+
+	const studio = Studios.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
+	return studio
+}
+export function getRundown (rundownId: string): Rundown {
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
+	return rundown
+}
+export function getPeripheralDeviceFromRundown (rundown: Rundown): PeripheralDevice {
+	if (!rundown.peripheralDeviceId) throw new Meteor.Error(500, `Rundown "${rundown._id}" does not have a peripheralDeviceId`)
+
+	const device = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+	if (!device) throw new Meteor.Error(404, `PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" not found`)
+	return device
 }
 
 export function updateDeviceLastDataReceived (deviceId: string) {

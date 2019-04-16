@@ -79,7 +79,6 @@ import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { setMeteorMethods, Methods } from '../methods'
-import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateParts, reloadRundownData } from './rundown'
 import { runPostProcessBlueprint } from '../../server/api/rundown'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
@@ -95,6 +94,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { getBlueprintOfRundown, loadStudioBlueprints } from './blueprints/cache'
 import { RundownContext, StudioContext, PartEventContext } from './blueprints/context'
 import { postProcessStudioBaselineObjects } from './blueprints/postProcess'
+import { IngestActions } from './ingest/actions';
 const PackageInfo = require('../../package.json')
 
 export namespace ServerPlayoutAPI {
@@ -108,8 +108,8 @@ export namespace ServerPlayoutAPI {
 		if (rundown.active) throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
 		const anyOtherActiveRundowns = areThereActiveROsInStudio(rundown.studioId, rundown._id)
 		if (anyOtherActiveRundowns.length) {
-			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.pluck(anyOtherActiveRundowns, '_id'))
-			throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.pluck(anyOtherActiveRundowns, '_id'))
+			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
+			throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 		}
 
 		resetRundown(rundown)
@@ -174,7 +174,7 @@ export namespace ServerPlayoutAPI {
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
 		return ClientAPI.responseSuccess(
-			reloadRundownData(rundown)
+			IngestActions.reloadRundown(rundown)
 		)
 	}
 	function resetRundown (rundown: Rundown) {
@@ -340,8 +340,8 @@ export namespace ServerPlayoutAPI {
 		const anyOtherActiveRundowns = areThereActiveROsInStudio(studio._id, rundown._id)
 
 		if (anyOtherActiveRundowns.length) {
-			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.pluck(anyOtherActiveRundowns, '_id'))
-			throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.pluck(anyOtherActiveRundowns, '_id'))
+			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
+			throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 		}
 
 		let wasInactive = !rundown.active
@@ -414,6 +414,7 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(rundown.studioId)
 
 		sendStoryStatus(rundown, null)
+		IngestActions.sendPartStatus()
 
 		Meteor.defer(() => {
 			let bp = getBlueprintOfRundown(rundown)

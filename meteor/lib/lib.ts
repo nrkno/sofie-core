@@ -243,6 +243,9 @@ export function sumChanges (...changes: (Changes | null)[]): Changes {
 	})
 	return change
 }
+export function anythingChanged (changes: Changes): boolean {
+	return !!(changes.added || changes.removed || changes.updated)
+}
 /**
  * Deep comparison of objects, returns true if equal
  * @param a

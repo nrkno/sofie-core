@@ -127,7 +127,7 @@ export function prepareForBroadcast (rundownId: string): ClientAPI.ClientRespons
 	if (rundown.active) return ClientAPI.responseError('Rundown is active, please deactivate before preparing it for broadcast')
 	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.pluck(anyOtherActiveRundowns, 'name').join(', '))
+		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.rundownPrepareForBroadcast(rundownId)
@@ -152,7 +152,7 @@ export function resetAndActivate (rundownId: string): ClientAPI.ClientResponse {
 	}
 	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.pluck(anyOtherActiveRundowns, 'name').join(', '))
+		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
 
 	return ClientAPI.responseSuccess(
@@ -165,7 +165,7 @@ export function activate (rundownId: string, rehearsal: boolean): ClientAPI.Clie
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.pluck(anyOtherActiveRundowns, 'name').join(', '))
+		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.rundownActivate(rundownId, rehearsal)
@@ -249,6 +249,7 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	return ClientAPI.responseSuccess(
+		// TODO: replace this with a general, non-MOS specific method
 		replaceStoryItem(rundown, piece, partCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
 	)
 

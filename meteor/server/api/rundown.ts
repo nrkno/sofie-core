@@ -15,7 +15,6 @@ import {
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { updateStory, reloadRundown } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -27,6 +26,8 @@ import { Studios, Studio } from '../../lib/collections/Studios'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
+import { reCreateSegment } from './ingest/rundownInput'
+import { IngestActions } from './ingest/actions'
 const PackageInfo = require('../../package.json')
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
@@ -280,47 +281,21 @@ export function updateAffectedParts (rundown: Rundown, affectedPartIds: Array<st
 
 	// Update the affected segments:
 	let affectedSegmentIds = _.uniq(
-		_.pluck(
+		_.map(
 			Parts.find({ // fetch assigned segmentIds
-				_id: {$in: affectedPartIds} // _.pluck(affectedPartIds, '_id')}
+				_id: {$in: affectedPartIds}
 			}).fetch(),
-		'segmentId')
+			part => part.segmentId
+		)
 	)
 
 	let changed = false
 	_.each(affectedSegmentIds, (segmentId) => {
-		changed = changed || updateWithinSegment(rundown, segmentId )
+		changed = changed || reCreateSegment(rundown._id, segmentId)
 	})
 
 	if (changed) {
 		updateTimelineFromMosData(rundown._id, affectedPartIds)
-	}
-}
-function updateWithinSegment (rundown: Rundown, segmentId: string): boolean {
-	let segment = Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, 'Segment "' + segmentId + '" not found!')
-
-	let parts = rundown.getParts({
-		segmentId: segment._id
-	})
-
-	let changed = false
-	_.each(parts, (part) => {
-		changed = changed || updatePart(rundown, part)
-	})
-
-	runPostProcessBlueprint(rundown, segment)
-
-	return changed
-}
-function updatePart (rundown: Rundown, part: Part): boolean {
-	// TODO: determine that the data source is MOS, and THEN call updateStory:
-	let story = rundown.fetchCache(CachePrefix.INGEST_PART + part._id)
-	if (story) {
-		return updateStory(rundown, part, story)
-	} else {
-		logger.warn('Unable to update part "' + part._id + '", story cache not found')
-		return false
 	}
 }
 export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
@@ -425,10 +400,6 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// }
 	// return anythingChanged
 	return false
-}
-export function reloadRundownData (rundown: Rundown) {
-	// TODO: determine that the rundown is Mos-driven, then call the function
-	return reloadRundown(rundown)
 }
 /**
  * Removes a Segment from the database

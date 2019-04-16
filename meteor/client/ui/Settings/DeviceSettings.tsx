@@ -55,7 +55,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					return <MediaManagerSettingsComponent
 						device={this.props.device}
 					/>
-				case 4: // PeripheralDeviceAPI.DeviceType.SPREADSHEET: // TODO
+				case PeripheralDeviceAPI.DeviceType.SPREADSHEET
 					return <SpreadsheetSettingsComponent
 						device={this.props.device}
 					/>

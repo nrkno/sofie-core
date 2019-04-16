@@ -60,7 +60,7 @@ import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadShowStyleBlueprints } from '../blueprints/cache'
 import { postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
-import { getRundownId, getStudio, getPartId, updateDeviceLastDataReceived } from '../ingest/lib'
+import { getRundownId, getStudioFromDevice, getPartId, updateDeviceLastDataReceived } from '../ingest/lib'
 import { handleUpdatedRundown, handleRemovedRundown, handleUpdatedPart, handleRemovedPart } from '../ingest/rundownInput'
 import { IngestDataCache, IngestCacheType } from '../../../lib/collections/IngestDataCache'
 
@@ -379,35 +379,7 @@ function setStoryStatus (deviceId: string, rundown: Rundown, storyId: string, st
 		}
 	})
 }
-export const reloadRundown: (rundown: Rundown) => void = Meteor.wrapAsync(
-	function reloadRundown (rundown: Rundown, cb: (err: Error | null) => void) {
-		logger.info('reloadRundown ' + rundown._id)
 
-		if (!rundown.peripheralDeviceId) throw new Meteor.Error(400,'rundown.peripheralDeviceId missing!')
-		check(rundown.peripheralDeviceId, String)
-
-		const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found' )
-
-		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, rundown: MOS.IMOSRunningOrder) => {
-			// console.log('Response!')
-			if (err) {
-				logger.error(err)
-				cb(err)
-			} else {
-				try {
-					logger.info('triggerGetRundown reply ' + rundown.ID)
-					logger.debug(rundown)
-
-					handleRundownData(rundown, peripheralDevice, false)
-					cb(null)
-				} catch (e) {
-					cb(e)
-				}
-			}
-		}, 'triggerGetRundown', rundown.externalId)
-	}
-)
 export function replaceStoryItem (rundown: Rundown, piece: Piece, partCache: {}, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
 		const story = partCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
@@ -428,7 +400,7 @@ function getSegmentExternalId (rundownId: MOS.MosString128, ingestPart: IngestPa
 	return `${rundownId.toString()}_${ingestPart.name.split(';')[0]}`
 }
 function handleRundownData (mosRundown: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, createFresh: boolean) {
-	const studio = getStudio(peripheralDevice)
+	const studio = getStudioFromDevice(peripheralDevice)
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
@@ -529,7 +501,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoMetadata ' + rundownData.ID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		// @ts-ignore
 		logger.debug(rundownData)
@@ -571,7 +543,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStatus ' + status.ID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, status.ID)
 		if (!isAvailableForMOS(rundown)) return
@@ -586,7 +558,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryStatus ' + status.ID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, status.RunningOrderId)
 		if (!isAvailableForMOS(rundown)) return
@@ -609,7 +581,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryInsert after ' + Action.StoryID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, Action.RunningOrderID)
 		if (!isAvailableForMOS(rundown)) return
@@ -656,7 +628,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryReplace ' + Action.StoryID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, Action.RunningOrderID)
 		if (!isAvailableForMOS(rundown)) return
@@ -698,7 +670,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.warn ('mosRoStoryMove ' + Action.StoryID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, Action.RunningOrderID)
 		if (!isAvailableForMOS(rundown)) return
@@ -763,7 +735,7 @@ export namespace MosIntegration {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryDelete ' + Action.RunningOrderID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 		const rundownId = getMosRundownId(studio, Action.RunningOrderID)
 		const partIds = _.map(Stories, s => getMosPartId(rundownId, s))
 
@@ -806,7 +778,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, Action.RunningOrderID)
 		if (!isAvailableForMOS(rundown)) return
@@ -836,7 +808,7 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoReadyToAir ' + Action.ID)
 
-		const studio = getStudio(peripheralDevice)
+		const studio = getStudioFromDevice(peripheralDevice)
 
 		let rundown = getRO(studio, Action.ID)
 		if (!isAvailableForMOS(rundown)) return

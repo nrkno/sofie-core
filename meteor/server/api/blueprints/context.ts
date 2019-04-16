@@ -33,7 +33,7 @@ import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
-import { loadCachedPartData, loadCachedRundownData } from '../ingest/ingestCache';
+import { loadCachedPartData, loadCachedRundownData } from '../ingest/ingestCache'
 
 /** Common */
 
@@ -359,16 +359,17 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/** Get the mos story related to a part */
-	getStoryForPart (part: Part): IngestPart {
+	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
 		let partId = part._id
 		check(partId, String)
 
 		return loadCachedPartData(this.rundown._id, part.segmentId, part._id)
 	}
 	/** Get the mos story related to the rundown */
-	getStoryForRundown (): IngestRundown {
+	getIngestDataForRundown (): IngestRundown | undefined {
 		return loadCachedRundownData(this.rundown._id)
 	}
+
 	/**
 	 * Returns a piece.
 	 * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent

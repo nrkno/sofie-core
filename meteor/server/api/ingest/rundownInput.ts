@@ -23,7 +23,9 @@ import {
 	saveIntoDb,
 	getCurrentTime,
 	literal,
-	asyncCollectionRemove
+	asyncCollectionRemove,
+	sumChanges,
+	anythingChanged
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -40,8 +42,8 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../l
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudio, updateDeviceLastDataReceived } from './lib'
+import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, updateDeviceLastDataReceived, getRundown, getStudioFromRundown } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
 const PackageInfo = require('../../../package.json')
 
@@ -149,7 +151,7 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundow
 	updateDeviceLastDataReceived(peripheralDevice._id)
 	const ingestRundown: IngestRundown = mutateRundown(rundownData)
 
-	const studio = getStudio(peripheralDevice)
+	const studio = getStudioFromDevice(peripheralDevice)
 
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
@@ -168,14 +170,14 @@ function updateRundownFromIngestData (
 	ingestRundown: IngestRundown,
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
-) {
+): boolean {
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
 	const showStyle = selectShowStyleVariant(studio, ingestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		// what to do here? remove the rundown? insert default rundowm?
-		return
+		return false
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
@@ -221,7 +223,7 @@ function updateRundownFromIngestData (
 	}
 
 	// Save rundown into database:
-	saveIntoDb(Rundowns, {
+	let changes = saveIntoDb(Rundowns, {
 		_id: dbRundownData._id
 	}, [dbRundownData], {
 		beforeInsert: (o) => {
@@ -248,17 +250,9 @@ function updateRundownFromIngestData (
 		rundownId: dbRundown._id,
 		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
-
-	saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
-		rundownId: dbRundown._id,
-	}, [baselineItem])
-
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
-	saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces, {
-		rundownId: dbRundown._id
-	}, adlibItems)
 
 	const existingRundownParts = Parts.find({
 		rundownId: rundownId,
@@ -288,57 +282,83 @@ function updateRundownFromIngestData (
 		adlibPieces.push(...segmentContents.adlibPieces)
 	})
 
-	// Update Segments:
-	saveIntoDb(Segments, {
-		rundownId: rundownId
-	}, segments, {
-		afterInsert (segment) {
-			logger.info('inserted segment ' + segment._id)
-		},
-		afterUpdate (segment) {
-			logger.info('updated segment ' + segment._id)
-		},
-		afterRemove (segment) {
-			logger.info('removed segment ' + segment._id)
-			afterRemoveSegment(segment._id, segment.rundownId)
-		}
-	})
-	saveIntoDb<Part, DBPart>(Parts, {
-		rundownId: rundownId,
-	}, parts, {
-		afterRemove (part) {
-			afterRemovePart(part)
-		}
-	})
-	saveIntoDb<Piece, Piece>(Pieces, {
-		rundownId: rundownId,
-		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-	}, segmentPieces, {
-		afterInsert (piece) {
-			logger.debug('inserted piece ' + piece._id)
-			logger.debug(piece)
-		},
-		afterUpdate (piece) {
-			logger.debug('updated piece ' + piece._id)
-		},
-		afterRemove (piece) {
-			logger.debug('deleted piece ' + piece._id)
-		}
-	})
-	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
-		rundownId: rundownId,
-	}, adlibPieces, {
-		afterInsert (adLibPiece) {
-			logger.debug('inserted adLibPiece ' + adLibPiece._id)
-			logger.debug(adLibPiece)
-		},
-		afterUpdate (adLibPiece) {
-			logger.debug('updated piece ' + adLibPiece._id)
-		},
-		afterRemove (adLibPiece) {
-			logger.debug('deleted piece ' + adLibPiece._id)
-		}
-	})
+	changes = sumChanges(
+		changes,
+		// Save the baseline
+		saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
+			rundownId: dbRundown._id,
+		}, [baselineItem]),
+		// Save the global adlibs
+		saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces, {
+			rundownId: dbRundown._id
+		}, adlibItems),
+		// Update Segments:
+		saveIntoDb(Segments, {
+			rundownId: rundownId
+		}, segments, {
+			afterInsert (segment) {
+				logger.info('inserted segment ' + segment._id)
+			},
+			afterUpdate (segment) {
+				logger.info('updated segment ' + segment._id)
+			},
+			afterRemove (segment) {
+				logger.info('removed segment ' + segment._id)
+				afterRemoveSegment(segment._id, segment.rundownId)
+			}
+		}),
+		saveIntoDb<Part, DBPart>(Parts, {
+			rundownId: rundownId,
+		}, parts, {
+			afterRemove (part) {
+				afterRemovePart(part)
+			}
+		}),
+		saveIntoDb<Piece, Piece>(Pieces, {
+			rundownId: rundownId,
+			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+		}, segmentPieces, {
+			afterInsert (piece) {
+				logger.debug('inserted piece ' + piece._id)
+				logger.debug(piece)
+			},
+			afterUpdate (piece) {
+				logger.debug('updated piece ' + piece._id)
+			},
+			afterRemove (piece) {
+				logger.debug('deleted piece ' + piece._id)
+			}
+		}),
+		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
+			rundownId: rundownId,
+		}, adlibPieces, {
+			afterInsert (adLibPiece) {
+				logger.debug('inserted adLibPiece ' + adLibPiece._id)
+				logger.debug(adLibPiece)
+			},
+			afterUpdate (adLibPiece) {
+				logger.debug('updated piece ' + adLibPiece._id)
+			},
+			afterRemove (adLibPiece) {
+				logger.debug('deleted piece ' + adLibPiece._id)
+			}
+		})
+	)
+	return anythingChanged(changes)
+}
+/**
+ * Run ingestData through blueprints and update the Rundown
+ * @param rundownId
+ * @returns true if data has changed
+ */
+export function reCreateRundown (rundownId: string): boolean {
+	// Recreate rundown from cached data
+
+	const rundown = getRundown(rundownId)
+	const studio = getStudioFromRundown(rundown)
+
+	const ingestRundown = loadCachedRundownData(rundownId)
+	return updateRundownFromIngestData(studio, rundown, ingestRundown)
 }
 
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
@@ -366,11 +386,18 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
+/**
+ * Run ingestData through blueprints and update the Segment
+ * @param studio
+ * @param rundown
+ * @param ingestSegment
+ * @returns true if data has changed
+ */
 function updateSegmentFromIngestData (
 	studio: Studio,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-) {
+): boolean {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const blueprint = getBlueprintOfRundown(rundown)
 
@@ -393,48 +420,62 @@ function updateSegmentFromIngestData (
 		rundownId: rundown._id
 	}, newSegment)
 
-	saveIntoDb<Part, DBPart>(Parts, {
-		rundownId: rundown._id,
-		segmentId: segmentId,
-	}, parts, {
-		afterRemove (part) {
-			afterRemovePart(part)
-		}
-	})
+	const changes = sumChanges(
+		saveIntoDb<Part, DBPart>(Parts, {
+			rundownId: rundown._id,
+			segmentId: segmentId,
+		}, parts, {
+			afterRemove (part) {
+				afterRemovePart(part)
+			}
+		}),
+		saveIntoDb<Piece, Piece>(Pieces, {
+			rundownId: rundown._id,
+			partId: { $in: parts.map(p => p._id) },
+			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+		}, segmentPieces, {
+			afterInsert (piece) {
+				logger.debug('inserted piece ' + piece._id)
+				logger.debug(piece)
+			},
+			afterUpdate (piece) {
+				logger.debug('updated piece ' + piece._id)
+			},
+			afterRemove (piece) {
+				logger.debug('deleted piece ' + piece._id)
+			}
+		}),
+		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
+			rundownId: rundown._id,
+			partId: { $in: parts.map(p => p._id) },
+		}, adlibPieces, {
+			afterInsert (adLibPiece) {
+				logger.debug('inserted adLibPiece ' + adLibPiece._id)
+				logger.debug(adLibPiece)
+			},
+			afterUpdate (adLibPiece) {
+				logger.debug('updated piece ' + adLibPiece._id)
+			},
+			afterRemove (adLibPiece) {
+				logger.debug('deleted piece ' + adLibPiece._id)
+			}
+		})
+	)
+	return anythingChanged(changes)
 
-	saveIntoDb<Piece, Piece>(Pieces, {
-		rundownId: rundown._id,
-		partId: { $in: parts.map(p => p._id) },
-		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-	}, segmentPieces, {
-		afterInsert (piece) {
-			logger.debug('inserted piece ' + piece._id)
-			logger.debug(piece)
-		},
-		afterUpdate (piece) {
-			logger.debug('updated piece ' + piece._id)
-		},
-		afterRemove (piece) {
-			logger.debug('deleted piece ' + piece._id)
-		}
-	})
+}
+/**
+ * Re-create segment from cached data.
+ * Returns true if data has changed
+ */
+export function reCreateSegment (rundownId: string, segmentId: string): boolean {
+	// Recreate segment from cached data
 
-	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
-		rundownId: rundown._id,
-		partId: { $in: parts.map(p => p._id) },
-	}, adlibPieces, {
-		afterInsert (adLibPiece) {
-			logger.debug('inserted adLibPiece ' + adLibPiece._id)
-			logger.debug(adLibPiece)
-		},
-		afterUpdate (adLibPiece) {
-			logger.debug('updated piece ' + adLibPiece._id)
-		},
-		afterRemove (adLibPiece) {
-			logger.debug('deleted piece ' + adLibPiece._id)
-		}
-	})
+	const rundown = getRundown(rundownId)
+	const studio = getStudioFromRundown(rundown)
 
+	const ingestSegment = loadCachedIngestSegment(rundownId, segmentId)
+	return updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
@@ -477,11 +518,15 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
+export function reCreatePart (): boolean {
+	// Recreate part from cached data
+	// TODO: implement this, when needed :)
+	return false
+}
 
 function getStudioAndRundown (peripheralDevice: PeripheralDevice, externalId: string) {
-	const studio = getStudio(peripheralDevice)
-	const rundown = Rundowns.findOne(getRundownId(studio, externalId))
-	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundown = getRundown(getRundownId(studio, externalId))
 
 	return {
 		rundown,

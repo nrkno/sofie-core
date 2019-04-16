@@ -11,9 +11,9 @@ type Timeout = number
 export function ObserveChangesForHash<Ta, Tb> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
 	const doUpdate = (id: string, obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
-		logger.debug('Updating hash:', id, hashName + ':', newHash)
 
 		if (newHash !== obj[hashName]) {
+			logger.debug('Updating hash:', id, hashName + ':', newHash)
 			const update = {}
 			update[hashName] = newHash
 			collection.update(id, { $set: update })

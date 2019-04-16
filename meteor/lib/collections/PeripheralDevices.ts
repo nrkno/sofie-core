@@ -59,7 +59,7 @@ export interface MediaManagerDevice extends PeripheralDevice {
 	settings?: MediaManagerDeviceSettings
 }
 export interface SpreadsheetDevice extends PeripheralDevice {
-	type: 4, // PeripheralDeviceAPI.DeviceType.SPREADSHEET, TODO
+	type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
 	settings?: SpreadsheetDeviceSettings
 	secretSettings?: SpreadsheetDeviceSecretSettings
 	accessTokenUrl?: string

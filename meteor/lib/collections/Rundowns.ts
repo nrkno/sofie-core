@@ -70,8 +70,8 @@ export interface DBRundown extends IBlueprintRundownDB {
 	/** Timestamp of when rundown was unsynced */
 	unsyncedTime?: Time
 
-	/** Last sent storyStatus to MOS */
-	currentPlayingStoryStatus?: string
+	/** Last sent storyStatus to ingestDevice (MOS) */
+	notifiedCurrentPlayingPartExternalId?: string
 
 	holdState?: RundownHoldState
 	/** What the source of the data was */
@@ -106,10 +106,11 @@ export class Rundown implements DBRundown {
 	public nextPartId: string | null
 	public nextTimeOffset?: number
 	public startedPlayback?: Time
-	public currentPlayingStoryStatus?: string
+	public notifiedCurrentPlayingPartExternalId?: string
 	public holdState?: RundownHoldState
 	public dataSource: string
 	public notes?: Array<RundownNote>
+	_: any;
 
 	constructor (document: DBRundown) {
 		_.each(_.keys(document), (key: keyof DBRundown) => {

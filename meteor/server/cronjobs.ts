@@ -42,7 +42,7 @@ Meteor.startup(() => {
 			// Clean up Rundown data cache:
 			// Remove caches not related to rundowns:
 			let rundownCacheCount = 0
-			let rundownIds = _.pluck(Rundowns.find().fetch(), '_id')
+			let rundownIds = _.map(Rundowns.find().fetch(), rundown => rundown._id)
 			IngestDataCache.find({
 				rundownId: {$nin: rundownIds}
 			}).forEach((roc) => {
