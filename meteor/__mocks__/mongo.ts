@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath } from '../lib/lib'
+import { pushOntoPath, setOntoPath, mongoWhere } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
@@ -29,11 +29,12 @@ export namespace MongoMock {
 			query = query || {}
 
 			const docsArray = _.values(this.documents)
-			const docs: any[] = (
-				query._id ?
+			const docs: any[] = _.compact((
+				query._id && _.isString(query._id) ?
 				[this.documents[query._id]] :
-				_.where(docsArray, query)
-			)
+				_.filter(docsArray, (doc) => mongoWhere(doc, query))
+			))
+
 			return {
 				fetch () {
 					return docs
@@ -52,8 +53,9 @@ export namespace MongoMock {
 				// todo
 				let docs = this.find(query).fetch()
 				_.each(docs, (doc) => {
-					_.each(modifier, (value: any, key: string) => {
+					let replace = false
 
+					_.each(modifier, (value: any, key: string) => {
 						if (key === '$set') {
 							_.each(value, (value: any, key: string) => {
 								setOntoPath(doc, key, value )
@@ -63,11 +65,20 @@ export namespace MongoMock {
 								pushOntoPath(doc, key, value )
 							})
 						} else {
-							throw Error('Update method not implemented yet')
+							if (key[0] === '$') {
+								throw Error('Update method not implemented yet')
+							} else {
+								replace = true
+							}
 							// setOntoPath(doc, key, value )
 						}
 
 					})
+					if (replace) {
+						this.remove(doc._id)
+						if (!modifier._id) modifier._id = doc._id
+						this.insert(modifier)
+					}
 				})
 
 				if (cb) cb(undefined, docs.length)
@@ -100,6 +111,7 @@ export namespace MongoMock {
 			const docs = this.find(id).fetch()
 
 			if (docs.length === 1) {
+				console.log(docs)
 				this.update(docs[0]._id, modifier, options, cb)
 			} else {
 				this.insert({
@@ -108,7 +120,7 @@ export namespace MongoMock {
 				this.update(id, modifier, options, cb)
 			}
 		}
-		remove (query: any, cb) {
+		remove (query: any, cb?: Function) {
 			try {
 				const docs = this.find(query).fetch()
 
