@@ -662,6 +662,24 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 		})
 	})
 }
+/** Insert document, and ignore if document already exists */
+export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	doc: DBInterface,
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		collection.insert(doc, (err: any, idInserted) => {
+			if (err) {
+				if (err.toString().match(/duplicate key/i) ) {
+					// @ts-ignore id duplicate, doc._id must exist
+					resolve(doc._id)
+				} else {
+					reject(err)
+				}
+			} else resolve(idInserted)
+		})
+	})
+}
 export function asyncCollectionUpdate<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,

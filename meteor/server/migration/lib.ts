@@ -232,36 +232,82 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 	}
 }
 
-export function renamePropertiesInCollection<T extends any> (
+type RenameContent = {content: { [newValue: string]: string }}
+export function renamePropertiesInCollection<T extends any > (
 	id: string,
 	collection: Mongo.Collection<T>,
 	collectionName: string,
-	renames: {[oldName: string]: string}
+	renames: Partial<{[newAttr in keyof T]: string | RenameContent}>,
+	dependOnResultFrom?: string
 ) {
 	const m: any = {
 		$or: []
 	}
-	_.each(_.keys(renames), (oldAttr) => {
-		const o = {}
-		o[oldAttr] = {$exists: true}
-		m.$or.push(o)
+	const oldNames: {[oldAttr: string]: string} = {}
+	_.each(_.keys(renames), (newAttr) => {
+		const oldAttr = renames[newAttr]
+		if (_.isString(oldAttr)) {
+			oldNames[oldAttr] = newAttr
+		}
+	})
+
+	_.each(_.keys(renames), (newAttr) => {
+		const oldAttr: string | RenameContent | undefined = renames[newAttr]
+		if (oldAttr) {
+			if (_.isString(oldAttr)) {
+				const o = {}
+				o[oldAttr] = {$exists: true}
+				m.$or.push(o)
+			} else {
+				const oldAttrActual = oldNames[newAttr] || newAttr // If the attribute has been renamed, rename it here as well
+
+				// Select where a value is of the old, to-be-replaced value:
+				const o = {}
+				o[oldAttrActual] = {$in: _.values(oldAttr.content) }
+				m.$or.push(o)
+			}
+		}
 	})
 	return {
 		id: id,
 		canBeRunAutomatically: true,
+		dependOnResultFrom: dependOnResultFrom,
 		validate: () => {
 			const objCount = collection.find(m).count()
+			console.log(`validate ${id}: ${objCount}`)
+			console.log(m)
 			if (objCount > 0) return `${objCount} documents in ${collectionName} needs to be updated`
 			return false
 		},
 		migrate: () => {
+			console.log(`migrate ${id}`)
 			collection.find(m).forEach((doc) => {
-				_.each(renames, (newAttr, oldAttr) => {
+				// Rename properties:
+				_.each(_.keys(renames), (newAttr) => {
+					const oldAttr: string | RenameContent | undefined = renames[newAttr]
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
-						if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
-							doc[newAttr] = doc[oldAttr]
+						if (_.isString(oldAttr)) {
+
+							if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
+								doc[newAttr] = doc[oldAttr]
+							}
+							delete doc[oldAttr]
 						}
-						delete doc[oldAttr]
+					}
+				})
+				// Translate property contents:
+				_.each(_.keys(renames), (newAttr) => {
+					const oldAttr: string | RenameContent | undefined = renames[newAttr]
+					if (newAttr && oldAttr && newAttr !== oldAttr) {
+						if (!_.isString(oldAttr)) {
+							_.each(oldAttr.content, (oldValue, newValue) => {
+
+								if (doc[newAttr] === oldValue) {
+									doc[newAttr] = newValue
+								}
+
+							})
+						}
 					}
 				})
 				collection.update(doc._id, doc)

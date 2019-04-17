@@ -55,8 +55,9 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 0.22.0: Release 7   (2019-03-15)
  * 0.23.0: Release 8   (2019-04-08)
  * 0.24.0: Release 9   (TBD)
+ * 0.25.0: Release 10  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.24.0'
+export const CURRENT_SYSTEM_VERSION = '0.25.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
@@ -64,12 +65,14 @@ export const CURRENT_SYSTEM_VERSION = '0.24.0'
 export const GENESIS_SYSTEM_VERSION = '0.0.0'
 
 /**
- * These versions are not supported anymore (breaking changes occurred after these version)
+ * These versions are not supported anymore (breaking changes occurred after these versions)
  */
 export const UNSUPPORTED_VERSIONS = [
 	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
 	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
-	'<=0.18'
+	'<=0.18',
+	// 0.24.0 to 0.25.0: Major refactoring, Renamin of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
+	'<=0.24',
 ]
 
 export function isVersionSupported (version: Version) {
@@ -152,8 +155,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	Blueprints.find({}).forEach((blueprint) => {
 		if (blueprint.code) {
 			const rawBlueprint = evalBlueprints(blueprint)
-
-			console.log('Blueprint: ' + blueprint.name)
 
 			// @ts-ignore
 			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -463,8 +464,9 @@ export function runMigration (
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
 	if (manualInputsWithUserPrompt.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 
-	console.log('migration.chunks', migration.chunks)
-	console.log('chunks', chunks)
+	// console.log('migration.chunks', migration.chunks)
+	// console.log('chunks', chunks)
+
 	// Check that chunks match:
 	let unmatchedChunk = _.find(migration.chunks, (migrationChunk) => {
 		return !_.find(chunks, (chunk) => {
@@ -516,6 +518,8 @@ export function runMigration (
 			// Run the migration script
 
 			if (step.migrate !== undefined) {
+				logger.info(`Running migration step "${step.id}"`)
+
 				if (step.chunk.sourceType === MigrationStepType.CORE) {
 					let migration = step.migrate as MigrateFunctionCore
 					migration(stepInput)
@@ -564,6 +568,7 @@ export function runMigration (
 	let migrationCompleted: boolean = false
 
 	if (migration.manualStepCount === 0 && !warningMessages.length) { // continue automatically with the next batch
+		logger.info('Migration: Automatically continuing with next batch..')
 		migration.partialMigration = false
 		const s = getMigrationStatus()
 		if (s.migration.automaticStepCount > 0 && s.migration.manualStepCount > 0) {
