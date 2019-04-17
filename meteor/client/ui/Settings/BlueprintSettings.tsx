@@ -72,7 +72,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				yes: t('Update'),
 				no: t('Cancel'),
 				message: [
-					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
+					<p>{t('Are you sure you want to update the Blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
 					<p>{t('Please note: This action is irreversible!')}</p>
 				],
 				onAccept: () => {
@@ -115,7 +115,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>
 							{this.props.assignedShowStyles.length > 0 ?
 								this.props.assignedShowStyles.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${i._id}`}>{i.name}</Link></span>) :
-								t('No show styles are using this blueprint')}
+								t('This Blueprint is not being used by any Show Style')}
 						</p>
 					</div>
 				)
@@ -126,7 +126,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>
 							{this.props.assignedStudios.length > 0 ?
 								this.props.assignedStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
-								t('No studios are compatible with this blueprint')}
+								t('This Blueprint is not compatible with any Studio)}
 						</p>
 					</div>
 				)
