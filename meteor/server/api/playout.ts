@@ -93,7 +93,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { getBlueprintOfRundown, loadStudioBlueprints } from './blueprints/cache'
 import { RundownContext, StudioContext, PartEventContext } from './blueprints/context'
 import { postProcessStudioBaselineObjects } from './blueprints/postProcess'
-import { IngestActions } from './ingest/actions';
+import { IngestActions } from './ingest/actions'
 const PackageInfo = require('../../package.json')
 
 export namespace ServerPlayoutAPI {
@@ -412,8 +412,7 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(rundown.studioId)
 
-		sendStoryStatus(rundown, null)
-		IngestActions.sendPartStatus()
+		IngestActions.notifyCurrentPlayingPart(rundown, null)
 
 		Meteor.defer(() => {
 			let bp = getBlueprintOfRundown(rundown)
@@ -1885,7 +1884,8 @@ function afterTake (
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
 		if (takePart.updateStoryStatus) {
-			sendStoryStatus(rundown, takePart)
+			IngestActions.notifyCurrentPlayingPart(rundown, takePart)
+
 		}
 	}, 40)
 }
