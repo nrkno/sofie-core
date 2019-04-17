@@ -14,9 +14,6 @@
     "cov": "jest --coverage && opn .coverage/lcov-report/index.html",
     "cov-open": "opn .coverage/lcov-report/index.html",
     "test-i": "npm run integration-test",
-    "unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
-    "integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-    "test-once": "meteor test --once --driver-package meteortesting:mocha",
     "license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause ISC Apache Public-Domain 'Public Domain' Unlicense WTFPL CC-BY-4.0 --allow-packages cycle @fortawesome/fontawesome-common-types",
     "lint": "tslint --project tsconfig.json --config tslint.json",
     "i18n-extract-pot": "i18next-extract-gettext --files=\"./client/ui/**/*.+(ts|tsx)\" --output=i18n/template.pot",
@@ -26,7 +23,11 @@
     "i18n-compile-json-sv": "i18next-conv -l sv -s i18n/sv.po -t public/locales/sv/translations.json --skipUntranslated",
     "release": "standard-version",
     "prepareChangelog": "standard-version --prerelease",
-    "validate-dependencies": "npm audit && npm run license-validate"
+    "validate-dependencies": "npm audit && npm run license-validate",
+  
+    "deprecated-unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
+    "deprecated-integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+    "deprecated-test-once": "meteor test --once --driver-package meteortesting:mocha"
   },
   "dependencies": {
     "@babel/runtime": "7.0.0-beta.48",
@@ -96,7 +97,6 @@
     "@types/jest": "^24.0.6",
     "@types/jquery": "^3.3.1",
     "@types/meteor": "1.4.21",
-    "@types/mocha": "^2.2.48",
     "@types/mousetrap": "^1.6.0",
     "@types/node": "^9.6.1",
     "@types/prop-types": "^15.5.2",

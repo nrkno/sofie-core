@@ -30,6 +30,7 @@ module.exports = {
 		'**/__tests__/**/*.(spec|test).(ts|js)',
 		'!.meteor/*.*'
 	],
+	setupFilesAfterEnv : ['./__mocks__/_setupMocks.ts'],
 	testEnvironment: 'node',
 	coverageThreshold: {
 		global: {

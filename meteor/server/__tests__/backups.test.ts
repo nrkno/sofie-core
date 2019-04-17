@@ -7,11 +7,6 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { MeteorMock } from '../../__mocks__/meteor'
 
-jest.mock('meteor/meteor', require('../../__mocks__/meteor').setup, { virtual: true })
-jest.mock('meteor/random', require('../../__mocks__/random').setup, { virtual: true })
-jest.mock('meteor/meteorhacks:picker', require('../../__mocks__/meteorhacks-picker').setup, { virtual: true })
-jest.mock('meteor/mongo', require('../../__mocks__/mongo').setup, { virtual: true })
-
 describe('backups', () => {
 
 	test('restoreRundown', () => {
