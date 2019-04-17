@@ -274,13 +274,10 @@ export function renamePropertiesInCollection<T extends any > (
 		dependOnResultFrom: dependOnResultFrom,
 		validate: () => {
 			const objCount = collection.find(m).count()
-			console.log(`validate ${id}: ${objCount}`)
-			console.log(m)
 			if (objCount > 0) return `${objCount} documents in ${collectionName} needs to be updated`
 			return false
 		},
 		migrate: () => {
-			console.log(`migrate ${id}`)
 			collection.find(m).forEach((doc) => {
 				// Rename properties:
 				_.each(_.keys(renames), (newAttr) => {
