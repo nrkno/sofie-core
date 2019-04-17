@@ -22,6 +22,9 @@ export interface SnapshotBase {
 export interface SnapshotItem extends SnapshotBase {
 	fileName: string
 	comment: string
+
+	studioId?: string
+	rundownId?: string
 }
 
 export interface SnapshotRundown extends SnapshotBase {
