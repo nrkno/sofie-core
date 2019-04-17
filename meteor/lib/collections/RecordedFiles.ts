@@ -20,8 +20,7 @@ registerCollection('RecordedFiles', RecordedFiles)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RecordedFiles._ensureIndex({
-			studioId: 1,
-			rundownId: 1,
+			studioId: 1
 		})
 	}
 })
