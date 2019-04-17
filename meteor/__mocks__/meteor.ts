@@ -39,7 +39,7 @@ namespace Meteor {
 		stop (): void
 	}
 }
-
+const OriginalError = Error
 export namespace MeteorMock {
 
 	export let isClient: boolean = false
@@ -61,7 +61,27 @@ export namespace MeteorMock {
 		return this.mockUser ? this.mockUser._id : undefined
 	}
 	export class Error {
+		private _stack?: string
 		constructor (public errorCode: number, public reason?: string) {
+			const e = new OriginalError('')
+			let stack: string = e.stack || ''
+
+			const lines = stack.split('\n')
+			if (lines.length > 1) {
+				lines.shift()
+				stack = lines.join('\n')
+			}
+			this._stack = stack
+			// console.log(this._stack)
+		}
+		get name () {
+			return this.toString()
+		}
+		get message () {
+			return this.toString()
+		}
+		get stack () {
+			return this._stack
 		}
 		toString () {
 			return `[${this.errorCode}] ${this.reason}`

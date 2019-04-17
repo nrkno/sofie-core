@@ -38,6 +38,7 @@ export function runInFiber (fcn: Function): Promise<void> {
 				// the function has finished
 				resolve()
 			} catch (e) {
+				console.log('Error: ' + e)
 				reject(e)
 			}
 		}).run()
