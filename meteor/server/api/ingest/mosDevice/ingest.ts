@@ -117,17 +117,10 @@ export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, ru
 
 	// Load the cached RO Data
 	const ingestRundown = loadCachedRundownData(rundown._id)
-	ingestRundown.payload = rundownData
-	// TODO - verify this dosnt lose data, it was doing more work before
+	ingestRundown.payload = _.extend(ingestRundown.payload, rundownData)
+	// TODO - verify this doesn't lose data, it was doing more work before
 
-	const blueprintContext = new ShowStyleContext(studio, rundown.showStyleBaseId, rundown.showStyleVariantId)
-	const blueprintRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
-
-	// Save the update
-	Rundowns.update(rundown._id, {
-		$set: blueprintRes.rundown
-	})
-	saveRundownCache(rundown._id, ingestRundown) // TODO - make this more lightweight?
+	handleUpdatedRundown(peripheralDevice, ingestRundown, 'mosRoMetadata') // TODO - make this more lightweight?
 }
 
 export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
