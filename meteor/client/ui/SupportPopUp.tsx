@@ -53,8 +53,8 @@ interface IToggleProps {
 export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 	render () {
 		return <React.Fragment>
-			<div className={ClassNames('support__toggle-button', {
-				'open': this.props.isOpen,
+			<div className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
+				'status-bar__controls__button--open': this.props.isOpen,
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<FontAwesomeIcon icon={faQuestion} />
 			</div>

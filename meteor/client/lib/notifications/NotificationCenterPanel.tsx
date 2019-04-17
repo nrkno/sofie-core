@@ -93,8 +93,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 	}
 }
 
+/**
+ * NotificationCenterPopUps props.
+ */
 interface IProps {
+	/** Should the list show a 'List empty' label, if the notification list is empty? Defaults to false */
 	showEmptyListLabel?: boolean
+	/** Should snoozed notifications be shown? Defaults to false */
 	showSnoozed?: boolean
 }
 
@@ -108,6 +113,11 @@ interface ITrackedProps {
 	highlightedLevel: NoticeLevel
 }
 
+/**
+ * Presentational component that displays a list of notifications from the Notification Center.
+ * @class NotificationCenterPopUps
+ * @extends React.Component<IProps>
+ */
 export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	return {
 		notifications: NotificationCenter.getNotifications(),
@@ -189,6 +199,13 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	}
 })
 
+/**
+ * Presentational component that displays a panel containing the NotificationCenterPopUps list containing
+ * the snoozed items and an 'Empty' label if no notifications are present.
+ * @export
+ * @class NotificationCenterPanel
+ * @extends React.Component
+ */
 export class NotificationCenterPanel extends React.Component {
 	render () {
 		return (
@@ -199,8 +216,14 @@ export class NotificationCenterPanel extends React.Component {
 	}
 }
 
+/**
+ * NotificationCenterPanelToggle props
+ * @interface IToggleProps
+ */
 interface IToggleProps {
+	/** Click event handler */
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+	/** Use 'open' class for the button to signify that the notification center is open */
 	isOpen?: boolean
 }
 
@@ -208,6 +231,12 @@ interface ITrackedCountProps {
 	count: number
 }
 
+/**
+ * A button for with a count of notifications in the Notification Center
+ * @export
+ * @class NotificationCenterPanelToggle
+ * @extends React.Component<IToggleProps>
+ */
 export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrackedCountProps>(() => {
 	return {
 		count: NotificationCenter.count()
@@ -215,8 +244,8 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 })(class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
 	render () {
 		return (
-			<div className={ClassNames('notifications__toggle-button', {
-				'open': this.props.isOpen,
+			<div className={ClassNames('status-bar__controls__button', 'notifications__toggle-button', {
+				'status-bar__controls__button--open': this.props.isOpen,
 				'has-items': this.props.count > 0
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<WarningIcon />

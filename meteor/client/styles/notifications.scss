@@ -113,32 +113,18 @@
 
 .notifications__toggle-button {
     position: fixed;
-    display: block;
-    border: none;
     right: 5px;
     top: 4.5em;
-    background: transparentize(#4B4B4B, 0.45);
-    width: $fullscreen-controls__button--radius;
-    height: $fullscreen-controls__button--radius;
-    border-radius: 100%;
-    transition: 0.3s background-color;
-    margin-bottom: 0.5rem;
-    font-size: 1em;
     z-index: 310;
     text-align: left;
     cursor: pointer;
 
-    &:active, &.active {
-        background: $ui-button-primary;
-        transition: 0s background-color;
-    }
-
     > svg {
         position: absolute;
-        width: 50%;
-        height: 50%;
+        width: #{$fullscreen-controls__button--radius / 2};
+        height: #{$fullscreen-controls__button--radius / 2};
         top: 50%;
-        left: 50%;
+        right: 0;
         transform: translate(-50%, -53%);
         transition: 0.5s all ease-in-out;
 
@@ -158,8 +144,12 @@
         }
     }
 
-    &.open {
-        
+    &.status-bar__controls__button--open:not(.has-items) {
+        > svg {
+            > path {
+                stroke: #333;
+            }
+        }
     }
 
     .notifications__toggle-button__count {
@@ -182,6 +172,16 @@
         .notifications__toggle-button__count {
             opacity: 1;
             transition: 0.2s opacity ease-out 0.4s;
+        }
+    }
+}
+
+.running-order {
+    .notifications__toggle-button.status-bar__controls__button--open {
+        > svg {
+            > path {
+                stroke: #fff;
+            }
         }
     }
 }
