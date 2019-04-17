@@ -18,6 +18,11 @@ interface IPopUpProps {
 	onDismiss?: (e: any) => void
 }
 
+/**
+ * The component that is used for both elements within the Notification Center as well as the Notification pop-ups as well
+ * @class NotificationPopUp
+ * @extends React.Component<IPopUpProps>
+ */
 class NotificationPopUp extends React.Component<IPopUpProps> {
 	triggerEvent = (action: NotificationAction, e) => {
 

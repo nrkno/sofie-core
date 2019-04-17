@@ -10,49 +10,65 @@ import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 export namespace RundownTiming {
+	/**
+	 * Events used by the RundownTimingProvider
+	 * @export
+	 * @enum {number}
+	 */
 	export enum Events {
-		'timeupdate'		= 'sofie:rundownTimeUpdate', // this event is emitted every now-and-then, generally to be used for simple displays
-		'timeupdateHR'		= 'sofie:rundownTimeUpdateHR' // this event is emmited with a very high resolution, to be used sparingly
+		/** Event is emitted every now-and-then, generally to be used for simple displays */
+		'timeupdate'		= 'sofie:rundownTimeUpdate',
+		/** event is emmited with a very high frequency (60 Hz), to be used sparingly as hooking up Components to it will cause a lot of renders */
+		'timeupdateHR'		= 'sofie:rundownTimeUpdateHR'
 	}
 
-	export interface RundownTimingContext { // this is the context object that will be passed to listening components
-		// this is the total duration of the rundown as planned (using expectedDurations)
+	/**
+	 * Context object that will be passed to listening components. The dictionaries use the Part ID as a key.
+	 * @export
+	 * @interface RundownTimingContext
+	 */
+	export interface RundownTimingContext {
+		/** This is the total duration of the rundown as planned (using expectedDurations). */
 		totalRundownDuration?: number
-		// this is the content remaining to be played in the rundown (based on the expectedDurations)
+		/** This is the content remaining to be played in the rundown (based on the expectedDurations).  */
 		remainingRundownDuration?: number
-		// this is the tottal duration of the rundown: as planned for the unplayed content, and as-run for the played-out
+		/** This is the tottal duration of the rundown: as planned for the unplayed content, and as-run for the played-out. */
 		asPlayedRundownDuration?: number
-		// Part ID is the key for these dictionaries
-		// this is the countdown to each of the parts relative to the current on air part.
+		/** this is the countdown to each of the parts relative to the current on air part. */
 		partCountdown?: {
 			[key: string]: number
 		}
-		// the calculated durations of each of the Parts: as-planned/as-run depending on state
+		/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
 		partDurations?: {
 			[key: string]: number
 		}
-		// the offset of each of the Parts from the beginning of the Rundown
+		/** The offset of each of the Parts from the beginning of the Rundown. */
 		partStartsAt?: {
 			[key: string]: number
 		}
-		// same as partStartsAt, but will include display duration overrides (such as minimal display width for an Part, etc.)
+		/** Same as partStartsAt, but will include display duration overrides (such as minimal display width for an Part, etc.). */
 		partDisplayStartsAt?: {
 			[key: string]: number
 		}
-		// same as partDurations, but will include display duration overrides (such as minimal display width for an Part, etc.)
+		/** Same as partDurations, but will include display duration overrides (such as minimal display width for an Part, etc.). */
 		partDisplayDurations?: {
 			[key: string]: number
 		}
-		// As-played durations of each part. Will be 0, if not yet played. Will be counted from start to now if currently playing.
+		/** As-played durations of each part. Will be 0, if not yet played. Will be counted from start to now if currently playing. */
 		partPlayed?: {
 			[key: string]: number
 		}
-		// Expected durations of each of the parts or the as-played duration, if the Part does not have an expected duration.
+		/** Expected durations of each of the parts or the as-played duration, if the Part does not have an expected duration. */
 		partExpectedDurations?: {
 			[key: string]: number
 		}
 	}
 
+	/**
+	 * This are the properties that will be injected by the withTiming HOC.
+	 * @export
+	 * @interface InjectedROTimingProps
+	 */
 	export interface InjectedROTimingProps {
 		timingDurations: RundownTimingContext
 	}
@@ -61,11 +77,17 @@ export namespace RundownTiming {
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
 
+/**
+ * RundownTimingProvider properties.
+ * @interface IRundownTimingProviderProps
+ */
 interface IRundownTimingProviderProps {
+	/** Rundown that is to be used for generating the timing information. */
 	rundown?: Rundown
-	// parts: Array<Part>
-	refreshInterval?: number // the interval for high-resolution timing events. If undefined, it will fall back onto TIMING_DEFAULT_REFRESH_INTERVAL
-	defaultDuration?: number // the fallback duration for Parts that have no as-played duration of their own
+	/** Interval for high-resolution timing events. If undefined, it will fall back onto TIMING_DEFAULT_REFRESH_INTERVAL. */
+	refreshInterval?: number
+	/** Fallback duration for Parts that have no as-played duration of their own. */
+	defaultDuration?: number
 }
 interface IRundownTimingProviderChildContext {
 	durations: RundownTiming.RundownTimingContext
@@ -76,6 +98,11 @@ interface IRundownTimingProviderTrackedProps {
 	parts: Array<Part>
 }
 
+/**
+ * RundownTimingProvider is a container component that provides a timing context to all child elements. It allows calculating a single 
+ * @class RundownTimingProvider
+ * @extends React.Component<IRundownTimingProviderProps>
+ */
 export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
 	let parts: Array<Part> = []
@@ -91,7 +118,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 	return {
 		parts
 	}
-})(class extends MeteorReactComponent<IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState> implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
+})(class RundownTimingProvider extends MeteorReactComponent<IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState> implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
 	static childContextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -334,7 +361,20 @@ export interface WithTimingOptions {
 export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
 
-export function withTiming<IProps, IState> (options?: WithTimingOptions | Function):
+/**
+ * Wrap a component in a HOC that will inject a the timing context as a prop. Takes an optional options object that
+ * allows a high timing resolution or filtering of the changes in the context, so that the child component only
+ * re-renders when a change to the filtered value happens.
+ * The options object can also be replaced with an options generator function that will take the incoming props
+ * as an argument and produce a {WithTimingOptions} object
+ * @export
+ * @template IProps The props interface of the child component
+ * @template IState The state interface of the child component
+ * @param  {(WithTimingOptions | ((props: IProps) => WithTimingOptions))} [options] The options object or the options object generator
+ * @return (WrappedComponent: IWrappedComponent<IProps, IState>) =>
+ * 		new (props: IProps, context: any ) => React.Component<IProps, IState>
+ */
+export function withTiming<IProps, IState>(options?: WithTimingOptions | ((props: IProps) => WithTimingOptions)):
 	(WrappedComponent: IWrappedComponent<IProps, IState>) =>
 		new (props: IProps, context: any ) => React.Component<IProps, IState> {
 	let expandedOptions: WithTimingOptions = _.extend({
@@ -405,20 +445,25 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | Functi
 
 interface IPartCountdownProps {
 	partId?: string
-	timingDurations?: RundownTiming.RundownTimingContext
-	hideOnZerundown?: boolean
+	hideOnZero?: boolean
 }
 interface IPartCountdownState {
 }
+
+/**
+ * A presentational component that will render a countdown to a given Part
+ * @class PartCountdown
+ * @extends React.Component<WithTiming<IPartCountdownProps>>
+ */
 export const PartCountdown = withTiming<IPartCountdownProps, IPartCountdownState>()(
-class extends React.Component<WithTiming<IPartCountdownProps>, IPartCountdownState> {
+class PartCountdown extends React.Component<WithTiming<IPartCountdownProps>, IPartCountdownState> {
 	render () {
 		return (<span>
 			{this.props.partId &&
 				this.props.timingDurations &&
 				this.props.timingDurations.partCountdown &&
 				this.props.timingDurations.partCountdown[this.props.partId] !== undefined &&
-				(this.props.hideOnZerundown !== true || this.props.timingDurations.partCountdown[this.props.partId] > 0) &&
+				(this.props.hideOnZero !== true || this.props.timingDurations.partCountdown[this.props.partId] > 0) &&
 					RundownUtils.formatTimeToShortTime(this.props.timingDurations.partCountdown[this.props.partId])}
 		</span>)
 	}
@@ -428,33 +473,45 @@ interface ISegmentDurationProps {
 }
 interface ISegmentDurationState {
 }
+
+/**
+ * A presentational component that will render a counter that will show how much content is left in a segment consisting of given parts
+ * @class SegmentDuration
+ * @extends React.Component<WithTiming<ISegmentDurationProps>>
+ */
 export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDurationState>()(
-	class extends React.Component<WithTiming<ISegmentDurationProps>, ISegmentDurationState> {
+class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>, ISegmentDurationState> {
+	render () {
+		if (
+			this.props.partIds &&
+			this.props.timingDurations.partExpectedDurations &&
+			this.props.timingDurations.partPlayed
+		) {
+			let partExpectedDurations = this.props.timingDurations.partExpectedDurations
+			let partPlayed = this.props.timingDurations.partPlayed
 
-		render () {
-			if (
-				this.props.partIds &&
-				this.props.timingDurations.partExpectedDurations &&
-				this.props.timingDurations.partPlayed
-			) {
-				let partExpectedDurations = this.props.timingDurations.partExpectedDurations
-				let partPlayed = this.props.timingDurations.partPlayed
+			const duration = this.props.partIds.reduce((memo, item) => {
+				return partExpectedDurations[item] !== undefined ?
+					memo + Math.max(0, partExpectedDurations[item] - (partPlayed[item] || 0)) :
+					memo
+			}, 0)
 
-				const duration = this.props.partIds.reduce((memo, item) => {
-					return partExpectedDurations[item] !== undefined ?
-						memo + Math.max(0, partExpectedDurations[item] - (partPlayed[item] || 0)) :
-						memo
-				}, 0)
-
-				return <span className={duration < 0 ? 'negative' : undefined}>
-					{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
-				</span>
-			}
-
-			return null
+			return <span className={duration < 0 ? 'negative' : undefined}>
+				{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
+			</span>
 		}
-	})
 
+		return null
+	}
+})
+
+/**
+ * Computes the actual (as-played fallbacking to expected) duration of a segment, consisting of given parts
+ * @export
+ * @param  {RundownTiming.RundownTimingContext} timingDurations The timing durations calculated for the Rundown
+ * @param  {Array<string>} partIds The IDs of parts that are members of the segment
+ * @return number
+ */
 export function computeSegmentDuration (timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>): number {
 	let partDurations = timingDurations.partDurations
 

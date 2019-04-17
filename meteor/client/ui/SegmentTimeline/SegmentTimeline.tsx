@@ -574,7 +574,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										this.props.parts[0]._id
 									)
 								) || undefined }
-							hideOnZerundown={true}
+							hideOnZero={true}
 						/>
 					 }
 				</div>
