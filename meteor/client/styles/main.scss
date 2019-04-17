@@ -61,3 +61,7 @@ a.selectable {
 		text-decoration: inherit;
 	}
 }
+
+.btn > svg.svg-inline--fa + span {
+	margin-left: 0.5em;
+}
