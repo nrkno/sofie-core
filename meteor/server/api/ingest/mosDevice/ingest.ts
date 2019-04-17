@@ -3,12 +3,17 @@ import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { getStudioFromDevice, getRundown, getSegmentId, canBeUpdated } from '../lib'
-import { getMosRundownId, getMosPartId, getSegmentExternalId, fixIllegalObject } from './lib'
+import {
+	getRundownIdFromMosRO,
+	getPartIdFromMosStory,
+	getSegmentExternalId,
+	fixIllegalObject
+} from './lib'
 import { literal } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, removeSegment } from '../rundownInput'
-import { loadCachedRundownData, saveRundownCache } from '../ingestCache'
+import { loadCachedRundownData, saveRundownCache, loadCachedIngestPart, loadCachedIngestSegment, loadIngestDataCachePart } from '../ingestCache'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Parts } from '../../../../lib/collections/Parts'
@@ -30,7 +35,7 @@ function storiesToIngestParts (rundownId: string, stories: MOS.IMOSStory[], unde
 		const name = (s.Slug ? s.Slug.toString() : '')
 		return {
 			externalId: s.ID.toString(),
-			partId: getMosPartId(rundownId, s.ID),
+			partId: getPartIdFromMosStory(rundownId, s.ID),
 			segmentName: name.split(';')[0],
 			ingest: literal<IngestPart>({
 				externalId: s.ID.toString(),
@@ -53,28 +58,28 @@ function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string, parts:
 	})
 	return groupedStories
 }
-function groupedPartsToSegments (mosRundownId: MOS.MosString128, groupedParts: { name: string, parts: IngestPart[]}[]): IngestSegment[] {
+function groupedPartsToSegments (rundownId: string, groupedParts: { name: string, parts: IngestPart[]}[]): IngestSegment[] {
 	return _.map(groupedParts, (grp, i) => literal<IngestSegment>({
-		externalId: getSegmentExternalId(mosRundownId, grp.parts[0], i),
+		externalId: getSegmentExternalId(rundownId, grp.parts[0], i),
 		name: grp.name,
 		rank: i,
 		parts: grp.parts,
 	}))
 }
 
-export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRundown: MOS.IMOSRunningOrder, createFresh: boolean) {
+export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRunningOrder: MOS.IMOSRunningOrder, createFresh: boolean) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
-	const rundownId = getMosRundownId(studio, mosRundown.ID)
+	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
 
-	const stories = _.compact(storiesToIngestParts(rundownId, mosRundown.Stories || [], !createFresh))
-	const groupedStories = groupIngestParts(stories)
+	const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh))
+	const groupedStories = groupIngestParts(parts)
 
 	// If this is a reload of a RO, then use cached data to make the change more seamless
 	if (!createFresh) {
-		const partIds = _.map(stories, s => s.externalId)
+		const partIds = _.map(parts, s => s.externalId)
 		const partCache = IngestDataCache.find({
 			rundownId: rundownId,
 			partId: { $in: partIds },
@@ -84,7 +89,7 @@ export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRun
 		const partCacheMap: { [id: string]: IngestPart } = {}
 		_.each(partCache, p => partCacheMap[p._id] = p.data as IngestPart)
 
-		_.each(stories, s => {
+		_.each(parts, s => {
 			const cached = partCacheMap[s.partId]
 			if (cached) {
 				s.ingest.payload = cached.payload
@@ -92,22 +97,22 @@ export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRun
 		})
 	}
 
-	const ingestSegments = groupedPartsToSegments(mosRundown.ID, groupedStories)
+	const ingestSegments = groupedPartsToSegments(rundownId, groupedStories)
 
 	const ingestRundown = literal<IngestRundown>({
-		externalId: mosRundown.ID.toString(),
-		name: mosRundown.Slug.toString(),
+		externalId: mosRunningOrder.ID.toString(),
+		name: mosRunningOrder.Slug.toString(),
 		type: 'mos',
 		segments: ingestSegments,
-		payload: mosRundown
+		payload: mosRunningOrder
 	})
 
 	handleUpdatedRundown(peripheralDevice, ingestRundown, createFresh ? 'mosCreate' : 'mosList')
 }
-export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, rundownData: MOS.IMOSRunningOrderBase) {
+export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, mosRunningOrderBase: MOS.IMOSRunningOrderBase) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
-	const rundown = getRundown(getMosRundownId(studio, rundownData.ID))
+	const rundown = getRundown(getRundownIdFromMosRO(studio, mosRunningOrderBase.ID))
 	if (!canBeUpdated(rundown)) return // TODO - more stuff in this file need this guard?
 
 	// Load the blueprint to process the data
@@ -117,7 +122,7 @@ export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, ru
 
 	// Load the cached RO Data
 	const ingestRundown = loadCachedRundownData(rundown._id)
-	ingestRundown.payload = _.extend(ingestRundown.payload, rundownData)
+	ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
 	// TODO - verify this doesn't lose data, it was doing more work before
 
 	handleUpdatedRundown(peripheralDevice, ingestRundown, 'mosRoMetadata') // TODO - make this more lightweight?
@@ -128,39 +133,32 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	// @ts-ignore
 	// logger.debug(story)
 
+	const runningOrderExternalId = story.RunningOrderId
+
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getMosRundownId(studio, story.RunningOrderId)
-	const partId = getMosPartId(rundownId, story.ID)
-	const cachedPart = IngestDataCache.findOne({
-		rundownId: rundownId,
-		partId: partId,
-		type: IngestCacheType.PART,
-	})
-	if (!cachedPart || !cachedPart.segmentId) {
-		throw new Meteor.Error(500, 'Got MOSFullStory for an unknown Part')
-	}
-	const cachedSegment = IngestDataCache.findOne({
-		rundownId: rundownId,
-		segmentId: cachedPart.segmentId,
-		type: IngestCacheType.SEGMENT,
-	})
-	if (!cachedSegment) {
-		throw new Meteor.Error(500, 'Got MOSFullStory for an unknown Segment')
+	const rundownId = getRundownIdFromMosRO(studio, runningOrderExternalId)
+	const partId = getPartIdFromMosStory(rundownId, story.ID)
+
+	const cachedPartData = loadIngestDataCachePart(rundownId, partId)
+	if (!cachedPartData.segmentId) {
+		throw new Meteor.Error(500, `SegmentId missing for part "${partId}" (MOSFullStory)`)
 	}
 
-	const ingestPart = cachedPart.data as IngestPart
+	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundownId, cachedPartData.segmentId)
+
+	const ingestPart: IngestPart = cachedPartData.data
 	ingestPart.name = story.Slug ? story.Slug.toString() : ''
 	ingestPart.payload = story
 
 	// Need the raw id, not the hashed copy
-	const segmentId = getSegmentExternalId(story.RunningOrderId, ingestPart, (cachedSegment.data as IngestSegment).rank)
+	const segmentId = getSegmentExternalId(rundownId, ingestPart, ingestSegment.rank)
 
 	// Update db with the full story:
-	handleUpdatedPart(peripheralDevice, story.RunningOrderId.toString(), segmentId, story.ID.toString(), ingestPart)
+	handleUpdatedPart(peripheralDevice, runningOrderExternalId.toString(), segmentId, story.ID.toString(), ingestPart)
 }
-export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, stories: Array<MOS.MosString128>) {
+export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, stories: Array<MOS.MosString128>) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getMosRundownId(studio, rundownId))
+	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -170,7 +168,7 @@ export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, rundow
 
 	if (filteredParts.length === ingestParts.length) return // Nothing was removed
 
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, filteredParts)
+	diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
 }
 
 function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngestPart[] {
@@ -187,9 +185,9 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 	})
 	return ingestParts
 }
-export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, previousPartId: MOS.MosString128, removePrevious: boolean, newStories: MOS.IMOSROStory[]) {
+export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, previousPartId: MOS.MosString128, removePrevious: boolean, newStories: MOS.IMOSROStory[]) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getMosRundownId(studio, rundownId))
+	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -206,7 +204,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId
 	}
 
 	const newPartIds = _.map(newParts, p => p.externalId)
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts)
+	diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
 	// Update next if we inserted before the part that is next
 	// Note: the case where we remove the previous line is handled inside diffAndApplyChanges
@@ -232,9 +230,9 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, rundownId
 		}
 	}
 }
-export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, story0: MOS.MosString128, story1: MOS.MosString128) {
+export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, story0: MOS.MosString128, story1: MOS.MosString128) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getMosRundownId(studio, rundownId))
+	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -251,7 +249,7 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId
 	ingestParts[story0Index] = ingestParts[story1Index]
 	ingestParts[story1Index] = tmp
 
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts)
+	diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
 	// Update next
 	if (!rundown.nextPartManual && rundown.nextPartId) {
@@ -270,9 +268,9 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, rundownId
 		}
 	}
 }
-export function handleMoveStories (peripheralDevice: PeripheralDevice, rundownId: MOS.MosString128, insertBefore: MOS.MosString128, stories: MOS.MosString128[]) {
+export function handleMoveStories (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, insertBefore: MOS.MosString128, stories: MOS.MosString128[]) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getMosRundownId(studio, rundownId))
+	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -291,13 +289,13 @@ export function handleMoveStories (peripheralDevice: PeripheralDevice, rundownId
 	// Reinsert parts
 	filteredParts.splice(insertIndex, 0, ...movingParts)
 
-	diffAndApplyChanges(studio, rundownId, rundown, ingestRundown, ingestParts)
+	diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 }
 
-function diffAndApplyChanges (studio: Studio, rundownId: MOS.MosString128, rundown: Rundown, ingestRundown: IngestRundown, ingestParts: AnnotatedIngestPart[]) {
+function diffAndApplyChanges (studio: Studio, rundown: Rundown, ingestRundown: IngestRundown, ingestParts: AnnotatedIngestPart[]) {
 	// Save the new parts list
 	const groupedParts = groupIngestParts(ingestParts)
-	const ingestSegments = groupedPartsToSegments(rundownId, groupedParts)
+	const ingestSegments = groupedPartsToSegments(rundown._id, groupedParts)
 
 	const oldSegmentEntries = compileSegmentEntries(ingestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(ingestSegments)

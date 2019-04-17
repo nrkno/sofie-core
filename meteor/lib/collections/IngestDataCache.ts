@@ -11,18 +11,39 @@ export enum IngestCacheType {
 }
 export type IngestCacheData = IngestRundown | IngestSegment | IngestPart
 
-export interface IngestDataCacheObj {
-	_id: string,
-	modified: number,
-	type: IngestCacheType,
+export interface IngestDataCacheObjBase {
+	_id: string
+	modified: number
+	type: IngestCacheType
 
 	/** Id of the Rundown */
-	rundownId: string,
-	segmentId?: string,
-	partId?: string,
+	rundownId: string
+	segmentId?: string
+	partId?: string
 
 	data: IngestCacheData
 }
+
+export interface IngestDataCacheObjRundown extends IngestDataCacheObjBase {
+	type: IngestCacheType.RUNDOWN
+	rundownId: string
+	data: IngestRundown
+}
+export interface IngestDataCacheObjSegment extends IngestDataCacheObjBase {
+	type: IngestCacheType.SEGMENT
+	rundownId: string
+	segmentId: string
+
+	data: IngestSegment
+}
+export interface IngestDataCacheObjPart extends IngestDataCacheObjBase {
+	type: IngestCacheType.PART
+	rundownId: string
+	segmentId: string
+	partId: string
+	data: IngestPart
+}
+export type IngestDataCacheObj = IngestDataCacheObjRundown | IngestDataCacheObjSegment | IngestDataCacheObjPart
 
 export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDataCacheObj>
 	= new Mongo.Collection<IngestDataCacheObj>('ingestDataCache')

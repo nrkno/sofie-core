@@ -33,7 +33,7 @@ import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
-import { loadCachedPartData, loadCachedRundownData } from '../ingest/ingestCache'
+import { loadCachedIngestPart, loadCachedRundownData } from '../ingest/ingestCache'
 
 /** Common */
 
@@ -360,10 +360,9 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	}
 	/** Get the mos story related to a part */
 	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
-		let partId = part._id
-		check(partId, String)
+		check(part._id, String)
 
-		return loadCachedPartData(this.rundown._id, part.segmentId, part._id)
+		return loadCachedIngestPart(this.rundown._id, part._id)
 	}
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown (): IngestRundown | undefined {

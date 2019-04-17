@@ -1,17 +1,17 @@
 import * as MOS from 'mos-connection'
 import { setMeteorMethods, Methods } from '../../../methods'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { MosIntegration } from './mos'
+import { MosIntegration } from './mosIntegration'
 
 let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId: string, deviceToken: string, rundown: MOS.IMOSRunningOrder) => {
-	return MosIntegration.mosRoCreate(deviceId, deviceToken, rundown)
+methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId: string, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) => {
+	return MosIntegration.mosRoCreate(deviceId, deviceToken, mosRunningOrder)
 }
-methods[PeripheralDeviceAPI.methods.mosRoReplace] = (deviceId: string, deviceToken: string, rundown: MOS.IMOSRunningOrder) => {
-	return MosIntegration.mosRoReplace(deviceId, deviceToken, rundown)
+methods[PeripheralDeviceAPI.methods.mosRoReplace] = (deviceId: string, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) => {
+	return MosIntegration.mosRoReplace(deviceId, deviceToken, mosRunningOrder)
 }
-methods[PeripheralDeviceAPI.methods.mosRoDelete] = (deviceId: string, deviceToken: string, rundownId: MOS.MosString128, force?: boolean) => {
-	return MosIntegration.mosRoDelete(deviceId, deviceToken, rundownId, force)
+methods[PeripheralDeviceAPI.methods.mosRoDelete] = (deviceId: string, deviceToken: string, mosRunningOrderId: MOS.MosString128, force?: boolean) => {
+	return MosIntegration.mosRoDelete(deviceId, deviceToken, mosRunningOrderId, force)
 }
 methods[PeripheralDeviceAPI.methods.mosRoMetadata] = (deviceId: string, deviceToken: string, metadata: MOS.IMOSRunningOrderBase) => {
 	return MosIntegration.mosRoMetadata(deviceId, deviceToken, metadata)

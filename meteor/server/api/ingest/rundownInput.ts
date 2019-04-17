@@ -128,6 +128,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 		if (canBeUpdated(rundown)) {
 			rundown.remove()
 		} else {
+			logger.info(`Rundown "${rundown._id}" cannot be updated`)
 			if (!rundown.unsynced) {
 				ServerRundownAPI.unsyncRundown(rundown._id)
 			}

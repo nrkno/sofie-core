@@ -91,12 +91,4 @@ if (logToFile || logPath !== '') {
 	})
 }
 
-// let orgConsoleLog = console.log
-// console.log = (...args) => {
-// 	// @ts-ignore
-// 	logger.debug(...args)
-// }
-
-
-
 export { logger }

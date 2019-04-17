@@ -2,8 +2,9 @@ import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { saveIntoDb, getCurrentTime } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { IngestDataCacheObj, IngestDataCache, IngestCacheType } from '../../../lib/collections/IngestDataCache'
+import { IngestDataCacheObj, IngestDataCache, IngestCacheType, IngestDataCacheObjPart, IngestDataCacheObjRundown, IngestDataCacheObjSegment } from '../../../lib/collections/IngestDataCache'
 import { getSegmentId, getPartId } from './lib'
+import { logger } from '../../../lib/logging'
 
 export function loadCachedRundownData (rundownId: string): IngestRundown {
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
@@ -31,21 +32,25 @@ export function loadCachedRundownData (rundownId: string): IngestRundown {
 
 	return ingestRundown
 }
-
 export function loadCachedIngestSegment (rundownId: string, segmentId: string): IngestSegment {
+
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		segmentId: segmentId,
 	}).fetch()
 
-	const segmentEntry = cacheEntries.find(e => e.type === IngestCacheType.SEGMENT)
-	if (!segmentEntry) throw new Meteor.Error(500, 'Failed to find cached segment')
+	const segmentEntries = cacheEntries.filter(e => e.type === IngestCacheType.SEGMENT)
+	if (cacheEntries.length > 1) logger.warning(`There are multiple segments in IngestDataCache for rundownId: "${rundownId}", segmentId: "${segmentId}"`)
 
-	const ingestSegment = segmentEntry.data as IngestSegment
+	const segmentEntry = segmentEntries[0]
+	if (!segmentEntry) throw new Meteor.Error(404, 'Failed to find cached segment')
+	if (segmentEntry.type !== IngestCacheType.SEGMENT) throw new Meteor.Error(500, 'Wrong type on cached segment')
 
-	_.each(cacheEntries, e => {
-		if (e.type === IngestCacheType.PART) {
-			ingestSegment.parts.push(e.data as IngestPart)
+	const ingestSegment: IngestSegment = segmentEntry.data
+
+	_.each(cacheEntries, entry => {
+		if (entry.type === IngestCacheType.PART) {
+			ingestSegment.parts.push(entry.data)
 		}
 	})
 
@@ -53,18 +58,21 @@ export function loadCachedIngestSegment (rundownId: string, segmentId: string): 
 
 	return ingestSegment
 }
-export function loadCachedPartData (rundownId: string, segmentId: string, partId: string): IngestPart {
+export function loadIngestDataCachePart (rundownId: string, partId: string): IngestDataCacheObjPart {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
-		segmentId: segmentId,
 		partId: partId,
 		type: IngestCacheType.PART
 	}).fetch()
+	if (cacheEntries.length > 1) logger.warning(`There are multiple parts in IngestDataCache for rundownId: "${rundownId}", partId: "${partId}"`)
 
-	const partEntry = cacheEntries.find(e => e.type === IngestCacheType.SEGMENT)
-	if (!partEntry) throw new Meteor.Error(500, 'Failed to find cached part')
-
-	return partEntry.data as IngestSegment
+	const partEntry = cacheEntries[0]
+	if (!partEntry) throw new Meteor.Error(404, 'Failed to find cached part')
+	if (partEntry.type !== IngestCacheType.PART) throw new Meteor.Error(500, 'Wrong type on cached part')
+	return partEntry
+}
+export function loadCachedIngestPart (rundownId: string, partId: string): IngestPart {
+	return loadIngestDataCachePart(rundownId, partId).data
 }
 
 export function saveRundownCache (rundownId: string, ingestRundown: IngestRundown) {
@@ -86,23 +94,25 @@ export function saveSegmentCache (rundownId: string, segmentId: string, ingestSe
 function generateCacheForRundown (rundownId: string, ingestRundown: IngestRundown): IngestDataCacheObj[] {
 	// cache the Data
 	const cacheEntries: IngestDataCacheObj[] = []
-	cacheEntries.push({
+	const rundown: IngestDataCacheObjRundown = {
 		_id: rundownId,
 		type: IngestCacheType.RUNDOWN,
 		rundownId: rundownId,
 		modified: getCurrentTime(),
 		data: {
 			...ingestRundown,
-			segments: [] // omit the segments
+			segments: [] // omit the segments, they come as separate objects
 		}
-	})
+	}
+	cacheEntries.push(rundown)
 	_.each(ingestRundown.segments, segment => cacheEntries.push(...generateCacheForSegment(rundownId, segment)))
 	return cacheEntries
 }
 function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegment): IngestDataCacheObj[] {
 	const segmentExternalId = getSegmentId(rundownId, ingestSegment.externalId)
-	const cacheEntries: IngestDataCacheObj[] = []
-	cacheEntries.push({
+	const cacheEntries: Array<IngestDataCacheObjSegment | IngestDataCacheObjPart> = []
+
+	const segment: IngestDataCacheObjSegment = {
 		_id: `${rundownId}_${segmentExternalId}`,
 		type: IngestCacheType.SEGMENT,
 		rundownId: rundownId,
@@ -110,9 +120,10 @@ function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegmen
 		modified: getCurrentTime(),
 		data: {
 			...ingestSegment,
-			parts: []
+			parts: []  // omit the parts, they come as separate objects
 		}
-	})
+	}
+	cacheEntries.push(segment)
 
 	_.each(ingestSegment.parts, part => {
 		cacheEntries.push(generateCacheForPart(rundownId, segmentExternalId, part))
@@ -120,7 +131,7 @@ function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegmen
 
 	return cacheEntries
 }
-function generateCacheForPart (rundownId: string, segmentExternalId: string, part: IngestPart): IngestDataCacheObj {
+function generateCacheForPart (rundownId: string, segmentExternalId: string, part: IngestPart): IngestDataCacheObjPart {
 	const partId = getPartId(rundownId, part.externalId)
 	return {
 		_id: `${rundownId}_${partId}`,

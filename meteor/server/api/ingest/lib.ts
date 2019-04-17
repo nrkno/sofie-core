@@ -5,13 +5,19 @@ import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/Pe
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 
-export function getRundownId (studio: Studio, externalId: string) {
-	return getHash(`${studio._id}_${externalId}`)
+export function getRundownId (studio: Studio, rundownExternalId: string) {
+	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
+	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
+	return getHash(`${studio._id}_${rundownExternalId}`)
 }
 export function getSegmentId (rundownId: string, segmentExternalId: string) {
+	if (!rundownId) throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!')
+	if (!segmentExternalId) throw new Meteor.Error(401, 'getSegmentId: segmentExternalId must be set!')
 	return getHash(`${rundownId}_segment_${segmentExternalId}`)
 }
 export function getPartId (rundownId: string, partExternalId: string) {
+	if (!rundownId) throw new Meteor.Error(401, 'getPartId: rundownId must be set!')
+	if (!partExternalId) throw new Meteor.Error(401, 'getPartId: partExternalId must be set!')
 	return getHash(`${rundownId}_part_${partExternalId}`)
 }
 
