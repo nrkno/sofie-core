@@ -8,6 +8,8 @@
   "scripts": {
     "start": "meteor run",
     "debug": "meteor run --inspect",
+    "postinstall": "meteor npm run prepareForTest",
+    "prepareForTest": "node ../scripts/fixTestFibers.js",
     "test": "jest",
     "cov": "jest --coverage && opn .coverage/lcov-report/index.html",
     "cov-open": "opn .coverage/lcov-report/index.html",

@@ -6,14 +6,16 @@ try {
 		// Temporary workaround:
 		throw Error(`
 Note: When you get the "Missing binary"-error when running in Jest
-Head over to
-	meteor/node_modules/fibers/fibers.js
-and add this line to line 13:
-	if (process.env.JEST_WORKER_ID !== undefined ) modPath += '.node'
+be sure you have run npm install (so that the postInstall script has run)
 
 Original error:
 ${e.toString()}`
-		)
+)
+// Head over to
+// 	meteor/node_modules/fibers/fibers.js
+// and add this line to line 13:
+// if (process.env.JEST_WORKER_ID !== undefined ) modPath += '.node'
+
 	} else throw e
 }
 /**
