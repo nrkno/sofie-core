@@ -1,6 +1,11 @@
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import * as _ from 'underscore'
 import { renamePropertiesInCollection } from './lib'
+import * as semver from 'semver'
+import { getCoreSystem } from '../../lib/collections/CoreSystem'
+import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
+import { asyncCollectionInsert, asyncCollectionInsertIgnore, waitForPromiseAll } from '../../lib/lib'
+
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -19,10 +24,7 @@ import { RundownBaselineItems } from '../../lib/collections/RundownBaselineItems
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
-import * as semver from 'semver'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
-import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
-import { asyncCollectionInsert, asyncCollectionInsertIgnore, waitForPromiseAll } from '../../lib/lib'
+import { Studios } from '../../lib/collections/Studios'
 
 // 0.25.0 // This is a big refactoring, with a LOT of renamings
 addMigrationSteps( '0.25.0', [
@@ -72,6 +74,9 @@ addMigrationSteps( '0.25.0', [
 
 				// dbs.RunningOrderBaselineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineAdLibPieces, doc)) })
 				// dbs.RunningOrderBaselineAdLibItems.remove({})
+
+				dbs.StudioInstallations.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(Studios, doc)) })
+				dbs.StudioInstallations.remove({})
 
 				dbs.RunningOrderDataCache.remove({})
 				waitForPromiseAll(ps)

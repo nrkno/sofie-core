@@ -91,7 +91,7 @@ export class Studio implements DBStudio {
 }
 
 export const Studios: TransformedCollection<Studio, DBStudio>
-	= new Mongo.Collection<Studio>('studio', {transform: (doc) => applyClassToDocument(Studio, doc) })
+	= new Mongo.Collection<Studio>('studios', {transform: (doc) => applyClassToDocument(Studio, doc) })
 registerCollection('Studios', Studios)
 
 Meteor.startup(() => {

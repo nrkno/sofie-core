@@ -9,6 +9,7 @@ interface DeprecatedDatabases {
 	SegmentLineAdLibItems: Mongo.Collection<any>,
 	SegmentLineItems: Mongo.Collection<any>,
 	SegmentLines: Mongo.Collection<any>,
+	StudioInstallations: Mongo.Collection<any>,
 }
 
 let deprecatedDatabases: DeprecatedDatabases | null
@@ -30,7 +31,8 @@ export function getDeprecatedDatabases (): DeprecatedDatabases | null {
 			// RunningOrders: new Mongo.Collection('rundowns'),
 			SegmentLineAdLibItems: new Mongo.Collection('segmentLineAdLibItems'),
 			SegmentLineItems: new Mongo.Collection('segmentLineItems'),
-			SegmentLines: new Mongo.Collection('segmentLines')
+			SegmentLines: new Mongo.Collection('segmentLines'),
+			StudioInstallations: new Mongo.Collection('studioInstallation')
 		}
 		return deprecatedDatabases
 	}
@@ -46,6 +48,7 @@ export function dropDeprecatedDatabases (): void {
 		ps.push(dbs.SegmentLineAdLibItems.rawCollection().drop())
 		ps.push(dbs.RunningOrderBaselineItems.rawCollection().drop())
 		ps.push(dbs.RunningOrderBaselineAdLibItems.rawCollection().drop())
+		ps.push(dbs.StudioInstallations.rawCollection().drop())
 
 		waitForPromise(
 			Promise.all(ps)
