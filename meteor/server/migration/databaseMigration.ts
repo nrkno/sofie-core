@@ -571,7 +571,7 @@ export function runMigration (
 		logger.info('Migration: Automatically continuing with next batch..')
 		migration.partialMigration = false
 		const s = getMigrationStatus()
-		if (s.migration.automaticStepCount > 0 && s.migration.manualStepCount > 0) {
+		if (s.migration.automaticStepCount > 0 || s.migration.manualStepCount > 0) {
 			const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
 			if (res.migrationCompleted) {
 				return res
