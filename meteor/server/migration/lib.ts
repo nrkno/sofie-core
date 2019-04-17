@@ -232,7 +232,9 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 	}
 }
 
-type RenameContent = {content: { [newValue: string]: string }}
+interface RenameContent {
+	content: { [newValue: string]: string }
+}
 export function renamePropertiesInCollection<T extends any > (
 	id: string,
 	collection: Mongo.Collection<T>,
@@ -259,11 +261,13 @@ export function renamePropertiesInCollection<T extends any > (
 				o[oldAttr] = {$exists: true}
 				m.$or.push(o)
 			} else {
+				const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
+
 				const oldAttrActual = oldNames[newAttr] || newAttr // If the attribute has been renamed, rename it here as well
 
 				// Select where a value is of the old, to-be-replaced value:
 				const o = {}
-				o[oldAttrActual] = {$in: _.values(oldAttr.content) }
+				o[oldAttrActual] = {$in: _.values(oldAttrRenameContent.content) }
 				m.$or.push(o)
 			}
 		}
@@ -297,7 +301,9 @@ export function renamePropertiesInCollection<T extends any > (
 					const oldAttr: string | RenameContent | undefined = renames[newAttr]
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
 						if (!_.isString(oldAttr)) {
-							_.each(oldAttr.content, (oldValue, newValue) => {
+							const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
+
+							_.each(oldAttrRenameContent.content, (oldValue, newValue) => {
 
 								if (doc[newAttr] === oldValue) {
 									doc[newAttr] = newValue

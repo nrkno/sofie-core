@@ -27,7 +27,7 @@ export namespace IngestActions {
 
 	}
 	/**
-	 * Notify the device on what part is currentöy playing
+	 * Notify the device on what part is currently playing
 	 * @param rundown
 	 * @param currentPlayingPart
 	 */
