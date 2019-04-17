@@ -12,12 +12,12 @@ export interface RundownBaselineItem {
 	objects: TimelineObjGeneric[]
 }
 
-export const RundownBaselineItems: TransformedCollection<RundownBaselineItem, RundownBaselineItem>
-	= new Mongo.Collection<RundownBaselineItem>('rundownBaselineItems')
-registerCollection('RundownBaselineItems', RundownBaselineItems)
+export const RundownBaselineObjs: TransformedCollection<RundownBaselineItem, RundownBaselineItem>
+	= new Mongo.Collection<RundownBaselineItem>('rundownBaselineObjs')
+registerCollection('RundownBaselineObjs', RundownBaselineObjs)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		RundownBaselineItems._ensureIndex({
+		RundownBaselineObjs._ensureIndex({
 			rundownId: 1
 		})
 	}

@@ -20,7 +20,7 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { Timeline } from '../../lib/collections/Timeline'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Pieces } from '../../lib/collections/Pieces'
-import { RundownBaselineItems } from '../../lib/collections/RundownBaselineItems'
+import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
@@ -69,7 +69,7 @@ addMigrationSteps( '0.25.0', [
 				dbs.SegmentLineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(AdLibPieces, doc)) })
 				dbs.SegmentLineAdLibItems.remove({})
 
-				dbs.RunningOrderBaselineItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineItems, doc)) })
+				dbs.RunningOrderBaselineItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineObjs, doc)) })
 				dbs.RunningOrderBaselineItems.remove({})
 
 				// dbs.RunningOrderBaselineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineAdLibPieces, doc)) })
@@ -197,9 +197,9 @@ addMigrationSteps( '0.25.0', [
 		'migrateDatabaseCollections'
 	),
 
-	renamePropertiesInCollection('RundownBaselineItems',
-		RundownBaselineItems,
-		'RundownBaselineItems',
+	renamePropertiesInCollection('RundownBaselineObjs',
+		RundownBaselineObjs,
+		'RundownBaselineObjs',
 		{
 			rundownId: 'runningOrderId',
 		},

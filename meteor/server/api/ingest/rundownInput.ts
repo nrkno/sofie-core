@@ -32,7 +32,7 @@ import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart, ServerRund
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
-import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
+import { RundownBaselineItem, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
 import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -270,7 +270,7 @@ function updateRundownFromIngestData (
 	changes = sumChanges(
 		changes,
 		// Save the baseline
-		saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineItems, {
+		saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineObjs, {
 			rundownId: dbRundown._id,
 		}, [baselineItem]),
 		// Save the global adlibs

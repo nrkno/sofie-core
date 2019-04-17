@@ -6,7 +6,7 @@ import { Rundowns, Rundown, RundownHoldState, RundownData, DBRundown } from '../
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { RundownBaselineItems, RundownBaselineItem } from '../../lib/collections/RundownBaselineItems'
+import { RundownBaselineObjs, RundownBaselineItem } from '../../lib/collections/RundownBaselineObjs'
 import { getCurrentTime,
 	saveIntoDb,
 	literal,
@@ -402,7 +402,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 		// clean up all runtime baseline items
-		RundownBaselineItems.remove({
+		RundownBaselineObjs.remove({
 			rundownId: rundown._id
 		})
 
@@ -3044,7 +3044,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 					}
 				})
 				// Start with fetching stuff from database:
-				let promiseBaselineItems: Promise<Array<RundownBaselineItem>> = asyncCollectionFindFetch(RundownBaselineItems, {
+				let promiseBaselineItems: Promise<Array<RundownBaselineItem>> = asyncCollectionFindFetch(RundownBaselineObjs, {
 					rundownId: activeRundown._id
 				})
 				let rundownData: RundownData = activeRundown.fetchAllData()

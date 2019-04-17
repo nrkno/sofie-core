@@ -8,7 +8,7 @@ import { Studios, Studio } from './Studios'
 import { Pieces, Piece } from './Pieces'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces } from './AdLibPieces'
-import { RundownBaselineItems } from './RundownBaselineItems'
+import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
@@ -169,7 +169,7 @@ export class Rundown implements DBRundown {
 		Parts.remove({rundownId: this._id})
 		Pieces.remove({ rundownId: this._id})
 		AdLibPieces.remove({ rundownId: this._id})
-		RundownBaselineItems.remove({ rundownId: this._id})
+		RundownBaselineObjs.remove({ rundownId: this._id})
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id})
 		IngestDataCache.remove({ rundownId: this._id })
 	}
