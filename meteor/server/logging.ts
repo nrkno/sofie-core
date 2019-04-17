@@ -1,6 +1,5 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
-import { setMeteorMethods } from './methods'
 import { getAbsolutePath } from './lib'
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
@@ -98,12 +97,6 @@ if (logToFile || logPath !== '') {
 // 	logger.debug(...args)
 // }
 
-setMeteorMethods({
-	'logger': (type: string, ...args: any[]) => {
-		// @ts-ignore
-		let l: any = logger[type] || logger.log
-		l(...args)
-	}
-})
+
 
 export { logger }
