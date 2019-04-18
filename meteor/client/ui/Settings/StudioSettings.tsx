@@ -943,9 +943,11 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 				res = false
 			}
 
-			this.setState({
-				needsUpdate: !!res
-			})
+			if (this.updateInterval) {
+				this.setState({
+					needsUpdate: !!res
+				})
+			}
 		})
 	}
 
@@ -956,9 +958,11 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 				res = false
 			}
 
-			this.setState({
-				needsUpdate: !!res
-			})
+			if (this.updateInterval) {
+				this.setState({
+					needsUpdate: !!res
+				})
+			}
 		})
 	}
 
