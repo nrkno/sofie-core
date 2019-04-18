@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
-import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, NotificationList, NotifierHandle, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
@@ -39,7 +39,7 @@ export interface RONotificationEvent {
 
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
-	private _notifier: NotifierObject
+	private _notifier: NotifierHandle
 
 	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
 	private _mediaStatusDep: Tracker.Dependency

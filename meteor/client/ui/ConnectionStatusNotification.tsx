@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { MomentFromNow } from '../lib/Moment'
 
-import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierObject } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierHandle } from '../lib/notifications/notifications'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { TranslationFunction, translate } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
@@ -15,7 +15,7 @@ import { CoreSystem } from '../../lib/collections/CoreSystem'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
-	private _notifier: NotifierObject
+	private _notifier: NotifierHandle
 	private _translater: TranslationFunction
 
 	constructor (t: TranslationFunction) {
