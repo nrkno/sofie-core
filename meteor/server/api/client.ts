@@ -12,10 +12,10 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from '../methods'
 
 export namespace ServerClientAPI {
-	export function clientErrorReport (timestamp: Time, errorObject: any) {
+	export function clientErrorReport (timestamp: Time, errorObject: any, location: string) {
 		check(timestamp, Number)
 
-		logger.error(`Uncaught error happened in GUI on ${this.connection.clientAddress} at ${(new Date(timestamp)).toISOString()}: ${JSON.stringify(errorObject)}`)
+		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${this.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
 
 		return ClientAPI.responseSuccess()
 	}

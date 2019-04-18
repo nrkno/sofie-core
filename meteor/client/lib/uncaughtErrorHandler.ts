@@ -5,6 +5,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
 
 interface LoggedError {
+	location: string
 	content: any
 	added: Time
 }
@@ -19,7 +20,7 @@ try {
 }
 
 function sendErrorToCore (errorLog: LoggedError) {
-	Meteor.call(ClientAPI.methods.clientErrorReport, errorLog.added, errorLog.content, (err: any, response: any) => {
+	Meteor.call(ClientAPI.methods.clientErrorReport, errorLog.added, errorLog.content, errorLog.location, (err: any, response: any) => {
 		if (err || ClientAPI.isClientResponseError(response)) {
 			// fail silently, so that we don't erase useful logs with multiple 'failed to send' messages
 			return
@@ -35,6 +36,7 @@ function sendErrorToCore (errorLog: LoggedError) {
 
 function uncaughtErrorHandler (errorObj: any) {
 	const errorLog = {
+		location: window.location.href,
 		content: errorObj,
 		added: getCurrentTime()
 	}
