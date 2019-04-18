@@ -31,23 +31,34 @@ import { IngestActions } from './ingest/actions'
 const PackageInfo = require('../../package.json')
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+	if (!studio.supportedShowStyleBase.length) {
+		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
+		return null
+	}
 	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
+		logger.debug(`No showStyleBases matching with supportedShowStyleBase [${studio.supportedShowStyleBase}] from studio "${studio._id}"`)
 		return null
 	}
 
 	const context = new StudioConfigContext(studio)
 
 	const studioBlueprint = loadStudioBlueprints(studio)
-	if (studioBlueprint && studioBlueprint.getShowStyleId) {
-		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRundown)
-		showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
-		if (showStyleId === null || !showStyleBase) {
-			return null
-		}
-	} else throw new Meteor.Error(500, `Studio "${studio._id}" does not have a valid blueprint`)
+	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
+	if (!studioBlueprint.getShowStyleId) throw new Meteor.Error(500, `Studio "${studio._id}" blueprint missing property getShowStyleId`)
+
+	const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRundown)
+	if (showStyleId === null) {
+		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
+		return null
+	}
+	showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
+	if (!showStyleBase) {
+		logger.debug(`No ShowStyleBase found matching showStyleId "${showStyleId}", from studio "${studio._id}" blueprint`)
+		return null
+	}
 	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
 	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
@@ -56,6 +67,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 
 	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
 	if (variantId === null) {
+		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null`)
 		return null
 	} else {
 		const showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
