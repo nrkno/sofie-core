@@ -109,6 +109,7 @@
     "i18next-conv": "^8.0.1",
     "i18next-extract-gettext": "^3.2.0",
     "jest": "^24.1.0",
+    "jest-meteor-stubs": "1.5.1",
     "fibers": "^3.1.1",
     "node-license-validator": "^1.3.0",
     "opn-cli": "^4.1.0",
