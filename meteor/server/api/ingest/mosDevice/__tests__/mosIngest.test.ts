@@ -1,43 +1,54 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as MOS from 'mos-connection'
-import { runInFiber } from '../../../../../__mocks__/Fibers'
 import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
-import { getMockPeripheralDevice } from '../../../../../__mocks__/helpers/peripheralDevice'
+import { setupMockPeripheralDevice, setupMockStudio, setupMockShowStyleBase, setupMockShowStyleVariant, setupMockStudioBlueprint } from '../../../../../__mocks__/helpers/database'
 import { Rundowns } from '../../../../../lib/collections/Rundowns'
+import { setLoggerLevel } from '../../../logger'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 
-require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create Meteor methods
+require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
 describe ('Test recieved mos actions', () => {
 
-	test('mosRoCreate', async () => {
-		await runInFiber(() => {
+	testInFiber('mosRoCreate', () => {
+		setLoggerLevel('debug')
 
-			expect(Rundowns.findOne()).toBeFalsy()
+		expect(Rundowns.findOne()).toBeFalsy()
 
-			// expect(1).toEqual(1)
-			const device = getMockPeripheralDevice(PeripheralDeviceAPI.DeviceType.MOSDEVICE)
+		// expect(1).toEqual(1)
+		const studio = setupMockStudio()
+		const device = setupMockPeripheralDevice(PeripheralDeviceAPI.DeviceType.MOSDEVICE, studio)
 
-			const mosRunningOrder: MOS.IMOSRunningOrder = {
-				ID: new MOS.MosString128('abc'),
-				Slug: new MOS.MosString128('mySlug'),
-				// DefaultChannel?: new MOS.MosString128(''),
-				// EditorialStart?: new MOS.MosTime(),
-				// EditorialDuration?: new MOS.MosDuration(),
-				// Trigger?: new MOS.MosString128(''),
-				// MacroIn?: new MOS.MosString128(''),
-				// MacroOut?: new MOS.MosString128(''),
-				// MosExternalMetaData?: [], // Array<IMOSExternalMetaData>
-				Stories: [] // Array<IMOSROStory>
-			}
-			Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mosRunningOrder )
+		const showStyleBaseId = Random.id()
+		const showStyleBase = setupMockShowStyleBase(
+			'', // showStyleBlueprint._id
+			{ _id: showStyleBaseId }
+		)
+		const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id)
 
-			const rundown = Rundowns.findOne()
-			console.log('c')
-			expect(rundown).toBeTruthy()
+		const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
 
-			console.log('a')
+		// const showStyleBlueprint
 
-		})
+		const mosRunningOrder: MOS.IMOSRunningOrder = {
+			ID: new MOS.MosString128('abc'),
+			Slug: new MOS.MosString128('mySlug'),
+			// DefaultChannel?: new MOS.MosString128(''),
+			// EditorialStart?: new MOS.MosTime(),
+			// EditorialDuration?: new MOS.MosDuration(),
+			// Trigger?: new MOS.MosString128(''),
+			// MacroIn?: new MOS.MosString128(''),
+			// MacroOut?: new MOS.MosString128(''),
+			// MosExternalMetaData?: [], // Array<IMOSExternalMetaData>
+			Stories: [] // Array<IMOSROStory>
+		}
+		// console.log('device', device)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mosRunningOrder )
+
+		const rundown = Rundowns.findOne()
+
+		expect(rundown).toBeTruthy()
+
 	})
 })
