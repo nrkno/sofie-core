@@ -5,7 +5,6 @@ import {
 	getCoreSystemCursor,
 	parseVersion,
 	Version,
-	parseExpectedVersion,
 	parseRange
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
@@ -97,7 +96,7 @@ function checkDatabaseVersions () {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = checkDatabaseVersion(
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseExpectedVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+							parseRange(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
 							'to fix, run migration',
 							'blueprint.blueprintVersion',
 							`databaseVersion.showStyle[${showStyleBase._id}]`
@@ -113,7 +112,7 @@ function checkDatabaseVersions () {
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseExpectedVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+									parseRange(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
 									'to fix, run migration',
 									'blueprint.blueprintVersion',
 									`databaseVersion.studio[${studio._id}]`
@@ -228,14 +227,14 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 
 	let integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseExpectedVersion(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']),
+		parseRange(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']),
 		'Blueprint has to be updated',
 		'blueprint.integrationVersion',
 		'core.tv-automation-sofie-blueprints-integration'
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseExpectedVersion(PackageInfo.dependencies['timeline-state-resolver-types']),
+		parseRange(PackageInfo.dependencies['timeline-state-resolver-types']),
 		'Blueprint has to be updated',
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
@@ -247,8 +246,8 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	} | undefined = undefined
 	if (blueprint.minimumCoreVersion) {
 		coreStatus = checkDatabaseVersion(
-			parseRange(blueprint.minimumCoreVersion),
 			parseVersion(CURRENT_SYSTEM_VERSION),
+			parseRange(blueprint.minimumCoreVersion),
 			'Blueprint does not support this version of core',
 			'blueprint.minimumCoreVersion',
 			'core system'

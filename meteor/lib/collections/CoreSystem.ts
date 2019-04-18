@@ -101,22 +101,18 @@ export function stripVersion (v: string): string {
 	}
 }
 export function parseRange (r: string | Range): Range {
+	if ((r + '').match(/git:\/\//)) {
+		return '^0.0.0' // anything goes..
+	}
 	const range = semver.validRange(r)
 	if (!range) throw new Meteor.Error(500, `Invalid range: "${r}"`)
 	return range
 }
 export function parseVersion (v: string | Version): Version {
+	if ((v + '').match(/git:\/\//)) {
+		return '0.0.0' // fallback
+	}
 	const valid = semver.valid(v)
 	if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
-	return valid
-}
-export function parseExpectedVersion (v: string | Version): Version {
-	if ((v + '').match(/git:\/\//)) {
-		return '0.0.0'
-	}
-	let v2 = semver.coerce(v)
-	if (!v2) throw new Meteor.Error(500, `Bad expected version: "${v}"`)
-	const valid = semver.valid(v2)
-	if (!valid) throw new Meteor.Error(500, `Invalid expected version: "${v}"`)
 	return valid
 }
