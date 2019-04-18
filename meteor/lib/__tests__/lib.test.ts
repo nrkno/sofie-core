@@ -17,7 +17,7 @@ import { setLoggerLevel } from '../../server/api/logger'
 
 describe ('lib/lib', () => {
 
-	testInFiber.only('mongowhere', () => {
+	testInFiber('mongowhere', () => {
 		setLoggerLevel('debug')
 
 		// mongoWhere is used my Collection mock
@@ -70,7 +70,6 @@ describe ('lib/lib', () => {
 
 		expect(MyCollection.find({ rank: {$lt: 3}}).fetch()).toHaveLength(3)
 		expect(MyCollection.find({ rank: {$lte: 3}}).fetch()).toHaveLength(4)
-
 
 	})
 })
