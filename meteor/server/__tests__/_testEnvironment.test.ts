@@ -3,17 +3,16 @@ import { Random } from 'meteor/random'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 
-import { runInFiber } from '../../__mocks__/Fibers'
-import { Studios, Studio, DBStudio } from '../../lib/collections/Studios'
+import { Studios, DBStudio } from '../../lib/collections/Studios'
+import { waitForPromise } from '../../lib/lib'
+import { testInFiber } from '../../__mocks__/helpers/jest'
 
 describe ('Basic test of test environment', () => {
 
-	test('Check that tests will run in fibers correctly', async () => {
-		await runInFiber(() => {
-			// This code runs in a fiber
-			const val = asynchronousFibersFunction(1,2,3)
-			expect(val).toEqual(1 + 2 + 3)
-		})
+	testInFiber('Check that tests will run in fibers correctly', () => {
+		// This code runs in a fiber
+		const val = asynchronousFibersFunction(1,2,3)
+		expect(val).toEqual(1 + 2 + 3)
 	})
 	test('Test Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']
@@ -74,6 +73,18 @@ describe ('Basic test of test environment', () => {
 		MongoMock.mockSetData(Studios, null)
 		expect(Studios.find().fetch()).toHaveLength(0)
 	})
+	testInFiber('Promises in fibers', () => {
+
+		let p = new Promise((resolve) => {
+			setTimeout(() => {
+				resolve('yup')
+			}, 10)
+		})
+
+		const result = waitForPromise(p)
+
+		expect(result).toEqual('yup')
+	})
 })
 
 function asynchronousFibersFunction (a: number, b: number, c: number): number {
@@ -84,7 +95,7 @@ function asynchronousFibersFunction (a: number, b: number, c: number): number {
 const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
 	setTimeout(() => {
 		cb(undefined, val0 + val1)
-	}, 100)
+	}, 10)
 })
 
 export function tempTestRandom () {

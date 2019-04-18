@@ -1,4 +1,6 @@
 import { setMeteorMethods } from '../methods'
+import { logger } from '../logging'
+import * as _ from 'underscore'
 
 setMeteorMethods({
 	'logger': (type: string, ...args: any[]) => {
@@ -7,3 +9,8 @@ setMeteorMethods({
 		l(...args)
 	}
 })
+
+// This is used when running in tests to minimize the logged output:
+export function setLoggerLevel (loggerLevel: 'debug' | 'info' | 'warning' | 'error') {
+	logger.transports.console.level = loggerLevel
+}

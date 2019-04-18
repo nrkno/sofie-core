@@ -11,6 +11,7 @@
     "postinstall": "meteor npm run prepareForTest",
     "prepareForTest": "node ../scripts/fixTestFibers.js",
     "test": "jest",
+    "watch": "jest --watch",
     "cov": "jest --coverage && opn .coverage/lcov-report/index.html",
     "cov-open": "opn .coverage/lcov-report/index.html",
     "test-i": "npm run integration-test",

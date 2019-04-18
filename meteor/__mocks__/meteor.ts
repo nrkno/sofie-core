@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { Fiber } from './Fibers'
+import { Fiber, runInFiber } from './Fibers'
 
 namespace Meteor {
 
@@ -39,7 +39,14 @@ namespace Meteor {
 		stop (): void
 	}
 }
-const OriginalError = Error
+const $ = {
+	Error,
+	setTimeout,
+	setInterval,
+	clearTimeout,
+	clearInterval,
+}
+
 export namespace MeteorMock {
 
 	export let isClient: boolean = false
@@ -63,7 +70,7 @@ export namespace MeteorMock {
 	export class Error {
 		private _stack?: string
 		constructor (public errorCode: number, public reason?: string) {
-			const e = new OriginalError('')
+			const e = new $.Error('')
 			let stack: string = e.stack || ''
 
 			const lines = stack.split('\n')
@@ -90,8 +97,13 @@ export namespace MeteorMock {
 	export function methods (methods: {[name: string]: Function}) {
 		Object.assign(this.mockMethods, methods)
 	}
-	export function call (methodName: string, args: any[]) {
-		this.mockMethods[methodName].call({}, args)
+	export function call (methodName: string, ...args: any[]) {
+		const fcn: Function = this.mockMethods[methodName]
+		if (!fcn) {
+			throw new Error(404, `Method '${methodName}' not found`)
+		}
+
+		fcn.call({}, ...args)
 	}
 	export function apply (methodName: string, args: any[], options?: {
 		wait?: boolean;
@@ -106,19 +118,24 @@ export namespace MeteorMock {
 		return path + '' // todo
 	}
 	export function setTimeout (fcn: Function, time: number): number {
-		return setTimeout(fcn, time)
+
+		return $.setTimeout(() => {
+			runInFiber(fcn).catch(console.error)
+		}, time) as any as number
 	}
 	export function clearTimeout (timer: number) {
-		clearTimeout(timer)
+		$.clearTimeout(timer)
 	}
 	export function setInterval (fcn: Function, time: number): number {
-		return setInterval(fcn, time)
+		return $.setInterval(() => {
+			runInFiber(fcn).catch(console.error)
+		}, time) as any as number
 	}
 	export function clearInterval (timer: number) {
-		clearInterval(timer)
+		$.clearInterval(timer)
 	}
 	export function defer (fcn: Function) {
-		return setTimeout(fcn, 0)
+		return this.setTimeout(fcn, 0)
 	}
 
 	export function startup (fcn: Function): void {
@@ -146,7 +163,17 @@ export namespace MeteorMock {
 	}
 
 	export function bindEnvironment (fcn: Function): any {
-		// Don't know how to implement in mock?
+		return (...args: any[]) => {
+
+			// Don't know how to implement in mock?
+
+			const fiber = Fiber.current
+			if (!fiber) throw new Error(500, `It appears that bindEnvironment function isn't running in a fiber`)
+
+			const returnValue = fcn()
+
+			return returnValue
+		}
 		return fcn
 	}
 
