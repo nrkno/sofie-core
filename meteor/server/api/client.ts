@@ -3,7 +3,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime } from '../../lib/lib'
+import { literal, getCurrentTime, Time } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
@@ -12,6 +12,14 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from '../methods'
 
 export namespace ServerClientAPI {
+	export function clientErrorReport (timestamp: Time, errorObject: any) {
+		check(timestamp, Number)
+
+		logger.error(`Uncaught error happened in GUI on ${this.connection.clientAddress} at ${(new Date(timestamp)).toISOString()}: ${JSON.stringify(errorObject)}`)
+
+		return ClientAPI.responseSuccess()
+	}
+
 	export function execMethod (context: string, methodName: string, ...args: any[]) {
 		check(methodName, String)
 		check(context, String)
@@ -136,6 +144,9 @@ export namespace ServerClientAPI {
 let methods: Methods = {}
 methods[ClientAPI.methods.execMethod] = function (...args: any[]) {
 	return ServerClientAPI.execMethod.apply(this, args)
+}
+methods[ClientAPI.methods.clientErrorReport] = function (...args: any[]) {
+	return ServerClientAPI.clientErrorReport.apply(this, args)
 }
 methods[ClientAPI.methods.callPeripheralDeviceFunction] = function (...args: any[]) {
 	return ServerClientAPI.callPeripheralDeviceFunction.apply(this, args)

@@ -812,6 +812,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	render () {
+		if (this.state.isError) {
+			throw new Error('Dupa')
+		}
+
 		const { t } = this.props
 		return <React.Fragment>
 			<Escape to='document'>
