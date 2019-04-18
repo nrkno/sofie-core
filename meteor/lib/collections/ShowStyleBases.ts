@@ -19,19 +19,10 @@ export interface HotkeyDefinition {
 }
 
 export interface DBShowStyleBase extends IBlueprintShowStyleBase {
-	_id: string
 	/** Name of this show style */
 	name: string
 	/** Id of the blueprint used by this show-style */
 	blueprintId: string
-
-	/** "Outputs" in the UI */
-	outputLayers: Array<IOutputLayer>
-	/** "Layers" in the GUI */
-	sourceLayers: Array<ISourceLayer>
-
-	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
 
 	hotkeyLegend?: Array<HotkeyDefinition>
 

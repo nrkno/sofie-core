@@ -8,13 +8,8 @@ import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { ObserveChangesForHash } from './lib'
 
 export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
-	_id: string
-	name: string
 	/** Id of parent ShowStyleBase */
 	showStyleBaseId: string
-
-	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
 
 	_rundownVersionHash: string
 }
