@@ -80,7 +80,7 @@ export class KeyboardController extends ControllerAbstract {
 		}
 	}
 	public onKeyUp (e: KeyboardEvent) {
-		const timeSincePress = Date.now() - this._keyDown[e.keyCode]
+		const timeSincePress = Date.now() - this._keyDown[e.code]
 
 		if (this._mode === Mode.NORMAL) {
 			const scrollPosition = this._prompterView.getScrollPosition()
