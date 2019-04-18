@@ -1,5 +1,9 @@
 {
   "extends": "tslint-config-standard",
+  "allowJs": true,
+  "jsRules": {
+      "no-empty": true
+  },
   "rules": {
     "indent": [true, "tabs", 4],
     "ter-indent": [true, "tab",{

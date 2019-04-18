@@ -3,7 +3,6 @@ import { getRelevantSystemVersions } from '../coreSystem'
 describe('coreSystem', () => {
 
 	test('getRelevantSystemVersions', () => {
-
 		const versions = getRelevantSystemVersions()
 
 		expect(versions).toMatchObject({

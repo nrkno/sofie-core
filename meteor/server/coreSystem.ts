@@ -241,7 +241,6 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
 	)
-
 	let coreStatus: {
 		statusCode: StatusCode;
 		messages: string[];
