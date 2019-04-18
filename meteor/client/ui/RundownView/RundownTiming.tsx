@@ -158,10 +158,10 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 		this.onRefreshTimer()
 	}
 
-	componentWillReceiveProps (nextProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
+	componentDidUpdate (prevProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 		// change refresh interval if needed
-		if (this.refreshTimerInterval !== nextProps.refreshInterval && this.refreshTimer) {
-			this.refreshTimerInterval = nextProps.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
+		if (this.refreshTimerInterval !== this.props.refreshInterval && this.refreshTimer) {
+			this.refreshTimerInterval = this.props.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
 			Meteor.clearInterval(this.refreshTimer)
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		}

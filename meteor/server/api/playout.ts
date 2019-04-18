@@ -195,7 +195,8 @@ export namespace ServerPlayoutAPI {
 				duration: 1,
 				startedPlayback: 1,
 				timings: 1,
-				runtimeArguments: 1
+				runtimeArguments: 1,
+				stoppedPlayback: 1
 			}
 		}, { multi: true })
 
@@ -434,7 +435,8 @@ export namespace ServerPlayoutAPI {
 				duration: 1,
 				startedPlayback: 1,
 				runtimeArguments: 1,
-				dirty: 1
+				dirty: 1,
+				stoppedPlayback: 1
 			}
 		}))
 		ps.push(asyncCollectionUpdate(Pieces, {

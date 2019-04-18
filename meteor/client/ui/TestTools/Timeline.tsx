@@ -8,6 +8,7 @@ import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { getCurrentTime } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
+import { PubSub } from '../../../lib/api/pubsub'
 
 /**
  * Note: this is a temporary function, which converts a timelineObject of the OLD type to the new (v2)
@@ -164,9 +165,9 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 			showDetails: null
 		}
 	}
-	componentWillMount () {
-		this.subscribe('timeline', {
-			siId: this.props.studioId
+	componentDidMount () {
+		this.subscribe(PubSub.timeline, {
+			studioId: this.props.studioId
 		})
 
 		this.triggerLoadScript()

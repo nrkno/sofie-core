@@ -922,14 +922,16 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		this.updateInterval = Meteor.setInterval(() => this.updateStatus(), updatePeriod)
 		this.updateStatus()
 	}
+
 	componentWillUnmount () {
 		if (this.updateInterval) {
 			Meteor.clearInterval(this.updateInterval)
 			this.updateInterval = undefined
 		}
 	}
-	componentWillReceiveProps (newProps: Translated<IStudioBaselineStatusProps>) {
-		this.updateStatus(newProps)
+
+	componentDidUpdate () {
+		this.updateStatus(this.props)
 	}
 
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
@@ -965,8 +967,8 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		const { needsUpdate } = this.state
 
 		return <div>
-			<p>{t('Studio Baseline needs update: ')} {t(needsUpdate ? 'Yes' : 'No')}</p>
-			<p><button className='btn btn-primary' onClick={(e) => this.reloadBaseline()}>{t('Reload Baseline')}</button></p>
+			<p className='mhn'>{t('Studio Baseline needs update: ')} {needsUpdate ? t('Yes') : t('No')}</p>
+			<p className='mhn'><button className='btn btn-primary' onClick={(e) => this.reloadBaseline()}>{t('Reload Baseline')}</button></p>
 		</div>
 	}
 }

@@ -240,7 +240,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		isHighResolution: false,
 		filter: ['partDurations', props.part._id]
 	}
-})(class extends React.Component<Translated<WithTiming<IProps>>, IState> {
+})(class SegmentTimelineLine0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	private _configValueMemo: { [key: string]: ConfigItemValue } = {}
 
 	constructor (props: Translated<WithTiming<IProps>>) {
@@ -258,7 +258,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				Math.max(
 				(
 					(startedPlayback && props.timingDurations.partDurations &&
-						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
+						(SegmentTimelineLine0.getCurrentLiveLinePosition(props.part) + SegmentTimelineLine0.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.partDurations ?
 						(props.part.displayDuration || props.timingDurations.partDurations[props.part._id]) :
@@ -268,23 +268,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	getCurrentLiveLinePosition () {
-		if (this.props.part.startedPlayback && this.props.part.getLastStartedPlayback()) {
-			if (this.props.part.duration) {
-				return this.props.part.duration
-			} else {
-				return getCurrentTime() - (this.props.part.getLastStartedPlayback() || 0)
-			}
-		} else {
-			return 0
-		}
-	}
-
-	getLiveLineTimePadding (timeScale) {
-		return LIVE_LINE_TIME_PADDING / timeScale
-	}
-
-	componentWillReceiveProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
+	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
 		const isLive = (nextProps.rundown.currentPartId === nextProps.part._id)
 		const isNext = (nextProps.rundown.nextPartId === nextProps.part._id)
 
@@ -298,8 +282,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					(
 						(startedPlayback && nextProps.timingDurations.partDurations &&
 							(nextProps.relative ?
-								this.getCurrentLiveLinePosition() :
-								this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
+								SegmentTimelineLine0.getCurrentLiveLinePosition(nextProps.part) :
+								SegmentTimelineLine0.getCurrentLiveLinePosition(nextProps.part) + SegmentTimelineLine0.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.partDurations ?
 						(nextProps.part.displayDuration || nextProps.timingDurations.partDurations[nextProps.part._id]) :
@@ -307,12 +291,28 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				)
 				: 0
 
-		this.setState({
+		return ({
 			isLive,
 			isNext,
 			isDurationSettling,
 			liveDuration
 		})
+	}
+
+	static getLiveLineTimePadding (timeScale) {
+		return LIVE_LINE_TIME_PADDING / timeScale
+	}
+
+	static getCurrentLiveLinePosition (part: PartUi) {
+		if (part.startedPlayback && part.getLastStartedPlayback()) {
+			if (part.duration) {
+				return part.duration
+			} else {
+				return getCurrentTime() - (part.getLastStartedPlayback() || 0)
+			}
+		} else {
+			return 0
+		}
 	}
 
 	getLayerStyle () {
@@ -378,7 +378,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							isNextLine={this.props.rundown.nextPartId === part._id ? true : false}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
-							liveLinePadding={this.getLiveLineTimePadding(this.props.timeScale)} />
+							liveLinePadding={SegmentTimelineLine0.getLiveLineTimePadding(this.props.timeScale)} />
 					)
 				}
 			})
@@ -390,8 +390,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			'width': (Math.min(
 						Math.max(
 							0,
-							(this.props.livePosition || 0) + this.getLiveLineTimePadding(this.props.timeScale) - (this.props.part.expectedDuration || this.props.part.renderedDuration || 0)),
-						this.getLiveLineTimePadding(this.props.timeScale)
+							(this.props.livePosition || 0) + SegmentTimelineLine0.getLiveLineTimePadding(this.props.timeScale) - (this.props.part.expectedDuration || this.props.part.renderedDuration || 0)),
+				SegmentTimelineLine0.getLiveLineTimePadding(this.props.timeScale)
 					) * this.props.timeScale) + 'px'
 		}
 	}

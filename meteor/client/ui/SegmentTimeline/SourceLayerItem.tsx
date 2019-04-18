@@ -8,7 +8,7 @@ import {
 	PieceUi
 } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 import * as ClassNames from 'classnames'
@@ -266,28 +266,16 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		this.checkElementWidth()
 	}
 
-	componentWillReceiveProps (nextProps: ISourceLayerItemProps) {
-		if ((nextProps.partDuration !== this.props.partDuration) ||
-			(nextProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
-			(nextProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
-			(nextProps.piece.duration !== this.props.piece.duration) ||
-			(nextProps.piece.durationOverride !== this.props.piece.durationOverride) ||
-			(nextProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
-			(nextProps.piece.trigger !== this.props.piece.trigger) ||
-			(this.isInsideViewport() && this._placeHolderElement)) {
-			this._forceSizingRecheck = true
-		}
+	componentDidUpdate (prevProps: ISourceLayerItemProps) {
+		this._forceSizingRecheck = true
 
-		if (nextProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
+		if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 			this.setState({
-				scrollLeftOffset: this.state.scrollLeftOffset + (nextProps.scrollLeft - this.props.scrollLeft),
-				cursorTimePosition: this.state.cursorTimePosition + (nextProps.scrollLeft - this.props.scrollLeft),
+				scrollLeftOffset: this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft),
+				cursorTimePosition: this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft),
 			})
 		}
-	}
 
-	componentDidUpdate () {
-		this._forceSizingRecheck = true
 		this.checkElementWidth()
 	}
 

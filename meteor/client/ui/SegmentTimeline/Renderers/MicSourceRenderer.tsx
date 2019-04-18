@@ -65,21 +65,6 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		this.rightLabel = e
 	}
 
-	componentWillReceiveProps (nextProps: IProps & InjectedTranslateProps, nextContext: any) {
-		if (super.componentWillReceiveProps && typeof super.componentWillReceiveProps === 'function') {
-			super.componentWillReceiveProps(nextProps, nextContext)
-		}
-
-		if ((nextProps.partDuration !== this.props.partDuration) ||
-			(nextProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
-			(nextProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
-			(nextProps.piece.duration !== this.props.piece.duration) ||
-			(nextProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
-			(nextProps.piece.trigger !== this.props.piece.trigger)) {
-			this._forceSizingRecheck = true
-		}
-	}
-
 	componentDidMount () {
 		// Create line element
 		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>') as JQuery<HTMLDivElement>
@@ -99,8 +84,19 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	}
 
 	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+		let _forceSizingRecheck = false
+
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
+		}
+
+		if ((prevProps.partDuration !== this.props.partDuration) ||
+			(prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
+			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
+			(prevProps.piece.duration !== this.props.piece.duration) ||
+			(prevProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
+			(prevProps.piece.trigger !== this.props.piece.trigger)) {
+			_forceSizingRecheck = true
 		}
 
 		// Move the line element
@@ -117,12 +113,10 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 		const content = this.props.piece.content as ScriptContent
 		if (content.sourceDuration && content.sourceDuration !== this.readTime) {
-			this._forceSizingRecheck = true
+			_forceSizingRecheck = true
 		}
-		if (this._forceSizingRecheck) {
-			// Update sizing information
-			this._forceSizingRecheck = false
 
+		if (_forceSizingRecheck) {
 			this.refreshLine()
 		}
 
