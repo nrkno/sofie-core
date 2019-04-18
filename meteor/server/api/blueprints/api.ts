@@ -49,7 +49,7 @@ export function removeBlueprint (id: string) {
 	Blueprints.remove(id)
 }
 
-function uploadBlueprint (blueprintId: string, body: string, blueprintName: string) {
+export function uploadBlueprint (blueprintId: string, body: string, blueprintName: string): Blueprint {
 	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	const blueprint = Blueprints.findOne(blueprintId)
@@ -74,6 +74,9 @@ function uploadBlueprint (blueprintId: string, body: string, blueprintName: stri
 	}
 
 	const blueprintManifest: SomeBlueprintManifest = evalBlueprints(newBlueprint, false)
+	if (!blueprintManifest) throw new Meteor.Error(400, `Blueprint ${blueprintId} did not return a manifest`)
+	if (!_.isObject(blueprintManifest)) throw new Meteor.Error(400, `Blueprint ${blueprintId} retured a manifest of type ${typeof blueprintManifest}`)
+
 	newBlueprint.blueprintType				= blueprintManifest.blueprintType || BlueprintManifestType.SHOWSTYLE
 	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
@@ -99,6 +102,7 @@ function uploadBlueprint (blueprintId: string, body: string, blueprintName: stri
 	}
 
 	Blueprints.upsert(newBlueprint._id, newBlueprint)
+	return newBlueprint
 }
 
 const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
