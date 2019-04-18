@@ -62,7 +62,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			saveEvaluation()
 		}
 	}
-	onUpdateValue = (edit: any, newValue: any ) => {
+	onUpdateValue = (edit: any, newValue: any) => {
 		let attr = edit.props.attribute
 
 		if (attr) {
@@ -131,8 +131,8 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 })
 export function getQuestionOptions (t) {
 	return [
-		{value: 'nothing', name: t('No problems')},
-		{value: 'minor', name: t('Something went wrong, but it didn\'t affect the output')},
-		{value: 'major', name: t('Something went wrong, and it affected the output')},
+		{ value: 'nothing', name: t('No problems') },
+		{ value: 'minor', name: t('Something went wrong, but it didn\'t affect the output') },
+		{ value: 'major', name: t('Something went wrong, and it affected the output') },
 	]
 }

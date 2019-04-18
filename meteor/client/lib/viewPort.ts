@@ -15,7 +15,7 @@ export function scrollToPart (partId: string): boolean {
 
 const HEADER_HEIGHT = 175
 
-export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string, forceScroll?: boolean): boolean {
+export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string, forceScroll?: boolean): boolean {
 
 	let elementToScrollTo: HTMLElement | JQuery<HTMLElement> = (
 		_.isString(elementToScrollToOrSegmentId) ?
@@ -40,7 +40,7 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 	return false
 }
 
-export function scrollToPosition ( scrollPosition: number): void {
+export function scrollToPosition (scrollPosition: number): void {
 	$(document.body).addClass('auto-scrolling')
 	const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
 	$(document.body).data('auto-scrolling', autoScrolling)

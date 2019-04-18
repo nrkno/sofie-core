@@ -121,7 +121,7 @@ export class Part implements DBPart {
 				partId: this._id
 			}, selector),
 			_.extend({
-				sort: {_rank: 1}
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}
@@ -220,7 +220,7 @@ export class Part implements DBPart {
 }
 
 export const Parts: TransformedCollection<Part, DBPart>
-	= new Mongo.Collection<Part>('parts', {transform: (doc) => applyClassToDocument(Part, doc) })
+	= new Mongo.Collection<Part>('parts', { transform: (doc) => applyClassToDocument(Part, doc) })
 registerCollection('Parts', Parts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

@@ -35,7 +35,7 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 			this.subscribe('studios', {})
 			this.subscribe('showStyleBases', {})
 			this.subscribe('showStyleVariants', {})
-			let activeRO = Rundowns.findOne({active: true})
+			let activeRO = Rundowns.findOne({ active: true })
 			if (activeRO) {
 				this.subscribe('segments', {
 					rundownId: activeRO._id

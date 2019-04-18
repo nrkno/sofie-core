@@ -32,7 +32,7 @@ Meteor.startup(() => {
 			// remove old Rundowns:
 			let rundownCount = 0
 			Rundowns.find({
-				created: {$lt: getCurrentTime() - 60 * 24 * 3600 * 1000} // older than 60 days
+				created: { $lt: getCurrentTime() - 60 * 24 * 3600 * 1000 } // older than 60 days
 			}).forEach(rundown => {
 				rundown.remove()
 				rundownCount++
@@ -44,7 +44,7 @@ Meteor.startup(() => {
 			let rundownCacheCount = 0
 			let rundownIds = _.map(Rundowns.find().fetch(), rundown => rundown._id)
 			IngestDataCache.find({
-				rundownId: {$nin: rundownIds}
+				rundownId: { $nin: rundownIds }
 			}).forEach((roc) => {
 				lowPrioFcn(IngestDataCache.remove, roc._id)
 				rundownCacheCount++

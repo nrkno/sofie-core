@@ -53,7 +53,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	}
 }
 export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
-	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
+	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

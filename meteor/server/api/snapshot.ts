@@ -116,7 +116,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 		...adLibPieces.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
-	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id)}}).fetch()
+	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -155,7 +155,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 
 	const coreSystem 		= getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
-	const studios 			= Studios.find((studioId ? {_id: studioId} : {})).fetch()
+	const studios 			= Studios.find((studioId ? { _id: studioId } : {})).fetch()
 
 	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
@@ -169,10 +169,10 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		})
 		queryShowStyleBases._id = ''
 		queryShowStyleBases = {
-			_id: {$in: showStyleBaseIds}
+			_id: { $in: showStyleBaseIds }
 		}
 		queryShowStyleVariants = {
-			showStyleBaseId: {$in: showStyleBaseIds}
+			showStyleBaseId: { $in: showStyleBaseIds }
 		}
 		queryDevices = { studioId: studioId }
 	}
@@ -186,13 +186,13 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 			blueprintIds = blueprintIds.concat(showStyleBase.blueprintId)
 		}))
 		queryBlueprints = {
-			_id: {$in: blueprintIds}
+			_id: { $in: blueprintIds }
 		}
 	}
 	const blueprints 		= Blueprints		.find(queryBlueprints).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
-		deviceId: {$in: _.map(devices, device => device._id)}
+		deviceId: { $in: _.map(devices, device => device._id) }
 	}).fetch()
 
 	logger.info(`Snapshot generation done`)
@@ -203,7 +203,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 			_id: snapshotId,
 			type: SnapshotType.SYSTEM,
 			created: getCurrentTime(),
-			name: `System` + (studioId ? `_${studioId}` : '' ) + `_${formatDateTime(getCurrentTime())}`,
+			name: `System` + (studioId ? `_${studioId}` : '') + `_${formatDateTime(getCurrentTime())}`,
 			version: CURRENT_SYSTEM_VERSION,
 		},
 		studios,
@@ -282,7 +282,7 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 }
 
 // Setup endpoints:
-function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot: SnapshotBase} ) ) {
+function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot: SnapshotBase})) {
 
 	try {
 		let s: any = snapshotFcn()
@@ -301,7 +301,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 		response.statusCode = e.errorCode || 500
 		response.end('Error: ' + e.toString())
 
-		if ( e.errorCode !== 404) {
+		if (e.errorCode !== 404) {
 			logger.error(e)
 		}
 	}
@@ -383,10 +383,10 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 		snapshot.rundown.unsyncedTime = getCurrentTime()
 	}
 
-	snapshot.rundown.active					= ( dbRundown ? dbRundown.active : false)
-	snapshot.rundown.currentPartId		= ( dbRundown ? dbRundown.currentPartId : null)
-	snapshot.rundown.nextPartId			= ( dbRundown ? dbRundown.nextPartId : null)
-	snapshot.rundown.notifiedCurrentPlayingPartExternalId = ( dbRundown ? dbRundown.notifiedCurrentPlayingPartExternalId : undefined)
+	snapshot.rundown.active					= (dbRundown ? dbRundown.active : false)
+	snapshot.rundown.currentPartId		= (dbRundown ? dbRundown.currentPartId : null)
+	snapshot.rundown.nextPartId			= (dbRundown ? dbRundown.nextPartId : null)
+	snapshot.rundown.notifiedCurrentPlayingPartExternalId = (dbRundown ? dbRundown.notifiedCurrentPlayingPartExternalId : undefined)
 
 	const studios = Studios.find().fetch()
 	if (studios.length === 1) snapshot.rundown.studioId = studios[0]._id
@@ -397,15 +397,15 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 		snapshot.rundown.showStyleVariantId = showStyleVariants[0]._id
 	}
 
-	saveIntoDb(Rundowns, {_id: rundownId}, [snapshot.rundown])
-	saveIntoDb(IngestDataCache, {rundownId: rundownId}, snapshot.ingestData)
+	saveIntoDb(Rundowns, { _id: rundownId }, [snapshot.rundown])
+	saveIntoDb(IngestDataCache, { rundownId: rundownId }, snapshot.ingestData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(Segments, {rundownId: rundownId}, snapshot.segments)
-	saveIntoDb(Parts, {rundownId: rundownId}, snapshot.parts)
-	saveIntoDb(Pieces, {rundownId: rundownId}, snapshot.pieces)
-	saveIntoDb(AdLibPieces, {rundownId: rundownId}, snapshot.adLibPieces)
-	saveIntoDb(MediaObjects, {_id: {$in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id)}}, snapshot.mediaObjects)
-	saveIntoDb(ExpectedMediaItems, {partId: {$in: snapshot.parts.map(i => i._id)}}, snapshot.expectedMediaItems)
+	saveIntoDb(Segments, { rundownId: rundownId }, snapshot.segments)
+	saveIntoDb(Parts, { rundownId: rundownId }, snapshot.parts)
+	saveIntoDb(Pieces, { rundownId: rundownId }, snapshot.pieces)
+	saveIntoDb(AdLibPieces, { rundownId: rundownId }, snapshot.adLibPieces)
+	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
+	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
 
 	logger.info(`Restore done`)
 }
@@ -417,11 +417,11 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 	let changes = sumChanges(
-		saveIntoDb(Studios, (studioId ? {_id: studioId} : {}), snapshot.studios),
+		saveIntoDb(Studios, (studioId ? { _id: studioId } : {}), snapshot.studios),
 		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
 		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
 		(snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null),
-		saveIntoDb(PeripheralDevices, (studioId ? {studioId: studioId} : {}), snapshot.devices),
+		saveIntoDb(PeripheralDevices, (studioId ? { studioId: studioId } : {}), snapshot.devices),
 		saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
 	)
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored
@@ -524,7 +524,7 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, response: Serv
 		response.statusCode = e.errorCode || 500
 		response.end('Error: ' + e.toString())
 
-		if ( e.errorCode !== 404) {
+		if (e.errorCode !== 404) {
 			logger.error(e)
 		}
 	}

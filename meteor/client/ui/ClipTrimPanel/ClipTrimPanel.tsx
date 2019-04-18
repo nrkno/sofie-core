@@ -9,7 +9,7 @@ import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
-import { getDeveloperMode } from '../../lib/localStorage';
+import { getDeveloperMode } from '../../lib/localStorage'
 
 export interface IProps {
 	pieceId: string

@@ -95,7 +95,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		const content = this.props.piece.content as VTContent
 		const seek = content && content.seek ? content.seek : 0
 		if (this.props.piece.infiniteMode && content && content.sourceDuration && (this.props.piece.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.partDuration || 0)) {
-			return <div className='segment-timeline__layer-item__source-finished' style={{'left': ((content.sourceDuration - seek) * this.props.timeScale).toString() + 'px'}}></div>
+			return <div className='segment-timeline__layer-item__source-finished' style={{ 'left': ((content.sourceDuration - seek) * this.props.timeScale).toString() + 'px' }}></div>
 		}
 		return null
 	}

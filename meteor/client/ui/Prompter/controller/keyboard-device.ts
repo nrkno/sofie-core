@@ -32,7 +32,7 @@ export class KeyboardController extends ControllerAbstract {
 	private _updateSpeedHandle: number | null = null
 
 	constructor (view: PrompterViewInner) {
-		super (view)
+		super(view)
 
 		this._prompterView = view
 
@@ -107,7 +107,7 @@ export class KeyboardController extends ControllerAbstract {
 					}
 					if (setNewPosition) {
 						let stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
-						const d = this._getDistanceToStop (this._currentSpeed, stopAcceleration)
+						const d = this._getDistanceToStop(this._currentSpeed, stopAcceleration)
 						this._targetPosition = scrollPosition + d / 4
 					}
 				}
@@ -143,7 +143,7 @@ export class KeyboardController extends ControllerAbstract {
 	private _getAccelerationToStopInTime (currentSpeed, normalStopAcceleration, distanceLeft): number {
 		let timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
-		return ( 2 * ( distanceLeft - (currentSpeed * timeToStop) ) ) / Math.pow(timeToStop, 2)
+		return (2 * (distanceLeft - (currentSpeed * timeToStop))) / Math.pow(timeToStop, 2)
 	}
 	private _updateScrollPosition () {
 		if (this._destroyed) return
@@ -167,7 +167,7 @@ export class KeyboardController extends ControllerAbstract {
 					// We should deccelerate
 
 					let actualStopAcceleration = this._getAccelerationToStopInTime(this._currentSpeed, stopAcceleration, dp)
-					if (Math.abs(this._currentSpeed) < Math.abs(actualStopAcceleration) ) {
+					if (Math.abs(this._currentSpeed) < Math.abs(actualStopAcceleration)) {
 						this._currentSpeed = 0
 					} else {
 						this._currentSpeed += actualStopAcceleration

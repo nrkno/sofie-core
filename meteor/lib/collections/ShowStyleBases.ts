@@ -50,7 +50,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 }
 
 export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase>
-	= new Mongo.Collection<ShowStyleBase>('showStyleBases', {transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
+	= new Mongo.Collection<ShowStyleBase>('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 Meteor.startup(() => {

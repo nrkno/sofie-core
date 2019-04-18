@@ -81,15 +81,15 @@ Meteor.startup(() => {
 function doMessageQueue () {
 	// console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000 // 1 minute
-	let limit = ( errorOnLastRunCount === 0 ? 100 : 5 ) // if there were errors on last send, don't run too many next time
+	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
 	try {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
-			expires: {$gt: now},
-			lastTry: {$not: {$gt: now - tryInterval}},
-			sent: {$not: {$gt: 0}},
-			hold: {$not: {$eq: true}}
+			expires: { $gt: now },
+			lastTry: { $not: { $gt: now - tryInterval } },
+			sent: { $not: { $gt: 0 } },
+			hold: { $not: { $eq: true } }
 		}, {
 			sort: {
 				lastTry: 1
@@ -182,8 +182,8 @@ function updateExternalMessageQueueStatus (): void {
 			updateExternalMessageQueueStatusTimeout = 0
 
 			const messagesOnQueueCursor = ExternalMessageQueue.find({
-				sent: {$not: {$gt: 0}},
-				tryCount: {$gt: 3}
+				sent: { $not: { $gt: 0 } },
+				tryCount: { $gt: 3 }
 			})
 			const messagesOnQueueCount: number = messagesOnQueueCursor.count()
 			let status: StatusObject = {
@@ -208,8 +208,8 @@ function updateExternalMessageQueueStatus (): void {
 }
 
 ExternalMessageQueue.find({
-	sent: {$not: {$gt: 0}},
-	tryCount: {$gt: 3}
+	sent: { $not: { $gt: 0 } },
+	tryCount: { $gt: 3 }
 }).observeChanges({
 	added: updateExternalMessageQueueStatus,
 	changed: updateExternalMessageQueueStatus,

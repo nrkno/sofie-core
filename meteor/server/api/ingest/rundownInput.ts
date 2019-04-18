@@ -148,7 +148,7 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundow
 
 	saveRundownCache(rundownId, ingestRundown)
 
-	updateRundownFromIngestData( studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
+	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
 function updateRundownFromIngestData (
 	studio: Studio,

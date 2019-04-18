@@ -16,8 +16,8 @@ meteorPublish(PubSub.peripheralDeviceCommands, function (deviceId: string, token
 		}
 	}
 
-	if (PeripheralDeviceSecurity.allowReadAccess({_id: deviceId}, token, this)) {
-		return PeripheralDeviceCommands.find({deviceId: deviceId}, modifier)
+	if (PeripheralDeviceSecurity.allowReadAccess({ _id: deviceId }, token, this)) {
+		return PeripheralDeviceCommands.find({ deviceId: deviceId }, modifier)
 
 	}
 	return null

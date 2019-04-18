@@ -41,7 +41,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}).fetch(),
 		studios: Studios.find({}, {}).fetch()
 	}
-})( class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -239,7 +239,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									{
 										_.map(this.props.studios, (studio) => {
 											return <div key={studio._id}>
-												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', {studioName: studio.name})}</button>
+												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}</button>
 											</div>
 										})
 									}

@@ -40,7 +40,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(mappingId, String)
 		let m: any = {}
 		m['mappings.' + mappingId] = mapping
-		Studios.update(this.studio._id, {$set: m})
+		Studios.update(this.studio._id, { $set: m })
 		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
 		return mappingId
 	}
@@ -48,14 +48,14 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(mappingId, String)
 		let m: any = {}
 		m['mappings.' + mappingId] = _.extend(this.studio.mappings[mappingId], mapping)
-		Studios.update(this.studio._id, {$set: m})
+		Studios.update(this.studio._id, { $set: m })
 		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
 	}
 	removeMapping (mappingId: string): void {
 		check(mappingId, String)
 		let m: any = {}
 		m['mappings.' + mappingId] = 1
-		Studios.update(this.studio._id, {$unset: m})
+		Studios.update(this.studio._id, { $unset: m })
 		delete this.studio.mappings[mappingId] // Update local
 	}
 	getConfig (configId: string): ConfigItemValue | undefined {
@@ -121,7 +121,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		})
 
 		if (!parentDevice || !parentDevice.settings) return undefined
-		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as PlayoutDeviceSettingsDevice
+		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId]
 	}
 	insertDevice (deviceId: string, device: PlayoutDeviceSettingsDevice): string | null {
 		check(deviceId, String)
@@ -214,7 +214,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		ShowStyleVariants.update({
 			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id,
-		}, {$set: variant})
+		}, { $set: variant })
 	}
 	removeVariant (variantId: string): void {
 		check(variantId, String)

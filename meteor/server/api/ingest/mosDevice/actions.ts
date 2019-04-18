@@ -72,7 +72,7 @@ export namespace MOSDeviceActions {
 			story.EditorialDuration = duration
 
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
-			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found' )
+			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
 			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
 				if (err) reject(err)

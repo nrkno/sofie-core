@@ -77,7 +77,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	}
 
 	onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.mousePosition = {left: e.pageX, top: e.pageY}
+		this.mousePosition = { left: e.pageX, top: e.pageY }
 	}
 
 	renderInside () {
@@ -459,7 +459,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					}
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-						{this.props.livePosition} / {this.props.part.startsAt} / {((this.props.timingDurations || {partStartsAt: {}}).partStartsAt || {})[this.props.part._id]}
+						{this.props.livePosition} / {this.props.part.startsAt} / {((this.props.timingDurations || { partStartsAt: {} }).partStartsAt || {})[this.props.part._id]}
 						</div>
 					}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextPart && !this.props.part.autoNext &&

@@ -172,7 +172,7 @@ interface IToolbarStateHader {
 const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
-	constructor (props: Translated<IToolbarPropsHeader> ) {
+	constructor (props: Translated<IToolbarPropsHeader>) {
 		super(props)
 
 		this.state = {

@@ -125,7 +125,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 								let str: string = answer
 								if (key === 'q0') {
 									_.find(getQuestionOptions(t), (o) => {
-										if (o.value === str ) {
+										if (o.value === str) {
 											str = o.name
 											return true
 										}

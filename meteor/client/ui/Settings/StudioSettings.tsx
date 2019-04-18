@@ -986,7 +986,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		} : {}).fetch().map((variant) => {
 			const baseStyle = ShowStyleBases.findOne(variant.showStyleBaseId)
 			return {
-				name: `${(baseStyle || {name: ''}).name}: ${variant.name} (${variant._id})`,
+				name: `${(baseStyle || { name: '' }).name}: ${variant.name} (${variant._id})`,
 				value: variant._id,
 				showStyleVariant: variant
 			}

@@ -33,7 +33,7 @@ export interface PeripheralDevice {
 	lastConnected: Time // Updated upon connection, not continously
 
 	connected: boolean
-	connectionId: string|null // Id of the current ddp-Connection
+	connectionId: string | null // Id of the current ddp-Connection
 
 	token: string
 

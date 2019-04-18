@@ -57,7 +57,7 @@ interface ITrackedProps {
 export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	return {
 	}
-})( class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	private
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -127,7 +127,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		// 	})
 		// })
 		if (this.state.migration) {
-			_.each(this.state.migration.manualInputs, (manualInput ) => {
+			_.each(this.state.migration.manualInputs, (manualInput) => {
 				if (manualInput.stepId && manualInput.attribute) {
 					let value: any
 					let step = this.state.inputValues[manualInput.stepId]
@@ -249,7 +249,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								type={manualInput.inputType}
 								options={manualInput.dropdownOptions}
 								overrideDisplayValue={value}
-								updateFunction={(edit: EditAttributeBase, newValue: any ) => {
+								updateFunction={(edit: EditAttributeBase, newValue: any) => {
 									if (manualInput.attribute) {
 										let inputValues = this.state.inputValues
 										if (!inputValues[stepId]) inputValues[stepId] = {}
@@ -348,7 +348,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								})}>
 								<th className='c3'>{t('All steps')}</th>
 									<td className='table-item-actions c3'>
-										<button className='action-btn' onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps})}>
+										<button className='action-btn' onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps })}>
 											<FontAwesomeIcon icon={this.state.showAllSteps ? faEyeSlash : faEye} />
 										</button>
 									</td>

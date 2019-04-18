@@ -53,7 +53,7 @@ function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string, parts:
 		if (lastStory && lastStory.name === s.segmentName) {
 			lastStory.parts.push(s.ingest)
 		} else {
-			groupedStories.push({ name: s.segmentName, parts: [s.ingest]})
+			groupedStories.push({ name: s.segmentName, parts: [s.ingest] })
 		}
 	})
 	return groupedStories

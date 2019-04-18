@@ -112,7 +112,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 			this.handleSecondary(e)
 		}
 	}
-	updatedInput = (edit: EditAttributeBase, newValue: any ) => {
+	updatedInput = (edit: EditAttributeBase, newValue: any) => {
 		this.inputResult[edit.props.attribute || ''] = newValue
 	}
 	render () {
@@ -234,7 +234,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
-			this.setState({queue})
+			this.setState({ queue })
 			onQueue.onAccept(e, inputResult)
 		}
 	}
@@ -242,7 +242,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
-			this.setState({queue})
+			this.setState({ queue })
 			if (onQueue.onDiscard) {
 				onQueue.onDiscard(e, inputResult)
 			}
@@ -253,7 +253,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
-			this.setState({queue})
+			this.setState({ queue })
 			if (onQueue.onSecondary) {
 				onQueue.onSecondary(e, inputResult)
 			}

@@ -103,7 +103,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return status
 	}
-	export function ping (id: string, token: string ): void {
+	export function ping (id: string, token: string): void {
 		check(id, String)
 		check(token, String)
 
@@ -224,7 +224,7 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		}, 'pingResponse', message)
 
-		ServerPeripheralDeviceAPI.ping(id, token)
+		ping(id, token)
 	}
 	export function killProcess (id: string, token: string, really: boolean) {
 		// This is used in integration tests only
@@ -422,7 +422,7 @@ methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, device
 methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId: string, deviceToken: string, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
 }
-methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken: string, returnValue: string, throwError?: boolean ) => {
+methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken: string, returnValue: string, throwError?: boolean) => {
 	return ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError)
 }
 methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {

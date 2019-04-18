@@ -40,7 +40,7 @@ export namespace MediaScannerIntegration {
 				_id: _id
 			})
 			// logger.debug(doc2)
-			MediaObjects.upsert(_id, {$set: doc2})
+			MediaObjects.upsert(_id, { $set: doc2 })
 		} else {
 			throw new Meteor.Error(400, 'missing doc argument')
 		}

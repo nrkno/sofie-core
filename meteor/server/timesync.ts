@@ -46,7 +46,7 @@ let standardDeviation = (arr: Array<number>): {mean: number, stdDev: number} => 
 	let total = 0
 	let mean = 0
 	let diffSqredArr: Array<number> = []
-	for (let i = 0;i < arr.length;i += 1 ) {
+	for (let i = 0;i < arr.length;i += 1) {
 		total += arr[i]
 	}
 	mean = total / arr.length
@@ -167,17 +167,17 @@ let updateServerTime = (retries: number = 0) => {
 
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
-			setSystemStatus('systemTime', {statusCode: StatusCode.GOOD, messages: [`NTP-time accuracy (standard deviation): ${Math.floor(result.stdDev * 10) / 10} ms`]})
+			setSystemStatus('systemTime', { statusCode: StatusCode.GOOD, messages: [`NTP-time accuracy (standard deviation): ${Math.floor(result.stdDev * 10) / 10} ms`] })
 		} else {
-			if (result.stdDev < systemTime.stdDev ) {
+			if (result.stdDev < systemTime.stdDev) {
 				systemTime.diff = result.mean
 				systemTime.stdDev = result.stdDev
 			}
 			let message = `Unable to accuire NTP-time with good enough accuracy (standard deviation: ${Math.floor(result.stdDev * 10) / 10} ms)`
 			if (systemTime.stdDev < 200) {
-				setSystemStatus('systemTime', {statusCode: StatusCode.WARNING_MAJOR, messages: [message]})
+				setSystemStatus('systemTime', { statusCode: StatusCode.WARNING_MAJOR, messages: [message] })
 			} else {
-				setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [message]})
+				setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: [message] })
 			}
 			Meteor.setTimeout(() => {
 				updateServerTime()
@@ -192,11 +192,11 @@ let updateServerTime = (retries: number = 0) => {
 		} else {
 
 			logger.info('Unable to set system time (' + (err.reason || err) + ')')
-			setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [`Error message: ${err.toString()}`]})
+			setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: [`Error message: ${err.toString()}`] })
 		}
 	})
 }
-setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: ['Starting up...'] })
+setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
 Meteor.startup(() => {
 	Meteor.setInterval(() => {
 		updateServerTime()

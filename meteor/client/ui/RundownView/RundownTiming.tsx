@@ -99,7 +99,7 @@ interface IRundownTimingProviderTrackedProps {
 }
 
 /**
- * RundownTimingProvider is a container component that provides a timing context to all child elements. It allows calculating a single 
+ * RundownTimingProvider is a container component that provides a timing context to all child elements. It allows calculating a single
  * @class RundownTimingProvider
  * @extends React.Component<IRundownTimingProviderProps>
  */
@@ -158,7 +158,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 		this.onRefreshTimer()
 	}
 
-	componentWillReceiveProps(nextProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
+	componentWillReceiveProps (nextProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 		// change refresh interval if needed
 		if (this.refreshTimerInterval !== nextProps.refreshInterval && this.refreshTimer) {
 			this.refreshTimerInterval = nextProps.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
@@ -374,9 +374,9 @@ type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: 
  * @return (WrappedComponent: IWrappedComponent<IProps, IState>) =>
  * 		new (props: IProps, context: any ) => React.Component<IProps, IState>
  */
-export function withTiming<IProps, IState>(options?: WithTimingOptions | ((props: IProps) => WithTimingOptions)):
+export function withTiming<IProps, IState> (options?: WithTimingOptions | ((props: IProps) => WithTimingOptions)):
 	(WrappedComponent: IWrappedComponent<IProps, IState>) =>
-		new (props: IProps, context: any ) => React.Component<IProps, IState> {
+		new (props: IProps, context: any) => React.Component<IProps, IState> {
 	let expandedOptions: WithTimingOptions = _.extend({
 		isHighResolution: false
 	}, typeof options === 'function' ? {} : options)

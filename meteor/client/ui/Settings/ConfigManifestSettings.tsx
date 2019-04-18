@@ -345,7 +345,7 @@ export function collectConfigs (item: ObjectWithConfig): ConfigManifestEntry[] {
 	if (item instanceof Studio) {
 		// All showStyles that the studio is supposed to support:
 		showStyleBases = ShowStyleBases.find({
-			_id: {$in: item.supportedShowStyleBase || []}
+			_id: { $in: item.supportedShowStyleBase || [] }
 		}).fetch()
 	} else if (item instanceof ShowStyleBase) {
 		showStyleBases = [item]

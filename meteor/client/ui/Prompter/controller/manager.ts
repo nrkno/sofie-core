@@ -28,7 +28,7 @@ export class PrompterControlManager {
 		window.removeEventListener('mousedown', this._onMouseKeyDown)
 		window.removeEventListener('mouseup', this._onMouseKeyUp)
 
-		_.each(this._controllers, c => c.destroy() )
+		_.each(this._controllers, c => c.destroy())
 		this._controllers = []
 	}
 	private _onKeyDown = (e: KeyboardEvent) => {

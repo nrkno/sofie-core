@@ -108,7 +108,7 @@ export namespace ServerTestToolsAPI {
 		check(studioId, String)
 		const updated = RecordedFiles.update({
 			studioId: studioId,
-			stoppedAt: {$exists: false}
+			stoppedAt: { $exists: false }
 		}, {
 			$set: {
 				stoppedAt: getCurrentTime()
@@ -130,7 +130,7 @@ export namespace ServerTestToolsAPI {
 
 		const active = RecordedFiles.findOne({
 			studioId: studioId,
-			stoppedAt: {$exists: false}
+			stoppedAt: { $exists: false }
 		})
 		if (active) throw new Meteor.Error(404, `An active recording for "${studioId}" was found!`)
 

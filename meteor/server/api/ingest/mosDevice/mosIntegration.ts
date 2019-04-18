@@ -90,7 +90,7 @@ export namespace MosIntegration {
 	}
 	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.warn ('mosRoStoryMove ' + Action.StoryID)
+		logger.warn('mosRoStoryMove ' + Action.StoryID)
 
 		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 

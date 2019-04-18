@@ -78,7 +78,7 @@ export function ensureCollectionProperty<T = any> (
 						let m = {}
 						m[property] = value
 						logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
-						collection.update(obj._id,{$set: m })
+						collection.update(obj._id,{ $set: m })
 					}
 				})
 			} else {
@@ -89,7 +89,7 @@ export function ensureCollectionProperty<T = any> (
 							let m = {}
 							m[property] = value
 							logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
-							collection.update(objectId,{$set: m })
+							collection.update(objectId,{ $set: m })
 						}
 					}
 				})
@@ -188,12 +188,12 @@ export function ensureStudioConfig (
 	}
 }
 
-export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
+export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string): MigrationStepBase {
 	return {
 		id: id,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let devices = PeripheralDevices.find({type: deviceType}).fetch()
+			let devices = PeripheralDevices.find({ type: deviceType }).fetch()
 
 			for (let i in devices) {
 				let device = devices[i]
@@ -203,7 +203,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 
 				if (expectedVersion) {
 					try {
-						if ( semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0') ) {
+						if (semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
 							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
 						}
 					} catch (e) {
@@ -214,7 +214,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 			return false
 		},
 		migrate: () => {
-			let devices = PeripheralDevices.find({type: deviceType}).fetch()
+			let devices = PeripheralDevices.find({ type: deviceType }).fetch()
 
 			_.each(devices, (device) => {
 				if (!device.expectedVersions) device.expectedVersions = {}
@@ -224,7 +224,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr
 					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`)
-					PeripheralDevices.update(device._id, {$set: m})
+					PeripheralDevices.update(device._id, { $set: m })
 				}
 			})
 		},
@@ -258,7 +258,7 @@ export function renamePropertiesInCollection<T extends any > (
 		if (oldAttr) {
 			if (_.isString(oldAttr)) {
 				const o = {}
-				o[oldAttr] = {$exists: true}
+				o[oldAttr] = { $exists: true }
 				m.$or.push(o)
 			} else {
 				const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
@@ -267,7 +267,7 @@ export function renamePropertiesInCollection<T extends any > (
 
 				// Select where a value is of the old, to-be-replaced value:
 				const o = {}
-				o[oldAttrActual] = {$in: _.values(oldAttrRenameContent.content) }
+				o[oldAttrActual] = { $in: _.values(oldAttrRenameContent.content) }
 				m.$or.push(o)
 			}
 		}

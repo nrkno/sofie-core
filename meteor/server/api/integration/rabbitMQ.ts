@@ -187,7 +187,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	}
 
 	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string, headers: {[headers: string]: string} | undefined) {
-		return new Promise ((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
 

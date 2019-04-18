@@ -118,13 +118,13 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 						const version0 = semver.coerce(version)
 						const expectedVersion0 = semver.coerce(expectedVersion)
 
-						if (version0 && expectedVersion0 && version0.major !== expectedVersion0.major ) {
+						if (version0 && expectedVersion0 && version0.major !== expectedVersion0.major) {
 							statusCode = StatusCode.BAD
 							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (major version differ)`
-						} else if (version0 && expectedVersion0 && version0.minor < expectedVersion0.minor ) {
+						} else if (version0 && expectedVersion0 && version0.minor < expectedVersion0.minor) {
 							statusCode = StatusCode.WARNING_MAJOR
 							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (minor version differ)`
-						} else if (version0 && expectedVersion0 && version0.minor <= expectedVersion0.minor && version0.patch < expectedVersion0.patch ) {
+						} else if (version0 && expectedVersion0 && version0.minor <= expectedVersion0.minor && version0.patch < expectedVersion0.patch) {
 							statusCode = StatusCode.WARNING_MINOR
 							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (patch version differ)`
 						}
@@ -186,7 +186,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 
 	return statusObj
 }
-function setStatus ( statusObj: StatusResponse): StatusCode {
+function setStatus (statusObj: StatusResponse): StatusCode {
 
 	let s: StatusCode = statusObj._status
 
@@ -205,7 +205,7 @@ function setStatus ( statusObj: StatusResponse): StatusCode {
 	statusObj._status = s
 	return s
 }
-function collectMesages ( statusObj: StatusResponse): Array<string> {
+function collectMesages (statusObj: StatusResponse): Array<string> {
 	let allMessages: Array<string> = []
 
 	if (statusObj._internal) {

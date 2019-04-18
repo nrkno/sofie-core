@@ -81,7 +81,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				)}
 			</div>
 			{this.props.showDismiss &&
-				<ContextMenuTrigger id='context-menu-dissmiss-all' attributes={{className: 'notification-pop-up__dismiss'}}>
+				<ContextMenuTrigger id='context-menu-dissmiss-all' attributes={{ className: 'notification-pop-up__dismiss' }}>
 				{/* <div className='notification-pop-up__dismiss'> */}
 					<button className='notification-pop-up__dismiss__button' onClick={(e) => (e.stopPropagation(), (typeof this.props.onDismiss === 'function' && this.props.onDismiss(e)))}>
 						<CoreIcon id='nrk-close' />
@@ -151,7 +151,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			const items = $('.notification-pop-up.is-highlighted')
 			if (items.length > 0) {
 				// scroll to highlighted items
-				const position = $(items[0]).position() || {top: 0}
+				const position = $(items[0]).position() || { top: 0 }
 				const container = $('.notification-center-panel .notification-pop-ups')
 				container && container.animate({
 					scrollTop: (container.scrollTop() || 0) + position.top - 10

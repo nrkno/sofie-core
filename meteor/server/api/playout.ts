@@ -198,7 +198,7 @@ export namespace ServerPlayoutAPI {
 				timings: 1,
 				runtimeArguments: 1
 			}
-		}, {multi: true})
+		}, { multi: true })
 
 		const dirtyParts = Parts.find({
 			rundownId: rundown._id,
@@ -221,7 +221,7 @@ export namespace ServerPlayoutAPI {
 				infiniteId: 0,
 				infiniteMode: 0,
 			}
-		}, {multi: true})
+		}, { multi: true })
 
 		// Reset any pieces that were modified by inserted adlibs
 		Pieces.update({
@@ -235,7 +235,7 @@ export namespace ServerPlayoutAPI {
 				originalExpectedDuration: 'expectedDuration',
 				originalInfiniteMode: 'infiniteMode'
 			}
-		}, {multi: true})
+		}, { multi: true })
 
 		Pieces.update({
 			rundownId: rundown._id
@@ -247,7 +247,7 @@ export namespace ServerPlayoutAPI {
 				disabled: 1,
 				hidden: 1
 			}
-		}, {multi: true})
+		}, { multi: true })
 
 		// ensure that any removed infinites are restored
 		updateSourceLayerInfinitesAfterLine(rundown)
@@ -630,7 +630,7 @@ export namespace ServerPlayoutAPI {
 						infiniteId: 0,
 						infiniteMode: 0,
 					}
-				}, {multi: true})
+				}, { multi: true })
 			}
 
 			updateTimeline(rundown.studioId)
@@ -869,9 +869,9 @@ export namespace ServerPlayoutAPI {
 		if ((part._id === rundown.currentPartId && !currentNextPieceId) || part.invalid) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
-			return ServerPlayoutAPI.rundownMoveNext (rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+			return rundownMoveNext(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
 		} else {
-			ServerPlayoutAPI.rundownSetNext(rundown._id, part._id, setManually)
+			rundownSetNext(rundown._id, part._id, setManually)
 			return part._id
 		}
 
@@ -886,9 +886,9 @@ export namespace ServerPlayoutAPI {
 		if (!rundown.currentPartId) throw new Meteor.Error(400, `Rundown "${rundownId}" no current part!`)
 		if (!rundown.nextPartId) throw new Meteor.Error(400, `Rundown "${rundownId}" no next part!`)
 
-		let currentPart = Parts.findOne({_id: rundown.currentPartId})
+		let currentPart = Parts.findOne({ _id: rundown.currentPartId })
 		if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
-		let nextPart = Parts.findOne({_id: rundown.nextPartId})
+		let nextPart = Parts.findOne({ _id: rundown.nextPartId })
 		if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
 
 		if (currentPart.holdMode !== PartHoldMode.FROM || nextPart.holdMode !== PartHoldMode.TO) {
@@ -1341,7 +1341,7 @@ export namespace ServerPlayoutAPI {
 		let orgSlId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
-			partId = adlibQueueInsertPart (rundown, partId, adLibItem )
+			partId = adlibQueueInsertPart(rundown, partId, adLibItem)
 		}
 		let part = Parts.findOne({
 			_id: partId,
@@ -1362,7 +1362,7 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 
-			ServerPlayoutAPI.rundownSetNext(rundown._id, partId)
+			rundownSetNext(rundown._id, partId)
 		} else {
 			cropInfinitesOnLayer(rundown, part, newPiece)
 			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
@@ -1390,7 +1390,7 @@ export namespace ServerPlayoutAPI {
 		let orgSlId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
-			partId = adlibQueueInsertPart (rundown, partId, adLibItem )
+			partId = adlibQueueInsertPart(rundown, partId, adLibItem)
 		}
 
 		let part = Parts.findOne({
@@ -1414,7 +1414,7 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 
-			ServerPlayoutAPI.rundownSetNext(rundown._id, partId)
+			rundownSetNext(rundown._id, partId)
 		} else {
 			cropInfinitesOnLayer(rundown, part, newPiece)
 			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
@@ -1635,7 +1635,7 @@ export namespace ServerPlayoutAPI {
 			const mSet: any = {}
 			mSet['runtimeArguments.' + property] = value
 			mSet.dirty = true
-			Parts.update(part._id, {$set: mSet})
+			Parts.update(part._id, { $set: mSet })
 		}
 
 		part = Parts.findOne(partId)
@@ -2204,7 +2204,7 @@ export function updateSourceLayerInfinitesAfterLineInner (rundown: Rundown, prev
 			if (existingItem && itemToInsert && _.isEqual(existingItem, itemToInsert)) {
 				// no change, since the new item is equal to the existing one
 				// logger.debug(`updateSourceLayerInfinitesAfterLine: no change to infinite continuation "${itemToInsert._id}"`)
-			} else if (existingItem && itemToInsert && existingItem._id === itemToInsert._id ) {
+			} else if (existingItem && itemToInsert && existingItem._id === itemToInsert._id) {
 				// same _id; we can do an update:
 				ps.push(asyncCollectionUpdate(Pieces, itemToInsert._id, itemToInsert))// note; not a $set, because we want to replace the object
 				logger.debug(`updateSourceLayerInfinitesAfterLine: updated infinite continuation "${itemToInsert._id}"`)
@@ -2339,7 +2339,7 @@ function convertAdLibToSLineItem (adLibItem: AdLibPiece | Piece, part: Part, que
 			_id: newId,
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
-				value: ( queue ? 0 : 'now')
+				value: (queue ? 0 : 'now')
 			},
 			partId: part._id,
 			adLibSourceId: adLibItem._id,
@@ -2601,7 +2601,7 @@ function transformPartIntoTimeline (
 	return timelineObjs
 }
 
-export function getLookeaheadObjects (rundownData: RundownData, studio: Studio ): Array<TimelineObjGeneric> {
+export function getLookeaheadObjects (rundownData: RundownData, studio: Studio): Array<TimelineObjGeneric> {
 	const activeRundown = rundownData.rundown
 
 	const currentPart = activeRundown.currentPartId ? rundownData.partsMap[activeRundown.currentPartId] : undefined
@@ -3125,7 +3125,7 @@ function getTimelineRecording (studio: Studio, forceNowToTime?: Time): Promise<T
 
 			RecordedFiles.find({ // TODO: ask Julian if this is okay, having multiple recordings at the same time?
 				studioId: studio._id,
-				stoppedAt: {$exists: false}
+				stoppedAt: { $exists: false }
 			}, {
 				sort: {
 					startedAt: 1 // TODO - is order correct?
@@ -3445,7 +3445,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	if (!timelineObjs) {
 		timelineObjs = Timeline.find({
 			studioId: studio._id,
-			statObject: {$ne: true}
+			statObject: { $ne: true }
 		}).fetch()
 	}
 
@@ -3482,7 +3482,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 		LLayer: '__stat'
 	}
 
-	waitForPromise(asyncCollectionUpsert(Timeline, magicId, {$set: statObj}))
+	waitForPromise(asyncCollectionUpsert(Timeline, magicId, { $set: statObj }))
 }
 
 /**
@@ -3504,7 +3504,7 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Ti
 function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObjGeneric>, currentPartId: string | undefined) {
 
 	_.each(timelineObjs, (obj) => {
-		if (obj.content.type === TimelineContentTypeLawo.SOURCE ) {
+		if (obj.content.type === TimelineContentTypeLawo.SOURCE) {
 			let lawoObj = obj as TimelineObjLawo & TimelineObjGeneric
 
 			_.each(lawoObj.content.attributes, (val, key) => {
@@ -3523,8 +3523,8 @@ function validateNoraPreload (timelineObjs: Array<TimelineObjGeneric>) {
 		if (!obj.isBackground) return
 
 		const obj2 = obj as TimelineObjHTTPRequest & TimelineObjGeneric
-		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template as any).event === 'take') {
-			(obj2.content.params.template as any).event = 'cue'
+		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template).event === 'take') {
+			(obj2.content.params.template).event = 'cue'
 		} else {
 			// something we don't understand, so dont lookahead on it
 			toRemoveIds.push(obj._id)

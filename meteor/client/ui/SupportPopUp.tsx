@@ -28,7 +28,7 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 	}
 })(class SupportPopUp extends MeteorReactComponent<IProps & ITrackedProps> {
 	constructor (props: IProps) {
-		super (props)
+		super(props)
 	}
 
 	// componentDidMount () {}

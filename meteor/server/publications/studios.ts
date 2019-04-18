@@ -21,7 +21,7 @@ meteorPublish(PubSub.studios, (selector, token) => {
 })
 meteorPublish(PubSub.studioOfDevice, (deviceId: string, token) => {
 
-	if (PeripheralDeviceSecurity.allowReadAccess({_id: deviceId}, token, this)) {
+	if (PeripheralDeviceSecurity.allowReadAccess({ _id: deviceId }, token, this)) {
 
 		let peripheralDevice = PeripheralDevices.findOne(deviceId)
 

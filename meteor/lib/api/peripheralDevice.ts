@@ -167,7 +167,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	})
 	let subscription: Meteor.SubscriptionHandle | null = null
 	if (Meteor.isClient) {
-		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId )
+		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 	}
 	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)

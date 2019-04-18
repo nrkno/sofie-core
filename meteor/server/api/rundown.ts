@@ -35,7 +35,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
 	}
-	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
+	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase } }).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
 		logger.debug(`No showStyleBases matching with supportedShowStyleBase [${studio.supportedShowStyleBase}] from studio "${studio._id}"`)
@@ -148,7 +148,7 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 
 				let nextPartInLine = fetchAfter(Parts, {
 					rundownId: removedPart.rundownId,
-					_id: {$ne: removedPart._id}
+					_id: { $ne: removedPart._id }
 				}, partBefore ? partBefore._rank : null)
 
 				if (nextPartInLine) {
@@ -160,7 +160,7 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 	}
 }
 export function updateParts (rundownId: string) {
-	let parts0 = Parts.find({rundownId: rundownId}, {sort: {_rank: 1}}).fetch()
+	let parts0 = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
 	let parts: Array<Part> = []
 	let partsToInsert: {[id: string]: Array<Part>} = {}
@@ -202,7 +202,7 @@ export function updateParts (rundownId: string) {
 
 						if (part._rank !== newRank) {
 							part._rank = newRank
-							Parts.update(part._id, {$set: {_rank: part._rank}})
+							Parts.update(part._id, { $set: { _rank: part._rank } })
 						}
 						parts.splice(insertI, 0, part)
 						insertI++

@@ -17,7 +17,7 @@ export namespace IngestActions {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE ) {
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
 			MOSDeviceActions.reloadRundown(device, rundown)
 		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
 			// TODO
@@ -54,7 +54,7 @@ export namespace IngestActions {
 		}
 
 		// TODO: refacor this into something nicer perhaps?
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE ) {
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
 			MOSDeviceActions.notifyCurrentPlayingPart(device, rundown, rundown.notifiedCurrentPlayingPartExternalId || null, currentPlayingPartExternalId)
 		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
 			// TODO

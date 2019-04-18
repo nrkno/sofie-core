@@ -18,7 +18,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  */
 
 // 0.19.0 (Release 4) is a BIG refactoring
-addMigrationSteps( '0.19.0', [
+addMigrationSteps('0.19.0', [
 	{ // Create showStyleBase (migrate from studio)
 		id: 'showStyleBase exists',
 		canBeRunAutomatically: true,

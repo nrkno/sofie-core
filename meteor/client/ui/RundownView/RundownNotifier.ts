@@ -441,7 +441,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		if (!device.connected) {
-			return t('Device {{deviceName}} is disconnected', {deviceName: device.name})
+			return t('Device {{deviceName}} is disconnected', { deviceName: device.name })
 		}
 		return `${device.name}: ` + (device.status.messages || ['']).join(', ')
 	}

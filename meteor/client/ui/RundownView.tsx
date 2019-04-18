@@ -553,7 +553,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	disableNextPieceUndo = (e: any) => {
-		const {t} = this.props
+		const { t } = this.props
 
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.rundown._id, true])
@@ -561,13 +561,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	take = (e: any) => {
-		const {t} = this.props
+		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
 		}
 	}
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
-		const {t} = this.props
+		const { t } = this.props
 		if (this.props.studioMode) {
 			if (this.props.rundown.active) {
 				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
@@ -587,7 +587,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	hold = (e: any) => {
-		const {t} = this.props
+		const { t } = this.props
 		if (this.props.studioMode && this.props.rundown.active) {
 			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id])
 		}
@@ -620,7 +620,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					}
 				})
 			}
-			if (!this.rundownShouldHaveStarted() ) {
+			if (!this.rundownShouldHaveStarted()) {
 				// The broadcast hasn't started yet
 				doModalDialog({
 					title: this.props.rundown.name,
@@ -635,7 +635,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						})
 					}
 				})
-			} else if (!this.rundownShouldHaveEnded() ) {
+			} else if (!this.rundownShouldHaveEnded()) {
 				// The broadcast has started
 				doActivate(e)
 			} else {
@@ -775,7 +775,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	takeRundownSnapshot = (e) => {
-		const {t} = this.props
+		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'Taken by user'], undefined,
 				t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
@@ -785,7 +785,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	resetAndActivateRundown = (e: any) => {
 		// Called from the ModalDialog, 1 minute before broadcast starts
 		if (this.props.studioMode) {
-			const {t} = this.props
+			const { t } = this.props
 			this.rewindSegments() // Do a rewind right away
 
 			doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id], (err) => {
@@ -1149,8 +1149,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 
 		if (typeof this.props.rundown !== typeof this.props.rundown ||
-			(this.props.rundown || {_id: ''})._id !== (prevProps.rundown || {_id: ''})._id ||
-			(this.props.rundown || {active: false}).active !== (prevProps.rundown || {active: false}).active ||
+			(this.props.rundown || { _id: '' })._id !== (prevProps.rundown || { _id: '' })._id ||
+			(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
 			this.state.studioMode !== prevState.studioMode) {
 			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
 				$(window).on('beforeunload', this.onBeforeUnload)
@@ -1166,7 +1166,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	refreshHotkeys = () => {
-		const {t} = this.props
+		const { t } = this.props
 		let preventDefault = (e) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
@@ -1253,7 +1253,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onBeforeUnload = (e: any) => {
-		const {t} = this.props
+		const { t } = this.props
 
 		e.preventDefault()
 		e.returnValue = t('This rundown is now active. Are you sure you want to exit this screen?')
@@ -1343,7 +1343,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSetNext = (part: Part, e: any, offset?: number) => {
-		const {t} = this.props
+		const { t } = this.props
 		if (this.state.studioMode && part && part._id && this.props.rundown) {
 			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, part._id, offset], () => {
 				this.setState({
@@ -1354,7 +1354,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		const {t} = this.props
+		const { t } = this.props
 		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentPartId) {
 			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.rundown._id, this.props.rundown.currentPartId, item._id])
 		}
@@ -1510,9 +1510,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 			attachedPlayoutGateways.forEach((item) => {
 				PeripheralDevicesAPI.restartDevice(item, e).then(() => {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', {playoutDeviceName: item.name}), 'RundownView'))
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }), 'RundownView'))
 				}).catch(() => {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', {playoutDeviceName: item.name}), 'RundownView'))
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }), 'RundownView'))
 				})
 			})
 		}
@@ -1686,7 +1686,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								}
 							</p>
 							<p>
-								<Route render={({history}) => (
+								<Route render={({ history }) => (
 									<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
 										{t('Return to list')}
 									</button>

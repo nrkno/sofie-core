@@ -174,15 +174,15 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 					|| !this.props.device.connected
 				) ?
 					'device-item__device-status--unknown' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
 					'device-item__device-status--good' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
 					'device-item__device-status--minor-warning' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
 					'device-item__device-status--warning' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
 					'device-item__device-status--bad' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
 					'device-item__device-status--fatal' :
 				''
 			)

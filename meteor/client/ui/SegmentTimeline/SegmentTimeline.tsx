@@ -496,7 +496,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	render () {
 		let notes: Array<PartNote> = this.props.segmentNotes
 
-		const {t} = this.props
+		const { t } = this.props
 
 		const criticalNotes = _.reduce(notes, (prev, item) => {
 			if (item.type === NoteType.ERROR) return ++prev

@@ -119,11 +119,11 @@ export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer
 					// If media object not found, then...
 					if (!mediaObject && content.fileName) {
 						newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
-						message = t('Source is missing: {{fileName}}', {fileName: content.fileName})
+						message = t('Source is missing: {{fileName}}', { fileName: content.fileName })
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
 						newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
-						message = t('Source doesn\'t have audio & video: {{fileName}}', {fileName: content.fileName})
+						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: content.fileName })
 					}
 					if (mediaObject) {
 						if (!newStatus) newStatus = RundownAPI.LineItemStatusCode.OK
@@ -160,7 +160,7 @@ export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer
 							}
 
 							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
-								messages.push(t('Source has {{audioStreams}} audio streams', {audioStreams}))
+								messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
 							}
 
 							// check for black/freeze frames
@@ -168,7 +168,7 @@ export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer
 								if (arr.length === 1) {
 									const frames = Math.round(arr[0].duration * 1000 / timebase)
 									if (arr[0].start === 0) {
-										messages.push(t('Clip starts with {{frames}} {{type}} frame', {frames, type, count: frames}))
+										messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
 									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
 										messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
 									} else {

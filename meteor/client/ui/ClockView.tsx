@@ -184,8 +184,8 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 							<div className='clocks-bottom-top'>
 								<div className='clocks-part-title'>
 									{currentPart && currentPart.autoNext ?
-									<div style={{display: 'inline-block', height: '18vh'}}>
-										<img style={{height: '12vh', paddingTop: '2vh'}} src='/icons/auto-presenter-screen.svg' />
+									<div style={{ display: 'inline-block', height: '18vh' }}>
+										<img style={{ height: '12vh', paddingTop: '2vh' }} src='/icons/auto-presenter-screen.svg' />
 									</div> : ''}
 									{nextPart ? nextPart.slug.split(';')[0] : '_'}
 								</div>

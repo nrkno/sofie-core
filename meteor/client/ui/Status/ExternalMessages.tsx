@@ -99,7 +99,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 	return {
 		queuedMessages: ExternalMessageQueue.find({
 			studioId: props.studioId,
-			sent: {$not: {$gt: 0}}
+			sent: { $not: { $gt: 0 } }
 		}, {
 			sort: {
 				created: -1,
@@ -108,7 +108,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		}).fetch(),
 		sentMessages: ExternalMessageQueue.find({
 			studioId: props.studioId,
-			sent: {$gt: 0}
+			sent: { $gt: 0 }
 		}, {
 			sort: {
 				sent: -1,

@@ -86,7 +86,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			mirror: firstIfArray(queryParams['mirror']) === '1',
 			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
 			restrictMode: firstIfArray(queryParams['mode']) || undefined,
-			followTake: ( queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
+			followTake: (queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
 
@@ -125,7 +125,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	checkScrollToCurrent () {
 		let rundownId = this.props.rundown && this.props.rundown._id
 		let rundown = Rundowns.findOne(rundownId || '')
-		if (this.configOptions.followTake ) {
+		if (this.configOptions.followTake) {
 			if (rundown) {
 
 				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
@@ -162,8 +162,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			const offset = $(el).offset()
 			if (
 				offset &&
-				( startY === -1 || offset.top > startY ) &&
-				( endY === -1 	|| offset.top <= endY )
+				(startY === -1 || offset.top > startY) &&
+				(endY === -1 	|| offset.top <= endY)
 			) {
 				foundPositions.push(offset.top)
 				return true
@@ -174,7 +174,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		return foundPositions[0] || null
 	}
 	getScrollPosition (): number | undefined {
-		return window.scrollY || window.pageYOffset || (document.documentElement || {scrollTop: undefined}).scrollTop
+		return window.scrollY || window.pageYOffset || (document.documentElement || { scrollTop: undefined }).scrollTop
 	}
 	onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
@@ -210,21 +210,21 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const el = anchors[i]
 				const next = anchors[i + 1]
 
-				if (rundown.currentPartId && el.className.match('.part-' + rundown.currentPartId ) ) {
+				if (rundown.currentPartId && el.className.match('.part-' + rundown.currentPartId)) {
 					currentPartElement = $(el)
 					currentPartElementAfter = $(next) || null
 				}
-				if (rundown.nextPartId && el.className.match('.part-' + rundown.nextPartId ) ) {
+				if (rundown.nextPartId && el.className.match('.part-' + rundown.nextPartId)) {
 					nextPartElement = $(el)
 					nextPartElementAfter = $(next) || null
 				}
 			}
 
-			const currentPositionStart 	= currentPartElement 		? (currentPartElement.offset() 		|| {top: undefined}).top : null
-			const currentPositionEnd 	= currentPartElementAfter 	? (currentPartElementAfter.offset() 	|| {top: undefined}).top : null
+			const currentPositionStart 	= currentPartElement 		? (currentPartElement.offset() 		|| { top: undefined }).top : null
+			const currentPositionEnd 	= currentPartElementAfter 	? (currentPartElementAfter.offset() 	|| { top: undefined }).top : null
 
 			// const nextPositionStart 	= nextPartElement 			? (nextPartElement.offset() 		|| {top: undefined}).top : null
-			const nextPositionEnd 		= nextPartElementAfter 		? (nextPartElementAfter.offset() 	|| {top: undefined}).top : null
+			const nextPositionEnd 		= nextPartElementAfter 		? (nextPartElementAfter.offset() 	|| { top: undefined }).top : null
 
 			if (currentPositionEnd && currentPositionEnd < positionTop) {
 				// Display take "^" indicator
@@ -369,10 +369,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	}
 	componentWillMount () {
 
-		this.subscribe('rundowns', 	{_id: 				this.props.rundownId})
-		this.subscribe('segments', 			{rundownId: 	this.props.rundownId})
-		this.subscribe('parts', 		{rundownId: 	this.props.rundownId})
-		this.subscribe('pieces', 	{rundownId: 	this.props.rundownId})
+		this.subscribe('rundowns', 	{ _id: 				this.props.rundownId })
+		this.subscribe('segments', 			{ rundownId: 	this.props.rundownId })
+		this.subscribe('parts', 		{ rundownId: 	this.props.rundownId })
+		this.subscribe('pieces', 	{ rundownId: 	this.props.rundownId })
 
 	}
 
@@ -461,7 +461,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					}}
 				>
 					<div className='overlay-fix'>
-						<div className={'read-marker ' + ( this.props.config.marker || 'hide' )}>
+						<div className={'read-marker ' + (this.props.config.marker || 'hide')}>
 							<div className='side left'></div>
 							<div className='side right'></div>
 						</div>

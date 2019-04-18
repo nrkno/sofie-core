@@ -27,7 +27,7 @@ import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
 
 // 0.25.0 // This is a big refactoring, with a LOT of renamings
-addMigrationSteps( '0.25.0', [
+addMigrationSteps('0.25.0', [
 
 	{
 		id: 'migrateDatabaseCollections',

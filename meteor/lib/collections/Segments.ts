@@ -51,7 +51,7 @@ export class Segment implements DBSegment {
 				segmentId: this._id
 			}, selector),
 			_.extend({
-				sort: {_rank: 1}
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}
@@ -72,7 +72,7 @@ export class Segment implements DBSegment {
 
 // export const Segments = new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
 export const Segments: TransformedCollection<Segment, DBSegment>
-	= new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
+	= new Mongo.Collection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
 registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

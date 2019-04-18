@@ -63,7 +63,7 @@ interface IEditAttributeBaseProps {
 	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
-	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
+	updateFunction?: (edit: EditAttributeBase, newValue: any) => void
 	overrideDisplayValue?: any
 	label?: string
 	mutateDisplayValue?: (v: any) => any
@@ -434,7 +434,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 			if ((this.props.options[first] + '') === (keys[0] + '')) {
 				// is an enum, only pick
 				for (let key in this.props.options) {
-					if ( !_.isNaN(parseInt(key, 10)) ) { // key is a number (the key)
+					if (!_.isNaN(parseInt(key, 10))) { // key is a number (the key)
 						let enumValue = this.props.options[key]
 						let enumKey = this.props.options[enumValue]
 						options.push({

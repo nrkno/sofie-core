@@ -462,7 +462,7 @@ export function runMigration (
 		return !!(manualInput.stepId && manualInput.attribute)
 	})
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
-	if (manualInputsWithUserPrompt.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
+	if (manualInputsWithUserPrompt.length !== inputResults.length) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 
 	// console.log('migration.chunks', migration.chunks)
 	// console.log('chunks', chunks)
@@ -622,7 +622,7 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 
 			} else throw new Meteor.Error(500, `Bad chunk.sourcetype: "${chunk.sourceType}"`)
 
-			Blueprints.update(chunk.blueprintId, {$set: m})
+			Blueprints.update(chunk.blueprintId, { $set: m })
 		} else throw new Meteor.Error(500, `Unknown chunk.sourcetype: "${chunk.sourceType}"`)
 	})
 }
@@ -685,7 +685,7 @@ function resetDatabaseVersions () {
 function getMigrationStudioContext (chunk: MigrationChunk): IMigrationContextStudio {
 
 	if (chunk.sourceType !== MigrationStepType.STUDIO) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
-	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
+	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing`)
 
 	let studio = Studios.findOne(chunk.sourceId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
@@ -694,7 +694,7 @@ function getMigrationStudioContext (chunk: MigrationChunk): IMigrationContextStu
 }
 function getMigrationShowStyleContext (chunk: MigrationChunk): IMigrationContextShowStyle {
 	if (chunk.sourceType !== MigrationStepType.SHOWSTYLE) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected SHOWSTYLE`)
-	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
+	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing`)
 
 	let showStyleBase = ShowStyleBases.findOne(chunk.sourceId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`)
@@ -708,7 +708,7 @@ methods[MigrationMethods.runMigration] = runMigration
 methods[MigrationMethods.forceMigration] = forceMigration
 methods[MigrationMethods.resetDatabaseVersions] = resetDatabaseVersions
 methods['debug_setVersion'] = (version: string) => {
-	return updateDatabaseVersion (version)
+	return updateDatabaseVersion(version)
 }
 
 setMeteorMethods(methods)

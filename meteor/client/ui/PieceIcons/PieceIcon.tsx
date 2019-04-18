@@ -135,7 +135,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case SourceLayerType.REMOTE :
 					return (
-						<RemoteInputIcon inputIndex={ parseInt(((this.props.piece || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<RemoteInputIcon inputIndex={ parseInt(((this.props.piece || {}).name.toString()).split(' ').slice(-1)[0], 10) } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case SourceLayerType.SPLITS :
 					return (
@@ -147,7 +147,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case SourceLayerType.CAMERA :
 					return (
-						<CamInputIcon inputIndex={ parseInt(((this.props.piece || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<CamInputIcon inputIndex={ parseInt(((this.props.piece || {}).name.toString()).split(' ').slice(-1)[0], 10) } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 			}
 		}

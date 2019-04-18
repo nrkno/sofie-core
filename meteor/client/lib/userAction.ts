@@ -21,7 +21,7 @@ export function doUserAction (
 	// Display a progress message, if the method takes a long time to execute:
 	let timeoutMessage: Notification | null = null
 	let timeout = Meteor.setTimeout(() => {
-		timeoutMessage = new Notification(undefined, NoticeLevel.NOTIFICATION, t('Waiting for action: {{actionName}}...', {actionName: userActionMethodName(t, method)}), 'userAction')
+		timeoutMessage = new Notification(undefined, NoticeLevel.NOTIFICATION, t('Waiting for action: {{actionName}}...', { actionName: userActionMethodName(t, method) }), 'userAction')
 		NotificationCenter.push(timeoutMessage)
 	}, 2000)
 
@@ -37,7 +37,7 @@ export function doUserAction (
 		if (err) {
 			console.error(err)
 			NotificationCenter.push(
-				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', {actionName: userActionMethodName(t, method)}), 'userAction')
+				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', { actionName: userActionMethodName(t, method) }), 'userAction')
 			)
 			if (callback) callback(err)
 		} else if (ClientAPI.isClientResponseError(res)) {
@@ -52,7 +52,7 @@ export function doUserAction (
 			if (timeoutMessage) {
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.NOTIFICATION,
-						okMessage || t('Action {{actionName}} done!', {actionName: userActionMethodName(t, method)})
+						okMessage || t('Action {{actionName}} done!', { actionName: userActionMethodName(t, method) })
 					, 'userAction', undefined, false, undefined, undefined, 2000)
 				)
 			}

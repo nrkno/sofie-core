@@ -7,7 +7,7 @@ import { PubSub } from '../../lib/api/pubsub'
  * @param name
  * @param callback
  */
-export function meteorPublish<T> (name: PubSub, callback: (...args: any[]) => Mongo.Cursor<T> | null ) {
+export function meteorPublish<T> (name: PubSub, callback: (...args: any[]) => Mongo.Cursor<T> | null) {
 	Meteor.publish(name, function (...args: any[]) {
 		return callback(...args) || this.ready
 	})

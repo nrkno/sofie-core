@@ -257,7 +257,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						sourceLayer = sourceLayers[piece.sourceLayerId]
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
-							let part = sourceLayer as ISourceLayerExtended
+							let part = sourceLayer
 							part.items = []
 							outputLayer.sourceLayers.push(part)
 						}
@@ -343,8 +343,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				_.each(itemsByLayer, (layerItems, outputSourceCombination) => {
 					const sortedItems = _.sortBy(layerItems, 'renderedInPoint')
 					for (let i = 1; i < sortedItems.length; i++) {
-						const currentItem = sortedItems[i] as PieceExtended
-						const previousItem = sortedItems[i - 1] as PieceExtended
+						const currentItem = sortedItems[i]
+						const previousItem = sortedItems[i - 1]
 						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null && previousItem.renderedDuration !== null && currentItem.renderedDuration !== null &&
 							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined) {
 							if ((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
@@ -381,7 +381,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						sourceLayer = sourceLayers[piece.sourceLayerId]
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
-							let part = sourceLayer as ISourceLayerExtended
+							let part = sourceLayer
 							part.items = []
 							outputLayer.sourceLayers.push(part)
 						}

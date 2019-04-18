@@ -110,7 +110,7 @@ export class Rundown implements DBRundown {
 	public holdState?: RundownHoldState
 	public dataSource: string
 	public notes?: Array<RundownNote>
-	_: any;
+	_: any
 
 	constructor (document: DBRundown) {
 		_.each(_.keys(document), (key: keyof DBRundown) => {
@@ -127,7 +127,7 @@ export class Rundown implements DBRundown {
 	}
 	getShowStyleBase (): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
-		if (!showStyleBase ) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
+		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
 		return showStyleBase
 	}
 	getStudio (): Studio {
@@ -146,7 +146,7 @@ export class Rundown implements DBRundown {
 				rundownId: this._id
 			}, selector),
 			_.extend({
-				sort: {_rank: 1}
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}
@@ -158,24 +158,24 @@ export class Rundown implements DBRundown {
 				rundownId: this._id
 			}, selector),
 			_.extend({
-				sort: {_rank: 1}
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		Rundowns.remove(this._id)
-		Segments.remove({rundownId: this._id})
-		Parts.remove({rundownId: this._id})
-		Pieces.remove({ rundownId: this._id})
-		AdLibPieces.remove({ rundownId: this._id})
-		RundownBaselineObjs.remove({ rundownId: this._id})
-		RundownBaselineAdLibPieces.remove({ rundownId: this._id})
+		Segments.remove({ rundownId: this._id })
+		Parts.remove({ rundownId: this._id })
+		Pieces.remove({ rundownId: this._id })
+		AdLibPieces.remove({ rundownId: this._id })
+		RundownBaselineObjs.remove({ rundownId: this._id })
+		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
 		IngestDataCache.remove({ rundownId: this._id })
 	}
 	touch () {
-		if (getCurrentTime() - this.modified > 3600 * 1000 ) {
-			Rundowns.update(this._id, {$set: {modified: getCurrentTime()}})
+		if (getCurrentTime() - this.modified > 3600 * 1000) {
+			Rundowns.update(this._id, { $set: { modified: getCurrentTime() } })
 		}
 	}
 	getTimings () {
@@ -272,7 +272,7 @@ export interface RundownData {
 
 // export const Rundowns = new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
 export const Rundowns: TransformedCollection<Rundown, DBRundown>
-	= new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
+	= new Mongo.Collection<Rundown>('rundowns', { transform: (doc) => applyClassToDocument(Rundown, doc) })
 registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

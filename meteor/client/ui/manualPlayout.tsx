@@ -156,7 +156,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 							<table>
 								<tbody>
 								{
-									_.map( this.getAtemMEs(studio), (mapping, mappingLayerId) => {
+									_.map(this.getAtemMEs(studio), (mapping, mappingLayerId) => {
 										return <tr key={mappingLayerId}>
 											<th>{mappingLayerId}</th>
 											{
@@ -179,7 +179,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 							<table>
 								<tbody>
 								{
-									_.map( this.getCasparLayers(studio), (mapping, mappingLayerId) => {
+									_.map(this.getCasparLayers(studio), (mapping, mappingLayerId) => {
 										return <tr key={mappingLayerId}>
 											<th>{mappingLayerId}</th>
 											<td>

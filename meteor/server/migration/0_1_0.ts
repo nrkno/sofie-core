@@ -12,7 +12,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  */
 
 // 0.1.0: These are the "default" migration steps
-addMigrationSteps( '0.1.0', [
+addMigrationSteps('0.1.0', [
 	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,

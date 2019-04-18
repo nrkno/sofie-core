@@ -58,7 +58,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 		_id: blueprintId,
 		name: blueprint ? blueprint.name : (blueprintName || blueprintId),
 		created: blueprint ? blueprint.created : getCurrentTime(),
-		code: body as string,
+		code: body,
 		modified: getCurrentTime(),
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],

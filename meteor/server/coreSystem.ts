@@ -170,8 +170,8 @@ function checkDatabaseVersion (
 				}
 			} else {
 
-				const currentV = new semver.SemVer(currentVersion, {includePrerelease: true})
-				const expectV = new semver.SemVer(stripVersion(expectVersion), {includePrerelease: true})
+				const currentV = new semver.SemVer(currentVersion, { includePrerelease: true })
+				const expectV = new semver.SemVer(stripVersion(expectVersion), { includePrerelease: true })
 
 				const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
 

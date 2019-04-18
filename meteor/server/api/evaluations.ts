@@ -61,7 +61,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 						('*<' + hostUrl + '/rundown/' + rundown._id + '|' + rundown.name + '>*') :
 						(rundown && rundown.name || 'N/A')
 					) +
-					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '' ) + '\n' +
+					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') + '\n' +
 					evaluationMessage + '\n' +
 					'_' + evaluationProducer + '_'
 				)

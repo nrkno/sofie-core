@@ -106,7 +106,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 					if (timelineObj.trigger.type === TriggerType.TIME_ABSOLUTE) {
 						segmentCopy.trigger = timelineObj.trigger
 						if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
-							segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
+							segmentCopy.renderedInPoint = (timelineObj.trigger.value)
 						} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
 							if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
 								segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)

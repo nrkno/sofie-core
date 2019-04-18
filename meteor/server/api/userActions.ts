@@ -337,9 +337,9 @@ export function activateHold (rundownId: string) {
 	if (!rundown.currentPartId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
 	if (!rundown.nextPartId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
 
-	let currentPart = Parts.findOne({_id: rundown.currentPartId})
+	let currentPart = Parts.findOne({ _id: rundown.currentPartId })
 	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
-	let nextPart = Parts.findOne({_id: rundown.nextPartId})
+	let nextPart = Parts.findOne({ _id: rundown.nextPartId })
 	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
 	if (rundown.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
@@ -381,7 +381,7 @@ export function recordStop (studioId: string) {
 	check(studioId, String)
 	const record = RecordedFiles.findOne({
 		studioId: studioId,
-		stoppedAt: {$exists: false}
+		stoppedAt: { $exists: false }
 	})
 	if (!record) return ClientAPI.responseError(`No active recording for "${studioId}" was found!`)
 	return ClientAPI.responseSuccess(
@@ -397,7 +397,7 @@ export function recordStart (studioId: string, fileName: string) {
 
 	const active = RecordedFiles.findOne({
 		studioId: studioId,
-		stoppedAt: {$exists: false}
+		stoppedAt: { $exists: false }
 	})
 	if (active) return ClientAPI.responseError(`There is already an active recording in studio "${studioId}"!`)
 

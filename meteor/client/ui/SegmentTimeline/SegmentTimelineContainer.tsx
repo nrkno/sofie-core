@@ -258,7 +258,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
-		let collapsedOutputs = {...this.state.collapsedOutputs}
+		let collapsedOutputs = { ...this.state.collapsedOutputs }
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
 		CollapsedStateStorage.setItem(`rundownView.segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
@@ -348,7 +348,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 	updateSpeech () {
 
-		let displayTime = Math.floor( ( this.state.displayTimecode / 1000))
+		let displayTime = Math.floor((this.state.displayTimecode / 1000))
 
 		if (this._prevDisplayTime !== displayTime) {
 

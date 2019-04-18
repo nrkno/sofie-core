@@ -44,7 +44,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	updateTime = () => {
 		if (this.vPreview) {
-			const piece = this.props.piece as PieceUi
+			const piece = this.props.piece
 			const itemDuration = ((piece.content ? piece.content.sourceDuration as number : undefined) || piece.duration || piece.renderedDuration || 0)
 			let targetTime = this.props.cursorTimePosition
 			let seek = ((piece.content ? piece.content.seek as number : undefined) || 0)
@@ -90,7 +90,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	getPreviewUrl = (): string | undefined => {
 		if (this.props.piece) {
-			const item = this.props.piece as PieceUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
@@ -102,7 +102,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 	getScenes = (): Array<number> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
-			const item = this.props.piece as PieceUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
 				return _.compact(metadata.mediainfo.scenes.map((i) => {
@@ -118,7 +118,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 	getFreezes = (): Array<Anomaly> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
-			const item = this.props.piece as PieceUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			let items: Array<Anomaly> = []
 			// add freezes
@@ -134,7 +134,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 	getBlacks = (): Array<Anomaly> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
-			const item = this.props.piece as PieceUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			let items: Array<Anomaly> = []
 			// add blacks
@@ -154,7 +154,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		let show = false
 		let msgBlacks = ''
 		let msgFreezes = ''
-		const item = this.props.piece as PieceUi
+		const item = this.props.piece
 		const metadata = item.metadata as MediaObject
 		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
 		if (this.blacks) {

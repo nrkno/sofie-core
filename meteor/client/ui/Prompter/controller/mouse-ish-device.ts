@@ -47,7 +47,7 @@ export class MouseIshController extends ControllerAbstract {
 	private _lastWheelTime: number = 0
 
 	constructor (view: PrompterViewInner) {
-		super (view)
+		super(view)
 
 		this._prompterView = view
 
