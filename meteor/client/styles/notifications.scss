@@ -144,7 +144,7 @@
         }
     }
 
-    &.status-bar__controls__button--open:not(.has-items) {
+    &.status-bar__controls__button--open {
         > svg {
             > path {
                 stroke: #333;
@@ -156,10 +156,10 @@
         display: block;
         position: absolute;
 
-        left: 62%;
+        right: 6%;
         top: 50%;
         transform: translate(0, -50%);
-        width: 35%;
+        width: #{$fullscreen-controls__button--radius / 2.86};
         text-align: center;
         font-size: 0.8em;
         font-weight: 500;

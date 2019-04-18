@@ -299,7 +299,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		const { t } = this.props
 
 		return (
-			<div className='mtl gutter'>
+			<div className='mtl gutter has-statusbar'>
 				<header className='mvs'>
 					<h1>{t('System Settings')}</h1>
 				</header>

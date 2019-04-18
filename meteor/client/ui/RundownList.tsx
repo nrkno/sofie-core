@@ -210,7 +210,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		const unsynced = this.props.rundowns.filter(i => i.unsynced)
 
 		return <React.Fragment>
-			<div className='mtl gutter'>
+			<div className='mtl gutter has-statusbar'>
 				<header className='mvs'>
 					<h1>{t('Rundowns')}</h1>
 				</header>
