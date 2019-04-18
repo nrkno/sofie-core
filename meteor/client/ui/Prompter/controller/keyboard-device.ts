@@ -46,16 +46,17 @@ export class KeyboardController extends ControllerAbstract {
 		this._destroyed = true
 	}
 	public onKeyDown (e: KeyboardEvent) {
-		if (!this._keyDown[e.keyCode + '']) this._keyDown[e.keyCode + ''] = Date.now()
+		console.log(e)
+		if (!this._keyDown[e.code]) this._keyDown[e.code] = Date.now()
 
 		if (this._mode === Mode.NORMAL) {
 			const scrollBy = Math.round(window.innerHeight * 0.66)
 			const scrollPosition = this._prompterView.getScrollPosition()
 			if (scrollPosition !== undefined) {
 				if (
-					e.keyCode === 37 || // left
-					e.keyCode === 38 ||	// up
-					e.keyCode === 33	// page up
+					e.code === 'ArrowLeft' ||
+					e.code === 'ArrowUp' ||
+					e.code === 'PageUp'
 				) {
 					e.preventDefault()
 					let newPosition = scrollPosition - scrollBy
@@ -63,10 +64,10 @@ export class KeyboardController extends ControllerAbstract {
 					this._continousScrolling = -1
 					this._updateScrollPosition()
 				} else if (
-					e.keyCode === 39 || // right
-					e.keyCode === 40 || // down
-					e.keyCode === 32 ||	// space
-					e.keyCode === 34 	// page down
+					e.code === 'ArrowRight' ||
+					e.code === 'ArrowDown' ||
+					e.code === 'Space' ||
+					e.code === 'PageDown'
 				) {
 					e.preventDefault()
 
@@ -79,19 +80,19 @@ export class KeyboardController extends ControllerAbstract {
 		}
 	}
 	public onKeyUp (e: KeyboardEvent) {
-		const timeSincePress = Date.now() - this._keyDown[e.keyCode + '']
+		const timeSincePress = Date.now() - this._keyDown[e.keyCode]
 
 		if (this._mode === Mode.NORMAL) {
 			const scrollPosition = this._prompterView.getScrollPosition()
 			if (scrollPosition !== undefined) {
 				if (
-					e.keyCode === 37 || // left
-					e.keyCode === 38 ||	// up
-					e.keyCode === 33 || // page up
-					e.keyCode === 39 || // right
-					e.keyCode === 40 || // down
-					e.keyCode === 32 ||	// space
-					e.keyCode === 34 	// page down
+					e.code === 'ArrowLeft' || // left
+					e.code === 'ArrowUp' ||	// up
+					e.code === 'PageUp' || // page up
+					e.code === 'ArrowRight' || // right
+					e.code === 'ArrowDown' || // down
+					e.code === 'Space' ||	// space
+					e.code === 'PageDown' 	// page down
 				) {
 					e.preventDefault()
 					this._continousScrolling = 0
@@ -114,7 +115,7 @@ export class KeyboardController extends ControllerAbstract {
 			}
 		}
 
-		this._keyDown[e.keyCode + ''] = 0
+		this._keyDown[e.code] = 0
 	}
 	public onMouseKeyDown (e: MouseEvent) {
 		// Nothing

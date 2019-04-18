@@ -81,9 +81,9 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
-			if (e.keyCode === 13) { // Enter
+			if (e.code === 'Enter') {
 				this.handleAccept(e)
-			} else if (e.keyCode === 27) { // Escape
+			} else if (e.code === 'Escape') {
 				if (this.props.secondaryText) {
 					this.handleSecondary(e)
 				} else {
