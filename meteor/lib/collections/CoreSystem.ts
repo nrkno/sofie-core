@@ -91,7 +91,7 @@ export function setCoreSystemStorePath (storePath: string): void {
 }
 
 export type Version = string
-export type Range = string
+export type VersionRange = string
 
 export function stripVersion (v: string): string {
 	if (v.match(/git/i) || v.match(/http/i)) {
@@ -100,7 +100,7 @@ export function stripVersion (v: string): string {
 		return v.replace(/[^\d.]/g,'') || '0.0.0'
 	}
 }
-export function parseRange (r: string | Range): Range {
+export function parseRange (r: string | VersionRange): VersionRange {
 	if ((r + '').match(/git:\/\//)) {
 		return '^0.0.0' // anything goes..
 	}

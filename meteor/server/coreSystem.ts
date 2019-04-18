@@ -5,7 +5,9 @@ import {
 	getCoreSystemCursor,
 	parseVersion,
 	Version,
-	parseRange
+	parseRange,
+	stripVersion,
+	VersionRange
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -150,7 +152,7 @@ function checkDatabaseVersions () {
  */
 function checkDatabaseVersion (
 	currentVersion: Version | null,
-	expectVersion: Version | null,
+	expectVersion: VersionRange | null,
 	fixMessage: string,
 	meName: string,
 	theyName: string
@@ -169,7 +171,7 @@ function checkDatabaseVersion (
 			} else {
 
 				const currentV = new semver.SemVer(currentVersion, {includePrerelease: true})
-				const expectV = new semver.SemVer(expectVersion, {includePrerelease: true})
+				const expectV = new semver.SemVer(stripVersion(expectVersion), {includePrerelease: true})
 
 				const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
 
