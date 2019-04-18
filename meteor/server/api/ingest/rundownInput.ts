@@ -22,7 +22,8 @@ import {
 	literal,
 	asyncCollectionRemove,
 	sumChanges,
-	anythingChanged
+	anythingChanged,
+	waitForPromiseAll
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -347,8 +348,8 @@ export function reCreateRundown (rundownId: string): boolean {
 	return updateRundownFromIngestData(studio, rundown, ingestRundown)
 }
 
-export function removeSegment (segmentId: string): Promise<any> {
-	return Promise.all([
+export function removeSegment (segmentId: string): void {
+	waitForPromiseAll([
 		asyncCollectionRemove(Parts, { segmentId: segmentId }),
 		// TODO - cleanup other part contents
 		asyncCollectionRemove(Segments, segmentId)
