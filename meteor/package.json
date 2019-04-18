@@ -96,7 +96,7 @@
     "@types/css-font-loading-module": "0.0.1",
     "@types/fibers": "0.0.30",
     "@types/jest": "^24.0.6",
-    "@types/jquery": "^3.3.1",
+    "@types/jquery": "^3.3.29",
     "@types/meteor": "1.4.21",
     "@types/mousetrap": "^1.6.0",
     "@types/node": "^9.6.1",
