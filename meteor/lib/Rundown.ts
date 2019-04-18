@@ -1,13 +1,17 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
 import { Pieces, Piece } from './collections/Pieces'
-import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import {
+	PieceLifespan,
+	getPieceGroupId,
+	IOutputLayer,
+	ISourceLayer
+} from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray, extendMandadory } from './lib'
 import { Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { ShowStyleBase } from './collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 

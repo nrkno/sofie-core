@@ -11,7 +11,7 @@
     }],
     "trailing-comma": false,
     "semicolon": [true, "never"],
-    "strict-type-predicates": true,
+    "strict-type-predicates": false,
     "await-promise": [true, "Bluebird"],
     "no-use-before-declare": false
   }

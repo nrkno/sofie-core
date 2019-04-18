@@ -1,7 +1,6 @@
 /// <reference path="../../../lib/typings/reactivearray.d.ts" />
 
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Dictionary } from 'underscore'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
@@ -46,9 +45,9 @@ export interface NotificationAction {
 /** A source of notifications */
 export type Notifier = () => NotificationList
 
-const notifiers: Dictionary<NotifierHandle> = {}
+const notifiers: {[index: string]: NotifierHandle} = {}
 
-const notifications: Dictionary<Notification> = {}
+const notifications: {[index: string]: Notification} = {}
 const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
 
 interface NotificationHandle {

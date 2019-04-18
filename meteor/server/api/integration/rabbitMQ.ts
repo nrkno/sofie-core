@@ -68,7 +68,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		await super.init()
 
 		if (this.connection) {
-			await promisify(this.connection.close)
+			await this.connection.close()
 		}
 
 		this.initializing = this.initConnection()
@@ -138,7 +138,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		await super.init()
 
 		if (this.channel) {
-			await promisify(this.channel.close)
+			await this.channel.close()
 		}
 
 		this.initializing = this.initChannel(this.connection)

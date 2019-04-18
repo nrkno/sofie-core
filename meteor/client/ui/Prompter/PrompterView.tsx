@@ -15,7 +15,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { objectPathGet, firstIfArray } from '../../../lib/lib'
 import { Parts } from '../../../lib/collections/Parts'
 import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
-import * as classNames from 'classnames'
 import { Segments } from '../../../lib/collections/Segments'
 import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
@@ -397,7 +396,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				divs.push(
 					<div
 						key={'segment_' + i}
-						className={classNames(
+						className={ClassNames(
 							'prompter-segment',
 							'scroll-anchor',
 							'segment-' + line.segmentId,
@@ -417,7 +416,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				divs.push(
 					<div
 						key={'part_' + i}
-						className={classNames(
+						className={ClassNames(
 							'prompter-part',
 							'scroll-anchor',
 							'part-' + line.partId,
@@ -434,7 +433,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			divs.push(
 				<div
 					key={i}
-					className={classNames(
+					className={ClassNames(
 						'prompter-line',
 						(!line.text ? 'empty' : undefined)
 					)}

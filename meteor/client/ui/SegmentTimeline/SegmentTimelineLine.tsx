@@ -14,13 +14,12 @@ import {
 	PieceUi
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { RundownTiming, WithTiming } from '../RundownView/RundownTiming'
+import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
 
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
-import { withTiming } from '../RundownView/RundownTiming'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'

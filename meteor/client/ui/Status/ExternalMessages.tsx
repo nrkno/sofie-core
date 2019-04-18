@@ -10,7 +10,7 @@ import * as _ from 'underscore'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
-import * as classNames from 'classnames'
+import * as ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { Studios, Studio } from '../../../lib/collections/Studios'
@@ -225,7 +225,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 			}
 		}
 		return (
-			<tr key={msg._id} className={classNames(classes)}>
+			<tr key={msg._id} className={ClassNames(classes)}>
 				<td className='c2'>
 					{
 						getAdminMode() ? <React.Fragment>

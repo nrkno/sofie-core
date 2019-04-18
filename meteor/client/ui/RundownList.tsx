@@ -17,10 +17,9 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
-import { getDeveloperMode } from '../lib/localStorage'
+import { getDeveloperMode, getAdminMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
-import { getAdminMode } from '../lib/localStorage'
 
 const PackageInfo = require('../../package.json')
 

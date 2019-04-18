@@ -48,7 +48,7 @@ import {
 	TimelineObjHTTPRequest,
 	Timeline as TimelineTypes
 } from 'timeline-state-resolver-types'
-import { TriggerType, TimelineTrigger } from 'superfly-timeline'
+import { TriggerType, TimelineTrigger, Resolver } from 'superfly-timeline'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -75,7 +75,6 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/Rundown'
 let clone = require('fast-clone')
-import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { setMeteorMethods, Methods } from '../methods'
