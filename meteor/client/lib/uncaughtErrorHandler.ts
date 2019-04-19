@@ -77,7 +77,7 @@ window.onerror = (event, source, line, col, error) => {
 	} catch (e) {
 		// ell, we can't do much then...
 	}
-	if (originalOnError !== undefined) {
+	if (originalOnError) {
 		originalOnError(event, source, line, col, error)
 	}
 }
