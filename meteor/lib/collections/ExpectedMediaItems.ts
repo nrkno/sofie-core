@@ -46,8 +46,7 @@ Meteor.startup(() => {
 			studioId: 1
 		})
 		ExpectedMediaItems._ensureIndex({
-			rundownId: 1,
-			partId: 1
+			rundownId: 1
 		})
 	}
 })

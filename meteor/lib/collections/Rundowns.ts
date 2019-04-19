@@ -15,6 +15,7 @@ import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
+import { ExpectedMediaItems } from './ExpectedMediaItems'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -172,6 +173,7 @@ export class Rundown implements DBRundown {
 		RundownBaselineObjs.remove({ rundownId: this._id })
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
 		IngestDataCache.remove({ rundownId: this._id })
+		ExpectedMediaItems.remove({ rundownId: this._id })
 	}
 	touch () {
 		if (getCurrentTime() - this.modified > 3600 * 1000) {

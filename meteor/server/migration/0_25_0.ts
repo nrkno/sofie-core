@@ -25,6 +25,7 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
+import { logger } from '../../lib/logging';
 
 // 0.25.0 // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
@@ -263,6 +264,34 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
+
+	{
+		id: 'cleanUpExpectedItems',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
+			logger.error(currentRundowns)
+			const itemsCount = ExpectedMediaItems.find({
+				rundownId: {
+					$nin: currentRundowns
+				}
+			}).count()
+			logger.error(itemsCount)
+
+			if (itemsCount > 0) {
+				return `ExpectedMediaItems contains ${itemsCount} orphaned items`
+			}
+			return false
+		},
+		migrate: () => {
+			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
+			ExpectedMediaItems.remove({
+				rundownId: {
+					$nin: currentRundowns
+				}
+			})
+		}
+	},
 
 	// add steps here:
 	// {

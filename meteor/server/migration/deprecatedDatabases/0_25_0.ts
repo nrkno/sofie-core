@@ -10,7 +10,7 @@ interface DeprecatedDatabases {
 	SegmentLineItems: Mongo.Collection<any>,
 	SegmentLines: Mongo.Collection<any>,
 	StudioInstallations: Mongo.Collection<any>,
-	RundownBaselineObjs: Mongo.Collection<any>,
+	// RundownBaselineObjs: Mongo.Collection<any>,
 }
 
 let deprecatedDatabases: DeprecatedDatabases | null
@@ -34,7 +34,7 @@ export function getDeprecatedDatabases (): DeprecatedDatabases | null {
 			SegmentLineItems: new Mongo.Collection('segmentLineItems'),
 			SegmentLines: new Mongo.Collection('segmentLines'),
 			StudioInstallations: new Mongo.Collection('studioInstallation'),
-			RundownBaselineObjs: new Mongo.Collection('rundownBaselineObjs')
+			// RundownBaselineObjs: new Mongo.Collection('rundownBaselineObjs')
 
 		}
 		return deprecatedDatabases
