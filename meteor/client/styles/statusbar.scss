@@ -26,9 +26,10 @@
 
 	.status-bar__controls__button {
 		margin-left: 5px;
+		position: relative;
 		display: block;
 		border: none;
-		background: transparentize(#4B4B4B, 0.45);
+		background: transparentize(#fff, 1);
 		width: $fullscreen-controls__button--radius;
 		height: $fullscreen-controls__button--radius;
 		border-radius: 100%;
@@ -36,8 +37,22 @@
 		margin-bottom: 0.5rem;
 		font-size: 1em;
 		box-sizing: border-box;
-
 		cursor: pointer;
+
+		&::after {
+			content: ' ';
+			position: absolute;
+			display: block;
+			z-index: -1;
+			border-radius: 100%;
+			top: 0;
+			right: 0;
+			width: $fullscreen-controls__button--radius;
+			height: $fullscreen-controls__button--radius;
+			background: transparentize(#4B4B4B, 0.45);
+			transition: 0.3s background-color;
+		}
+
 
 		&.status-bar__controls__button--inactive {
 			cursor: default;
@@ -45,8 +60,10 @@
 
 		&:not(.status-bar__controls__button--inactive) {
 			&:active, &.active {
-				background: $ui-button-primary;
-				transition: 0s background;
+				&::after {
+					background: $ui-button-primary;
+					transition: 0s background-color;
+				}
 			}
 		}
 
@@ -54,7 +71,6 @@
 			width: #{$fullscreen-controls__button--radius + 5px};
 			border-radius: 0 100% 100% 0;
 			background-color: #fff;
-			color: #333;
 			margin-left: 0;
 			border-top: 1px solid rgba(0, 0, 0, 0.3);
 			border-right: 1px solid rgba(0, 0, 0, 0.3);

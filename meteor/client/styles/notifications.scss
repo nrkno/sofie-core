@@ -144,14 +144,6 @@
         }
     }
 
-    &.status-bar__controls__button--open {
-        > svg {
-            > path {
-                stroke: #333;
-            }
-        }
-    }
-
     .notifications__toggle-button__count {
         display: block;
         position: absolute;

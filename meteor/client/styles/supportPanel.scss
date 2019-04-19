@@ -1,7 +1,7 @@
 @import '_colorScheme';
 @import '_variables';
 
-.support__toggle-button {
+.status-bar__controls__button.support__toggle-button {
 	position: fixed;
     right: 5px;
     bottom: 5px;
@@ -20,12 +20,6 @@
         > path {
             fill: rgb(255, 255, 255);
             transition: 0.5s all linear;
-        }
-    }
-
-    &.status-bar__controls__button--open {
-        > svg > path {
-            fill: #333;
         }
     }
 }
