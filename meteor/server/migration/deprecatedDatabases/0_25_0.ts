@@ -52,7 +52,7 @@ export function dropDeprecatedDatabases (): void {
 		ps.push(dbs.RunningOrderBaselineItems.rawCollection().drop())
 		ps.push(dbs.RunningOrderBaselineAdLibItems.rawCollection().drop())
 		ps.push(dbs.StudioInstallations.rawCollection().drop())
-		ps.push(dbs.RundownBaselineObjs.rawCollection().drop())
+		// ps.push(dbs.RundownBaselineObjs.rawCollection().drop())
 
 		waitForPromise(
 			Promise.all(ps)
