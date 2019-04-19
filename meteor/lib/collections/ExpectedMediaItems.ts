@@ -42,7 +42,8 @@ Meteor.startup(() => {
 			path: 1
 		})
 		ExpectedMediaItems._ensureIndex({
-			mediaFlowId: 1
+			mediaFlowId: 1,
+			studioId: 1
 		})
 		ExpectedMediaItems._ensureIndex({
 			rundownId: 1,
