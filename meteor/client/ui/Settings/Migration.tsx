@@ -58,7 +58,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	return {
 	}
 })(class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	private
+	private cancelRequests: boolean
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -75,6 +75,10 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	}
 	componentDidMount () {
 		this.updateVersions()
+	}
+	componentWillUnmount () {
+		super.componentWillUnmount()
+		this.cancelRequests = true
 	}
 	clickRefresh () {
 		this.setState({
@@ -97,6 +101,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			migrationNeeded: false
 		})
 		Meteor.call(MigrationMethods.getMigrationStatus, (err, r: GetMigrationStatusResult) => {
+			if (this.cancelRequests) return
 			if (err) {
 				logger.error(err)
 				// todo: notify user
@@ -147,6 +152,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				this.state.migration.hash, // hash
 				inputResults, // inputResults
 			(err, r: RunMigrationResult) => {
+				if (this.cancelRequests) return
 				if (err) {
 					logger.error(err)
 					// todo: notify user
@@ -169,6 +175,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			Meteor.call(MigrationMethods.forceMigration,
 				this.state.migration.chunks,
 			(err) => {
+				if (this.cancelRequests) return
 				if (err) {
 					logger.error(err)
 					// todo: notify user
