@@ -18,7 +18,7 @@ import { Parts } from '../../../../../lib/collections/Parts'
 
 require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
-describe ('Test recieved mos actions', () => {
+describe('Test recieved mos actions', () => {
 
 	testInFiber('mosRoCreate', () => {
 		// setLoggerLevel('debug')
@@ -31,7 +31,7 @@ describe ('Test recieved mos actions', () => {
 		const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
 		const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId)
 
-		const showStyleBase = setupMockShowStyleBase( showStyleBlueprint._id, { _id: showStyleBaseId })
+		const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, { _id: showStyleBaseId })
 		const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
 		const studio = setupMockStudio({
@@ -61,7 +61,7 @@ describe ('Test recieved mos actions', () => {
 			}]
 		}
 		// console.log('device', device)
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mosRunningOrder )
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mosRunningOrder)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({

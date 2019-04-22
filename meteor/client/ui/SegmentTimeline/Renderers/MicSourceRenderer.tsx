@@ -67,7 +67,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	componentDidMount () {
 		// Create line element
-		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>') as JQuery<HTMLDivElement>
+		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>')
 		this.updateAnchoredElsWidths()
 		if (this.props.itemElement) {
 			this.itemElement = this.props.itemElement

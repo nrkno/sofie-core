@@ -25,7 +25,7 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
-import { logger } from '../../lib/logging';
+import { logger } from '../../lib/logging'
 
 // 0.25.0 // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
