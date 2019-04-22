@@ -502,6 +502,9 @@ export namespace ServerPlayoutAPI {
 
 		return ClientAPI.responseSuccess()
 	}
+	/*
+	// TODO: I could not figure out if this is used anywhere, therefore removing temporarily / Nyman
+
 	export function rundownStoriesMoved (rundownId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
 		check(rundownId, String)
 		check(onAirNextWindowWidth, Match.Maybe(Number))
@@ -537,6 +540,7 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 	}
+	*/
 	export function rundownDisableNextPiece (rundownId: string, undo?: boolean) {
 		check(rundownId, String)
 

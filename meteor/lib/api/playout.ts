@@ -15,7 +15,7 @@ export namespace PlayoutAPI {
 		'rundownSetNext' = 'playout.rundownSetNext',
 		'rundownMoveNext' = 'playout.rundownMoveNext',
 		'rundownActivateHold' = 'playout.rundownActivateHold',
-		'rundownStoriesMoved' = 'playout.rundownStoriesMoved',
+		// 'rundownStoriesMoved' = 'playout.rundownStoriesMoved',
 		'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
 		'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
 		'partPlaybackStartedCallback' = 'playout.partPlaybackStartedCallback',
