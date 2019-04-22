@@ -17,7 +17,7 @@ import { loadCachedRundownData, saveRundownCache, loadCachedIngestPart, loadCach
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Parts } from '../../../../lib/collections/Parts'
-import { ServerPlayoutAPI } from '../../playout'
+import { ServerPlayoutAPI } from '../../playout/playout'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleContext } from '../../blueprints/context'
@@ -225,7 +225,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 			})
 			if (newNextPart) {
 				// Move up next-point to the first inserted part
-				ServerPlayoutAPI.rundownSetNext(rundown._id, newNextPart._id)
+				ServerPlayoutAPI.setNextPart(rundown._id, newNextPart._id)
 			}
 		}
 	}
@@ -263,7 +263,7 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 			// Find the first part from the other Story (could be multiple)
 			const newNextPart = _.sortBy(parts, p => p._rank).find(p => p.externalId !== nextPart.externalId)
 			if (newNextPart) {
-				ServerPlayoutAPI.rundownSetNext(rundown._id, newNextPart._id)
+				ServerPlayoutAPI.setNextPart(rundown._id, newNextPart._id)
 			}
 		}
 	}

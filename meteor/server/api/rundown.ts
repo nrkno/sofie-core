@@ -14,7 +14,7 @@ import {
 	getHash
 } from '../../lib/lib'
 import { logger } from '../logging'
-import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
+import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -26,9 +26,7 @@ import { Studios, Studio } from '../../lib/collections/Studios'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
-// import { reCreateSegment } from './ingest/rundownInput'
-import { IngestActions } from './ingest/actions'
-const PackageInfo = require('../../package.json')
+import { PackageInfo } from '../coreSystem'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -105,7 +103,7 @@ export function removePart (rundownId: string, partOrId: DBPart | string, replac
 	if (partToRemove) {
 		Parts.remove(partToRemove._id)
 		afterRemovePart(partToRemove, replacedByPart)
-		updateTimelineFromMosData(rundownId)
+		triggerUpdateTimelineAfterIngestData(rundownId)
 
 		if (replacedByPart) {
 			Parts.update({
@@ -155,7 +153,7 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 					replacedByPart = nextPartInLine
 				}
 			}
-			ServerPlayoutAPI.rundownSetNext(rundown._id, replacedByPart ? replacedByPart._id : null)
+			ServerPlayoutAPI.setNextPart(rundown._id, replacedByPart ? replacedByPart._id : null)
 		}
 	}
 }

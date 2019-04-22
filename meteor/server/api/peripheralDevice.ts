@@ -10,13 +10,14 @@ import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDevice
 import { logger } from '../logging'
 import { Timeline } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
-import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
+import { ServerPlayoutAPI } from './playout/playout'
 import { setMeteorMethods, Methods } from '../methods'
 import { Picker } from 'meteor/meteorhacks:picker'
 import { IncomingMessage, ServerResponse } from 'http'
 import * as bodyParser from 'body-parser'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
+import { afterUpdateTimeline } from './playout/timeline'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {

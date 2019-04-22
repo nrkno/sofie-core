@@ -24,6 +24,8 @@ import { logger } from './logging'
 import * as semver from 'semver'
 const PackageInfo = require('../package.json')
 
+export { PackageInfo }
+
 function initializeCoreSystem () {
 	let system = getCoreSystem()
 	if (!system) {

@@ -5,7 +5,7 @@ import {
 import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
-import { afterUpdateTimeline } from './playout'
+import { afterUpdateTimeline } from './playout/timeline'
 
 function insertTimelineObject (studioId: string, timelineObject: TimelineObjGeneric) {
 	let id = studioId + (timelineObject._id || timelineObject.id)

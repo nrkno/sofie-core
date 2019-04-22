@@ -11,7 +11,7 @@ import {
 	Parts, Part
 } from '../../lib/collections/Parts'
 import { logger } from '../logging'
-import { ServerPlayoutAPI } from './playout'
+import { ServerPlayoutAPI } from './playout/playout'
 import { UserActionAPI } from '../../lib/api/userActions'
 import {
 	EvaluationBase
@@ -28,6 +28,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
+import { areThereActiveRundownsInStudio } from './playout/studio'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -67,7 +68,7 @@ export function take (rundownId: string): ClientAPI.ClientResponse {
 			throw new Meteor.Error(404, `Part "${rundown.currentPartId}", set as currentPart in "${rundownId}", not found!`)
 		}
 	}
-	return ServerPlayoutAPI.rundownTake(rundown)
+	return ServerPlayoutAPI.takeNextPart(rundown)
 }
 export function setNext (rundownId: string, nextSlId: string | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse {
 	check(rundownId, String)
@@ -89,7 +90,7 @@ export function setNext (rundownId: string, nextSlId: string | null, setManually
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	return ServerPlayoutAPI.rundownSetNext(rundownId, nextSlId, setManually, timeOffset)
+	return ServerPlayoutAPI.setNextPart(rundownId, nextSlId, setManually, timeOffset)
 }
 export function moveNext (
 	rundownId: string,
@@ -112,7 +113,7 @@ export function moveNext (
 		}
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownMoveNext(
+		ServerPlayoutAPI.moveNextPart(
 			rundownId,
 			horisontalDelta,
 			verticalDelta,
@@ -125,12 +126,12 @@ export function prepareForBroadcast (rundownId: string): ClientAPI.ClientRespons
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (rundown.active) return ClientAPI.responseError('Rundown is active, please deactivate before preparing it for broadcast')
-	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
+	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownPrepareForBroadcast(rundownId)
+		ServerPlayoutAPI.prepareRundownForBroadcast(rundownId)
 	)
 }
 export function resetRundown (rundownId: string): ClientAPI.ClientResponse {
@@ -141,7 +142,7 @@ export function resetRundown (rundownId: string): ClientAPI.ClientResponse {
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownResetRundown(rundownId)
+		ServerPlayoutAPI.resetRundown(rundownId)
 	)
 }
 export function resetAndActivate (rundownId: string): ClientAPI.ClientResponse {
@@ -150,32 +151,32 @@ export function resetAndActivate (rundownId: string): ClientAPI.ClientResponse {
 	if (rundown.active && !rundown.rehearsal) {
 		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
+	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownResetAndActivate(rundownId)
+		ServerPlayoutAPI.resetAndActivateRundown(rundownId)
 	)
 }
 export function activate (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 	check(rehearsal, Boolean)
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
+	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownActivate(rundownId, rehearsal)
+		ServerPlayoutAPI.activateRundown(rundownId, rehearsal)
 	)
 }
 export function deactivate (rundownId: string): ClientAPI.ClientResponse {
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownDeactivate(rundownId)
+		ServerPlayoutAPI.deactivateRundown(rundownId)
 	)
 
 }
@@ -346,7 +347,7 @@ export function activateHold (rundownId: string) {
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownActivateHold(rundownId)
+		ServerPlayoutAPI.activateHold(rundownId)
 	)
 }
 export function userSaveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {

@@ -42,7 +42,7 @@ import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
 import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, getStudioFromRundown, canBeUpdated } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
-const PackageInfo = require('../../../package.json')
+import { PackageInfo } from '../../coreSystem'
 
 export namespace RundownInput {
 	// TODO - this all needs guards to avoid race conditions with stuff running in playout.ts (which should be removed from there)

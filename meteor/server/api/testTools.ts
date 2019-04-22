@@ -7,7 +7,6 @@ import { getCurrentTime, literal, waitForPromise, getHash } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
-import { updateTimeline } from './playout'
 import * as moment from 'moment'
 import { TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
@@ -21,6 +20,7 @@ import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 import { check } from 'meteor/check'
+import { updateTimeline } from './playout/timeline'
 
 const deleteRequest = promisify(request.delete)
 
