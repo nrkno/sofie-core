@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 const ntpClient: NtpClient = require('ntp-client')
 import { NtpClient } from '../../typings/ntp-client'
 import { systemTime } from '../../../lib/lib'
-import { StatusCode, setSystemStatus } from '../../systemStatus'
+import { StatusCode, setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 
 /** How often the system-time should be updated */

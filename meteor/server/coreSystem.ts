@@ -15,7 +15,7 @@ import {
 	CURRENT_SYSTEM_VERSION,
 	GENESIS_SYSTEM_VERSION
 } from './migration/databaseMigration'
-import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus'
+import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'

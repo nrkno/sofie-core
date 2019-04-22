@@ -2,7 +2,7 @@
 import { restoreRundown } from '../backups'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../lib/lib'
-import { StatusCode } from '../systemStatus'
+import { StatusCode } from '../systemStatus/systemStatus'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { MeteorMock } from '../../__mocks__/meteor'

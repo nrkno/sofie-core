@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { StatusCode } from '../../server/systemStatus'
+import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'

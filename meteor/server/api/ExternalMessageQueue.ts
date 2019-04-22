@@ -23,7 +23,7 @@ import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
-import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
+import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
 
 export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
