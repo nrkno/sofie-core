@@ -7,8 +7,16 @@ import {
 	resetRunningMethods
 } from './methods'
 
-const checkTime = 500 // how often to check
-const acceptDelay = 100 // how much delay to accept before logging a warning
+/**
+ * The performanceMonotor runs at an interval, and when run it checks that it actually ran on time.
+ * If it didn't run on time, this was probably because the main thread was blocked, either due to some
+ * slow-running function or garbage collection.
+ * If it detects a delay, it logs a warning to the console along with some debugging data, to help us find
+ * the culprit.
+ */
+
+const PERMORMANCE_CHECK_INTERVAL = 500 // how often to check
+const ACCEPTED_DELAY = 100 // how much delay to accept before logging a warning
 const statisticsDelays: Array<number> = []
 const statisticsCount = 10000 // how many to base each statistics on
 const statistics: Array<{
@@ -111,13 +119,13 @@ function updateStatistics (onlyReturn?: boolean) {
 		stat.average += d
 		if (d < stat.min) stat.min = d
 		if (d > stat.max) stat.max = d
-		if (d > acceptDelay) {
+		if (d > ACCEPTED_DELAY) {
 			stat.warnings++
 			stat.averageWarnings += d
 		}
 
-		if (d > acceptDelay / 2) stat.halfWarnings++
-		if (d > acceptDelay / 4) stat.quarterWarnings++
+		if (d > ACCEPTED_DELAY / 2) stat.halfWarnings++
+		if (d > ACCEPTED_DELAY / 4) stat.quarterWarnings++
 	})
 	if (stat.count) stat.average = stat.average / stat.count
 	if (stat.warnings) stat.averageWarnings = stat.averageWarnings / stat.warnings
@@ -175,9 +183,9 @@ let monitorPerformance = () => {
 	if (lastTime) {
 		let timeSinceLast = Date.now() - lastTime
 
-		let delayTime = timeSinceLast - checkTime
+		let delayTime = timeSinceLast - PERMORMANCE_CHECK_INTERVAL
 
-		if (delayTime > acceptDelay) {
+		if (delayTime > ACCEPTED_DELAY) {
 			logger.warn('Main thread was blocked for ' + delayTime + ' ms')
 			let trace: string[] = []
 			let runningMethods = getRunningMethods()
@@ -199,7 +207,7 @@ let monitorPerformance = () => {
 	lastTime = Date.now()
 	Meteor.setTimeout(() => {
 		monitorPerformance()
-	}, checkTime)
+	}, PERMORMANCE_CHECK_INTERVAL)
 }
 Meteor.startup(() => {
 	Meteor.setTimeout(() => {
