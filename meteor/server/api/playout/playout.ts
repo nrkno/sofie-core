@@ -950,38 +950,9 @@ export namespace ServerPlayoutAPI {
 		if (!adLibPiece) throw new Meteor.Error(404, `Part Ad Lib Item "${adLibPieceId}" not found!`)
 		if (adLibPiece.invalid) throw new Meteor.Error(404, `Cannot take invalid Part Ad Lib Item "${adLibPieceId}"!`)
 
-		if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
+		if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a currently playing part!`)
 
-		let orgSlId = partId
-		if (queue) {
-			// insert a NEW, adlibbed part after this part
-			partId = adlibQueueInsertPart(rundown, partId, adLibPiece)
-		}
-		let part = Parts.findOne({
-			_id: partId,
-			rundownId: rundownId
-		})
-		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-		if (!queue && rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
-		let newPiece = convertAdLibToPiece(adLibPiece, part, queue)
-		Pieces.insert(newPiece)
-
-		// logger.debug('adLibItemStart', newPiece)
-		if (queue) {
-			// keep infinite sLineItems
-			Pieces.find({ rundownId: rundownId, partId: orgSlId }).forEach(piece => {
-				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-					let newPiece = convertAdLibToPiece(piece, part!, queue)
-					Pieces.insert(newPiece)
-				}
-			})
-
-			setNextPart(rundown._id, partId)
-		} else {
-			cropInfinitesOnLayer(rundown, part, newPiece)
-			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
-			updateTimeline(rundown.studioId)
-		}
+		innerStartAdLibPiece(rundown, queue, partId, adLibPiece)
 	})
 	export const rundownBaselineAdLibPieceStart = syncFunction(function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
 		check(rundownId, String)
@@ -996,32 +967,34 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(403, `Part Ad Lib Items can not be used in combination with hold!`)
 		}
 
-		let adLibItem = RundownBaselineAdLibPieces.findOne({
+		let adLibPiece = RundownBaselineAdLibPieces.findOne({
 			_id: baselineAdLibPieceId,
 			rundownId: rundownId
 		})
-		if (!adLibItem) throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
+		if (!adLibPiece) throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
+		if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Rundown Baseline Ad Lib Items can be only placed in a currently playing part!`)
+
+		innerStartAdLibPiece(rundown, queue, partId, adLibPiece)
+	})
+	function innerStartAdLibPiece (rundown: Rundown, queue: boolean, partId: string, adLibPiece: AdLibPiece) {
 		let orgPartId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
-			partId = adlibQueueInsertPart(rundown, partId, adLibItem)
+			partId = adlibQueueInsertPart(rundown, partId, adLibPiece)
 		}
-
 		let part = Parts.findOne({
 			_id: partId,
-			rundownId: rundownId
+			rundownId: rundown._id
 		})
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-		if (!queue && rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Rundown Baseline Ad Lib Items can be only placed in a current part!`)
 
-		let newPiece = convertAdLibToPiece(adLibItem, part, queue)
+		let newPiece = convertAdLibToPiece(adLibPiece, part, queue)
 		Pieces.insert(newPiece)
-		// logger.debug('adLibItemStart', newPiece)
 
 		if (queue) {
 			// keep infinite sLineItems
-			Pieces.find({ rundownId: rundownId, partId: orgPartId }).forEach(piece => {
-				console.log(piece.name + ' has life span of ' + piece.infiniteMode)
+			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
+				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
 					let newPiece = convertAdLibToPiece(piece, part!, queue)
 					Pieces.insert(newPiece)
@@ -1034,7 +1007,7 @@ export namespace ServerPlayoutAPI {
 			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 			updateTimeline(rundown.studioId)
 		}
-	})
+	}
 	export function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
 
 		// let parts = rundown.getParts()
