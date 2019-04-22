@@ -45,7 +45,7 @@ export function getCurrentTime (): Time {
 export { systemTime }
 
 if (Meteor.isServer) {
-	// handled in timesync
+	// handled in systemTime
 } else {
 	// fetch time from server:
 	let updateDiffTime = () => {

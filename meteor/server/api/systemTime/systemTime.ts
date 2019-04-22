@@ -1,73 +1,13 @@
-
-const ntpClient: NtpClient = require('ntp-client')
-import { NtpClient } from './typings/ntp-client'
-import { getCurrentTime, systemTime } from '../lib/lib'
-import { StatusCode, setSystemStatus } from './systemStatus'
-import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { setMeteorMethods, Methods } from './methods'
+const ntpClient: NtpClient = require('ntp-client')
+import { NtpClient } from '../../typings/ntp-client'
+import { systemTime } from '../../../lib/lib'
+import { StatusCode, setSystemStatus } from '../../systemStatus'
+import { logger } from '../../logging'
 
-interface ServerTime {
-	diff: number
-	serverTime: number
-	responseTime: number
-}
-let getServerTime = (host?: string, port?: number, timeout?: number): Promise<ServerTime> => {
+/** How often the system-time should be updated */
+const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000
 
-	return new Promise((resolve, reject) => {
-		ntpClient.ntpReplyTimeout = timeout || 500
-
-		let sentTime = Date.now()
-		try {
-			ntpClient.getNetworkTime(
-				host || '0.se.pool.ntp.org',
-				port || 123,
-				(err: any, date: Date) => {
-					if (err) {
-						reject(err)
-						return
-					} else {
-						let replyTime = Date.now()
-						resolve({
-							diff: ((sentTime + replyTime) / 2) - date.getTime(),
-							serverTime: date.getTime(),
-							responseTime: replyTime - sentTime
-						})
-					}
-				}
-			)
-		} catch (e) {
-			reject(e)
-		}
-	})
-}
-let standardDeviation = (arr: Array<number>): {mean: number, stdDev: number} => {
-	let total = 0
-	let mean = 0
-	let diffSqredArr: Array<number> = []
-	for (let i = 0;i < arr.length;i += 1) {
-		total += arr[i]
-	}
-	mean = total / arr.length
-	for (let j = 0; j < arr.length; j += 1) {
-		diffSqredArr.push(Math.pow((arr[j] - mean),2))
-	}
-	return {
-		mean: mean,
-		stdDev: (Math.sqrt(diffSqredArr.reduce((firstEl, nextEl) => {
-			return firstEl + nextEl
-		}) / arr.length))
-	}
-}
-interface Config {
-	maxSampleCount?: number
-	minSampleCount?: number
-	maxAllowedDelay?: number
-	maxTries?: number
-	host?: string
-	port?: number
-}
 /**
  * Send a number of calls to ntp-server, and calculate most-probable diff
  * compared to system time
@@ -123,29 +63,73 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		return stat
 	})
 }
-let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.determineDiffTime] = () => {
-	return determineDiffTime({
-		maxSampleCount: 20,
-		minSampleCount: 10,
-		maxAllowedDelay: 500
+
+interface ServerTime {
+	diff: number
+	serverTime: number
+	responseTime: number
+}
+function getServerTime (host?: string, port?: number, timeout?: number): Promise<ServerTime> {
+
+	return new Promise((resolve, reject) => {
+		ntpClient.ntpReplyTimeout = timeout || 500
+
+		let sentTime = Date.now()
+		try {
+			ntpClient.getNetworkTime(
+				host || '0.se.pool.ntp.org',
+				port || 123,
+				(err: any, date: Date) => {
+					if (err) {
+						reject(err)
+						return
+					} else {
+						let replyTime = Date.now()
+						resolve({
+							diff: ((sentTime + replyTime) / 2) - date.getTime(),
+							serverTime: date.getTime(),
+							responseTime: replyTime - sentTime
+						})
+					}
+				}
+			)
+		} catch (e) {
+			reject(e)
+		}
 	})
 }
-methods[PeripheralDeviceAPI.methods.getTimeDiff] = () => {
+function standardDeviation (arr: Array<number>): {mean: number, stdDev: number} {
+	let total = 0
+	let mean = 0
+	let diffSqredArr: Array<number> = []
+	for (let i = 0; i < arr.length; i += 1) {
+		total += arr[i]
+	}
+	mean = total / arr.length
+	for (let j = 0; j < arr.length; j += 1) {
+		diffSqredArr.push(Math.pow((arr[j] - mean),2))
+	}
 	return {
-		currentTime: getCurrentTime(),
-		systemRawTime: Date.now(),
-		diff: systemTime.diff,
-		stdDev: systemTime.stdDev,
-		good: (systemTime.stdDev < 1000 / 50)
+		mean: mean,
+		stdDev: (Math.sqrt(diffSqredArr.reduce((firstEl, nextEl) => {
+			return firstEl + nextEl
+		}) / arr.length))
 	}
 }
-methods[PeripheralDeviceAPI.methods.getTime] = () => {
-	return getCurrentTime()
+interface Config {
+	maxSampleCount?: number
+	minSampleCount?: number
+	maxAllowedDelay?: number
+	maxTries?: number
+	host?: string
+	port?: number
 }
-setMeteorMethods(methods)
 
-let updateServerTime = (retries: number = 0) => {
+/**
+ * Update the system time (this function is run at an interval()
+ * @param retries
+ */
+function updateServerTime (retries: number = 0) {
 
 	let ntpServerStr: string | undefined = process.env.NTP_SERVERS
 	if (!ntpServerStr) {
@@ -200,7 +184,7 @@ setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting
 Meteor.startup(() => {
 	Meteor.setInterval(() => {
 		updateServerTime()
-	}, 3600 * 1000)
+	}, UPDATE_SYSTEM_TIME_INTERVAL)
 	updateServerTime(5)
 })
 
