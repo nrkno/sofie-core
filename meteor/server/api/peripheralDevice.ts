@@ -178,7 +178,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.partId, String)
 
 		// Meteor.call('playout_partPlaybackStart', r.rundownId, r.partId, r.time)
-		ServerPlayoutAPI.partPlaybackStartedCallback(r.rundownId, r.partId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownId, r.partId, r.time)
 	}
 	export function partPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStoppedResult) {
 		// This is called from the playout-gateway when an
@@ -189,7 +189,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownId, String)
 		check(r.partId, String)
 
-		ServerPlayoutAPI.partPlaybackStoppedCallback(r.rundownId, r.partId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownId, r.partId, r.time)
 	}
 	export function piecePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -201,7 +201,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.pieceId, String)
 
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
-		ServerPlayoutAPI.piecePlaybackStartedCallback(r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceId, r.time)
 	}
 	export function piecePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -213,7 +213,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.pieceId, String)
 
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
-		ServerPlayoutAPI.piecePlaybackStoppedCallback(r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)

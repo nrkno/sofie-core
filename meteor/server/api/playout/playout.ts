@@ -541,7 +541,7 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	*/
-	export function rundownDisableNextPiece (rundownId: string, undo?: boolean) {
+	export function disableNextPiece (rundownId: string, undo?: boolean) {
 		check(rundownId, String)
 
 		let rundown = Rundowns.findOne(rundownId)
@@ -657,7 +657,10 @@ export namespace ServerPlayoutAPI {
 			return ClientAPI.responseError('Found no future pieces')
 		}
 	}
-	export function piecePlaybackStartedCallback (rundownId: string, pieceId: string, startedPlayback: Time) {
+	/**
+	 * Triggered from Playout-gateway when a Piece has started playing
+	 */
+	export function onPiecePlaybackStarted (rundownId: string, pieceId: string, startedPlayback: Time) {
 		check(rundownId, String)
 		check(pieceId, String)
 		check(startedPlayback, Number)
@@ -681,7 +684,10 @@ export namespace ServerPlayoutAPI {
 			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 		}
 	}
-	export function piecePlaybackStoppedCallback (rundownId: string, pieceId: string, stoppedPlayback: Time) {
+	/**
+	 * Triggered from Playout-gateway when a Piece has stopped playing
+	 */
+	export function onPiecePlaybackStopped (rundownId: string, pieceId: string, stoppedPlayback: Time) {
 		check(rundownId, String)
 		check(pieceId, String)
 		check(stoppedPlayback, Number)
@@ -703,8 +709,10 @@ export namespace ServerPlayoutAPI {
 			reportPieceHasStopped(segLineItem, stoppedPlayback)
 		}
 	}
-
-	export function partPlaybackStartedCallback (rundownId: string, partId: string, startedPlayback: Time) {
+	/**
+	 * Triggered from Playout-gateway when a Part has started playing
+	 */
+	export function onPartPlaybackStarted (rundownId: string, partId: string, startedPlayback: Time) {
 		check(rundownId, String)
 		check(partId, String)
 		check(startedPlayback, Number)
@@ -821,7 +829,10 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Part "${partId}" in rundown "${rundownId}" not found!`)
 		}
 	}
-	export function partPlaybackStoppedCallback (rundownId: string, partId: string, stoppedPlayback: Time) {
+	/**
+	 * Triggered from Playout-gateway when a Part has stopped playing
+	 */
+	export function onPartPlaybackStopped (rundownId: string, partId: string, stoppedPlayback: Time) {
 		check(rundownId, String)
 		check(partId, String)
 		check(stoppedPlayback, Number)
@@ -852,6 +863,9 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Part "${partId}" in rundown "${rundownId}" not found!`)
 		}
 	}
+	/**
+	 * Make a copy of a piece and start playing it now
+	 */
 	export const pieceTakeNow = function pieceTakeNow (rundownId: string, partId: string, pieceId: string) {
 		check(rundownId, String)
 		check(partId, String)
@@ -918,10 +932,10 @@ export namespace ServerPlayoutAPI {
 		stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 		updateTimeline(rundown.studioId)
 	}
-	export const segmentAdLibLineItemStart = syncFunction(function segmentAdLibLineItemStart (rundownId: string, partId: string, slaiId: string, queue: boolean) {
+	export const segmentAdLibPieceStart = syncFunction(function segmentAdLibPieceStart (rundownId: string, partId: string, adLibPieceId: string, queue: boolean) {
 		check(rundownId, String)
 		check(partId, String)
-		check(slaiId, String)
+		check(adLibPieceId, String)
 
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -929,19 +943,19 @@ export namespace ServerPlayoutAPI {
 		if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
 			throw new Meteor.Error(403, `Part Ad Lib Items can not be used in combination with hold!`)
 		}
-		let adLibItem = AdLibPieces.findOne({
-			_id: slaiId,
+		let adLibPiece = AdLibPieces.findOne({
+			_id: adLibPieceId,
 			rundownId: rundownId
 		})
-		if (!adLibItem) throw new Meteor.Error(404, `Part Ad Lib Item "${slaiId}" not found!`)
-		if (adLibItem.invalid) throw new Meteor.Error(404, `Cannot take invalid Part Ad Lib Item "${slaiId}"!`)
+		if (!adLibPiece) throw new Meteor.Error(404, `Part Ad Lib Item "${adLibPieceId}" not found!`)
+		if (adLibPiece.invalid) throw new Meteor.Error(404, `Cannot take invalid Part Ad Lib Item "${adLibPieceId}"!`)
 
 		if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
 
 		let orgSlId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
-			partId = adlibQueueInsertPart(rundown, partId, adLibItem)
+			partId = adlibQueueInsertPart(rundown, partId, adLibPiece)
 		}
 		let part = Parts.findOne({
 			_id: partId,
@@ -949,7 +963,7 @@ export namespace ServerPlayoutAPI {
 		})
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 		if (!queue && rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
-		let newPiece = convertAdLibToPiece(adLibItem, part, queue)
+		let newPiece = convertAdLibToPiece(adLibPiece, part, queue)
 		Pieces.insert(newPiece)
 
 		// logger.debug('adLibItemStart', newPiece)
@@ -969,10 +983,10 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioId)
 		}
 	})
-	export const rundownBaselineAdLibPieceStart = syncFunction(function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
+	export const rundownBaselineAdLibPieceStart = syncFunction(function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
 		check(rundownId, String)
 		check(partId, String)
-		check(robaliId, String)
+		check(baselineAdLibPieceId, String)
 		logger.debug('rundownBaselineAdLibPieceStart')
 
 		let rundown = Rundowns.findOne(rundownId)
@@ -983,11 +997,11 @@ export namespace ServerPlayoutAPI {
 		}
 
 		let adLibItem = RundownBaselineAdLibPieces.findOne({
-			_id: robaliId,
+			_id: baselineAdLibPieceId,
 			rundownId: rundownId
 		})
-		if (!adLibItem) throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${robaliId}" not found!`)
-		let orgSlId = partId
+		if (!adLibItem) throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
+		let orgPartId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
 			partId = adlibQueueInsertPart(rundown, partId, adLibItem)
@@ -1006,7 +1020,7 @@ export namespace ServerPlayoutAPI {
 
 		if (queue) {
 			// keep infinite sLineItems
-			Pieces.find({ rundownId: rundownId, partId: orgSlId }).forEach(piece => {
+			Pieces.find({ rundownId: rundownId, partId: orgPartId }).forEach(piece => {
 				console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
 					let newPiece = convertAdLibToPiece(piece, part!, queue)
@@ -1021,7 +1035,7 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioId)
 		}
 	})
-	export function adlibQueueInsertPart (rundown: Rundown, partId: string, sladli: AdLibPiece) {
+	export function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
 
 		// let parts = rundown.getParts()
 		logger.info('adlibQueueInsertPart')
@@ -1042,7 +1056,7 @@ export namespace ServerPlayoutAPI {
 			externalId: '',
 			segmentId: part.segmentId,
 			rundownId: rundown._id,
-			title: sladli.name,
+			title: adLibPiece.name,
 			dynamicallyInserted: true,
 			afterPart: part._id,
 			typeVariant: 'adlib'
@@ -1053,7 +1067,7 @@ export namespace ServerPlayoutAPI {
 		return newPartId
 
 	}
-	export function segmentAdLibLineItemStop (rundownId: string, partId: string, pieceId: string) {
+	export function startAdLibPiece (rundownId: string, partId: string, pieceId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
@@ -1259,6 +1273,10 @@ export namespace ServerPlayoutAPI {
 		}
 		return ClientAPI.responseSuccess()
 	})
+	/**
+	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
+	 * ( typically when using the "now"-feature )
+	 */
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		check(timelineObjId, String)
 		check(time, Number)
@@ -1283,11 +1301,9 @@ export namespace ServerPlayoutAPI {
 	export function updateStudioBaseline (studioId: string) {
 		check(studioId, String)
 
-		const activateRundownCount = Rundowns.find({
-			studioId: studioId,
-			active: true
-		}).count()
-		if (activateRundownCount === 0) {
+		const activeRundowns = areThereActiveRundownsInStudio(studioId)
+
+		if (activeRundowns.length === 0) {
 			// This is only run when there is no rundown active in the studio
 			updateTimeline(studioId)
 		}
@@ -1300,11 +1316,9 @@ export namespace ServerPlayoutAPI {
 		const studio = Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
-		const activateRundownCount = Rundowns.find({
-			studioId: studio._id,
-			active: true
-		}).count()
-		if (activateRundownCount === 0) {
+		const activeRundowns = areThereActiveRundownsInStudio(studio._id)
+
+		if (activeRundowns.length === 0) {
 			const markerId = `${studio._id}_baseline_version`
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'

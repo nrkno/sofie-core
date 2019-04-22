@@ -187,7 +187,7 @@ export function reloadData (rundownId: string) {
 }
 export function disableNextPiece (rundownId: string, undo?: boolean) {
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownDisableNextPiece(rundownId, undo)
+		ServerPlayoutAPI.disableNextPiece(rundownId, undo)
 	)
 }
 export function togglePartArgument (rundownId: string, partId: string, property: string, value: string) {
@@ -272,7 +272,7 @@ export function segmentAdLibLineItemStart (rundownId: string, partId: string, sl
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibLineItemStart(rundownId, partId, slaiId, queue)
+		ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, slaiId, queue)
 	)
 }
 export function sourceLayerOnLineStop (rundownId: string, partId: string, sourceLayerId: string) {
@@ -313,7 +313,7 @@ export function segmentAdLibLineItemStop (rundownId: string, partId: string, pie
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, partId, pieceId)
+		ServerPlayoutAPI.startAdLibPiece(rundownId, partId, pieceId)
 	)
 }
 export function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
