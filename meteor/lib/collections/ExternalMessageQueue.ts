@@ -37,6 +37,8 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	receiver: any
 	/** Messate details */
 	message: any
+	/** Maximum retry duration measured in ms. */
+	retryDuration?: Time
 }
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>

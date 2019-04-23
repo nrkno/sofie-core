@@ -89,7 +89,7 @@ function doMessageQueue () {
 			expires: { $gt: now },
 			lastTry: { $not: { $gt: now - tryInterval } },
 			sent: { $not: { $gt: 0 } },
-			hold: { $not: { $eq: true } }
+			hold: { $not: { $eq: true } },
 		}, {
 			sort: {
 				lastTry: 1
@@ -102,6 +102,9 @@ function doMessageQueue () {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
+	 	messagesToSend = messagesToSend.filter((msg : ExternalMessageQueueObj ) : Boolean => {
+			return _.isUndefined(msg.retryDuration) || msg.created > (now - msg.retryDuration!);
+		});
 		_.each(messagesToSend, (msg) => {
 			try {
 				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
