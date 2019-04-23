@@ -31,6 +31,8 @@ export { PackageInfo }
 function initializeCoreSystem () {
 	let system = getCoreSystem()
 	if (!system) {
+		// At this point, we probably have a system that is as fresh as it gets
+
 		let version = parseVersion(GENESIS_SYSTEM_VERSION)
 		CoreSystem.insert({
 			_id: SYSTEM_ID,
@@ -40,6 +42,17 @@ function initializeCoreSystem () {
 			previousVersion: null,
 			storePath: '' // to be filled in later
 		})
+
+		// Check what migration has to provide:
+		let migration = prepareMigration(true)
+		if (
+			migration.migrationNeeded &&
+			migration.manualStepCount === 0 &&
+			migration.chunks.length <= 1
+		) {
+			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
+			runMigration(migration.chunks, migration.hash, [])
+		}
 	}
 
 	// Monitor database changes:
@@ -306,6 +319,7 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'@slack/client',
 			'@types/amqplib',
 			'@types/body-parser',
+			'@types/semver',
 			'@types/react-circular-progressbar',
 			'@types/request',
 			'amqplib',

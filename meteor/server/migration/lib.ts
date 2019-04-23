@@ -10,7 +10,7 @@ import { Studios, Studio } from '../../lib/collections/Studios'
 import * as semver from 'semver'
 
 /**
- * Convenience function to generate basic test
+ * Returns a migration step that ensures the provided property is set in the collection
  * @param collectionName
  * @param selector
  * @param property

@@ -136,6 +136,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	}
 	migrationChunks.push(chunk)
 
+	// Collect migration steps from system:
 	_.each(coreMigrationSteps, (step) => {
 		allMigrationSteps.push({
 			id:						step.id,
@@ -152,8 +153,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			chunk: 					chunk
 		})
 	})
-	// Collect migration steps from blueprints:
 
+	// Collect migration steps from blueprints:
 	Blueprints.find({}).forEach((blueprint) => {
 		if (blueprint.code) {
 			const rawBlueprint = evalBlueprints(blueprint)
@@ -308,10 +309,9 @@ export function prepareMigration (returnAllChunks?: boolean) {
 		if (partialMigration) return
 		if (
 			semver.gt(step._version, step.chunk._dbVersion) && // step version is larger than database version
-			semver.gte(step._version, step.chunk._targetVersion) // // step version is less than (or equal) to system version
+			semver.lte(step._version, step.chunk._targetVersion) // // step version is less than (or equal) to system version
 		) {
 			// Step is in play
-
 			if (step.overrideSteps) {
 				// Override / delete other steps
 				_.each(step.overrideSteps, (overrideId: string) => {
@@ -336,16 +336,20 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			}
 
 			// Check if the step can be applied:
-			if (step.chunk.sourceType === MigrationStepType.CORE) {
-				let validate = step.validate as ValidateFunctionCore
-				step._validateResult = validate(false)
-			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
-				let validate = step.validate as ValidateFunctionStudio
-				step._validateResult = validate(getMigrationStudioContext(step.chunk), false)
-			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				let validate = step.validate as ValidateFunctionShowStyle
-				step._validateResult = validate(getMigrationShowStyleContext(step.chunk),false)
-			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+			try {
+				if (step.chunk.sourceType === MigrationStepType.CORE) {
+					let validate = step.validate as ValidateFunctionCore
+					step._validateResult = validate(false)
+				} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+					let validate = step.validate as ValidateFunctionStudio
+					step._validateResult = validate(getMigrationStudioContext(step.chunk), false)
+				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+					let validate = step.validate as ValidateFunctionShowStyle
+					step._validateResult = validate(getMigrationShowStyleContext(step.chunk),false)
+				} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+			} catch (error) {
+				throw new Meteor.Error(500, `Error in migration step "${step.id}": ${error.reason || error.toString()}`)
+			}
 
 			if (step._validateResult) {
 				migrationSteps[step.id] = step
@@ -358,7 +362,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			// Step is not applicable
 		}
 	})
-
 	// console.log('migrationSteps', migrationSteps)
 
 	// check if there are any manual steps:
@@ -413,7 +416,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	})
 
 	// Only return the chunks which has steps in them:
-	let activeChunks = (
+	const activeChunks = (
 		returnAllChunks ?
 		migrationChunks :
 		_.filter(migrationChunks, (chunk) => {
