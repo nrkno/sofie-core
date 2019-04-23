@@ -20,6 +20,7 @@ import { ManualPlayout } from './manualPlayout'
 import { getDeveloperMode, getAdminMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
+import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 
 const PackageInfo = require('../../package.json')
 
@@ -147,6 +148,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 }
 
 interface IRundownsListProps {
+	coreSystem: ICoreSystem
 	rundowns: Array<Rundown>
 }
 
@@ -159,6 +161,7 @@ export const RundownList = translateWithTracker(() => {
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
+		coreSystem: getCoreSystem(),
 		rundowns: Rundowns.find({}, { sort: { created: -1 } }).fetch()
 	}
 })(
@@ -209,6 +212,37 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		const unsynced = this.props.rundowns.filter(i => i.unsynced)
 
 		return <React.Fragment>
+			{
+				(
+					this.props.coreSystem &&
+					this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
+					synced.length === 0 &&
+					unsynced.length === 0
+				) ?
+				<div className='mtl gutter has-statusbar'>
+					<h1>{t('Getting started')}</h1>
+					<div>
+						<ul>
+							<li>
+								{t('Start with giving this browser configuration permissions, by adding this to the URL: ')}&nbsp;
+								<a href='?configure=1'>
+									?configure=1
+								</a>
+							</li>
+							<li>
+								{t('Then, run the migrations script:')}&nbsp;
+								<a href='/settings/tools/migration'>
+									{t('Migrations')}
+								</a>
+							</li>
+						</ul>
+						{t('Further documentation is available at GitHub')}&nbsp;
+						<a href='https://github.com/nrkno/tv-automation-server-core'>
+							https://github.com/nrkno/tv-automation-server-core
+						</a>
+					</div>
+				</div> : null
+			}
 			<div className='mtl gutter has-statusbar'>
 				<header className='mvs'>
 					<h1>{t('Rundowns')}</h1>
