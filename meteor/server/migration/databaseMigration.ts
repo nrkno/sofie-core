@@ -2,7 +2,8 @@ import {
 	parseVersion,
 	getCoreSystem,
 	setCoreSystemVersion,
-	Version
+	Version,
+	GENESIS_SYSTEM_VERSION
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
@@ -58,11 +59,6 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 0.25.0: Release 10  (TBD)
  */
 export const CURRENT_SYSTEM_VERSION = '0.25.0'
-
-/** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
- * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
- */
-export const GENESIS_SYSTEM_VERSION = '0.0.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

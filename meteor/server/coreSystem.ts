@@ -7,13 +7,15 @@ import {
 	Version,
 	parseRange,
 	stripVersion,
-	VersionRange
+	VersionRange,
+	GENESIS_SYSTEM_VERSION
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	CURRENT_SYSTEM_VERSION,
-	GENESIS_SYSTEM_VERSION
+	prepareMigration,
+	runMigration
 } from './migration/databaseMigration'
 import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'

@@ -38,6 +38,11 @@ export interface ICoreSystem {
 	name?: string
 }
 
+/** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
+ * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
+ */
+export const GENESIS_SYSTEM_VERSION = '0.0.0'
+
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
