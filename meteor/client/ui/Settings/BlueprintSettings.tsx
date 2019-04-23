@@ -126,7 +126,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>
 							{this.props.assignedStudios.length > 0 ?
 								this.props.assignedStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
-								t('This Blueprint is not compatible with any Studio)}
+								t('This Blueprint is not compatible with any Studio')}
 						</p>
 					</div>
 				)

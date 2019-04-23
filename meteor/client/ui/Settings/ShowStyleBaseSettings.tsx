@@ -134,7 +134,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<p className='mod mhn mvs'>
 						{this.props.compatibleStudios.length > 0 ?
 							this.props.compatibleStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
-							t('This Show Style is not compatible with any Studio)}
+							t('This Show Style is not compatible with any Studio')}
 					</p>
 				</div>
 				<div className='row'>
