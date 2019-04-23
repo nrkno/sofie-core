@@ -1184,9 +1184,9 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
 			},
-			message: [
+			message: <React.Fragment>
 				<p>{t('Are you sure you want to remove the variant "{{showStyleVariantId}}"?', { showStyleVariantId: showStyleVariant.name })}</p>
-			]
+			</React.Fragment>
 		})
 	}
 
