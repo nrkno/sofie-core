@@ -120,16 +120,22 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
 
 	// Discover applicable migration steps:
+	let migrationNeeded: boolean = false
 	let allMigrationSteps: Array<MigrationStepInternal> = []
 	let migrationChunks: Array<MigrationChunk> = []
 	let rank: number = 0
+
+	const databaseVersion = parseVersion(databaseSystem.version)
+	const targetVersion = parseVersion(CURRENT_SYSTEM_VERSION)
+
+	if (!semver.eq(databaseVersion, targetVersion)) migrationNeeded = true
 
 	// Collect migration steps from core system:
 	let chunk: MigrationChunk = {
 		sourceType:				MigrationStepType.CORE,
 		sourceName:				'system',
-		_dbVersion: 			parseVersion(databaseSystem.version),
-		_targetVersion: 		parseVersion(CURRENT_SYSTEM_VERSION),
+		_dbVersion: 			databaseVersion,
+		_targetVersion: 		targetVersion,
 		_steps:					[]
 	}
 	migrationChunks.push(chunk)
@@ -418,13 +424,17 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			return chunk._steps.length > 0
 		})
 	)
+	const hash = getHash(stepsHash.join(','))
 
-	let hash = getHash(stepsHash.join(','))
+	const steps = _.values(migrationSteps)
+
+	if (steps.length > 0) migrationNeeded = true
 
 	return {
 		hash:				hash,
 		chunks: 			activeChunks,
-		steps: 				_.values(migrationSteps),
+		steps: 				steps,
+		migrationNeeded: 	migrationNeeded,
 		automaticStepCount: automaticStepCount,
 		manualStepCount: 	manualStepCount,
 		ignoredStepCount: 	ignoredStepCount,
@@ -643,7 +653,7 @@ function getMigrationStatus (): GetMigrationStatusResult {
 		// databaseVersion:	 		databaseVersion,
 		// databasePreviousVersion:	system.previousVersion,
 		// systemVersion:		 		systemVersion,
-		migrationNeeded:	 			migration.steps.length > 0,
+		migrationNeeded:	 			migration.migrationNeeded,
 
 		migration: {
 			canDoAutomaticMigration:	migration.manualStepCount === 0,
