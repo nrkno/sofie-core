@@ -1008,7 +1008,7 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioId)
 		}
 	}
-	export function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
+	function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
 
 		// let parts = rundown.getParts()
 		logger.info('adlibQueueInsertPart')
