@@ -28,7 +28,7 @@ interface IRecordingViewTrackedProps {
 
 const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewState, IRecordingViewTrackedProps>((props: IRecordingViewProps) => {
 	const file = RecordedFiles.findOne({}, { sort: { startedAt: -1 } })
-	
+
 	return {
 		studio: Studios.findOne(),
 		file,
