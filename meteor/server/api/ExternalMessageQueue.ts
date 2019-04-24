@@ -46,7 +46,6 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 			tryCount: 0,
 			expires: now + 35 * 24 * 3600 * 1000, // 35 days
 			manualRetry: false,
-			errorFatal: false,
 		}
 
 		message2 = removeNullyProperties(message2)
@@ -81,7 +80,7 @@ Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue () {
-	console.log('doMessageQueue')
+	// console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000 // 1 minute
 	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
@@ -105,9 +104,11 @@ function doMessageQueue () {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
+		// console.log('>>>', now, messagesToSend)
 	 	messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
-			return msg.retryUntil === undefined || msg.manualRetry || msg.created > msg.retryUntil
+			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
 		})
+		// console.log('<<<', now, messagesToSend)
 		_.each(messagesToSend, (msg) => {
 			try {
 				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
