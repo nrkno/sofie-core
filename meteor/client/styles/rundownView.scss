@@ -309,7 +309,7 @@ body.vertical-overflow-only {
 		display: block;
 		margin: 0;
 		padding: 0;
-		
+		overflow: hidden;
 		
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
@@ -328,7 +328,7 @@ body.vertical-overflow-only {
 			font-weight: 400;
 		}
 		.segment-timeline__title__notes {
-			margin: 0;
+			margin: 0 0 0.5em;
 			padding: 0.5em;
 			line-height: 1.4em;
 			font-size: 75%;
@@ -1544,6 +1544,7 @@ body.vertical-overflow-only {
 	
 				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 							$output-layer-group-collapse-animation-duration height ease-in-out,
+							$output-layer-group-collapse-animation-duration line-height ease-in-out,
 							$output-layer-group-collapse-animation-duration opacity,
 							0s visibility 0s;
 			}
@@ -1581,11 +1582,13 @@ body.vertical-overflow-only {
 					.segment-timeline__output-layer-control__layer {
 						transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 									$output-layer-group-collapse-animation-duration height ease-in-out,
+									$output-layer-group-collapse-animation-duration line-height ease-in-out,
 									$output-layer-group-collapse-animation-duration opacity,
 									0s visibility $output-layer-group-collapse-animation-duration;
 						height: 0;
 						min-height: 0;
 						opacity: 0;
+						line-height: 0;
 						visibility: hidden;
 					}
 
@@ -1686,6 +1689,7 @@ body.vertical-overflow-only {
 								0s visibility $output-layer-group-collapse-animation-duration;
 					height: 0.3em;
 					min-height: 0.3em;
+					line-height: 0.3em;
 					opacity: 0;
 					visibility: hidden;
 				}
