@@ -338,20 +338,20 @@ function updateRundownFromIngestData (
 	}
 	return didChange
 }
-/**
- * Run ingestData through blueprints and update the Rundown
- * @param rundownId
- * @returns true if data has changed
- */
-export function reCreateRundown (rundownId: string): boolean {
-	// Recreate rundown from cached data
+// /**
+//  * Run ingestData through blueprints and update the Rundown
+//  * @param rundownId
+//  * @returns true if data has changed
+//  */
+// export function reCreateRundown (rundownId: string): boolean {
+// 	// Recreate rundown from cached data
 
-	const rundown = getRundown(rundownId)
-	const studio = getStudioFromRundown(rundown)
+// 	const rundown = getRundown(rundownId)
+// 	const studio = getStudioFromRundown(rundown)
 
-	const ingestRundown = loadCachedRundownData(rundownId)
-	return updateRundownFromIngestData(studio, rundown, ingestRundown)
-}
+// 	const ingestRundown = loadCachedRundownData(rundownId)
+// 	return updateRundownFromIngestData(studio, rundown, ingestRundown)
+// }
 
 export function removeSegment (segmentId: string): void {
 	waitForPromiseAll([
@@ -515,11 +515,11 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 
 	updateExpectedMediaItemsOnPart(rundown._id, partId)
 }
-export function reCreatePart (): boolean {
-	// Recreate part from cached data
-	// TODO: implement this, when needed :)
-	return false
-}
+// export function reCreatePart (): boolean {
+// 	// Recreate part from cached data
+// 	// TODO: implement this, when needed :)
+// 	return false
+// }
 
 function getStudioAndRundown (peripheralDevice: PeripheralDevice, externalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
