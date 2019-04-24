@@ -41,6 +41,7 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
+			retryUntil: message.retryUntil,
 			studioId: rundown.studioId,
 			created: now,
 			tryCount: 0,
