@@ -67,6 +67,20 @@ export interface PieceExtended extends Piece {
 	maxLabelWidth?: number
 }
 
+/**
+ * This function allows to see what the output of the playback will look like.
+ * It simulates the operations done by the playout operations in core and playout-gateway
+ * and produces a list of Pieces across Parts timed relatively.
+ * 
+ * This method is primarly used by the GUI to visualize segments, but other functions
+ * utilize it as well when information about timing & time placement is needed.
+ *
+ * @export
+ * @param {ShowStyleBase} showStyleBase
+ * @param {Rundown} rundown
+ * @param {Segment} segment
+ * @param {boolean} [checkFollowingSegment]
+ */
 export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundown, segment: Segment, checkFollowingSegment?: boolean): {
 	/** A Segment with some additional information */
 	segmentExtended: SegmentExtended,
