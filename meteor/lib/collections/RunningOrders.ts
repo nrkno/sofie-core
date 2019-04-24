@@ -16,6 +16,7 @@ import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integrati
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RunningOrderNote } from '../api/notes'
+import { ExpectedMediaItems } from './ExpectedMediaItems';
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -180,6 +181,7 @@ export class RunningOrder implements DBRunningOrder {
 		SegmentLineAdLibItems.remove({ runningOrderId: this._id})
 		RunningOrderBaselineItems.remove({ runningOrderId: this._id})
 		RunningOrderBaselineAdLibItems.remove({ runningOrderId: this._id})
+		ExpectedMediaItems.remove({ runningOrderId: this._id })
 		this.removeCache()
 	}
 	touch () {
