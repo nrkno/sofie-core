@@ -45,6 +45,8 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 			created: now,
 			tryCount: 0,
 			expires: now + 35 * 24 * 3600 * 1000, // 35 days
+			manualRetry: false,
+			errorFatal: false,
 		}
 
 		message2 = removeNullyProperties(message2)
@@ -79,7 +81,7 @@ Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue () {
-	// console.log('doMessageQueue')
+	console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000 // 1 minute
 	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
@@ -90,6 +92,7 @@ function doMessageQueue () {
 			lastTry: { $not: { $gt: now - tryInterval } },
 			sent: { $not: { $gt: 0 } },
 			hold: { $not: { $eq: true } },
+			errorFatal: { $not: { $eq: true } },
 		}, {
 			sort: {
 				lastTry: 1
@@ -102,15 +105,17 @@ function doMessageQueue () {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
-	 	messagesToSend = messagesToSend.filter((msg : ExternalMessageQueueObj ) : Boolean => {
-			return _.isUndefined(msg.retryDuration) || msg.created > (now - msg.retryDuration!);
-		});
+	 	messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
+			return msg.retryUntil === undefined || msg.manualRetry || msg.created > msg.retryUntil
+		})
 		_.each(messagesToSend, (msg) => {
 			try {
 				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
+				msg.manualRetry = false
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
+					manualRetry: false,
 				}})
 
 				let p: Promise<any>
@@ -230,10 +235,23 @@ methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
 methods[ExternalMessageQueueAPI.methods.toggleHold] = (id: string) => {
 	check(id, String)
 	let m = ExternalMessageQueue.findOne(id)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found`)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on toggleHold`)
 	ExternalMessageQueue.update(id, {$set: {
 		hold: !m.hold
 	}})
+}
+methods[ExternalMessageQueueAPI.methods.retry] = (id: string) => {
+	check(id, String)
+	let m = ExternalMessageQueue.findOne(id)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on retry`)
+	let tryGap = getCurrentTime() - 1 * 60 * 1000
+	ExternalMessageQueue.update(id, {$set: {
+		manualRetry: true,
+		hold: false,
+		errorFatal: false,
+		lastTry: m.lastTry !== undefined && m.lastTry > tryGap ? tryGap : m.lastTry
+	}})
+	triggerdoMessageQueue(1000)
 }
 methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) => {
 	check(value, Boolean)

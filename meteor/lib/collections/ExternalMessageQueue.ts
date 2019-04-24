@@ -26,7 +26,7 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	sent?: Time
 	/** Reply from receiver */
 	sentReply?: any
-	/** If true, wont retry no more */
+	/** If true, wont retry any more */
 	errorFatal?: boolean
 	/** If true, wont retry (can be set from UI) */
 	hold?: boolean
@@ -37,8 +37,10 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	receiver: any
 	/** Messate details */
 	message: any
-	/** Maximum retry duration measured in ms. */
-	retryDuration?: Time
+	/** Retry sending messages until this time */
+	retryUntil?: Time
+	/** Manual retry override (UI retry button) - retry once more */
+	manualRetry?: boolean
 }
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>

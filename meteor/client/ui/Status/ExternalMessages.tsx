@@ -14,7 +14,7 @@ import * as ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { Studios, Studio } from '../../../lib/collections/Studios'
-import { faTrash, faPause, faPlay } from '@fortawesome/fontawesome-free-solid'
+import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
@@ -165,6 +165,9 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 	toggleHoldMessage (msg: ExternalMessageQueueObj) {
 		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.toggleHold, msg._id)
 	}
+	retryMessage (msg: ExternalMessageQueueObj) {
+		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.retry, msg._id)
+	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
 
 		let classes: string[] = ['message-row']
@@ -238,6 +241,9 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 									<FontAwesomeIcon icon={faPlay} /> :
 									<FontAwesomeIcon icon={faPause} />
 								}
+							</button>
+							<button className='action-btn' onClick={(e) => this.retryMessage(msg)}>
+							  <FontAwesomeIcon icon={faRedo} />
 							</button><br/>
 						</React.Fragment> : null
 					}
