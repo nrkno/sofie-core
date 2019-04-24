@@ -101,12 +101,12 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	let autoNextPart = false
 
 	let segmentExtended = _.clone(segment) as SegmentExtended
+	/** Create maps for outputLayers and sourceLayers */
 	segmentExtended.outputLayers = {}
 	segmentExtended.sourceLayers = {}
 
 	// fetch all the parts for the segment
 	let partsE: Array<PartExtended> = []
-	// let parts = segment.getParts()
 	const parts = segment.getParts()
 
 	if (parts.length > 0) {
@@ -169,29 +169,13 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			}),
 			'_id')
 
+		// the SuperTimeline has an issue with resolving items that start at the 0 absolute time point
+		// we therefore need a constant offset that we can offset everything to make sure it's not at 0 point.
 		const TIMELINE_TEMP_OFFSET = 1
 
-		// ensure that the sourceLayers array in the segment outputLayers is created
-		// _.each(outputLayers, (outputLayer) => {
-		// 	if (_.isArray(outputLayer.sourceLayers)) {
-		// 		outputLayer.sourceLayers.length = 0
-		// 	} else {
-		// 		outputLayer.sourceLayers = new Array<ISourceLayer>()
-		// 	}
-		// 	// reset the used property, in case the output layer lost all of its contents
-		// 	outputLayer.used = false
-		// })
-		//
-		// ensure that the items array is created
-		// _.each(sourceLayers, (sourceLayer) => {
-		// 	if (_.isArray(sourceLayer.items)) {
-		// 		sourceLayer.items.length = 0
-		// 	} else {
-		// 		sourceLayer.items = new Array<Piece>()
-		// 	}
-		// })
-
+		// create a lookup map to match original pieces to their resolved counterparts
 		let piecesLookup: IPieceExtendedDictionary = {}
+		// a buffer to store durations for the displayDuration groups
 		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let startsAt = 0
@@ -200,6 +184,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		partsE = _.map(parts, (part, itIndex) => {
 			let partTimeline: SuperTimeline.UnresolvedTimeline = []
 
+			// extend objects to match the Extended interface
 			let partE: PartExtended = extendMandadory(part, {
 				items: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
 					return extendMandadory<Piece, PieceExtended>(piece, {
@@ -216,14 +201,13 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 					)
 			})
 
+			// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
 			if (rundown.currentPartId === partE._id) {
 				isLiveSegment = true
 				currentLivePart = partE
 			}
 			if (rundown.nextPartId === partE._id) {
 				isNextSegment = true
-				// next is only auto, if current has a duration
-				// nextPart = partE
 			}
 			autoNextPart = (
 				currentLivePart ?
@@ -236,11 +220,11 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				currentLivePart.expectedDuration !== 0 :
 				false
 			)
-
 			if (partE.startedPlayback !== undefined) {
 				hasAlreadyPlayed = true
 			}
 
+			// insert items into the timeline for resolution
 			_.each<PieceExtended>(partE.items, (piece) => {
 				partTimeline.push({
 					id: getPieceGroupId(piece),
@@ -251,22 +235,21 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						id: piece._id
 					}
 				})
+				// find the target output layer
 				let outputLayer = outputLayers[piece.outputLayerId] as IOutputLayerExtended | undefined
 				piece.outputLayer = outputLayer
 
 				if (!piece.virtual && outputLayer) {
 					// mark the output layer as used within this segment
-					// console.log(piece)
 					if (sourceLayers[piece.sourceLayerId] && !sourceLayers[piece.sourceLayerId].isHidden) {
 						outputLayer.used = true
 					}
-					// attach the sourceLayer to the outputLayer, if it hasn't been already
-
-					// find matching layer in the output layer
+					// attach the sourceLayer to the output, if it hasn't been already
+					// find matching layer in the output
 					let sourceLayer = outputLayer.sourceLayers.find((el) => {
 						return el._id === piece.sourceLayerId
 					})
-
+					// if the source has not yet been used on this output
 					if (!sourceLayer) {
 						sourceLayer = sourceLayers[piece.sourceLayerId]
 						if (sourceLayer) {
@@ -282,17 +265,18 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						// attach the piece to the sourceLayer in this segment
 						piece.sourceLayer.items.push(piece)
 
+						// mark the special Remote and Guest flags, these are dependant on the sourceLayer configuration
 						// check if the segment should be in a special state for segments with remote input
 						if (piece.sourceLayer.isRemoteInput) {
 							hasRemoteItems = true
 						}
-
 						if (piece.sourceLayer.isGuestInput) {
 							hasGuestItems = true
 						}
 					}
 				}
 
+				// add the piece to the map to make future searches quicker
 				piecesLookup[piece._id] = piece
 				if (piece.continuesRefId && piecesLookup[piece.continuesRefId]) {
 					piecesLookup[piece.continuesRefId].continuedByRef = piece
@@ -300,25 +284,33 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				}
 			})
 
-			// SuperTimeline.Resolver.setTraceLevel(SuperTimeline.TraceLevel.TRACE)
-
+			// Use the SuperTimeline library to resolve all the items within the Part
 			let partRTimeline = SuperTimeline.Resolver.getTimelineInWindow(partTimeline)
+			// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 			let furthestDuration = 0
 			partRTimeline.resolved.forEach((tlItem) => {
-				let piece = piecesLookup[tlItem.content.id] // Timeline actually has copies of the content object, instead of the object itself
+				// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
+				let piece = piecesLookup[tlItem.content.id]
 				piece.renderedDuration = tlItem.resolved.outerDuration || null
 
 				// if there is no renderedInPoint, use 0 as the starting time for the item
 				piece.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
-				// console.log(piece._id + ': ' + piece.renderedInPoint)
 
+				// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
 				if (Number.isFinite(piece.renderedDuration || 0) && ((piece.renderedInPoint || 0) + (piece.renderedDuration || 0) > furthestDuration)) {
 					furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
 				}
 			})
 
+			// use the expectedDuration and fallback to the DEFAULT_DISPLAY_DURATION for the part
 			partE.renderedDuration = partE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
 
+			// displayDuration groups are sets of Parts that share their expectedDurations.
+			// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.
+			// This value is then deducted from the expectedDuration and the result leftover duration is added to the group pool.
+			// If a member has a displayDuration == 0, it will use up whatever is available in the pool.
+			// displayDurationGroups is specifically designed for a situation where the Rundown has a lead-in piece to camera
+			// and then has a B-Roll to be played out over a VO from the host.
 			if (partE.displayDurationGroup && (
 				// either this is not the first element of the displayDurationGroup
 				(displayDurationGroups[partE.displayDurationGroup] !== undefined) ||
@@ -330,6 +322,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				displayDurationGroups[partE.displayDurationGroup] = Math.max(0, displayDurationGroups[partE.displayDurationGroup] - (partE.duration || partE.renderedDuration))
 			}
 
+			// push the startsAt value, to figure out when each of the parts starts, relative to the beginning of the segment
 			partE.startsAt = startsAt
 			startsAt = partE.startsAt + (partE.renderedDuration || 0)
 
@@ -337,14 +330,15 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			return partE
 		})
 
+		// resolve the duration of a Piece to be used for display
 		const resolveDuration = (item: PieceExtended): number => {
-			let childDuration = 0
 			const expectedDurationNumber = (typeof item.expectedDuration === 'number' ? item.expectedDuration || 0 : 0)
-			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber) + childDuration
+			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber)
 		}
 
 		_.each<PartExtended>(partsE, (part) => {
 			if (part.items) {
+				// if an item is continued by another item, rendered duration may need additional resolution
 				_.each<PieceExtended>(part.items, (item) => {
 					if (item.continuedByRef) {
 						item.renderedDuration = resolveDuration(item)
@@ -354,6 +348,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				const itemsByLayer = _.groupBy(part.items, (item) => {
 					return item.outputLayerId + '_' + item.sourceLayerId
 				})
+				// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
+				// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
 				_.each(itemsByLayer, (layerItems, outputSourceCombination) => {
 					const sortedItems = _.sortBy(layerItems, 'renderedInPoint')
 					for (let i = 1; i < sortedItems.length; i++) {
@@ -378,26 +374,32 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			}
 		})
 
+		// Following part allows display of the following part (one in another segment), but only in the context
+		// of a given segment. So if segment B follows segment A, only outputs and layers used in segment A will
+		// be 'resolved' by this code (shown as used, etc.). Any other outputs and layers will be ignored.
 		if (followingPart && followingPart.items) {
 			_.each<PieceExtended>(followingPart.items, (piece) => {
-				// match output layers in following part, but do not mark as used
-				// we only care about output layers used in this segment.
+				// match outputs in following part, but do not mark as used
+				// we only care about outputs used in this segment
 				let outputLayer = outputLayers[piece.outputLayerId] as IOutputLayerExtended | undefined
 				piece.outputLayer = outputLayer
 
-				// find matching layer in the output layer
+				// find matching layer in the outputs
 				let sourceLayer = outputLayer && outputLayer.sourceLayers && outputLayer.sourceLayers.find((el) => {
 					return el._id === piece.sourceLayerId
 				})
 
+				// if layer not found in output, add it to output
 				if (sourceLayer === undefined) {
 					if (outputLayer) {
 						sourceLayer = sourceLayers[piece.sourceLayerId]
 						if (sourceLayer) {
+							// create a copy of the source layer to be attached inside the output.
 							sourceLayer = _.clone(sourceLayer)
-							let part = sourceLayer
-							part.items = []
-							outputLayer.sourceLayers.push(part)
+							let sl = sourceLayer
+							sl.items = []
+							outputLayer.sourceLayers.push(sl)
+							sl.followingItems.push(piece)
 						}
 					}
 				} else {
