@@ -754,9 +754,13 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 	})
 })
 export function makePromise<T> (fcn: () => T): Promise<T> {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
-			resolve(fcn())
+			try {
+				resolve(fcn())
+			} catch (e) {
+				reject(e)
+			}
 		})
 	})
 }

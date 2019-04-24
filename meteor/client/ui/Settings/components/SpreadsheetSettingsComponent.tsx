@@ -60,10 +60,10 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 
 			// doModalDialog({
 			// 	title: t('Update Blueprints?'),
-			// 	message: [
+			// 	message: <React.Fragment>
 			// 		<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
 			// 		<p>{t('Please note: This action is irreversible!')}</p>
-			// 	],
+			// 	</React.Fragment>,
 			// 	onAccept: () => {
 			// 		if (uploadFileContents && blueprint) {
 			// 			fetch('/blueprints/restore/' + blueprint._id, {

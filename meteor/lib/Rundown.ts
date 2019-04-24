@@ -68,15 +68,25 @@ export interface PieceExtended extends Piece {
 }
 
 export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundown, segment: Segment, checkFollowingSegment?: boolean): {
+	/** A Segment with some additional information */
 	segmentExtended: SegmentExtended,
+	/** Parts in the segment, with additional information on the Part and the Pieces */
 	parts: Array<PartExtended>,
+	/** A flag if the segment is currently on air (one of it's Parts is on air) */
 	isLiveSegment: boolean,
+	/** A flag if the segment is currently next (one of it's Parts is on air) */
 	isNextSegment: boolean,
+	/** The part that is currently on air, if the Segment is on air */
 	currentLivePart: PartExtended | undefined,
+	/** A flag if any of the Parts have a Piece on a Layer with the 'Remote' flag on */
 	hasRemoteItems: boolean,
+	/** A flag if any of the Parts have a Piece on a Layer with the 'Guest' flag on */
 	hasGuestItems: boolean,
+	/** A flag if any of the Parts have already played */
 	hasAlreadyPlayed: boolean,
+	/** A flag if the current on air part (doesn't have to be of this segment) will autonext */
 	autoNextPart: boolean
+	/** If checkFollowingPart is true, it will return the part that will follow this segment */
 	followingPart: PartExtended | undefined
 } {
 	let isLiveSegment = false

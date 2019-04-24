@@ -46,14 +46,14 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		const { t } = this.props
 
 		doModalDialog({
-			title: t('Delete this item?'),
+			title: t('Delete this Item?'),
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
 				doUserAction(t, e, UserActionAPI.methods.removeRundown, [rundown._id])
 			},
 			message: (
-				t('Are you sure you want to delete rundown "{{name}}"?', { name: rundown.name }) + '\n' +
+				t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})
@@ -69,7 +69,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [rundown._id])
 			},
 			message: (
-				t('Are you sure you want to re-sync rundown "{{name}}" with MOS script?', { name: rundown.name }) + '\n' +
+				t('Are you sure you want to re-sync the "{{name}}" rundown with MOS script?', { name: rundown.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})
@@ -220,11 +220,11 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 					unsynced.length === 0
 				) ?
 				<div className='mtl gutter has-statusbar'>
-					<h1>{t('Getting started')}</h1>
+					<h1>{t('Getting Started')}</h1>
 					<div>
 						<ul>
 							<li>
-								{t('Start with giving this browser configuration permissions, by adding this to the URL: ')}&nbsp;
+								{t('Start with giving this browser configuration permissions by adding this to the URL: ')}&nbsp;
 								<a href='?configure=1'>
 									?configure=1
 								</a>
@@ -236,9 +236,9 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 								</a>
 							</li>
 						</ul>
-						{t('Further documentation is available at GitHub')}&nbsp;
-						<a href='https://github.com/nrkno/tv-automation-server-core'>
-							https://github.com/nrkno/tv-automation-server-core
+						{t('Documentation is available at')}&nbsp;
+						<a href='https://github.com/nrkno/Sofie-TV-automation/'>
+							https://github.com/nrkno/Sofie-TV-automation/
 						</a>
 					</div>
 				</div> : null

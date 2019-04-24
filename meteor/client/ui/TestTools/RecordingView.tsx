@@ -27,15 +27,19 @@ interface IRecordingViewTrackedProps {
 }
 
 const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewState, IRecordingViewTrackedProps>((props: IRecordingViewProps) => {
+	const file = RecordedFiles.findOne({}, { sort: { startedAt: -1 } })
+
 	return {
 		studio: Studios.findOne(),
-		file: RecordedFiles.findOne({}, { sort: { startedAt: -1 } }),
-		log: UserActionsLog.find({
-			timestamp: {
-				$gte: this.props.file.startedAt,
-				$lt: this.props.file.stoppedAt,
-			}
-		}, { sort: { timestamp: 1 } }).fetch()
+		file,
+		log: file ?
+			UserActionsLog.find({
+				timestamp: {
+					$gte: file.startedAt,
+					$lt: file.stoppedAt,
+				}
+			}, { sort: { timestamp: 1 } }).fetch() :
+			[]
 	}
 })(class RecordingView extends MeteorReactComponent<Translated<IRecordingViewProps & IRecordingViewTrackedProps>, IRecordingViewState> {
 
