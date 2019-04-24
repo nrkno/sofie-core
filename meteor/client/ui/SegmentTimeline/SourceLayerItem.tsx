@@ -116,6 +116,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
+				const nextIsTouching = !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration)))
+
 				if (this.props.followLiveLine && this.props.isLiveLine) {
 					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
 					if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) > (inPoint + this.props.partStartsAt + inTransitionDuration + (this.state.leftAnchoredWidth / this.props.timeScale)) &&
@@ -127,7 +129,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
-								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : (nextIsTouching ? '100%' : 'none'),
 							'transform': 'translate3d(' + Math.floor(widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + Math.floor(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 5px)',
@@ -142,7 +144,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
-								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : (nextIsTouching ? '100%' : 'none'),
 							'transform': 'translate3d(' + Math.floor(Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + Math.floor(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 5px)',
@@ -158,7 +160,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
-								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : (nextIsTouching ? '100%' : 'none'),
 							'transform': 'translate3d(' + Math.floor(widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 5px)',
 							'willChange': 'transform'
 						}
@@ -167,7 +169,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					} else {
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
-								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none'
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : (nextIsTouching ? '100%' : 'none')
 						}
 
 						return styleObj

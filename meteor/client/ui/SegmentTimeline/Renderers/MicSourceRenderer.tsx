@@ -20,8 +20,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	itemPosition: number
 	itemWidth: number
-	itemElement: HTMLDivElement | null
-	lineItem: JQuery<HTMLDivElement>
+	itemElement: HTMLElement | null
+	lineItem: JQuery<HTMLElement>
 	linePosition: number
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
