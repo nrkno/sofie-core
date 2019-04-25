@@ -56,10 +56,10 @@ export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void
 
 	const pieces = Pieces.find({
 		rundownId: rundown._id
-	})
+	}).fetch()
 	const adlibs = AdLibPieces.find({
 		rundownId: rundown._id
-	})
+	}).fetch()
 
 	const eMIs: ExpectedMediaItem[] = []
 
