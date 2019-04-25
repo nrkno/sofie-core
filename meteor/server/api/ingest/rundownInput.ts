@@ -498,7 +498,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 
 	updateExpectedMediaItemsOnPart(rundown._id, part._id)
-	triggerUpdateTimelineAfterIngestData(rundown._id, segmentId)
+	triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newStory: any) {
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
@@ -517,7 +517,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 
 	updateExpectedMediaItemsOnPart(rundown._id, partId)
-	triggerUpdateTimelineAfterIngestData(rundown._id, segmentId)
+	triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 }
 // export function reCreatePart (): boolean {
 // 	// Recreate part from cached data

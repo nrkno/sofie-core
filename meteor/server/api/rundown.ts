@@ -1,17 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
-import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
+import { Pieces } from '../../lib/collections/Pieces'
+import { Segments } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	fetchBefore,
 	getRank,
 	fetchAfter,
-	getCurrentTime,
-	getHash
+	getCurrentTime
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -103,7 +102,7 @@ export function removePart (rundownId: string, partOrId: DBPart | string, replac
 	if (partToRemove) {
 		Parts.remove(partToRemove._id)
 		afterRemovePart(partToRemove, replacedByPart)
-		triggerUpdateTimelineAfterIngestData(rundownId)
+		triggerUpdateTimelineAfterIngestData(rundownId, [partToRemove.segmentId])
 
 		if (replacedByPart) {
 			Parts.update({
@@ -157,6 +156,8 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 		}
 	}
 }
+
+// TODO - does this still work with new ingest model?
 export function updateParts (rundownId: string) {
 	let parts0 = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
