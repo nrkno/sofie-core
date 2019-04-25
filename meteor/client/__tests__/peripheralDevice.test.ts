@@ -1,7 +1,7 @@
 /* Integration test for peripheralDevice */
 
 // import * as chai from 'chai'
-import {} from 'mocha'
+// import {} from 'mocha'
 
 // const expect = chai.expect
 

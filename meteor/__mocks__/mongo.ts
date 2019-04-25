@@ -58,11 +58,11 @@ export namespace MongoMock {
 					_.each(modifier, (value: any, key: string) => {
 						if (key === '$set') {
 							_.each(value, (value: any, key: string) => {
-								setOntoPath(doc, key, value )
+								setOntoPath(doc, key, value)
 							})
 						} else if (key === '$push') {
 							_.each(value, (value: any, key: string) => {
-								pushOntoPath(doc, key, value )
+								pushOntoPath(doc, key, value)
 							})
 						} else {
 							if (key[0] === '$') {

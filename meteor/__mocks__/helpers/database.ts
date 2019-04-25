@@ -94,7 +94,7 @@ function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constan
 
 		newConstant = newConstant.replace(/^\^/,'') || '0.0.0' // fix the version, the same way the bleprint does it
 
-		code = code.replace(new RegExp(constant, 'g'), _.isString(newConstant) ? `'${newConstant}'` : newConstant )
+		code = code.replace(new RegExp(constant, 'g'), _.isString(newConstant) ? `'${newConstant}'` : newConstant)
 	})
 	return `{default: (${code})()}`
 }
@@ -137,7 +137,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint (blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName)
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
 
@@ -247,7 +247,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint (blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName)
 }
 
 // const studioBlueprint

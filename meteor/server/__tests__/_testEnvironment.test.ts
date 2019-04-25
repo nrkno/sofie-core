@@ -7,7 +7,7 @@ import { Studios, DBStudio } from '../../lib/collections/Studios'
 import { waitForPromise } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 
-describe ('Basic test of test environment', () => {
+describe('Basic test of test environment', () => {
 
 	testInFiber('Check that tests will run in fibers correctly', () => {
 		// This code runs in a fiber

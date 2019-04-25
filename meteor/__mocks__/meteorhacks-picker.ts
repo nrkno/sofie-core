@@ -3,7 +3,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 export class PickerMock {
 
 	static mockRoutes: {[name: string]: Function} = {}
-	static route (routeName: string, fcn: (params, req: IncomingMessage, response: ServerResponse, next) => void ) {
+	static route (routeName: string, fcn: (params, req: IncomingMessage, response: ServerResponse, next) => void) {
 		this.mockRoutes[routeName] = fcn
 	}
 
@@ -15,7 +15,7 @@ export class Router {
 	middleware () {
 		// todo
 	}
-	route (routeName: string, fcn: (params, req: IncomingMessage, response: ServerResponse, next) => void ) {
+	route (routeName: string, fcn: (params, req: IncomingMessage, response: ServerResponse, next) => void) {
 		// todo
 	}
 }

@@ -71,7 +71,7 @@ export interface PieceExtended extends Piece {
  * This function allows to see what the output of the playback will look like.
  * It simulates the operations done by the playout operations in core and playout-gateway
  * and produces a list of Pieces across Parts timed relatively.
- * 
+ *
  * This method is primarly used by the GUI to visualize segments, but other functions
  * utilize it as well when information about timing & time placement is needed.
  *

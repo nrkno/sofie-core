@@ -5,8 +5,8 @@ import { Methods, setMeteorMethods } from '../methods'
 import { StudiosAPI } from '../../lib/api/studios'
 import { Studios, Studio, DBStudio } from '../../lib/collections/Studios'
 import { literal } from '../../lib/lib'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns';
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices';
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 export function insertStudio (newId?: string): string {
 	if (newId) check(newId, String)
