@@ -18,7 +18,7 @@ import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playou
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
-import { updateExpectedMediaItems } from './expectedMediaItems'
+import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
@@ -129,7 +129,7 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 	Pieces.remove({
 		partId: removedPart._id
 	})
-	updateExpectedMediaItems(removedPart.rundownId, removedPart._id)
+	updateExpectedMediaItemsOnPart(removedPart.rundownId, removedPart._id)
 
 	let rundown = Rundowns.findOne(removedPart.rundownId)
 	if (rundown) {
