@@ -51,8 +51,8 @@ import {
 import * as _ from 'underscore'
 import { TriggerType } from 'superfly-timeline'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints } from '../blueprints/cache'
-import { StudioContext } from '../blueprints/context'
+import { loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
+import { StudioContext, RundownContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from '../testTools'
@@ -207,15 +207,22 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				// next (on pvw (or on pgm if first))
 				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studio))
 
-				// console.log(JSON.stringify(timelineObjs))
+				const showStyleBlueprint = getBlueprintOfRundown(activeRundown)
+				if (showStyleBlueprint.onTimelineGenerate) {
+					const context = new RundownContext(activeRundown, studio)
+					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), object => literal<TimelineObjGeneric>({
+						...object,
+						objectType: TimelineObjType.RUNDOWN,
+						studioId: studio._id,
+						_id: object.id,
+					}))
+				}
 
 				// TODO: Specific implementations, to be refactored into Blueprints:
 				setLawoObjectsTriggerValue(timelineObjs, activeRundown.currentPartId || undefined)
 				timelineObjs = validateNoraPreload(timelineObjs)
 
 				waitForPromise(promiseClearTimeline)
-
-				// console.log('full', JSON.stringify(timelineObjs, undefined, 4))
 
 				resolve(
 					_.map<TimelineObjGeneric, TimelineObjRundown>(timelineObjs, (timelineObj) => {

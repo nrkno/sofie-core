@@ -57,6 +57,9 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _rundownImportVersionStatusDep: Tracker.Dependency
 	private _rundownImportVersionInterval: number | undefined = undefined
 
+	private _unsentExternalMessagesStatus: Notification | undefined = undefined
+	private _unsentExternalMessageStatusDep: Tracker.Dependency
+
 	constructor (rundownId: string, showStyleBase: ShowStyleBase, studio: Studio) {
 		super()
 		this._notificationList = new NotificationList([])
@@ -64,6 +67,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._rundownStatusDep = new Tracker.Dependency()
 		this._deviceStatusDep = new Tracker.Dependency()
 		this._rundownImportVersionStatusDep = new Tracker.Dependency()
+		this._unsentExternalMessageStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
@@ -84,6 +88,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						this.reactiveMediaStatus(rRundownId, showStyleBase, studio)
 						this.reactivePartNotes(rRundownId)
 						this.reactivePeripheralDeviceStatus(studio._id)
+						this.reactiveQueueStatus(studio._id)
 					} else {
 						this.cleanUpMediaStatus()
 					}
@@ -93,6 +98,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				this._deviceStatus = {}
 				this._notes = {}
 				this._rundownImportVersionStatus = undefined
+				this._unsentExternalMessagesStatus = undefined
 				this.cleanUpMediaStatus()
 			}
 		})
@@ -104,12 +110,14 @@ class RundownViewNotifier extends WithManagedTracker {
 			this._rundownStatusDep.depend()
 			this._notesDep.depend()
 			this._rundownImportVersionStatusDep.depend()
+			this._unsentExternalMessageStatusDep.depend()
 
 			const notifications = _.compact(_.values(this._mediaStatus))
 				.concat(_.compact(_.values(this._deviceStatus)))
 				.concat(_.compact(_.values(this._notes)))
 				.concat(_.compact(_.values(this._rundownStatus)))
 				.concat(_.compact([this._rundownImportVersionStatus]))
+				.concat(_.compact([this._unsentExternalMessagesStatus]))
 
 			this._notificationList.set(
 				notifications
@@ -371,6 +379,22 @@ class RundownViewNotifier extends WithManagedTracker {
 			const rundown = Rundowns.findOne(rRundownId)
 			if (rundown) {
 				this.updateVersionStatus(rundown._id)
+			}
+		})
+	}
+
+	private reactiveQueueStatus (studioId: string) {
+		let reactiveUnsentMessageCount: ReactiveVar<number>
+		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId })
+		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId)
+		this.autorun(() => {
+			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {
+				this._unsentExternalMessagesStatus = new Notification(`unsent_${studioId}`, NoticeLevel.WARNING, 'External message queue has unsent messages.', 'ExternalMessageQueue', getCurrentTime(), true, undefined, -1)
+				this._unsentExternalMessageStatusDep.changed()
+			}
+			if (reactiveUnsentMessageCount.get() === 0 && this._unsentExternalMessagesStatus !== undefined) {
+				this._unsentExternalMessagesStatus = undefined
+				this._unsentExternalMessageStatusDep.changed()
 			}
 		})
 	}

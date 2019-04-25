@@ -6,8 +6,10 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { getCurrentTime } from '../../../lib/lib'
 
 export namespace reactiveData {
 	export function getRRundownId (rundownId: string): ReactiveVar<string | undefined> {
@@ -112,6 +114,25 @@ export namespace reactiveData {
 				allDevices.splice(allDevices.length, 0, ...subDevices)
 			})
 			rVar.set(allDevices)
+		})
+
+		return rVar
+	}
+
+	export function getUnsentExternalMessageCount (studioId: string): ReactiveVar<number> {
+		const rVar = new ReactiveVar<number>(0)
+
+		Tracker.autorun(() => {
+			let now = getCurrentTime()
+			const unsentMessages = ExternalMessageQueue.find({
+				expires: { $gt: now },
+				studioId: { $eq: studioId },
+				sent: { $not: { $gt: 0 } },
+				tryCount: { $not: { $lt: 1 } }
+			}, {
+				limit: 10
+			}).fetch()
+			rVar.set(unsentMessages.length)
 		})
 
 		return rVar
