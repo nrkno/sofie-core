@@ -58,7 +58,8 @@ import {
 	setNextPart as libSetNextPart,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	prefixAllObjectIds
+	prefixAllObjectIds,
+	getPreviousPartForSegment
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -1409,17 +1410,7 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 				_id: { $in: data.changedSegments }
 			})
 			if (firstSegment) {
-				const prevSegment = Segments.findOne({
-					rundownId: rundownId,
-					_rank: { $lt: firstSegment._rank }
-				}, { sort: { _rank: -1 } })
-				if (prevSegment) {
-					// Find last line in the segment
-					prevLine = Parts.findOne({
-						rundownId: rundownId,
-						segmentId: prevSegment._id
-					}, { sort: { _rank: -1 } })
-				}
+				prevLine = getPreviousPartForSegment(rundownId, firstSegment)
 			}
 		}
 

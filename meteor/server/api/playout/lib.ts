@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { updateSourceLayerInfinitesAfterLine } from './playout'
 import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { Parts, DBPart, Part } from '../../../lib/collections/Parts'
@@ -14,6 +13,13 @@ import {
 	pushOntoPath
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
+import { loadCachedIngestSegment } from '../ingest/ingestCache'
+import { updateSegmentFromIngestData } from '../ingest/rundownInput'
+import { updateSourceLayerInfinitesAfterLine } from './infinites'
+import { Studios } from '../../../lib/collections/Studios'
+import { updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
+import { triggerUpdateTimelineAfterIngestData } from './playout'
+import { DBSegment, Segment, Segments } from '../../../lib/collections/Segments';
 let clone = require('fast-clone')
 
 /**
@@ -121,6 +127,19 @@ function resetRundownPlayhead (rundown: Rundown) {
 		setNextPart(rundown, null)
 	}
 }
+export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
+	const prevSegment = Segments.findOne({
+		rundownId: rundownId,
+		_rank: { $lt: dbSegment._rank }
+	}, { sort: { _rank: -1 } })
+	if (prevSegment) {
+		return Parts.findOne({
+			rundownId: rundownId,
+			segmentId: prevSegment._id,
+		}, { sort: { _rank: -1 } })
+	}
+	return undefined
+}
 function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
 	return Parts.findOne({
 		rundownId: dbRundown._id,
@@ -128,20 +147,23 @@ function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
 	}, { sort: { _rank: -1 } })
 }
 export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
+	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbPart.segmentId)
+	// const ingestPart = loadCachedIngestPart(dbRundown._id, dbPart._id)
+
+	const studio = Studios.findOne(dbRundown.studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)
 	const rundown = new Rundown(dbRundown)
-	// TODO reimplement
-	const story = {} // rundown.fetchCache(CachePrefix.INGEST_PART + dbPart._id)
-	const part = new Part(dbPart)
-	// updateStory(rundown, part, story)
 
-	// const segment = part.getSegment()
-	// if (segment) {
-	// 	// this could be run after the segment, if we were capable of limiting that
-	// 	runPostProcessBlueprint(rundown, segment)
-	// }
+	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 
-	const prevLine = getPreviousPart(dbRundown, part)
+	const segment = Segments.findOne(dbPart.segmentId)
+	if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
+
+	const prevLine = getPreviousPartForSegment(dbRundown._id, segment)
 	updateSourceLayerInfinitesAfterLine(rundown, prevLine)
+
+	updateExpectedMediaItemsOnPart(rundown._id, dbPart._id)
+	triggerUpdateTimelineAfterIngestData(rundown._id, [dbPart.segmentId])
 }
 export function setNextPart (
 	rundown: Rundown,

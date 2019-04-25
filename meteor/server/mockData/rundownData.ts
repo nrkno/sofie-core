@@ -9,7 +9,7 @@ import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
 import { Parts } from '../../lib/collections/Parts'
-import { updateSourceLayerInfinitesAfterLine } from '../api/playout/playout'
+import { updateSourceLayerInfinitesAfterLine } from '../api/playout/infinites'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
