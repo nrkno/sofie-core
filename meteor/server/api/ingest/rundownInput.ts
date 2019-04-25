@@ -39,11 +39,12 @@ import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, getStudioFromRundown, canBeUpdated } from './lib'
+import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
 import { mutateRundown, mutateSegment, mutatePart } from './ingest'
 import { PackageInfo } from '../../coreSystem'
-import { updateExpectedMediaItemsOnPart, updateExpectedMediaItemsOnRundown } from '../expectedMediaItems';
+import { updateExpectedMediaItemsOnPart, updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
+import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 
 export namespace RundownInput {
 	// TODO - this all needs guards to avoid race conditions with stuff running in playout.ts (which should be removed from there)
@@ -335,6 +336,7 @@ function updateRundownFromIngestData (
 	const didChange = anythingChanged(changes)
 	if (didChange) {
 		updateExpectedMediaItemsOnRundown(dbRundown._id)
+		triggerUpdateTimelineAfterIngestData(rundownId, _.map(segments, s => s._id))
 	}
 	return didChange
 }
@@ -496,6 +498,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 
 	updateExpectedMediaItemsOnPart(rundown._id, part._id)
+	triggerUpdateTimelineAfterIngestData(rundown._id, segmentId)
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newStory: any) {
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
@@ -514,6 +517,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 
 	updateExpectedMediaItemsOnPart(rundown._id, partId)
+	triggerUpdateTimelineAfterIngestData(rundown._id, segmentId)
 }
 // export function reCreatePart (): boolean {
 // 	// Recreate part from cached data

@@ -1646,48 +1646,54 @@ function setRundownStartedPlayback (rundown: Rundown, startedPlayback: Time) {
 	}
 }
 
-interface UpdateTimelineFromMosDataTimeout {
+interface UpdateTimelineFromIngestDataTimeout {
 	timeout?: number
-	changedLines?: string[]
+	changedSegments: string[]
 }
-let updateTimelineFromMosDataTimeouts: {
-	[id: string]: UpdateTimelineFromMosDataTimeout
+let updateTimelineFromIngestDataTimeouts: {
+	[id: string]: UpdateTimelineFromIngestDataTimeout
 } = {}
-export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedLines?: Array<string>) {
-	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-
+export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegments: Array<string>) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-	let data: UpdateTimelineFromMosDataTimeout = updateTimelineFromMosDataTimeouts[rundownId]
+	let data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts[rundownId]
 	if (data) {
 		if (data.timeout) Meteor.clearTimeout(data.timeout)
-		if (data.changedLines) {
-			data.changedLines = changedLines ? data.changedLines.concat(changedLines) : undefined
-		}
+		data.changedSegments = data.changedSegments.concat(changedSegments)
 	} else {
 		data = {
-			changedLines: changedLines
+			changedSegments: changedSegments
 		}
 	}
 
 	data.timeout = Meteor.setTimeout(() => {
-		delete updateTimelineFromMosDataTimeouts[rundownId]
+		delete updateTimelineFromIngestDataTimeouts[rundownId]
 
 		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
 		let prevLine: Part | undefined
-		if (data.changedLines) {
-			const firstLine = Parts.findOne({
+		if (data.changedSegments) {
+			const firstSegment = Segments.findOne({
 				rundownId: rundownId,
-				_id: { $in: data.changedLines }
-			}, { sort: { _rank: 1 } })
-			if (firstLine) {
-				prevLine = Parts.findOne({
+				_id: { $in: data.changedSegments }
+			})
+			if (firstSegment) {
+				const prevSegment = Segments.findOne({
 					rundownId: rundownId,
-					_rank: { $lt: firstLine._rank }
+					_rank: { $lt: firstSegment._rank }
 				}, { sort: { _rank: -1 } })
+				if (prevSegment) {
+					// Find last line in the segment
+					prevLine = Parts.findOne({
+						rundownId: rundownId,
+						segmentId: prevSegment._id
+					}, { sort: { _rank: -1 } })
+				}
 			}
 		}
 
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+		// TODO - test the input data for this
 		updateSourceLayerInfinitesAfterLine(rundown, prevLine, true)
 
 		if (rundown.active) {
@@ -1695,5 +1701,5 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 		}
 	}, 1000)
 
-	updateTimelineFromMosDataTimeouts[rundownId] = data
+	updateTimelineFromIngestDataTimeouts[rundownId] = data
 }
