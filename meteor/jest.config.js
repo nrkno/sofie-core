@@ -42,7 +42,9 @@ module.exports = {
 	},
 	coverageDirectory: "./.coverage/",
 	collectCoverageFrom: [
-		"**/*.{js,ts}",
+		"server/**/*.{js,ts}",
+		"lib/**/*.{js,ts}",
+		"client/**/*.{js,ts}",
 		"!**/*.{tsx}",
 		"!**/client/main.js",
 		"!.meteor/**/*.*",
