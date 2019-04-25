@@ -1,14 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as MOS from 'mos-connection'
 import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
 import {
-	setupMockPeripheralDevice,
-	setupMockStudio,
-	setupMockShowStyleBase,
-	setupMockShowStyleVariant,
-	setupMockStudioBlueprint,
-	setupMockShowStyleBlueprint
+	setupDefaultStudioEnvironment
 } from '../../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
 import { setLoggerLevel } from '../../../logger'
@@ -16,7 +10,7 @@ import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Segments } from '../../../../../lib/collections/Segments'
 import { Parts } from '../../../../../lib/collections/Parts'
 
-require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
+require('../api.ts') // include in order to create the Meteor methods needed
 
 describe('Test recieved mos actions', () => {
 
@@ -25,20 +19,7 @@ describe('Test recieved mos actions', () => {
 
 		expect(Rundowns.findOne()).toBeFalsy()
 
-		const showStyleBaseId = Random.id()
-		const showStyleVariantId = Random.id()
-
-		const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
-		const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId)
-
-		const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, { _id: showStyleBaseId })
-		const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
-
-		const studio = setupMockStudio({
-			blueprintId: studioBlueprint._id,
-			supportedShowStyleBase: [showStyleBaseId]
-		})
-		const device = setupMockPeripheralDevice(PeripheralDeviceAPI.DeviceType.MOSDEVICE, studio)
+		const { device } = setupDefaultStudioEnvironment()
 
 		const mosRunningOrder: MOS.IMOSRunningOrder = {
 			ID: new MOS.MosString128('abc'),
@@ -60,7 +41,7 @@ describe('Test recieved mos actions', () => {
 				Items: []
 			}]
 		}
-		// console.log('device', device)
+
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mosRunningOrder)
 
 		const rundown = Rundowns.findOne() as Rundown

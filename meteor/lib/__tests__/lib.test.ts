@@ -2,14 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import {
-	setupMockPeripheralDevice,
-	setupMockStudio,
-	setupMockShowStyleBase,
-	setupMockShowStyleVariant,
-	setupMockStudioBlueprint,
-	setupMockShowStyleBlueprint
-} from '../../__mocks__/helpers/database'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { setLoggerLevel } from '../../server/api/logger'
 import {

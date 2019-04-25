@@ -1,4 +1,5 @@
 import * as _ from 'underscore'
+import { Random } from 'meteor/random'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { StatusCode } from '../../server/systemStatus/systemStatus'
@@ -248,6 +249,35 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const blueprintName = 'mockBlueprint'
 
 	return uploadBlueprint(blueprintId, code, blueprintName)
+}
+
+export function setupDefaultStudioEnvironment () {
+
+	const showStyleBaseId = Random.id()
+	const showStyleVariantId = Random.id()
+
+	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
+	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId)
+
+	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, { _id: showStyleBaseId })
+	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
+
+	const studio = setupMockStudio({
+		blueprintId: studioBlueprint._id,
+		supportedShowStyleBase: [showStyleBaseId]
+	})
+	const device = setupMockPeripheralDevice(PeripheralDeviceAPI.DeviceType.MOSDEVICE, studio)
+
+	return {
+		showStyleBaseId,
+		showStyleVariantId,
+		studioBlueprint,
+		showStyleBlueprint,
+		showStyleBase,
+		showStyleVariant,
+		studio,
+		device
+	}
 }
 
 // const studioBlueprint
