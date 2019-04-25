@@ -103,7 +103,21 @@ export namespace MeteorMock {
 			throw new Error(404, `Method '${methodName}' not found`)
 		}
 
-		fcn.call({}, ...args)
+		const lastArg = args.length > 0 && args[args.length - 1]
+		if (lastArg && typeof lastArg === 'function') {
+			const callback = args.pop()
+
+			setTimeout(() => {
+				try {
+					callback(undefined, fcn.call({}, ...args))
+				} catch (e) {
+					callback(e)
+				}
+			}, 0)
+		} else {
+			return fcn.call({}, ...args)
+		}
+
 	}
 	export function apply (methodName: string, args: any[], options?: {
 		wait?: boolean;

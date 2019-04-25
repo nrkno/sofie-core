@@ -39,6 +39,9 @@ export namespace MongoMock {
 				fetch () {
 					return docs
 				},
+				count () {
+					return docs.length
+				},
 				observeChanges () {
 					// todo
 				}
