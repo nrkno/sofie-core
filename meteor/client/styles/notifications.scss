@@ -113,32 +113,18 @@
 
 .notifications__toggle-button {
     position: fixed;
-    display: block;
-    border: none;
     right: 5px;
     top: 4.5em;
-    background: transparentize(#4B4B4B, 0.45);
-    width: $fullscreen-controls__button--radius;
-    height: $fullscreen-controls__button--radius;
-    border-radius: 100%;
-    transition: 0.3s background-color;
-    margin-bottom: 0.5rem;
-    font-size: 1em;
     z-index: 310;
     text-align: left;
     cursor: pointer;
 
-    &:active, &.active {
-        background: $ui-button-primary;
-        transition: 0s background-color;
-    }
-
     > svg {
         position: absolute;
-        width: 50%;
-        height: 50%;
+        width: #{$fullscreen-controls__button--radius / 2};
+        height: #{$fullscreen-controls__button--radius / 2};
         top: 50%;
-        left: 50%;
+        right: 0;
         transform: translate(-50%, -53%);
         transition: 0.5s all ease-in-out;
 
@@ -158,18 +144,14 @@
         }
     }
 
-    &.open {
-        
-    }
-
     .notifications__toggle-button__count {
         display: block;
         position: absolute;
 
-        left: 62%;
+        right: 6%;
         top: 50%;
         transform: translate(0, -50%);
-        width: 35%;
+        width: #{$fullscreen-controls__button--radius / 2.86};
         text-align: center;
         font-size: 0.8em;
         font-weight: 500;
@@ -182,6 +164,16 @@
         .notifications__toggle-button__count {
             opacity: 1;
             transition: 0.2s opacity ease-out 0.4s;
+        }
+    }
+}
+
+.running-order {
+    .notifications__toggle-button.status-bar__controls__button--open {
+        > svg {
+            > path {
+                stroke: #fff;
+            }
         }
     }
 }
@@ -264,7 +256,7 @@
     }
 }
 
-.running-order-view .notification-center-panel {
+.rundown-view .notification-center-panel {
     background: #eee;
     color: #000;
     top: 64px;
@@ -307,12 +299,12 @@
 }
 
 
-.running-order-view + .notification-pop-ups {
+.rundown-view + .notification-pop-ups {
     transition: 1s right ease-out;
     
 }
 
-.running-order-view.notification-center-open + .notification-pop-ups {
+.rundown-view.notification-center-open + .notification-pop-ups {
     right: 460px;
     transition: 1s right ease-out;
 }
@@ -326,16 +318,16 @@
         }
     }
 
-    .running-order-view {
+    .rundown-view {
         &.notification-center-open {
             padding-right: calc(#{$statusbar-width} + 25vw) !important;
-            > .header .running-order-overview {
+            > .header .rundown-overview {
                 padding-right: calc(#{$statusbar-width} + 25vw + 1.5em) !important;
             }
         }
     }
 
-    .running-order-view.notification-center-open + .notification-pop-ups {
+    .rundown-view.notification-center-open + .notification-pop-ups {
         right: calc(25vw + 85px);
     }
 }

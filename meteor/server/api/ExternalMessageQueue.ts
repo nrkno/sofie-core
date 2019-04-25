@@ -18,15 +18,14 @@ import {
 	removeNullyProperties
 } from '../../lib/lib'
 import { setMeteorMethods, Methods } from '../methods'
-import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
-import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
-import { wrapMethods } from '../lib'
+import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
 
-export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
+export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
 
 		// check the output:
@@ -42,17 +41,19 @@ export function queueExternalMessages (runningOrder: RunningOrder, messages: Arr
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
-			studioId: runningOrder.studioInstallationId,
+			retryUntil: message.retryUntil,
+			studioId: rundown.studioId,
 			created: now,
 			tryCount: 0,
 			expires: now + 35 * 24 * 3600 * 1000, // 35 days
+			manualRetry: false,
 		}
 
 		message2 = removeNullyProperties(message2)
 
 		// console.log('result', result)
 
-		if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
+		if (!rundown.rehearsal) { // Don't save the message when running rehearsals
 			ExternalMessageQueue.insert(message2)
 
 			triggerdoMessageQueue() // trigger processing of the queue
@@ -82,15 +83,16 @@ Meteor.startup(() => {
 function doMessageQueue () {
 	// console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000 // 1 minute
-	let limit = ( errorOnLastRunCount === 0 ? 100 : 5 ) // if there were errors on last send, don't run too many next time
+	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
 	try {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
-			expires: {$gt: now},
-			lastTry: {$not: {$gt: now - tryInterval}},
-			sent: {$not: {$gt: 0}},
-			hold: {$not: {$eq: true}}
+			expires: { $gt: now },
+			lastTry: { $not: { $gt: now - tryInterval } },
+			sent: { $not: { $gt: 0 } },
+			hold: { $not: { $eq: true } },
+			errorFatal: { $not: { $eq: true } },
 		}, {
 			sort: {
 				lastTry: 1
@@ -103,12 +105,19 @@ function doMessageQueue () {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
+		// console.log('>>>', now, messagesToSend)
+	 	messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
+			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
+		})
+		// console.log('<<<', now, messagesToSend)
 		_.each(messagesToSend, (msg) => {
 			try {
 				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
+				msg.manualRetry = false
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
+					manualRetry: false,
 				}})
 
 				let p: Promise<any>
@@ -183,8 +192,8 @@ function updateExternalMessageQueueStatus (): void {
 			updateExternalMessageQueueStatusTimeout = 0
 
 			const messagesOnQueueCursor = ExternalMessageQueue.find({
-				sent: {$not: {$gt: 0}},
-				tryCount: {$gt: 3}
+				sent: { $not: { $gt: 0 } },
+				tryCount: { $gt: 3 }
 			})
 			const messagesOnQueueCount: number = messagesOnQueueCursor.count()
 			let status: StatusObject = {
@@ -209,8 +218,8 @@ function updateExternalMessageQueueStatus (): void {
 }
 
 ExternalMessageQueue.find({
-	sent: {$not: {$gt: 0}},
-	tryCount: {$gt: 3}
+	sent: { $not: { $gt: 0 } },
+	tryCount: { $gt: 3 }
 }).observeChanges({
 	added: updateExternalMessageQueueStatus,
 	changed: updateExternalMessageQueueStatus,
@@ -228,10 +237,23 @@ methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
 methods[ExternalMessageQueueAPI.methods.toggleHold] = (id: string) => {
 	check(id, String)
 	let m = ExternalMessageQueue.findOne(id)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found`)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on toggleHold`)
 	ExternalMessageQueue.update(id, {$set: {
 		hold: !m.hold
 	}})
+}
+methods[ExternalMessageQueueAPI.methods.retry] = (id: string) => {
+	check(id, String)
+	let m = ExternalMessageQueue.findOne(id)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on retry`)
+	let tryGap = getCurrentTime() - 1 * 60 * 1000
+	ExternalMessageQueue.update(id, {$set: {
+		manualRetry: true,
+		hold: false,
+		errorFatal: false,
+		lastTry: m.lastTry !== undefined && m.lastTry > tryGap ? tryGap : m.lastTry
+	}})
+	triggerdoMessageQueue(1000)
 }
 methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) => {
 	check(value, Boolean)
@@ -242,4 +264,4 @@ methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) =
 	}
 }
 
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

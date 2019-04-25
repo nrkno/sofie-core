@@ -2,12 +2,11 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
-import { StudioInstallations, StudioInstallation, ITestToolsConfig, MappingExt } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio, ITestToolsConfig, MappingExt } from '../../lib/collections/Studios'
 import { getCurrentTime, literal, waitForPromise, getHash } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
-import { updateTimeline } from './playout'
 import * as moment from 'moment'
 import { TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
@@ -21,6 +20,7 @@ import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 import { check } from 'meteor/check'
+import { updateTimeline } from './playout/timeline'
 
 const deleteRequest = promisify(request.delete)
 
@@ -32,13 +32,13 @@ const defaultConfig = {
 	channelFormat: ChannelFormat.HD_1080I5000,
 	prefix: ''
 }
-export function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
+export function getStudioConfig (studio: Studio): ITestToolsConfig {
 	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
 	if (!config.recordings) config.recordings = defaultConfig
 	return config
 }
 
-export function generateRecordingTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObjRecording[] {
+export function generateRecordingTimelineObjs (studio: Studio, recording: RecordedFile): TimelineObjRecording[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 
@@ -58,7 +58,7 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 		literal<TimelineObjCCGRecord & TimelineObjRecording>({
 			_id: IDs.record,
 			id: '',
-			siId: studio._id,
+			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
@@ -79,7 +79,7 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 		literal<TimelineObjCCGInput & TimelineObjRecording>({
 			_id: IDs.input,
 			id: '',
-			siId: studio._id,
+			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			trigger: {
 				type: TriggerType.LOGICAL,
@@ -108,7 +108,7 @@ export namespace ServerTestToolsAPI {
 		check(studioId, String)
 		const updated = RecordedFiles.update({
 			studioId: studioId,
-			stoppedAt: {$exists: false}
+			stoppedAt: { $exists: false }
 		}, {
 			$set: {
 				stoppedAt: getCurrentTime()
@@ -125,12 +125,12 @@ export namespace ServerTestToolsAPI {
 	export function recordStart (studioId: string, name: string) {
 		check(studioId, String)
 		check(name, String)
-		const studio = StudioInstallations.findOne(studioId)
+		const studio = Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
 		const active = RecordedFiles.findOne({
 			studioId: studioId,
-			stoppedAt: {$exists: false}
+			stoppedAt: { $exists: false }
 		})
 		if (active) throw new Meteor.Error(404, `An active recording for "${studioId}" was found!`)
 
@@ -160,7 +160,7 @@ export namespace ServerTestToolsAPI {
 			lookahead: LookaheadMode.NONE,
 			internal: true
 		})
-		StudioInstallations.update(studio._id, { $set: setter })
+		Studios.update(studio._id, { $set: setter })
 
 		const id = Random.id(7)
 		const path = (config.recordings.filePrefix || defaultConfig.prefix) + id + '.mp4'
@@ -184,7 +184,7 @@ export namespace ServerTestToolsAPI {
 		const file = RecordedFiles.findOne(id)
 		if (!file) throw new Meteor.Error(404, `Recording "${id}" was not found!`)
 
-		const studio = StudioInstallations.findOne(file.studioId)
+		const studio = Studios.findOne(file.studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`)
 
 		const config = getStudioConfig(studio)

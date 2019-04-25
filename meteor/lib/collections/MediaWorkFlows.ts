@@ -18,7 +18,7 @@ export interface MediaWorkFlow {
 
 	/** Which device this workflow originated from */
 	deviceId: string
-	studioInstallationId: string
+	studioId: string
 
 	source: WorkFlowSource
 	/** Id of the expectedMedia Item */

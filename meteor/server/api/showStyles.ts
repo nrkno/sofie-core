@@ -6,7 +6,6 @@ import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { literal } from '../../lib/lib'
-import { wrapMethods } from '../lib'
 
 export function insertShowStyleBase (): string {
 	let id = ShowStyleBases.insert(literal<ShowStyleBase>({
@@ -17,7 +16,7 @@ export function insertShowStyleBase (): string {
 		sourceLayers: [],
 		config: [],
 		runtimeArguments: [],
-		_runningOrderVersionHash: '',
+		_rundownVersionHash: '',
 	}))
 	insertShowStyleVariant(id, 'Default')
 	return id
@@ -33,7 +32,7 @@ export function insertShowStyleVariant (showStyleBaseId: string, name?: string):
 		showStyleBaseId: showStyleBase._id,
 		name: name || 'Variant',
 		config: [],
-		_runningOrderVersionHash: '',
+		_rundownVersionHash: '',
 	})
 }
 export function removeShowStyleBase (showStyleBaseId: string) {
@@ -66,4 +65,4 @@ methods[ShowStylesAPI.methods.removeShowStyleVariant] = (showStyleVariantId: str
 }
 
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

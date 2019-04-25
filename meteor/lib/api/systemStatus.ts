@@ -1,4 +1,4 @@
-import { StatusCode } from '../../server/systemStatus'
+import { StatusCode } from '../../server/systemStatus/systemStatus'
 
 export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
 export interface CheckObj {

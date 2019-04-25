@@ -19,25 +19,16 @@ export interface HotkeyDefinition {
 }
 
 export interface DBShowStyleBase extends IBlueprintShowStyleBase {
-	_id: string
 	/** Name of this show style */
 	name: string
 	/** Id of the blueprint used by this show-style */
 	blueprintId: string
 
-	/** "Outputs" in the UI */
-	outputLayers: Array<IOutputLayer>
-	/** "Layers" in the GUI */
-	sourceLayers: Array<ISourceLayer>
-
-	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
-
 	hotkeyLegend?: Array<HotkeyDefinition>
 
 	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
 
-	_runningOrderVersionHash: string
+	_rundownVersionHash: string
 }
 
 export class ShowStyleBase implements DBShowStyleBase {
@@ -49,7 +40,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public config: Array<IConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
 	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
-	public _runningOrderVersionHash: string
+	public _rundownVersionHash: string
 
 	constructor (document: DBShowStyleBase) {
 		_.each(_.keys(document), (key) => {
@@ -59,7 +50,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 }
 
 export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase>
-	= new Mongo.Collection<ShowStyleBase>('showStyleBases', {transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
+	= new Mongo.Collection<ShowStyleBase>('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 Meteor.startup(() => {
@@ -68,6 +59,6 @@ Meteor.startup(() => {
 		// 	_id: 1,
 		// })
 
-		ObserveChangesForHash(ShowStyleBases, '_runningOrderVersionHash', ['config', 'blueprintId'])
+		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['config', 'blueprintId'])
 	}
 })

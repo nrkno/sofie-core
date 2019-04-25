@@ -4,7 +4,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as ClassNames from 'classnames'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { faBinoculars, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/fontawesome-free-solid'
+import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/fontawesome-free-solid'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import {
@@ -57,8 +57,8 @@ interface ITrackedProps {
 export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	return {
 	}
-})( class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	private
+})(class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	private cancelRequests: boolean
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -75,6 +75,10 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	}
 	componentDidMount () {
 		this.updateVersions()
+	}
+	componentWillUnmount () {
+		super.componentWillUnmount()
+		this.cancelRequests = true
 	}
 	clickRefresh () {
 		this.setState({
@@ -97,6 +101,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			migrationNeeded: false
 		})
 		Meteor.call(MigrationMethods.getMigrationStatus, (err, r: GetMigrationStatusResult) => {
+			if (this.cancelRequests) return
 			if (err) {
 				logger.error(err)
 				// todo: notify user
@@ -127,7 +132,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		// 	})
 		// })
 		if (this.state.migration) {
-			_.each(this.state.migration.manualInputs, (manualInput ) => {
+			_.each(this.state.migration.manualInputs, (manualInput) => {
 				if (manualInput.stepId && manualInput.attribute) {
 					let value: any
 					let step = this.state.inputValues[manualInput.stepId]
@@ -147,6 +152,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				this.state.migration.hash, // hash
 				inputResults, // inputResults
 			(err, r: RunMigrationResult) => {
+				if (this.cancelRequests) return
 				if (err) {
 					logger.error(err)
 					// todo: notify user
@@ -169,6 +175,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			Meteor.call(MigrationMethods.forceMigration,
 				this.state.migration.chunks,
 			(err) => {
+				if (this.cancelRequests) return
 				if (err) {
 					logger.error(err)
 					// todo: notify user
@@ -249,7 +256,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								type={manualInput.inputType}
 								options={manualInput.dropdownOptions}
 								overrideDisplayValue={value}
-								updateFunction={(edit: EditAttributeBase, newValue: any ) => {
+								updateFunction={(edit: EditAttributeBase, newValue: any) => {
 									if (manualInput.attribute) {
 										let inputValues = this.state.inputValues
 										if (!inputValues[stepId]) inputValues[stepId] = {}
@@ -302,12 +309,12 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							}
 						</div>
 						<div>
-							{this.state.errorMessage}
+							{this.state.errorMessage ? <p>{this.state.errorMessage}</p> : null}
 						</div>
-						<div>
-							<button className='btn mod mhm' onClick={() => { this.clickRefresh() }}>
-								<FontAwesomeIcon icon={faBinoculars} />
-								{t('Refresh')}
+						<div className='mod mhn mvm'>
+							<button className='btn mrm' onClick={() => { this.clickRefresh() }}>
+								<FontAwesomeIcon icon={faClipboardCheck} />
+								<span>{t('Re-check')}</span>
 							</button>
 
 							{/* {
@@ -326,29 +333,29 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								: null
 							} */}
 							{
-								<button className='btn mod mhm' onClick={() => { this.resetDatabaseVersions() }}>
+								<button className='btn mrm' onClick={() => { this.resetDatabaseVersions() }}>
 									<FontAwesomeIcon icon={faDatabase} />
-									{t('Reset All Versions')}
+									<span>{t('Reset All Versions')}</span>
 								</button>
 							}
 						</div>
 					</div>
 					{this.state.migrationNeeded && this.state.migration ?
 						<div>
-							<h2>Migrate database</h2>
+							<h2 className='mhn'>Migrate database</h2>
 
-							<div>
+							<p className='mhn mvs'>
 								{t(`This migration consists of ${this.state.migration.automaticStepCount} automatic steps and  ${this.state.migration.manualStepCount} manual steps (${this.state.migration.ignoredStepCount} steps are ignored).`)}
-							</div>
+							</p>
 
-							<table className='expando migration-steps-table'>
+							<table className='table expando migration-steps-table'>
 								<tbody>
 								<tr className={ClassNames({
 									'hl': this.state.showAllSteps
 								})}>
 								<th className='c3'>{t('All steps')}</th>
 									<td className='table-item-actions c3'>
-										<button className='action-btn' onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps})}>
+										<button className='action-btn' onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps })}>
 											<FontAwesomeIcon icon={this.state.showAllSteps ? faEyeSlash : faEye} />
 										</button>
 									</td>
@@ -357,8 +364,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 									<td colSpan={2}>
 									{
 										this.state.migration.chunks.map(c => <div key={c.sourceName}>
-											<h3>{c.sourceName}</h3>
-											{ _.map(c._steps, s => <p key={s}>{s}</p>) }
+											<h3 className='mhs'>{c.sourceName}</h3>
+											{ _.map(c._steps, s => <p className='mod mhs' key={s}>{s}</p>) }
 										</div>)
 									}
 									</td>
@@ -367,29 +374,29 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							</table>
 
 							{this.state.migration.partialMigration ?
-								<div>
+								<p className='mhn mvs'>
 									{t('The migration consists of several phases, you will get more options after you\'ve this migration')}
-								</div> : null
+								</p> : null
 							}
 							{this.state.migration.canDoAutomaticMigration ?
 								<div>
-									<div>
+									<p className='mhn mvs'>
 										{t('The migration can be completed automatically.')}
-									</div>
-									<button className='btn-primary' onClick={() => { this.runMigration() }}>
+									</p>
+									<button className='btn btn-primary' onClick={() => { this.runMigration() }}>
 										<FontAwesomeIcon icon={faDatabase} />
-										{t('Run automatic migration procedure')}
+										<span>{t('Run automatic migration procedure')}</span>
 									</button>
 								</div>
 							:
 							<div>
-								<div>
+								<p className='mhn mvs'>
 									{t('The migration procedure needs some help from you in order to complete, see below:')}
-								</div>
+								</p>
 								<div>
 									{this.renderManualSteps()}
 								</div>
-								<button className='btn-primary' onClick={() => {
+								<button className='btn btn-primary' onClick={() => {
 									doModalDialog({
 										title: t('Double-check Values'),
 										message: t('Are you sure the values you have entered are correct?'),
@@ -398,8 +405,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										}
 									})
 								}}>
-									<FontAwesomeIcon icon={faBinoculars} />
-									{t('Run Migration Procedure')}
+									<FontAwesomeIcon icon={faClipboardCheck} />
+									<span>{t('Run Migration Procedure')}</span>
 								</button>
 							</div>
 							}
@@ -423,7 +430,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										<div>
 											{t('Please check the database related to the warnings above. If neccessary, you can')}
 										</div>
-										<button className='btn-secondary' onClick={() => {
+										<button className='btn btn-secondary' onClick={() => {
 											doModalDialog({
 												title: t('Force Migration'),
 												message: t('Are you sure you want to force the migration? This will bypass the migration checks, so be sure to verify that the values in the settings are correct!'),
@@ -433,7 +440,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											})
 										}}>
 											<FontAwesomeIcon icon={faDatabase} />
-											{t('Force Migration (unsafe)')}
+											<span>{t('Force Migration (unsafe)')}</span>
 										</button>
 									</div>
 								</div>

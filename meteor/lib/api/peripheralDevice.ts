@@ -20,12 +20,38 @@ export interface StatusObject {
 	statusCode: StatusCode,
 	messages?: Array<string>
 }
+/*
+// TODO: Refactor into this?
+export enum DeviceCategory {
+	SUBDEVICE = 'subdevice',
+	INGEST = 'ingest',
+	PLAYOUT = 'playout',
+	MEDIA_MANAGER = 'media_manager'
+}
+export enum DeviceType {
+	// Main devices:
+	MOS_GATEWAY = 'mos_gateway',
+	SPREADSHEET_GATEWAY = 'spreadsheet_gateway',
 
+	PLAYOUT_GATEWAY = 'playout_gateway',
+
+	MEDIA_MANAGER = 'media_manager',
+
+	// Sub-devices:
+	MOS_CONNECTION = 'mos_connection',
+
+	TSR_CASPARCG = 'tsr_casparcg',
+	TSR_ATEM = 'tsr_atem',
+	TSR_HTTPSEND = 'tsr_httpsend',
+	//etc..
+}
+*/
 export enum DeviceType {
 	MOSDEVICE = 0,
 	PLAYOUT = 1,
 	OTHER = 2, // i.e. sub-devices
 	MEDIA_MANAGER = 3,
+	SPREADSHEET = 4,
 }
 export interface InitOptions {
 	type: DeviceType
@@ -38,18 +64,18 @@ export interface InitOptions {
 }
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 
-export interface SegmentLinePlaybackStartedResult {
-	roId: string,
-	slId: string,
+export interface PartPlaybackStartedResult {
+	rundownId: string,
+	partId: string,
 	time: number
 }
-export type SegmentLinePlaybackStoppedResult = SegmentLinePlaybackStartedResult
-export interface SegmentLineItemPlaybackStartedResult {
-	roId: string,
-	sliId: string,
+export type PartPlaybackStoppedResult = PartPlaybackStartedResult
+export interface PiecePlaybackStartedResult {
+	rundownId: string,
+	pieceId: string,
 	time: number
 }
-export type SegmentLineItemPlaybackStoppedResult = SegmentLineItemPlaybackStartedResult
+export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -68,10 +94,10 @@ export enum methods {
 	'getTime'				= 'systemTime.getTime',
 
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
-	'segmentLinePlaybackStarted' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStarted',
-	'segmentLinePlaybackStopped' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStopped',
-	'segmentLineItemPlaybackStarted'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStarted',
-	'segmentLineItemPlaybackStopped'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStopped',
+	'partPlaybackStarted' 	= 'peripheralDevice.rundown.partPlaybackStarted',
+	'partPlaybackStopped' 	= 'peripheralDevice.rundown.partPlaybackStopped',
+	'piecePlaybackStarted'= 'peripheralDevice.rundown.piecePlaybackStarted',
+	'piecePlaybackStopped'= 'peripheralDevice.rundown.piecePlaybackStopped',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',
@@ -94,7 +120,17 @@ export enum methods {
 	'mosRoReadyToAir' 	= 'peripheralDevice.mos.RoReadyToAir',
 	'mosRoFullStory' 	= 'peripheralDevice.mos.RoFullStory',
 
-	'resyncRo'			= 'peripheralDevice.mos.roResync',
+	'dataRundownDelete'	= 'peripheralDevice.rundown.rundownDelete',
+	'dataRundownCreate'	= 'peripheralDevice.rundown.rundownCreate',
+	'dataRundownUpdate'	= 'peripheralDevice.rundown.rundownUpdate',
+	'dataSegmentDelete'			= 'peripheralDevice.rundown.segmentDelete',
+	'dataSegmentCreate'			= 'peripheralDevice.rundown.segmentCreate',
+	'dataSegmentUpdate'			= 'peripheralDevice.rundown.segmentUpdate',
+	'dataPieceDelete'	= 'peripheralDevice.rundown.pieceDelete',
+	'dataPieceCreate'	= 'peripheralDevice.rundown.pieceCreate',
+	'dataPieceUpdate'	= 'peripheralDevice.rundown.pieceUpdate',
+
+	'resyncRundown'			= 'peripheralDevice.mos.roResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
@@ -102,7 +138,11 @@ export enum methods {
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
-	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep'
+	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
+
+	'requestUserAuthToken' 	= 'peripheralDevice.spreadsheet.requestUserAuthToken',
+	'storeAccessToken' 	= 'peripheralDevice.spreadsheet.storeAccessToken',
+
 }
 export function initialize (id: string, token: string, options: InitOptions): Promise<string> {
 	return MeteorPromiseCall(methods.initialize, id, token, options)
@@ -127,7 +167,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	})
 	let subscription: Meteor.SubscriptionHandle | null = null
 	if (Meteor.isClient) {
-		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId )
+		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 	}
 	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)

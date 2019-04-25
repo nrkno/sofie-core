@@ -52,16 +52,16 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+		if (this.props.piece.name !== prevProps.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
 
 	render () {
-		const content = this.props.segmentLineItem.content as TransitionContent
+		const content = this.props.piece.content as TransitionContent
 		return <React.Fragment>
 					<span className='segment-timeline__layer-item__label with-overflow' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						{this.props.segmentLineItem.name}
+						{this.props.piece.name}
 						{content && content.icon && !this.state.iconFailed &&
 							<img src={'/transition-icons/' + content.icon + '.svg'} className='segment-timeline__layer-item__label__transition-icon' onError={this.iconFailed} />
 						}

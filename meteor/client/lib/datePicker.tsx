@@ -72,7 +72,7 @@ export const DatePickerFromTo = translate()(class DatePickerFromTo extends React
 		})
 	}
 	render () {
-		const {t} = this.props
+		const { t } = this.props
 		return (
 			<div className='datepicker-from-to'>
 				<button className='action-btn mod mhm' onClick={this.onClickPrevious}>

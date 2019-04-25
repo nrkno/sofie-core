@@ -116,8 +116,8 @@ export namespace mousetrapHelper {
 		}
 	}
 
-	export function shortcutLabel (hotkey: string): string {
-		if (this._isMacLike) {
+	export function shortcutLabel (hotkey: string, isMacLike: boolean = false): string {
+		if (isMacLike) {
 			hotkey = hotkey.replace(/mod/i, '\u2318')
 		} else {
 			hotkey = hotkey.replace(/mod/i, 'Ctrl')
@@ -135,9 +135,9 @@ export namespace mousetrapHelper {
 
 // Add mousetrap keycodes for special keys
 mousetrap.addKeycodes({
-	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
-	222: '\\', // on ANSI-based keyboards, this is the key with single quote
-	223: '|', // this key is not present on ANSI-based keyboards
+	220: '§', // on US-based (ANstudio) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
+	222: '\\', // on ANstudio-based keyboards, this is the key with single quote
+	223: '|', // this key is not present on ANstudio-based keyboards
 
 	96: 'num0',
 	97: 'num1',

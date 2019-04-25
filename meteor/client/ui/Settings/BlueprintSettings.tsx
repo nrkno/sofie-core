@@ -8,7 +8,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
@@ -27,7 +27,7 @@ interface IState {
 }
 interface ITrackedProps {
 	blueprint?: Blueprint
-	assignedStudios: StudioInstallation[]
+	assignedStudios: Studio[]
 	assignedShowStyles: ShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
@@ -36,11 +36,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	return {
 		blueprint: Blueprints.findOne(id),
-		assignedStudios: StudioInstallations.find({ blueprintId: id }).fetch(),
+		assignedStudios: Studios.find({ blueprintId: id }).fetch(),
 		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
 		assignedSystem: CoreSystem.findOne({ blueprintId: id })
 	}
-})( class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -71,10 +71,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				title: t('Update Blueprints?'),
 				yes: t('Update'),
 				no: t('Cancel'),
-				message: [
-					<p>{t('Are you sure you want to update the Blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
+				message: <React.Fragment>
+					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
 					<p>{t('Please note: This action is irreversible!')}</p>
-				],
+				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents && blueprint) {
 						fetch('/blueprints/restore/' + blueprint._id, {

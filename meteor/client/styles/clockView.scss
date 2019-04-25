@@ -35,14 +35,14 @@
 	height: 34vh;
 }
 
-.clocks-segment-icon {
+.clocks-part-icon {
 	width: 16.09375vw;
 	margin-top: 5.08912vh;
 	height: 20.2777778vh; // 18.3 + 3.6
 	float: left;
 }
 
-.clocks-segment-title {
+.clocks-part-title {
 	padding-left: 2.815vw;
 	height: 18.333vh;
 	font-size: 13.889vh;
@@ -59,11 +59,11 @@
 	padding-top: 2vh;
 }
 
-.clocks-segment-title.clocks-current-segment-title {
+.clocks-part-title.clocks-current-segment-title {
 	font-weight: 500;
 }
 
-.clocks-segmentline-title {
+.clocks-part-title {
 	margin-top: -2.778vh;
 	font-weight: 300!important;
 	padding-top: 1vh;
@@ -85,7 +85,7 @@
 	text-align: center
 }
 
-.clocks-ro-countdown {
+.clocks-rundown-countdown {
 	height: 36.6vh;
 	line-height: 36.6vh;
 	font-size: 27.7778vh;
@@ -150,7 +150,7 @@
 	padding-left: 0.2em;
 }
 
-.clocks-segment-icon .stub-icon {
+.clocks-part-icon .stub-icon {
 	width: 100%;
 	height: 100%;
 	background: #00c800;

@@ -319,7 +319,7 @@ fieldset {
 
 /**
  * 1. Correct `color` not being inherited in IE 8/9/10/11.
- * 2. Remove padding so people aren't caught out if they zero out fieldsets.
+ * 2. Remove padding so people aren't caught out if they zerundown out fieldsets.
  */
 legend {
   border: 0;

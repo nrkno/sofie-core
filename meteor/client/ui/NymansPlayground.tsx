@@ -6,13 +6,12 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
-import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
-import { TimelineState } from 'superfly-timeline'
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
+import { TimelineState, Resolver, Enums } from 'superfly-timeline'
+import { Parts, Part } from '../../lib/collections/Parts'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
-import { Resolver, Enums } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { Time } from '../../lib/lib'
 import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
@@ -29,25 +28,25 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 		this.autorun(() => {
 			this.subscribe('timeline', {})
 
-			this.subscribe('runningOrders', {
+			this.subscribe('rundowns', {
 				active: true
 			})
-			this.subscribe('studioInstallations', {})
+			this.subscribe('studios', {})
 			this.subscribe('showStyleBases', {})
 			this.subscribe('showStyleVariants', {})
-			let activeRO = RunningOrders.findOne({active: true})
+			let activeRO = Rundowns.findOne({ active: true })
 			if (activeRO) {
 				this.subscribe('segments', {
-					runningOrderId: activeRO._id
+					rundownId: activeRO._id
 				})
-				this.subscribe('segmentLines', {
-					runningOrderId: activeRO._id
+				this.subscribe('parts', {
+					rundownId: activeRO._id
 				})
-				this.subscribe('segmentLineItems', {
-					runningOrderId: activeRO._id
+				this.subscribe('pieces', {
+					rundownId: activeRO._id
 				})
-				this.subscribe('segmentLineAdLibItems', {
-					runningOrderId: activeRO._id
+				this.subscribe('adLibPieces', {
+					rundownId: activeRO._id
 				})
 			}
 		})
@@ -63,7 +62,7 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 					<ComponentMediaObjects />
 				</div>
 				<div>
-					<ComponentRunningOrders />
+					<ComponentRundowns />
 				</div>
 				<div>
 					<ComponentTimeline />
@@ -72,8 +71,8 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 		)
 	}
 }
-interface IRunningOrders {
-	runningOrders: Array<RunningOrder>,
+interface IRundowns {
+	rundowns: Array<Rundown>,
 	mediaObjects: Array<MediaObject>,
 }
 export const ComponentMediaObjects = withTracker(() => {
@@ -85,7 +84,7 @@ export const ComponentMediaObjects = withTracker(() => {
 
 	}
 })(
-class extends MeteorReactComponent<IRunningOrders> {
+class extends MeteorReactComponent<IRundowns> {
 	renderMOs () {
 
 		return this.props.mediaObjects.map((mo) => (
@@ -121,42 +120,42 @@ class extends MeteorReactComponent<IRunningOrders> {
 		)
 	}
 })
-interface IRunningOrders {
-	runningOrders: Array<RunningOrder>
+interface IRundowns {
+	rundowns: Array<Rundown>
 }
-export const ComponentRunningOrders = withTracker(() => {
+export const ComponentRundowns = withTracker(() => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
 	return {
-		runningOrders: RunningOrders.find({}, { sort: { createdAt: -1 } }).fetch()
+		rundowns: Rundowns.find({}, { sort: { createdAt: -1 } }).fetch()
 
 	}
 })(
-class extends MeteorReactComponent<IRunningOrders> {
+class extends MeteorReactComponent<IRundowns> {
 	renderROs () {
 
-		return this.props.runningOrders.map((ro) => (
-			<div key={ro._id}>
-				<div>ID: <i>{ro._id}</i></div>
-				<div>Created: {ro.created}</div>
+		return this.props.rundowns.map((rundown) => (
+			<div key={rundown._id}>
+				<div>ID: <i>{rundown._id}</i></div>
+				<div>Created: {rundown.created}</div>
 
-				<div>mosId: {ro.mosId}</div>
-				<div>studioInstallationId: {ro.studioInstallationId}</div>
-				<div>showStyleBaseId: {ro.showStyleBaseId}</div>
-				<div>showStyleVariantId: {ro.showStyleVariantId}</div>
-				<div>name: {ro.name}</div>
-				<div>created: {ro.created}</div>
+				<div>externalId: {rundown.externalId}</div>
+				<div>studioId: {rundown.studioId}</div>
+				<div>showStyleBaseId: {rundown.showStyleBaseId}</div>
+				<div>showStyleVariantId: {rundown.showStyleVariantId}</div>
+				<div>name: {rundown.name}</div>
+				<div>created: {rundown.created}</div>
 
-				<div>metaData: {makeTableOfObject(ro.metaData)}</div>
-				<div>status: {makeTableOfObject(ro.status)}</div>
-				<div>airStatus: {makeTableOfObject(ro.airStatus)}</div>
+				<div>metaData: {makeTableOfObject(rundown.metaData)}</div>
+				<div>status: {makeTableOfObject(rundown.status)}</div>
+				<div>airStatus: {makeTableOfObject(rundown.airStatus)}</div>
 
-				<div>currentSegmentLineId: {ro.currentSegmentLineId}</div>
-				<div>nextSegmentLineId: {ro.nextSegmentLineId}</div>
+				<div>currentPartId: {rundown.currentPartId}</div>
+				<div>nextPartId: {rundown.nextPartId}</div>
 
 				<div>
-					<ComponentSegments runningOrderId={ro._id} />
+					<ComponentSegments rundownId={rundown._id} />
 				</div>
 			</div>
 		))
@@ -164,7 +163,7 @@ class extends MeteorReactComponent<IRunningOrders> {
 	render () {
 		return (
 			<div>
-				<h2>Running orders</h2>
+				<h2>Rundowns</h2>
 				<div>
 					{this.renderROs()}
 				</div>
@@ -173,7 +172,7 @@ class extends MeteorReactComponent<IRunningOrders> {
 	}
 })
 interface ISegmentsProps {
-	runningOrderId?: string
+	rundownId?: string
 }
 interface ISegmentsState {
 }
@@ -186,9 +185,9 @@ export const ComponentSegments = withTracker<ISegmentsProps, ISegmentsState, ISe
 	// Note that these properties are reactively recalculated
 	return {
 		segments: (
-			props.runningOrderId ?
+			props.rundownId ?
 			Segments.find({
-				runningOrderId: props.runningOrderId
+				rundownId: props.rundownId
 			}, { sort: { _rank: 1 } }).fetch()
 			: []
 		)
@@ -203,7 +202,7 @@ class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegm
 				<div>ID: <i>{segment._id}</i></div>
 				<div>Name: <i>{segment.name}</i></div>
 				<div>
-				<ComponentSegmentLines segmentId={segment._id} />
+				<ComponentParts segmentId={segment._id} />
 				</div>
 			</div>
 		))
@@ -219,36 +218,36 @@ class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegm
 		)
 	}
 })
-interface ISegmentLineProps {
+interface IPartProps {
 	segmentId?: string
 }
-interface ISegmentLineState {
+interface IPartState {
 }
-interface ISegmentLineTrackedState {
-	segmentLines: Array<SegmentLine>
+interface IPartTrackedState {
+	parts: Array<Part>
 }
-export const ComponentSegmentLines = withTracker<ISegmentLineProps, ISegmentLineState, ISegmentLineTrackedState>((props: ISegmentLineProps) => {
+export const ComponentParts = withTracker<IPartProps, IPartState, IPartTrackedState>((props: IPartProps) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
 	return {
-		segmentLines: (
+		parts: (
 			props.segmentId ?
-			SegmentLines.find({
+			Parts.find({
 				segmentId: props.segmentId
 			}, { sort: { _rank: 1 } }).fetch()
 			: []
 		)
 	}
 })(
-class extends MeteorReactComponent<ISegmentLineProps & ISegmentLineTrackedState, ISegmentLineState> {
+class extends MeteorReactComponent<IPartProps & IPartTrackedState, IPartState> {
 	renderROs () {
 
-		return this.props.segmentLines.map((segmentLine) => (
-			<div key={segmentLine._id}>
-				<b>SegmentLine</b>
-				<div>ID: <i>{segmentLine._id}</i></div>
-				<div>MosId: <i>{segmentLine.mosId}</i></div>
+		return this.props.parts.map((part) => (
+			<div key={part._id}>
+				<b>Part</b>
+				<div>ID: <i>{part._id}</i></div>
+				<div>externalId: <i>{part.externalId}</i></div>
 			</div>
 		))
 	}

@@ -7,7 +7,6 @@ import {
 import * as i18next from 'react-i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
-import { translate } from 'react-i18next'
 import { getCurrentTime } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -45,7 +44,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-export const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = i18next.translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -174,15 +173,15 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 					|| !this.props.device.connected
 				) ?
 					'device-item__device-status--unknown' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
 					'device-item__device-status--good' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
 					'device-item__device-status--minor-warning' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
 					'device-item__device-status--warning' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
 					'device-item__device-status--bad' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
 					'device-item__device-status--fatal' :
 				''
 			)

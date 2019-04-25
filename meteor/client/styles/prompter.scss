@@ -1,5 +1,16 @@
 @import "colorScheme";
 
+@font-face {
+    font-family: 'Source Serif Pro';
+    src: url('/fonts/Source_Serif_Pro/SourceSerifPro-Regular.woff') format('woff'), /* Pretty Modern Browsers */
+         url('/fonts/Source_Serif_Pro/SourceSerifPro-Regular.ttf')  format('truetype'); /* Safari, Android, iOS */
+}
+@font-face {
+    font-family: 'Overpass';
+    src: url('/fonts/Overpass/Overpass-Regular.woff') format('woff'), /* Pretty Modern Browsers */
+         url('/fonts/Overpass/Overpass-Regular.ttf')  format('truetype'); /* Safari, Android, iOS */
+}
+
 .prompter {
     user-select: none;
     cursor: none;
@@ -11,6 +22,7 @@
     text-align: left;
     letter-spacing: 0.9px;
 
+    font-family: Roboto, Helvetica, Arial, sans-serif;
 
     &.mirror {
         transform: scaleX(-1);
@@ -31,7 +43,7 @@
         border-top: 0.1em solid #fff;
         
     }
-    .prompter-segmentLine {
+    .prompter-part {
 
         text-align: center;
         letter-spacing: 0.1em;
@@ -63,7 +75,7 @@
 
 
     .prompter-segment,
-    .prompter-segmentLine,
+    .prompter-part,
     .prompter-break {
         border-bottom: 0.2em solid #000;
 
@@ -83,6 +95,7 @@
     }
 
     .prompter-line {
+        // font-family: Overpass, Roboto, Helvetica, Arial, sans-serif;
         font-family: Source Serif Pro, Roboto, Helvetica, Arial, sans-serif;
         font-size: 0.96em;
         letter-spacing: 0.0em;

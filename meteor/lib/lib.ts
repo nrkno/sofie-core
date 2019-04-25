@@ -20,7 +20,7 @@ export function getHash (str: string): string {
  * @param  {string} Method name
  * @return {Promise<any>}
  */
-export function MeteorPromiseCall (callName: string, ...args: any[] ): Promise<any> {
+export function MeteorPromiseCall (callName: string, ...args: any[]): Promise<any> {
 	return new Promise((resolve, reject) => {
 		Meteor.call(callName, ...args, (err, res) => {
 			if (err) reject(err)
@@ -42,10 +42,10 @@ const systemTime = {
 export function getCurrentTime (): Time {
 	return Math.floor(Date.now() - systemTime.diff)
 }
-export {systemTime}
+export { systemTime }
 
 if (Meteor.isServer) {
-	// handled in timesync
+	// handled in systemTime
 } else {
 	// fetch time from server:
 	let updateDiffTime = () => {
@@ -101,8 +101,8 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeRemove?: (o: DocClass) => DBInterface
 	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
 	insert?: (o: DBInterface) => void
-	update?: (id: string, o: DBInterface, ) => void
-	remove?: (o: DBInterface ) => void
+	update?: (id: string, o: DBInterface,) => void
+	remove?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
@@ -167,7 +167,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 			if (!diff) {
 				let p: Promise<any> | undefined
-				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
+				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
 				if (options.update) {
 					options.update(oldObj._id, oUpdate)
 				} else {
@@ -186,7 +186,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		} else {
 			if (!_.isNull(oldObj)) {
 				let p: Promise<any> | undefined
-				let oInsert = ( options.beforeInsert ? options.beforeInsert(o) : o)
+				let oInsert = (options.beforeInsert ? options.beforeInsert(o) : o)
 				if (options.insert) {
 					options.insert(oInsert)
 				} else {
@@ -207,7 +207,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	_.each(removeObjs, function (obj: DocClass, key) {
 		if (obj) {
 			let p: Promise<any> | undefined
-			let oRemove: DBInterface = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
+			let oRemove: DBInterface = (options.beforeRemove ? options.beforeRemove(obj) : obj)
 			if (options.remove) {
 				options.remove(oRemove)
 			} else {
@@ -242,6 +242,9 @@ export function sumChanges (...changes: (Changes | null)[]): Changes {
 		}
 	})
 	return change
+}
+export function anythingChanged (changes: Changes): boolean {
+	return !!(changes.added || changes.removed || changes.updated)
 }
 /**
  * Deep comparison of objects, returns true if equal
@@ -420,7 +423,7 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: MongoSelector<T>, rank: number | null): T {
 	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
 	return collection.find(_.extend(selector, {
-		_rank: {$lt: rank}
+		_rank: { $lt: rank }
 	}), {
 		sort: {
 			_rank: -1,
@@ -433,7 +436,7 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
 
 	selector = _.extend({}, selector, {
-		_rank: {$gt: rank}
+		_rank: { $gt: rank }
 	})
 
 	if (_.isArray(collection)) {
@@ -472,7 +475,7 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 			newRankMax = 1
 		}
 	}
-	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
+	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 }
 export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexKey: string]: T} {
 	const normalizedObject: any = {}
@@ -488,7 +491,7 @@ export function rateLimit (name: string,f1: Function, f2: Function, t: number) {
 	// if time t has passed since last call, run f1(), otherwise run f2()
 	if (Math.random() < 0.05) Meteor.setTimeout(cleanUpRateLimit, 10000)
 
-	if (rateLimitCache[name] && Math.abs(Date.now() - rateLimitCache[name]) < t ) {
+	if (rateLimitCache[name] && Math.abs(Date.now() - rateLimitCache[name]) < t) {
 		if (f2)	return f2()
 		return null
 	}
@@ -502,7 +505,7 @@ function cleanUpRateLimit () {
 	const now = Date.now()
 	const maxTime = 1000
 	for (const name in rateLimitCache) {
-		if (rateLimitCache[name] && Math.abs(now - rateLimitCache[name]) > maxTime ) {
+		if (rateLimitCache[name] && Math.abs(now - rateLimitCache[name]) > maxTime) {
 			delete rateLimitCache[name]
 		}
 	}
@@ -531,7 +534,7 @@ export function rateLimitAndDoItLater (name: string, f1: Function, limit: number
 function cleanUprateLimitAndDoItLater () {
 	const now = Date.now()
 	for (const name in rateLimitAndDoItLaterCache) {
-		if (rateLimitAndDoItLaterCache[name] && rateLimitAndDoItLaterCache[name] < (now - 100) ) {
+		if (rateLimitAndDoItLaterCache[name] && rateLimitAndDoItLaterCache[name] < (now - 100)) {
 			delete rateLimitAndDoItLaterCache[name]
 		}
 	}
@@ -570,7 +573,7 @@ export function rateLimitIgnore (name: string, f1: Function, limit: number) {
 
 				rateLimitIgnoreCache[name] = Date.now()
 
-			},((nextTime - Date.now()) || 0) )
+			},((nextTime - Date.now()) || 0))
 			return 0
 		} else {
 			// there is already a timeout on it's way, ignore this call then.
@@ -581,7 +584,7 @@ export function rateLimitIgnore (name: string, f1: Function, limit: number) {
 function cleanUprateLimitIgnore () {
 	const now = Date.now()
 	for (const name in rateLimitIgnoreCache) {
-		if (rateLimitIgnoreCache[name] && rateLimitIgnoreCache[name] < (now - 100) ) {
+		if (rateLimitIgnoreCache[name] && rateLimitIgnoreCache[name] < (now - 100)) {
 			delete rateLimitIgnoreCache[name]
 		}
 	}
@@ -659,6 +662,24 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 		})
 	})
 }
+/** Insert document, and ignore if document already exists */
+export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	doc: DBInterface,
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		collection.insert(doc, (err: any, idInserted) => {
+			if (err) {
+				if (err.toString().match(/duplicate key/i)) {
+					// @ts-ignore id duplicate, doc._id must exist
+					resolve(doc._id)
+				} else {
+					reject(err)
+				}
+			} else resolve(idInserted)
+		})
+	})
+}
 export function asyncCollectionUpdate<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
@@ -707,14 +728,14 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
  *
  * creds: https://github.com/rsp/node-caught/blob/master/index.js
  */
-export const caught = ( f => p => (p.catch(f), p))(() => {
+export const caught = (f => p => (p.catch(f), p))(() => {
 	// nothing
 })
 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync (function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
+export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
 	Promise.all(ps)
 	.then((result) => {
 		cb(null, result)
@@ -723,7 +744,7 @@ export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsy
 		cb(e)
 	})
 })
-export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
 	Promise.resolve(p)
 	.then((result) => {
 		cb(null, result)
@@ -733,9 +754,13 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 	})
 })
 export function makePromise<T> (fcn: () => T): Promise<T> {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
-			resolve(fcn())
+			try {
+				resolve(fcn())
+			} catch (e) {
+				reject(e)
+			}
 		})
 	})
 }
@@ -772,9 +797,9 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 					} else if (_.has(s,'$ne')) {
 						ok = (oAttr !== s.$ne)
 					} else if (_.has(s,'$in')) {
-						ok = (oAttr.indexOf(s.$in) !== -1)
+						ok = (s.$in.indexOf(oAttr) !== -1)
 					} else if (_.has(s,'$nin')) {
-						ok = (oAttr.indexOf(s.$nin) === -1)
+						ok = (s.$nin.indexOf(oAttr) === -1)
 					} else {
 						if (_.isObject(oAttr)) {
 							ok = mongoWhere(oAttr, s)
@@ -784,7 +809,7 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 					}
 				} else {
 					let innerSelector: any = {}
-					innerSelector[key] = {$eq: s}
+					innerSelector[key] = { $eq: s }
 					ok = mongoWhere(o, innerSelector)
 				}
 			}

@@ -2,12 +2,13 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { getCurrentTime } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
+import { PubSub } from '../../../lib/api/pubsub'
 
 /**
  * Note: this is a temporary function, which converts a timelineObject of the OLD type to the new (v2)
@@ -108,7 +109,7 @@ interface ITimelineViewState {
 }
 const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
 	return {
-		studios: StudioInstallations.find({}).fetch()
+		studios: Studios.find({}).fetch()
 	}
 })(class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {
 
@@ -147,7 +148,7 @@ interface ITimelineVisualizerInStudioTrackedProps {
 export const TimelineVisualizerInStudio = translateWithTracker<ITimelineVisualizerInStudioProps, ITimelineVisualizerInStudioState, ITimelineVisualizerInStudioTrackedProps>((props: ITimelineVisualizerInStudioProps) => {
 	return {
 		timeline: Timeline.find({
-			siId: props.studioId
+			studioId: props.studioId
 		}).fetch()
 	}
 })(
@@ -164,9 +165,9 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 			showDetails: null
 		}
 	}
-	componentWillMount () {
-		this.subscribe('timeline', {
-			siId: this.props.studioId
+	componentDidMount () {
+		this.subscribe(PubSub.timeline, {
+			studioId: this.props.studioId
 		})
 
 		this.triggerLoadScript()
@@ -282,11 +283,11 @@ interface IStudioSelectProps {
 interface IStudioSelectState {
 }
 interface IStudioSelectTrackedProps {
-	studios: StudioInstallation[]
+	studios: Studio[]
 }
 const TimelineStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>((props: IStudioSelectProps) => {
 	return {
-		studios: StudioInstallations.find({}, {
+		studios: Studios.find({}, {
 			sort: {
 				_id: 1
 			}

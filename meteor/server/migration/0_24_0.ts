@@ -4,7 +4,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 
 // 0.24.0
-addMigrationSteps( '0.24.0', [
+addMigrationSteps('0.24.0', [
 	{ // Ensure blueprints have type set
 		id: 'blueprints have blueprintType',
 		canBeRunAutomatically: true,

@@ -8,15 +8,10 @@ import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { ObserveChangesForHash } from './lib'
 
 export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
-	_id: string
-	name: string
 	/** Id of parent ShowStyleBase */
 	showStyleBaseId: string
 
-	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
-
-	_runningOrderVersionHash: string
+	_rundownVersionHash: string
 }
 
 export interface ShowStyleCompound extends ShowStyleBase {
@@ -49,7 +44,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public name: string
 	public showStyleBaseId: string
 	public config: Array<IConfigItem>
-	public _runningOrderVersionHash: string
+	public _rundownVersionHash: string
 
 	constructor (document: DBShowStyleVariant) {
 		_.each(_.keys(document), (key) => {
@@ -58,7 +53,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	}
 }
 export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
-	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
+	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -70,6 +65,6 @@ Meteor.startup(() => {
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(ShowStyleVariants, '_runningOrderVersionHash', ['config', 'showStyleBaseId'])
+		ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['config', 'showStyleBaseId'])
 	}
 })

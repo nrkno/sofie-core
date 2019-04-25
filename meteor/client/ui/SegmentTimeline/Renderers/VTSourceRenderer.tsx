@@ -3,7 +3,7 @@ import * as $ from 'jquery'
 import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'
 
-import { SegmentLineItemUi } from '../SegmentTimelineContainer'
+import { PieceUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -48,13 +48,13 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 
 	updateTime = () => {
 		if (this.vPreview) {
-			const segmentLineItem = this.props.segmentLineItem as SegmentLineItemUi
-			const itemDuration = ((segmentLineItem.content ? segmentLineItem.content.sourceDuration as number : undefined) || segmentLineItem.duration || segmentLineItem.renderedDuration || 0)
+			const piece = this.props.piece
+			const itemDuration = ((piece.content ? piece.content.sourceDuration as number : undefined) || piece.duration || piece.renderedDuration || 0)
 			let targetTime = this.props.cursorTimePosition
-			let seek = ((segmentLineItem.content ? segmentLineItem.content.seek as number : undefined) || 0)
-			if (segmentLineItem.content && segmentLineItem.content.loop && this.vPreview.duration > 0) {
+			let seek = ((piece.content ? piece.content.seek as number : undefined) || 0)
+			if (piece.content && piece.content.loop && this.vPreview.duration > 0) {
 				targetTime = targetTime % (Math.min(this.vPreview.duration, itemDuration) * 1000)
-			} else if (itemDuration === 0 && segmentLineItem.infiniteMode) {
+			} else if (itemDuration === 0 && piece.infiniteMode) {
 				// noop
 			} else {
 				targetTime = Math.min(targetTime, itemDuration)
@@ -83,7 +83,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		}
 		this.updateTime()
 
-		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+		if (this.props.piece.name !== prevProps.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 
@@ -93,8 +93,8 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	}
 
 	getPreviewUrl = (): string | undefined => {
-		if (this.props.segmentLineItem) {
-			const item = this.props.segmentLineItem as SegmentLineItemUi
+		if (this.props.piece) {
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
@@ -104,9 +104,9 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	}
 
 	getScenes = (): Array<number> | undefined => {
-		if (this.props.segmentLineItem) {
+		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
-			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
 				return _.compact(metadata.mediainfo.scenes.map((i) => {
@@ -120,9 +120,9 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	}
 
 	getFreezes = (): Array<Anomaly> | undefined => {
-		if (this.props.segmentLineItem) {
+		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
-			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			let items: Array<Anomaly> = []
 			// add freezes
@@ -136,9 +136,9 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	}
 
 	getBlacks = (): Array<Anomaly> | undefined => {
-		if (this.props.segmentLineItem) {
+		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
-			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const item = this.props.piece
 			const metadata = item.metadata as MediaObject
 			let items: Array<Anomaly> = []
 			// add blacks
@@ -158,7 +158,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		let show = false
 		let msgBlacks = ''
 		let msgFreezes = ''
-		const item = this.props.segmentLineItem as SegmentLineItemUi
+		const item = this.props.piece
 		const metadata = item.metadata as MediaObject
 		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
 		if (this.blacks) {
@@ -207,7 +207,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	render () {
 		const { t } = this.props
 
-		let labelItems = this.props.segmentLineItem.name.split('||')
+		let labelItems = this.props.piece.name.split('||')
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
 
@@ -221,12 +221,12 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		}
 
 		const itemDuration = this.getItemDuration()
-		const content = this.props.segmentLineItem.content as VTContent
-		const seek = content && content.seek ? content.seek as number : 0
+		const content = this.props.piece.content as VTContent
+		const seek = content && content.seek ? content.seek : 0
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
 
-		const vtContent = this.props.segmentLineItem.content as VTContent
+		const vtContent = this.props.piece.content as VTContent
 
 		return <React.Fragment>
 					{this.renderInfiniteItemContentEnded()}
@@ -256,7 +256,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 						{this.renderContentTrimmed()}
 					</span>
 					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{(this.end && this.props.segmentLineItem.content && this.props.segmentLineItem.content.loop) &&
+						{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
 							(<div className='segment-timeline__layer-item__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
@@ -277,7 +277,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
 									<span className='mini-inspector__label'>{t('File name')}</span>
-									<span className='mini-inspector__value'>{this.props.segmentLineItem.content && this.props.segmentLineItem.content.fileName}</span>
+									<span className='mini-inspector__value'>{this.props.piece.content && this.props.piece.content.fileName}</span>
 								</div>
 							</div>
 						}

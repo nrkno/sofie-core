@@ -2,8 +2,8 @@ import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
 import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Studios } from '../../lib/collections/Studios'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
 
@@ -19,7 +19,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 	Meteor.defer(() => {
 
-		let studio = StudioInstallations.findOne(evaluation.studioId)
+		let studio = Studios.findOne(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
 		let webhookUrls = _.compact((studio.getConfigValue('slack_evaluation') + '').split(','))
@@ -51,17 +51,17 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				let ro = RunningOrders.findOne(evaluation.runningOrderId)
+				let rundown = Rundowns.findOne(evaluation.rundownId)
 				let hostUrl = studio.settings.sofieUrl
 
 				slackMessage += (
 					'rundown ' +
 					(
-						hostUrl && ro ?
-						('*<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>*') :
-						(ro && ro.name || 'N/A')
+						hostUrl && rundown ?
+						('*<' + hostUrl + '/rundown/' + rundown._id + '|' + rundown.name + '>*') :
+						(rundown && rundown.name || 'N/A')
 					) +
-					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '' ) + '\n' +
+					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') + '\n' +
 					evaluationMessage + '\n' +
 					'_' + evaluationProducer + '_'
 				)

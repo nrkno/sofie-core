@@ -14,7 +14,7 @@ import {
 	Redirect
 } from 'react-router-dom'
 
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
@@ -38,6 +38,7 @@ import { BlueprintAPI } from '../../lib/api/blueprint'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { getDeveloperMode } from '../lib/localStorage'
 import * as i18next from 'i18next'
+import { StudiosAPI } from '../../lib/api/studios'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -51,20 +52,20 @@ interface ISettingsMenuProps {
 interface ISettingsMenuState {
 }
 interface ISettingsMenuTrackedProps {
-	studioInstallations: Array<StudioInstallation>
+	studios: Array<Studio>
 	showStyleBases: Array<ShowStyleBase>
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	meteorSubscribe(PubSub.studioInstallations, {})
+	meteorSubscribe(PubSub.studios, {})
 	meteorSubscribe(PubSub.showStyleBases, {})
 	meteorSubscribe(PubSub.showStyleVariants, {})
 	meteorSubscribe(PubSub.blueprints, {})
 	meteorSubscribe(PubSub.peripheralDevices, {})
 
 	return {
-		studioInstallations: StudioInstallations.find({}).fetch(),
+		studios: Studios.find({}).fetch(),
 		showStyleBases: ShowStyleBases.find({}).fetch(),
 		peripheralDevices: PeripheralDevices.find({}, {
 			sort: {
@@ -124,7 +125,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				return t('Unknown Device')
 		}
 	}
-
+	onAddStudio () {
+		callMethod('Menu', StudiosAPI.methods.insertStudio)
+	}
 	onAddShowStyleBase () {
 		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
 	}
@@ -133,6 +136,21 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
 	}
 
+	onDeleteStudio (studio: Studio) {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this Studio?'),
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: <React.Fragment>
+				<p>{t('Are you sure you want to delete the studio "{{studioId}}"?', { studioId: studio.name })}</p>
+				<p>{t('Please note: This action is irreversible!')}</p>
+			</React.Fragment>,
+			onAccept: () => {
+				callMethod('ModalDialog', StudiosAPI.methods.removeStudio, studio._id)
+			}
+		})
+	}
 	onDeleteShowStyleBase (item: ShowStyleBase) {
 		const { t } = this.props
 		doModalDialog({
@@ -183,13 +201,23 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 
 		return (
 			<div className='tight-xs htight-xs text-s'>
-				<h2 className='mhs'>{t('Studios')}</h2>
+				<h2 className='mhs'>
+					<button className='action-btn right' onClick={(e) => this.onAddStudio()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					{t('Studios')}
+				</h2>
 				<hr className='vsubtle man' />
 				{
-					this.props.studioInstallations.map((studio) => {
+					this.props.studios.map((studio) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
-								<h3>{studio.name || t('Unnamed Studio')}</h3>
+								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteStudio(studio) }}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+								<div className='selectable clickable'>
+									<h3>{studio.name || t('Unnamed Studio')}</h3>
+								</div>
 							</NavLink>,
 							<hr className='vsubtle man' key={studio._id + '-hr'} />
 						]
@@ -290,7 +318,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	componentWillMount () {
 		// Subscribe to data:
 		this.subscribe('peripheralDevices', {})
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 		this.subscribe('showStyleBases', {})
 		this.subscribe('showStyleVariants', {})
 		this.subscribe('blueprints', {})
@@ -299,7 +327,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		const { t } = this.props
 
 		return (
-			<div className='mtl gutter'>
+			<div className='mtl gutter has-statusbar'>
 				<header className='mvs'>
 					<h1>{t('System Settings')}</h1>
 				</header>

@@ -1,14 +1,8 @@
-
 import { getRelevantSystemVersions } from '../coreSystem'
-
-jest.mock('meteor/random', require('../../__mocks__/random').setup, { virtual: true })
-jest.mock('meteor/meteorhacks:picker', require('../../__mocks__/meteorhacks-picker').setup, { virtual: true })
-jest.mock('meteor/mongo', require('../../__mocks__/mongo').setup, { virtual: true })
 
 describe('coreSystem', () => {
 
 	test('getRelevantSystemVersions', () => {
-
 		const versions = getRelevantSystemVersions()
 
 		expect(versions).toMatchObject({

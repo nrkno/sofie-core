@@ -99,7 +99,7 @@ function evaluateFunctions () {
 			}
 		}
 	})
-	for (let i = syncFunctionFcns.length - 1; i >= 0 ; i-- ) {
+	for (let i = syncFunctionFcns.length - 1; i >= 0 ; i--) {
 		if (syncFunctionFcns[i].status === syncFunctionFcnStatus.DONE) {
 			syncFunctionFcns.splice(i, 1)
 		}

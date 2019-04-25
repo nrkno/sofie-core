@@ -8,7 +8,7 @@ export function multilineText (txt: string) {
 }
 export function isEventInInputField (e: Event) {
 	// @ts-ignore localName
-	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1 )
+	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1)
 }
 const loadScriptCache: {[url: string]: {
 	status: 'loading' | 'ok',

@@ -11,7 +11,7 @@ import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { multilineText } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
@@ -29,7 +29,7 @@ interface IState {
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
-	studios: Array<StudioInstallation>
+	studios: Array<Studio>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 
@@ -39,9 +39,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				created: -1
 			}
 		}).fetch(),
-		studios: StudioInstallations.find({}, {}).fetch()
+		studios: Studios.find({}, {}).fetch()
 	}
-})( class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -56,7 +56,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				$gt: getCurrentTime() - 30 * 24 * 3600 * 1000 // last 30 days
 			}
 		})
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 	}
 
 	onUploadFile (e) {
@@ -239,7 +239,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									{
 										_.map(this.props.studios, (studio) => {
 											return <div key={studio._id}>
-												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', {studioName: studio.name})}</button>
+												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}</button>
 											</div>
 										})
 									}

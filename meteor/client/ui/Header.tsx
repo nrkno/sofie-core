@@ -100,7 +100,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 						<div className='frow ha-right'>
 							<nav className='links mod'>
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
-								<NavLink to='/' activeClassName='active'>{t('Running Orders')}</NavLink>
+								<NavLink to='/' activeClassName='active'>{t('Rundowns')}</NavLink>
 								{ this.props.developerMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
 								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>

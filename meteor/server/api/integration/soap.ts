@@ -63,7 +63,7 @@ export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP0 & Exter
 
 	// Send the message:
 
-	await new Promise ((resolve, reject) => {
+	await new Promise((resolve, reject) => {
 		let fcn = soapClient[msg.message.fcn ] as soap.ISoapMethod | undefined
 		if (fcn) {
 
@@ -87,7 +87,7 @@ export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP0 & Exter
 		}
 	})
 }
-async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn ) {
+async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn) {
 	return new Promise((resolve, reject) => {
 		// console.log('resolveSOAPFcnData')
 

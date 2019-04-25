@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { logger } from './logging'
 
 export interface Methods {
 	[method: string]: Function
@@ -10,7 +11,7 @@ let runningMethods: {[methodId: string]: {
 	startTime: number,
 	i: number
 }} = {}
-let runningMethodsI: number = 0
+let runningMethodstudio: number = 0
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods
@@ -24,7 +25,7 @@ export function setMeteorMethods (orgMethods: Methods): void {
 		if (method) {
 
 			methods[methodName] = function (...args: any[]) {
-				let i = runningMethodsI++
+				let i = runningMethodstudio++
 				let methodId = 'm' + i
 
 				runningMethods[methodId] = {
@@ -47,6 +48,7 @@ export function setMeteorMethods (orgMethods: Methods): void {
 					}
 
 				} catch (err) {
+					logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
 					delete runningMethods[methodId]
 					throw err
 				}

@@ -5,7 +5,7 @@ import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
 import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { ConfigRef } from '../blueprints'
+import { ConfigRef } from '../blueprints/config'
 
 interface Message {
 	_id: string
@@ -68,7 +68,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		await super.init()
 
 		if (this.connection) {
-			await promisify(this.connection.close)
+			await this.connection.close()
 		}
 
 		this.initializing = this.initConnection()
@@ -138,7 +138,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		await super.init()
 
 		if (this.channel) {
-			await promisify(this.channel.close)
+			await this.channel.close()
 		}
 
 		this.initializing = this.initChannel(this.connection)
@@ -187,7 +187,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	}
 
 	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string, headers: {[headers: string]: string} | undefined) {
-		return new Promise ((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
 

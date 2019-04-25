@@ -19,7 +19,7 @@ export abstract class MediaWorkFlowStep {
 
 	/** Which device this workflow originated from */
 	deviceId: string
-	studioInstallationId: string
+	studioId: string
 
 	workFlowId: string
 	action: string

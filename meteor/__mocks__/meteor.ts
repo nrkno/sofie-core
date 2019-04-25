@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { Fiber } from './Fibers'
+import { Fiber, runInFiber } from './Fibers'
 
 namespace Meteor {
 
@@ -39,40 +39,73 @@ namespace Meteor {
 		stop (): void
 	}
 }
+const $ = {
+	Error,
+	setTimeout,
+	setInterval,
+	clearTimeout,
+	clearInterval,
+}
 
-export class MeteorMock {
+export namespace MeteorMock {
 
-	static isClient: boolean = false
-	static isCordova: boolean = false
-	static isServer: boolean = true
-	static isProduction: boolean = false
-	static release: string = ''
+	export let isClient: boolean = false
+	export let isCordova: boolean = false
+	export let isServer: boolean = true
+	export let isProduction: boolean = false
+	export let release: string = ''
 
-	static settings: any = {}
+	export let settings: any = {}
 
-	static mockMethods: {[name: string]: Function} = {}
-	static mockUser: Meteor.User | undefined = undefined
-	static mockStartupFunctions: Function[] = []
+	export let mockMethods: {[name: string]: Function} = {}
+	export let mockUser: Meteor.User | undefined = undefined
+	export let mockStartupFunctions: Function[] = []
 
-	static user (): Meteor.User | undefined {
+	export function user (): Meteor.User | undefined {
 		return this.mockUser
 	}
-	static userId (): string | undefined {
+	export function userId (): string | undefined {
 		return this.mockUser ? this.mockUser._id : undefined
 	}
-	static Error (errorCode: number, reason?: string): Meteor.Error {
-		return {
-			error: errorCode,
-			reason: reason
+	export class Error {
+		private _stack?: string
+		constructor (public errorCode: number, public reason?: string) {
+			const e = new $.Error('')
+			let stack: string = e.stack || ''
+
+			const lines = stack.split('\n')
+			if (lines.length > 1) {
+				lines.shift()
+				stack = lines.join('\n')
+			}
+			this._stack = stack
+			// console.log(this._stack)
+		}
+		get name () {
+			return this.toString()
+		}
+		get message () {
+			return this.toString()
+		}
+		get stack () {
+			return this._stack
+		}
+		toString () {
+			return `[${this.errorCode}] ${this.reason}`
 		}
 	}
-	static methods (methods: {[name: string]: Function}) {
+	export function methods (methods: {[name: string]: Function}) {
 		Object.assign(this.mockMethods, methods)
 	}
-	static call (methodName: string, args: any[]) {
-		this.mockMethods[methodName].call({}, args)
+	export function call (methodName: string, ...args: any[]) {
+		const fcn: Function = this.mockMethods[methodName]
+		if (!fcn) {
+			throw new Error(404, `Method '${methodName}' not found`)
+		}
+
+		fcn.call({}, ...args)
 	}
-	static apply (methodName: string, args: any[], options?: {
+	export function apply (methodName: string, args: any[], options?: {
 		wait?: boolean;
 		onResultReceived?: Function;
 		returnStubValue?: boolean;
@@ -81,34 +114,39 @@ export class MeteorMock {
 		// ?
 		this.mockMethods[methodName].call({})
 	}
-	static absoluteUrl (path?: string): string {
+	export function absoluteUrl (path?: string): string {
 		return path + '' // todo
 	}
-	static setTimeout (fcn: Function, time: number): number {
-		return setTimeout(fcn, time)
+	export function setTimeout (fcn: Function, time: number): number {
+
+		return $.setTimeout(() => {
+			runInFiber(fcn).catch(console.error)
+		}, time) as any as number
 	}
-	static clearTimeout (timer: number) {
-		clearTimeout(timer)
+	export function clearTimeout (timer: number) {
+		$.clearTimeout(timer)
 	}
-	static setInterval (fcn: Function, time: number): number {
-		return setInterval(fcn, time)
+	export function setInterval (fcn: Function, time: number): number {
+		return $.setInterval(() => {
+			runInFiber(fcn).catch(console.error)
+		}, time) as any as number
 	}
-	static clearInterval (timer: number) {
-		clearInterval(timer)
+	export function clearInterval (timer: number) {
+		$.clearInterval(timer)
 	}
-	static defer (fcn: Function) {
-		return setTimeout(fcn, 0)
+	export function defer (fcn: Function) {
+		return this.setTimeout(fcn, 0)
 	}
 
-	static startup (fcn: Function): void {
+	export function startup (fcn: Function): void {
 		this.mockStartupFunctions.push(fcn)
 	}
 
-	static wrapAsync (fcn: Function, context?: Object): any {
+	export function wrapAsync (fcn: Function, context?: Object): any {
 		return (...args: any[]) => {
 
 			const fiber = Fiber.current
-			if (!fiber) throw Error(`It appears that wrapAsync isn't running in a fiber`)
+			if (!fiber) throw new Error(500, `It appears that wrapAsync isn't running in a fiber`)
 
 			const callback = (err, value) => {
 				if (err) {
@@ -124,13 +162,23 @@ export class MeteorMock {
 		}
 	}
 
-	static bindEnvironment (fcn: Function): any {
-		// Don't know how to implement in mock?
+	export function bindEnvironment (fcn: Function): any {
+		return (...args: any[]) => {
+
+			// Don't know how to implement in mock?
+
+			const fiber = Fiber.current
+			if (!fiber) throw new Error(500, `It appears that bindEnvironment function isn't running in a fiber`)
+
+			const returnValue = fcn()
+
+			return returnValue
+		}
 		return fcn
 	}
 
 	/*
-	static subscribe () {
+	export function subscribe () {
 
 	}
 	*/

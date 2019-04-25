@@ -10,11 +10,11 @@ import * as _ from 'underscore'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
-import * as classNames from 'classnames'
+import * as ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { faTrash, faPause, faPlay } from '@fortawesome/fontawesome-free-solid'
+import { Studios, Studio } from '../../../lib/collections/Studios'
+import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
@@ -24,12 +24,12 @@ interface IExternalMessagesState {
 	studioId: string
 }
 interface IExternalMessagesTrackedProps {
-	studios: Array<StudioInstallation>
+	studios: Array<Studio>
 }
 
 const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalMessagesState, IExternalMessagesTrackedProps>((props: IExternalMessagesProps) => {
 	return {
-		studios: StudioInstallations.find({}).fetch()
+		studios: Studios.find({}).fetch()
 	}
 })(class ExternalMessages extends MeteorReactComponent<Translated<IExternalMessagesProps & IExternalMessagesTrackedProps>, IExternalMessagesState> {
 	constructor (props) {
@@ -39,7 +39,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		}
 	}
 	componentWillMount () {
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 	}
 	onClickStudio = (studio) => {
 		this.setState({
@@ -99,7 +99,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 	return {
 		queuedMessages: ExternalMessageQueue.find({
 			studioId: props.studioId,
-			sent: {$not: {$gt: 0}}
+			sent: { $not: { $gt: 0 } }
 		}, {
 			sort: {
 				created: -1,
@@ -108,7 +108,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		}).fetch(),
 		sentMessages: ExternalMessageQueue.find({
 			studioId: props.studioId,
-			sent: {$gt: 0}
+			sent: { $gt: 0 }
 		}, {
 			sort: {
 				sent: -1,
@@ -164,6 +164,9 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 	}
 	toggleHoldMessage (msg: ExternalMessageQueueObj) {
 		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.toggleHold, msg._id)
+	}
+	retryMessage (msg: ExternalMessageQueueObj) {
+		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.retry, msg._id)
 	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
 
@@ -225,7 +228,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 			}
 		}
 		return (
-			<tr key={msg._id} className={classNames(classes)}>
+			<tr key={msg._id} className={ClassNames(classes)}>
 				<td className='c2'>
 					{
 						getAdminMode() ? <React.Fragment>
@@ -238,6 +241,9 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 									<FontAwesomeIcon icon={faPlay} /> :
 									<FontAwesomeIcon icon={faPause} />
 								}
+							</button>
+							<button className='action-btn' onClick={(e) => this.retryMessage(msg)}>
+							  <FontAwesomeIcon icon={faRedo} />
 							</button><br/>
 						</React.Fragment> : null
 					}

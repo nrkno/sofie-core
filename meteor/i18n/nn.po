@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-17T12:22:03.257Z\n"
-"PO-Revision-Date: 2019-04-17 14:25+0200\n"
+"POT-Creation-Date: 2019-04-24T09:22:42.720Z\n"
+"PO-Revision-Date: 2019-04-24 11:38+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -15,13 +15,13 @@ msgstr ""
 msgid "Return to list"
 msgstr "Gå tilbake til lista"
 
-msgid "There is no running order active in this studio."
+msgid "There is no rundown active in this studio."
 msgstr "Fann ingen aktive køyreplanar for dette studioet."
 
 msgid "This studio doesn't exist."
 msgstr "Dette studioet eksisterer ikkje."
 
-msgid "There are no active running orders."
+msgid "There are no active rundowns."
 msgstr "Fann ingen aktive køyreplanar."
 
 msgid "Evaluation"
@@ -109,7 +109,7 @@ msgstr "Test test"
 msgid "Home"
 msgstr "Heim"
 
-msgid "Running Orders"
+msgid "Rundowns"
 msgstr "Køyreplanar"
 
 msgid "Nyman's Playground"
@@ -127,33 +127,6 @@ msgstr "Innstillingar"
 msgid "My name is {{name}}"
 msgstr "Mitt navn {{name}}"
 
-msgid "Search..."
-msgstr "Søk..."
-
-msgid "Invalid AdLib"
-msgstr ""
-
-msgid "Cannot play this AdLib becasue it is marked as Invalid"
-msgstr ""
-
-msgid "Last "
-msgstr "Sist "
-
-msgid "Toggle Drawer"
-msgstr "Skuff"
-
-msgid "Escape from filter search"
-msgstr "Gå ut av filtersøk"
-
-msgid "AdLib"
-msgstr "Manuelle element"
-
-msgid "Global AdLib"
-msgstr "Hurtigtastar"
-
-msgid "Shortcuts"
-msgstr "Funksjonstastar"
-
 msgid "Operating Mode"
 msgstr ""
 
@@ -163,32 +136,50 @@ msgstr ""
 msgid "End of script"
 msgstr ""
 
-msgid "Delete this item?"
+msgid "Delete this Item?"
 msgstr "Slett dette elementet?"
 
 msgid "Delete"
 msgstr "Slett"
 
-msgid "Are you sure you want to delete running order \"{{name}}\"?"
-msgstr "Er du sikker på at du vil slette køyreplanen ”{{name}}” frå Sofie?"
+msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
+msgstr "Er du sikker på at du vil slette køyreplanen \"{{name}}\"?"
 
 msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlinga kan du ikkje angre!"
 
-msgid "Re-Sync this running order?"
+msgid "Re-Sync this rundown?"
 msgstr "Synkroniser køyreplanen med ENPS på nytt?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
 
 msgid ""
-"Are you sure you want to re-sync running order \"{{name}}\" with MOS script?"
-msgstr "Er du sikker på at du vil synkronisere køyreplanen ”{{name}}” med MOS?"
+"Are you sure you want to re-sync the \"{{name}}\" rundown with MOS script?"
+msgstr ""
+"Er du sikker på at du vil synkronisere køyreplanen \"{{name}}\" med MOS?"
 
 msgid "Re-sync with MOS"
 msgstr "Synkroniser med MOS"
 
-msgid "Running Order"
+msgid "Getting Started"
+msgstr "Kom i gong"
+
+msgid ""
+"Start with giving this browser configuration permissions by adding this to "
+"the URL: "
+msgstr ""
+
+msgid "Then, run the migrations script:"
+msgstr ""
+
+msgid "Migrations"
+msgstr "Migration"
+
+msgid "Documentation is available at"
+msgstr ""
+
+msgid "Rundown"
 msgstr "Køyreplan"
 
 msgid "ID"
@@ -264,7 +255,7 @@ msgstr "Deaktiver"
 msgid "Activate (Rehearsal)"
 msgstr "Aktiver testmodus"
 
-msgid "Reload Running Order"
+msgid "Reload Rundown"
 msgstr "Last inn køyreplanen på nytt"
 
 msgid "Move Next forwards"
@@ -288,12 +279,12 @@ msgstr "Unskip neste super"
 msgid "Log Error"
 msgstr "Loggfør feil"
 
-msgid "Do you want to activate this Running Order?"
+msgid "Do you want to activate this Rundown?"
 msgstr "Vil du aktivere denne køyreplanen?"
 
 msgid ""
 "The planned end time has passed, are you sure you want to activate this "
-"Running Order?"
+"Rundown?"
 msgstr ""
 "Det planlagte sluttidspunktet er passert, er du sikker på at du vil aktivere "
 "denne køyreplanen?"
@@ -302,13 +293,13 @@ msgid "Are you sure you want to activate Rehearsal Mode?"
 msgstr "Er du sikker på at du vil gå i testmodus?"
 
 msgid ""
-"Are you sure you want to deactivate this Running Order?\n"
+"Are you sure you want to deactivate this Rundown?\n"
 "(This will clear the outputs)"
 msgstr ""
 "Er du sikker på at du vil deaktivere denne køyreplanen?\n"
 "(Dette vil nullstille alle utgangar.)"
 
-msgid "The running order can not be reset while it is active"
+msgid "The rundown can not be reset while it is active"
 msgstr "Ein aktivert køyreplan kan ikkje tilbakestillast"
 
 msgid ""
@@ -318,7 +309,7 @@ msgstr ""
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr "Førebu studio og aktiver testmodus"
 
-msgid "Reset Running Order"
+msgid "Reset Rundown"
 msgstr "Tilbakestill køyreplanen"
 
 msgid "Reload ENPS Data"
@@ -345,8 +336,7 @@ msgstr "Avbryt den trykte tasten"
 msgid "Change to fullscreen mode"
 msgstr "Fullskjermmodus"
 
-msgid ""
-"This running order is now active. Are you sure you want to exit this screen?"
+msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr "Denne køyreplanen er aktiv. Er du sikker på at du vil avslutte?"
 
 msgid ""
@@ -369,33 +359,32 @@ msgstr "Lagre eit snapshot"
 msgid "Restart Playout"
 msgstr ""
 
-msgid "This running order has been unpublished from Sofie."
+msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne køyreplanen er ikkje lenger tilgjengeleg i Sofie."
 
-msgid "Error: The studio of this RunningOrder was not found."
+msgid "Error: The studio of this Rundown was not found."
 msgstr ""
 
-msgid "Error: The ShowStyle of this RunningOrder was not found."
+msgid "Error: The ShowStyle of this Rundown was not found."
 msgstr ""
 
 msgid "Unknown error"
 msgstr ""
 
 msgid ""
-"The Running Order has been UNSYNCED from ENPS! No data updates will "
-"currently come through."
+"The Rundown has been UNSYNCED from ENPS! No data updates will currently come "
+"through."
 msgstr ""
 
 msgid "Re-sync"
 msgstr "Synkroniser"
 
-msgid "Re-sync Running Order"
+msgid "Re-sync Rundown"
 msgstr "Tilbakestill køyreplanen"
 
 msgid ""
-"Are you sure you want to re-sync the Running Order?\n"
-"(If the currently playing Segment Line has been changed, this can affect the "
-"output.)"
+"Are you sure you want to re-sync the Rundown?\n"
+"(If the currently playing Part has been changed, this can affect the output.)"
 msgstr ""
 "Er du sikker på at du vil tilbakestille denne køyreplanen?\n"
 "(Dette vil nullstille alle utgangar.)"
@@ -407,8 +396,8 @@ msgid "Unable to check the system configuration for changes"
 msgstr ""
 
 msgid ""
-"The system configuration has been changed since importing this running "
-"order. It might not run correctly"
+"The system configuration has been changed since importing this rundown. It "
+"might not run correctly"
 msgstr ""
 
 msgid "Device {{deviceName}} is disconnected"
@@ -444,8 +433,10 @@ msgstr "Over ein dag sidan"
 msgid "MOS Connection"
 msgstr ""
 
+#, fuzzy
+#| msgid "Last "
 msgid "Last update"
-msgstr "Sist"
+msgstr "Sist "
 
 msgid "Off-line devices"
 msgstr ""
@@ -456,8 +447,10 @@ msgstr ""
 msgid "All connections working correctly"
 msgstr ""
 
+#, fuzzy
+#| msgid "Play-out Gateway"
 msgid "Play-out"
-msgstr ""
+msgstr "Playout-gateway"
 
 msgid "All devices working correctly"
 msgstr ""
@@ -549,6 +542,12 @@ msgstr "Media Manager"
 msgid "Unknown Device"
 msgstr "Ukjend eining"
 
+msgid "Delete this Studio?"
+msgstr "Slett denne studioen?"
+
+msgid "Are you sure you want to delete the studio \"{{studioId}}\"?"
+msgstr "Er du sikker på at du vil slette studioen \"{{studioId}}\"?"
+
 msgid "Delete this Show Style?"
 msgstr "Slett denne showstylen?"
 
@@ -639,6 +638,24 @@ msgstr ""
 
 msgid "Assigned Studios:"
 msgstr ""
+
+msgid "Unassign"
+msgstr ""
+
+msgid "Assign"
+msgstr ""
+
+msgid "Assigned Show Styles:"
+msgstr ""
+
+msgid "No show styles are using this blueprint"
+msgstr ""
+
+msgid "Assigned Studios:"
+msgstr ""
+
+msgid "No studios are compatible with this blueprint"
+msgstr "Inga studio er kompatible med denne showstylen"
 
 msgid "Unassign"
 msgstr ""
@@ -841,6 +858,32 @@ msgstr ""
 msgid "(Restart to apply)"
 msgstr ""
 
+msgid "Application credentials"
+msgstr ""
+
+msgid ""
+"Go to the url below and click on the \"Enable the Drive API button\". Then "
+"click on \"Download Client configuration\", save the credentials.json file "
+"and upload it here."
+msgstr ""
+
+msgid "Access token"
+msgstr ""
+
+msgid ""
+"Click on the link below and accept the permissions request. Paste the "
+"received URL below."
+msgstr ""
+
+msgid "Waiting for gateway to generate URL..."
+msgstr ""
+
+msgid "Drive folder name"
+msgstr ""
+
+msgid "Debug logging"
+msgstr "Aktiver debug-logging"
+
 msgid "true"
 msgstr ""
 
@@ -861,6 +904,9 @@ msgstr "Legg til"
 
 msgid "Item"
 msgstr "Element"
+
+msgid "Delete this item?"
+msgstr "Slett dette elementet?"
 
 msgid "Are you sure you want to delete this config item \"{{configId}}\"?"
 msgstr ""
@@ -908,8 +954,8 @@ msgstr "Er du sikker på at du vil sette databaseversjonen til"
 msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
 msgstr "Versjon for {{name}}: Frå {{fromVersion}} til {{toVersion}}"
 
-msgid "Refresh"
-msgstr "Oppdater"
+msgid "Re-check"
+msgstr ""
 
 msgid "Reset Version to"
 msgstr "Nullstill versjon til"
@@ -1314,6 +1360,33 @@ msgstr ""
 msgid "HTML that will be shown in the Support Panel"
 msgstr ""
 
+msgid "Search..."
+msgstr "Søk..."
+
+msgid "Invalid AdLib"
+msgstr ""
+
+msgid "Cannot play this AdLib becasue it is marked as Invalid"
+msgstr ""
+
+msgid "Last "
+msgstr "Sist "
+
+msgid "Toggle Drawer"
+msgstr "Skuff"
+
+msgid "Escape from filter search"
+msgstr "Gå ut av filtersøk"
+
+msgid "AdLib"
+msgstr "Manuelle element"
+
+msgid "Global AdLib"
+msgstr "Hurtigtastar"
+
+msgid "Shortcuts"
+msgstr "Funksjonstastar"
+
 msgid "System"
 msgstr "System"
 
@@ -1426,7 +1499,7 @@ msgid "Last seen"
 msgstr "Sist sett"
 
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
-msgstr "Er du sikker på at du vil fjerne eininga ”{{deviceId}}”?"
+msgstr "Er du sikker på at du vil fjerne eininga \"{{deviceId}}\"?"
 
 msgid "Restart this device?"
 msgstr "Start denne eininga på nytt?"
@@ -1495,11 +1568,15 @@ msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
 
+#~ msgid "Are you sure you want to delete rundown \"{{rundownSlug}}\"?"
+#~ msgstr ""
+#~ "Er du sikker på at du vil slette køyreplanen {{rundownSlug}} frå Sofie?"
+
 #~ msgid "Set as Next"
 #~ msgstr "Sett som neste"
 
-#~ msgid "No studios are compatible with this Show Style"
-#~ msgstr "Inga studio er kompatible med denne showstylen"
+#~ msgid "Refresh"
+#~ msgstr "Oppdater"
 
 #~ msgid "Are you sure you want to remove device \"{{devideId}}\"?"
 #~ msgstr "Er du sikker på at du vil fjerne eininga \"{{devideId}}\"?"
@@ -1513,17 +1590,17 @@ msgstr "new_config"
 #~ msgid "Source layers"
 #~ msgstr "Kjeldelag"
 
-#~ msgid "Running Order is active"
+#~ msgid "Rundown is active"
 #~ msgstr "Køyreplanen er aktiv"
 
 #~ msgid ""
-#~ "Only a single Running Order can be active in a studio at the same time. "
-#~ "Please deactivate the other Running Order and try again."
+#~ "Only a single Rundown can be active in a studio at the same time. Please "
+#~ "deactivate the other Rundown and try again."
 #~ msgstr ""
 #~ "Bare éin køyreplan kan være aktiv i eit studio. Deaktiver den andre "
 #~ "køyreplanen, og prøv på nytt."
 
-#~ msgid "Are you sure you want to reset this Running Order?"
+#~ msgid "Are you sure you want to reset this Rundown?"
 #~ msgstr "Er du sikker på at du vil tilbakestille denne kjøreplan?"
 
 #~ msgid "Line Templates"
@@ -1531,9 +1608,6 @@ msgstr "new_config"
 
 #~ msgid "Restore Backup"
 #~ msgstr "Restore Backup"
-
-#~ msgid "Migration"
-#~ msgstr "Migration"
 
 #~ msgid "Blueprint logic ID"
 #~ msgstr "Blueprint logic ID"

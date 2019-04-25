@@ -5,27 +5,34 @@ import {
 	getCoreSystemCursor,
 	parseVersion,
 	Version,
-	parseExpectedVersion,
-	parseRange
+	parseRange,
+	stripVersion,
+	VersionRange,
+	GENESIS_SYSTEM_VERSION
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	CURRENT_SYSTEM_VERSION,
-	GENESIS_SYSTEM_VERSION
+	prepareMigration,
+	runMigration
 } from './migration/databaseMigration'
-import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus'
+import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { StudioInstallations } from '../lib/collections/StudioInstallations'
+import { Studios } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
 const PackageInfo = require('../package.json')
 
+export { PackageInfo }
+
 function initializeCoreSystem () {
 	let system = getCoreSystem()
 	if (!system) {
+		// At this point, we probably have a system that is as fresh as it gets
+
 		let version = parseVersion(GENESIS_SYSTEM_VERSION)
 		CoreSystem.insert({
 			_id: SYSTEM_ID,
@@ -35,6 +42,17 @@ function initializeCoreSystem () {
 			previousVersion: null,
 			storePath: '' // to be filled in later
 		})
+
+		// Check what migration has to provide:
+		let migration = prepareMigration(true)
+		if (
+			migration.migrationNeeded &&
+			migration.manualStepCount === 0 &&
+			migration.chunks.length <= 1
+		) {
+			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
+			runMigration(migration.chunks, migration.hash, [])
+		}
 	}
 
 	// Monitor database changes:
@@ -97,14 +115,14 @@ function checkDatabaseVersions () {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = checkDatabaseVersion(
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseExpectedVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+							parseRange(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
 							'to fix, run migration',
 							'blueprint.blueprintVersion',
 							`databaseVersion.showStyle[${showStyleBase._id}]`
 						)
 					}
 
-					StudioInstallations.find({
+					Studios.find({
 						supportedShowStyleBase: showStyleBase._id
 					}).forEach((studio) => {
 						if (!studioIds[studio._id]) { // only run once per blueprint and studio
@@ -113,7 +131,7 @@ function checkDatabaseVersions () {
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseExpectedVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+									parseRange(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
 									'to fix, run migration',
 									'blueprint.blueprintVersion',
 									`databaseVersion.studio[${studio._id}]`
@@ -151,7 +169,7 @@ function checkDatabaseVersions () {
  */
 function checkDatabaseVersion (
 	currentVersion: Version | null,
-	expectVersion: Version | null,
+	expectVersion: VersionRange | null,
 	fixMessage: string,
 	meName: string,
 	theyName: string
@@ -169,37 +187,48 @@ function checkDatabaseVersion (
 				}
 			} else {
 
-				const currentV = new semver.SemVer(currentVersion, {includePrerelease: true})
-				const expectV = new semver.SemVer(expectVersion, {includePrerelease: true})
+				const currentV = new semver.SemVer(currentVersion, { includePrerelease: true })
 
-				const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+				try {
+					const expectV = new semver.SemVer(stripVersion(expectVersion), { includePrerelease: true })
 
-				if (!expectV || !currentV) {
-					return {
-						statusCode: StatusCode.BAD,
-						messages: [ message ]
+					const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+
+					if (!expectV || !currentV) {
+						return {
+							statusCode: StatusCode.BAD,
+							messages: [ message ]
+						}
+					} else if (expectV.major !== currentV.major) {
+						return {
+							statusCode: StatusCode.BAD,
+							messages: [message]
+						}
+					} else if (expectV.minor !== currentV.minor) {
+						return {
+							statusCode: StatusCode.WARNING_MAJOR,
+							messages: [message]
+						}
+					} else if (expectV.patch !== currentV.patch) {
+						return {
+							statusCode: StatusCode.WARNING_MINOR,
+							messages: [message]
+						}
+					} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
+						return {
+							statusCode: StatusCode.WARNING_MINOR,
+							messages: [message]
+						}
+					} else {
+						return {
+							statusCode: StatusCode.BAD,
+							messages: [ message ]
+						}
 					}
-				} else if (expectV.major !== currentV.major) {
-					return {
-						statusCode: StatusCode.BAD,
-						messages: [message]
-					}
-				} else if (expectV.minor !== currentV.minor) {
-					return {
-						statusCode: StatusCode.WARNING_MAJOR,
-						messages: [message]
-					}
-				} else if (expectV.patch !== currentV.patch) {
-					return {
-						statusCode: StatusCode.WARNING_MINOR,
-						messages: [message]
-					}
-				} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
-					return {
-						statusCode: StatusCode.WARNING_MINOR,
-						messages: [message]
-					}
-				} else {
+				// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
+				} catch (e) {
+					const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+
 					return {
 						statusCode: StatusCode.BAD,
 						messages: [ message ]
@@ -228,27 +257,26 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 
 	let integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseExpectedVersion(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']),
+		parseRange(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']),
 		'Blueprint has to be updated',
 		'blueprint.integrationVersion',
 		'core.tv-automation-sofie-blueprints-integration'
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseExpectedVersion(PackageInfo.dependencies['timeline-state-resolver-types']),
+		parseRange(PackageInfo.dependencies['timeline-state-resolver-types']),
 		'Blueprint has to be updated',
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
 	)
-
 	let coreStatus: {
 		statusCode: StatusCode;
 		messages: string[];
 	} | undefined = undefined
 	if (blueprint.minimumCoreVersion) {
 		coreStatus = checkDatabaseVersion(
-			parseRange(blueprint.minimumCoreVersion),
 			parseVersion(CURRENT_SYSTEM_VERSION),
+			parseRange(blueprint.minimumCoreVersion),
 			'Blueprint does not support this version of core',
 			'blueprint.minimumCoreVersion',
 			'core system'
@@ -291,6 +319,7 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'@slack/client',
 			'@types/amqplib',
 			'@types/body-parser',
+			'@types/semver',
 			'@types/react-circular-progressbar',
 			'@types/request',
 			'amqplib',
@@ -339,8 +368,17 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 		names = _.filter(names, (name) => {
 			return omitNames.indexOf(name) === -1
 		})
+
+		let sanitizeVersion = v => {
+			if (v.match(/git/i)) {
+				return '0.0.0'
+			} else {
+				return v
+			}
+		}
+
 		_.each(names, (name) => {
-			versions[name] = dependencies[name]
+			versions[name] = sanitizeVersion(dependencies[name])
 		})
 		versions['core'] = PackageInfo.version // package version
 

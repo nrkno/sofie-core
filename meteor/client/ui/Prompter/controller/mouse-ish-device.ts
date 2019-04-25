@@ -47,7 +47,7 @@ export class MouseIshController extends ControllerAbstract {
 	private _lastWheelTime: number = 0
 
 	constructor (view: PrompterViewInner) {
-		super (view)
+		super(view)
 
 		this._prompterView = view
 
@@ -67,12 +67,12 @@ export class MouseIshController extends ControllerAbstract {
 	public onKeyDown (e: KeyboardEvent) {
 		// Nothing
 		if (
-			e.keyCode === 80 && // p
+			e.code === 'KeyP' &&
 			e.ctrlKey
 		) {
 			e.preventDefault() // Prevent print-dialogue
 		} else if (
-			e.keyCode === 116 // f5
+			e.code === 'F5'
 		) {
 			e.preventDefault() // Prevent reload of page
 		}

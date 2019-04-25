@@ -9,16 +9,16 @@ export namespace UserActionAPI {
 		'moveNext' 								= 'userAction.moveNext',
 
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
-		'resetRunningOrder' 					= 'userAction.resetRunningOrder',
+		'resetRundown' 					= 'userAction.resetRundown',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
 		'activate' 								= 'userAction.activate',
 		'deactivate' 							= 'userAction.deactivate',
 		'reloadData' 							= 'userAction.reloadData',
 
-		'disableNextSegmentLineItem'			= 'userAction.disableNextSegmentLineItem',
-		'toggleSegmentLineArgument'				= 'userAction.toggleSegmentLineArgument',
-		'segmentLineItemTakeNow'				= 'userAction.segmentLineItemTakeNow',
-		'setInOutPoints'						= 'userAction.segmentLineItemSetInOutPoints',
+		'disableNextPiece'			= 'userAction.disableNextPiece',
+		'togglePartArgument'				= 'userAction.togglePartArgument',
+		'pieceTakeNow'				= 'userAction.pieceTakeNow',
+		'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
 
 		'segmentAdLibLineItemStart'				= 'userAction.segmentAdLibLineItemStart',
 		'sourceLayerOnLineStop'					= 'userAction.sourceLayerOnLineStop',
@@ -31,14 +31,14 @@ export namespace UserActionAPI {
 
 		'saveEvaluation' 						= 'userAction.saveEvaluation',
 
-		// 'roStoriesMoved'						= 'userAction.roStoriesMoved',
-		// 'segmentLinePlaybackStartedCallback'	= 'userAction.segmentLinePlaybackStartedCallback',
-		// 'segmentLineItemPlaybackStartedCallback'= 'userAction.segmentLineItemPlaybackStartedCallback',
+		// 'rundownStoriesMoved'						= 'userAction.rundownStoriesMoved',
+		// 'partPlaybackStartedCallback'	= 'userAction.partPlaybackStartedCallback',
+		// 'piecePlaybackStartedCallback'= 'userAction.piecePlaybackStartedCallback',
 
-		'storeRunningOrderSnapshot'				= 'userAction.storeRunningOrderSnapshot',
+		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',
 
-		'removeRunningOrder'					= 'userAction.removeRunningOrder',
-		'resyncRunningOrder'					= 'userAction.resyncRunningOrder',
+		'removeRundown'					= 'userAction.removeRundown',
+		'resyncRundown'					= 'userAction.resyncRundown',
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',

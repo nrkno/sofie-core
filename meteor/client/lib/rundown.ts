@@ -1,15 +1,15 @@
-import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
+import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
 export namespace RundownUtils {
-	function padZero (input: number, places?: number): string {
+	function padZerundown (input: number, places?: number): string {
 		places = places || 2
 		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
 	}
 
-	export function getSegmentDuration (lines: Array<SegmentLineUi>) {
+	export function getSegmentDuration (lines: Array<PartUi>) {
 		return lines.reduce((memo, item) => {
 			return memo + (item.duration || item.expectedDuration || item.renderedDuration || 0)
 		}, 0)
@@ -23,7 +23,7 @@ export namespace RundownUtils {
 		} else {
 			if (showPlus) sign = '+'
 		}
-		const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: milliseconds * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate'])})
+		const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: milliseconds * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
 		const timeCodeString: String = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
@@ -96,23 +96,23 @@ export namespace RundownUtils {
 			}
 		}
 
-		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZerundown(hours) + ':' : '') + padZerundown(minutes) + ':' + padZerundown(secondsRest)
 	}
 
-	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {
-		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
+	export function isInsideViewport (scrollLeft: number, scrollWidth: number, part: PartUi, partStartsAt: number | undefined, partDuration: number | undefined, piece?: PieceUi) {
+		if (scrollLeft + scrollWidth < (partStartsAt || part.startsAt || 0) + (piece !== undefined ? (piece.renderedInPoint || 0) : 0)) {
 			return false
-		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) +
-					(segmentLineItem !== undefined ?
-						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
-							(segmentLine.duration !== undefined ?
-								segmentLine.duration :
-								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
+		} else if (scrollLeft > (partStartsAt || part.startsAt || 0) +
+					(piece !== undefined ?
+						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
+							(part.duration !== undefined ?
+								part.duration :
+								(partDuration || part.renderedDuration || part.expectedDuration || 0) - (piece.renderedInPoint || 0))
 							)
 						) :
-						(segmentLine.duration !== undefined ?
-							segmentLine.duration :
-							(segmentLineDuration || segmentLine.renderedDuration || 0)
+						(part.duration !== undefined ?
+							part.duration :
+							(partDuration || part.renderedDuration || 0)
 						)
 					)
 				) {
@@ -121,10 +121,10 @@ export namespace RundownUtils {
 		return true
 	}
 
-	export function getSourceLayerClassName (slType: SourceLayerType): string {
+	export function getSourceLayerClassName (partType: SourceLayerType): string {
 		// CAMERA_MOVEMENT -> "camera-movement"
 		return (
-			((SourceLayerType[slType] || 'unknown-sourceLayer-' + slType) + '')
+			((SourceLayerType[partType] || 'unknown-sourceLayer-' + partType) + '')
 			.toLowerCase()
 			.replace(/_/g,'-')
 		)

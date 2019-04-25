@@ -1,20 +1,15 @@
 
-import { restoreRunningOrder } from '../backups'
+import { restoreRundown } from '../backups'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../lib/lib'
-import { StatusCode } from '../systemStatus'
+import { StatusCode } from '../systemStatus/systemStatus'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { MeteorMock } from '../../__mocks__/meteor'
-
-jest.mock('meteor/meteor', require('../../__mocks__/meteor').setup, { virtual: true })
-jest.mock('meteor/random', require('../../__mocks__/random').setup, { virtual: true })
-jest.mock('meteor/meteorhacks:picker', require('../../__mocks__/meteorhacks-picker').setup, { virtual: true })
-jest.mock('meteor/mongo', require('../../__mocks__/mongo').setup, { virtual: true })
 
 describe('backups', () => {
 
-	test('restoreRunningOrder', () => {
+	test('restoreRundown', () => {
 
 		PeripheralDevices.insert({
 			_id: 'mockMos',
@@ -38,13 +33,13 @@ describe('backups', () => {
 		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoCreate] = jest.fn()
 		MeteorMock.mockMethods[PeripheralDeviceAPI.methods.mosRoFullStory] = jest.fn()
 
-		restoreRunningOrder({
-			type: 'runningOrderCache',
+		restoreRundown({
+			type: 'rundownCache',
 			data: [
 				{
-					type: 'roCreate',
+					type: 'rundownCreate',
 					data: {
-						ID: 'ro0',
+						ID: 'rundown0',
 						Stories: [
 							{
 								ID: 'story0'

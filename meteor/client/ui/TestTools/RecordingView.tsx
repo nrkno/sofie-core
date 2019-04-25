@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import * as objectPath from 'object-path'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
@@ -21,7 +21,7 @@ interface IRecordingViewProps {
 interface IRecordingViewState {
 }
 interface IRecordingViewTrackedProps {
-	studio: StudioInstallation | undefined
+	studio: Studio | undefined
 	file: RecordedFile | undefined
 	log: UserActionsLogItem[]
 }
@@ -30,7 +30,7 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 	const file = RecordedFiles.findOne({}, { sort: { startedAt: -1 } })
 
 	return {
-		studio: StudioInstallations.findOne(),
+		studio: Studios.findOne(),
 		file,
 		log: file ?
 			UserActionsLog.find({
@@ -53,7 +53,7 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 				studioId: this.props.match.params.studioId,
 				_id: this.props.match.params.recordingId
 			})
-			this.subscribe(PubSub.studioInstallations, {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.match.params.studioId
 			})
 		}
@@ -81,7 +81,7 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 		this.videoPlayer.currentTime = time / 1000
 	}
 
-	renderRecordingView (file: RecordedFile, studio: StudioInstallation) {
+	renderRecordingView (file: RecordedFile, studio: Studio) {
 		const { t } = this.props
 
 		if (!file) return null

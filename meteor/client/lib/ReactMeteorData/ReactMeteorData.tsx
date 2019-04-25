@@ -189,7 +189,7 @@ export function withTracker<IProps, IState, TrackedProps> (
 	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
 	):
 	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
-		new (props: IProps ) => React.Component<IProps, IState> {
+		new (props: IProps) => React.Component<IProps, IState> {
 
 	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
 

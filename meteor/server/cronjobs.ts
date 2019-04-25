@@ -1,11 +1,11 @@
-import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
-import { RunningOrders } from '../lib/collections/RunningOrders'
+import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
+import { IngestDataCache } from '../lib/collections/IngestDataCache'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -29,27 +29,27 @@ Meteor.startup(() => {
 			lastNightlyCronjob = getCurrentTime()
 			logger.info('Nightly cronjob: starting...')
 
-			// remove old Running orders:
-			let roCount = 0
-			RunningOrders.find({
-				created: {$lt: getCurrentTime() - 60 * 24 * 3600 * 1000} // older than 60 days
-			}).forEach(ro => {
-				ro.remove()
-				roCount++
+			// remove old Rundowns:
+			let rundownCount = 0
+			Rundowns.find({
+				created: { $lt: getCurrentTime() - 60 * 24 * 3600 * 1000 } // older than 60 days
+			}).forEach(rundown => {
+				rundown.remove()
+				rundownCount++
 			})
-			if (roCount) logger.info('Cronjob: Removed ' + roCount + ' old running orders')
+			if (rundownCount) logger.info('Cronjob: Removed ' + rundownCount + ' old rundowns')
 
-			// Clean up RunningOrder data cache:
-			// Remove caches not related to running orders:
-			let roCacheCount = 0
-			let roIds = _.pluck(RunningOrders.find().fetch(), '_id')
-			RunningOrderDataCache.find({
-				roId: {$nin: roIds}
+			// Clean up Rundown data cache:
+			// Remove caches not related to rundowns:
+			let rundownCacheCount = 0
+			let rundownIds = _.map(Rundowns.find().fetch(), rundown => rundown._id)
+			IngestDataCache.find({
+				rundownId: { $nin: rundownIds }
 			}).forEach((roc) => {
-				lowPrioFcn(RunningOrderDataCache.remove, roc._id)
-				roCacheCount++
+				lowPrioFcn(IngestDataCache.remove, roc._id)
+				rundownCacheCount++
 			})
-			if (roCacheCount) logger.info('Cronjob: Will remove cached data from ' + roCacheCount + ' running orders')
+			if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
 
 			let ps: Array<Promise<any>> = []
 			// restart casparcg

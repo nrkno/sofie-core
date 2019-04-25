@@ -38,6 +38,11 @@ export interface ICoreSystem {
 	name?: string
 }
 
+/** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
+ * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
+ */
+export const GENESIS_SYSTEM_VERSION = '0.0.0'
+
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
@@ -91,25 +96,28 @@ export function setCoreSystemStorePath (storePath: string): void {
 }
 
 export type Version = string
-export type Range = string
+export type VersionRange = string
 
 export function stripVersion (v: string): string {
-	return v.replace(/[^\d.]/g,'')
+	if (v.match(/git/i) || v.match(/http/i)) {
+		return '0.0.0'
+	} else {
+		return v.replace(/[^\d.]/g,'') || '0.0.0'
+	}
 }
-export function parseRange (r: string | Range): Range {
+export function parseRange (r: string | VersionRange): VersionRange {
+	if ((r + '').match(/git:\/\//)) {
+		return '^0.0.0' // anything goes..
+	}
 	const range = semver.validRange(r)
 	if (!range) throw new Meteor.Error(500, `Invalid range: "${r}"`)
 	return range
 }
 export function parseVersion (v: string | Version): Version {
+	if ((v + '').match(/git:\/\//)) {
+		return '0.0.0' // fallback
+	}
 	const valid = semver.valid(v)
 	if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
-	return valid
-}
-export function parseExpectedVersion (v: string | Version): Version {
-	let v2 = semver.coerce(v)
-	if (!v2) throw new Meteor.Error(500, `Bad expected version: "${v}"`)
-	const valid = semver.valid(v2)
-	if (!valid) throw new Meteor.Error(500, `Invalid expected version: "${v}"`)
 	return valid
 }

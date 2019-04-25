@@ -1,0 +1,2029 @@
+@import "colorScheme";
+@import "itemTypeColors";
+@import "_variables";
+
+$output-layer-group-line: 1px solid #5C5C5C;
+$output-layer-group-collapse-animation-duration: 0.3s;
+
+$segment-header-height: 2.3em;
+$segment-background-color: #000;
+$segment-timeline-background-color: #1F1F1F;
+$segment-next-preview-background-color: #181818;
+$segment-title-background-color: #4B4B4B;
+$segment-title-background-color-next: $general-next-color;
+$segment-title-text-color-live: #ffffff;
+$segment-title-background-color-live: $general-live-color;
+$segment-title-background-color-remote: $general-live-remote-color;
+$segment-title-background-color-guest: $general-live-guest-color;
+$segment-title-background-color-has-played: #2c2c2c;
+$part-start-color: #a5a5a5;
+$segment-item-disabled-background: #898989;
+$segment-item-disabled-color: #c9c9c9;
+
+$segment-nextline-shade-width: 30px;
+$segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
+
+$liveline-timecode-color:  #ffff00; //$general-live-color;
+$hold-status-color: $liveline-timecode-color;
+
+$previewline-color: rgb(38, 137, 186);
+
+/** The top padding of the timeline has to be equal to the header-height, so that the
+	functional part of the timeline starts at the same level as the segment title
+*/
+$segment-timeline-padding: $segment-header-height 0 2.5em;
+
+$segment-layer-height: 1.5em;
+$segment-layer-separator-color: transparentize(#000, 0.5);
+
+// A utility mix-in, to add an interactive collapse triangle on an item
+@mixin collapse-triangle {
+	&::before {
+		top: 50%;
+		left: 0;
+		position: absolute;
+		transform: translate(0, -50%) rotate(0deg);
+		content: ' ';
+		display: block;
+		background: url('/images/collapse-triangle.svg') no-repeat scroll center center;
+		background-size: contain;
+		width: 15px;
+		height: 15px;
+		transition: $output-layer-group-collapse-animation-duration transform ease-in-out;
+	}
+}
+
+@mixin collapse-triangle-collapsed {
+	&::before {
+		transform: translate(0, -50%) rotate(-90deg);
+	}
+}
+
+.rundown-view {
+	padding-top: 125px;
+	padding-bottom: 50vh;
+	padding-right: $statusbar-width;
+	transition: 0s padding-right 0s;
+
+	.header.rundown .notification-pop-ups {
+		top: 65px;
+	}
+
+	> .header .rundown-overview {
+		transition: 0s padding-right 0.5s;
+	}
+
+	&.notification-center-open {
+		padding-right: calc(#{$statusbar-width} + #{$notification-center-width});
+		transition: 0s padding-right 1s;
+
+		> .header .rundown-overview {
+			padding-right: calc(#{$statusbar-width} + #{$notification-center-width} + 1.5em);
+			transition: 0s padding-right 1s;
+		}
+	}
+}
+
+body.vertical-overflow-only {
+	overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.rundown-view__focus-lost-frame {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+
+	border: 8px dashed $color-status-fatal;
+	border-image: repeating-linear-gradient(
+		315deg,
+		transparent,
+		transparent 10px,
+		$color-status-fatal 11px,
+		$color-status-fatal 31px,
+		transparent 32px) 8; 
+/* 	border-image: repeating-linear-gradient(
+		315deg,
+		#ffff00,
+		#ffff00 10px,
+		$color-status-fatal 11px,
+		$color-status-fatal 31px,
+		#ffff00 32px) 8;  */
+	z-index: 10000;
+	pointer-events: none;
+}
+
+.header.rundown {
+	position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+	z-index: 200;
+	user-select: none;
+
+	.row {
+		width: 100%;
+
+		&.margin-right {
+			padding-right: $statusbar-width;
+		}
+	}
+
+	.flex-col.col-timing {
+		flex: 1 1;
+	}
+	
+	.timing {
+		margin: 0 0;
+		min-width: auto;
+		width: 100%;
+		text-align: center;
+	
+		.timing-clock {
+			position: relative;
+			margin-right: 1em;
+			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
+			font-weight: normal;
+			color: $general-clock;
+			font-size: 1.5em;
+			margin-top: 0.8em;
+			font-weight: 100;
+			word-break: keep-all;
+			white-space: nowrap;
+
+			&.visual-last-child {
+				margin-right: 0;
+			}
+
+			&.countdown {
+				font-weight: 400;
+			}
+
+			&.playback-started {
+				display: inline-block;
+				width: 25%;
+			}
+
+			&.left {
+				text-align: left;
+			}
+
+			&.time-now {
+				position: absolute;
+				top: 0.05em;
+				left: 50%;
+				transform: translateX(-50%);
+				margin-top: 0px;
+				margin-right: 0;
+				font-size: 2.3em;
+				font-weight: 100;
+				text-align: center;
+			}
+
+			.timing-clock-label {
+				position: absolute;
+				top: -1em;
+				color: #B8B8B8;
+				text-transform: uppercase;
+				white-space: nowrap;
+				font-weight: 300;
+				font-size: 0.5em;
+
+				&.left {
+					left: 0;
+					right: auto;
+					text-align: left;
+				}
+
+				&.right {
+					right: 0;
+					left: auto;
+					text-align: right;
+				}
+
+				&.hide-overflow {
+					overflow: hidden;
+					text-overflow: ellipsis;
+					width: 100%;
+				}
+
+				&.rundown-name {
+					width: auto;
+					max-width: calc(30vw - 138px);
+					min-width: 100%;
+				}
+			}
+
+			&.heavy-light {
+				font-weight: 600;
+
+				&.heavy {
+					// color: $general-late-color;
+					color: #FFE900;
+					background: none;
+				}
+
+				&.light {
+					color: $general-fast-color;
+					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
+					background: none;
+				}
+			}
+		}
+
+		.rundown__header-status {
+			position: absolute;
+			font-size: 0.7rem;
+			text-transform: uppercase;
+			background: #fff;
+			border-radius: 1rem;
+			font-weight: 700;
+			color: #000;
+			top: 13px;
+			right: -5px;
+			transform: translateX(100%);
+			padding: 2px 5px 1px;
+
+			&.rundown__header-status--hold {
+				background: $hold-status-color;
+			}
+		}
+
+		.timing-clock-header-label {
+			font-weight: 100px;
+
+		}
+	}
+
+	.close {
+		margin: 17px 20px 14px;
+	}
+}
+
+.first-row  {
+	cursor:	default;
+}
+
+.header.rundown.not-active .first-row  {
+	background-color: rgb(38, 137, 186);
+}
+.header.rundown.not-active .first-row span  {
+	color: #FFF !important;
+}
+// .header.rundown.active .first-row  {
+	// background-color: #600
+// }
+.header.rundown.active.rehearsal .first-row  {
+	background-color: #660
+}
+
+// A component for displaying the segments (ENPS Stories/NKR Titles)
+.segment-timeline {
+	display: grid;
+	grid-column-gap: 0;
+	grid-row-gap: 0;
+	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	
+	width: auto;
+	margin: 1.5em;
+	// padding: 0 0 0.15em 0.15em;
+
+	background: $segment-background-color;
+	-webkit-box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
+	-moz-box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
+	box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
+
+	// padding has to be the same on both of these elements so that the layers and their controls line up
+	.segment-timeline__output-layers, .segment-timeline__timeline {
+		padding: $segment-timeline-padding;
+	}
+
+	.segment-timeline__title {
+		display: block;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		
+		grid-column: segment-name / segment-group-controls;
+		grid-row: main-view / end;
+
+		transition: $output-layer-group-collapse-animation-duration opacity,
+					$output-layer-group-collapse-animation-duration visibility 0s;
+
+		background: $segment-title-background-color;
+
+		word-break: break-word;
+		h2 {
+			margin: 0;
+			padding: 0.3em;
+			line-height: 1.2em;
+			letter-spacing: 0px;
+			font-weight: 400;
+		}
+		.segment-timeline__title__notes {
+			margin: 0 0 0.5em;
+			padding: 0.5em;
+			line-height: 1.4em;
+			font-size: 75%;
+
+			> .segment-timeline__title__notes__note {
+				position: relative;
+				padding-left: 20px;
+				cursor: pointer;
+
+				&:not(:last-child) {
+					margin-bottom: 5px;
+				}
+
+				> .icon {
+					position: absolute;
+					left: 0;
+					top: 1px;
+					height: auto;
+					width: 16px;
+				}
+
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
+	}
+
+	&.has-guest-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-guest;
+
+			> h2 {
+				background: $segment-title-background-color-guest;
+			}
+		}
+
+		&.live, &.next {
+			.segment-timeline__title {
+				> h2 {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+				}
+			}
+		}
+	}
+
+	// the live and next states are the states of the entire segment component
+	&.has-remote-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-remote;
+
+			> h2 {
+				background: $segment-title-background-color-remote;
+			}
+		}
+
+		&.live, &.next {
+			.segment-timeline__title {
+				> h2 {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+				}
+			}
+		}
+	}
+
+	&.live {
+		.segment-timeline__title {
+			color: $segment-title-text-color-live;
+			font-weight: 500;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
+			background: $segment-title-background-color-live;
+		}
+	}
+
+	&.next {
+		.segment-timeline__title {
+			font-weight: 500;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
+			background: $segment-title-background-color-next;
+		}
+	}
+
+
+	&.has-played {
+		.segment-timeline__title {
+			font-weight: 200;
+			background: $segment-title-background-color-has-played;
+		}
+	}
+
+	// mos-id is a utility element, so that we can quickly check the mos Id of a segment using the inspector
+	// let's hide it in the UI
+	.segment-timeline__mos-id {
+		display: none;
+	}
+
+	// This is the display in the top-left corner of the segment
+	.segment-timeline__duration {
+		position: relative;
+		display: block;
+		margin: 0;
+		padding: 0;
+
+		grid-column: segment-name / segment-group-controls;
+		grid-row: header / main-view;
+
+		cursor: pointer;
+
+		font-size: 1.0em;
+		line-height: 2.45em;
+		padding-left: 25px;
+		margin-left: 0.3em;
+		letter-spacing: 1px;
+
+		@include collapse-triangle();
+
+		> span.negative {
+			color: $general-late-color;
+			font-weight: 500;
+		}
+	}
+	.segment-timeline__timeUntil {
+		position: relative;
+		display: block;
+		margin: 0;
+		padding: 0;
+		text-align: right;
+
+
+		grid-column: segment-name / segment-group-controls;
+		grid-row: header / main-view;
+
+		cursor: pointer;
+
+		font-size: 1.3em;
+		font-weight: 400;
+		line-height: 2.0em;
+		padding-right: 0px;
+		margin-right: 0em;
+		letter-spacing: 0px;
+	}
+	.segment-timeline__timeline-zoom-buttons {
+		position: relative;
+		grid-column: segment-group-controls / timeline;
+		grid-row: zoom-area / end;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+
+		opacity: 0;
+		transition: 0.5s opacity ease-in-out;
+
+		> .segment-timeline__timeline-zoom-buttons__button {
+			min-width: 30px;
+			min-height: 30px;
+			max-width: 30px;
+			max-height: 30px;
+			background: transparent;
+			transition: 0.3s background-color ease-in-out;
+			border-radius: 100%;
+			overflow: visible;
+
+			&:hover {
+				background: $segment-title-background-color;
+				transition: 0s background-color;
+			}
+
+			&:active {
+				background: $ui-button-primary;
+				transition: 0s background-color;
+			}
+		}
+	}
+	&:hover {
+		.segment-timeline__timeline-zoom-buttons {
+			transition: 0.2s opacity ease-in-out;
+			opacity: 1;
+		}
+	}
+	.segment-timeline__next-preview {
+		position: relative;
+		grid-column: end / future-timeline-end;
+		grid-row: header / zoom-area;
+		margin: $segment-header-height 0 0 1em;
+		overflow: hidden;
+		transition: $output-layer-group-collapse-animation-duration margin ease-in-out;
+	}
+	.segment-timeline__next-preview-background {
+		position: relative;
+		grid-column: end / future-timeline-end;
+		grid-row: header / zoom-area;
+		margin: $segment-header-height 0 1.5em 1em;
+		background: $segment-next-preview-background-color;
+		opacity: 1;
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
+					$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
+	}
+
+	.segment-timeline__zoom-area-container {
+		grid-column: timeline / end;
+		grid-row: zoom-area / end;
+	}
+
+	// The area controlling the zoom at the bottom of the segment
+	.segment-timeline__zoom-area {
+		position: relative;
+		max-height: 4em;
+		margin: 0.2em 0.2em 0em 0;
+		padding: 1px 0;
+
+		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
+					$output-layer-group-collapse-animation-duration margin ease-in-out;
+
+		.segment-timeline__timeline {
+			overflow: hidden;
+			white-space: nowrap;
+			padding: 0;
+
+			.segment-timeline__part {
+				vertical-align: top;
+				z-index: inherit;
+
+				.segment-timeline__part__nextline {
+					border-left-width: 1px;
+
+					&::before, &::after {
+						display: none;
+					}
+
+					&.segment-timeline__part__nextline--endline {
+						display: none;
+					}
+
+					.segment-timeline__part__nextline__label {
+						display: none;
+					}
+				}
+
+				&.next {
+					.segment-timeline__part__nextline {
+						&::before, &::after {
+							display: none;
+						}
+
+						.segment-timeline__part__nextline__label {
+							display: none;
+						}
+					}
+				}
+
+				.segment-timeline__output-group {
+					min-height: 0em;
+					border-bottom: none;
+
+					.segment-timeline__layer {
+						min-height: 0.2em;
+						line-height: 0.2em;
+						border-bottom: none;
+
+						.segment-timeline__layer-item {
+							pointer-events: none;
+							cursor: default;
+							z-index: inherit;
+
+							&:hover {
+								box-shadow: none;
+							}
+
+							.segment-timeline__layer-item__label {
+								display: none;
+							}
+						}
+					}
+
+					&.collapsable.collapsed {
+						border-bottom: none;
+
+						.segment-timeline__layer {
+							min-height: 0.2em;
+							line-height: 0.2em;
+							border-bottom: none;
+						}
+					}
+				}
+
+				.segment-timeline__layer-item-appendage {
+					display: none;
+				}
+
+				.segment-timeline__part__difference {
+					background: rgba(0, 0, 0, 0.5);	
+				}
+			}
+		}
+
+		.segment-timeline__zoom-area__liveline {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 0;
+			border-left: 2px solid $general-live-color;
+			background: none;
+			pointer-events: none;
+		}
+
+		.segment-timeline__zoom-area__controls {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			overflow: hidden;
+
+			.segment-timeline__zoom-area__controls__left-mask {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				background: rgba(0, 0, 0, 0.5);
+			}
+
+			.segment-timeline__zoom-area__controls__right-mask {
+				position: absolute;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				background: rgba(0, 0, 0, 0.5);
+			}
+
+			.segment-timeline__zoom-area__controls__selected-area {
+				position: absolute;
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				top: 0;
+				bottom: 0;
+				width: 250px;
+				cursor: move;		
+				cursor: -webkit-grab;
+				background: none;
+
+				.segment-timeline__zoom-area__controls__selected-area__right-handle {
+					position: absolute;
+					top: 0;
+					right: -10px;
+					bottom: 0;
+					width: 20px;
+					cursor: ew-resize;
+					z-index: 20;
+				}
+
+				.segment-timeline__zoom-area__controls__selected-area__left-handle {
+					position: absolute;
+					top: 0;
+					left: -10px;
+					bottom: 0;
+					width: 20px;
+					cursor: ew-resize;
+					z-index: 20;
+				}
+
+				.segment-timeline__zoom-area__controls__selected-area__center-handle {
+					display: none;
+				}
+
+				&.small-mode {
+					.segment-timeline__zoom-area__controls__selected-area__right-handle {
+						position: absolute;
+						top: 0;
+						right: -13px;
+						bottom: 0;
+						width: 10px;
+						z-index: 20;
+					}
+
+					.segment-timeline__zoom-area__controls__selected-area__left-handle {
+						position: absolute;
+						top: 0;
+						left: -13px;
+						bottom: 0;
+						width: 10px;
+						z-index: 20;
+					}
+
+					.segment-timeline__zoom-area__controls__selected-area__center-handle {
+						position: absolute;
+						top: 0;
+						left: -3px;
+						bottom: 0;
+						width: 10px;
+						cursor: move;				
+						cursor: -webkit-grab;
+						z-index: 20;
+						display: block;
+					}
+				}
+			}
+		}
+		.segment-timeline__part {
+			.segment-timeline__part__invalid-cover {
+				background-image:
+					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
+					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
+			}
+		}
+	}
+
+	/* The timeline itself is constructed out of three overlapping layers:
+			.segment-timeline__timeline-background - renders the big, flat gray background
+			.segment-timeline__timeline-grid - renders just the time grid and the labels above them
+			.segment-timeline__timeline-container - contains the timeline elements and the live-line and other lines
+	*/
+	.segment-timeline__timeline-background {
+		grid-column: timeline / end;
+		grid-row: main-view / zoom-area;
+		min-width: 0;
+		overflow: hidden;
+		background: $segment-timeline-background-color;
+		opacity: 1;
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2), $output-layer-group-collapse-animation-duration margin-bottom ($output-layer-group-collapse-animation-duration * 1/2);
+		margin-bottom: 2.5em;
+	}
+
+	.segment-timeline__timeline-grid {
+		grid-column: timeline / end;
+		grid-row: header / zoom-area;
+		min-width: 0;
+		overflow: hidden;
+		margin-bottom: 1.15em;
+
+		opacity: 1;
+		visibility: visible;
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
+					$output-layer-group-collapse-animation-duration visibility 0s;
+	}
+
+	.segment-timeline__timeline-container {
+		grid-column: timeline / end;
+		grid-row: header / zoom-area;
+		min-width: 0;
+		min-height: 0;
+
+		overflow: hidden;
+	}
+
+	.segment-timeline__liveline-shade {
+		position: absolute;
+		top: $segment-header-height;
+		left: 0;
+		bottom: 0;
+		background: linear-gradient(to left, rgba(0, 0, 0, 0.3) 0, rgba(0, 0, 0, 0.7) 75px);
+		pointer-events: none;
+		transition: $output-layer-group-collapse-animation-duration top ease-in-out;
+	}
+
+	// The liveline lives in the .segment-timeline__timeline-container
+	.segment-timeline__liveline {
+		width: 2px;
+		background: $general-live-color;
+		box-shadow: -3px 0 20px rgba(0,0,0,1);
+		transition: $output-layer-group-collapse-animation-duration top ease-in-out,
+					$output-layer-group-collapse-animation-duration bottom ease-in-out;
+
+		.segment-timeline__liveline__label {
+			position: absolute;
+			top: -1.10em;
+			left: -0.2px;
+			color: #fff;
+			background-color: $general-live-color;
+			text-transform: uppercase;
+			font-weight: bold;
+			line-height: 1em;
+			white-space: nowrap;
+			word-wrap: none;
+			border-radius: 0.1em 0.5em 0.5em 0em;
+			padding: 0.1em 0.5em 0em 0.2em;
+		}
+
+		.segment-timeline__liveline__timecode {
+			position: absolute;
+			bottom: -0.1em;
+			left: 5px;
+			font-size: 1.2em;
+			line-height: 1em;
+			font-weight: 500;
+			color: $liveline-timecode-color;
+			white-space: nowrap;
+			word-wrap: none;
+			opacity: 1;
+
+			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out $output-layer-group-collapse-animation-duration;
+
+			&.overtime {
+				color: $general-late-color;
+			}
+		}
+
+		.segment-timeline__liveline__icon {
+			display: inline-block;
+			margin-left: 0.2em;
+
+			&.segment-timeline__liveline__icon--next {
+				position: relative;
+				width: 0;
+				height: 0;
+				top: -2px;
+				border-width: 5px 0 5px 9px;
+				border-style: solid;
+				border-color: transparent transparent transparent $general-next-color;
+
+				&::after {
+					content: ' ';
+					position: absolute;
+					top: -5px;
+					right: -1px;
+					height: 10px;
+					width: 0;
+					border-left: 2px solid $general-next-color;
+				}
+			}
+
+			&.segment-timeline__liveline__icon--auto-next {
+				position: relative;
+				width: 0;
+				height: 0;
+				top: 1px;
+				left: 4px;
+				border-width: 5px 0 5px 9px;
+				border-style: solid;
+				border-color: transparent transparent transparent $general-next-color;
+
+				&::after {
+					content: ' ';
+					position: absolute;
+					top: -5px;
+					left: -13px;
+					height: 10px;
+					width: 0;
+					border-left: 2px solid $general-next-color;
+				}
+			}
+		}
+
+		.segment-timeline__liveline__status {
+			position: absolute;
+			border-radius: 2em;
+			text-transform: uppercase;
+			font-size: 0.7rem;
+			padding: 2px 5px 1px;
+			line-height: 1.2em;
+			margin-top: 2px;
+			font-weight: 700;
+			color: #000;
+			background-color: #fff;
+			opacity: 1;
+			transition: 0.3s opacity;
+
+			&.segment-timeline__liveline__status--hold {
+				background-color: $hold-status-color;
+			}
+		}
+	}
+
+	/** This is a child element of the .segment-timeline__timeline-container.
+	    This is the parent of all segment items
+	*/
+	.segment-timeline__timeline, .segment-timeline__next-preview {
+		overflow: visible;
+		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
+
+		// Part is an element grouping all parts
+		.segment-timeline__part {
+			position: relative;
+			z-index: 1;
+			transform-style: preserve-3d;
+
+			* {
+				backface-visibility: hidden;
+				-webkit-backface-visibility: hidden;
+			}
+
+			&.segment-timeline__part--end-of-segment {
+				background: $segment-background-color;
+				height: 100%;
+				top: 0;
+				min-width: 200%;
+				z-index: 0;
+			}
+			&.invalid {
+				background-color: #333;
+			}
+
+			.segment-timeline__part__previewline {
+				display: block;
+				position: absolute;
+				top: -13px;
+				left: 0;
+				bottom: -1.3em;
+				border-left: 2px solid $previewline-color;
+				z-index: 10;
+			}
+
+			.segment-timeline__part__nextline {
+				display: block;
+				position: absolute;
+				top: -13px;
+				left: 0;
+				bottom: -1.3em;
+				flex: 0;
+				border-left: 2px solid $part-start-color;
+				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
+				transform: translate3d(0,0,50px);
+
+				&.segment-timeline__part__nextline--endline {
+					left: auto;
+					right: 0;
+				}
+
+				.segment-timeline__part__nextline__label {
+					display: none;
+					text-transform: uppercase;
+					position: absolute;
+					top: -2px;
+    				left: 2px;
+					text-transform: uppercase;
+					font-weight: bold;
+					line-height: 1em;
+					white-space: nowrap;
+					word-wrap: none;
+					color: $part-start-color;
+
+					&.segment-timeline__part__nextline__label--thin {
+						font-weight: 400;
+					}
+
+					.segment-timeline__part__nextline__label__carriage-return {
+						width: 20px;
+						height: 15px;
+						position: relative;
+						top: 12px;
+    					right: 11px;
+						display: inline-block;
+
+						> svg {
+							fill: $part-start-color;
+						}
+					}
+				}
+
+				&::after {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0px;
+    				left: -10px;
+					width: 0;
+					height: 0;
+					border-style: solid;
+					border-width: 5px 0 5px 9px;
+					border-color: transparent transparent transparent $part-start-color;
+				}
+
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					bottom: 4px;
+    				left: -10px;
+					width: 0;
+					height: 0;
+					border-style: solid;
+					border-width: 5px 0 5px 9px;
+					border-color: transparent transparent transparent $part-start-color;
+				}
+			}
+
+			.segment-timeline__part__invalid-cover {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				z-index: 1;
+				pointer-events: none;
+				background-image:
+					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
+					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+
+			}
+
+			&:not(.live) {
+				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
+				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
+					border-left-width: 1px;
+
+					&::before, &::after {
+						left: -1px;
+					}
+
+					.segment-timeline__part__nextline__label {
+						display: block;
+						left: 10px;
+					}
+				}
+			}
+
+			&.live {
+				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
+					&::after, &::before {
+						display: none;
+					}
+				}
+			}
+
+			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
+				border-left-width: 1px;
+
+				&::before, &::after {
+					left: -1px;
+				}
+
+				.segment-timeline__part__nextline__label {
+					display: block;
+					left: 10px;
+				}
+			}
+
+			.segment-timeline__part__show-end {
+				position: absolute;
+				top: -13px;
+				left: 100%;
+				white-space: nowrap;
+				bottom: -1.3rem;
+				border-left: 2px solid $part-start-color;
+				margin-left: 2px;
+				padding-left: 0.5em;
+				text-transform: uppercase;
+				font-size: 0.9em;
+
+				.segment-timeline__part__show-end__label {
+					position: absolute;
+					top: 50%;
+					transform: translateY(calc(-50% - 6px));
+				}
+			}
+
+			.segment-timeline__part__future-shade {
+				display: block;
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				right: 0;
+				background: linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%);
+				transform: translate3d(0, 0, 10px)
+			}
+
+			&.next {
+				.segment-timeline__part__nextline:not(.offset) {
+					.segment-timeline__part__nextline__label {
+						> svg {
+							margin-left: 1px;
+							margin-right: 5px;
+						}
+					}
+				}
+
+				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline):not(.offset) {
+					border-left-color: $general-next-color;
+					color: $general-next-color;
+
+					&::before, &::after {
+						border-color: transparent transparent transparent $general-next-color;
+					}
+
+					.segment-timeline__part__nextline__label {
+						color: $general-next-color;
+						display: block;
+
+						.segment-timeline__part__nextline__label__carriage-return {
+							> svg {
+								fill: $general-next-color;
+							}
+						}
+					}
+				}
+			}
+
+			.segment-timeline__part__nextline--endline.show-end {
+				&::before, &::after {
+					display: none;
+				}
+			}
+
+			.segment-timeline__part__nextline--endline.is-next {
+				border-left-color: $general-next-color;
+				color: $general-next-color;
+
+				&::before, &::after {
+					border-color: transparent transparent transparent $general-next-color;
+				}
+
+				.segment-timeline__part__nextline__label {
+					color: $general-next-color;
+					display: block;
+
+					.segment-timeline__part__nextline__label__carriage-return {
+						> svg {
+							fill: $general-next-color;
+						}
+					}
+				}
+			}
+			
+			// Group all layers belonging to an output group
+			.segment-timeline__output-group {
+				min-height: $segment-layer-height;
+				border-bottom: 0px solid $segment-layer-separator-color;
+				transform-style: preserve-3d;
+
+				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
+						
+				// The layer container for all pieces
+				.segment-timeline__layer {
+					min-height: $segment-layer-height;
+					line-height: $segment-layer-height;
+					border-bottom: 2px solid $segment-layer-separator-color;
+					transform-style: preserve-3d;
+
+					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
+								$output-layer-group-collapse-animation-duration border ease-in-out;
+
+					.segment-timeline__layer-item {
+						background: $segment-layer-background-unknown;
+						transition: box-shadow 0.5s ease-out;
+						box-shadow: 0 0 0 0 rgba(255,255,255,0.5);
+						cursor: default;
+						transform-style: preserve-3d;
+
+						// TODO: This is just temporary styling, to indicate that the layers are clickable
+						&:hover {
+							transition: none;
+							box-shadow: 0 0 18px 1px rgb(0, 0, 0);
+							transform: translate3d(0, 0, 10px);
+						}
+
+						@include item-type-colors();
+
+						&.disabled {
+							background: $segment-item-disabled-background;
+							color: $segment-item-disabled-color;
+						}
+						&.next-is-touching {
+							border-right: 1px solid $segment-timeline-background-color; 
+						}
+
+						&.next-is-touching:hover {
+							border-right: none;
+						}
+
+						&.splits, &.live-speak {
+							.segment-timeline__layer-item__preview {
+								position: absolute;
+								top: 0;
+								left: 0;
+								right: 0;
+								bottom: 0;
+								display: flex;
+								flex-direction: column-reverse;
+								transform-style: preserve-3d;
+
+								.segment-timeline__layer-item__preview__item {
+									flex: 1 1;
+									min-height: 0;
+									transform-style: preserve-3d;
+
+									@include item-type-colors();
+
+									> .segment-timeline__layer-item__label.right-side {
+										margin-right: 0 !important;
+									}
+								}
+							}
+						}
+
+						.segment-timeline__layer-item__scene-marker {
+							position: absolute;
+							display: block;
+							top: -2px;
+							width: 2px;
+							bottom: 0;
+							background: linear-gradient(to bottom, #0000ff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.2) 4.1px);
+							overflow: hidden;
+							transform: translate3d(0,0,2px)
+						}
+
+						.segment-timeline__layer-item__anomaly-marker {
+							position: absolute;
+							display: block;
+							top: -2px;
+							height: calc(100% + 2px);
+							min-width: 2px;
+							background: repeating-linear-gradient(
+								90deg,
+								black,
+								black 3px,
+								rgba(0, 0, 0, .2) 3px,
+								rgba(0, 0, 0, .2) 6px
+							);
+							overflow: hidden;
+							// transform: translate3d(0,0,-2px)
+						}
+						.segment-timeline__layer-item__anomaly-marker::after {
+							content: '';
+							position: absolute;
+							display: block;
+							top: 0px;
+							width: 100%;
+							height: 2px;
+							min-width: 2px;
+							// background: repeating-linear-gradient(
+							// 	90deg,
+							// 	black,
+							// 	black 2px,
+							// 	rgba(0, 0, 0, .2) 1.5px,
+							// 	rgba(0, 0, 0, .2) 3px
+							// );
+							background: yellow;
+							overflow: hidden;
+							// transform: translate3d(0,0,2px)
+						}
+
+						.segment-timeline__layer-item__anomaly-marker__freezes {
+							background: repeating-linear-gradient(
+								0deg,
+								black,
+								black 3px,
+								rgba(0, 0, 0, .2) 3px,
+								rgba(0, 0, 0, .2) 6px
+							);
+						}
+
+						.segment-timeline__layer-item__source-finished {
+							position: absolute;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
+							z-index: 2;
+						}
+
+						.segment-timeline__layer-item__label {
+							position: relative;
+							z-index: 10;
+							margin: 0 0.3em;
+							text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+							font-weight: 400;
+							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
+							pointer-events: none;
+							display: inline-block;
+							white-space: nowrap;
+
+							transform: translate3d(0, 0, 1px); // Just to make it render in front
+
+							&:not(.right-side) {
+								overflow: hidden;
+								text-overflow: ellipsis;
+							}
+
+							&.with-overflow {
+								overflow: visible !important;
+							}
+
+							&.secondary {
+								font-weight: 300;
+							}
+
+							&.third {
+								font-weight: 200;
+							}
+
+							&.emphasis {
+								font-weight: 500;
+							}
+
+							&.missing {
+								color: orange
+							}
+
+							&.first-words {
+								position: absolute;
+								left: 0;
+								font-weight: 300;
+								font-style: italic;
+
+								> * {
+									position: relative;
+								}
+							}
+
+							&.right-side {
+								position: absolute;
+								right: 0;
+								transform: translate3d(0, 0, 15px);
+								text-align: right;
+								max-width: calc(100% - 10px);
+								overflow: hidden;
+								text-overflow: clip;
+								
+								> * {
+									position: relative;
+								}
+
+								> .segment-timeline__layer-item__label {
+									margin-right: 0 !important;
+									margin-left: 5px !important;
+									overflow: initial;
+									max-width: none;
+								}
+
+								> .label-icon {
+									margin: 0 -10px 0 0;
+								}
+
+								> .label-icon.label-infinite-icon {
+									margin: 0 0 0 0;
+								}
+
+								> .last-words {
+									float: right;
+								}
+							}
+
+							&.last-words {
+								font-weight: 300;
+								font-style: italic;
+
+								display: block;
+							}
+
+							&.file-name {
+								font-weight: 200;
+							}
+
+							&.label-icon {
+								margin: 0;
+							}
+
+							&.label-overflow-time {
+								font-weight: 300;
+							}
+
+							> .segment-timeline__layer-item__label {
+								margin: 0;
+								max-width: none;
+							}
+
+							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {
+								margin: 0 0.3em;
+							}
+
+							.segment-timeline__layer-item__label__transition-icon {
+								    max-width: 16px;
+									max-height: 1.4em;
+									vertical-align: top;
+									height: 1.4em;
+									object-fit: contain;
+									object-position: center center;
+									margin-left: 0.5em;
+							}
+						}
+
+
+						&.hide-overflow-labels {
+							.segment-timeline__layer-item__label {
+								&.overflow-label {
+									display: none;
+								}
+							}
+						}
+
+						.segment-timeline__layer-item__transition {
+							position: absolute;
+							top: 0;
+							bottom: 0;
+							background: inherit;
+
+							&.in {
+								left: 0;
+								transform: translateX(calc(-100% + 0.5px));
+							}
+
+							&.out {
+								right: 0;
+								transform: translateX(calc(100% - 0.5px));
+							}
+
+							&.mix {
+								&::before {
+									content: ' ';
+									display: block;
+									position: absolute;
+									top: 0;
+									left: 0;
+									bottom: 0;
+									right: 0;
+								}
+								
+								&.in {
+									clip-path: polygon(100% 100%, 100% 0, 1% 100%);
+									
+									&::before {
+										background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
+									}
+								}
+								&.out {
+									clip-path: polygon(99% 100%, 0 100%, 0 0);
+
+									&::before {
+										background: linear-gradient(to left, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
+									}
+								}
+							}
+
+							&.wipe {								
+								&.in {
+									clip-path: polygon(1% 101%, 1% 49%, 100% 49%, 100% 101%);
+								}
+								&.out {
+									clip-path: polygon(polygon(99% 51%, 0% 51%, 0 0, 100% 100%));
+								}
+							}
+						}
+
+						@include missing-overlay()
+					}
+				}
+
+				// The output group is collapsable if it has more than a single source layer attached to it
+				&.collapsable {
+					&.collapsed {
+						border-bottom: 2px solid $segment-layer-separator-color;
+
+						.segment-timeline__layer {
+							// min-height: 0 causes the layers to collapse and divide the output-group min-height amongst themselves
+							min-height: 0;
+							border-bottom: 0px solid $segment-layer-separator-color;
+	
+							.segment-timeline__layer-item {
+								.segment-timeline__layer-item__label {
+									opacity: 0;
+									visibility: hidden;
+									transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
+												0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
+			.segment-timeline__layer-item-appendage {
+				&.script-line {
+					width: 0;
+					transform: translate3d(0, 0, 30px);
+					border-left: 2px dotted $segment-layer-background-mic;
+					margin-left: -2px;
+					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
+				}
+			}
+		}
+	}
+
+	.segment-timeline__next-preview {
+		.segment-timeline__part .segment-timeline__output-group .segment-timeline__layer .segment-timeline__layer-item .segment-timeline__layer-item__label {
+			max-width: calc(100% - 0.6em);
+		}
+	}
+
+	// This is the output layer controls section in the middle
+	.segment-timeline__output-layers {
+		grid-column: segment-group-controls / timeline;
+		grid-row: header / zoom-area;
+
+		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
+
+		margin: 0 0.5em;
+
+		// this is a single output-layer container
+		.segment-timeline__output-layer-control {
+			line-height: $segment-layer-height;
+			min-height: $segment-layer-height;
+			
+			// the label with the name for the output layer
+			.segment-timeline__output-layer-control__label {
+				font-weight: 500;
+				padding-left: 20px;
+				letter-spacing: 0.02em;
+				color: rgb(255, 255, 255);
+
+				opacity: 1;
+				transition: $output-layer-group-collapse-animation-duration opacity;
+
+				text-shadow: 0 0 5px $segment-background-color;
+    			z-index: 2;
+			}
+
+			// the label for the source-layer within this output group
+			.segment-timeline__output-layer-control__layer {
+				line-height: $segment-layer-height;
+				height: $segment-layer-height;
+				min-height: $segment-layer-height;
+				letter-spacing: 0em;
+				color: rgb(207, 207, 207);
+	
+				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
+							$output-layer-group-collapse-animation-duration height ease-in-out,
+							$output-layer-group-collapse-animation-duration line-height ease-in-out,
+							$output-layer-group-collapse-animation-duration opacity,
+							0s visibility 0s;
+			}
+
+			// the output layer group is collapsable if it has more than one source layer assinged
+			&.collapsable {
+
+				// this is the "line" grouping source layers together
+				&::after {
+					content: ' ';
+					display: block;
+					position: absolute;
+					border-left: $output-layer-group-line;
+					border-bottom: $output-layer-group-line;
+					top: 1.1em;
+					left: 7px;
+					bottom: 0.8em;
+					width: 50px;
+					box-sizing: border-box;
+					opacity: 1;
+					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 1/3);
+				}
+
+				.segment-timeline__output-layer-control__label {
+					cursor: pointer;
+
+					@include collapse-triangle();
+				}
+
+				&.collapsed {
+					.segment-timeline__output-layer-control__label {
+						@include collapse-triangle-collapsed();
+					}
+
+					.segment-timeline__output-layer-control__layer {
+						transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
+									$output-layer-group-collapse-animation-duration height ease-in-out,
+									$output-layer-group-collapse-animation-duration line-height ease-in-out,
+									$output-layer-group-collapse-animation-duration opacity,
+									0s visibility $output-layer-group-collapse-animation-duration;
+						height: 0;
+						min-height: 0;
+						opacity: 0;
+						line-height: 0;
+						visibility: hidden;
+					}
+
+					&::after {
+						transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity;
+						opacity: 0;
+					}
+				}
+			}
+		}
+	}
+
+	// the collapsed state for the entire segment
+	&.collapsed {
+		transition: $output-layer-group-collapse-animation-duration height ease-out;
+
+		.segment-timeline__duration {
+			@include collapse-triangle-collapsed();
+		}
+		
+		.segment-timeline__title { // TODO: This is just temporary, to have some aciton on collapsed
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+
+		.segment-timeline__zoom-area {
+			margin: 0.2em 0 0 0;
+
+			.segment-timeline__timeline {
+				padding: 0;
+			}
+		}
+		
+		.segment-timeline__timeline-background {
+			opacity: 0;
+			margin-bottom: 0;
+
+			transition: $output-layer-group-collapse-animation-duration opacity, $output-layer-group-collapse-animation-duration margin-bottom;
+		}
+
+		.segment-timeline__timeline-grid {
+			opacity: 0;
+			visibility: hidden;
+			
+			transition: $output-layer-group-collapse-animation-duration opacity,
+						0s visibility $output-layer-group-collapse-animation-duration;
+		}
+
+		.segment-timeline__liveline {
+			top: 0;
+			bottom: 0;
+
+			.segment-timeline__liveline__timecode {
+				opacity: 0;
+				visibility: hidden;
+
+				transition: $output-layer-group-collapse-animation-duration opacity,
+							0s visibility $output-layer-group-collapse-animation-duration;
+			}
+		}
+
+		.segment-timeline__liveline-shade {
+			top: 0;
+		}
+
+		/** segment-timeline__output-layer & segment-timeline__timelien will have a different
+			padding in the collapsed state, but it still matches
+		*/
+		.segment-timeline__timeline, .segment-timeline__output-layers {
+			padding: 0.2em 0 0;
+		}
+		.segment-timeline__output-layers {
+			.segment-timeline__output-layer-control {
+				min-height: 0;
+				transition: $output-layer-group-collapse-animation-duration line-height ease-out,
+							$output-layer-group-collapse-animation-duration min-height ease-out;
+
+				.segment-timeline__output-layer-control__label {
+					opacity: 0;
+					visibility: hidden;
+
+					transition: $output-layer-group-collapse-animation-duration opacity 0s,
+								0s visibility $output-layer-group-collapse-animation-duration;
+				}
+				
+				&::after {
+					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
+								0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+					opacity: 0 !important;
+					visibility: hidden;
+				}
+
+				.segment-timeline__output-layer-control__layer {
+					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
+								$output-layer-group-collapse-animation-duration height ease-in-out,
+								$output-layer-group-collapse-animation-duration opacity,
+								0s visibility $output-layer-group-collapse-animation-duration;
+					height: 0.3em;
+					min-height: 0.3em;
+					line-height: 0.3em;
+					opacity: 0;
+					visibility: hidden;
+				}
+			}
+		}
+
+		> .segment-timeline__timeline-container > .segment-timeline__timeline, > .segment-timeline__next-preview {
+			.segment-timeline__part {
+				.segment-timeline__part__nextline {
+					top: -1em;
+
+					.segment-timeline__part__nextline__label {
+						display: none;
+					}
+
+					&::after, &::before {
+						display: none;
+					}
+				}
+				.segment-timeline__output-group {
+					min-height: 0;
+					transition: $output-layer-group-collapse-animation-duration min-height ease-out;
+
+					.segment-timeline__layer {
+						min-height: 0.4em;
+						border-bottom: 1px solid $segment-layer-separator-color;
+
+						.segment-timeline__layer-item {
+							.segment-timeline__layer-item__label {
+								opacity: 0;
+								visibility: hidden;
+								transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
+											0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+							}
+						}
+					}
+
+					&.collapsable.collapsed {
+						border-bottom: 0px solid $segment-layer-separator-color;
+
+						.segment-timeline__layer {
+							min-height: 0.4em;
+							border-bottom: 1px solid $segment-layer-separator-color;
+						}
+					}
+				}
+			}
+		}
+
+		> .segment-timeline__next-preview {
+			margin: 0.2em 0 0 1em;
+			transition: $output-layer-group-collapse-animation-duration margin 0;
+		}
+
+		> .segment-timeline__next-preview-background {
+			margin: 0.2em 0 0 1em;
+			opacity: 0;
+			transition: $output-layer-group-collapse-animation-duration opacity 0,
+						$output-layer-group-collapse-animation-duration margin 0;
+		}
+	}
+}
+
+@keyframes inspector-fadeIn {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+// TODO: this is just a debug label, should not be visible in final app
+.segment-timeline__debug-info {
+	position: absolute;
+	white-space: nowrap;
+	word-wrap: none;
+	color: #fff;
+	top: -1.5em;
+	right: 0;
+
+	&.red {
+		color: red;
+		top: auto;
+		bottom: -1.5em;
+		right: auto;
+		left: 0
+	}
+}
+
+.segment-timeline__mini-inspector {
+	position: absolute;
+	display: block;
+	border-radius: 5px;
+	background: #474747;
+	box-shadow: 1px -1.5px 3.5px 1.5px rgba(0, 0, 0, 0.5);
+	padding: 0.7em 1em;
+	white-space: nowrap;
+	transform: translate(-50%, -100%);
+	animation: 0.2s inspector-fadeIn;
+	animation-iteration-count: 1;
+	border: 1px black solid;
+
+	@include item-type-borders();
+
+	&::before {
+		content: ' ';
+		display: block;
+		position: absolute;
+		border-radius: 20px;
+		height: 0px;
+		border-color: inherit;
+		border-width: 3px;
+		border-style: solid;
+		top: -3px;
+		left: 7px;
+		right: 7px;
+	}
+
+	&.segment-timeline__mini-inspector--pop-down {
+		transform: translate(-50%, 2em);
+	}
+
+	&.segment-timeline__mini-inspector--video {
+		padding: 0;
+		border: 1px solid #1f1f1f;
+		border-radius: 0px;
+		transform: translate(-100%, -100%);
+
+		&::before {
+			content: none;
+			display: none;
+		}
+
+		> video, > .video-preview, > .thumbnail {
+			display: block;
+			width: 160px;
+			height: 90px;
+			background: #000;
+		}
+
+		> .segment-timeline__mini-inspector__timecode {
+			display: block;
+			position: absolute;
+			top: 0;
+			right: 0;
+			font-weight: 400;
+			text-shadow: 0 0 1px rgba(0,0,0,1);
+			font-size: 0.75em;
+			padding: 0.2em 0.3em;
+			background: rgba(0,0,0,0.25);
+			border-bottom-left-radius: 3px;
+		}
+
+		> .segment-timeline__mini-inspector__warnings {
+			display: block;
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			max-width: 100%;
+			font-weight: 400;
+			text-shadow: 0 0 1px rgba(0,0,0,1);
+			font-size: 0.75em;
+			padding: 0.2em 0.3em;
+			background: rgba(0,0,0,0.25);
+			border-top-right-radius: 3px;
+		}
+
+		> .video-preview {
+			position: relative;
+			overflow: hidden;
+
+			> .background {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+			}
+
+			> .box {
+				position: absolute;
+				transform: translate(-50%, -50%);
+			}
+
+			& > * {
+				@include item-type-colors();
+			}
+
+			.video-preview__label {
+				position: absolute;
+				top: auto;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				font-weight: 400;
+				text-shadow: 0 0 2px rgba(0, 0, 0, 0.75);
+				text-align: center;
+			}
+		}
+	}
+
+	.mini-inspector__header {
+		font-weight: 500;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		margin-top: -6px;
+    	margin-bottom: 6px;
+
+		> .mini-inspector__sub-header {
+			margin-left: 0.5em;
+			font-weight: 300;
+		}
+	}
+	.mini-inspector__footer {
+		margin-top: 3px;
+
+		text-align: right;
+	}
+	.mini-inspector__label {
+		font-weight: 300;
+		text-transform: capitalize;
+		padding-right: 1em;
+	}
+	.mini-inspector__value {
+		font-weight: 500;
+		max-width: 60vw;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mini-inspector__system {
+		font-weight: 300;
+		font-style: italic;
+	}
+	.mini-inspector__full-text {
+		font-weight: 300;
+		max-width: 400px;
+		display: inline-block;
+		white-space: normal;
+		width: auto;
+		min-width: 200px;
+		font-style: italic;
+		text-align: left;
+
+		&.text-end {
+			margin-top: 6px;
+			text-align: right;
+		}
+
+		&.text-broken {
+			display: block;
+		}
+	}
+	.mini-inspector__in-point {
+		margin-right: 1em;
+		letter-spacing: 0.3px;
+		font-weight: 400;
+  		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+	}
+	.mini-inspector__duration {
+		margin-right: 1em;
+		letter-spacing: 0.3px;
+		font-weight: 300;
+  		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+	}
+	.mini-inspector__changed {
+		font-size: 0.8em;
+	}
+	table {
+		> tbody {
+			> tr {
+				> td {
+					&.mini-inspector__row--timing {
+						padding-top: 0.5em;
+					}
+				}
+			}
+			> tr:first-child {
+				> td {
+					&.mini-inspector__row--timing {
+						padding-top: 0em;
+					}
+				}
+			}
+		}
+	}
+}
+
+.rundown-view__go-to-onAir {
+	opacity: 0.7;
+	position: fixed;
+	cursor: pointer;
+    top: 160px;
+    right: 1.5em;
+    background: $general-live-color;
+    color: #000;
+    padding: 0.7em 1em;
+    border-radius: 3px;
+    font-weight: 500;
+	box-shadow: 10px 5px 5px #000;
+	z-index: 100;
+	
+	&:hover {
+		opacity: 1;
+	}
+}
+
+.rundown-view--unpublished {
+	margin-top: 0;
+	
+	> .rundown-view__label {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		text-align: center;
+		font-size: 3em;
+		transform: translateY(-50%);
+
+		> p {
+			margin: 20px auto;
+			max-width: 1200px;
+		}
+	}
+}
+
+.rundown-view--loading {
+	margin-top: 0;
+
+	> .mod.mhl.mvl.alc {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-150%, -50%);
+	}
+}
+
+@import "rundownOverview";

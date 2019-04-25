@@ -2,9 +2,9 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	StudioInstallation,
-	StudioInstallations
-} from '../../../lib/collections/StudioInstallations'
+	Studio,
+	Studios
+} from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -22,7 +22,7 @@ import { logger } from '../../../lib/logging'
 import { MongoModifier } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 
-export type ObjectWithConfig = StudioInstallation | ShowStyleBase | ShowStyleVariant
+export type ObjectWithConfig = Studio | ShowStyleBase | ShowStyleVariant
 
 interface IConfigManifestSettingsProps {
 	manifest: ConfigManifestEntry[]
@@ -51,8 +51,8 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 	}
 
 	updateObject<T> (obj: T, updateObj: MongoModifier<T>) {
-		if (obj instanceof StudioInstallation) {
-			StudioInstallations.update(obj._id, updateObj)
+		if (obj instanceof Studio) {
+			Studios.update(obj._id, updateObj)
 		} else if (obj instanceof ShowStyleBase) {
 			ShowStyleBases.update(obj._id, updateObj)
 		} else if (obj instanceof ShowStyleVariant) {
@@ -171,8 +171,8 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		const { t } = this.props
 
 		let collection: any = null
-		if (this.props.object instanceof StudioInstallation) {
-			collection = StudioInstallations
+		if (this.props.object instanceof Studio) {
+			collection = Studios
 		} else if (this.props.object instanceof ShowStyleBase) {
 			collection = ShowStyleBases
 		} else if (this.props.object instanceof ShowStyleVariant) {
@@ -342,10 +342,10 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 export function collectConfigs (item: ObjectWithConfig): ConfigManifestEntry[] {
 	let showStyleBases: Array<ShowStyleBase> = []
 
-	if (item instanceof StudioInstallation) {
+	if (item instanceof Studio) {
 		// All showStyles that the studio is supposed to support:
 		showStyleBases = ShowStyleBases.find({
-			_id: {$in: item.supportedShowStyleBase || []}
+			_id: { $in: item.supportedShowStyleBase || [] }
 		}).fetch()
 	} else if (item instanceof ShowStyleBase) {
 		showStyleBases = [item]
@@ -369,7 +369,7 @@ export function collectConfigs (item: ObjectWithConfig): ConfigManifestEntry[] {
 
 	let manifestEntries: Array<ConfigManifestEntry> = []
 	_.each(blueprints, (blueprint: Blueprint) => {
-		const entries = item instanceof StudioInstallation ? blueprint.studioConfigManifest : blueprint.showStyleConfigManifest
+		const entries = item instanceof Studio ? blueprint.studioConfigManifest : blueprint.showStyleConfigManifest
 		_.each(entries, (entry: ConfigManifestEntry) => {
 			// @todo: placeholder, implement this correctly
 			manifestEntries.push(entry)

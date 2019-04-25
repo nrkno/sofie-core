@@ -1,21 +1,21 @@
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 import { SegmentTimelineElementId } from '../ui/SegmentTimeline/SegmentTimeline'
-import { SegmentLines } from '../../lib/collections/SegmentLines'
+import { Parts } from '../../lib/collections/Parts'
 
-export function scrollToSegmentLine (segmentLineId: string): boolean {
+export function scrollToPart (partId: string): boolean {
 	// TODO: do scrolling within segment as well?
 
-	let segmentLine = SegmentLines.findOne(segmentLineId)
-	if (segmentLine) {
-		return scrollToSegment(segmentLine.segmentId)
+	let part = Parts.findOne(partId)
+	if (part) {
+		return scrollToSegment(part.segmentId)
 	}
 	return false
 }
 
 const HEADER_HEIGHT = 175
 
-export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string, forceScroll?: boolean): boolean {
+export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string, forceScroll?: boolean): boolean {
 
 	let elementToScrollTo: HTMLElement | JQuery<HTMLElement> = (
 		_.isString(elementToScrollToOrSegmentId) ?
@@ -40,7 +40,7 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 	return false
 }
 
-export function scrollToPosition ( scrollPosition: number): void {
+export function scrollToPosition (scrollPosition: number): void {
 	$(document.body).addClass('auto-scrolling')
 	const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
 	$(document.body).data('auto-scrolling', autoScrolling)

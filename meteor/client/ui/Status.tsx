@@ -78,7 +78,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 		// Subscribe to data:
 
 		this.subscribe('peripheralDevices', {})
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 		this.subscribe('showStyleBases', {})
 		this.subscribe('showStyleVariants', {})
 	}
@@ -86,7 +86,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 		const { t } = this.props
 
 		return (
-			<div className='mtl gutter'>
+			<div className='mtl gutter has-statusbar'>
 				{ /* <header className='mvs'>
 					<h1>{t('Status')}</h1>
 				</header> */ }

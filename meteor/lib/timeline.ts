@@ -10,29 +10,29 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 	let transformObject = (obj: TimelineObjGeneric): TimelineContentObject => {
 		let transformedObj = clone(_.extend({
 		   id: obj['_id'],
-		   roId: obj['roId']
+		   rundownId: obj['rundownId']
 	   }, _.omit(obj, ['_id', 'id', 'deviceId', 'siId'])))
 
 	   if (!transformedObj.content) transformedObj.content = {}
 	   if (!transformedObj.content.objects) transformedObj.content.objects = []
 
-		if (obj['slId']) {
+		if (obj['partId']) {
 			// Will cause a callback to be called, when the object starts to play:
-			transformedObj.content.callBack = 'segmentLinePlaybackStarted'
+			transformedObj.content.callBack = 'partPlaybackStarted'
 			transformedObj.content.callBackData = {
-				roId: obj.roId,
-				slId: obj['slId']
+				rundownId: obj.rundownId,
+				partId: obj['partId']
 			}
-			transformedObj.content.callBackStopped = 'segmentLinePlaybackStopped'
+			transformedObj.content.callBackStopped = 'partPlaybackStopped'
 	   }
-		if (obj['sliId']) {
+		if (obj['pieceId']) {
 			// Will cause a callback to be called, when the object starts to play:
-			transformedObj.content.callBack = 'segmentLineItemPlaybackStarted'
+			transformedObj.content.callBack = 'piecePlaybackStarted'
 			transformedObj.content.callBackData = {
-				roId: obj.roId,
-				sliId: obj['sliId']
+				rundownId: obj.rundownId,
+				pieceId: obj['pieceId']
 			}
-			transformedObj.content.callBackStopped = 'segmentLineItemPlaybackStopped'
+			transformedObj.content.callBackStopped = 'piecePlaybackStopped'
 		}
 
 	   return transformedObj

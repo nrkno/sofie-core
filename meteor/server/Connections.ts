@@ -32,7 +32,7 @@ Meteor.startup(() => {
 	// Reset the connection status of the devices
 	PeripheralDevices.find({
 		connected: true,
-		lastSeen: {$lt: getCurrentTime() - 60 * 1000},
+		lastSeen: { $lt: getCurrentTime() - 60 * 1000 },
 	}).forEach((device: PeripheralDevice) => {
 		PeripheralDevices.update(device._id, {$set: {
 			connected: false

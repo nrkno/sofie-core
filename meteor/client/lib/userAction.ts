@@ -21,7 +21,7 @@ export function doUserAction (
 	// Display a progress message, if the method takes a long time to execute:
 	let timeoutMessage: Notification | null = null
 	let timeout = Meteor.setTimeout(() => {
-		timeoutMessage = new Notification(undefined, NoticeLevel.NOTIFICATION, t('Waiting for action: {{actionName}}...', {actionName: userActionMethodName(t, method)}), 'userAction')
+		timeoutMessage = new Notification(undefined, NoticeLevel.NOTIFICATION, t('Waiting for action: {{actionName}}...', { actionName: userActionMethodName(t, method) }), 'userAction')
 		NotificationCenter.push(timeoutMessage)
 	}, 2000)
 
@@ -37,7 +37,7 @@ export function doUserAction (
 		if (err) {
 			console.error(err)
 			NotificationCenter.push(
-				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', {actionName: userActionMethodName(t, method)}), 'userAction')
+				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', { actionName: userActionMethodName(t, method) }), 'userAction')
 			)
 			if (callback) callback(err)
 		} else if (ClientAPI.isClientResponseError(res)) {
@@ -52,7 +52,7 @@ export function doUserAction (
 			if (timeoutMessage) {
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.NOTIFICATION,
-						okMessage || t('Action {{actionName}} done!', {actionName: userActionMethodName(t, method)})
+						okMessage || t('Action {{actionName}} done!', { actionName: userActionMethodName(t, method) })
 					, 'userAction', undefined, false, undefined, undefined, 2000)
 				)
 			}
@@ -71,15 +71,15 @@ function userActionMethodName (
 		case UserActionAPI.methods.moveNext: return 'Moving Next'
 
 		case UserActionAPI.methods.prepareForBroadcast: return 'Preparing for broadcast'
-		case UserActionAPI.methods.resetRunningOrder: return 'Resetting Runningorder'
-		case UserActionAPI.methods.resetAndActivate: return 'Resetting and activating Runningorder'
-		case UserActionAPI.methods.activate: return 'Activating Runningorder'
-		case UserActionAPI.methods.deactivate: return 'Deactivating Runningorder'
-		case UserActionAPI.methods.reloadData: return 'Reloading runningOrder data'
+		case UserActionAPI.methods.resetRundown: return 'Resetting Rundown'
+		case UserActionAPI.methods.resetAndActivate: return 'Resetting and activating Rundown'
+		case UserActionAPI.methods.activate: return 'Activating Rundown'
+		case UserActionAPI.methods.deactivate: return 'Deactivating Rundown'
+		case UserActionAPI.methods.reloadData: return 'Reloading rundown data'
 
-		case UserActionAPI.methods.disableNextSegmentLineItem: return 'Disabling next segmentLineItem'
-		case UserActionAPI.methods.toggleSegmentLineArgument: return 'Toggling SegmentLine-Argument'
-		case UserActionAPI.methods.segmentLineItemTakeNow: return 'Taking SegmentLineItem'
+		case UserActionAPI.methods.disableNextPiece: return 'Disabling next piece'
+		case UserActionAPI.methods.togglePartArgument: return 'Toggling Part-Argument'
+		case UserActionAPI.methods.pieceTakeNow: return 'Taking Piece'
 
 		case UserActionAPI.methods.segmentAdLibLineItemStart: return 'Starting AdLib Item'
 		case UserActionAPI.methods.baselineAdLibItemStart: return 'Starting AdLib Item'
@@ -91,12 +91,12 @@ function userActionMethodName (
 
 		case UserActionAPI.methods.saveEvaluation: return 'Saving Evaluation'
 
-		case UserActionAPI.methods.storeRunningOrderSnapshot: return 'Creating Snapshot for debugging'
+		case UserActionAPI.methods.storeRundownSnapshot: return 'Creating Snapshot for debugging'
 
 		case UserActionAPI.methods.sourceLayerOnLineStop: return 'Stopping source layer'
 
-		case UserActionAPI.methods.removeRunningOrder: return 'Removing Runningorder'
-		case UserActionAPI.methods.resyncRunningOrder: return 'Re-syncing Runningorder'
+		case UserActionAPI.methods.removeRundown: return 'Removing Rundown'
+		case UserActionAPI.methods.resyncRundown: return 'Re-syncing Rundown'
 
 		case UserActionAPI.methods.recordStop: return 'Stopping recording'
 		case UserActionAPI.methods.recordStart: return 'Starting recording'

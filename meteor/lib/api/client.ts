@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 export namespace ClientAPI {
 	export enum methods {
 		'execMethod' = 'client.execMethod',
+		'clientErrorReport' = 'client.clientErrorReport',
 		'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
 	}
 

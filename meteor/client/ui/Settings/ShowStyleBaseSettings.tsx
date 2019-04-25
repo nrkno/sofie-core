@@ -23,7 +23,7 @@ import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 
 interface IProps {
@@ -42,11 +42,11 @@ interface IState {
 interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
-	compatibleStudios: Array<StudioInstallation>
+	compatibleStudios: Array<Studio>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
-	const compatibleStudios = showStyleBase ? StudioInstallations.find({
+	const compatibleStudios = showStyleBase ? Studios.find({
 		supportedShowStyleBase: {
 			$in: [showStyleBase._id]
 		}
@@ -58,7 +58,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}).fetch() : [],
 		compatibleStudios: compatibleStudios
 	}
-})( class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -1184,9 +1184,9 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
 			},
-			message: [
+			message: <React.Fragment>
 				<p>{t('Are you sure you want to remove the variant "{{showStyleVariantId}}"?', { showStyleVariantId: showStyleVariant.name })}</p>
-			]
+			</React.Fragment>
 		})
 	}
 
