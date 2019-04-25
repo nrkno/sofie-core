@@ -11,8 +11,73 @@ import { setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
 
-export const updateExpectedMediaItems: (rundownId: string, partId: string) => void
-= syncFunctionIgnore(function updateExpectedMediaItems (rundownId: string, partId: string) {
+export enum PieceType {
+	PIECE = 'piece',
+	ADLIB = 'adlib'
+}
+
+function generateExpectedMediaItems (rundownId: string, studioId: string, piece: PieceGeneric, pieceType: string): ExpectedMediaItem[] {
+	const result: ExpectedMediaItem[] = []
+
+	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds && piece.partId) {
+		(piece.content.mediaFlowIds as string[]).forEach(function (flow) {
+			const id = getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + piece.partId)
+			result.push({
+				_id: id,
+				disabled: false,
+				lastSeen: getCurrentTime(),
+				mediaFlowId: flow,
+				path: this[0].toString(),
+				url: this[1].toString(),
+
+				rundownId: rundownId,
+				partId: piece.partId as string,
+				studioId: studioId
+			})
+		}, [piece.content.fileName, piece.content.path])
+	}
+
+	return result
+}
+
+export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void 
+= syncFunctionIgnore(function updateExpectedMediaItemsOnRundown (rundownId: string) {
+	check(rundownId, String)
+
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) {
+		const removedItems = ExpectedMediaItems.remove({
+			rundownId: rundownId
+		})
+		logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
+		return
+	}
+	const studioId = rundown.studioId
+
+	const pieces = Pieces.find({
+		rundownId: rundown._id
+	})
+	const adlibs = AdLibPieces.find({
+		rundownId: rundown._id
+	})
+
+	const eMIs: ExpectedMediaItem[] = []
+
+	function iterateOnPieceLike (piece: PieceGeneric, pieceType: string) {
+		eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
+	}
+
+	// robalis.forEach((doc) => iterateOnPieceLike(doc, 'robali'))
+	pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
+	adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
+
+	saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(ExpectedMediaItems, {
+		rundownId: rundown._id
+	}, eMIs)
+})
+
+export const updateExpectedMediaItemsOnPart: (rundownId: string, partId: string) => void
+= syncFunctionIgnore(function updateExpectedMediaItemsOnPart (rundownId: string, partId: string) {
 	check(rundownId, String)
 	check(partId, String)
 
@@ -41,37 +106,22 @@ export const updateExpectedMediaItems: (rundownId: string, partId: string) => vo
 	// const robalis = RundownBaselineAdLibPieces.find({
 	// 	rundownId: rundown._id
 	// })
-	const slis = Pieces.find({
+	const pieces = Pieces.find({
 		rundownId: rundown._id,
 		partId: part._id
 	})
-	const slali = AdLibPieces.find({
+	const adlibs = AdLibPieces.find({
 		rundownId: rundown._id,
 		partId: part._id
 	})
 
-	function iterateOnPieceLike (doc: PieceGeneric, prefix: string) {
-		if (doc.content && doc.content.fileName && doc.content.path && doc.content.mediaFlowIds) {
-			(doc.content.mediaFlowIds as string[]).forEach(function (flow) {
-				eMIs.push(literal<ExpectedMediaItem>({
-					_id: getHash(prefix + '_' + doc._id + '_' + flow + '_' + rundownId + '_' + partId),
-					disabled: false,
-					lastSeen: getCurrentTime(),
-					mediaFlowId: flow,
-					path: this[0].toString(),
-					url: this[1].toString(),
-
-					rundownId: rundownId,
-					partId: partId,
-					studioId: studioId
-				}))
-			}, [doc.content.fileName, doc.content.path])
-		}
+	function iterateOnPieceLike (piece: PieceGeneric, pieceType: string) {
+		eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 	}
 
 	// robalis.forEach((doc) => iterateOnPieceLike(doc, 'robali'))
-	slis.forEach((doc) => iterateOnPieceLike(doc, 'piece'))
-	slali.forEach((doc) => iterateOnPieceLike(doc, 'slali'))
+	pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
+	adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
 
 	saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(ExpectedMediaItems, {
 		rundownId: rundown._id,
