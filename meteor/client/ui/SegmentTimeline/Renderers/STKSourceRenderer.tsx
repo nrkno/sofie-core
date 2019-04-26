@@ -91,7 +91,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 	getPreviewUrl = (): string | undefined => {
 		if (this.props.piece) {
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 			}
@@ -103,7 +103,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
 				return _.compact(metadata.mediainfo.scenes.map((i) => {
 					if (i < itemDuration) {
@@ -119,7 +119,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			let items: Array<Anomaly> = []
 			// add freezes
 			if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
@@ -135,7 +135,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			let items: Array<Anomaly> = []
 			// add blacks
 			if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
@@ -155,7 +155,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		let msgBlacks = ''
 		let msgFreezes = ''
 		const item = this.props.piece
-		const metadata = item.metadata as MediaObject
+		const metadata = item.contentMetaData as MediaObject
 		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
 		if (this.blacks) {
 			let tot = 0

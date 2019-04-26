@@ -139,7 +139,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
 					segmentCopy.status = status
-					segmentCopy.metadata = metadata
+					segmentCopy.contentMetaData = metadata
 
 					overrides.piece = _.extend(overrides.piece || {}, segmentCopy)
 				}

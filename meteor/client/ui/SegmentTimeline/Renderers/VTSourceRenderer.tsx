@@ -19,6 +19,9 @@ import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
+	scenes?: Array<number>
+	blacks?: Array<Anomaly>
+	freezes?: Array<Anomaly>
 }
 export const VTSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 	vPreview: HTMLVideoElement
@@ -26,12 +29,13 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	rightLabel: HTMLSpanElement
 	begin: string
 	end: string
-	scenes?: Array<number>
-	blacks?: Array<Anomaly>
-	freezes?: Array<Anomaly>
+
+	metadataRev: string | undefined
 
 	constructor (props: IProps & InjectedTranslateProps) {
 		super(props)
+
+		this.state = {}
 	}
 
 	setVideoRef = (e: HTMLVideoElement) => {
@@ -66,8 +70,15 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 
 	componentDidMount () {
 		this.updateAnchoredElsWidths()
-
-		this.scenes = this.getScenes()
+		const metadata = this.props.piece.contentMetaData as MediaObject
+		if (metadata && metadata._rev) {
+			this.metadataRev = metadata._rev // update only if the metadata object changed
+		}
+		this.setState({
+			scenes: this.getScenes(),
+			freezes: this.getFreezes(),
+			blacks: this.getBlacks()
+		})
 	}
 
 	updateAnchoredElsWidths = () => {
@@ -87,15 +98,28 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 			this.updateAnchoredElsWidths()
 		}
 
-		this.scenes = this.getScenes()
-		this.freezes = this.getFreezes()
-		this.blacks = this.getBlacks()
+		const metadata = this.props.piece.contentMetaData as MediaObject
+		if (metadata && metadata._rev && metadata._rev !== this.metadataRev) {
+			this.metadataRev = metadata._rev // update only if the metadata object changed
+			this.setState({
+				scenes: this.getScenes(),
+				freezes: this.getFreezes(),
+				blacks: this.getBlacks()
+			})
+		} else if (!metadata && this.metadataRev !== undefined) {
+			this.metadataRev = undefined
+			this.setState({
+				scenes: undefined,
+				freezes: undefined,
+				blacks: undefined
+			})
+		}
 	}
 
 	getPreviewUrl = (): string | undefined => {
 		if (this.props.piece) {
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 			}
@@ -107,7 +131,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
 				return _.compact(metadata.mediainfo.scenes.map((i) => {
 					if (i < itemDuration) {
@@ -123,7 +147,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			let items: Array<Anomaly> = []
 			// add freezes
 			if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
@@ -139,7 +163,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
-			const metadata = item.metadata as MediaObject
+			const metadata = item.contentMetaData as MediaObject
 			let items: Array<Anomaly> = []
 			// add blacks
 			if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
@@ -159,11 +183,11 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		let msgBlacks = ''
 		let msgFreezes = ''
 		const item = this.props.piece
-		const metadata = item.metadata as MediaObject
+		const metadata = item.contentMetaData as MediaObject
 		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
-		if (this.blacks) {
+		if (this.state.blacks) {
 			let tot = 0
-			for (const b of this.blacks) {
+			for (const b of this.state.blacks) {
 				tot += b.duration
 				let s = b.start
 				let e = b.end
@@ -178,9 +202,9 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 			// @todo: hardcoded 25fps
 			if (tot > 0) msgBlacks = `${Math.round(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
 		}
-		if (this.freezes) {
+		if (this.state.freezes) {
 			let tot = 0
-			for (const b of this.freezes) {
+			for (const b of this.state.freezes) {
 				tot += b.duration
 				let s = b.start
 				let e = b.end
@@ -230,16 +254,16 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 
 		return <React.Fragment>
 					{this.renderInfiniteItemContentEnded()}
-					{this.scenes &&
-						this.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
+					{this.state.scenes &&
+						this.state.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
 						<span className='segment-timeline__layer-item__scene-marker' key={i}
 							style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.freezes &&
-						this.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+					{this.state.freezes &&
+						this.state.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start}
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.blacks &&
-						this.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+					{this.state.blacks &&
+						this.state.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 						<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start}
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>

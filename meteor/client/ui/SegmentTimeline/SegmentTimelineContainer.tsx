@@ -44,7 +44,7 @@ export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
 	/** Metadata object */
-	metadata?: any
+	contentMetaData?: any
 	message?: string | null
 }
 interface IProps {
