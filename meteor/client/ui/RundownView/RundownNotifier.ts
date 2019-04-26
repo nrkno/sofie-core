@@ -23,6 +23,7 @@ import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { Pieces } from '../../../lib/collections/Pieces'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -42,6 +43,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _notifier: NotifierHandle
 
 	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
+	private _mediaStatusComps: _.Dictionary<Tracker.Computation> = {}
 	private _mediaStatusDep: Tracker.Dependency
 
 	private _notes: _.Dictionary<Notification | undefined> = {}
@@ -131,6 +133,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
 
+		_.forEach(this._mediaStatusComps, (element, key) => element.stop())
 		this._notifier.stop()
 	}
 
@@ -306,20 +309,19 @@ class RundownViewNotifier extends WithManagedTracker {
 		let oldItemIds: Array<string> = []
 		const rPieces = reactiveData.getRPieces(rRundownId)
 		this.autorun((comp: Tracker.Computation) => {
-			// console.log('RundownViewNotifier 5')
-			const items = rPieces.get()
-			const newItemIds = items.map(item => item._id)
-			items.forEach((item) => {
-				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
-				const part = Parts.findOne(item.partId)
+			const pieces = rPieces.get()
+			const newItemIds = pieces.map(item => item._id)
+			pieces.forEach((piece) => {
+				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
+				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
 				if (sourceLayer && part) {
-					this.autorun(() => {
-						// console.log('RundownViewNotifier 5-1')
-						const { status, message } = checkPieceContentStatus(item, sourceLayer, studio.config)
+					// we don't want this to be in a non-reactive context, so we manage this computation manually
+					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
+						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.LineItemStatusCode.OK) && (status !== RundownAPI.LineItemStatusCode.UNKNOWN) && (status !== RundownAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
-							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.partId, getCurrentTime(), true, [
+							newNotification = new Notification(piece._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + piece.partId, getCurrentTime(), true, [
 								{
 									label: t('Show issue'),
 									type: 'default'
@@ -332,10 +334,10 @@ class RundownViewNotifier extends WithManagedTracker {
 										if (handler && typeof handler === 'function') {
 											handler({
 												sourceLocator: {
-													name: item.name,
-													rundownId: item.rundownId,
-													pieceId: item._id,
-													partId: item.partId
+													name: piece.name,
+													rundownId: piece.rundownId,
+													pieceId: piece._id,
+													partId: piece.partId
 												}
 											})
 										}
@@ -343,22 +345,26 @@ class RundownViewNotifier extends WithManagedTracker {
 							})
 						}
 
-						if (newNotification && !Notification.isEqual(this._mediaStatus[item._id], newNotification)) {
-							this._mediaStatus[item._id] = newNotification
+						if (newNotification && !Notification.isEqual(this._mediaStatus[piece._id], newNotification)) {
+							this._mediaStatus[piece._id] = newNotification
 							this._mediaStatusDep.changed()
-						} else if (!newNotification && this._mediaStatus[item._id]) {
-							delete this._mediaStatus[item._id]
+						} else if (!newNotification && this._mediaStatus[piece._id]) {
+							delete this._mediaStatus[piece._id]
 							this._mediaStatusDep.changed()
 						}
 					})
 				} else {
-					delete this._mediaStatus[item._id]
+					delete this._mediaStatus[piece._id]
 					this._mediaStatusDep.changed()
 				}
 			})
 
-			_.difference(oldItemIds, newItemIds).forEach((item) => {
+			const removedItems = _.difference(oldItemIds, newItemIds)
+			removedItems.forEach((item) => {
 				delete this._mediaStatus[item]
+				this._mediaStatusComps[item].stop()
+				delete this._mediaStatusComps[item]
+
 				this._mediaStatusDep.changed()
 			})
 			oldItemIds = newItemIds
