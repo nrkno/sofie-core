@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-24T09:22:42.720Z\n"
-"PO-Revision-Date: 2019-04-24T09:22:42.720Z\n"
+"POT-Creation-Date: 2019-04-26T10:28:25.694Z\n"
+"PO-Revision-Date: 2019-04-26T10:28:25.694Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -605,20 +605,20 @@ msgid "Update"
 msgstr ""
 
 msgid ""
-"Are you sure you want to update the Blueprints from the file "
+"Are you sure you want to update the blueprints from the file "
 "\"{{fileName}}\"?"
 msgstr ""
 
 msgid "Assigned Show Styles:"
 msgstr ""
 
-msgid "No show styles are using this blueprint"
+msgid "This Blueprint is not being used by any Show Style"
 msgstr ""
 
 msgid "Assigned Studios:"
 msgstr ""
 
-msgid "No studios are compatible with this blueprint"
+msgid "This Blueprint is not compatible with any Studio"
 msgstr ""
 
 msgid "Unassign"
@@ -983,6 +983,9 @@ msgid "Blueprint"
 msgstr ""
 
 msgid "Compatible Studios:"
+msgstr ""
+
+msgid "This Show Style is not compatible with any Studio"
 msgstr ""
 
 msgid ""

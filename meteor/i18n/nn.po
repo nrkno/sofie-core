@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-24T09:22:42.720Z\n"
-"PO-Revision-Date: 2019-04-24 11:38+0200\n"
+"POT-Creation-Date: 2019-04-26T10:28:25.694Z\n"
+"PO-Revision-Date: 2019-04-26 12:44+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -125,7 +125,7 @@ msgid "Settings"
 msgstr "Innstillingar"
 
 msgid "My name is {{name}}"
-msgstr "Mitt navn {{name}}"
+msgstr ""
 
 msgid "Operating Mode"
 msgstr ""
@@ -625,10 +625,10 @@ msgid "Update"
 msgstr ""
 
 msgid ""
-"Are you sure you want to update the Blueprints from the file "
+"Are you sure you want to update the blueprints from the file "
 "\"{{fileName}}\"?"
 msgstr ""
-"Er du sikker på at du vil oppdatere blueprintet frå fila ”{{fileName}}”?"
+"Er du sikker på at du vil oppdatere blueprintet frå fila \"{{fileName}}\"?"
 
 msgid "Assigned Show Styles:"
 msgstr ""
@@ -639,23 +639,8 @@ msgstr ""
 msgid "Assigned Studios:"
 msgstr ""
 
-msgid "Unassign"
+msgid "This Blueprint is not compatible with any Studio"
 msgstr ""
-
-msgid "Assign"
-msgstr ""
-
-msgid "Assigned Show Styles:"
-msgstr ""
-
-msgid "No show styles are using this blueprint"
-msgstr ""
-
-msgid "Assigned Studios:"
-msgstr ""
-
-msgid "No studios are compatible with this blueprint"
-msgstr "Inga studio er kompatible med denne showstylen"
 
 msgid "Unassign"
 msgstr ""
@@ -1031,6 +1016,9 @@ msgstr "Blueprint"
 
 msgid "Compatible Studios:"
 msgstr "Kompatible studio:"
+
+msgid "This Show Style is not compatible with any Studio"
+msgstr ""
 
 msgid ""
 "Are you sure you want to delete this runtime argument \"{{property}}: "
@@ -1567,6 +1555,12 @@ msgstr "Opptak held framleis på"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "No studios are compatible with this blueprint"
+#~ msgstr "Inga studio er kompatible med denne showstylen"
+
+#~ msgid "No studios are compatible with this Show Style"
+#~ msgstr "Inga studio er kompatible med denne showstylen"
 
 #~ msgid "Are you sure you want to delete rundown \"{{rundownSlug}}\"?"
 #~ msgstr ""
