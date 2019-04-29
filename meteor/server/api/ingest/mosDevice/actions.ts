@@ -68,8 +68,9 @@ export namespace MOSDeviceActions {
 			if (!mosPayload.Body) throw new Meteor.Error(500, `Part Cache for "${partCache.externalId}" missing FullStory content!`)
 
 			const story = mosPayload.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
-			story.EditorialStart = inPoint
-			story.EditorialDuration = duration
+			const timeBase = story.TimeBase || 1
+			story.EditorialStart = Math.floor(inPoint * timeBase)
+			story.EditorialDuration = Math.ceil(duration * timeBase)
 
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
