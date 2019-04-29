@@ -458,8 +458,9 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
 		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0].Content
-		story.EditorialStart = inPoint
-		story.EditorialDuration = duration
+		const timeBase = story.TimeBase || 1
+		story.EditorialStart = Math.floor(inPoint * timeBase)
+		story.EditorialDuration = Math.ceil(duration * timeBase)
 
 		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
 		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.mosDeviceId + '" not found' )
