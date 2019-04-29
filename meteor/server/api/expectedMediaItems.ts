@@ -110,11 +110,11 @@ export const updateExpectedMediaItemsOnPart: (rundownId: string, partId: string)
 	const pieces = Pieces.find({
 		rundownId: rundown._id,
 		partId: part._id
-	})
+	}).fetch()
 	const adlibs = AdLibPieces.find({
 		rundownId: rundown._id,
 		partId: part._id
-	})
+	}).fetch()
 
 	function iterateOnPieceLike (piece: PieceGeneric, pieceType: string) {
 		eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
