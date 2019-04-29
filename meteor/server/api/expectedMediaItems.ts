@@ -5,7 +5,7 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { Pieces, PieceGeneric } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
-import { saveIntoDb, literal, getCurrentTime, getHash } from '../../lib/lib'
+import { saveIntoDb, getCurrentTime, getHash } from '../../lib/lib'
 import { Parts } from '../../lib/collections/Parts'
 import { setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
@@ -24,6 +24,7 @@ function generateExpectedMediaItems (rundownId: string, studioId: string, piece:
 			const id = getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + piece.partId)
 			result.push({
 				_id: id,
+				label: piece.name,
 				disabled: false,
 				lastSeen: getCurrentTime(),
 				mediaFlowId: flow,

@@ -5,6 +5,10 @@ import { registerCollection, Time } from '../lib'
 
 export interface ExpectedMediaItem {
 	_id: string
+
+	/** Source label that can be used to identify the EMI */
+	label?: string
+
 	/** Local path to the media object */
 	path: string
 
