@@ -69,8 +69,9 @@ export namespace MOSDeviceActions {
 
 			const story = mosPayload.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
 			const timeBase = story.TimeBase || 1
-			story.EditorialStart = Math.floor(inPoint * timeBase)
-			story.EditorialDuration = Math.ceil(duration * timeBase)
+			story.EditorialStart = inPoint * timeBase
+			story.EditorialDuration = duration * timeBase
+			story.TimeBase = timeBase
 
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
