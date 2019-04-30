@@ -55,6 +55,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 
 			'has-default-action': !!defaultAction,
 
+			'persistent': item.persistent,
+
 			'is-highlighted': this.props.isHighlighted
 		})}
 		onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}

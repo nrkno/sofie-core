@@ -331,3 +331,11 @@
         right: calc(25vw + 85px);
     }
 }
+
+@media screen and (max-width: 1023px) {
+    .container-fluid > .notification-pop-ups {
+        .notification-pop-up.persistent {
+            display: none !important;
+        }
+    }
+}
