@@ -147,6 +147,15 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundow
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!canBeUpdated(existingDbRundown)) return
 
+	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
+}
+export function updateRundownAndSaveCache (
+	studio: Studio,
+	rundownId: string,
+	existingDbRundown: Rundown | undefined,
+	ingestRundown: IngestRundown,
+	dataSource?: string,
+	peripheralDevice?: PeripheralDevice) {
 	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
 
 	saveRundownCache(rundownId, ingestRundown)

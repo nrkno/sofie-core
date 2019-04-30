@@ -78,7 +78,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				title: t('Restore from this Snapshot file?'),
 				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
 				onAccept: () => {
-					fetch('/backup/restore', {
+					fetch('/snapshot/restore', {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {
