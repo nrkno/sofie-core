@@ -114,7 +114,7 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getUnsentExternalMessageCount (studioId: string): ReactiveVar<number> {
+	export function getUnsentExternalMessageCount (studioId: string, rundownId: string): ReactiveVar<number> {
 		const rVar = new ReactiveVar<number>(0)
 
 		Tracker.autorun(() => {
@@ -122,6 +122,7 @@ export namespace reactiveData {
 			const unsentMessages = ExternalMessageQueue.find({
 				expires: { $gt: now },
 				studioId: { $eq: studioId },
+				rundownId: { $eq: rundownId },
 				sent: { $not: { $gt: 0 } },
 				tryCount: { $not: { $lt: 1 } }
 			}, {
