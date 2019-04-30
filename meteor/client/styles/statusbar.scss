@@ -79,13 +79,14 @@
 			margin-left: -1px;
 		}
 
-		.svg-inline--fa {
-			position: relative;
-			width: 35%;
-			height: auto;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
+		&.status-bar__controls__button--take {
+			text-transform: uppercase;
+			font-weight: 700;
+			display: none !important;
+
+			@media (pointer: coarse) {
+				display: inline !important;
+			}
 		}
 	}
 
@@ -95,6 +96,7 @@
 		user-select: none;
 		margin-top: 2em;
 		margin-left: 5px;
+		margin-bottom: 3em;
 
 		.keyboard_key {
 			display: inline-block;

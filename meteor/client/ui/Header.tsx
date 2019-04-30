@@ -36,7 +36,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		}
 	}
 
-	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (!this.state.showNotifications === true) {
 			NotificationCenter.snoozeAll()
 		}
@@ -46,7 +46,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLDivElement>) => {
+	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			showSupportPanel: !this.state.showSupportPanel
 		})

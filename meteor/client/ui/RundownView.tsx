@@ -1392,7 +1392,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}, isOpen ? 1 : 1000)
 	}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLDivElement>) => {
+	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			isSupportPanelOpen: !this.state.isSupportPanelOpen
 		})
@@ -1473,7 +1473,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		return false
 	}
 
-	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (!this.state.isNotificationsCenterOpen === true) {
 			NotificationCenter.snoozeAll()
 			NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
@@ -1540,6 +1540,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this._inspectorDrawer = isp
 	}
 
+	onTake = (e: any) => {
+		const { t } = this.props
+		if (this.state.studioMode && this.props.rundown) {
+			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+		}
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -1573,7 +1580,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
 									onToggleNotifications={this.onToggleNotifications}
 									isSupportPanelOpen={this.state.isSupportPanelOpen}
-									onToggleSupportPanel={this.onToggleSupportPanel} />
+									onToggleSupportPanel={this.onToggleSupportPanel}
+									isStudioMode={this.state.studioMode}
+									onTake={this.onTake} />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<VelocityReact.VelocityTransitionGroup enter={{

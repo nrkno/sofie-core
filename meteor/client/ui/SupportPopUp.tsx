@@ -47,17 +47,17 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 
 interface IToggleProps {
 	isOpen?: boolean
-	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+	onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 	render () {
 		return <React.Fragment>
-			<div className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
+			<button className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
 				'status-bar__controls__button--open': this.props.isOpen,
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<FontAwesomeIcon icon={faQuestion} />
-			</div>
+			</button>
 		</React.Fragment>
 	}
 }

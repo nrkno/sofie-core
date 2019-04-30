@@ -224,7 +224,7 @@ export class NotificationCenterPanel extends React.Component {
  */
 interface IToggleProps {
 	/** Click event handler */
-	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+	onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	/** Use 'open' class for the button to signify that the notification center is open */
 	isOpen?: boolean
 }
@@ -246,7 +246,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 })(class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
 	render () {
 		return (
-			<div className={ClassNames('status-bar__controls__button', 'notifications__toggle-button', {
+			<button className={ClassNames('status-bar__controls__button', 'notifications__toggle-button', {
 				'status-bar__controls__button--open': this.props.isOpen,
 				'has-items': this.props.count > 0
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
@@ -254,7 +254,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 				{ this.props.count > 0 &&
 					<span className='notifications__toggle-button__count'>{this.props.count > 99 ? '99+' : this.props.count}</span>
 				}
-			</div>
+			</button>
 		)
 	}
 })

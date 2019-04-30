@@ -286,7 +286,7 @@ body.vertical-overflow-only {
 	@media screen and (max-width: 800px) {
 		.timing {
 			.timing-clock.heavy-light {
-				margin-right: none;
+				margin-right: 0;
 			}
 	
 			.timing-clock.plan-end {
