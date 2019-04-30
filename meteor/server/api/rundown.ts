@@ -44,9 +44,9 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
-	if (!studioBlueprint.getShowStyleId) throw new Meteor.Error(500, `Studio "${studio._id}" blueprint missing property getShowStyleId`)
+	if (!studioBlueprint.blueprint.getShowStyleId) throw new Meteor.Error(500, `Studio "${studio._id}" blueprint missing property getShowStyleId`)
 
-	const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRundown)
+	const showStyleId = studioBlueprint.blueprint.getShowStyleId(context, showStyleBases, ingestRundown)
 	if (showStyleId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
 		return null
@@ -62,7 +62,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
 	if (!showStyleBlueprint) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
-	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
+	const variantId = showStyleBlueprint.blueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
 	if (variantId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null`)
 		return null

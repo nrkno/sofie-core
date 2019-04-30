@@ -67,12 +67,12 @@ function handleEvent (event: AsRunLogEvent): void {
 				const rundown = Rundowns.findOne(event.rundownId) as Rundown
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
-				let bp = getBlueprintOfRundown(rundown)
+				const { blueprint } = getBlueprintOfRundown(rundown)
 
-				if (bp.onAsRunEvent) {
+				if (blueprint.onAsRunEvent) {
 					const context = new AsRunEventContext(rundown, undefined, event)
 
-					Promise.resolve(bp.onAsRunEvent(context))
+					Promise.resolve(blueprint.onAsRunEvent(context))
 					.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
 
 						queueExternalMessages(rundown, messages)

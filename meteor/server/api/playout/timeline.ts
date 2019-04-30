@@ -207,7 +207,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				// next (on pvw (or on pgm if first))
 				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studio))
 
-				const showStyleBlueprint = getBlueprintOfRundown(activeRundown)
+				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
 				if (showStyleBlueprint.onTimelineGenerate) {
 					const context = new RundownContext(activeRundown, studio)
 					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), object => literal<TimelineObjGeneric>({
@@ -236,8 +236,9 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 			} else {
 				let studioBaseline: TimelineObjRundown[] = []
 
-				const blueprint = loadStudioBlueprints(studio)
-				if (blueprint) {
+				const studioBlueprint = loadStudioBlueprints(studio)
+				if (studioBlueprint) {
+					const blueprint = studioBlueprint.blueprint
 					const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
 					studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 

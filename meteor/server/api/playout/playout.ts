@@ -248,7 +248,7 @@ export namespace ServerPlayoutAPI {
 		// beforeTake(rundown, previousPart || null, takePart)
 		beforeTake(rundownData, previousPart || null, takePart)
 
-		let blueprint = waitForPromise(pBlueprint)
+		const { blueprint } = waitForPromise(pBlueprint)
 		if (blueprint.onPreTake) {
 			try {
 				waitForPromise(
