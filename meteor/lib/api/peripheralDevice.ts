@@ -4,6 +4,8 @@ import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 
+// Note: When making changes to this file, remember to also update the copy in core-integration library
+
 namespace PeripheralDeviceAPI {
 
 export enum StatusCode {
@@ -51,7 +53,7 @@ export enum DeviceType {
 	PLAYOUT = 1,
 	OTHER = 2, // i.e. sub-devices
 	MEDIA_MANAGER = 3,
-	SPREADSHEET = 4,
+	SPREADSHEET = 4
 }
 export interface InitOptions {
 	type: DeviceType
@@ -115,17 +117,17 @@ export enum methods {
 	'mosRoItemInsert' 	= 'peripheralDevice.mos.roItemInsert',
 	'mosRoItemReplace' 	= 'peripheralDevice.mos.roItemReplace',
 	'mosRoItemMove' 	= 'peripheralDevice.mos.roItemMove',
-	'mosRoItemDelete' 	= 'peripheralDevice.mos.RoItemDelete',
-	'mosRoItemSwap' 	= 'peripheralDevice.mos.RoItemSwap',
-	'mosRoReadyToAir' 	= 'peripheralDevice.mos.RoReadyToAir',
-	'mosRoFullStory' 	= 'peripheralDevice.mos.RoFullStory',
+	'mosRoItemDelete' 	= 'peripheralDevice.mos.roItemDelete',
+	'mosRoItemSwap' 	= 'peripheralDevice.mos.roItemSwap',
+	'mosRoReadyToAir' 	= 'peripheralDevice.mos.roReadyToAir',
+	'mosRoFullStory' 	= 'peripheralDevice.mos.roFullStory',
 
 	'dataRundownDelete'	= 'peripheralDevice.rundown.rundownDelete',
 	'dataRundownCreate'	= 'peripheralDevice.rundown.rundownCreate',
 	'dataRundownUpdate'	= 'peripheralDevice.rundown.rundownUpdate',
-	'dataSegmentDelete'			= 'peripheralDevice.rundown.segmentDelete',
-	'dataSegmentCreate'			= 'peripheralDevice.rundown.segmentCreate',
-	'dataSegmentUpdate'			= 'peripheralDevice.rundown.segmentUpdate',
+	'dataSegmentDelete'	= 'peripheralDevice.rundown.segmentDelete',
+	'dataSegmentCreate'	= 'peripheralDevice.rundown.segmentCreate',
+	'dataSegmentUpdate'	= 'peripheralDevice.rundown.segmentUpdate',
 	'dataPieceDelete'	= 'peripheralDevice.rundown.pieceDelete',
 	'dataPieceCreate'	= 'peripheralDevice.rundown.pieceCreate',
 	'dataPieceUpdate'	= 'peripheralDevice.rundown.pieceUpdate',
@@ -141,7 +143,7 @@ export enum methods {
 	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
 
 	'requestUserAuthToken' 	= 'peripheralDevice.spreadsheet.requestUserAuthToken',
-	'storeAccessToken' 	= 'peripheralDevice.spreadsheet.storeAccessToken',
+	'storeAccessToken' 	= 'peripheralDevice.spreadsheet.storeAccessToken'
 
 }
 export function initialize (id: string, token: string, options: InitOptions): Promise<string> {
