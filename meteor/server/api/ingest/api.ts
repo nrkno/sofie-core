@@ -51,13 +51,13 @@ methods[PeripheralDeviceAPI.methods.dataSegmentCreate] = (deviceId: string, devi
 methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) => {
 	return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
 }
-methods[PeripheralDeviceAPI.methods.dataPieceDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string) => {
+methods[PeripheralDeviceAPI.methods.dataPartDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string) => {
 	return RundownInput.dataPartDelete(this, deviceId, deviceToken, rundownId, segmentId, partId)
 }
-methods[PeripheralDeviceAPI.methods.dataPieceCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
+methods[PeripheralDeviceAPI.methods.dataPartCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
 	return RundownInput.dataPartCreate(this, deviceId, deviceToken, rundownId, segmentId, partId, newStory)
 }
-methods[PeripheralDeviceAPI.methods.dataPieceUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
+methods[PeripheralDeviceAPI.methods.dataPartUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
 	return RundownInput.dataPartUpdate(this, deviceId, deviceToken, rundownId, segmentId, partId, newStory)
 }
 
