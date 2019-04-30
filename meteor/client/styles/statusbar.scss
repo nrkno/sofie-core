@@ -12,7 +12,7 @@
 	padding-top: 70px;
 	background: #fff;
 
-	transition: 0.3s background;
+	transition: 0.3s background-color;
 
 	&.super-dark {
 		background: #000 !important;
@@ -37,6 +37,7 @@
 		margin-bottom: 0.5rem;
 		font-size: 1em;
 		box-sizing: border-box;
+		padding: 0;
 		cursor: pointer;
 
 		&::after {
@@ -87,6 +88,10 @@
 			@media (pointer: coarse) {
 				display: inline !important;
 			}
+		}
+
+		> div[aria-label="animation"] {
+
 		}
 	}
 
