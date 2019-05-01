@@ -23,8 +23,6 @@ describe('Test recieved mos actions', () => {
 
 		const { device } = setupDefaultStudioEnvironment()
 
-		const rundownId = Random.id()
-
 		const rundownData: IngestRundown = {
 			externalId: 'abcde',
 			name: 'MyMockRundown',
@@ -68,7 +66,7 @@ describe('Test recieved mos actions', () => {
 			]
 		}
 
-		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownId, rundownData)
+		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData.externalId, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({

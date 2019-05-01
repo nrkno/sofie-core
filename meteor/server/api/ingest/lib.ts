@@ -44,14 +44,6 @@ export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio
 	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
 	return studio
 }
-// export function getStudioFromRundown (rundown: Rundown): Studio {
-// 	const studioId = rundown.studioId
-// 	if (!studioId) throw new Meteor.Error(500, 'Rundown "' + rundown._id + '" has no Studio')
-
-// 	const studio = Studios.findOne(studioId)
-// 	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
-// 	return studio
-// }
 export function getRundown (rundownId: string): Rundown {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, 'Rundown ' + rundownId + ' not found')

@@ -1,4 +1,4 @@
-import { Rundown, Rundowns, DBRundown } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 
 export function areThereActiveRundownsInStudio (studioId: string, excludeRundownId?: string): Rundown[] {
 	let anyOtherActiveRundowns = Rundowns.find({

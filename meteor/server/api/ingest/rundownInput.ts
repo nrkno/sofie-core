@@ -57,14 +57,14 @@ export namespace RundownInput {
 		check(rundownId, String)
 		handleRemovedRundown(peripheralDevice, rundownId)
 	}
-	export function dataRundownCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, rundownData: any) {
+	export function dataRundownCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, rundownData: IngestRundown) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownCreate', rundownId, rundownData)
 		check(rundownId, String)
 		check(rundownData, Object)
 		handleUpdatedRundown(peripheralDevice, rundownData, 'dataRundownCreate')
 	}
-	export function dataRundownUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, rundownData: any) {
+	export function dataRundownUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, rundownData: IngestRundown) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownUpdate', rundownId, rundownData)
 		check(rundownId, String)
@@ -79,21 +79,21 @@ export namespace RundownInput {
 		check(segmentId, String)
 		handleRemovedSegment(peripheralDevice, rundownId, segmentId)
 	}
-	export function dataSegmentCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) {
+	export function dataSegmentCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSegment: IngestSegment) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentCreate', rundownId, segmentId, newSection)
+		logger.info('dataSegmentCreate', rundownId, segmentId, newSegment)
 		check(rundownId, String)
 		check(segmentId, String)
-		check(newSection, Object)
-		handleUpdatedSegment(peripheralDevice, rundownId, newSection)
+		check(newSegment, Object)
+		handleUpdatedSegment(peripheralDevice, rundownId, newSegment)
 	}
-	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) {
+	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSegment: IngestSegment) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataSegmentUpdate', rundownId, segmentId, newSection)
+		logger.info('dataSegmentUpdate', rundownId, segmentId, newSegment)
 		check(rundownId, String)
 		check(segmentId, String)
-		check(newSection, Object)
-		handleUpdatedSegment(peripheralDevice, rundownId, newSection)
+		check(newSegment, Object)
+		handleUpdatedSegment(peripheralDevice, rundownId, newSegment)
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string) {
@@ -104,28 +104,31 @@ export namespace RundownInput {
 		check(partId, String)
 		handleRemovedPart(peripheralDevice, rundownId, segmentId, partId)
 	}
-	export function dataPartCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) {
+	export function dataPartCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newPart: IngestPart) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataPartCreate', rundownId, segmentId, partId, newStory)
+		logger.info('dataPartCreate', rundownId, segmentId, partId, newPart)
 		check(rundownId, String)
 		check(segmentId, String)
 		check(partId, String)
-		check(newStory, Object)
-		handleUpdatedPart(peripheralDevice, rundownId, segmentId, partId, newStory)
+		check(newPart, Object)
+		handleUpdatedPart(peripheralDevice, rundownId, segmentId, partId, newPart)
 	}
-	export function dataPartUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) {
+	export function dataPartUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newPart: IngestPart) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		logger.info('dataPartUpdate', rundownId, segmentId, partId, newStory)
+		logger.info('dataPartUpdate', rundownId, segmentId, partId, newPart)
 		check(rundownId, String)
 		check(segmentId, String)
 		check(partId, String)
-		check(newStory, Object)
-		handleUpdatedPart(peripheralDevice, rundownId, segmentId, partId, newStory)
+		check(newPart, Object)
+		handleUpdatedPart(peripheralDevice, rundownId, segmentId, partId, newPart)
 	}
 }
 
 export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
-	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
+
+	const rundown = getRundown(rundownId)
 	if (rundown) {
 		logger.info('Removing rundown ' + rundown._id)
 
@@ -139,7 +142,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 		}
 	}
 }
-export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: any, dataSource: string) {
+export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, rundownData: IngestRundown, dataSource: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const ingestRundown: IngestRundown = mutateRundown(rundownData)
@@ -375,7 +378,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		removeSegment(segmentId)
 	}
 }
-function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentData: any) {
+function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentData: IngestSegment) {
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 
 	const ingestSegment: IngestSegment = mutateSegment(segmentData)
@@ -493,7 +496,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	updateExpectedMediaItemsOnPart(rundown._id, part._id)
 	triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 }
-export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newStory: any) {
+export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string, newPart: IngestPart) {
 	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
 
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -504,7 +507,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	// Blueprints will handle the creation of the SL
 	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
 	ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
-	ingestSegment.parts.push(mutatePart(newStory))
+	ingestSegment.parts.push(mutatePart(newPart))
 
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
 	updateSegmentFromIngestData(studio, rundown, ingestSegment)

@@ -19,7 +19,7 @@ import { updateSourceLayerInfinitesAfterLine } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from './playout'
-import { DBSegment, Segment, Segments } from '../../../lib/collections/Segments';
+import { DBSegment, Segments } from '../../../lib/collections/Segments'
 let clone = require('fast-clone')
 
 /**
