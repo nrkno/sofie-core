@@ -59,6 +59,9 @@ describe('Basic test of test environment', () => {
 		Studios.remove('def')
 		expect(Studios.find().fetch()).toHaveLength(1)
 
+		const observer = Studios.find({ _id: 'abc' }).observeChanges({})
+		expect(observer).toBeTruthy()
+
 		Studios.insert({
 			_id: 'xyz',
 			name: 'xyz',
@@ -69,6 +72,8 @@ describe('Basic test of test environment', () => {
 			_rundownVersionHash: 'xyz'
 		})
 		expect(Studios.find().fetch()).toHaveLength(2)
+
+		observer.stop()
 
 		MongoMock.mockSetData(Studios, null)
 		expect(Studios.find().fetch()).toHaveLength(0)
