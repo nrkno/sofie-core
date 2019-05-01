@@ -6,8 +6,6 @@ import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/Use
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Studios } from '../../../lib/collections/Studios'
-import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { setLoggerLevel } from '../logger'
 
 require('../client') // include in order to create the Meteor methods needed
@@ -109,7 +107,7 @@ describe('ClientAPI', () => {
 			expect(MeteorMock.mockMethods[ClientAPI.methods.clientErrorReport]).toBeTruthy()
 		})
 		it('Returns a success response to the client', () => {
-			const result = ServerClientAPI.clientErrorReport.apply(mockThis, [getCurrentTime(), {error: 'Some Error'}, 'MockLocation'])
+			const result = ServerClientAPI.clientErrorReport.apply(mockThis, [getCurrentTime(), { error: 'Some Error' }, 'MockLocation'])
 
 			expect(result).toMatchObject({
 				success: 200
