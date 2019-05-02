@@ -22,7 +22,20 @@ interface Cache {
 	fcn: SomeBlueprintManifest
 }
 
-export function loadSystemBlueprints (system: ICoreSystem): SystemBlueprintManifest | undefined {
+export interface WrappedSystemBlueprint {
+	blueprintId: string
+	blueprint: SystemBlueprintManifest
+}
+export interface WrappedStudioBlueprint {
+	blueprintId: string
+	blueprint: StudioBlueprintManifest
+}
+export interface WrappedShowStyleBlueprint {
+	blueprintId: string
+	blueprint: ShowStyleBlueprintManifest
+}
+
+export function loadSystemBlueprints (system: ICoreSystem): WrappedSystemBlueprint | undefined {
 	if (!system.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(system.blueprintId)
@@ -31,10 +44,14 @@ export function loadSystemBlueprints (system: ICoreSystem): SystemBlueprintManif
 	if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) {
 		throw new Meteor.Error(500, `Blueprint "${system.blueprintId}" is not valid for a CoreSystem!`)
 	}
-	return blueprint
+
+	return {
+		blueprintId: system.blueprintId,
+		blueprint: blueprint
+	}
 }
 
-export function loadStudioBlueprints (studio: Studio): StudioBlueprintManifest | undefined {
+export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | undefined {
 	if (!studio.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(studio.blueprintId)
@@ -43,24 +60,32 @@ export function loadStudioBlueprints (studio: Studio): StudioBlueprintManifest |
 	if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) {
 		throw new Meteor.Error(500, `Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}"!`)
 	}
-	return blueprint
+
+	return {
+		blueprintId: studio.blueprintId,
+		blueprint: blueprint
+	}
 }
 
-export function getBlueprintOfRundown (runnningOrder: Rundown): ShowStyleBlueprintManifest {
+export function getBlueprintOfRundown (runnningOrder: Rundown): WrappedShowStyleBlueprint {
 	if (!runnningOrder.showStyleBaseId) throw new Meteor.Error(400, `Rundown is missing showStyleBaseId!`)
 	let showStyleBase = ShowStyleBases.findOne(runnningOrder.showStyleBaseId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${runnningOrder.showStyleBaseId}" not found!`)
 	return loadShowStyleBlueprints(showStyleBase)
 }
 
-export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): ShowStyleBlueprintManifest {
+export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
 	const blueprint = loadBlueprintsById(showStyleBase.blueprintId)
 	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
 
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
 		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`)
 	}
-	return blueprint
+
+	return {
+		blueprintId: showStyleBase.blueprintId,
+		blueprint: blueprint
+	}
 }
 
 function loadBlueprintsById (id: string): SomeBlueprintManifest | undefined {

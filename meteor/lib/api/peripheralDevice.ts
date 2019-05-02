@@ -128,9 +128,9 @@ export enum methods {
 	'dataSegmentDelete'	= 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate'	= 'peripheralDevice.rundown.segmentCreate',
 	'dataSegmentUpdate'	= 'peripheralDevice.rundown.segmentUpdate',
-	'dataPieceDelete'	= 'peripheralDevice.rundown.pieceDelete',
-	'dataPieceCreate'	= 'peripheralDevice.rundown.pieceCreate',
-	'dataPieceUpdate'	= 'peripheralDevice.rundown.pieceUpdate',
+	'dataPartDelete'	= 'peripheralDevice.rundown.partDelete',
+	'dataPartCreate'	= 'peripheralDevice.rundown.partCreate',
+	'dataPartUpdate'	= 'peripheralDevice.rundown.partUpdate',
 
 	'resyncRundown'			= 'peripheralDevice.mos.roResync',
 

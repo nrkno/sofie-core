@@ -43,7 +43,6 @@ import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
-import { restoreRundown } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
@@ -499,7 +498,7 @@ const postRoute = Picker.filter((req, res) => req.method === 'POST')
 postRoute.middleware(bodyParser.json({
 	limit: '15mb' // Arbitrary limit
 }))
-postRoute.route('/backup/restore', (params, req: IncomingMessage, response: ServerResponse, next) => {
+postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	response.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -509,13 +508,7 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, response: Serv
 			snapshot = JSON.parse(snapshot)
 		}
 
-		if (snapshot.type === 'rundownCache' && snapshot.data) {
-			// special case (to be deprecated): rundown cached data
-			restoreRundown(snapshot)
-
-		} else {
-			restoreFromSnapshot(snapshot)
-		}
+		restoreFromSnapshot(snapshot)
 
 		response.statusCode = 200
 		response.end(content)

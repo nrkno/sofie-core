@@ -60,9 +60,9 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	updateTimeline(studio._id)
 
 	Meteor.defer(() => {
-		let bp = getBlueprintOfRundown(rundown)
-		if (bp.onRundownActivate) {
-			Promise.resolve(bp.onRundownActivate(new RundownContext(rundown, studio)))
+		const { blueprint } = getBlueprintOfRundown(rundown)
+		if (blueprint.onRundownActivate) {
+			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, studio)))
 			.catch(logger.error)
 		}
 	})
@@ -108,9 +108,9 @@ export function deactivateRundown (rundown: Rundown) {
 	IngestActions.notifyCurrentPlayingPart(rundown, null)
 
 	Meteor.defer(() => {
-		let bp = getBlueprintOfRundown(rundown)
-		if (bp.onRundownDeActivate) {
-			Promise.resolve(bp.onRundownDeActivate(new RundownContext(rundown)))
+		const { blueprint } = getBlueprintOfRundown(rundown)
+		if (blueprint.onRundownDeActivate) {
+			Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
 			.catch(logger.error)
 		}
 	})

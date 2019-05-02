@@ -55,8 +55,19 @@ export namespace MongoMock {
 				count: () => {
 					return docs.length
 				},
-				observeChanges: () => {
-					// todo
+				observe (clbs) {
+					return {
+						stop () {
+							// stub
+						}
+					}
+				},
+				observeChanges (clbs) {
+					return {
+						stop () {
+							// stub
+						}
+					}
 				}
 			}
 		}

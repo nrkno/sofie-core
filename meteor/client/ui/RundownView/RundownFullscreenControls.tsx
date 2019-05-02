@@ -29,8 +29,10 @@ interface IProps {
 	onRewindSegments?: () => void
 	isNotificationCenterOpen: boolean
 	isSupportPanelOpen: boolean
-	onToggleNotifications?: (e: React.MouseEvent<HTMLDivElement>) => void
-	onToggleSupportPanel?: (e: React.MouseEvent<HTMLDivElement>) => void
+	isStudioMode: boolean
+	onToggleNotifications?: (e: React.MouseEvent<HTMLButtonElement>) => void
+	onToggleSupportPanel?: (e: React.MouseEvent<HTMLButtonElement>) => void
+	onTake?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 interface IState {
@@ -128,51 +130,57 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	onFullscreenMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+	onFullscreenMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			fullScreenHover: true
 		})
 	}
 
-	onFullscreenMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+	onFullscreenMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			fullScreenHover: false
 		})
 	}
 
-	onOnAirClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	onOnAirClick = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (typeof this.props.onFollowOnAir === 'function') {
 			this.props.onFollowOnAir()
 		}
 	}
 
-	onOnAirMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+	onOnAirMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			onAirHover: true
 		})
 	}
 
-	onOnAirMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+	onOnAirMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			onAirHover: false
 		})
 	}
 
-	onRewindEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+	onRewindEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			rewindHover: true
 		})
 	}
 
-	onRewindLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+	onRewindLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			rewindHover: false
 		})
 	}
 
-	onRewindClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	onRewindClick = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (typeof this.props.onRewindSegments === 'function') {
 			this.props.onRewindSegments()
+		}
+	}
+
+	onTakeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+		if (typeof this.props.onTake === 'function') {
+			this.props.onTake(e)
 		}
 	}
 
@@ -183,21 +191,24 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
 					<NotificationCenterPanelToggle onClick={this.props.onToggleNotifications} isOpen={this.props.isNotificationCenterOpen} />
-					<div className='status-bar__controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
+					<button className='status-bar__controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
 						<FontAwesomeIcon icon={faFastBackward} />
-					</div>
+					</button>
 					{!this.props.isFollowingOnAir &&
-						<div className='status-bar__controls__button' role='button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
+						<button className='status-bar__controls__button' role='button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
 							{this.state.onAirHover ?
 								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} /> :
 								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />}
-						</div>
+						</button>
 					}
 					{!this.state.isFullscreen &&
 						<div className='status-bar__controls__label'>
 							<div className='status-bar__controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
 						</div>
 					}
+					{this.props.isStudioMode && <button className='status-bar__controls__button status-bar__controls__button--take' role='button' onClick={this.onTakeClick} tabIndex={0}>
+						Take
+					</button>}
 					<SupportPopUpToggle onClick={this.props.onToggleSupportPanel} isOpen={this.props.isSupportPanelOpen} />
 				</VelocityReact.VelocityTransitionGroup>
 			</div>

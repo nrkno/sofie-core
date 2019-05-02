@@ -260,6 +260,53 @@ body.vertical-overflow-only {
 	.close {
 		margin: 17px 20px 14px;
 	}
+
+	/* RWD: iPad */
+	@media screen and (max-width: 1024px) {
+		.timing {
+			.timing-clock.plan-end:not(.countdown) {
+				display: none;			
+			}
+	
+			.timing-clock.countdown.plan-end {
+				margin-right: 0;
+			} 
+		}
+	}
+
+	/* RWD: Anything below an iPad */
+	@media screen and (max-width: 1023px) {
+		.timing {
+			.timing-clock.plan-end:not(.countdown), .timing-clock.plan-start:not(.countdown) {
+				display: none;
+			}
+		}
+	}
+
+	@media screen and (max-width: 800px) {
+		.timing {
+			.timing-clock.heavy-light {
+				margin-right: 0;
+			}
+	
+			.timing-clock.plan-end {
+				display: none;
+			}
+		}
+	}
+
+	@media screen and (max-width: 600px) {
+		.timing {
+			.timing-clock.plan-start.countdown {
+				display: none;
+			}
+	
+			.timing-clock.time-now {
+				left: 2em;
+				transform: none;
+			}
+		}
+	}
 }
 
 .first-row  {
