@@ -1,37 +1,38 @@
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { Methods, setMeteorMethods } from '../../methods'
 
 import { RundownInput } from './rundownInput'
 
 let methods: Methods = {}
 
-methods[PeripheralDeviceAPI.methods.dataRundownDelete] = (deviceId: string, deviceToken: string, rundownId: string) => {
-	return RundownInput.dataRundownDelete(this, deviceId, deviceToken, rundownId)
+methods[PeripheralDeviceAPI.methods.dataRundownDelete] = (deviceId: string, deviceToken: string, rundownExternalId: string) => {
+	return RundownInput.dataRundownDelete(this, deviceId, deviceToken, rundownExternalId)
 }
-methods[PeripheralDeviceAPI.methods.dataRundownCreate] = (deviceId: string, deviceToken: string, rundownId: string, rundownData: any) => {
-	return RundownInput.dataRundownCreate(this, deviceId, deviceToken, rundownId, rundownData)
+methods[PeripheralDeviceAPI.methods.dataRundownCreate] = (deviceId: string, deviceToken: string, ingestRundown: IngestRundown) => {
+	return RundownInput.dataRundownCreate(this, deviceId, deviceToken, ingestRundown)
 }
-methods[PeripheralDeviceAPI.methods.dataRundownUpdate] = (deviceId: string, deviceToken: string, rundownId: string, rundownData: any) => {
-	return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, rundownId, rundownData)
+methods[PeripheralDeviceAPI.methods.dataRundownUpdate] = (deviceId: string, deviceToken: string, ingestRundown: IngestRundown) => {
+	return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string) => {
-	return RundownInput.dataSegmentDelete(this, deviceId, deviceToken, rundownId, segmentId)
+methods[PeripheralDeviceAPI.methods.dataSegmentDelete] = (deviceId: string, deviceToken: string, rundownExternalId: string, segmentExternalId: string) => {
+	return RundownInput.dataSegmentDelete(this, deviceId, deviceToken, rundownExternalId, segmentExternalId)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) => {
-	return RundownInput.dataSegmentCreate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
+methods[PeripheralDeviceAPI.methods.dataSegmentCreate] = (deviceId: string, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) => {
+	return RundownInput.dataSegmentCreate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) => {
-	return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
+methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) => {
+	return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
 }
-methods[PeripheralDeviceAPI.methods.dataPartDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string) => {
-	return RundownInput.dataPartDelete(this, deviceId, deviceToken, rundownId, segmentId, partId)
+methods[PeripheralDeviceAPI.methods.dataPartDelete] = (deviceId: string, deviceToken: string, rundownExternalId: string, segmentExternalId: string, partExternalId: string) => {
+	return RundownInput.dataPartDelete(this, deviceId, deviceToken, rundownExternalId, segmentExternalId, partExternalId)
 }
-methods[PeripheralDeviceAPI.methods.dataPartCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
-	return RundownInput.dataPartCreate(this, deviceId, deviceToken, rundownId, segmentId, partId, newStory)
+methods[PeripheralDeviceAPI.methods.dataPartCreate] = (deviceId: string, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) => {
+	return RundownInput.dataPartCreate(this, deviceId, deviceToken, rundownExternalId, segmentExternalId, ingestPart)
 }
-methods[PeripheralDeviceAPI.methods.dataPartUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) => {
-	return RundownInput.dataPartUpdate(this, deviceId, deviceToken, rundownId, segmentId, partId, newStory)
+methods[PeripheralDeviceAPI.methods.dataPartUpdate] = (deviceId: string, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) => {
+	return RundownInput.dataPartUpdate(this, deviceId, deviceToken, rundownExternalId, segmentExternalId, ingestPart)
 }
 
 setMeteorMethods(methods)
