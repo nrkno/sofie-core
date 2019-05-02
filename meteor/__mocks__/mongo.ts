@@ -22,6 +22,7 @@ export namespace MongoMock {
 	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
 		private localName: string
 		private _options: any = {}
+		private _isMock: true = true // used in test to check that it's a mock
 
 		constructor (localName: string, options: any) {
 			this.localName = localName

@@ -3,9 +3,35 @@ import { Random } from 'meteor/random'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 
-import { Studios, DBStudio } from '../../lib/collections/Studios'
 import { waitForPromise } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
+
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { AsRunLog } from '../../lib/collections/AsRunLog'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { Evaluations } from '../../lib/collections/Evaluations'
+import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
+import { IngestDataCache } from '../../lib/collections/IngestDataCache'
+import { MediaObjects } from '../../lib/collections/MediaObjects'
+import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
+import { Parts } from '../../lib/collections/Parts'
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Pieces } from '../../lib/collections/Pieces'
+import { RecordedFiles } from '../../lib/collections/RecordedFiles'
+import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { Segments } from '../../lib/collections/Segments'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Snapshots } from '../../lib/collections/Snapshots'
+import { Studios, DBStudio } from '../../lib/collections/Studios'
+import { Timeline } from '../../lib/collections/Timeline'
+import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 
 describe('Basic test of test environment', () => {
 
@@ -17,6 +43,61 @@ describe('Basic test of test environment', () => {
 	test('Test Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']
 		expect(tempTestRandom()).toEqual('superRandom')
+	})
+	test('Verify Mock collections', () => {
+
+		// @ts-ignore
+		expect(AdLibPieces._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(AsRunLog._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Blueprints._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(CoreSystem._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Evaluations._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(ExpectedMediaItems._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(ExternalMessageQueue._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(IngestDataCache._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(MediaObjects._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(MediaWorkFlows._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(MediaWorkFlowSteps._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Parts._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(PeripheralDeviceCommands._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(PeripheralDevices._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Pieces._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(RecordedFiles._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(RundownBaselineAdLibPieces._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(RundownBaselineObjs._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Rundowns._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Segments._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(ShowStyleBases._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(ShowStyleVariants._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Snapshots._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Studios._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(Timeline._isMock).toBeTruthy()
+		// @ts-ignore
+		expect(UserActionsLog._isMock).toBeTruthy()
 	})
 	test('Test Mock collection data', () => {
 
