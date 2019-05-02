@@ -17,8 +17,9 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { Methods, setMeteorMethods } from '../../methods'
-import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
+import { parseVersion, parseRange, CoreSystem, SYSTEM_ID, stripVersion } from '../../../lib/collections/CoreSystem'
 import { evalBlueprints } from './cache'
+import { removeSystemStatus } from '../../systemStatus/systemStatus';
 
 export function insertBlueprint (type?: BlueprintManifestType, name?: string): string {
 	return Blueprints.insert({
@@ -47,6 +48,7 @@ export function insertBlueprint (type?: BlueprintManifestType, name?: string): s
 export function removeBlueprint (id: string) {
 	check(id, String)
 	Blueprints.remove(id)
+	removeSystemStatus('blueprintCompability_' + id)
 }
 
 export function uploadBlueprint (blueprintId: string, body: string, blueprintName: string): Blueprint {
