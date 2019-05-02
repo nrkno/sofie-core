@@ -193,7 +193,10 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 		id: id,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let devices = PeripheralDevices.find({ type: deviceType }).fetch()
+			let devices = PeripheralDevices.find({
+				type: deviceType,
+				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
+			}).fetch()
 
 			for (let i in devices) {
 				let device = devices[i]

@@ -83,7 +83,7 @@ addMigrationSteps('0.1.0', [
 			let missing: string | boolean = false
 			_.each(studios, (studio: Studio) => {
 				const dev = PeripheralDevices.findOne({
-					type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+					type: PeripheralDeviceAPI.DeviceType.MOS,
 					studioId: studio._id
 				})
 				if (!dev) {

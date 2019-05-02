@@ -247,7 +247,10 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 	// Also fetch debugInfo from devices:
 	let deviceSnaphots: Array<DeviceSnapshot> = []
 	_.each(systemSnapshot.devices, (device) => {
-		if (device.connected && device.type !== PeripheralDeviceAPI.DeviceType.OTHER) {
+		if (
+			device.connected &&
+			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+		) {
 			let startTime = getCurrentTime()
 			let deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
 

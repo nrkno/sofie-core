@@ -17,12 +17,12 @@ export namespace IngestActions {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			MOSDeviceActions.reloadRundown(device, rundown)
 		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
 			// TODO
 		} else {
-			throw new Meteor.Error(400, `The device ${device._id} does not suport the method "reloadRundown"`)
+			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
 		}
 
 	}
@@ -54,12 +54,12 @@ export namespace IngestActions {
 		}
 
 		// TODO: refacor this into something nicer perhaps?
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			MOSDeviceActions.notifyCurrentPlayingPart(device, rundown, rundown.notifiedCurrentPlayingPartExternalId || null, currentPlayingPartExternalId)
 		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
 			// TODO
 		} else {
-			throw new Meteor.Error(400, `The device ${device._id} does not suport the method "notifyCurrentPlayingPart"`)
+			throw new Meteor.Error(400, `The device ${device._id} does not support the method "notifyCurrentPlayingPart"`)
 		}
 
 	}
