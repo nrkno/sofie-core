@@ -365,23 +365,32 @@ export namespace ServerPlayoutAPI {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
-			if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
-
-			let nextPart: Part | null = null
-			if (nextPartId) {
-				nextPart = Parts.findOne(nextPartId) || null
-				if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
-			}
-
-			libSetNextPart(rundown, nextPart, setManually, nextTimeOffset)
-
-			// remove old auto-next from timeline, and add new one
-			updateTimeline(rundown.studioId)
+			setNextPartInner(rundown, nextPartId, setManually, nextTimeOffset)
 
 			return ClientAPI.responseSuccess()
 		})
+	}
+	export function setNextPartInner (
+		rundown: Rundown,
+		nextPartId: string | null,
+		setManually?: boolean,
+		nextTimeOffset?: number | undefined
+	) {
+		if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundown._id}" is not active!`)
+
+		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundown._id}" cannot change next during hold!`)
+
+		let nextPart: Part | null = null
+		if (nextPartId) {
+			nextPart = Parts.findOne(nextPartId) || null
+			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
+		}
+
+		libSetNextPart(rundown, nextPart, setManually, nextTimeOffset)
+
+		// remove old auto-next from timeline, and add new one
+		updateTimeline(rundown.studioId)
 	}
 	export function moveNextPart (
 		rundownId: string,

@@ -152,6 +152,7 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 					replacedByPart = nextPartInLine
 				}
 			}
+			// TODO - should this be setNextPartInner?
 			ServerPlayoutAPI.setNextPart(rundown._id, replacedByPart ? replacedByPart._id : null)
 		}
 	}

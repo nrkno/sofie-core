@@ -42,6 +42,7 @@ const MINIMUM_TAKE_SPAN = 1000
 		-> ClientAPI.responseError('Friendly message')
 */
 
+// TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export function take (rundownId: string): ClientAPI.ClientResponse {
 	// Called by the user. Wont throw as nasty errors
 
@@ -68,7 +69,7 @@ export function take (rundownId: string): ClientAPI.ClientResponse {
 			throw new Meteor.Error(404, `Part "${rundown.currentPartId}", set as currentPart in "${rundownId}", not found!`)
 		}
 	}
-	return ServerPlayoutAPI.takeNextPart(rundown)
+	return ServerPlayoutAPI.takeNextPart(rundown._id)
 }
 export function setNext (rundownId: string, nextSlId: string | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse {
 	check(rundownId, String)

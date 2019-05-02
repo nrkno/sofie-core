@@ -225,7 +225,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 			})
 			if (newNextPart) {
 				// Move up next-point to the first inserted part
-				ServerPlayoutAPI.setNextPart(rundown._id, newNextPart._id)
+				ServerPlayoutAPI.setNextPartInner(rundown, newNextPart._id)
 			}
 		}
 	}
@@ -263,7 +263,7 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 			// Find the first part from the other Story (could be multiple)
 			const newNextPart = _.sortBy(parts, p => p._rank).find(p => p.externalId !== nextPart.externalId)
 			if (newNextPart) {
-				ServerPlayoutAPI.setNextPart(rundown._id, newNextPart._id)
+				ServerPlayoutAPI.setNextPartInner(rundown, newNextPart._id)
 			}
 		}
 	}
