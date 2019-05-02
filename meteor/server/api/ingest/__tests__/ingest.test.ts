@@ -9,16 +9,17 @@ import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { setLoggerLevel } from '../../logger'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segments } from '../../../../lib/collections/Segments'
+import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Parts } from '../../../../lib/collections/Parts'
-import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
-describe('Test ingest actions for rundown', () => {
+describe('Test ingest actions for rundowns and segments', () => {
 
 	let device: PeripheralDevice
 	let externalId = 'abcde'
+	let segExternalId = 'zyxwv'
 	beforeAll(() => {
 		device = setupDefaultStudioEnvironment().device
 	})
@@ -491,18 +492,119 @@ describe('Test ingest actions for rundown', () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 	})
 
-})
+	testInFiber('dataSegmentCreate', () => {
+		expect(Rundowns.findOne()).toBeTruthy()
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: []
+		}
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
 
-describe('Test ingest actions for rundown', () => {
+		const segment = Segments.find({ externalId: segExternalId }).fetch()
+		expect(segment).toHaveLength(1)
+		expect(segment[0]).toMatchObject({
+			externalId: ingestSegment.externalId,
+			name: 'MyMockSegment' // fails here because name is set to segments externalId instead
+		})
 
-	let device: PeripheralDevice
-	let externalId = 'abcde'
-	let segmentId =
-	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(3)
 	})
 
-	testInFiber('dataSegmentCreate', () => {
-		expect(1).toBe(1)
+	testInFiber('dataSegmentUpdate add a part', () => {
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: [
+				{
+					externalId: 'part42',
+					name: 'Part 42',
+					rank: 0
+				}
+			]
+		}
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(3)
+
+		const parts3 = Parts.find({ rundownId: rundown._id, segmentId: segments[2]._id }).fetch()
+		expect(parts3).toHaveLength(1)
+		expect(parts3[0]).toMatchObject({
+			externalId: 'part42',
+			title: 'Part 42'
+		})
+	})
+
+	testInFiber('dataSegmentUpdate no change', () => {
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: [
+				{
+					externalId: 'part42',
+					name: 'Part 42',
+					rank: 0
+				}
+			]
+		}
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(3)
+
+		const parts3 = Parts.find({ rundownId: rundown._id, segmentId: segments[2]._id }).fetch()
+		expect(parts3).toHaveLength(1)
+		expect(parts3[0]).toMatchObject({
+			externalId: 'part42',
+			title: 'Part 42'
+		})
+	})
+
+	testInFiber('dataSegmentUpdate remove a part', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: []
+		}
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(3)
+
+		const parts3 = Parts.find({ rundownId: rundown._id, segmentId: segments[2]._id }).fetch()
+		expect(parts3).toHaveLength(0)
+	})
+
+	testInFiber('dataSegmentDelete', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+		expect(Segments.findOne({ externalId: segExternalId })).toBeFalsy()
 	})
 })

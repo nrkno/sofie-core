@@ -193,7 +193,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 			getSegment: (context: SegmentContext, ingestSegment: IngestSegment): BlueprintResultSegment => {
 
 				const segment: IBlueprintSegment = {
-					name: ingestSegment.externalId,
+					name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 					metaData: ingestSegment.payload
 				}
 				const parts: BlueprintResultPart[] = []

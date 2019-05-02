@@ -139,7 +139,7 @@ export namespace MongoMock {
 			const docs = this.find(id)._fetchRaw()
 
 			if (docs.length === 1) {
-				console.log(docs)
+				// console.log(docs)
 				this.update(docs[0]._id, modifier, options, cb)
 			} else {
 				this.insert({

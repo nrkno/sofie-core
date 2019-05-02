@@ -177,6 +177,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			if (options.afterRemove) {
 				p = Promise.resolve(p)
 				.then(() => {
+					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
 				})
 			}
