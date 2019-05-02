@@ -3,6 +3,7 @@ import { pushOntoPath, setOntoPath, mongoWhere } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
+const clone = require('fast-clone')
 
 export namespace MongoMock {
 	export interface MockCollections<T extends CollectionObject> {
@@ -20,9 +21,11 @@ export namespace MongoMock {
 	}
 	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
 		private localName: string
+		private _options: any = {}
 
-		constructor (localName: string) {
+		constructor (localName: string, options: any) {
 			this.localName = localName
+			this._options = options || {}
 		}
 		find (query: any) {
 			if (_.isString(query)) query = { _id: query }
@@ -36,10 +39,20 @@ export namespace MongoMock {
 			))
 
 			return {
-				fetch () {
+				_fetchRaw: () => {
 					return docs
 				},
-				count () {
+				fetch: () => {
+					const transform = (
+						this._options.transform ?
+						this._options.transform :
+						(doc) => doc
+					)
+					return _.map(docs, (doc) => {
+						return transform(clone(doc))
+					})
+				},
+				count: () => {
 					return docs.length
 				},
 				observe (clbs) {
@@ -65,7 +78,7 @@ export namespace MongoMock {
 			try {
 
 				// todo
-				let docs = this.find(query).fetch()
+				let docs = this.find(query)._fetchRaw()
 				_.each(docs, (doc) => {
 					let replace = false
 
@@ -122,7 +135,7 @@ export namespace MongoMock {
 		upsert (query: any, modifier, options?: UpsertOptions, cb?: Function) {
 			let id = _.isString(query) ? query : query._id
 
-			const docs = this.find(id).fetch()
+			const docs = this.find(id)._fetchRaw()
 
 			if (docs.length === 1) {
 				console.log(docs)
@@ -136,7 +149,7 @@ export namespace MongoMock {
 		}
 		remove (query: any, cb?: Function) {
 			try {
-				const docs = this.find(query).fetch()
+				const docs = this.find(query)._fetchRaw()
 
 				_.each(docs, (doc) => {
 					delete this.documents[doc._id]
