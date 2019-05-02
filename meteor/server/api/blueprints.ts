@@ -70,7 +70,7 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
-import { parseVersion, ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { parseVersion, ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -1258,10 +1258,10 @@ function uploadBlueprint (blueprintId: string, body: string, blueprintName: stri
 	}
 
 	// Parse the versions, just to verify that the format is correct:
-	parseVersion(blueprintManifest.blueprintVersion)
-	parseVersion(blueprintManifest.integrationVersion)
-	parseVersion(blueprintManifest.TSRVersion)
-	parseVersion(blueprintManifest.minimumCoreVersion)
+	parseVersion(stripVersion(blueprintManifest.blueprintVersion))
+	parseVersion(stripVersion(blueprintManifest.integrationVersion))
+	parseVersion(stripVersion(blueprintManifest.TSRVersion))
+	parseVersion(stripVersion(blueprintManifest.minimumCoreVersion))
 
 	const existing = Blueprints.findOne(newBlueprint._id)
 	if (existing && existing.blueprintType && existing.blueprintType !== newBlueprint.blueprintType) {
