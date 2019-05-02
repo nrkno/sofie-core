@@ -31,13 +31,13 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-export function getOrderedPiece (line: Part): Array<PieceResolved> {
-	const items = line.getAllPieces()
+export function getOrderedPiece (part: Part): Array<PieceResolved> {
+	const pieces = part.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
-	items.forEach(i => itemMap[i._id] = i)
+	pieces.forEach(i => itemMap[i._id] = i)
 
-	const objs: Array<TimelineObjRundown> = items.map(
+	const objs: Array<TimelineObjRundown> = pieces.map(
 		i => clone(createPieceGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0))
 	)
 	objs.forEach(o => {
@@ -65,10 +65,11 @@ export function getOrderedPiece (line: Part): Array<PieceResolved> {
 		resolvedItems.push(item)
 	})
 	if (tlResolved.unresolved.length > 0) {
-		 logger.warn('got ' + tlResolved.unresolved.length + ' unresolved items for piece #' + line._id)
+		logger.error(`Got ${tlResolved.unresolved.length} unresolved timeline-objects for part #${part._id} (first is ${tlResolved.unresolved[0].id})`)
+
 	}
-	if (items.length !== resolvedItems.length) {
-		logger.warn('got ' + resolvedItems.length + ' ordered items. expected ' + items.length + '. for piece #' + line._id)
+	if (pieces.length !== resolvedItems.length) {
+		logger.error(`Got ${resolvedItems.length} ordered items. Expected ${pieces.length} for part #${part._id}`)
 	}
 
 	resolvedItems.sort((a, b) => {
@@ -88,9 +89,9 @@ export function createPieceGroupFirstObject (
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract {
 	return literal<TimelineObjPieceAbstract>({
-		_id: getPieceFirstObjectId(piece),
-		id: '',
-		studioId: '', // added later
+		id: getPieceFirstObjectId(piece),
+		_id: '', // set later
+		studioId: '', // set later
 		rundownId: piece.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: {
@@ -114,15 +115,15 @@ export function createPieceGroup (
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown {
 	return literal<TimelineObjGroup & TimelineObjRundown>({
-		_id: getPieceGroupId(item),
-		id: '',
+		id: getPieceGroupId(item),
+		_id: '', // set later
+		studioId: '', // set later
 		content: {
 			type: TimelineContentTypeOther.GROUP,
 			objects: []
 		},
 		inGroup: partGroup && partGroup._id,
 		isGroup: true,
-		studioId: '',
 		rundownId: item.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: item.trigger,
@@ -239,8 +240,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						// @ts-ignore _id
-						_id: obj.id || obj['_id'],
+						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN
 					})
@@ -278,9 +278,8 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 		const objs = prefixAllObjectIds(_.compact(
 			_.map(contentObjects, (obj) => {
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-					// @ts-ignore _id
-					_id: obj.id || obj['_id'],
-					studioId: '',
+					_id: '', // set later
+					studioId: '', // set later
 					objectType: TimelineObjType.RUNDOWN
 				})
 			})

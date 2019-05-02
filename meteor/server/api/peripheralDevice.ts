@@ -8,7 +8,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline } from '../../lib/collections/Timeline'
+import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { setMeteorMethods, Methods } from '../methods'
@@ -146,7 +146,7 @@ export namespace ServerPeripheralDeviceAPI {
 				studioIds[obj.studioId] = true
 
 				Timeline.update({
-					_id: o.id
+					_id: getTimelineId(obj.studioId, o.id)
 				}, {$set: {
 					'trigger.value': o.time,
 					'trigger.setFromNow': true
