@@ -50,6 +50,7 @@ describe('Basic test of test environment', () => {
 		Studios.update('abc', {$set: {
 			_rundownVersionHash: 'myHash'
 		}})
+
 		expect(Studios.findOne({
 			name: 'abc'
 		})).toMatchObject({
@@ -57,7 +58,10 @@ describe('Basic test of test environment', () => {
 		})
 
 		Studios.remove('def')
-		expect(Studios.find().fetch()).toHaveLength(1)
+		const studios = Studios.find().fetch()
+		expect(studios).toHaveLength(1)
+		expect(studios[0].getConfigValue).toBeTruthy()
+		expect(typeof studios[0].getConfigValue).toEqual('function')
 
 		Studios.insert({
 			_id: 'xyz',
