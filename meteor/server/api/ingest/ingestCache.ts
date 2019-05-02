@@ -40,7 +40,7 @@ export function loadCachedIngestSegment (rundownId: string, segmentId: string): 
 	}).fetch()
 
 	const segmentEntries = cacheEntries.filter(e => e.type === IngestCacheType.SEGMENT)
-	if (cacheEntries.length > 1) logger.warning(`There are multiple segments in IngestDataCache for rundownId: "${rundownId}", segmentId: "${segmentId}"`)
+	if (segmentEntries.length > 1) logger.warn(`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownId}", segmentId: "${segmentId}"`)
 
 	const segmentEntry = segmentEntries[0]
 	if (!segmentEntry) throw new Meteor.Error(404, 'Failed to find cached segment')
@@ -64,7 +64,7 @@ export function loadIngestDataCachePart (rundownId: string, partId: string): Ing
 		partId: partId,
 		type: IngestCacheType.PART
 	}).fetch()
-	if (cacheEntries.length > 1) logger.warning(`There are multiple parts in IngestDataCache for rundownId: "${rundownId}", partId: "${partId}"`)
+	if (cacheEntries.length > 1) logger.warn(`There are multiple parts (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownId}", partId: "${partId}"`)
 
 	const partEntry = cacheEntries[0]
 	if (!partEntry) throw new Meteor.Error(404, 'Failed to find cached part')

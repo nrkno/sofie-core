@@ -48,7 +48,7 @@ if (Meteor.isServer) {
 		emerg: getLogMethod('emerg'),
 		alert: getLogMethod('alert'),
 		crit: getLogMethod('crit'),
-		warning: getLogMethod('warning'),
+		warning: getLogMethod('warn'),
 		notice: getLogMethod('notice')
 	}
 } else {
@@ -81,7 +81,7 @@ if (Meteor.isServer) {
 		emerg: getLogMethod('emerg'),
 		alert: getLogMethod('alert'),
 		crit: getLogMethod('crit'),
-		warning: getLogMethod('warning'),
+		warning: getLogMethod('warn'),
 		notice: getLogMethod('notice')
 	}
 	// @ts-ignore localStorage

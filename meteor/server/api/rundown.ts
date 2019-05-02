@@ -64,7 +64,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 
 	const variantId = showStyleBlueprint.blueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
 	if (variantId === null) {
-		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null`)
+		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null in .getShowStyleVariantId`)
 		return null
 	} else {
 		const showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
