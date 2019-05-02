@@ -18,9 +18,13 @@ interface SyncFunctionFcn {
 	cb: Callback
 	timeout: number
 	status: syncFunctionFcnStatus
+	priority: number
 }
+/** Queue of syncFunctions */
 const syncFunctionFcns: Array<SyncFunctionFcn> = []
+/** Start time of running syncFunctions */
 const syncFunctionRunningFcns: {[id: string]: number} = {}
+
 /**
  * Only allow one instane of the function (and its arguments) to run at the same time
  * If trying to run several at the same time, the subsequent are put on a queue and run later
@@ -28,7 +32,7 @@ const syncFunctionRunningFcns: {[id: string]: number} = {}
  * @param id0 (Optional) Id to determine which functions are to wait for each other. Can use "$0" to refer first argument. Example: "myFcn_$0,$1" will let myFcn(0, 0, 13) and myFcn(0, 1, 32) run in parallell, byt not myFcn(0, 0, 13) and myFcn(0, 0, 14)
  * @param timeout (Optional)
  */
-export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout: number = 10000): T {
+export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout: number = 10000, priority: number = 1): T {
 
 	let id1 = Random.id()
 
@@ -56,46 +60,47 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 			args: args,
 			cb: cb,
 			timeout: timeout,
-			status: syncFunctionFcnStatus.WAITING
+			status: syncFunctionFcnStatus.WAITING,
+			priority: priority
 		})
 		evaluateFunctions()
 	})
 }
 function evaluateFunctions () {
-
-	_.each(syncFunctionFcns, (o, key) => {
-		if (o.status === syncFunctionFcnStatus.WAITING) {
-
-			let runIt = false
-			// is the function running?
-			if (syncFunctionRunningFcns[o.id]) {
-				// Yes, an instance of the function is running
-				let timeSinceStart = Date.now() - syncFunctionRunningFcns[o.id]
-				if (timeSinceStart > o.timeout) {
-					// The function has run too long
-					logger.error('syncFunction "' + (o.fcn.name) + '" took too long to evaluate')
-					runIt = true
-				} else {
-					// Do nothing, another is running
-				}
-			} else {
-				// No other instance of the funciton is running
-				runIt = true
+	const groups = _.groupBy(syncFunctionFcns, fcn => fcn.id)
+	_.each(groups, (group, id) => {
+		const runningFcn = _.find(group, fcn => fcn.status === syncFunctionFcnStatus.RUNNING)
+		let startNext = false
+		if (runningFcn) {
+			let startTime = syncFunctionRunningFcns[id]
+			if (!startTime) {
+				startTime = syncFunctionRunningFcns[id] = Date.now()
 			}
-			if (runIt) {
-				o.status = syncFunctionFcnStatus.RUNNING
-				syncFunctionRunningFcns[o.id] = Date.now()
+			if (Date.now() - startTime > runningFcn.timeout) {
+				// The function has run too long
+				logger.error('syncFunction "' + (runningFcn.fcn.name) + '" took too long to evaluate')
+				startNext = true
+			} else {
+				// Do nothing, another is running
+			}
+ 		}
+
+		if (startNext) {
+			const nextFcn = _.max(_.filter(group, fcn => fcn.status === syncFunctionFcnStatus.WAITING), fcn => fcn.priority)
+			if (nextFcn) {
+				nextFcn.status = syncFunctionFcnStatus.RUNNING
+				syncFunctionRunningFcns[id] = Date.now()
 				Meteor.setTimeout(() => {
 					try {
-						let result = o.fcn(...o.args)
-						o.cb(null, result)
+						let result = nextFcn.fcn(...nextFcn.args)
+						nextFcn.cb(null, result)
 					} catch (e) {
-						o.cb(e)
+						nextFcn.cb(e)
 					}
-					delete syncFunctionRunningFcns[o.id]
-					o.status = syncFunctionFcnStatus.DONE
+					delete syncFunctionRunningFcns[id]
+					nextFcn.status = syncFunctionFcnStatus.DONE
 					evaluateFunctions()
-				},0)
+				}, 0)
 			}
 		}
 	})
@@ -106,8 +111,8 @@ function evaluateFunctions () {
 	}
 }
 function isFunctionQueued (id: string): boolean {
-	let queued = _.find(syncFunctionFcns, (o, key) => {
-		return (o.id === id && o.status === syncFunctionFcnStatus.WAITING)
+	let queued = _.find(syncFunctionFcns, fcn => {
+		return (fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING)
 	})
 	return !!queued
 }

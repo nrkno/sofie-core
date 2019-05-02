@@ -58,7 +58,7 @@ import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece,
 import { PackageInfo } from '../../coreSystem'
 import { areThereActiveRundownsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterLine, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
-import { rundownSyncFunction } from '../ingest/rundownInput'
+import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 
 export namespace ServerPlayoutAPI {
@@ -67,7 +67,7 @@ export namespace ServerPlayoutAPI {
 	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
 	 */
 	export function prepareRundownForBroadcast (rundownId: string) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (rundown.active) throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
@@ -89,7 +89,7 @@ export namespace ServerPlayoutAPI {
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
 	export function resetRundown (rundownId: string) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(401, `rundownResetBroadcast can only be run in rehearsal!`)
@@ -106,7 +106,7 @@ export namespace ServerPlayoutAPI {
 	 * To be triggered by the User a short while before going on air
 	 */
 	export function resetAndActivateRundown (rundownId: string) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(402, `rundownResetAndActivate cannot be run when active!`)
@@ -121,7 +121,7 @@ export namespace ServerPlayoutAPI {
 	 */
 	export function activateRundown (rundownId: string, rehearsal: boolean) {
 		check(rehearsal, Boolean)
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
@@ -132,7 +132,7 @@ export namespace ServerPlayoutAPI {
 	 * Deactivate the rundown
 	 */
 	export function deactivateRundown (rundownId: string) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
@@ -145,7 +145,7 @@ export namespace ServerPlayoutAPI {
 	export function reloadData (rundownId: string) {
 		// Reload and reset the Rundown
 		check(rundownId, String)
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
@@ -160,7 +160,7 @@ export namespace ServerPlayoutAPI {
 	export function takeNextPart (rundownId: string): ClientAPI.ClientResponse {
 		let now = getCurrentTime()
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			let rundown = Rundowns.findOne(rundownId) as Rundown
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
@@ -362,7 +362,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownId, String)
 		if (nextPartId) check(nextPartId, String)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
@@ -396,7 +396,7 @@ export namespace ServerPlayoutAPI {
 
 		if (!horisontalDelta && !verticalDelta) throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horisontalDelta}, ${verticalDelta})`)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
@@ -478,7 +478,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownId, String)
 		logger.debug('rundownActivateHold')
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
@@ -547,7 +547,7 @@ export namespace ServerPlayoutAPI {
 	export function disableNextPiece (rundownId: string, undo?: boolean) {
 		check(rundownId, String)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.currentPartId) throw new Meteor.Error(401, `No current part!`)
@@ -670,7 +670,7 @@ export namespace ServerPlayoutAPI {
 		check(startedPlayback, Number)
 
 		// TODO - confirm this is correct
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			// This method is called when an auto-next event occurs
 			const segLineItem = Pieces.findOne({
 				_id: pieceId,
@@ -700,7 +700,7 @@ export namespace ServerPlayoutAPI {
 		check(stoppedPlayback, Number)
 
 		// TODO - confirm this is correct
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			// This method is called when an auto-next event occurs
 			const segLineItem = Pieces.findOne({
 				_id: pieceId,
@@ -727,7 +727,7 @@ export namespace ServerPlayoutAPI {
 		check(partId, String)
 		check(startedPlayback, Number)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			// This method is called when a part starts playing (like when an auto-next event occurs, or a manual next)
 
 			const playingPart = Parts.findOne({
@@ -849,7 +849,7 @@ export namespace ServerPlayoutAPI {
 		check(partId, String)
 		check(stoppedPlayback, Number)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
 
 			const rundown = Rundowns.findOne(rundownId)
@@ -908,11 +908,11 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.startAdLibPiece(rundownId, partId, pieceId)
 	}
-	export const sourceLayerStickyItemStart = syncFunction(function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
+	export function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
 		check(rundownId, String)
 		check(sourceLayerId, String)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
@@ -954,13 +954,13 @@ export namespace ServerPlayoutAPI {
 				updateTimeline(rundown.studioId)
 			}
 		})
-	})
+	}
 	export function sourceLayerOnLineStop (rundownId: string, partId: string, sourceLayerId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(sourceLayerId, String)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
@@ -1008,11 +1008,11 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(rundown.studioId)
 		})
 	}
-	export const rundownTogglePartArgument = syncFunction(function rundownTogglePartArgument (rundownId: string, partId: string, property: string, value: string) {
+	export function rundownTogglePartArgument (rundownId: string, partId: string, property: string, value: string) {
 		check(rundownId, String)
 		check(partId, String)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
@@ -1060,7 +1060,7 @@ export namespace ServerPlayoutAPI {
 			}
 			return ClientAPI.responseSuccess()
 		})
-	})
+	}
 	/**
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )

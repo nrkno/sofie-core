@@ -16,13 +16,14 @@ import { convertAdLibToPiece, getResolvedPieces } from './pieces'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
 import { updateParts } from '../rundown'
-import { rundownSyncFunction } from '../ingest/rundownInput'
+import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
+import { TriggerType } from 'superfly-timeline'
+
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
-import { TriggerType } from 'superfly-timeline';
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow (rundownId: string, partId: string, pieceId: string) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in an active rundown!`)
@@ -86,7 +87,7 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 	}
 	export function segmentAdLibPieceStart (rundownId: string, partId: string, adLibPieceId: string, queue: boolean) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in an active rundown!`)
@@ -106,7 +107,7 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 	}
 	export function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			logger.debug('rundownBaselineAdLibPieceStart')
 
 			const rundown = Rundowns.findOne(rundownId)
@@ -194,7 +195,7 @@ export namespace ServerPlayoutAdLibAPI {
 		check(partId, String)
 		check(pieceId, String)
 
-		return rundownSyncFunction(rundownId, () => {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			const part = Parts.findOne({

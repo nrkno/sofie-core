@@ -48,8 +48,12 @@ import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 
-export function rundownSyncFunction<T extends Function> (rundownId: string, fcn: T): ReturnType<T> {
-	return syncFunction(fcn, `ingest_rundown_${rundownId}`)()
+export enum RundownSyncFunctionPriority {
+	Ingest = 0,
+	Playout = 10,
+}
+export function rundownSyncFunction<T extends Function> (rundownId: string, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
+	return syncFunction(fcn, `ingest_rundown_${rundownId}`, undefined, priority)()
 }
 
 export namespace RundownInput {
@@ -125,7 +129,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	rundownSyncFunction(rundownId, () => {
+	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId)
 		if (rundown) {
 			logger.info('Removing rundown ' + rundown._id)
@@ -145,7 +149,7 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingest
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
-	return rundownSyncFunction(rundownId, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const existingDbRundown = Rundowns.findOne(rundownId)
 		if (!canBeUpdated(existingDbRundown)) return
 
@@ -374,7 +378,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		if (canBeUpdated(rundown, segmentId)) {
@@ -386,7 +390,7 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 		if (!canBeUpdated(rundown, segmentId)) return
@@ -482,7 +486,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
@@ -511,7 +515,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, ingestPart.externalId)
