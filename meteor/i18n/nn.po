@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-26T10:28:25.694Z\n"
-"PO-Revision-Date: 2019-04-26 12:44+0200\n"
+"POT-Creation-Date: 2019-05-02T09:04:45.576Z\n"
+"PO-Revision-Date: 2019-05-02 11:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -392,6 +392,9 @@ msgstr ""
 msgid "Show issue"
 msgstr ""
 
+msgid "External message queue has unsent messages."
+msgstr ""
+
 msgid "Unable to check the system configuration for changes"
 msgstr ""
 
@@ -433,10 +436,8 @@ msgstr "Over ein dag sidan"
 msgid "MOS Connection"
 msgstr ""
 
-#, fuzzy
-#| msgid "Last "
 msgid "Last update"
-msgstr "Sist "
+msgstr ""
 
 msgid "Off-line devices"
 msgstr ""
@@ -447,10 +448,8 @@ msgstr ""
 msgid "All connections working correctly"
 msgstr ""
 
-#, fuzzy
-#| msgid "Play-out Gateway"
 msgid "Play-out"
-msgstr "Playout-gateway"
+msgstr ""
 
 msgid "All devices working correctly"
 msgstr ""

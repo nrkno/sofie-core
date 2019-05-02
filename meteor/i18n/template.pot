@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-26T10:28:25.694Z\n"
-"PO-Revision-Date: 2019-04-26T10:28:25.694Z\n"
+"POT-Creation-Date: 2019-05-02T09:04:45.576Z\n"
+"PO-Revision-Date: 2019-05-02T09:04:45.576Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -376,6 +376,9 @@ msgid ""
 msgstr ""
 
 msgid "Show issue"
+msgstr ""
+
+msgid "External message queue has unsent messages."
 msgstr ""
 
 msgid "Unable to check the system configuration for changes"
