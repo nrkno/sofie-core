@@ -107,7 +107,7 @@ export namespace MeteorMock {
 		if (lastArg && typeof lastArg === 'function') {
 			const callback = args.pop()
 
-			setTimeout(() => {
+			this.setTimeout(() => {
 				try {
 					callback(undefined, fcn.call({}, ...args))
 				} catch (e) {
