@@ -277,6 +277,8 @@ export interface ObjId {
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 
+export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
+
 export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }
