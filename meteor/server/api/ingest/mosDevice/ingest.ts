@@ -154,7 +154,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	const segmentId = getSegmentExternalId(rundownId, ingestPart, ingestSegment.rank)
 
 	// Update db with the full story:
-	handleUpdatedPart(peripheralDevice, runningOrderExternalId.toString(), segmentId, story.ID.toString(), ingestPart)
+	handleUpdatedPart(peripheralDevice, runningOrderExternalId.toString(), segmentId, ingestPart)
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, stories: Array<MOS.MosString128>) {
 	const studio = getStudioFromDevice(peripheralDevice)
