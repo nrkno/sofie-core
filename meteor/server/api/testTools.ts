@@ -8,7 +8,7 @@ import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
 import * as moment from 'moment'
-import { TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
+import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import {
 	ChannelFormat,
@@ -54,10 +54,10 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 		input: getHash(recording._id + LLayerInput)
 	}
 
-	return [
+	return setTimelineId([
 		literal<TimelineObjCCGRecord & TimelineObjRecording>({
-			_id: IDs.record,
-			id: '',
+			id: IDs.record,
+			_id: '',
 			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			trigger: {
@@ -77,8 +77,8 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 			}
 		}),
 		literal<TimelineObjCCGInput & TimelineObjRecording>({
-			_id: IDs.input,
-			id: '',
+			id: IDs.input,
+			_id: '', // set later,
 			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			trigger: {
@@ -97,7 +97,7 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 				}
 			}
 		})
-	]
+	])
 }
 
 export namespace ServerTestToolsAPI {

@@ -64,7 +64,7 @@ export namespace ServerClientAPI {
 			// console.log('eeeeeeeeeeeeeee')
 			// allow the exception to be handled by the Client code
 			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-			logger.error(errMsg)
+			logger.error(errMsg + '\n' + (e.stack || ''))
 			UserActionsLog.update(actionId, {$set: {
 				success: false,
 				doneTime: getCurrentTime(),

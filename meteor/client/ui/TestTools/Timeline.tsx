@@ -228,9 +228,7 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 
 		let timeline = _.compact(_.map(this.props.timeline, (obj) => {
 
-			let o = _.extend({
-				id: obj._id
-			}, obj)
+			let o = _.clone(obj)
 			delete o._id
 
 			if (o.trigger.value === 'now') o.trigger.value = getCurrentTime() // tmp

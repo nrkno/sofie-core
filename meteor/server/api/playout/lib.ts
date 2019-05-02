@@ -19,7 +19,7 @@ import { updateSourceLayerInfinitesAfterLine } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from './playout'
-import { DBSegment, Segment, Segments } from '../../../lib/collections/Segments';
+import { DBSegment, Segment, Segments } from '../../../lib/collections/Segments'
 let clone = require('fast-clone')
 
 /**
@@ -299,7 +299,7 @@ export function onPartHasStoppedPlaying (part: Part, stoppedPlayingTime: Time) {
 	}
 }
 export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string): T[] {
-	const changedIds = objList.map(o => o._id)
+	const changedIds = objList.map(o => o.id)
 
 	let replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
@@ -311,7 +311,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 	return objList.map(i => {
 		const o = clone(i)
 
-		o._id = prefix + o._id
+		o.id = prefix + o.id
 
 		if (typeof o.duration === 'string') {
 			o.duration = replaceIds(o.duration)

@@ -317,6 +317,10 @@ export interface ObjId {
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 
+export function omit<T, P extends keyof T> (obj: T, prop: P): Omit<T, P> {
+	return _.omit(obj)
+}
+
 export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }

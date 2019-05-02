@@ -20,6 +20,7 @@ import {
 	Timeline,
 	TimelineObjGeneric,
 	TimelineObjType,
+	getTimelineId,
 } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
@@ -894,8 +895,7 @@ export namespace ServerPlayoutAPI {
 				_.compact(
 					_.map(newPiece.content.timelineObjects, (obj) => {
 						return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-							// @ts-ignore _id
-							_id: obj.id || obj._id,
+							_id: '', // set later
 							studioId: '', // set later
 							objectType: TimelineObjType.RUNDOWN
 						})
@@ -1054,7 +1054,7 @@ export namespace ServerPlayoutAPI {
 		})
 		// To establish playback time, we need to look at the actual Timeline
 		let alCopyItemTObj = Timeline.findOne({
-			_id: getPieceGroupId(pieceId)
+			_id: getTimelineId(rundown.studioId, getPieceGroupId(pieceId))
 		})
 		let parentOffset = 0
 		if (!alCopyItem) throw new Meteor.Error(404, `Part Ad Lib Copy Item "${pieceId}" not found!`)

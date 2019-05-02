@@ -18,7 +18,9 @@ import {
 	TimelineObjRecording,
 	TimelineObjGroup,
 	TimelineObjGroupPart,
-	TimelineObjPartAbstract
+	TimelineObjPartAbstract,
+	getTimelineId,
+	fixTimelineId
 } from '../../../lib/collections/Timeline'
 import { Studios,
 	Studio } from '../../../lib/collections/Studios'
@@ -37,7 +39,8 @@ import {
 	getCurrentTime,
 	asyncCollectionUpsert,
 	extendMandadory,
-	literal
+	literal,
+	omit
 } from '../../../lib/lib'
 import { Rundowns, RundownData, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineItem, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
@@ -142,10 +145,9 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	let objHash = getHash(stringifyObjects(timelineObjs))
 
 	// save into "magic object":
-	let magicId = studio._id + '_statObj'
 	let statObj: TimelineObjStat = {
-		_id: magicId,
-		id: '',
+		id: 'statObj',
+		_id: '', // set later
 		studioId: studio._id,
 		objectType: TimelineObjType.STAT,
 		statObject: true,
@@ -163,8 +165,9 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 		isAbstract: true,
 		LLayer: '__stat'
 	}
+	statObj._id = getTimelineId(statObj)
 
-	waitForPromise(asyncCollectionUpsert(Timeline, magicId, { $set: statObj }))
+	waitForPromise(asyncCollectionUpsert(Timeline, statObj._id, { $set: statObj }))
 }
 /**
  * Returns timeline objects related to rundowns in a studio
@@ -209,13 +212,16 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 
 				const showStyleBlueprint = getBlueprintOfRundown(activeRundown)
 				if (showStyleBlueprint.onTimelineGenerate) {
+
 					const context = new RundownContext(activeRundown, studio)
-					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), object => literal<TimelineObjGeneric>({
-						...object,
-						objectType: TimelineObjType.RUNDOWN,
-						studioId: studio._id,
-						_id: object.id,
-					}))
+					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), (object: TimelineTypes.TimelineObject) => {
+						return literal<TimelineObjGeneric>({
+							...object,
+							_id: '', // set later
+							objectType: TimelineObjType.RUNDOWN,
+							studioId: studio._id
+						})
+					})
 				}
 
 				// TODO: Specific implementations, to be refactored into Blueprints:
@@ -241,11 +247,11 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 					const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
 					studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 
-					const id = `${studio._id}_baseline_version`
+					const id = `baseline_version`
 					studioBaseline.push(literal<TimelineObjRundown>({
-						_id: id,
 						id: id,
-						studioId: '',
+						_id: '', // set later
+						studioId: '', // set later
 						rundownId: '',
 						objectType: TimelineObjType.RUNDOWN,
 						trigger: { type: 0, value: 0 },
@@ -304,38 +310,37 @@ function getTimelineRecording (studio: Studio, forceNowToTime?: Time): Promise<T
 	// })
 }
 /**
- * Fix the timeline objects, adds properties like deviceId and siId to the timeline objects
+ * Fix the timeline objects, adds properties like deviceId and studioId to the timeline objects
  * @param studio
  * @param timelineObjs Array of timeline objects
  */
 function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObjGeneric>): void {
 	// first, split out any grouped objects, to make the timeline shallow:
-	let fixObjectChildren = (o: TimelineObjGeneric) => {
+	let fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.content && o.content.objects && o.content.objects.length) {
-			// let o2 = o as TimelineObjGeneric
+
 			_.each(o.content.objects, (child: TimelineTypes.TimelineObject) => {
-				let childFixed: TimelineObjGeneric = extendMandadory<TimelineTypes.TimelineObject, TimelineObjGeneric>(child, {
-					// @ts-ignore _id
-					_id: child.id || child['_id'],
+
+				let childFixed: TimelineObjGeneric = {
+					...child,
+					_id: '', // set later
 					studioId: o.studioId,
 					objectType: o.objectType,
 					inGroup: o._id
-				})
-				if (!childFixed._id) logger.error(`TimelineObj missing _id attribute (child of ${o._id})`, childFixed)
-				delete childFixed['id']
+				}
+				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o._id})`, childFixed)
+				childFixed._id = getTimelineId(childFixed)
 				timelineObjs.push(childFixed)
-				fixObjectChildren(childFixed as TimelineObjGroup)
+
+				fixObjectChildren(childFixed)
 			})
 			delete o.content.objects
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
-		o._id = o._id || o.id
-		if (!o._id) logger.error('TimelineObj missing _id attribute', o)
-		delete o.id
 		o.studioId = studio._id
-
+		o._id = getTimelineId(o)
 		fixObjectChildren(o)
 	})
 }
@@ -369,11 +374,11 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 	let activeRundown = rundownData.rundown
 
 	timelineObjs.push(literal<TimelineObjRundown>({
+		id: activeRundown._id + '_status',
+		_id: '', // set later
 		studioId: '', // set later
-		id: '', // set later
 		objectType: TimelineObjType.RUNDOWN,
 		rundownId: rundownData.rundown._id,
-		_id: activeRundown._id + '_status',
 		trigger: {
 			type: TriggerType.LOGICAL,
 			value: '1'
@@ -461,7 +466,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let item of currentInfiniteItems) {
 			const infiniteGroup = createPartGroup(currentPart, item.expectedDuration || 0)
-			infiniteGroup._id = getPartGroupId(item._id) + '_infinite'
+			infiniteGroup.id = getPartGroupId(item._id) + '_infinite'
 			infiniteGroup.priority = 1
 
 			const groupClasses: string[] = ['current_part']
@@ -517,7 +522,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 				nextPieceGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentPartGroup._id}.end - ${overlapDuration}`
+					value: `#${currentPartGroup.id}.end - ${overlapDuration}`
 				})
 				if (typeof currentPartGroup.duration === 'number') {
 					currentPartGroup.duration += currentPart.autoNextOverlap || 0
@@ -553,9 +558,9 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 }
 function createPartGroup (part: Part, duration: number | string): TimelineObjGroupPart & TimelineObjRundown {
 	let partGrp = literal<TimelineObjGroupPart & TimelineObjRundown>({
-		_id: getPartGroupId(part),
-		id: '',
-		studioId: '', // added later
+		id: getPartGroupId(part),
+		_id: '', // set later
+		studioId: '', // set later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: {
@@ -582,9 +587,9 @@ function createPartGroupFirstObject (
 	previousPart?: Part
 ): TimelineObjPartAbstract {
 	return literal<TimelineObjPartAbstract>({
-		_id: getPartFirstObjectId(part),
-		id: '',
-		studioId: '', // added later
+		id: getPartFirstObjectId(part),
+		_id: '', // set later
+		studioId: '', // set later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 		trigger: {
@@ -642,7 +647,7 @@ function transformBaselineItemsIntoTimeline (rundown: Rundown, items: RundownBas
 	_.each(items, (item: RundownBaselineItem) => {
 		// the baseline items are layed out without any grouping
 		_.each(item.objects, (o: TimelineObjGeneric) => {
-			// do some transforms maybe?
+			fixTimelineId(o)
 			timelineObjs.push(extendMandadory<TimelineObjGeneric, TimelineObjRundown>(o, {
 				rundownId: rundown._id,
 				objectType: TimelineObjType.RUNDOWN
@@ -713,6 +718,7 @@ function transformPartIntoTimeline (
 				timelineObjs.push(createPieceGroupFirstObject(item, pieceGroup, firstObjClasses))
 
 				_.each(tos, (o: TimelineObjectCoreExt) => {
+					fixTimelineId(o)
 					if (o.holdMode) {
 						if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
 							return
@@ -729,14 +735,14 @@ function transformPartIntoTimeline (
 						// }
 					// }
 
-					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(o, {
-						// @ts-ignore _id
-						_id: o.id || o['_id'],
+					timelineObjs.push({
+						...o,
+						_id: '', // set later
 						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup._id : undefined,
 						rundownId: rundown._id,
 						objectType: TimelineObjType.RUNDOWN
-					}))
+					})
 				})
 			}
 		}
