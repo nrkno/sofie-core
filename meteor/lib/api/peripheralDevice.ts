@@ -6,7 +6,7 @@ import { PubSub, meteorSubscribe } from './pubsub'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
-namespace PeripheralDeviceAPI {
+export namespace PeripheralDeviceAPI {
 
 export enum StatusCode {
 
@@ -219,5 +219,3 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 }
 
 }
-
-export { PeripheralDeviceAPI }
