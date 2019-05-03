@@ -37,9 +37,9 @@ export function runInFiber (fcn: Function): Promise<void> {
 		Fiber(() => {
 			try {
 				// Run the function
-				fcn()
+				const out = fcn()
 				// the function has finished
-				resolve()
+				resolve(out)
 			} catch (e) {
 				console.log('Error: ' + e)
 				reject(e)

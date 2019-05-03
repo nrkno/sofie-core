@@ -4,12 +4,45 @@ import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/Perip
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
+import {
+	PieceLifespan,
+	getPieceGroupId,
+	IOutputLayer,
+	ISourceLayer,
+	SourceLayerType,
+	StudioBlueprintManifest,
+	BlueprintManifestType,
+	Timeline, IStudioContext,
+	IStudioConfigContext,
+	IBlueprintShowStyleBase,
+	IngestRundown,
+	BlueprintManifestBase,
+	ShowStyleBlueprintManifest,
+	IBlueprintShowStyleVariant,
+	ShowStyleContext,
+	BlueprintResultRundown,
+	BlueprintResultSegment,
+	IngestSegment,
+	SegmentContext,
+	IBlueprintAdLibPiece,
+	IBlueprintRundown,
+	IBlueprintSegment,
+	BlueprintResultPart,
+	IBlueprintPart,
+	IBlueprintPiece
+} from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { StudioBlueprintManifest, BlueprintManifestType, Timeline, IStudioContext, IStudioConfigContext, IBlueprintShowStyleBase, IngestRundown, BlueprintManifestBase, ShowStyleBlueprintManifest, IBlueprintShowStyleVariant, ShowStyleContext, BlueprintResultRundown, BlueprintResultSegment, IngestSegment, SegmentContext, IBlueprintAdLibPiece, IBlueprintRundown, IBlueprintSegment, BlueprintResultPart, IBlueprintPart, IBlueprintPiece } from 'tv-automation-sofie-blueprints-integration'
 import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
+import { literal } from '../../lib/lib'
+
+export enum LAYER_IDS {
+	SOURCE_CAM0 = 'cam0',
+	SOURCE_VT0 = 'vt0',
+	OUTPUT_PGM = 'pgm'
+}
 
 let dbI: number = 0
 export function setupMockPeripheralDevice (
@@ -40,7 +73,7 @@ export function setupMockPeripheralDevice (
 		connectionId: 'myConnectionId',
 		token: 'mockToken'
 	}
-	const device = _.extend(defaultDevice, doc)
+	const device = _.extend(defaultDevice, doc) as PeripheralDevice
 	PeripheralDevices.insert(device)
 	return device
 }
@@ -71,8 +104,32 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 	const defaultShowStyleBase: DBShowStyleBase = {
 		_id: 'mockShowStyleBase' + (dbI++),
 		name: 'mockShowStyleBase',
-		outputLayers: [],
-		sourceLayers: [],
+		outputLayers: [
+			literal<IOutputLayer>({
+				_id: LAYER_IDS.OUTPUT_PGM,
+				_rank: 0,
+				isPGM: true,
+				name: 'PGM'
+			})
+		],
+		sourceLayers: [
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_CAM0,
+				_rank: 0,
+				name: 'Camera',
+				onPGMClean: true,
+				type: SourceLayerType.CAMERA,
+				unlimited: false
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_VT0,
+				_rank: 1,
+				name: 'VT',
+				onPGMClean: true,
+				type: SourceLayerType.VT,
+				unlimited: false
+			})
+		],
 		config: [],
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>

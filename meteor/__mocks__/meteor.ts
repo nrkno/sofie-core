@@ -47,6 +47,13 @@ const $ = {
 	clearInterval,
 }
 
+const mockThis = {
+	userId: 1,
+	connection: {
+		clientAddress: '1.1.1.1'
+	}
+}
+
 export namespace MeteorMock {
 
 	export let isClient: boolean = false
@@ -62,10 +69,10 @@ export namespace MeteorMock {
 	export let mockStartupFunctions: Function[] = []
 
 	export function user (): Meteor.User | undefined {
-		return this.mockUser
+		return mockUser
 	}
 	export function userId (): string | undefined {
-		return this.mockUser ? this.mockUser._id : undefined
+		return mockUser ? mockUser._id : undefined
 	}
 	export class Error {
 		private _stack?: string
@@ -95,11 +102,15 @@ export namespace MeteorMock {
 		}
 	}
 	export function methods (methods: {[name: string]: Function}) {
-		Object.assign(this.mockMethods, methods)
+		Object.assign(mockMethods, methods)
 	}
 	export function call (methodName: string, ...args: any[]) {
-		const fcn: Function = this.mockMethods[methodName]
+
+		const fcn: Function = mockMethods[methodName]
 		if (!fcn) {
+			console.log(methodName)
+			console.log(mockMethods)
+			console.log((new Error(1)).stack)
 			throw new Error(404, `Method '${methodName}' not found`)
 		}
 
@@ -109,13 +120,13 @@ export namespace MeteorMock {
 
 			this.setTimeout(() => {
 				try {
-					callback(undefined, fcn.call({}, ...args))
+					callback(undefined, fcn.call(mockThis, ...args))
 				} catch (e) {
 					callback(e)
 				}
 			}, 0)
 		} else {
-			return fcn.call({}, ...args)
+			return fcn.call(mockThis, ...args)
 		}
 
 	}
@@ -126,7 +137,7 @@ export namespace MeteorMock {
 		throwStubExceptions?: boolean;
 	}, asyncCallback?: Function): any {
 		// ?
-		this.mockMethods[methodName].call({})
+		mockMethods[methodName].call(mockThis, ...args)
 	}
 	export function absoluteUrl (path?: string): string {
 		return path + '' // todo
@@ -153,7 +164,7 @@ export namespace MeteorMock {
 	}
 
 	export function startup (fcn: Function): void {
-		this.mockStartupFunctions.push(fcn)
+		mockStartupFunctions.push(fcn)
 	}
 
 	export function wrapAsync (fcn: Function, context?: Object): any {
