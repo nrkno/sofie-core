@@ -15,6 +15,7 @@ import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -68,13 +69,12 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		let t = this.props.t
 
 		switch (this.props.device.type) {
-			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+			case PeripheralDeviceAPI.DeviceType.MOS:
 				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Play-out Gateway')
 			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 				return t('Media Manager')
-			case PeripheralDeviceAPI.DeviceType.OTHER:
 			default:
 				return t('Unknown Device')
 		}
@@ -222,8 +222,8 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 				<div className='actions-container'>
 					<div className='device-item__actions'>
 						{(
-							// TODO: implement better way to determine what device it is
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.OTHER && this.props.device.name.match(/CasparCG/i) ? <React.Fragment>
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.subType === TSR_DeviceType.CASPARCG ? <React.Fragment>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
 										e.preventDefault()
@@ -253,7 +253,8 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 							<FontAwesomeIcon icon={faTrash} />
 						</button>}
 						{(
-							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
+							this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+							? <React.Fragment>
 								<ModalDialog title={t('Restart this device?')} acceptText={t('Restart')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}

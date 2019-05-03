@@ -169,10 +169,14 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 			},
 			checks: checks
 		}
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
 			so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
+			so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
 		}
 
 		if (!statusObj.components) statusObj.components = []

@@ -6,6 +6,7 @@ import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -61,8 +62,8 @@ Meteor.startup(() => {
 				}).forEach(subDevice => {
 					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
-						subDevice.type === PeripheralDeviceAPI.DeviceType.OTHER &&
-						subDevice.name.match(/CasparCG/i)
+						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+						subDevice.subType === TSR_DeviceType.CASPARCG
 					) {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
