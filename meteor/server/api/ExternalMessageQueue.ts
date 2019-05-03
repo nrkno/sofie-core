@@ -43,6 +43,7 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 			message: message.message,
 			retryUntil: message.retryUntil,
 			studioId: rundown.studioId,
+			rundownId: rundown._id,
 			created: now,
 			tryCount: 0,
 			expires: now + 35 * 24 * 3600 * 1000, // 35 days
@@ -50,8 +51,6 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 		}
 
 		message2 = removeNullyProperties(message2)
-
-		// console.log('result', result)
 
 		if (!rundown.rehearsal) { // Don't save the message when running rehearsals
 			ExternalMessageQueue.insert(message2)

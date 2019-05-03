@@ -125,7 +125,6 @@ export namespace MongoMock {
 					throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
 				}
 				this.documents[d._id] = d
-
 				if (cb) cb(undefined, d._id)
 				else return d._id
 			} catch (error) {
