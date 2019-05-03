@@ -40,6 +40,7 @@ export enum DeviceType {
 }
 export type DeviceSubType = SUBTYPE_PROCESS | TSR_DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
+/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
 export type SUBTYPE_PROCESS = '_process'
 export const SUBTYPE_PROCESS: SUBTYPE_PROCESS = '_process'
 export type MOS_DeviceType = 'mos_connection'

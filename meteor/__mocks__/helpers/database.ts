@@ -12,14 +12,24 @@ import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
 
 let dbI: number = 0
-export function setupMockPeripheralDevice (type: PeripheralDeviceAPI.DeviceType, studio: Studio, doc?: Partial<PeripheralDevice>) {
+export function setupMockPeripheralDevice (
+	category: PeripheralDeviceAPI.DeviceCategory,
+	type: PeripheralDeviceAPI.DeviceType,
+	subType: PeripheralDeviceAPI.DeviceSubType,
+	studio: Studio,
+	doc?: Partial<PeripheralDevice>
+) {
 	doc = doc || {}
 
 	const defaultDevice: PeripheralDevice = {
 		_id: 'mockDevice' + (dbI++),
 		name: 'mockDevice',
 		studioId: studio._id,
+
+		category: category,
 		type: type,
+		subType: subType,
+
 		created: 1234,
 		status: {
 			statusCode: StatusCode.GOOD,
@@ -266,7 +276,12 @@ export function setupDefaultStudioEnvironment () {
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId]
 	})
-	const device = setupMockPeripheralDevice(PeripheralDeviceAPI.DeviceType.MOSDEVICE, studio)
+	const device = setupMockPeripheralDevice(
+		PeripheralDeviceAPI.DeviceCategory.INGEST,
+		PeripheralDeviceAPI.DeviceType.MOS,
+		PeripheralDeviceAPI.SUBTYPE_PROCESS,
+		studio
+	)
 
 	return {
 		showStyleBaseId,
