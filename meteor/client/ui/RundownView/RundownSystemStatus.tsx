@@ -102,68 +102,50 @@ function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLine
 }
 
 export const RundownSystemStatus = translateWithTracker((props: IProps) => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-	const attachedDevices: PeripheralDevice[] = []
+	let attachedDevices: PeripheralDevice[] = []
+
 	const parentDevices = PeripheralDevices.find({
 		studioId: props.studio._id
 	}).fetch()
-	attachedDevices.splice(attachedDevices.length, 0, ...parentDevices)
-	parentDevices.forEach(i => {
-		const subDevices = PeripheralDevices.find({
-			parentDeviceId: i._id
-		}).fetch()
-		attachedDevices.splice(attachedDevices.length, 0, ...subDevices)
-	})
+	attachedDevices = attachedDevices.concat(parentDevices)
+
+	const subDevices = PeripheralDevices.find({
+		parentDeviceId: { $in: _.pluck(parentDevices, '_id') }
+	}).fetch()
+	attachedDevices = attachedDevices.concat(subDevices)
 
 	let ingestDevices = attachedDevices.filter(i => (
-		i.category === PeripheralDeviceAPI.DeviceCategory.INGEST
+		i.category === PeripheralDeviceAPI.DeviceCategory.INGEST ||
+		i.category === PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
 	))
 	let playoutDevices = attachedDevices.filter(i => (
-		i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT ||
-		i.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
+		i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
 	))
 
-	let playoutChildren: PeripheralDevice[] = []
-	playoutDevices.forEach((i) => {
-		playoutChildren = playoutChildren.concat(attachedDevices.filter(j => j.parentDeviceId === i._id))
-	})
-
-	let mosChildren: PeripheralDevice[] = []
-	ingestDevices.forEach((i) => {
-		mosChildren = mosChildren.concat(attachedDevices.filter(j => j.parentDeviceId === i._id))
-	})
-
-	playoutDevices = playoutDevices.concat(playoutChildren)
-	ingestDevices = ingestDevices.concat(mosChildren)
-
-	const mosStatus = _.reduce(ingestDevices, (memo: PeripheralDeviceAPI.StatusCode, item: PeripheralDevice) => {
-		if (item.connected && memo.valueOf() < item.status.statusCode.valueOf()) {
-			return item.status.statusCode
-		} else if (!item.connected) {
-			return PeripheralDeviceAPI.StatusCode.FATAL
-		} else {
-			return memo
+	const [
+		ingest,
+		playout
+	] = _.map([ingestDevices, playoutDevices], (devices) => {
+		const status = _.reduce(devices, (memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+			if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
+				return device.status.statusCode
+			} else if (!device.connected) {
+				return PeripheralDeviceAPI.StatusCode.FATAL
+			} else {
+				return memo
+			}
+		}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
+		const onlineOffline: OnLineOffLineList = {
+			onLine: devices.filter(device => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
+			offLine: devices.filter(device => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
 		}
-	}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
-	const mosOnlineOffline: OnLineOffLineList = {
-		onLine: ingestDevices.filter(i => i.connected && i.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
-		offLine: ingestDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
-	}
-	const mosLastUpdate = _.reduce(ingestDevices, (memo, item: MosParentDevice) => Math.max(item.lastDataReceived || 0, memo), 0)
-	const playoutStatus = _.reduce(playoutDevices, (memo: PeripheralDeviceAPI.StatusCode, item: PeripheralDevice) => {
-		if (item.connected && memo.valueOf() < item.status.statusCode.valueOf()) {
-			return item.status.statusCode
-		} else if (!item.connected) {
-			return PeripheralDeviceAPI.StatusCode.FATAL
-		} else {
-			return memo
+		const lastUpdate = _.reduce(devices, (memo, device: MosParentDevice) => Math.max(device.lastDataReceived || 0, memo), 0)
+		return {
+			status: status,
+			lastUpdate: lastUpdate,
+			onlineOffline: onlineOffline
 		}
-	}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
-	const playoutOnlineOffline: OnLineOffLineList = {
-		onLine: playoutDevices.filter(i => i.connected && i.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
-		offLine: playoutDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
-	}
+	})
 
 	let segments = props.rundown.getSegments()
 
@@ -174,13 +156,15 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 
 	return {
 		notes,
-		mosStatus,
-		mosLastUpdate,
-		playoutStatus,
-		mosDevices: mosOnlineOffline,
-		playoutDevices: playoutOnlineOffline
+
+		mosStatus: ingest.status,
+		mosDevices: ingest.onlineOffline,
+		mosLastUpdate: ingest.lastUpdate,
+
+		playoutStatus: playout.status,
+		playoutDevices: playout.onlineOffline
 	}
-})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	private notificationTimeout: number
 	private STATE_CHANGE_NOTIFICATION_DURATION = 7000
 
