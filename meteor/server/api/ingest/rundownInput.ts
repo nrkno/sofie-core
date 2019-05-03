@@ -121,7 +121,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	const rundown = getRundown(rundownId)
+	const rundown = getRundown(rundownId, rundownExternalId)
 	if (rundown) {
 		logger.info('Removing rundown ' + rundown._id)
 
@@ -507,7 +507,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 
 function getStudioAndRundown (peripheralDevice: PeripheralDevice, externalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getRundownId(studio, externalId))
+	const rundown = getRundown(getRundownId(studio, externalId), externalId)
 
 	return {
 		rundown,

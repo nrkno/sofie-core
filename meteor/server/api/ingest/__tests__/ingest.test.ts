@@ -25,7 +25,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('dataRundownCreate', () => {
-		setLoggerLevel('debug')
+		// setLoggerLevel('debug')
 
 		expect(Rundowns.findOne()).toBeFalsy()
 
@@ -449,6 +449,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.find().count()).toBe(0)
 	})
 
+	testInFiber('dataRundownDelete for a second time', () => {
+		expect(Rundowns.findOne()).toBeFalsy()
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataRundownDelete, device._id, device.token, externalId)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Rundown ${externalId} not found`)
+		}
+	})
+
 	// Allow update even though no preceeding create
 	testInFiber('dataRundownUpdate even though not yet created', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
@@ -547,6 +557,23 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
+	testInFiber('dataSegmentUpdate non-existant rundown', () => {
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: [],
+		}
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, 'wibble', ingestSegment)
+			expect(true).toBe(false)
+		} catch (e) {
+			expect(e.message).toBe(`[404] Rundown wibble not found`)
+		}
+	})
+
 	testInFiber('dataSegmentUpdate no change', () => {
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -606,5 +633,47 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 		expect(Segments.findOne({ externalId: segExternalId })).toBeFalsy()
+	})
+
+	/* testInFiber('dataSegmentDelete for a second time', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+			expect(true).toBe(false) // Should throw rather than run this test
+		} catch (e) {
+			expect(e.message).toBe(`[404] Segment ${segExternalId} not found`)
+		}
+	}) */
+
+	testInFiber('dataSegmentDelete from non-existant rundown', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentDelete, device._id, device.token, 'wibble', segExternalId)
+			expect(true).toBe(false) // Should throw rather than run this test
+		} catch (e) {
+			expect(e.message).toBe(`[404] Rundown wibble not found`)
+		}
+	})
+
+	testInFiber('dataSegmentCreate non-existant rundown', () => {
+		expect(Rundowns.findOne()).toBeTruthy()
+
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: []
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token, 'wibble', ingestSegment)
+			expect(true).toBe(false)
+		} catch (e) {
+			expect(e.message).toBe(`[404] Rundown wibble not found`)
+		}
 	})
 })
