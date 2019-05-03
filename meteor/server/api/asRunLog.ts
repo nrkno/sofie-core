@@ -90,7 +90,7 @@ function handleEvent (event: AsRunLogEvent): void {
 // Convenience functions:
 
 export function reportRundownHasStarted (rundownOrId: Rundown | string, timestamp?: Time) {
-	// Called when the first item in rundown starts playing
+	// Called when the first part in rundown starts playing
 
 	let rundown = (
 		_.isString(rundownOrId) ?

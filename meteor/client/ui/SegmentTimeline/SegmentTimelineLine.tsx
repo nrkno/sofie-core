@@ -80,8 +80,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	}
 
 	renderInside () {
-		if (this.props.layer.items !== undefined) {
-			return _.chain(this.props.layer.items.filter((piece) => {
+		if (this.props.layer.pieces !== undefined) {
+			return _.chain(this.props.layer.pieces.filter((piece) => {
 				// filter only pieces belonging to this part
 				return (piece.partId === this.props.part._id) ?
 					// filter only pieces, that have not been hidden from the UI

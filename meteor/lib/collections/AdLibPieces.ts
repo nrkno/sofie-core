@@ -8,7 +8,7 @@ import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprint
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	expectedDuration: number | string
 
-	/** The object describing the item in detail */
+	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
 	trigger: undefined

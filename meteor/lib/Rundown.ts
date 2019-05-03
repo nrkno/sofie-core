@@ -28,7 +28,7 @@ export interface SegmentExtended extends Segment {
 
 export interface PartExtended extends Part {
 	/** Pieces belonging to this part */
-	items: Array<PieceExtended>
+	pieces: Array<PieceExtended>
 	renderedDuration: number
 	startsAt: number
 	willProbablyAutoNext: boolean
@@ -42,7 +42,7 @@ export interface IOutputLayerExtended extends IOutputLayer {
 }
 export interface ISourceLayerExtended extends ISourceLayer {
 	/** Pieces present on this source layer */
-	items: Array<PieceExtended>
+	pieces: Array<PieceExtended>
 	followingItems: Array<PieceExtended>
 }
 interface IPieceExtendedDictionary {
@@ -110,7 +110,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 	let hasGuestItems = false
-	let followingPart: PartExtended | undefined = undefined
+	let followingPart: PartExtended | undefined
 
 	let autoNextPart = false
 
@@ -125,21 +125,21 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 	if (parts.length > 0) {
 		if (checkFollowingSegment) {
-			let followingSLines = Parts.find({
+			let followingParts = Parts.find({
 				rundownId: segment.rundownId,
 				_rank: {
 					$gt: parts[parts.length - 1]._rank
 				}
 			}, { sort: { _rank: 1 }, limit: 1 }).fetch()
-			if (followingSLines.length > 0) {
-				let followingSLine = followingSLines[0]
+			if (followingParts.length > 0) {
+				let followingPart = followingParts[0]
 
 				let pieces = Pieces.find({
-					partId: followingSLine._id
+					partId: followingPart._id
 				}).fetch()
 
-				followingPart = extendMandadory<Part, PartExtended>(followingSLine, {
-					items: _.map(pieces, (piece) => {
+				followingPart = extendMandadory<Part, PartExtended>(followingPart, {
+					pieces: _.map(pieces, (piece) => {
 						return extendMandadory<Piece, PieceExtended>(piece, {
 							// sourceLayer: ISourceLayerExtended,
 							// outputLayer: IOutputLayerExtended,
@@ -159,7 +159,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		}
 
 		// create local deep copies of the studio outputLayers and sourceLayers so that we can store
-		// items present on those layers inside and also figure out which layers are used when inside the rundown
+		// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 		const outputLayers = normalizeArray<IOutputLayerExtended>(
 			showStyleBase.outputLayers.map((layer) => {
 				return extendMandadory<IOutputLayer, IOutputLayerExtended>(
@@ -177,13 +177,13 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 					_.clone(layer),
 					{
 						followingItems: [],
-						items: []
+						pieces: []
 					}
 				)
 			}),
 			'_id')
 
-		// the SuperTimeline has an issue with resolving items that start at the 0 absolute time point
+		// the SuperTimeline has an issue with resolving pieces that start at the 0 absolute time point
 		// we therefore need a constant offset that we can offset everything to make sure it's not at 0 point.
 		const TIMELINE_TEMP_OFFSET = 1
 
@@ -200,7 +200,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 			// extend objects to match the Extended interface
 			let partE: PartExtended = extendMandadory(part, {
-				items: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
+				pieces: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
 					return extendMandadory<Piece, PieceExtended>(piece, {
 						renderedDuration: 0,
 						renderedInPoint: 0
@@ -239,7 +239,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			}
 
 			// insert items into the timeline for resolution
-			_.each<PieceExtended>(partE.items, (piece) => {
+			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
 					id: getPieceGroupId(piece),
 					trigger: offsetTrigger(piece.trigger, TIMELINE_TEMP_OFFSET),
@@ -269,7 +269,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
 							let part = sourceLayer
-							part.items = []
+							part.pieces = []
 							outputLayer.sourceLayers.push(part)
 						}
 					}
@@ -277,7 +277,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 					if (sourceLayer) {
 						piece.sourceLayer = sourceLayer
 						// attach the piece to the sourceLayer in this segment
-						piece.sourceLayer.items.push(piece)
+						piece.sourceLayer.pieces.push(piece)
 
 						// mark the special Remote and Guest flags, these are dependant on the sourceLayer configuration
 						// check if the segment should be in a special state for segments with remote input
@@ -351,15 +351,15 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		}
 
 		_.each<PartExtended>(partsE, (part) => {
-			if (part.items) {
+			if (part.pieces) {
 				// if an item is continued by another item, rendered duration may need additional resolution
-				_.each<PieceExtended>(part.items, (item) => {
+				_.each<PieceExtended>(part.pieces, (item) => {
 					if (item.continuedByRef) {
 						item.renderedDuration = resolveDuration(item)
 					}
 				})
 
-				const itemsByLayer = _.groupBy(part.items, (item) => {
+				const itemsByLayer = _.groupBy(part.pieces, (item) => {
 					return item.outputLayerId + '_' + item.sourceLayerId
 				})
 				// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
@@ -391,8 +391,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		// Following part allows display of the following part (one in another segment), but only in the context
 		// of a given segment. So if segment B follows segment A, only outputs and layers used in segment A will
 		// be 'resolved' by this code (shown as used, etc.). Any other outputs and layers will be ignored.
-		if (followingPart && followingPart.items) {
-			_.each<PieceExtended>(followingPart.items, (piece) => {
+		if (followingPart && followingPart.pieces) {
+			_.each<PieceExtended>(followingPart.pieces, (piece) => {
 				// match outputs in following part, but do not mark as used
 				// we only care about outputs used in this segment
 				let outputLayer = outputLayers[piece.outputLayerId] as IOutputLayerExtended | undefined
@@ -411,7 +411,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 							// create a copy of the source layer to be attached inside the output.
 							sourceLayer = _.clone(sourceLayer)
 							let sl = sourceLayer
-							sl.items = []
+							sl.pieces = []
 							outputLayer.sourceLayers.push(sl)
 							sl.followingItems.push(piece)
 						}

@@ -41,7 +41,7 @@ function generateExpectedMediaItems (rundownId: string, studioId: string, piece:
 	return result
 }
 
-export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void 
+export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItemsOnRundown (rundownId: string) {
 	check(rundownId, String)
 
@@ -68,7 +68,6 @@ export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void
 		eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 	}
 
-	// robalis.forEach((doc) => iterateOnPieceLike(doc, 'robali'))
 	pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
 	adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
 
@@ -104,9 +103,6 @@ export const updateExpectedMediaItemsOnPart: (rundownId: string, partId: string)
 
 	const eMIs: ExpectedMediaItem[] = []
 
-	// const robalis = RundownBaselineAdLibPieces.find({
-	// 	rundownId: rundown._id
-	// })
 	const pieces = Pieces.find({
 		rundownId: rundown._id,
 		partId: part._id
@@ -120,7 +116,6 @@ export const updateExpectedMediaItemsOnPart: (rundownId: string, partId: string)
 		eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 	}
 
-	// robalis.forEach((doc) => iterateOnPieceLike(doc, 'robali'))
 	pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
 	adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
 

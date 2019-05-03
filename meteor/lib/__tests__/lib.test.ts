@@ -28,9 +28,9 @@ import {
 	rateLimitIgnore
 } from '../lib'
 import { setMeteorMethods } from '../../server/methods'
-import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline';
-import { TriggerType } from 'timeline-state-resolver-types/dist/superfly-timeline';
-import { ExpectedMediaItems } from '../collections/ExpectedMediaItems';
+import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
+import { TriggerType } from 'timeline-state-resolver-types/dist/superfly-timeline'
+import { ExpectedMediaItems } from '../collections/ExpectedMediaItems'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
@@ -57,7 +57,7 @@ describe('lib/lib', () => {
 				return v
 			}
 		})
-		const pValue = MeteorPromiseCall('myMethod', 'myValue')
+		const pValue = MeteorPromiseCall('myMethod', 'myValue').catch(e => { throw e })
 		expect(pValue).toHaveProperty('then') // be a promise
 		const value = waitForPromise(pValue)
 		expect(value).toEqual('myValue')

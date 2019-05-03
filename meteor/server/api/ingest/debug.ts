@@ -8,7 +8,7 @@ import { Meteor } from 'meteor/meteor'
 import { loadCachedRundownData } from './ingestCache'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../../lib/logging'
-import { updateSourceLayerInfinitesAfterLine } from '../playout/infinites'
+import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 
 let methods: Methods = {}
 
@@ -27,7 +27,7 @@ methods['debug_rundownRunBlueprints'] = (rundownId: string, deleteFirst?: boolea
 	handleUpdatedRundown(peripheralDevice, ingestRundown, 'mock')
 
 	logger.info('debug_rundownRunBlueprints: infinites')
-	updateSourceLayerInfinitesAfterLine(rundown)
+	updateSourceLayerInfinitesAfterPart(rundown)
 
 	logger.info('debug_rundownRunBlueprints: done')
 }

@@ -15,7 +15,7 @@ import {
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
 import { updateSegmentFromIngestData } from '../ingest/rundownInput'
-import { updateSourceLayerInfinitesAfterLine } from './infinites'
+import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from './playout'
@@ -28,7 +28,7 @@ let clone = require('fast-clone')
  */
 export function resetRundown (rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
-	// Remove all dunamically inserted items (adlibs etc)
+	// Remove all dunamically inserted pieces (adlibs etc)
 	Pieces.remove({
 		rundownId: rundown._id,
 		dynamicallyInserted: true
@@ -101,7 +101,7 @@ export function resetRundown (rundown: Rundown) {
 	}, { multi: true })
 
 	// ensure that any removed infinites are restored
-	updateSourceLayerInfinitesAfterLine(rundown)
+	updateSourceLayerInfinitesAfterPart(rundown)
 
 	resetRundownPlayhead(rundown)
 }
@@ -159,8 +159,8 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	const segment = Segments.findOne(dbPart.segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
 
-	const prevLine = getPreviousPartForSegment(dbRundown._id, segment)
-	updateSourceLayerInfinitesAfterLine(rundown, prevLine)
+	const prevPart = getPreviousPartForSegment(dbRundown._id, segment)
+	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 
 	updateExpectedMediaItemsOnPart(rundown._id, dbPart._id)
 	triggerUpdateTimelineAfterIngestData(rundown._id, [dbPart.segmentId])
@@ -237,7 +237,7 @@ function resetPart (part: DBPart): Promise<void> {
 	}, {
 		multi: true
 	}))
-	// Remove all pieces that have been dynamically created (such as adLib items)
+	// Remove all pieces that have been dynamically created (such as adLib pieces)
 	ps.push(asyncCollectionRemove(Pieces, {
 		rundownId: part.rundownId,
 		partId: part._id,
@@ -275,11 +275,11 @@ function resetPart (part: DBPart): Promise<void> {
 	} else {
 		const rundown = Rundowns.findOne(part.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
-		const prevLine = getPreviousPart(rundown, part)
+		const prevPart = getPreviousPart(rundown, part)
 
 		return Promise.all(ps)
 		.then(() => {
-			updateSourceLayerInfinitesAfterLine(rundown, prevLine)
+			updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 			// do nothing
 		})
 	}

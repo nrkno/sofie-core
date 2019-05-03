@@ -99,7 +99,7 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 
 export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
-	let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
+	let newStatus: RundownAPI.TakeItemStatusCode = RundownAPI.TakeItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
@@ -110,7 +110,7 @@ export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer
 				const content = piece.content as VTContent
 				// If the fileName is not set...
 				if (!content.fileName) {
-					newStatus = RundownAPI.LineItemStatusCode.SOURCE_NOT_SET
+					newStatus = RundownAPI.TakeItemStatusCode.SOURCE_NOT_SET
 					message = t('Source is not set')
 				} else {
 					const mediaObject = MediaObjects.findOne({
@@ -118,15 +118,15 @@ export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer
 					})
 					// If media object not found, then...
 					if (!mediaObject && content.fileName) {
-						newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+						newStatus = RundownAPI.TakeItemStatusCode.SOURCE_MISSING
 						message = t('Source is missing: {{fileName}}', { fileName: content.fileName })
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
-						newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+						newStatus = RundownAPI.TakeItemStatusCode.SOURCE_BROKEN
 						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: content.fileName })
 					}
 					if (mediaObject) {
-						if (!newStatus) newStatus = RundownAPI.LineItemStatusCode.OK
+						if (!newStatus) newStatus = RundownAPI.TakeItemStatusCode.OK
 						const messages: Array<String> = []
 
 						// Do a format check:
@@ -194,8 +194,8 @@ export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer
 						}
 
 						if (messages.length) {
-							if (newStatus === RundownAPI.LineItemStatusCode.OK) {
-								newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+							if (newStatus === RundownAPI.TakeItemStatusCode.OK) {
+								newStatus = RundownAPI.TakeItemStatusCode.SOURCE_BROKEN
 								message = messages.join(', ')
 							} else {
 								message += ', ' + messages.join(', ')
