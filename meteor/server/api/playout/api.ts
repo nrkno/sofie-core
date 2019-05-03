@@ -50,23 +50,23 @@ methods[PlayoutAPI.methods.partPlaybackStartedCallback] = (rundownId: string, pa
 methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
 	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
 }
-methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (rundownId: string, partId: string, salliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, salliId, queue)
+methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownId: string, partId: string, pieceId: string, queue: boolean) => {
+	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownId: string, partId: string, robaliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownId, partId, robaliId, queue)
+methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownId: string, partId: string, pieceId: string, queue: boolean) => {
+	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.segmentAdLibLineItemStop] = (rundownId: string, partId: string, pieceId: string) => {
+methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownId: string, partId: string, pieceId: string) => {
 	return ServerPlayoutAPI.startAdLibPiece(rundownId, partId, pieceId)
 }
-methods[PlayoutAPI.methods.sourceLayerOnLineStop] = (rundownId: string, partId: string, sourceLayerId: string) => {
-	return ServerPlayoutAPI.sourceLayerOnLineStop(rundownId, partId, sourceLayerId)
+methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownId: string, partId: string, sourceLayerId: string) => {
+	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownId, partId, sourceLayerId)
 }
 methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: string, time: number) => {
 	return ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(timelineObjId, time)
 }
-methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (rundownId: string, sourceLayerId: string) => {
-	return ServerPlayoutAPI.sourceLayerStickyItemStart(rundownId, sourceLayerId)
+methods[PlayoutAPI.methods.sourceLayerStickyPieceStart] = (rundownId: string, sourceLayerId: string) => {
+	return ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownId, sourceLayerId)
 }
 methods[PlayoutAPI.methods.updateStudioBaseline] = (studioId: string) => {
 	return ServerPlayoutAPI.updateStudioBaseline(studioId)

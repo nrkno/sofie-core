@@ -9,7 +9,7 @@ import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
 import { Parts } from '../../lib/collections/Parts'
-import { updateSourceLayerInfinitesAfterLine } from '../api/playout/infinites'
+import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -58,18 +58,18 @@ setMeteorMethods({
 		})
 	},
 
-	'debug_updateSourceLayerInfinitesAfterLine' (rundownId: string, previousSlId?: string, runToEnd?: boolean) {
+	'debug_updateSourceLayerInfinitesAfterPart' (rundownId: string, previousPartId?: string, runToEnd?: boolean) {
 		check(rundownId, String)
-		if (previousSlId) check(previousSlId, String)
+		if (previousPartId) check(previousPartId, String)
 		if (runToEnd !== undefined) check(runToEnd, Boolean)
 
 		const rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-		const prevSl = previousSlId ? Parts.findOne(previousSlId) : undefined
+		const prevPart = previousPartId ? Parts.findOne(previousPartId) : undefined
 
-		updateSourceLayerInfinitesAfterLine(rundown, prevSl, runToEnd)
+		updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd)
 
-		logger.info('debug_updateSourceLayerInfinitesAfterLine: done')
+		logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
 	}
 })

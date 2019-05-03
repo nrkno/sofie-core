@@ -52,7 +52,7 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	if (!rundown.nextPartId) {
 		let parts = rundown.getParts()
 		let firstPart = _.first(parts)
-		if (firstPart) {
+		if (firstPart && !firstPart.invalid) {
 			setNextPart(rundown, firstPart)
 		}
 	}
@@ -94,7 +94,7 @@ export function deactivateRundown (rundown: Rundown) {
 		})
 	}
 
-	// clean up all runtime baseline items
+	// clean up all runtime baseline objects
 	RundownBaselineObjs.remove({
 		rundownId: rundown._id
 	})

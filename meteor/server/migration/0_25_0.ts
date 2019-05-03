@@ -279,7 +279,7 @@ addMigrationSteps('0.25.0', [
 			logger.error(itemsCount)
 
 			if (itemsCount > 0) {
-				return `ExpectedMediaItems contains ${itemsCount} orphaned items`
+				return `ExpectedMediaItems contains ${itemsCount} orphaned media-items`
 			}
 			return false
 		},

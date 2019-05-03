@@ -3,6 +3,7 @@ import { Random } from 'meteor/random'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -22,41 +23,34 @@ export interface StatusObject {
 	statusCode: StatusCode,
 	messages?: Array<string>
 }
-/*
-// TODO: Refactor into this?
+// Note The actual type of a device is determined by the Category, Type and SubType
 export enum DeviceCategory {
-	SUBDEVICE = 'subdevice',
 	INGEST = 'ingest',
 	PLAYOUT = 'playout',
 	MEDIA_MANAGER = 'media_manager'
 }
 export enum DeviceType {
-	// Main devices:
-	MOS_GATEWAY = 'mos_gateway',
-	SPREADSHEET_GATEWAY = 'spreadsheet_gateway',
-
-	PLAYOUT_GATEWAY = 'playout_gateway',
-
-	MEDIA_MANAGER = 'media_manager',
-
-	// Sub-devices:
-	MOS_CONNECTION = 'mos_connection',
-
-	TSR_CASPARCG = 'tsr_casparcg',
-	TSR_ATEM = 'tsr_atem',
-	TSR_HTTPSEND = 'tsr_httpsend',
-	//etc..
+	// Ingest devices:
+	MOS 			= 'mos',
+	SPREADSHEET 	= 'spreadsheet',
+	// Playout devices:
+	PLAYOUT 		= 'playout',
+	// Media-manager devices:
+	MEDIA_MANAGER 	= 'media_manager'
 }
-*/
-export enum DeviceType {
-	MOSDEVICE = 0,
-	PLAYOUT = 1,
-	OTHER = 2, // i.e. sub-devices
-	MEDIA_MANAGER = 3,
-	SPREADSHEET = 4
-}
+export type DeviceSubType = SUBTYPE_PROCESS | TSR_DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
+
+/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
+export type SUBTYPE_PROCESS = '_process'
+export const SUBTYPE_PROCESS: SUBTYPE_PROCESS = '_process'
+export type MOS_DeviceType = 'mos_connection'
+export type Spreadsheet_DeviceType = 'spreadsheet_connection'
+
 export interface InitOptions {
+	category: DeviceCategory
 	type: DeviceType
+	subType: DeviceSubType
+
 	name: string
 	connectionId: string
 	parentDeviceId?: string

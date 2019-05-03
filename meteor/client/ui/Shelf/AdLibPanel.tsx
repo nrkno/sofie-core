@@ -433,7 +433,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentAdLibLineItemStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
 		}
 	}
 
@@ -441,7 +441,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		// console.log(sourceLayer)
 		const { t } = this.props
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
 		}
 	}
 

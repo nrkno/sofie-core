@@ -129,7 +129,7 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 			return extendMandadory<Segment, SegmentUi>(segment, {
 				items: _.map(segment.getParts(), (part) => {
 					let sle = extendMandadory<Part, PartExtended>(part, {
-						items: [],
+						pieces: [],
 						renderedDuration: 0,
 						startsAt: 0,
 						willProbablyAutoNext: false

@@ -145,20 +145,20 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	const rundown = Rundowns.findOne(rundownId)
 	if (rundown && rundown.active) {
 		// If the replaced segment is next-to-be-played out,
-		// instead make the next-to-be-played-out item the one in it's place
+		// instead make the next-to-be-played-out part the one in it's place
 		const oldNextPart = _.find(removedParts, part => rundown.nextPartId)
 		if (oldNextPart) {
 			const partBefore = fetchBefore(Parts, {
 				rundownId: rundownId
 			}, oldNextPart._rank)
 
-			const nextPartInLine = fetchAfter(Parts, {
+			const newNextPart = fetchAfter(Parts, {
 				rundownId: rundownId,
 				_id: { $ne: oldNextPart._id }
 			}, partBefore ? partBefore._rank : null)
 
 			// TODO - should this be setNextPartInner?
-			ServerPlayoutAPI.setNextPart(rundown._id, nextPartInLine ? nextPartInLine._id : null)
+			ServerPlayoutAPI.setNextPart(rundown._id, newNextPart ? newNextPart._id : null)
 		}
 	}
 }

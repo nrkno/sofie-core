@@ -26,7 +26,7 @@ export namespace ServerPlayoutAdLibAPI {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in an active rundown!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 
 			const piece = Pieces.findOne({
 				_id: pieceId,
@@ -39,7 +39,7 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundownId
 			})
 			if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a current part!`)
+			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 
 			const showStyleBase = rundown.getShowStyleBase()
 			const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
@@ -62,10 +62,10 @@ export namespace ServerPlayoutAdLibAPI {
 				)
 			}
 
-			// disable the original piece if from the same SL
+			// disable the original piece if from the same Part
 			if (piece.partId === part._id) {
 				const pieces = getResolvedPieces(part)
-				const resPiece = pieces.find(item => item._id === piece._id)
+				const resPiece = pieces.find(p => p._id === piece._id)
 
 				if (piece.startedPlayback && piece.startedPlayback <= getCurrentTime()) {
 					if (resPiece && resPiece.duration !== undefined && (piece.infiniteMode || piece.startedPlayback + resPiece.duration >= getCurrentTime())) {
@@ -90,9 +90,9 @@ export namespace ServerPlayoutAdLibAPI {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in an active rundown!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 			if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
-				throw new Meteor.Error(403, `Part Ad Lib Items can not be used in combination with hold!`)
+				throw new Meteor.Error(403, `Part AdLib-pieces can not be used in combination with hold!`)
 			}
 			const adLibPiece = AdLibPieces.findOne({
 				_id: adLibPieceId,
@@ -101,7 +101,7 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!adLibPiece) throw new Meteor.Error(404, `Part Ad Lib Item "${adLibPieceId}" not found!`)
 			if (adLibPiece.invalid) throw new Meteor.Error(404, `Cannot take invalid Part Ad Lib Item "${adLibPieceId}"!`)
 
-			if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part Ad Lib Items can be only placed in a currently playing part!`)
+			if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
 
 			innerStartAdLibPiece(rundown, queue, partId, adLibPiece)
 		})
@@ -112,9 +112,9 @@ export namespace ServerPlayoutAdLibAPI {
 
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Rundown Baseline Ad Lib Items can be only placed in an active rundown!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Rundown Baseline AdLib-pieces can be only placed in an active rundown!`)
 			if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
-				throw new Meteor.Error(403, `Part Ad Lib Items can not be used in combination with hold!`)
+				throw new Meteor.Error(403, `Part AdLib-pieces can not be used in combination with hold!`)
 			}
 
 			const adLibPiece = RundownBaselineAdLibPieces.findOne({
@@ -122,7 +122,7 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundownId
 			})
 			if (!adLibPiece) throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
-			if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Rundown Baseline Ad Lib Items can be only placed in a currently playing part!`)
+			if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Rundown Baseline AdLib-pieces can be only placed in a currently playing part!`)
 
 			innerStartAdLibPiece(rundown, queue, partId, adLibPiece)
 		})
@@ -143,7 +143,7 @@ export namespace ServerPlayoutAdLibAPI {
 		Pieces.insert(newPiece)
 
 		if (queue) {
-			// keep infinite sLineItems
+			// keep infinite pieces
 			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
 				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
@@ -195,21 +195,21 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundownId
 			})
 			if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-			const alCopyItem = Pieces.findOne({
+			const alCopyPiece = Pieces.findOne({
 				_id: pieceId,
 				rundownId: rundownId
 			})
 			// To establish playback time, we need to look at the actual Timeline
-			const alCopyItemTObj = Timeline.findOne({
+			const alCopyPieceTObj = Timeline.findOne({
 				_id: getPieceGroupId(pieceId)
 			})
 			let parentOffset = 0
-			if (!alCopyItem) throw new Meteor.Error(404, `Part Ad Lib Copy Item "${pieceId}" not found!`)
-			if (!alCopyItemTObj) throw new Meteor.Error(404, `Part Ad Lib Copy Item "${pieceId}" not found in the playout Timeline!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Part Ad Lib Copy Items can be only manipulated in an active rundown!`)
-			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part Ad Lib Copy Items can be only manipulated in a current part!`)
-			if (!alCopyItem.dynamicallyInserted) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a dynamic Piece!`)
-			if (!alCopyItem.adLibSourceId) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a Part Ad Lib Copy Item!`)
+			if (!alCopyPiece) throw new Meteor.Error(404, `Part AdLib-copy-piece "${pieceId}" not found!`)
+			if (!alCopyPieceTObj) throw new Meteor.Error(404, `Part AdLib-copy-piece "${pieceId}" not found in the playout Timeline!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Part AdLib-copy-pieces can be only manipulated in an active rundown!`)
+			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part AdLib-copy-pieces can be only manipulated in a current part!`)
+			if (!alCopyPiece.dynamicallyInserted) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a dynamic Piece!`)
+			if (!alCopyPiece.adLibSourceId) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a Part AdLib-copy-piece!`)
 
 			// The ad-lib item positioning will be relative to the startedPlayback of the part
 			if (part.startedPlayback) {
@@ -217,8 +217,8 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			let newExpectedDuration = 1 // smallest, non-zerundown duration
-			if (alCopyItemTObj.trigger.type === TriggerType.TIME_ABSOLUTE && _.isNumber(alCopyItemTObj.trigger.value)) {
-				const actualStartTime = parentOffset + alCopyItemTObj.trigger.value
+			if (alCopyPieceTObj.trigger.type === TriggerType.TIME_ABSOLUTE && _.isNumber(alCopyPieceTObj.trigger.value)) {
+				const actualStartTime = parentOffset + alCopyPieceTObj.trigger.value
 				newExpectedDuration = getCurrentTime() - actualStartTime
 			} else {
 				logger.warn(`"${pieceId}" timeline object is not positioned absolutely or is still set to play now, assuming it's about to be played.`)

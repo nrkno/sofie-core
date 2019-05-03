@@ -13,7 +13,7 @@ import { ISourceLayer, IOutputLayer } from 'tv-automation-sofie-blueprints-integ
 export interface IAdLibListItem {
 	_id: string,
 	name: string,
-	status?: RundownAPI.LineItemStatusCode
+	status?: RundownAPI.TakeItemStatusCode
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
@@ -47,9 +47,9 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 					'adlib-panel__list-view__list__table__cell--icon',
 					RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					{
-						'source-missing': this.props.item.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.item.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.item.status === RundownAPI.LineItemStatusCode.UNKNOWN
+						'source-missing': this.props.item.status === RundownAPI.TakeItemStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.item.status === RundownAPI.TakeItemStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.item.status === RundownAPI.TakeItemStatusCode.UNKNOWN
 					}
 				)}>
 					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}

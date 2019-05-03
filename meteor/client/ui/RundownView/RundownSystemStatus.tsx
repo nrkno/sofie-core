@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PeripheralDevice, PeripheralDevices, MosDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, MosParentDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -116,8 +116,13 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		attachedDevices.splice(attachedDevices.length, 0, ...subDevices)
 	})
 
-	let mosDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE)
-	let playoutDevices = attachedDevices.filter(i => (i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT || i.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER))
+	let ingestDevices = attachedDevices.filter(i => (
+		i.category === PeripheralDeviceAPI.DeviceCategory.INGEST
+	))
+	let playoutDevices = attachedDevices.filter(i => (
+		i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT ||
+		i.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
+	))
 
 	let playoutChildren: PeripheralDevice[] = []
 	playoutDevices.forEach((i) => {
@@ -125,14 +130,14 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 	})
 
 	let mosChildren: PeripheralDevice[] = []
-	mosDevices.forEach((i) => {
+	ingestDevices.forEach((i) => {
 		mosChildren = mosChildren.concat(attachedDevices.filter(j => j.parentDeviceId === i._id))
 	})
 
 	playoutDevices = playoutDevices.concat(playoutChildren)
-	mosDevices = mosDevices.concat(mosChildren)
+	ingestDevices = ingestDevices.concat(mosChildren)
 
-	const mosStatus = _.reduce(mosDevices, (memo: PeripheralDeviceAPI.StatusCode, item: PeripheralDevice) => {
+	const mosStatus = _.reduce(ingestDevices, (memo: PeripheralDeviceAPI.StatusCode, item: PeripheralDevice) => {
 		if (item.connected && memo.valueOf() < item.status.statusCode.valueOf()) {
 			return item.status.statusCode
 		} else if (!item.connected) {
@@ -142,10 +147,10 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
 	const mosOnlineOffline: OnLineOffLineList = {
-		onLine: mosDevices.filter(i => i.connected && i.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
-		offLine: mosDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
+		onLine: ingestDevices.filter(i => i.connected && i.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
+		offLine: ingestDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
 	}
-	const mosLastUpdate = _.reduce(mosDevices, (memo, item: MosDevice) => Math.max(item.lastDataReceived || 0, memo), 0)
+	const mosLastUpdate = _.reduce(ingestDevices, (memo, item: MosParentDevice) => Math.max(item.lastDataReceived || 0, memo), 0)
 	const playoutStatus = _.reduce(playoutDevices, (memo: PeripheralDeviceAPI.StatusCode, item: PeripheralDevice) => {
 		if (item.connected && memo.valueOf() < item.status.statusCode.valueOf()) {
 			return item.status.statusCode

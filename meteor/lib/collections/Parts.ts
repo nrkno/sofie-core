@@ -174,18 +174,18 @@ export class Part implements DBPart {
 		notes = notes.concat(this.notes || [])
 
 		if (runtimeNotes) {
-			const items = this.getPieces()
+			const pieces = this.getPieces()
 			const rundown = this.getRundown()
 			const studio = rundown && rundown.getStudio()
 			const showStyleBase = rundown && rundown.getShowStyleBase()
 			const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-			_.each(items, (item) => {
+			_.each(pieces, (piece) => {
 				// TODO: check statuses (like media availability) here
 
-				if (partLookup && item.sourceLayerId && partLookup[item.sourceLayerId]) {
-					const part = partLookup[item.sourceLayerId]
-					const st = checkPieceContentStatus(item, part, studio ? studio.config : [])
-					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
+				if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
+					const part = partLookup[piece.sourceLayerId]
+					const st = checkPieceContentStatus(piece, part, studio ? studio.config : [])
+					if (st.status === RundownAPI.TakeItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.TakeItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
 							origin: {
@@ -193,7 +193,7 @@ export class Part implements DBPart {
 								rundownId: this.rundownId,
 								segmentId: this.segmentId,
 								partId: this._id,
-								pieceId: item._id
+								pieceId: piece._id
 							},
 							message: st.message || ''
 						})

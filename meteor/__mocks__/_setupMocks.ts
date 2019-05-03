@@ -1,6 +1,12 @@
 import { setLoggerLevel } from '../server/api/logger'
+import { runInFiber, Fiber } from './Fibers'
+import { makeCompatible } from 'meteor-promise'
 
 // This file is run before all tests start.
+
+// Set up how Meteor handles Promises & Fibers:
+makeCompatible(Promise, Fiber)
+
 // Add references to all "meteor" mocks below, so that jest resolves the imports properly.
 
 jest.mock('meteor/meteor',					require('./meteor').setup,					{ virtual: true })

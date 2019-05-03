@@ -57,7 +57,7 @@ import {
 import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { areThereActiveRundownsInStudio } from './studio'
-import { updateSourceLayerInfinitesAfterLine, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
+import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 
@@ -171,15 +171,15 @@ export namespace ServerPlayoutAPI {
 			let firstTake = !rundown.startedPlayback
 			let rundownData = rundown.fetchAllData()
 
-			const currentSL = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
-			if (currentSL && currentSL.transitionDuration) {
-				const prevSL = rundown.previousPartId ? rundownData.partsMap[rundown.previousPartId] : undefined
-				const allowTransition = prevSL && !prevSL.disableOutTransition
+			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
+			if (currentPart && currentPart.transitionDuration) {
+				const prevPart = rundown.previousPartId ? rundownData.partsMap[rundown.previousPartId] : undefined
+				const allowTransition = prevPart && !prevPart.disableOutTransition
 
-				// If there was a transition from the previous SL, then ensure that has finished before another take is permitted
+				// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 				if (allowTransition) {
-					const start = currentSL.getLastStartedPlayback()
-					if (start && now < start + currentSL.transitionDuration) {
+					const start = currentPart.getLastStartedPlayback()
+					if (start && now < start + currentPart.transitionDuration) {
 						return ClientAPI.responseError('Cannot take during a transition')
 					}
 				}
@@ -290,7 +290,7 @@ export namespace ServerPlayoutAPI {
 
 			ps = []
 
-			// Setup the items for the HOLD we are starting
+			// Setup the parts for the HOLD we are starting
 			if (m.previousPartId && m.holdState === RundownHoldState.ACTIVE) {
 				let previousPart = rundownData.partsMap[m.previousPartId]
 				if (!previousPart) throw new Meteor.Error(404, 'previousPart not found!')
@@ -535,19 +535,19 @@ export namespace ServerPlayoutAPI {
 				nextPart = Parts.findOne(rundown.nextPartId)
 			}
 			if (currentPart && onAirNextWindowWidth === 2) { // the next line was next to onAir line
-				const newNextLine = rundown.getParts({
+				const newNextPart = rundown.getParts({
 					_rank: {
 						$gt: currentPart._rank
 					}
 				}, {
 					limit: 1
 				})[0]
-				libSetNextPart(rundown, newNextLine || null)
+				libSetNextPart(rundown, newNextPart || null)
 			} else if (!currentPart && nextPart && onAirNextWindowWidth === undefined && nextPosition !== undefined) {
-				const newNextLine = rundown.getParts({}, {
+				const newNextPart = rundown.getParts({}, {
 					limit: nextPosition
 				})[0]
-				libSetNextPart(rundown, newNextLine || null)
+				libSetNextPart(rundown, newNextPart || null)
 
 			}
 		}
@@ -681,20 +681,20 @@ export namespace ServerPlayoutAPI {
 		// TODO - confirm this is correct
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			// This method is called when an auto-next event occurs
-			const segLineItem = Pieces.findOne({
+			const piece = Pieces.findOne({
 				_id: pieceId,
 				rundownId: rundownId
 			})
-			if (!segLineItem) throw new Meteor.Error(404, `Piece "${pieceId}" in rundown "${rundownId}" not found!`)
+			if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" in rundown "${rundownId}" not found!`)
 
 			const isPlaying: boolean = !!(
-				segLineItem.startedPlayback &&
-				!segLineItem.stoppedPlayback
+				piece.startedPlayback &&
+				!piece.stoppedPlayback
 			)
 			if (!isPlaying) {
 				logger.info(`Playout reports piece "${pieceId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
-				reportPieceHasStarted(segLineItem, startedPlayback)
+				reportPieceHasStarted(piece, startedPlayback)
 
 				// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 			}
@@ -711,20 +711,20 @@ export namespace ServerPlayoutAPI {
 		// TODO - confirm this is correct
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			// This method is called when an auto-next event occurs
-			const segLineItem = Pieces.findOne({
+			const piece = Pieces.findOne({
 				_id: pieceId,
 				rundownId: rundownId
 			})
-			if (!segLineItem) throw new Meteor.Error(404, `Piece "${pieceId}" in rundown "${rundownId}" not found!`)
+			if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" in rundown "${rundownId}" not found!`)
 
 			const isPlaying: boolean = !!(
-				segLineItem.startedPlayback &&
-				!segLineItem.stoppedPlayback
+				piece.startedPlayback &&
+				!piece.stoppedPlayback
 			)
 			if (isPlaying) {
 				logger.info(`Playout reports piece "${pieceId}" has stopped playback on timestamp ${(new Date(stoppedPlayback)).toISOString()}`)
 
-				reportPieceHasStopped(segLineItem, stoppedPlayback)
+				reportPieceHasStopped(piece, stoppedPlayback)
 			}
 		})
 	}
@@ -766,13 +766,13 @@ export namespace ServerPlayoutAPI {
 					if (rundown.currentPartId === partId) {
 						// this is the current part, it has just started playback
 						if (rundown.previousPartId) {
-							const prevSegLine = Parts.findOne(rundown.previousPartId)
+							const prevPart = Parts.findOne(rundown.previousPartId)
 
-							if (!prevSegLine) {
+							if (!prevPart) {
 								// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
 								logger.error(`Previous part "${rundown.previousPartId}" on rundown "${rundownId}" could not be found.`)
-							} else if (!prevSegLine.duration) {
-								onPartHasStoppedPlaying(prevSegLine, startedPlayback)
+							} else if (!prevPart.duration) {
+								onPartHasStoppedPlaying(prevPart, startedPlayback)
 							}
 						}
 
@@ -917,7 +917,7 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.startAdLibPiece(rundownId, partId, pieceId)
 	}
-	export function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
+	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
 		check(rundownId, String)
 		check(sourceLayerId, String)
 
@@ -950,8 +950,8 @@ export namespace ServerPlayoutAPI {
 				const currentPart = Parts.findOne(rundown.currentPartId)
 				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
 
-				const lastItem = convertPieceToAdLibPiece(lastPieces[0])
-				const newAdLibPiece = convertAdLibToPiece(lastItem, currentPart, false)
+				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
+				const newAdLibPiece = convertAdLibToPiece(lastPiece, currentPart, false)
 
 				Pieces.insert(newAdLibPiece)
 
@@ -964,7 +964,7 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function sourceLayerOnLineStop (rundownId: string, partId: string, sourceLayerId: string) {
+	export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(sourceLayerId, String)
@@ -983,23 +983,23 @@ export namespace ServerPlayoutAPI {
 
 			const now = getCurrentTime()
 			const relativeNow = now - (part.getLastStartedPlayback() || 0)
-			const orderedItems = getResolvedPieces(part)
+			const orderedPieces = getResolvedPieces(part)
 
-			orderedItems.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
+			orderedPieces.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
 				if (!i.durationOverride) {
 					let newExpectedDuration: number | undefined = undefined
 
 					if (i.infiniteId && i.infiniteId !== i._id && part) {
-						const segLineStarted = part.getLastStartedPlayback()
-						if (segLineStarted) {
-							newExpectedDuration = now - segLineStarted
+						const partStarted = part.getLastStartedPlayback()
+						if (partStarted) {
+							newExpectedDuration = now - partStarted
 						}
 					} else if (i.startedPlayback && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
 						newExpectedDuration = now - i.startedPlayback
 					}
 
 					if (newExpectedDuration !== undefined) {
-						console.log(`Cropping item "${i._id}" at ${newExpectedDuration}`)
+						console.log(`Cropping piece "${i._id}" at ${newExpectedDuration}`)
 
 						Pieces.update({
 							_id: i._id
@@ -1012,7 +1012,7 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 
-			updateSourceLayerInfinitesAfterLine(rundown, part)
+			updateSourceLayerInfinitesAfterPart(rundown, part)
 
 			updateTimeline(rundown.studioId)
 		})
@@ -1062,7 +1062,7 @@ export namespace ServerPlayoutAPI {
 					if (currentPart && currentPart.autoNext) {
 						updateTimeline(rundown.studioId)
 					}
-				// If this is rundown's current SL, update immediately
+				// If this is rundown's current part, update immediately
 				} else if (rundown.currentPartId === part._id) {
 					updateTimeline(rundown.studioId)
 				}
@@ -1141,20 +1141,20 @@ export namespace ServerPlayoutAPI {
 
 function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPart: Part) {
 	if (currentPart) {
-		const adjacentSL = _.find(rundownData.parts, (part) => {
+		const adjacentPart = _.find(rundownData.parts, (part) => {
 			return (
 				part.segmentId === currentPart.segmentId &&
 				part._rank > currentPart._rank
 			)
 		})
-		if (!adjacentSL || adjacentSL._id !== nextPart._id) {
+		if (!adjacentPart || adjacentPart._id !== nextPart._id) {
 			// adjacent Part isn't the next part, do not overflow
 			return
 		}
 		let ps: Array<Promise<any>> = []
-		const currentSLIs = currentPart.getAllPieces()
-		currentSLIs.forEach((item) => {
-			if (item.overflows && typeof item.expectedDuration === 'number' && item.expectedDuration > 0 && item.duration === undefined && item.durationOverride === undefined) {
+		const currentPieces = currentPart.getAllPieces()
+		currentPieces.forEach((piece) => {
+			if (piece.overflows && typeof piece.expectedDuration === 'number' && piece.expectedDuration > 0 && piece.duration === undefined && piece.durationOverride === undefined) {
 				// Clone an overflowing piece
 				let overflowedItem = _.extend({
 					_id: Random.id(),
@@ -1164,11 +1164,11 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 						value: 0
 					},
 					dynamicallyInserted: true,
-					continuesRefId: item._id,
+					continuesRefId: piece._id,
 
 					// Subtract the amount played from the expected duration
-					expectedDuration: Math.max(0, item.expectedDuration - ((item.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
-				}, _.omit(clone(item) as Piece, 'startedPlayback', 'duration', 'overflows'))
+					expectedDuration: Math.max(0, piece.expectedDuration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
+				}, _.omit(clone(piece) as Piece, 'startedPlayback', 'duration', 'overflows'))
 
 				if (overflowedItem.expectedDuration > 0) {
 					ps.push(asyncCollectionInsert(Pieces, overflowedItem))
@@ -1232,14 +1232,14 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 		delete updateTimelineFromIngestDataTimeouts[rundownId]
 
 		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
-		let prevLine: Part | undefined
+		let prevPart: Part | undefined
 		if (data.changedSegments) {
 			const firstSegment = Segments.findOne({
 				rundownId: rundownId,
 				_id: { $in: data.changedSegments }
 			})
 			if (firstSegment) {
-				prevLine = getPreviousPartForSegment(rundownId, firstSegment)
+				prevPart = getPreviousPartForSegment(rundownId, firstSegment)
 			}
 		}
 
@@ -1247,7 +1247,7 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
 		// TODO - test the input data for this
-		updateSourceLayerInfinitesAfterLine(rundown, prevLine, true)
+		updateSourceLayerInfinitesAfterPart(rundown, prevPart, true)
 
 		if (rundown.active) {
 			updateTimeline(rundown.studioId)

@@ -32,7 +32,7 @@ import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRu
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
-import { RundownBaselineItem, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
 import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -128,7 +128,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId)
+		const rundown = getRundown(rundownId, rundownExternalId)
 		if (rundown) {
 			logger.info('Removing rundown ' + rundown._id)
 
@@ -255,16 +255,16 @@ function updateRundownFromIngestData (
 
 	// Save the baseline
 	const blueprintRundownContext = new RundownContext(dbRundown, studio)
-	logger.info(`Building baseline items for ${dbRundown._id}...`)
-	logger.info(`... got ${rundownRes.baseline.length} items from baseline.`)
+	logger.info(`Building baseline objects for ${dbRundown._id}...`)
+	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
-	const baselineItem: RundownBaselineItem = {
+	const baselineObj: RundownBaselineObj = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
 		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 	// Save the global adlibs
-	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib items from baseline.`)
+	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
 	const existingRundownParts = Parts.find({
@@ -298,10 +298,9 @@ function updateRundownFromIngestData (
 	changes = sumChanges(
 		changes,
 		// Save the baseline
-		saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineObjs, {
+		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs, {
 			rundownId: dbRundown._id,
-		}, [baselineItem]),
-
+		}, [baselineObj]),
 		// Save the global adlibs
 		saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces, {
 			rundownId: dbRundown._id
@@ -335,7 +334,7 @@ function updateRundownFromIngestData (
 
 		saveIntoDb<Piece, Piece>(Pieces, {
 			rundownId: rundownId,
-			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
 		}, segmentPieces, {
 			afterInsert (piece) {
 				logger.debug('inserted piece ' + piece._id)
@@ -377,7 +376,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId)
+		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		if (canBeUpdated(rundown, segmentId)) {
 			removeSegments(rundownId, [segmentId])
@@ -389,7 +388,7 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId)
+		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 		if (!canBeUpdated(rundown, segmentId)) return
 
@@ -443,7 +442,7 @@ export function updateSegmentFromIngestData (
 		saveIntoDb<Piece, Piece>(Pieces, {
 			rundownId: rundown._id,
 			partId: { $in: parts.map(p => p._id) },
-			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
 		}, segmentPieces, {
 			afterInsert (piece) {
 				logger.debug('inserted piece ' + piece._id)
@@ -485,7 +484,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId)
+		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
 
@@ -498,7 +497,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		})
 		if (!part) throw new Meteor.Error(404, 'Part not found')
 
-		// Blueprints will handle the deletion of the SL
+		// Blueprints will handle the deletion of the Part
 		const ingestSegment = loadCachedIngestSegment(rundown._id, segmentId)
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
@@ -514,13 +513,13 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId)
+		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, ingestPart.externalId)
 
 		if (!canBeUpdated(rundown, segmentId, partId)) return
 
-		// Blueprints will handle the creation of the SL
+		// Blueprints will handle the creation of the Part
 		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
 		ingestSegment.parts.push(ingestPart)

@@ -78,7 +78,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 							displayDuration = Math.max(0, Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) || displayDurationGroups[part.displayDurationGroup])
 						}
 						return extendMandadory<Part, PartUi>(part, {
-							items: [],
+							pieces: [],
 							renderedDuration: part.expectedDuration ? 0 : displayDuration,
 							startsAt: 0,
 							willProbablyAutoNext: false

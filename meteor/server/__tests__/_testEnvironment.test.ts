@@ -32,13 +32,29 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, DBStudio } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { isInFiber } from '../../__mocks__/Fibers'
 
 describe('Basic test of test environment', () => {
 
 	testInFiber('Check that tests will run in fibers correctly', () => {
 		// This code runs in a fiber
+		expect(isInFiber()).toBeTruthy()
+
 		const val = asynchronousFibersFunction(1,2,3)
 		expect(val).toEqual(1 + 2 + 3)
+
+		let p = Promise.resolve()
+		.then(() => {
+			expect(isInFiber()).toBeTruthy()
+			return 'a'
+		})
+		.then(val => {
+			return new Promise((resolve) => {
+				expect(isInFiber()).toBeTruthy()
+				resolve(val)
+			})
+		})
+		expect(waitForPromise(p)).toEqual('a')
 	})
 	test('Test Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']

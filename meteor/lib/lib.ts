@@ -178,6 +178,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			if (options.afterRemove) {
 				p = Promise.resolve(p)
 				.then(() => {
+					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
 				})
 			}
@@ -279,6 +280,10 @@ export interface ObjId {
 	_id: string
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
+
+export function omit<T, P extends keyof T> (obj: T, prop: P): Omit<T, P> {
+	return _.omit(obj)
+}
 
 export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
 
