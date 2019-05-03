@@ -185,7 +185,7 @@ export class Part implements DBPart {
 				if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 					const part = partLookup[piece.sourceLayerId]
 					const st = checkPieceContentStatus(piece, part, studio ? studio.config : [])
-					if (st.status === RundownAPI.TakeItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.TakeItemStatusCode.SOURCE_BROKEN) {
+					if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
 							origin: {

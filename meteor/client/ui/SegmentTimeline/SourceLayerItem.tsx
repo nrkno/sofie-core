@@ -475,9 +475,9 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					'infinite': (this.props.piece.duration === undefined && this.props.piece.durationOverride === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
 					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration))),
 
-					'source-missing': this.props.piece.status === RundownAPI.TakeItemStatusCode.SOURCE_MISSING || this.props.piece.status === RundownAPI.TakeItemStatusCode.SOURCE_NOT_SET,
-					'source-broken': this.props.piece.status === RundownAPI.TakeItemStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.piece.status === RundownAPI.TakeItemStatusCode.UNKNOWN,
+					'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
+					'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+					'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 					'disabled': this.props.piece.disabled
 				})}
 					data-mos-id={this.props.piece._id}

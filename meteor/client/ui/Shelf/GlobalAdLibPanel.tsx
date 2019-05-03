@@ -101,7 +101,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						_id: layer._id,
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last ') + (layer.abbreviation || layer.name),
-						status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+						status: RundownAPI.PieceStatusCode.UNKNOWN,
 						layer: layer,
 						isSticky: true
 					})))
