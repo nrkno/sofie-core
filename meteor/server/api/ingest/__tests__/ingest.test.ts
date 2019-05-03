@@ -320,7 +320,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts2).toHaveLength(1)
 	})
 
-	/* testInFiber('dataRundownUpdate remove a segment', () => {
+	testInFiber('dataRundownUpdate remove a segment', () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -381,9 +381,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const parts1 = Parts.find({ rundownId: rundown._id, segmentId: segments[1]._id }).fetch()
 		expect(parts1).toHaveLength(1)
-	}) */
+	})
 
-	/* testInFiber('dataRundownUpdate remove a part', () => {
+	testInFiber('dataRundownUpdate remove a part', () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -439,7 +439,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const parts1 = Parts.find({ rundownId: rundown._id, segmentId: segments[1]._id }).fetch()
 		expect(parts1).toHaveLength(1)
-	}) */
+	})
 
 	testInFiber('dataRundownDelete', () => {
 		expect(Rundowns.findOne()).toBeTruthy()
