@@ -12,15 +12,15 @@ import {
 import { literal } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
-import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, removeSegment } from '../rundownInput'
-import { loadCachedRundownData, saveRundownCache, loadCachedIngestPart, loadCachedIngestSegment, loadIngestDataCachePart } from '../ingestCache'
-import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData } from '../rundownInput'
+import { loadCachedRundownData, saveRundownCache, loadCachedIngestSegment, loadIngestDataCachePart } from '../ingestCache'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Parts } from '../../../../lib/collections/Parts'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleContext } from '../../blueprints/context'
+import { removeSegments } from '../../rundown'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -312,11 +312,9 @@ function diffAndApplyChanges (studio: Studio, rundown: Rundown, ingestRundown: I
 	// TODO for any references in segmentDiff.rankChanged
 
 	// Remove old segments
-	for (const i of segmentDiff.removed) {
-		const segmentId = getSegmentId(rundown._id, ingestRundown.segments[i].externalId)
-		// TODO - batch promise?
-		removeSegment(segmentId)
-	}
+	const removedSegmentIds = _.map(segmentDiff.removed, i => getSegmentId(rundown._id, ingestRundown.segments[i].externalId))
+	removeSegments(rundown._id, removedSegmentIds)
+
 	// Create/Update segments
 	for (const i of segmentDiff.changed) {
 		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])

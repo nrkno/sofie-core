@@ -66,6 +66,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
+	afterRemoveAll?: (o: Array<DBInterface>) => void
 }
 interface Changes {
 	added: number
@@ -185,6 +186,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		}
 	})
 	waitForPromiseAll(ps)
+
+	if (options.afterRemoveAll) options.afterRemoveAll(_.compact(_.values(removeObjs)))
 
 	return change
 }

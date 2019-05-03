@@ -20,17 +20,15 @@ import {
 	saveIntoDb,
 	getCurrentTime,
 	literal,
-	asyncCollectionRemove,
 	sumChanges,
 	anythingChanged,
-	waitForPromiseAll,
 	ReturnType
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart, ServerRundownAPI } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -303,10 +301,12 @@ function updateRundownFromIngestData (
 		saveIntoDb<RundownBaselineItem, RundownBaselineItem>(RundownBaselineObjs, {
 			rundownId: dbRundown._id,
 		}, [baselineItem]),
+
 		// Save the global adlibs
 		saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces, {
 			rundownId: dbRundown._id
 		}, adlibItems),
+
 		// Update Segments:
 		saveIntoDb(Segments, {
 			rundownId: rundownId
@@ -319,16 +319,20 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (segment) {
 				logger.info('removed segment ' + segment._id)
-				afterRemoveSegment(segment._id, segment.rundownId)
+			},
+			afterRemoveAll (segments) {
+				afterRemoveSegments(rundownId, _.map(segments, s => s._id))
 			}
 		}),
+
 		saveIntoDb<Part, DBPart>(Parts, {
 			rundownId: rundownId,
 		}, parts, {
-			afterRemove (part) {
-				afterRemovePart(part)
+			afterRemoveAll (parts) {
+				afterRemoveParts(rundownId, parts)
 			}
 		}),
+
 		saveIntoDb<Piece, Piece>(Pieces, {
 			rundownId: rundownId,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
@@ -344,6 +348,7 @@ function updateRundownFromIngestData (
 				logger.debug('deleted piece ' + piece._id)
 			}
 		}),
+
 		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 			rundownId: rundownId,
 		}, adlibPieces, {
@@ -367,13 +372,6 @@ function updateRundownFromIngestData (
 	return didChange
 }
 
-export function removeSegment (segmentId: string): void {
-	waitForPromiseAll([
-		asyncCollectionRemove(Parts, { segmentId: segmentId }),
-		// TODO - cleanup other part contents
-		asyncCollectionRemove(Segments, segmentId)
-	])
-}
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
@@ -382,7 +380,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		const rundown = getRundown(rundownId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		if (canBeUpdated(rundown, segmentId)) {
-			removeSegment(segmentId)
+			removeSegments(rundownId, [segmentId])
 		}
 	})
 }
@@ -438,8 +436,8 @@ export function updateSegmentFromIngestData (
 			rundownId: rundown._id,
 			segmentId: segmentId,
 		}, parts, {
-			afterRemove (part) {
-				afterRemovePart(part)
+			afterRemoveAll (parts) {
+				afterRemoveParts(rundown._id, parts)
 			}
 		}),
 		saveIntoDb<Piece, Piece>(Pieces, {

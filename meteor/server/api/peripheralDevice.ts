@@ -342,53 +342,6 @@ postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMe
 	res.end(content)
 })
 
-/**
- * Insert a Story (aka a Segment) into the database
- * @param story The story to be inserted
- * @param rundownId The Rundown id to insert into
- * @param rank The rank (position) to insert at
- */
-// export function insertSegment (story: IMOSROStory, rundownId: string, rank: number) {
-// 	let segment = convertToSegment(story, rank)
-// 	Segments.upsert(segment._id, {$set: _.omit(segment,['_id']) })
-// 	afterInsertUpdateSegment(story, rundownId)
-// }
-/**
- * After a Story (aka a Segment) has been inserted / updated, handle its contents
- * @param story The Story that was inserted / updated
- * @param rundownId Id of the Rundown that contains the story
- */
-// export function afterInsertUpdateSegment (story: IMOSROStory, rundownId: string) {
-	// Save Items (#####) into database:
-
-	/*
-	let segment = convertToSegment(story, rundownId, 0)
-	let rank = 0
-	saveIntoDb(Parts, {
-		rundownId: rundownId,
-		segmentId: segment._id
-	}, _.map(story.Items, (item: IMOSItem) => {
-		return convertToPart(item, rundownId, segment._id, rank++)
-	}), {
-		afterInsert (o) {
-			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
-			if (item) {
-				afterInsertUpdatePart(item, rundownId, segment._id)
-			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
-		},
-		afterUpdate (o) {
-			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
-			if (item) {
-				afterInsertUpdatePart(item, rundownId, segment._id)
-			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
-		},
-		afterRemove (o) {
-			afterRemovePart(o._id)
-		}
-	})
-	*/
-// }
-
 let methods: Methods = {}
 methods[PeripheralDeviceAPI.methods.initialize] = (deviceId: string, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) => {
 	return ServerPeripheralDeviceAPI.initialize(deviceId, deviceToken, options)

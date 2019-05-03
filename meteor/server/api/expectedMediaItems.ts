@@ -41,7 +41,7 @@ function generateExpectedMediaItems (rundownId: string, studioId: string, piece:
 	return result
 }
 
-export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void 
+export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItemsOnRundown (rundownId: string) {
 	check(rundownId, String)
 
