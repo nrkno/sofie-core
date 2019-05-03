@@ -8,7 +8,7 @@ import { PeripheralDeviceSecurity } from '../../../security/peripheralDevices'
 import { logger } from '../../../logging'
 import { getStudioFromDevice, getRundown, canBeUpdated } from '../lib'
 import { handleRemovedRundown } from '../rundownInput'
-import { getRundownIdFromMosRO, getPartIdFromMosStory } from './lib'
+import { getRundownIdFromMosRO, getPartIdFromMosStory, getRundownFromMosRO } from './lib'
 import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories, handleMosRundownMetadata } from './ingest'
 
 export namespace MosIntegration {
@@ -44,7 +44,7 @@ export namespace MosIntegration {
 		logger.debug(status)
 
 		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundown(getRundownIdFromMosRO(studio, status.ID))
+		const rundown = getRundownFromMosRO(studio, status.ID)
 		if (!canBeUpdated(rundown)) return
 
 		Rundowns.update(rundown._id, {$set: {
@@ -57,7 +57,7 @@ export namespace MosIntegration {
 		logger.debug(status)
 
 		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundown(getRundownIdFromMosRO(studio, status.ID))
+		const rundown = getRundownFromMosRO(studio, status.ID)
 		if (!canBeUpdated(rundown)) return
 
 		// Save Stories (aka Part ) status into database:
@@ -168,7 +168,7 @@ export namespace MosIntegration {
 		logger.debug(Action)
 
 		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundown(getRundownIdFromMosRO(studio, Action.ID))
+		const rundown = getRundownFromMosRO(studio, Action.ID)
 		if (!canBeUpdated(rundown)) return
 
 		// Set the ready to air status of a Rundown
