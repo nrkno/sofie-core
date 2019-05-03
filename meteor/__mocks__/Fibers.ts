@@ -29,6 +29,9 @@ ${e.toString()}`
  *     })
  * })
  */
+export function isInFiber (): boolean {
+	return !!Fiber.current
+}
 export function runInFiber (fcn: Function): Promise<void> {
 	return new Promise((resolve, reject) => {
 		Fiber(() => {
