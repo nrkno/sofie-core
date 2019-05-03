@@ -255,7 +255,8 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(2)
 
-			rd.remove()
+			Rundowns.remove(rd._id)
+			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart1)
 
 			items = ExpectedMediaItems.find({
 				rundownId: rdId1,
