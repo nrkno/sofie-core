@@ -54,10 +54,10 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRStudio (siId: string): ReactiveVar<Studio | undefined> {
+	export function getRStudio (studioId: string): ReactiveVar<Studio | undefined> {
 		const rVar = new ReactiveVar<Studio | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
 		Tracker.autorun(() => {
-			const studio = Studios.findOne(siId)
+			const studio = Studios.findOne(studioId)
 			rVar.set(studio)
 		})
 

@@ -213,7 +213,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 	constructor (props: Translated<IModalDialogGlobalContainerProps>) {
 		super(props)
 		if (modalDialogGlobalContainerSingleton) {
-			logger.warning('modalDialogGlobalContainerSingleton called more than once!')
+			logger.warn('modalDialogGlobalContainerSingleton called more than once!')
 		}
 		modalDialogGlobalContainerSingleton = this
 		this.state = {

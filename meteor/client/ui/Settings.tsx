@@ -113,14 +113,14 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		let t = this.props.t
 
 		switch (type) {
-			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+			case PeripheralDeviceAPI.DeviceType.MOS:
 				return t('MOS Gateway')
+			case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
+				return t('Spreadsheet Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Play-out Gateway')
 			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 				return t('Media Manager')
-			case PeripheralDeviceAPI.DeviceType.OTHER:
-				return ''
 			default:
 				return t('Unknown Device')
 		}
@@ -279,7 +279,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.peripheralDevices
 					.filter((device) => {
-						return device.type !== PeripheralDeviceAPI.DeviceType.OTHER
+						return device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 					})
 					.map((item) => {
 						return [

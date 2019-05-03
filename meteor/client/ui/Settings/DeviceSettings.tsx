@@ -39,9 +39,12 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 })(
 class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
 	renderSpecifics () {
-		if (this.props.device) {
+		if (
+			this.props.device &&
+			this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+		) {
 			switch (this.props.device.type) {
-				case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+				case PeripheralDeviceAPI.DeviceType.MOS:
 					return <MosDeviceSettingsComponent
 						device={this.props.device}
 						subDevices={this.props.subDevices}

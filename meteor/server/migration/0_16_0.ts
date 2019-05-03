@@ -43,5 +43,5 @@ addMigrationSteps('0.16.0', [
 		}]
 	},
 
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1')
 ])

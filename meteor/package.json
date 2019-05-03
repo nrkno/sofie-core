@@ -112,6 +112,7 @@
     "jest": "^24.1.0",
     "jest-meteor-stubs": "1.5.1",
     "fibers": "^3.1.1",
+    "meteor-promise": "0.8.7",
     "node-license-validator": "^1.3.0",
     "opn-cli": "^4.1.0",
     "standard-version": "^5.0.2",

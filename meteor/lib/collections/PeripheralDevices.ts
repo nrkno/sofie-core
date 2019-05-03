@@ -13,7 +13,10 @@ export interface PeripheralDevice {
 	_id: string
 
 	name: string
+
+	category: PeripheralDeviceAPI.DeviceCategory
 	type: PeripheralDeviceAPI.DeviceType
+	subType: PeripheralDeviceAPI.DeviceSubType
 
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
 	studioId?: string
@@ -42,24 +45,32 @@ export interface PeripheralDevice {
 	secretSettings?: any | SpreadsheetDeviceSecretSettings
 }
 
-export interface MosDevice extends PeripheralDevice {
-	type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+export interface MosParentDevice extends PeripheralDevice {
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
+	type: PeripheralDeviceAPI.DeviceType.MOS,
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 	settings?: MosDeviceSettings
 	secretSettings: undefined
 	lastDataReceived?: Time
 }
-export interface PlayoutDevice extends PeripheralDevice {
+export interface PlayoutParentDevice extends PeripheralDevice {
+	category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 	type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 	secretSettings: undefined
 	settings?: PlayoutDeviceSettings
 }
 export interface MediaManagerDevice extends PeripheralDevice {
+	category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
 	type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 	secretSettings: undefined
 	settings?: MediaManagerDeviceSettings
 }
 export interface SpreadsheetDevice extends PeripheralDevice {
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
 	type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 	settings?: SpreadsheetDeviceSettings
 	secretSettings?: SpreadsheetDeviceSecretSettings
 	accessTokenUrl?: string

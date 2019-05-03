@@ -8,7 +8,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline } from '../../lib/collections/Timeline'
+import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { setMeteorMethods, Methods } from '../methods'
@@ -26,7 +26,9 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(options, Object)
 		check(options.name, String)
-		check(options.type, Number)
+		check(options.category, String)
+		check(options.type, String)
+		check(options.subType, Match.OneOf(Number, String))
 		check(options.parentDeviceId, Match.Optional(String))
 		check(options.versions, Match.Optional(Object))
 
@@ -42,7 +44,11 @@ export namespace ServerPeripheralDeviceAPI {
 					lastConnected: getCurrentTime(),
 					connected: true,
 					connectionId: options.connectionId,
+
+					category: options.category,
 					type: options.type,
+					subType: options.subType,
+
 					name: peripheralDevice.name || options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
@@ -62,7 +68,11 @@ export namespace ServerPeripheralDeviceAPI {
 					lastSeen: getCurrentTime(),
 					lastConnected: getCurrentTime(),
 					token: token,
+
+					category: options.category,
 					type: options.type,
+					subType: options.subType,
+
 					name: options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
@@ -146,7 +156,7 @@ export namespace ServerPeripheralDeviceAPI {
 				studioIds[obj.studioId] = true
 
 				Timeline.update({
-					_id: o.id
+					_id: getTimelineId(obj.studioId, o.id)
 				}, {$set: {
 					'trigger.value': o.time,
 					'trigger.setFromNow': true

@@ -98,7 +98,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
-				let timelineObj = Timeline.findOne({ _id: getPieceGroupId(props.piece) })
+				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
 
 				if (timelineObj) {
 					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)

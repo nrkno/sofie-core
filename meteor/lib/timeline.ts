@@ -2,16 +2,22 @@ import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
 let clone = require('fast-clone')
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
 export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
 
 	let transformObject = (obj: TimelineObjGeneric): TimelineContentObject => {
-		let transformedObj = clone(_.extend({
-		   id: obj['_id'],
-		   rundownId: obj['rundownId']
-	   }, _.omit(obj, ['_id', 'id', 'deviceId', 'siId'])))
+		if (!obj.id) throw new Meteor.Error(500, `Timeline object missing id attribute (_id: "${obj._id}") `)
+		let transformedObj = clone(
+			_.omit(
+				{
+					...obj,
+					rundownId: obj.rundownId
+				}, ['_id', 'deviceId', 'studioId']
+			)
+	   )
 
 	   if (!transformedObj.content) transformedObj.content = {}
 	   if (!transformedObj.content.objects) transformedObj.content.objects = []
