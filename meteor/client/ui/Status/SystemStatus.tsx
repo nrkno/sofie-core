@@ -16,6 +16,7 @@ import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -115,11 +116,15 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		})
 	}
 	handleConfirmKillAccept = (e) => {
+		const { t } = this.props
 		if (this.state.showKillDeviceConfirm) {
-			PeripheralDevicesAPI.restartDevice(this.state.showKillDeviceConfirm, e).then((res) => {
-				console.log(res)
+			const device = this.state.showKillDeviceConfirm
+			PeripheralDevicesAPI.restartDevice(device, e).then((res) => {
+				// console.log(res)
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
 			}).catch((err) => {
-				console.error(err)
+				// console.error(err)
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 			})
 		}
 		// ShowStyles.remove(this.state.KillConfirmItem._id)
@@ -144,10 +149,11 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 
 				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
 					if (err) {
-						console.error(err)
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 					} else {
-						console.log(result)
-						// resolve(result)
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
 					}
 				})
 			},

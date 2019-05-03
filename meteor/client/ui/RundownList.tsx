@@ -21,6 +21,7 @@ import { getDeveloperMode, getAdminMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 
 const PackageInfo = require('../../package.json')
 
@@ -175,9 +176,11 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 	}
 
 	componentDidMount () {
+		const { t } = this.props
 		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
 			if (err) {
-				console.error(err)
+				// console.error(err)
+				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
 				return
 			}
 

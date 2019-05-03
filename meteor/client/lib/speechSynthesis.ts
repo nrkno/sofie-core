@@ -24,7 +24,7 @@ class SpeechSynthesisClass {
 			if (speechSynthesis) {
 				this._voice = this.selectVoice()
 			} else {
-				console.error('Speech synthesis not available')
+				console.warn('Speech synthesis not available')
 			}
 		}
 	}
@@ -33,11 +33,11 @@ class SpeechSynthesisClass {
 	}
 	_speak (textToSpeak: string, fromQueue?: boolean) {
 		if (!this._isInitialized) {
-			console.error('Speech synthesis not initialized')
+			console.warn('Speech synthesis not initialized')
 			return
 		}
 		if (!this._voice) {
-			console.error('SpeechSynthesis: No voice found')
+			console.warn('SpeechSynthesis: No voice found')
 			return
 		}
 		if (!textToSpeak) {
@@ -60,7 +60,7 @@ class SpeechSynthesisClass {
 		}
 		utterThis.onerror = (event) => {
 			this._checkQueue()
-			console.error('SpeechSynthesisUtterance.onerror', event)
+			console.warn('SpeechSynthesisUtterance.onerror', event)
 		}
 		utterThis.voice = this._voice
 		utterThis.pitch = VOICE_PITCH

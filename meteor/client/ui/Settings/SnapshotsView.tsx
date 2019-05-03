@@ -87,7 +87,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}).then(res => {
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Successfully restored snapshot'), 'RestoreSnapshot'))
 					}).catch(err => {
-						console.error('Snapshot restore failure: ', err)
+						// console.error('Snapshot restore failure: ', err)
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Snapshot restore failed: {{errorMessage}}', { errorMessage: (err + '') }), 'RestoreSnapshot'))
 					})
 				},

@@ -14,6 +14,7 @@ import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettin
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -76,9 +77,11 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 			no: t('Cancel'),
 			onAccept: (e: any) => {
 				PeripheralDevicesAPI.restartDevice(device, e).then((res) => {
-					console.log(res)
+					// console.log(res)
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: device.name }), 'DeviceSettings'))
 				}).catch((err) => {
-					console.error(err)
+					// console.error(err)
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'DeviceSettings'))
 				})
 			}
 		})
