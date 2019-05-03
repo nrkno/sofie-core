@@ -163,19 +163,19 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	}
 }
 
-// TODO - does this still work with new ingest model?
-export function updateParts (rundownId: string) {
-	let parts0 = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
+// TODO - verify this still works with new ingest model
+export function updateDynamicPartRanks (rundownId: string): Array<Part> {
+	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
-	let parts: Array<Part> = []
-	let partsToInsert: {[id: string]: Array<Part>} = {}
+	const rankedParts: Array<Part> = []
+	const partsToPutAfter: {[id: string]: Array<Part>} = {}
 
-	_.each(parts0, (part) => {
+	_.each(allParts, (part) => {
 		if (part.afterPart) {
-			if (!partsToInsert[part.afterPart]) partsToInsert[part.afterPart] = []
-			partsToInsert[part.afterPart].push(part)
+			if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
+			partsToPutAfter[part.afterPart].push(part)
 		} else {
-			parts.push(part)
+			rankedParts.push(part)
 		}
 	})
 
@@ -183,12 +183,12 @@ export function updateParts (rundownId: string) {
 	while (hasAddedAnything) {
 		hasAddedAnything = false
 
-		_.each(partsToInsert, (sls, partId) => {
+		_.each(partsToPutAfter, (dynamicParts, partId) => {
 
 			let partBefore: Part | null = null
 			let partAfter: Part | null = null
 			let insertI = -1
-			_.each(parts, (part, i) => {
+			_.each(rankedParts, (part, i) => {
 				if (part._id === partId) {
 					partBefore = part
 
@@ -202,24 +202,25 @@ export function updateParts (rundownId: string) {
 			if (partBefore) {
 
 				if (insertI !== -1) {
-					_.each(sls, (part, i) => {
-						let newRank = getRank(partBefore, partAfter, i, sls.length)
+					_.each(dynamicParts, (dynamicPart, i) => {
+						const newRank = getRank(partBefore, partAfter, i, dynamicParts.length)
 
-						if (part._rank !== newRank) {
-							part._rank = newRank
-							Parts.update(part._id, { $set: { _rank: part._rank } })
+						if (dynamicPart._rank !== newRank) {
+							dynamicPart._rank = newRank
+							Parts.update(dynamicPart._id, { $set: { _rank: dynamicPart._rank } })
 						}
-						parts.splice(insertI, 0, part)
+
+						rankedParts.splice(insertI, 0, dynamicPart)
 						insertI++
 						hasAddedAnything = true
 					})
 				}
-				delete partsToInsert[partId]
+				delete partsToPutAfter[partId]
 			}
 		})
 	}
 
-	return parts
+	return rankedParts
 }
 
 export namespace ServerRundownAPI {

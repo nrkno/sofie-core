@@ -15,7 +15,7 @@ import { prefixAllObjectIds } from './lib'
 import { convertAdLibToPiece, getResolvedPieces } from './pieces'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
-import { updateParts } from '../rundown'
+import { updateDynamicPartRanks } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { TriggerType } from 'superfly-timeline'
 
@@ -160,20 +160,12 @@ export namespace ServerPlayoutAdLibAPI {
 		}
 	}
 	function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
-
-		// let parts = rundown.getParts()
 		logger.info('adlibQueueInsertPart')
 
-		let part = Parts.findOne(partId)
+		const part = Parts.findOne(partId)
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
-		// let nextPart = fetchAfter(Parts, {
-		// 	rundownId: rundown._id
-		// }, part._rank)
-
-		// let newRank = getRank(part, nextPart, 0, 1)
-
-		let newPartId = Random.id()
+		const newPartId = Random.id()
 		Parts.insert({
 			_id: newPartId,
 			_rank: 99999, // something high, so it will be placed last
@@ -186,7 +178,7 @@ export namespace ServerPlayoutAdLibAPI {
 			typeVariant: 'adlib'
 		})
 
-		updateParts(rundown._id) // place in order
+		updateDynamicPartRanks(rundown._id) // place in order
 
 		return newPartId
 	}
