@@ -10,8 +10,8 @@ import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { setLoggerLevel } from '../../logger'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
-import { Parts } from '../../../../lib/collections/Parts'
-import { IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import { Part, Parts } from '../../../../lib/collections/Parts'
+import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -770,7 +770,64 @@ describe('Test ingest actions for rundowns and segments', () => {
 		} catch (e) {
 			expect(e).toBeTruthy()
 		}
-
 	})
 
+	testInFiber('dataPartCreate', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		const segment = Segments.findOne({ externalId: 'segment0' }) as Segment
+		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(1)
+
+		const ingestPart: IngestPart = {
+			externalId: 'party',
+			name: 'Part Y',
+			rank: 0,
+			// payload: any?
+		}
+
+		Meteor.call(PeripheralDeviceAPI.methods.dataPartCreate, device._id, device.token, externalId, segment.externalId, ingestPart)
+
+		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
+
+		let part = Parts.findOne({ externalId: 'party' }) as Part
+		expect(part).toMatchObject({
+			externalId: ingestPart.externalId,
+			title: ingestPart.name
+		})
+	})
+
+	testInFiber('dataPartUpdate', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		const segment = Segments.findOne({ externalId: 'segment0' }) as Segment
+		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
+
+		const ingestPart: IngestPart = {
+			externalId: 'party',
+			name: 'Part Z',
+			rank: 0,
+			// payload: any?
+		}
+
+		Meteor.call(PeripheralDeviceAPI.methods.dataPartUpdate, device._id, device.token, externalId, segment.externalId, ingestPart)
+
+		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
+
+		let part = Parts.findOne({ externalId: 'party' }) as Part
+		expect(part).toMatchObject({
+			externalId: ingestPart.externalId,
+			title: ingestPart.name
+		})
+	})
+
+	testInFiber('dataPartDelete', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		const segment = Segments.findOne({ rundownId: rundown._id, externalId: 'segment0' }) as Segment
+		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
+
+		Meteor.call(PeripheralDeviceAPI.methods.dataPartDelete, device._id, device.token, externalId, segment.externalId, 'party')
+
+		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(1)
+		expect(Parts.findOne({ externalId: 'party' })).toBeFalsy()
+	})
+
+	// TODO Part tests are minimal/happy path only on the assumption the API gets little use
 })
