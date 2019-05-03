@@ -122,8 +122,10 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		afterPart: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
 		afterRemoveAll (parts) {
-			// Do the same for any affected dynamicallyInserted Parts
-			afterRemoveParts(rundownId, parts)
+			if (parts.length > 0) {
+				// Do the same for any affected dynamicallyInserted Parts
+				afterRemoveParts(rundownId, parts)
+			}
 		}
 	})
 

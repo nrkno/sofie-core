@@ -83,11 +83,13 @@ function evaluateFunctions () {
 			} else {
 				// Do nothing, another is running
 			}
- 		}
+ 		} else {
+			startNext = true
+		}
 
 		if (startNext) {
 			const nextFcn = _.max(_.filter(group, fcn => fcn.status === syncFunctionFcnStatus.WAITING), fcn => fcn.priority)
-			if (nextFcn) {
+			if (_.isObject(nextFcn)) {
 				nextFcn.status = syncFunctionFcnStatus.RUNNING
 				syncFunctionRunningFcns[id] = Date.now()
 				Meteor.setTimeout(() => {
