@@ -4,6 +4,7 @@ import { check } from 'meteor/check'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Pieces } from '../../lib/collections/Pieces'
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Segments } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
@@ -78,98 +79,106 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 }
 
 /**
- * After a Segment has beed removed, handle its contents
- * @param segmentId Id of the Segment
- * @param rundownId Id of the Rundown
+ * Removes Segments from the database
+ * @param rundownId The Rundown id to remove from
+ * @param segmentIds The Segment ids to be removed
  */
-export function afterRemoveSegment (segmentId: string, rundownId: string) {
+export function removeSegments (rundownId: string, segmentIds: string[]): number {
+	const count = Segments.remove({
+		_id: { $in: segmentIds },
+		rundownId: rundownId
+	})
+	if (count > 0) {
+		afterRemoveSegments(rundownId, segmentIds)
+	}
+	return count
+}
+/**
+ * After Segments have been removed, handle the contents.
+ * This will trigger an update of the timeline
+ * @param rundownId Id of the Rundown
+ * @param segmentIds Id of the Segments
+ */
+export function afterRemoveSegments (rundownId: string, segmentIds: string[]) {
 	// Remove the parts:
 	saveIntoDb(Parts, {
 		rundownId: rundownId,
-		segmentId: segmentId
+		segmentId: { $in: segmentIds }
 	},[],{
-		remove (part) {
-			removePart(part.rundownId, part)
+		afterRemoveAll (parts) {
+			afterRemoveParts(rundownId, parts)
 		}
 	})
-}
-export function removePart (rundownId: string, partOrId: DBPart | string, replacedByPart?: DBPart) {
-	let partToRemove: DBPart | undefined = (
-		_.isString(partOrId) ?
-			Parts.findOne(partOrId) :
-			partOrId
-	)
-	if (partToRemove) {
-		Parts.remove(partToRemove._id)
-		afterRemovePart(partToRemove, replacedByPart)
-		triggerUpdateTimelineAfterIngestData(rundownId, [partToRemove.segmentId])
 
-		if (replacedByPart) {
-			Parts.update({
-				rundownId: partToRemove.rundownId,
-				afterPart: partToRemove._id
-			}, {
-				$set: {
-					afterPart: replacedByPart._id,
-				}
-			}, {
-				multi: true
-			})
-		} else {
-			Parts.remove({
-				rundownId: partToRemove.rundownId,
-				afterPart: partToRemove._id
-			})
-		}
-	}
+	triggerUpdateTimelineAfterIngestData(rundownId, segmentIds)
 }
-export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
-	// TODO - what about adlibs?
+
+/**
+ * After Parts have been removed, handle the contents.
+ * This will NOT trigger an update of the timeline
+ * @param rundownId Id of the Rundown
+ * @param removedParts The parts that have been removed
+ */
+export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
+	saveIntoDb(Parts, {
+		rundownId: rundownId,
+		dynamicallyInserted: true,
+		afterPart: { $in: _.map(removedParts, p => p._id) }
+	}, [], {
+		afterRemoveAll (parts) {
+			// Do the same for any affected dynamicallyInserted Parts
+			afterRemoveParts(rundownId, parts)
+		}
+	})
+
+	// Clean up all the db parts that belong to the removed Parts
+	// TODO - is there anything else to remove?
 	Pieces.remove({
-		partId: removedPart._id
+		rundownId: rundownId,
+		partId: { $in: _.map(removedParts, p => p._id) }
 	})
-	updateExpectedMediaItemsOnPart(removedPart.rundownId, removedPart._id)
+	AdLibPieces.remove({
+		rundownId: rundownId,
+		partId: { $in: _.map(removedParts, p => p._id) }
+	})
+	_.each(removedParts, part => {
+		// TODO - batch?
+		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
+	})
 
-	let rundown = Rundowns.findOne(removedPart.rundownId)
-	if (rundown) {
+	const rundown = Rundowns.findOne(rundownId)
+	if (rundown && rundown.active) {
 		// If the replaced segment is next-to-be-played out,
 		// instead make the next-to-be-played-out part the one in it's place
-		if (
-			rundown.active &&
-			rundown.nextPartId === removedPart._id
-		) {
-			if (!replacedByPart) {
-				let partBefore = fetchBefore(Parts, {
-					rundownId: removedPart.rundownId
-				}, removedPart._rank)
+		const oldNextPart = _.find(removedParts, part => part._id === rundown.nextPartId)
+		if (oldNextPart) {
+			const partBefore = fetchBefore(Parts, {
+				rundownId: rundownId
+			}, oldNextPart._rank)
 
-				let nextPart = fetchAfter(Parts, {
-					rundownId: removedPart.rundownId,
-					_id: { $ne: removedPart._id }
-				}, partBefore ? partBefore._rank : null)
+			const newNextPart = fetchAfter(Parts, {
+				rundownId: rundownId,
+				_id: { $ne: oldNextPart._id }
+			}, partBefore ? partBefore._rank : null)
 
-				if (nextPart) {
-					replacedByPart = nextPart
-				}
-			}
-			ServerPlayoutAPI.setNextPart(rundown._id, replacedByPart ? replacedByPart._id : null)
+			// TODO - should this be setNextPartInner?
+			ServerPlayoutAPI.setNextPart(rundown._id, newNextPart ? newNextPart._id : null)
 		}
 	}
 }
 
-// TODO - does this still work with new ingest model?
-export function updateParts (rundownId: string) {
-	let parts0 = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
+export function updateDynamicPartRanks (rundownId: string): Array<Part> {
+	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
-	let parts: Array<Part> = []
-	let partsToInsert: {[id: string]: Array<Part>} = {}
+	const rankedParts: Array<Part> = []
+	const partsToPutAfter: {[id: string]: Array<Part>} = {}
 
-	_.each(parts0, (part) => {
+	_.each(allParts, (part) => {
 		if (part.afterPart) {
-			if (!partsToInsert[part.afterPart]) partsToInsert[part.afterPart] = []
-			partsToInsert[part.afterPart].push(part)
+			if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
+			partsToPutAfter[part.afterPart].push(part)
 		} else {
-			parts.push(part)
+			rankedParts.push(part)
 		}
 	})
 
@@ -177,12 +186,12 @@ export function updateParts (rundownId: string) {
 	while (hasAddedAnything) {
 		hasAddedAnything = false
 
-		_.each(partsToInsert, (sls, partId) => {
+		_.each(partsToPutAfter, (dynamicParts, partId) => {
 
 			let partBefore: Part | null = null
 			let partAfter: Part | null = null
 			let insertI = -1
-			_.each(parts, (part, i) => {
+			_.each(rankedParts, (part, i) => {
 				if (part._id === partId) {
 					partBefore = part
 
@@ -196,80 +205,25 @@ export function updateParts (rundownId: string) {
 			if (partBefore) {
 
 				if (insertI !== -1) {
-					_.each(sls, (part, i) => {
-						let newRank = getRank(partBefore, partAfter, i, sls.length)
+					_.each(dynamicParts, (dynamicPart, i) => {
+						const newRank = getRank(partBefore, partAfter, i, dynamicParts.length)
 
-						if (part._rank !== newRank) {
-							part._rank = newRank
-							Parts.update(part._id, { $set: { _rank: part._rank } })
+						if (dynamicPart._rank !== newRank) {
+							dynamicPart._rank = newRank
+							Parts.update(dynamicPart._id, { $set: { _rank: dynamicPart._rank } })
 						}
-						parts.splice(insertI, 0, part)
+
+						rankedParts.splice(insertI, 0, dynamicPart)
 						insertI++
 						hasAddedAnything = true
 					})
 				}
-				delete partsToInsert[partId]
+				delete partsToPutAfter[partId]
 			}
 		})
 	}
 
-	return parts
-}
-// /**
-//  * Converts a part into a Segment
-//  * @param story MOS Sory
-//  * @param rundownId Rundown id of the story
-//  * @param rank Rank of the story
-//  */
-// export function convertToSegment (part: Part, rank: number): DBSegment {
-// 	// let slugParts = (story.Slug || '').toString().split(';')
-// 	let slugParts = part.title.split(';')
-
-// 	return {
-// 		_id: segmentId(part.rundownId, part.title, rank),
-// 		rundownId: part.rundownId,
-// 		_rank: rank,
-// 		externalId: 'N/A', // to be removed?
-// 		name: slugParts[0],
-// 		// number: (story.Number ? story.Number.toString() : '')
-// 	}
-// 	// logger.debug('story.Number', story.Number)
-// }
-// export function segmentId (rundownId: string, storySlug: string, rank: number): string {
-// 	let slugParts = storySlug.split(';')
-// 	let id = rundownId + '_' + slugParts[0] + '_' + rank
-// 	return getHash(id)
-// }
-// export function updateAffectedParts (rundown: Rundown, affectedPartIds: Array<string>) {
-
-// 	// Update the affected segments:
-// 	let affectedSegmentIds = _.uniq(
-// 		_.map(
-// 			Parts.find({ // fetch assigned segmentIds
-// 				_id: {$in: affectedPartIds}
-// 			}).fetch(),
-// 			part => part.segmentId
-// 		)
-// 	)
-
-// 	let changed = false
-// 	_.each(affectedSegmentIds, (segmentId) => {
-// 		changed = changed || reCreateSegment(rundown._id, segmentId)
-// 	})
-
-// 	if (changed) {
-// 		updateTimelineFromMosData(rundown._id, affectedPartIds)
-// 	}
-// }
-/**
- * Removes a Segment from the database
- * @param story The story to be inserted
- * @param rundownId The Rundown id to insert into
- * @param rank The rank (position) to insert at
- */
-export function removeSegment (segmentId: string, rundownId: string) {
-	Segments.remove(segmentId)
-	afterRemoveSegment(segmentId, rundownId)
+	return rankedParts
 }
 
 export namespace ServerRundownAPI {

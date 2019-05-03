@@ -17,8 +17,6 @@ import { loadCachedIngestSegment } from '../ingest/ingestCache'
 import { updateSegmentFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
-import { updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
-import { triggerUpdateTimelineAfterIngestData } from './playout'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 let clone = require('fast-clone')
 
@@ -161,9 +159,6 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 
 	const prevPart = getPreviousPartForSegment(dbRundown._id, segment)
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
-
-	updateExpectedMediaItemsOnPart(rundown._id, dbPart._id)
-	triggerUpdateTimelineAfterIngestData(rundown._id, [dbPart.segmentId])
 }
 export function setNextPart (
 	rundown: Rundown,

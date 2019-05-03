@@ -1,17 +1,13 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import * as MOS from 'mos-connection'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import {
-	setupDefaultStudioEnvironment
-} from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { setLoggerLevel } from '../../logger'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { updateDynamicPartRanks } from '../../rundown'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -669,7 +665,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: segExternalId })).toBeFalsy()
 	})
 
-	/* FIXME
 	testInFiber('dataSegmentDelete for a second time', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalID: segExternalId }).count()).toBe(0)
@@ -680,7 +675,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		} catch (e) {
 			expect(e.message).toBe(`[404] Segment ${segExternalId} not found`)
 		}
-	}) */
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+	})
 
 	testInFiber('dataSegmentDelete from non-existant rundown', () => {
 		const rundown = Rundowns.findOne() as Rundown
@@ -830,4 +827,177 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	// TODO Part tests are minimal/happy path only on the assumption the API gets little use
+
+	testInFiber('dataRundownUpdate remove dynamicInserted Part', () => {
+		Rundowns.remove({})
+		expect(Rundowns.findOne()).toBeFalsy()
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			// payload: {},
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 1,
+					// payload?: any,
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 1,
+							// payload?: any,
+						},
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 2,
+							// payload?: any,
+						}
+					]
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 2,
+					// payload?: any,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 1,
+							// payload?: any,
+						}
+					]
+				}
+			]
+		}
+		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData)
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const part = Parts.findOne({ externalId: 'part1' }) as Part
+		expect(part).toBeTruthy()
+
+		const dynamicPartId = 'dynamic1'
+		Parts.insert({
+			_id: dynamicPartId,
+			_rank: 999999,
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			externalId: '',
+			title: 'Dynamic',
+			typeVariant: 'dynamic',
+			dynamicallyInserted: true,
+			afterPart: part._id
+		})
+		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
+
+		// Let the logic generate the correct rank first
+		updateDynamicPartRanks(rundown._id)
+		let dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeTruthy()
+		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
+
+		// Update the rundown and it should have been removed
+		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
+
+		dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeFalsy() // TODO - is this the desired behaviour
+	})
+
+	testInFiber('dataSegmentUpdate update dynamicInserted Part', () => {
+		Rundowns.remove({})
+		expect(Rundowns.findOne()).toBeFalsy()
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			// payload: {},
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 1,
+					// payload?: any,
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 1,
+							// payload?: any,
+						},
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 2,
+							// payload?: any,
+						}
+					]
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 2,
+					// payload?: any,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 1,
+							// payload?: any,
+						}
+					]
+				}
+			]
+		}
+		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData)
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const part = Parts.findOne({ externalId: 'part1' }) as Part
+		expect(part).toBeTruthy()
+
+		const dynamicPartId = 'dynamic1'
+		Parts.insert({
+			_id: dynamicPartId,
+			_rank: 999999,
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			externalId: '',
+			title: 'Dynamic',
+			typeVariant: 'dynamic',
+			dynamicallyInserted: true,
+			afterPart: part._id
+		})
+		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
+
+		// Let the logic generate the correct rank first
+		updateDynamicPartRanks(rundown._id)
+		let dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeTruthy()
+		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
+
+		// Update the segment owning the part and it should remain
+		const segmentData = rundownData.segments[0]
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
+		dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeTruthy()
+
+		// Change the rank of the part it belongs to and this rank should update
+		segmentData.parts[1].rank = 5
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
+		dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeTruthy()
+		expect(dynamicPart._rank).toEqual(5.5) // TODO - this value is bad
+
+		// Remove the part it is set to be after, and it should be removed
+		segmentData.parts[1].externalId = 'not-the-same'
+		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
+		dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeFalsy()
+	})
 })

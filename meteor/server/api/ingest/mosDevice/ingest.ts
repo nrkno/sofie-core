@@ -2,25 +2,26 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getRundown, getSegmentId, canBeUpdated } from '../lib'
+import { getStudioFromDevice, getSegmentId, canBeUpdated } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
 	getSegmentExternalId,
-	fixIllegalObject
+	fixIllegalObject,
+	getRundownFromMosRO
 } from './lib'
 import { literal } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
-import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData, removeSegment } from '../rundownInput'
-import { loadCachedRundownData, saveRundownCache, loadCachedIngestPart, loadCachedIngestSegment, loadIngestDataCachePart } from '../ingestCache'
-import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { handleUpdatedRundown, handleUpdatedPart, updateSegmentFromIngestData } from '../rundownInput'
+import { loadCachedRundownData, saveRundownCache, loadCachedIngestSegment, loadIngestDataCachePart } from '../ingestCache'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Parts } from '../../../../lib/collections/Parts'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleContext } from '../../blueprints/context'
+import { removeSegments } from '../../rundown'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -112,7 +113,7 @@ export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRun
 export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, mosRunningOrderBase: MOS.IMOSRunningOrderBase) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
-	const rundown = getRundown(getRundownIdFromMosRO(studio, mosRunningOrderBase.ID))
+	const rundown = getRundownFromMosRO(studio, mosRunningOrderBase.ID)
 	if (!canBeUpdated(rundown)) return // TODO - more stuff in this file need this guard?
 
 	// Load the blueprint to process the data
@@ -158,7 +159,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, stories: Array<MOS.MosString128>) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
+	const rundown = getRundownFromMosRO(studio, runningOrderMosId)
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -187,7 +188,7 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 }
 export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, previousPartId: MOS.MosString128, removePrevious: boolean, newStories: MOS.IMOSROStory[]) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
+	const rundown = getRundownFromMosRO(studio, runningOrderMosId)
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -225,14 +226,14 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 			})
 			if (newNextPart) {
 				// Move up next-point to the first inserted part
-				ServerPlayoutAPI.setNextPart(rundown._id, newNextPart._id)
+				ServerPlayoutAPI.setNextPartInner(rundown, newNextPart._id)
 			}
 		}
 	}
 }
 export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, story0: MOS.MosString128, story1: MOS.MosString128) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
+	const rundown = getRundownFromMosRO(studio, runningOrderMosId)
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -263,14 +264,14 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 			// Find the first part from the other Story (could be multiple)
 			const newNextPart = _.sortBy(parts, p => p._rank).find(p => p.externalId !== nextPart.externalId)
 			if (newNextPart) {
-				ServerPlayoutAPI.setNextPart(rundown._id, newNextPart._id)
+				ServerPlayoutAPI.setNextPartInner(rundown, newNextPart._id)
 			}
 		}
 	}
 }
 export function handleMoveStories (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, insertBefore: MOS.MosString128, stories: MOS.MosString128[]) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getRundownIdFromMosRO(studio, runningOrderMosId))
+	const rundown = getRundownFromMosRO(studio, runningOrderMosId)
 
 	const ingestRundown = loadCachedRundownData(rundown._id)
 	const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -312,11 +313,9 @@ function diffAndApplyChanges (studio: Studio, rundown: Rundown, ingestRundown: I
 	// TODO for any references in segmentDiff.rankChanged
 
 	// Remove old segments
-	for (const i of segmentDiff.removed) {
-		const segmentId = getSegmentId(rundown._id, ingestRundown.segments[i].externalId)
-		// TODO - batch promise?
-		removeSegment(segmentId)
-	}
+	const removedSegmentIds = _.map(segmentDiff.removed, i => getSegmentId(rundown._id, ingestRundown.segments[i].externalId))
+	removeSegments(rundown._id, removedSegmentIds)
+
 	// Create/Update segments
 	for (const i of segmentDiff.changed) {
 		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])

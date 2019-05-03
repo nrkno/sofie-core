@@ -2,12 +2,17 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
-import { getRundownId, getPartId } from '../lib'
+import { getRundownId, getPartId, getRundown } from '../lib'
 import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
 
 export function getRundownIdFromMosRO (studio: Studio, runningOrderMosId: MOS.MosString128) {
 	if (!runningOrderMosId) throw new Meteor.Error(401, 'parameter runningOrderMosId missing!')
 	return getRundownId(studio, runningOrderMosId.toString())
+}
+
+export function getRundownFromMosRO (studio: Studio, runningOrderMosId: MOS.MosString128) {
+	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
+	return getRundown(rundownId, runningOrderMosId.toString())
 }
 
 export function getPartIdFromMosStory (rundownId: string, partMosId: MOS.MosString128) {

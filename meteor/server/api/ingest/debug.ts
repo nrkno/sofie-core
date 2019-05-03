@@ -18,11 +18,11 @@ methods['debug_rundownRunBlueprints'] = (rundownId: string, deleteFirst?: boolea
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-	const ingestRundown = loadCachedRundownData(rundownId)
-	if (deleteFirst) rundown.remove()
-
 	const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 	if (!peripheralDevice) throw new Meteor.Error(404, 'MOS Device not found to be used for mock rundown!')
+
+	const ingestRundown = loadCachedRundownData(rundownId)
+	if (deleteFirst) rundown.remove()
 
 	handleUpdatedRundown(peripheralDevice, ingestRundown, 'mock')
 

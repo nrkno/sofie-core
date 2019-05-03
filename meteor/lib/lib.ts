@@ -66,6 +66,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
+	afterRemoveAll?: (o: Array<DBInterface>) => void
 }
 interface Changes {
 	added: number
@@ -187,6 +188,13 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	})
 	waitForPromiseAll(ps)
 
+	if (options.afterRemoveAll) {
+		const objs = _.compact(_.values(removeObjs))
+		if (objs.length > 0) {
+			options.afterRemoveAll(objs)
+		}
+	}
+
 	return change
 }
 export function sumChanges (...changes: (Changes | null)[]): Changes {
@@ -281,6 +289,8 @@ export type OmitId<T> = Omit<T & ObjId, '_id'>
 export function omit<T, P extends keyof T> (obj: T, prop: P): Omit<T, P> {
 	return _.omit(obj)
 }
+
+export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
 
 export function applyClassToDocument (docClass, document) {
 	return new docClass(document)

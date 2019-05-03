@@ -8,9 +8,9 @@ import {
 	PieceUi
 } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, PieceLifespan, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
-import { Transition } from '../../../lib/constants/casparcg'
+import { Transition } from 'timeline-state-resolver-types'
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
