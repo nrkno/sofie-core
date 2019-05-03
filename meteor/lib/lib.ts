@@ -188,7 +188,12 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	})
 	waitForPromiseAll(ps)
 
-	if (options.afterRemoveAll) options.afterRemoveAll(_.compact(_.values(removeObjs)))
+	if (options.afterRemoveAll) {
+		const objs = _.compact(_.values(removeObjs))
+		if (objs.length > 0) {
+			options.afterRemoveAll(objs)
+		}
+	}
 
 	return change
 }

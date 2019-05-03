@@ -669,7 +669,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: segExternalId })).toBeFalsy()
 	})
 
-	/* FIXME
 	testInFiber('dataSegmentDelete for a second time', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalID: segExternalId }).count()).toBe(0)
@@ -680,7 +679,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		} catch (e) {
 			expect(e.message).toBe(`[404] Segment ${segExternalId} not found`)
 		}
-	}) */
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+	})
 
 	testInFiber('dataSegmentDelete from non-existant rundown', () => {
 		const rundown = Rundowns.findOne() as Rundown

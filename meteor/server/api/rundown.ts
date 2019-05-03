@@ -83,11 +83,15 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
  * @param rundownId The Rundown id to remove from
  * @param segmentIds The Segment ids to be removed
  */
-export function removeSegments (rundownId: string, segmentIds: string[]) {
-	Segments.remove({
+export function removeSegments (rundownId: string, segmentIds: string[]): number {
+	const count = Segments.remove({
 		_id: { $in: segmentIds },
 		rundownId: rundownId
-	}, () => afterRemoveSegments(rundownId, segmentIds))
+	})
+	if (count > 0) {
+		afterRemoveSegments(rundownId, segmentIds)
+	}
+	return count
 }
 /**
  * After Segments have been removed, handle the contents.
@@ -122,10 +126,8 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		afterPart: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
 		afterRemoveAll (parts) {
-			if (parts.length > 0) {
-				// Do the same for any affected dynamicallyInserted Parts
-				afterRemoveParts(rundownId, parts)
-			}
+			// Do the same for any affected dynamicallyInserted Parts
+			afterRemoveParts(rundownId, parts)
 		}
 	})
 
@@ -148,7 +150,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	if (rundown && rundown.active) {
 		// If the replaced segment is next-to-be-played out,
 		// instead make the next-to-be-played-out part the one in it's place
-		const oldNextPart = _.find(removedParts, part => rundown.nextPartId)
+		const oldNextPart = _.find(removedParts, part => part._id === rundown.nextPartId)
 		if (oldNextPart) {
 			const partBefore = fetchBefore(Parts, {
 				rundownId: rundownId

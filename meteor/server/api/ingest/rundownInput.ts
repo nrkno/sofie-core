@@ -28,7 +28,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updateDynamicPartRanks } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -366,6 +366,7 @@ function updateRundownFromIngestData (
 	const didChange = anythingChanged(changes)
 	if (didChange) {
 		updateExpectedMediaItemsOnRundown(dbRundown._id)
+		updateDynamicPartRanks(dbRundown._id)
 		triggerUpdateTimelineAfterIngestData(rundownId, _.map(segments, s => s._id))
 	}
 	return didChange
@@ -379,7 +380,9 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		if (canBeUpdated(rundown, segmentId)) {
-			removeSegments(rundownId, [segmentId])
+			if (removeSegments(rundownId, [segmentId]) === 0) {
+				throw new Meteor.Error(404, `Segment ${segmentExternalId} not found`)
+			}
 		}
 	})
 }
@@ -475,6 +478,7 @@ export function updateSegmentFromIngestData (
 	const didChange = anythingChanged(changes)
 	if (didChange) {
 		updateExpectedMediaItemsOnRundown(rundown._id)
+		updateDynamicPartRanks(rundown._id)
 	}
 	return didChange
 }
@@ -605,7 +609,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank,
+			_rank: sourcePart.rank, // TODO - is this correct
 			notes: notes,
 		})
 		parts.push(part)
