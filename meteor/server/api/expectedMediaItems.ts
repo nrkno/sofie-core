@@ -124,28 +124,3 @@ export const updateExpectedMediaItemsOnPart: (rundownId: string, partId: string)
 		partId: part._id
 	}, eMIs)
 })
-
-function insertExpectedObject (fileName: string, url: string, mediaFlowId: string, rundownId: string, partId: string) {
-	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found.`)
-
-	ExpectedMediaItems.insert({
-		_id: Random.id(),
-		disabled: false,
-		lastSeen: getCurrentTime(),
-		mediaFlowId: mediaFlowId,
-		path: fileName,
-		url,
-		rundownId,
-		partId,
-		studioId: rundown.studioId
-	})
-}
-
-let methods = {}
-methods['insertExpected'] = (fileName, url, mediaFlowId, rundownId, partId) => {
-	return insertExpectedObject(fileName, url, mediaFlowId, rundownId, partId)
-}
-
-// Apply methods:
-setMeteorMethods(methods)
