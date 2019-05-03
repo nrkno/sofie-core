@@ -1,25 +1,19 @@
 import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
-import { ServerClientAPI } from '../client'
 import { UserActionAPI } from '../../../lib/api/userActions'
-import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
+import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { runInFiber } from '../../../__mocks__/Fibers'
 
 require('../client') // include in order to create the Meteor methods needed
 
 setLoggerLevel('info')
 
 describe('ClientAPI', () => {
-	const mockThis = {
-		userId: -1,
-		connection: {
-			clientAddress: '8.8.8.8'
-		}
-	}
-
 	describe('execMethod', () => {
 		const mockRdId = 'mockRdId'
 		const mockArgs = [mockRdId, true]
@@ -40,7 +34,7 @@ describe('ClientAPI', () => {
 		})
 
 		describe('Execute and log Meteor method calls', () => {
-			ServerClientAPI.execMethod.apply(mockThis, [mockContext, UserActionAPI.methods.activate, ...mockArgs])
+			Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.activate, ...mockArgs)
 
 			it('Allows executing Meteor methods', () => {
 				// make sure that it's only called once
@@ -61,11 +55,12 @@ describe('ClientAPI', () => {
 				expect(logItem.success).toBe(true)
 				expect(logItem.args).toBe(JSON.stringify(mockArgs))
 				expect(logItem.context).toBe(mockContext)
+				expect(logItem.userId).toBeDefined()
 			})
 		})
 
 		it('Logs error messages when responseError is returned', () => {
-			ServerClientAPI.execMethod.apply(mockThis, [mockContext, UserActionAPI.methods.take, ...mockArgs])
+			Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.take, ...mockArgs)
 
 			expect(mockMethods[UserActionAPI.methods.take]).toBeCalledTimes(1)
 
@@ -78,12 +73,13 @@ describe('ClientAPI', () => {
 			}
 			expect(logItem.method).toBe(UserActionAPI.methods.take)
 			expect(logItem.success).toBe(false)
+			expect(logItem.userId).toBeDefined()
 			expect(logItem.errorMessage).toMatch(/^ClientResponseError: /)
 		})
 
 		it('Logs exception messages if an exception is thrown by a method', () => {
 			const f = () => {
-				ServerClientAPI.execMethod.apply(mockThis, [mockContext, UserActionAPI.methods.setNext, ...mockArgs])
+				Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.setNext, ...mockArgs)
 			}
 
 			expect(f).toThrow()
@@ -98,6 +94,7 @@ describe('ClientAPI', () => {
 			}
 			expect(logItem.method).toBe(UserActionAPI.methods.setNext)
 			expect(logItem.success).toBe(false)
+			expect(logItem.userId).toBeDefined()
 			expect(logItem.errorMessage).toBe('[502] Mock exception')
 		})
 	})
@@ -107,7 +104,7 @@ describe('ClientAPI', () => {
 			expect(MeteorMock.mockMethods[ClientAPI.methods.clientErrorReport]).toBeTruthy()
 		})
 		it('Returns a success response to the client', () => {
-			const result = ServerClientAPI.clientErrorReport.apply(mockThis, [getCurrentTime(), { error: 'Some Error' }, 'MockLocation'])
+			const result = Meteor.call(ClientAPI.methods.clientErrorReport, 1000, { error: 'Some Error' }, 'MockLocation')
 
 			expect(result).toMatchObject({
 				success: 200
@@ -118,6 +115,7 @@ describe('ClientAPI', () => {
 	describe('callPeripheralDeviceFunction', () => {
 		const mockDeviceId = 'mockDeviceId'
 		const mockFunctionName = 'mockFunction'
+		const mockFailingFunctionName = 'mockFailFunction'
 		const mockContext = 'Context description'
 		const mockArgs = ['mockArg1', 'mockArg2']
 		const mockMethods = {}
@@ -128,7 +126,7 @@ describe('ClientAPI', () => {
 
 		describe('Call a method on the peripheralDevice', () => {
 			const logMethodName = `${mockDeviceId}: ${mockFunctionName}`
-			const promise = ServerClientAPI.callPeripheralDeviceFunction.apply(mockThis, [mockContext, mockDeviceId, mockFunctionName, ...mockArgs]) as Promise<any>
+			const promise = Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, mockContext, mockDeviceId, mockFunctionName, ...mockArgs) as Promise<any>
 			it('Logs the call in UserActionsLog', () => {
 				const log = UserActionsLog.findOne({
 					method: logMethodName
@@ -139,14 +137,13 @@ describe('ClientAPI', () => {
 				}
 
 				expect(log.method).toBe(logMethodName)
-				expect(log.userId).toBe(mockThis.userId)
+				expect(log.userId).toBeDefined()
 			})
 			it('Sends a call to the peripheralDevice', () => {
 				const pdc = PeripheralDeviceCommands.findOne({
 					deviceId: mockDeviceId,
 					functionName: mockFunctionName
 				})
-				PeripheralDeviceCommands.find({})
 				if (!pdc) {
 					fail('Peripheral device command request not found')
 					return
@@ -157,29 +154,90 @@ describe('ClientAPI', () => {
 				expect(pdc.args).toMatchObject(mockArgs)
 			})
 			it('Resolves the returned promise once a response from the peripheralDevice is received', () => {
-				PeripheralDeviceCommands.update({
-					deviceId: mockDeviceId,
-					functionName: mockFunctionName
-				}, {
-					$set: {
-						hasReply: true,
-						reply: 'OK'
-					}
-				})
-				// This will probably resolve after around 3s, since that is the timeout time
-				// of checkReply and the observeChanges is not implemented in the mock
-				return promise.then((value) => {
-					const log = UserActionsLog.findOne({
-						method: logMethodName
+				return runInFiber(() => {
+					PeripheralDeviceCommands.update({
+						deviceId: mockDeviceId,
+						functionName: mockFunctionName
+					}, {
+						$set: {
+							hasReply: true,
+							reply: 'OK'
+						}
 					})
-					if (!log) {
-						fail('Log entry not found')
-						return
-					}
+					// This will probably resolve after around 3s, since that is the timeout time
+					// of checkReply and the observeChanges is not implemented in the mock
+					return promise.then((value) => {
+						const log = UserActionsLog.findOne({
+							method: logMethodName
+						})
+						if (!log) {
+							fail('Log entry not found')
+							return
+						}
 
-					expect(log.success).toBe(true)
-					expect(log.doneTime).toBeDefined()
-					expect(value).toBe('OK')
+						expect(log.success).toBe(true)
+						expect(log.doneTime).toBeDefined()
+						expect(value).toBe('OK')
+					})
+				})
+			})
+		})
+
+		describe('Call a failing method on the peripheralDevice', () => {
+			const logMethodName = `${mockDeviceId}: ${mockFailingFunctionName}`
+			const promise = Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, mockContext, mockDeviceId, mockFailingFunctionName, ...mockArgs) as Promise<any>
+			it('Logs the call in UserActionsLog', () => {
+				const log = UserActionsLog.findOne({
+					method: logMethodName
+				})
+				if (!log) {
+					fail('Log entry not found')
+					return
+				}
+
+				expect(log.method).toBe(logMethodName)
+				expect(log.userId).toBeDefined()
+			})
+			it('Sends a call to the peripheralDevice', () => {
+				const pdc = PeripheralDeviceCommands.findOne({
+					deviceId: mockDeviceId,
+					functionName: mockFailingFunctionName
+				})
+				if (!pdc) {
+					fail('Peripheral device command request not found')
+					return
+				}
+
+				expect(pdc.deviceId).toBe(mockDeviceId)
+				expect(pdc.functionName).toBe(mockFailingFunctionName)
+				expect(pdc.args).toMatchObject(mockArgs)
+			})
+			it('Resolves the returned promise once a response from the peripheralDevice is received', () => {
+				return runInFiber(() => {
+					PeripheralDeviceCommands.update({
+						deviceId: mockDeviceId,
+						functionName: mockFailingFunctionName
+					}, {
+						$set: {
+							hasReply: true,
+							replyError: 'Failed'
+						}
+					})
+					// This will probably resolve after around 3s, since that is the timeout time
+					// of checkReply and the observeChanges is not implemented in the mock
+					return promise.catch((value) => {
+						const log = UserActionsLog.findOne({
+							method: logMethodName
+						})
+						if (!log) {
+							fail('Log entry not found')
+							return
+						}
+	
+						expect(log.success).toBe(false)
+						expect(log.doneTime).toBeDefined()
+						expect(value).toBe('Failed')
+					}).then(() => { })
 				})
 			})
 		})
