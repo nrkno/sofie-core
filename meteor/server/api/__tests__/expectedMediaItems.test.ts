@@ -4,7 +4,7 @@ import { literal } from '../../../lib/lib'
 import { setLoggerLevel } from '../logger'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts } from '../../../lib/collections/Parts'
-import { VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -13,6 +13,7 @@ import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } fro
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
+import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces';
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -22,6 +23,7 @@ describe('Expected Media Items', () => {
 	const mockPiece0 = 'mockPiece0'
 	const mockPart1 = 'mockPart1'
 	const mockPiece1 = 'mockPiece1'
+	const mockAdLibPiece0 = 'mockAdLib0'
 	const env = setupDefaultStudioEnvironment()
 
 	const mockBase = '\\RAZ_DWA_TRZY\\C\\'
@@ -149,6 +151,33 @@ describe('Expected Media Items', () => {
 				timelineObjects: []
 			})
 		}))
+		AdLibPieces.insert(literal<AdLibPiece>({
+			_id: rdId + '_' + mockAdLibPiece0,
+			name: '',
+			_rank: 0,
+			adlibPreroll: 0,
+			disabled: false,
+			expectedDuration: 0,
+			externalId: '',
+			infiniteMode: PieceLifespan.Normal,
+			invalid: false,
+			metaData: {},
+			outputLayerId: LAYER_IDS.OUTPUT_PGM,
+			partId: rdId + '_' + mockPart1,
+			rundownId: rdId,
+			sourceLayerId: LAYER_IDS.SOURCE_VT0,
+			status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+			trigger: undefined,
+			content: literal<VTContent>({
+				fileName: mockFileName1,
+				path: mockPath1,
+				mediaFlowIds: [mockFlow0],
+				firstWords: '',
+				lastWords: '',
+				sourceDuration: 0,
+				timelineObjects: []
+			})
+		}))
 	}
 
 	beforeAll(() => runInFiber(() => {
@@ -164,7 +193,7 @@ describe('Expected Media Items', () => {
 				rundownId: rdId0,
 				studioId: env.studio._id,
 			}).fetch()
-			expect(items).toHaveLength(3)
+			expect(items).toHaveLength(4)
 		})
 		testInFiber.only('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
 			const rd = Rundowns.findOne(rdId0)
@@ -224,7 +253,7 @@ describe('Expected Media Items', () => {
 				rundownId: rdId1,
 				studioId: env.studio._id
 			}).fetch()
-			expect(items).toHaveLength(1)
+			expect(items).toHaveLength(2)
 
 			rd.remove()
 
