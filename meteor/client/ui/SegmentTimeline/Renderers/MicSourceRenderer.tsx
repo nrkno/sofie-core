@@ -67,7 +67,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	componentDidMount () {
 		// Create line element
-		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>')
+		this.lineItem = $('<div class="segment-timeline__piece-appendage script-line"></div>')
 		this.updateAnchoredElsWidths()
 		if (this.props.itemElement) {
 			this.itemElement = this.props.itemElement
@@ -156,11 +156,11 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
 
 		return <React.Fragment>
-			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+			<span className='segment-timeline__piece__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{begin}
 			</span>
-			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				<span className='segment-timeline__layer-item__label last-words'>{end}</span>
+			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+				<span className='segment-timeline__piece__label last-words'>{end}</span>
 				{this.renderInfiniteIcon()}
 				{this.renderOverflowTimeLabel()}
 			</span>

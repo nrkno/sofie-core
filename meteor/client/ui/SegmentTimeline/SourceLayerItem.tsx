@@ -466,7 +466,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 
 			return (
-				<div className={ClassNames('segment-timeline__layer-item', typeClass, {
+				<div className={ClassNames('segment-timeline__piece', typeClass, {
 					'with-in-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0,
 					'with-out-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0,
 
@@ -499,7 +499,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					}
 					{
 						this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0 ? (
-							<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
+							<div className={ClassNames('segment-timeline__piece__transition', 'in', {
 								'mix': this.props.piece.transitions.inTransition.type === Transition.MIX,
 								'wipe': this.props.piece.transitions.inTransition.type === Transition.WIPE
 							})}
@@ -510,7 +510,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					}
 					{
 						this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0 ? (
-							<div className={ClassNames('segment-timeline__layer-item__transition', 'out', {
+							<div className={ClassNames('segment-timeline__piece__transition', 'out', {
 								'mix': this.props.piece.transitions.outTransition.type === Transition.MIX,
 								'wipe': this.props.piece.transitions.outTransition.type === Transition.WIPE
 							})}
@@ -527,7 +527,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			this._placeHolderElement = true
 
 			return (
-				<div className='segment-timeline__layer-item'
+				<div className='segment-timeline__piece'
 					data-mos-id={this.props.piece._id}
 					ref={this.setRef}
 					style={this.getItemStyle()}>

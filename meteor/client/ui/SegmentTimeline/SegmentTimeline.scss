@@ -75,7 +75,7 @@ $timeline-layer-height: 1em;
                 pointer-events: none;
             }
 
-            > .segment-timeline__layer-item {
+            > .segment-timeline__piece {
                 position: absolute;
                 top: 0;
                 bottom: 0;
@@ -88,7 +88,7 @@ $timeline-layer-height: 1em;
         }
     }
 
-    .segment-timeline__layer-item-appendage {
+    .segment-timeline__piece-appendage {
         position: absolute;
         top: 0;
         bottom: 0;

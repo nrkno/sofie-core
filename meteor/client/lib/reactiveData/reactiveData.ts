@@ -79,7 +79,7 @@ export namespace reactiveData {
 	export function getRSourceLayer (showStyleBase: ShowStyleBase, sourceLayerId: string): ReactiveVar<ISourceLayer | undefined> {
 		const rVar = new ReactiveVar<ISourceLayer | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
 		Tracker.autorun(() => {
-			const sourceLayer = showStyleBase.sourceLayers.find((item) => item._id === sourceLayerId)
+			const sourceLayer = showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)
 			rVar.set(sourceLayer)
 		})
 		return rVar

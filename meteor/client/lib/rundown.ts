@@ -9,9 +9,9 @@ export namespace RundownUtils {
 		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
 	}
 
-	export function getSegmentDuration (lines: Array<PartUi>) {
-		return lines.reduce((memo, item) => {
-			return memo + (item.duration || item.expectedDuration || item.renderedDuration || 0)
+	export function getSegmentDuration (parts: Array<PartUi>) {
+		return parts.reduce((memo, part) => {
+			return memo + (part.duration || part.expectedDuration || part.renderedDuration || 0)
 		}, 0)
 	}
 

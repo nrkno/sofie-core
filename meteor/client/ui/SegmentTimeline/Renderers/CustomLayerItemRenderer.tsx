@@ -84,7 +84,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			let time = (this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
 			// only display differences greater than 1 second
 			return (time > 0) ? (
-				<div className='segment-timeline__layer-item__label label-overflow-time'>
+				<div className='segment-timeline__piece__label label-overflow-time'>
 					{RundownUtils.formatDiffToTimecode(time, true, false, true)}
 				</div>
 			) : null
@@ -95,14 +95,14 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		const content = this.props.piece.content as VTContent
 		const seek = content && content.seek ? content.seek : 0
 		if (this.props.piece.infiniteMode && content && content.sourceDuration && (this.props.piece.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.partDuration || 0)) {
-			return <div className='segment-timeline__layer-item__source-finished' style={{ 'left': ((content.sourceDuration - seek) * this.props.timeScale).toString() + 'px' }}></div>
+			return <div className='segment-timeline__piece__source-finished' style={{ 'left': ((content.sourceDuration - seek) * this.props.timeScale).toString() + 'px' }}></div>
 		}
 		return null
 	}
 
 	renderInfiniteIcon () {
 		return (this.props.piece.infiniteMode && this.props.piece.infiniteMode === PieceLifespan.Infinite && !this.props.piece.duration && !this.props.piece.durationOverride) ?
-			<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
+			<div className='segment-timeline__piece__label label-icon label-infinite-icon'>
 				<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='#ffff00' viewBox='0 0 8 8'>
   					<path d='M2 0c-1.31 0-2 1.01-2 2s.69 2 2 2c.79 0 1.42-.56 2-1.22.58.66 1.19 1.22 2 1.22 1.31 0 2-1.01 2-2s-.69-2-2-2c-.81 0-1.42.56-2 1.22-.58-.66-1.21-1.22-2-1.22zm0 1c.42 0 .88.47 1.34 1-.46.53-.92 1-1.34 1-.74 0-1-.54-1-1 0-.46.26-1 1-1zm4 0c.74 0 1 .54 1 1 0 .46-.26 1-1 1-.43 0-.89-.47-1.34-1 .46-.53.91-1 1.34-1z'
   						transform='translate(0 2)' />
@@ -115,7 +115,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		const vtContent = this.props.piece.content as VTContent
 
 		return (vtContent && vtContent.editable && vtContent.sourceDuration !== vtContent.editable.editorialDuration) ?
-			<div className='segment-timeline__layer-item__label label-icon'>
+			<div className='segment-timeline__piece__label label-icon'>
 				<FontAwesomeIcon icon={faCut} />
 			</div>
 			: null

@@ -30,10 +30,10 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 interface IListViewPropsHeader {
-	onSelectAdLib: (aSLine: AdLibPieceUi) => void
+	onSelectAdLib: (piece: AdLibPieceUi) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
-	onToggleAdLib: (aSLine: AdLibPieceUi, queue: boolean, e: any) => void
-	selectedItem: AdLibPieceUi | undefined
+	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: any) => void
+	selectedPiece: AdLibPieceUi | undefined
 	filter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
@@ -114,7 +114,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 									<AdLibListItem
 										key={item._id}
 										item={item}
-										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										selected={this.props.selectedPiece && this.props.selectedPiece._id === item._id || false}
 										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
@@ -127,7 +127,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 									<AdLibListItem
 										key={item._id}
 										item={item}
-										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										selected={this.props.selectedPiece && this.props.selectedPiece._id === item._id || false}
 										layer={this.state.sourceLayers[item.sourceLayerId]}
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
@@ -235,7 +235,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 
 export interface SegmentUi extends Segment {
 	/** Pieces belonging to this part */
-	segLines: Array<Part>
+	parts: Array<Part>
 	items?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
@@ -253,7 +253,7 @@ interface IProps {
 }
 
 interface IState {
-	selectedItem: AdLibPiece | undefined
+	selectedPiece: AdLibPiece | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
@@ -324,7 +324,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		super(props)
 
 		this.state = {
-			selectedItem: undefined,
+			selectedPiece: undefined,
 			selectedSegment: undefined,
 			filter: undefined,
 			followLive: true
@@ -426,29 +426,29 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 	}
 
-	onSelectAdLib = (aSLine: AdLibPieceUi) => {
+	onSelectAdLib = (piece: AdLibPieceUi) => {
 		// console.log(aSLine)
 		this.setState({
-			selectedItem: aSLine
+			selectedPiece: piece
 		})
 	}
 
-	onToggleAdLib = (aSLine: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (aSLine.invalid) {
+		if (piece.invalid) {
 			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
 			return
 		}
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[aSLine.sourceLayerId] &&
-			!this.props.sourceLayerLookup[aSLine.sourceLayerId].isQueueable) {
-			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
+			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
+			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 
-		if (this.props.rundown && this.props.rundown.currentPartId && aSLine.isGlobal) {
+		if (this.props.rundown && this.props.rundown.currentPartId && piece.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false])
 		}
 	}
 
@@ -474,7 +474,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
 					onToggleSticky={this.onToggleStickyItem}
-					selectedItem={this.state.selectedItem}
+					selectedPiece={this.state.selectedPiece}
 					showStyleBase={this.props.showStyleBase}
 					rundownAdLibs={this.props.rundownAdLibs}
 					filter={this.state.filter} />

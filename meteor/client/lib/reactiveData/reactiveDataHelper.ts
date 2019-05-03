@@ -43,9 +43,9 @@ export abstract class WithManagedTracker {
 	private _subs: Meteor.SubscriptionHandle[] = []
 
 	stop () {
-		this._autoruns.forEach((item) => item.stop())
+		this._autoruns.forEach((comp) => comp.stop())
 		setTimeout(() => {
-			this._subs.forEach((item) => item.stop())
+			this._subs.forEach((comp) => comp.stop())
 		}, 2000) // wait for a couple of seconds, before unsubscribing
 	}
 
