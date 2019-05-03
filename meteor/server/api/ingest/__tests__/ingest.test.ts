@@ -459,6 +459,22 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 	})
 
+	testInFiber('dataRundownDelete bad device', () => {
+		expect(Rundowns.findOne()).toBeFalsy()
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataRundownDelete, device._id.slice(0, -1), device.token, externalId)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe('[404] PeripheralDevice "mockDevice" not found')
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataRundownDelete, device._id, device.token.slice(0, -1), externalId)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe('[401] Not allowed access to peripheralDevice')
+		}
+	})
+
 	// Allow update even though no preceeding create
 	testInFiber('dataRundownUpdate even though not yet created', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
@@ -625,6 +641,24 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts3).toHaveLength(0)
 	})
 
+	testInFiber('dataSegmentUpdate no external id', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+		const ingestSegment: IngestSegment = {
+			externalId: '',
+			name: 'MyMockSegment',
+			rank: 0,
+			// payload?: any;
+			parts: []
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+			expect(false).toBe(true)
+		} catch (e) {
+			expect(e.message).toBe(`[401] getSegmentId: segmentExternalId must be set!`)
+		}
+	})
+
 	testInFiber('dataSegmentDelete', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
@@ -635,9 +669,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: segExternalId })).toBeFalsy()
 	})
 
-	/* testInFiber('dataSegmentDelete for a second time', () => {
+	/* FIXME
+	testInFiber('dataSegmentDelete for a second time', () => {
 		const rundown = Rundowns.findOne() as Rundown
-		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+		expect(Segments.find({ rundownId: rundown._id, externalID: segExternalId }).count()).toBe(0)
 
 		try {
 			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
@@ -676,4 +711,66 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(e.message).toBe(`[404] Rundown wibble not found`)
 		}
 	})
+
+	testInFiber('dataRundownCreate with not enough arguments', () => {
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token, null)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+	})
+
+	testInFiber('dataSegmentCreate with not enough arguments', () => {
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token, externalId)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token, externalId, null)
+			expect(0).toBe(1)
+		} catch (e) {
+			expect(e).toBeTruthy()
+		}
+
+	})
+
 })
