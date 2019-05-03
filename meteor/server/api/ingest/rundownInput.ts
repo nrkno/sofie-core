@@ -20,16 +20,15 @@ import {
 	saveIntoDb,
 	getCurrentTime,
 	literal,
-	asyncCollectionRemove,
 	sumChanges,
 	anythingChanged,
-	waitForPromiseAll
+	ReturnType
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart, ServerRundownAPI } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -45,10 +44,17 @@ import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnPart, updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { syncFunction } from '../../codeControl'
+
+export enum RundownSyncFunctionPriority {
+	Ingest = 0,
+	Playout = 10,
+}
+export function rundownSyncFunction<T extends Function> (rundownId: string, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
+	return syncFunction(fcn, `ingest_rundown_${rundownId}`, undefined, priority)()
+}
 
 export namespace RundownInput {
-	// TODO - this all needs guards to avoid race conditions with stuff running in playout.ts (which should be removed from there)
-
 	// Delete, Create & Update Rundown (and it's contents):
 	export function dataRundownDelete (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
@@ -121,28 +127,32 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	const rundown = getRundown(rundownId, rundownExternalId)
-	if (rundown) {
-		logger.info('Removing rundown ' + rundown._id)
+	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+		if (rundown) {
+			logger.info('Removing rundown ' + rundown._id)
 
-		if (canBeUpdated(rundown)) {
-			rundown.remove()
-		} else {
-			logger.info(`Rundown "${rundown._id}" cannot be updated`)
-			if (!rundown.unsynced) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+			if (canBeUpdated(rundown)) {
+				rundown.remove()
+			} else {
+				logger.info(`Rundown "${rundown._id}" cannot be updated`)
+				if (!rundown.unsynced) {
+					ServerRundownAPI.unsyncRundown(rundown._id)
+				}
 			}
 		}
-	}
+	})
 }
 export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
-
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
-	const existingDbRundown = Rundowns.findOne(rundownId)
-	if (!canBeUpdated(existingDbRundown)) return
 
-	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const existingDbRundown = Rundowns.findOne(rundownId)
+		if (!canBeUpdated(existingDbRundown)) return
+
+		updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
+	})
 }
 export function updateRundownAndSaveCache (
 	studio: Studio,
@@ -295,6 +305,7 @@ function updateRundownFromIngestData (
 		saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces, {
 			rundownId: dbRundown._id
 		}, adlibItems),
+
 		// Update Segments:
 		saveIntoDb(Segments, {
 			rundownId: rundownId
@@ -307,16 +318,20 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (segment) {
 				logger.info('removed segment ' + segment._id)
-				afterRemoveSegment(segment._id, segment.rundownId)
+			},
+			afterRemoveAll (segments) {
+				afterRemoveSegments(rundownId, _.map(segments, s => s._id))
 			}
 		}),
+
 		saveIntoDb<Part, DBPart>(Parts, {
 			rundownId: rundownId,
 		}, parts, {
-			afterRemove (part) {
-				afterRemovePart(part)
+			afterRemoveAll (parts) {
+				afterRemoveParts(rundownId, parts)
 			}
 		}),
+
 		saveIntoDb<Piece, Piece>(Pieces, {
 			rundownId: rundownId,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
@@ -332,6 +347,7 @@ function updateRundownFromIngestData (
 				logger.debug('deleted piece ' + piece._id)
 			}
 		}),
+
 		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 			rundownId: rundownId,
 		}, adlibPieces, {
@@ -355,28 +371,30 @@ function updateRundownFromIngestData (
 	return didChange
 }
 
-export function removeSegment (segmentId: string): void {
-	waitForPromiseAll([
-		asyncCollectionRemove(Parts, { segmentId: segmentId }),
-		// TODO - cleanup other part contents
-		asyncCollectionRemove(Segments, segmentId)
-	])
-}
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
-	const { rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
-	const segmentId = getSegmentId(rundown._id, segmentExternalId)
-	if (canBeUpdated(rundown, segmentId)) {
-		removeSegment(segmentId)
-	}
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
+
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+		const segmentId = getSegmentId(rundown._id, segmentExternalId)
+		if (canBeUpdated(rundown, segmentId)) {
+			removeSegments(rundownId, [segmentId])
+		}
+	})
 }
 function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
-	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
 
-	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	if (!canBeUpdated(rundown, segmentId)) return
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
+		if (!canBeUpdated(rundown, segmentId)) return
 
-	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		saveSegmentCache(rundown._id, segmentId, ingestSegment)
+		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	})
 }
 /**
  * Run ingestData through blueprints and update the Segment
@@ -417,8 +435,8 @@ export function updateSegmentFromIngestData (
 			rundownId: rundown._id,
 			segmentId: segmentId,
 		}, parts, {
-			afterRemove (part) {
-				afterRemovePart(part)
+			afterRemoveAll (parts) {
+				afterRemoveParts(rundown._id, parts)
 			}
 		}),
 		saveIntoDb<Piece, Piece>(Pieces, {
@@ -462,57 +480,56 @@ export function updateSegmentFromIngestData (
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
-	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
-	const segmentId = getSegmentId(rundown._id, segmentExternalId)
-	const partId = getPartId(rundown._id, partExternalId)
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
 
-	if (!canBeUpdated(rundown, segmentId, partId)) return
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+		const segmentId = getSegmentId(rundown._id, segmentExternalId)
+		const partId = getPartId(rundown._id, partExternalId)
 
-	const part = Parts.findOne({
-		_id: partId,
-		segmentId: segmentId,
-		rundownId: rundown._id
+		if (!canBeUpdated(rundown, segmentId, partId)) return
+
+		const part = Parts.findOne({
+			_id: partId,
+			segmentId: segmentId,
+			rundownId: rundown._id
+		})
+		if (!part) throw new Meteor.Error(404, 'Part not found')
+
+		// Blueprints will handle the deletion of the Part
+		const ingestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
+
+		saveSegmentCache(rundown._id, segmentId, ingestSegment)
+		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+
+		updateExpectedMediaItemsOnPart(rundown._id, part._id)
+		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 	})
-	if (!part) throw new Meteor.Error(404, 'Part not found')
-
-	// Blueprints will handle the deletion of the Part
-	const ingestSegment = loadCachedIngestSegment(rundown._id, segmentId)
-	ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
-
-	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
-
-	updateExpectedMediaItemsOnPart(rundown._id, part._id)
-	triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
-	const { studio, rundown } = getStudioAndRundown(peripheralDevice, rundownExternalId)
-
-	const segmentId = getSegmentId(rundown._id, segmentExternalId)
-	const partId = getPartId(rundown._id, ingestPart.externalId)
-
-	if (!canBeUpdated(rundown, segmentId, partId)) return
-
-	// Blueprints will handle the creation of the Part
-	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
-	ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
-	ingestSegment.parts.push(ingestPart)
-
-	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
-
-	updateExpectedMediaItemsOnPart(rundown._id, partId)
-	triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
-}
-
-function getStudioAndRundown (peripheralDevice: PeripheralDevice, externalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundown = getRundown(getRundownId(studio, externalId), externalId)
+	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return {
-		rundown,
-		studio
-	}
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+		const segmentId = getSegmentId(rundown._id, segmentExternalId)
+		const partId = getPartId(rundown._id, ingestPart.externalId)
+
+		if (!canBeUpdated(rundown, segmentId, partId)) return
+
+		// Blueprints will handle the creation of the Part
+		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
+		ingestSegment.parts.push(ingestPart)
+
+		saveSegmentCache(rundown._id, segmentId, ingestSegment)
+		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+
+		updateExpectedMediaItemsOnPart(rundown._id, partId)
+		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
+	})
 }
 
 function generateSegmentContents (
