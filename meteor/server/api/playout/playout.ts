@@ -908,7 +908,7 @@ export namespace ServerPlayoutAPI {
 		// disable the original piece if from the same Part
 		if (piece.partId === part._id) {
 			const pieces = getResolvedPieces(part)
-			const resPiece = pieces.find(piece => piece._id === piece._id)
+			const resPiece = pieces.find(p => p._id === piece._id)
 
 			if (piece.startedPlayback && piece.startedPlayback <= getCurrentTime()) {
 				if (resPiece && resPiece.duration !== undefined && (piece.infiniteMode || piece.startedPlayback + resPiece.duration >= getCurrentTime())) {
