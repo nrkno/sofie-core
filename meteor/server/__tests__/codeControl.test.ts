@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../lib/logging'
 import { syncFunction, Callback, waitTime } from '../codeControl'
-import { rundownSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput';
-import { testInFiber } from '../../__mocks__/helpers/jest';
+import { rundownSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import { testInFiber } from '../../__mocks__/helpers/jest'
 
 function assertTimecloseTo (start: number, target: number) {
 	let deltaTime = Date.now() - start
@@ -23,21 +23,27 @@ describe('codeControl', () => {
 		}, 100)
 	})
 
-	testInFiber('sync2', () => {
-		let sync1 = (name: string) => rundownSyncFunction(name, RundownSyncFunctionPriority.Playout, () => takesALongTimeInner(name))
+	testInFiber('rundownSyncFunction', () => {
+		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => rundownSyncFunction('ro1', priority, () => takesALongTimeInner(name))
 
 		let res: any[] = []
 		Meteor.setTimeout(() => {
-			res.push(sync1('abc'))
+			res.push(sync1('abc', RundownSyncFunctionPriority.Ingest))
+		}, 30)
+		Meteor.setTimeout(() => {
+			res.push(sync1('zzz', RundownSyncFunctionPriority.Playout))
 		}, 50)
 		Meteor.setTimeout(() => {
-			res.push(sync1('def'))
+			res.push(sync1('def', RundownSyncFunctionPriority.Ingest))
 		}, 10)
 
-		waitTime(180)
+		waitTime(500)
 
-		expect(res).toHaveLength(2)
-		expect(res).toEqual(['result yo def', 'result yo abc'])
+		expect(res).toEqual([
+			'result yo def', // Pushed to queue first
+			'result yo zzz', // High priority bumps it above abc
+			'result yo abc',
+		])
 	})
 
 	testInFiber('syncFunction', () => { // TODO - what does this test do?
