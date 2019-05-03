@@ -385,7 +385,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	}
 	/**
 	 * Returns pieces in a part
-	 * @param id Id of part to fetch items in
+	 * @param id Id of part to fetch pieces in
 	 */
 	getPieces (partId: string): Array<IBlueprintPiece> {
 		check(partId, String)

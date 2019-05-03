@@ -94,7 +94,7 @@ export function deactivateRundown (rundown: Rundown) {
 		})
 	}
 
-	// clean up all runtime baseline items
+	// clean up all runtime baseline objects
 	RundownBaselineObjs.remove({
 		rundownId: rundown._id
 	})

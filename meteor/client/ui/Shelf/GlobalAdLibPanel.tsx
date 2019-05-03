@@ -101,7 +101,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						_id: layer._id,
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last ') + (layer.abbreviation || layer.name),
-						status: RundownAPI.LineItemStatusCode.UNKNOWN,
+						status: RundownAPI.TakeItemStatusCode.UNKNOWN,
 						layer: layer,
 						isSticky: true
 					})))
@@ -422,7 +422,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyItemStart, [this.props.rundown._id, sourceLayerId])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.rundown._id, sourceLayerId])
 		}
 	}
 
@@ -448,7 +448,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		if (this.props.rundown && this.props.rundown.currentPartId && aSLine.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
 		}
 	}
 
@@ -457,7 +457,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		if (this.props.rundown && this.props.rundown.currentPartId) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
 		}
 	}
 

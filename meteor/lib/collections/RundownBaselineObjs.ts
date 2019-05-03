@@ -4,16 +4,16 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { TimelineObjGeneric } from './Timeline'
 
-export interface RundownBaselineItem {
+export interface RundownBaselineObj {
 	_id: string
-	/** The rundown this item belongs to */
+	/** The rundown this timeline-object belongs to */
 	rundownId: string
 
 	objects: TimelineObjGeneric[]
 }
 
-export const RundownBaselineObjs: TransformedCollection<RundownBaselineItem, RundownBaselineItem>
-	= new Mongo.Collection<RundownBaselineItem>('rundownBaselineObjs')
+export const RundownBaselineObjs: TransformedCollection<RundownBaselineObj, RundownBaselineObj>
+	= new Mongo.Collection<RundownBaselineObj>('rundownBaselineObjs')
 registerCollection('RundownBaselineObjs', RundownBaselineObjs)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

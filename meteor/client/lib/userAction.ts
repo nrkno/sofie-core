@@ -81,11 +81,11 @@ function userActionMethodName (
 		case UserActionAPI.methods.togglePartArgument: return 'Toggling Part-Argument'
 		case UserActionAPI.methods.pieceTakeNow: return 'Taking Piece'
 
-		case UserActionAPI.methods.segmentAdLibLineItemStart: return 'Starting AdLib Item'
-		case UserActionAPI.methods.baselineAdLibItemStart: return 'Starting AdLib Item'
-		case UserActionAPI.methods.segmentAdLibLineItemStop: return 'Stopping AdLib Item'
+		case UserActionAPI.methods.segmentAdLibPieceStart: return 'Starting AdLib-piece'
+		case UserActionAPI.methods.baselineAdLibPieceStart: return 'Starting AdLib-piece'
+		case UserActionAPI.methods.segmentAdLibPieceStop: return 'Stopping AdLib-piece'
 
-		case UserActionAPI.methods.sourceLayerStickyItemStart: return 'Starting sticky-item'
+		case UserActionAPI.methods.sourceLayerStickyPieceStart: return 'Starting sticky-pice'
 
 		case UserActionAPI.methods.activateHold: return 'Activating Hold'
 
@@ -93,7 +93,7 @@ function userActionMethodName (
 
 		case UserActionAPI.methods.storeRundownSnapshot: return 'Creating Snapshot for debugging'
 
-		case UserActionAPI.methods.sourceLayerOnLineStop: return 'Stopping source layer'
+		case UserActionAPI.methods.sourceLayerOnPartStop: return 'Stopping source layer'
 
 		case UserActionAPI.methods.removeRundown: return 'Removing Rundown'
 		case UserActionAPI.methods.resyncRundown: return 'Re-syncing Rundown'

@@ -47,13 +47,13 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	})
 	const tlResolved = Resolver.getTimelineInWindow(transformTimeline(objs))
 
-	let resolvedItems: Array<PieceResolved> = []
+	let resolvedPieces: Array<PieceResolved> = []
 	_.each(tlResolved.resolved, e => {
 		const id = ((e as any || {}).metadata || {}).pieceId
 		let item = _.clone(itemMap[id]) as PieceResolved
 		item.resolvedStart = e.resolved.startTime || 0
 		item.resolved = true
-		resolvedItems.push(item)
+		resolvedPieces.push(item)
 	})
 	_.each(tlResolved.unresolved, e => {
 		const id = ((e as any || {}).metadata || {}).pieceId
@@ -62,17 +62,17 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 		item.resolvedStart = 0
 		item.resolved = false
 
-		resolvedItems.push(item)
+		resolvedPieces.push(item)
 	})
 	if (tlResolved.unresolved.length > 0) {
 		logger.error(`Got ${tlResolved.unresolved.length} unresolved timeline-objects for part #${part._id} (first is ${tlResolved.unresolved[0].id})`)
 
 	}
-	if (pieces.length !== resolvedItems.length) {
-		logger.error(`Got ${resolvedItems.length} ordered items. Expected ${pieces.length} for part #${part._id}`)
+	if (pieces.length !== resolvedPieces.length) {
+		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${part._id}`)
 	}
 
-	resolvedItems.sort((a, b) => {
+	resolvedPieces.sort((a, b) => {
 		if (a.resolvedStart < b.resolvedStart) return -1
 		if (a.resolvedStart > b.resolvedStart) return 1
 
@@ -81,7 +81,7 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 		return -1
 	})
 
-	return resolvedItems
+	return resolvedPieces
 }
 export function createPieceGroupFirstObject (
 	piece: Piece,
@@ -135,12 +135,12 @@ export function createPieceGroup (
 	})
 }
 export function getResolvedPieces (line: Part): Piece[] {
-	const items = line.getAllPieces()
+	const pieces = line.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
-	items.forEach(i => itemMap[i._id] = i)
+	pieces.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createPieceGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
+	const objs = pieces.map(i => clone(createPieceGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 1
@@ -167,10 +167,10 @@ export function getResolvedPieces (line: Part): Piece[] {
 		})
 	})
 	if (events.unresolved.length > 0) {
-		logger.warn('got ' + events.unresolved.length + ' unresolved items for piece #' + line._id)
+		logger.warn(`Got ${events.unresolved.length} unresolved pieces for piece #${line._id}`)
 	}
-	if (items.length !== eventMap.length) {
-		logger.warn('got ' + eventMap.length + ' ordered items. expected ' + items.length + '. for piece #' + line._id)
+	if (pieces.length !== eventMap.length) {
+		logger.warn(`Got ${eventMap.length} ordered pieces. Expected ${pieces.length}. for piece #${line._id}`)
 	}
 
 	eventMap.sort((a, b) => {
@@ -189,7 +189,7 @@ export function getResolvedPieces (line: Part): Piece[] {
 		}
 	})
 
-	const processedItems = eventMap.map(e => _.extend(e.item, {
+	const processedPieces = eventMap.map(e => _.extend(e.item, {
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: Math.max(0, e.start - 1)
@@ -197,8 +197,8 @@ export function getResolvedPieces (line: Part): Piece[] {
 		duration: Math.max(0, e.end - e.start)
 	}) as Piece)
 
-	// crop infinite items
-	processedItems.forEach((value, index, source) => {
+	// crop infinite pieces
+	processedPieces.forEach((value, index, source) => {
 		if (value.infiniteMode) {
 			for (let i = index + 1; i < source.length; i++) {
 				const li = source[i]
@@ -210,7 +210,7 @@ export function getResolvedPieces (line: Part): Piece[] {
 		}
 	})
 
-	return processedItems
+	return processedPieces
 }
 export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	// const oldId = piece._id

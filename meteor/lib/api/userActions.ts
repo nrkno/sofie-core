@@ -9,23 +9,23 @@ export namespace UserActionAPI {
 		'moveNext' 								= 'userAction.moveNext',
 
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
-		'resetRundown' 					= 'userAction.resetRundown',
+		'resetRundown' 							= 'userAction.resetRundown',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
 		'activate' 								= 'userAction.activate',
 		'deactivate' 							= 'userAction.deactivate',
 		'reloadData' 							= 'userAction.reloadData',
 
-		'disableNextPiece'			= 'userAction.disableNextPiece',
-		'togglePartArgument'				= 'userAction.togglePartArgument',
-		'pieceTakeNow'				= 'userAction.pieceTakeNow',
+		'disableNextPiece'						= 'userAction.disableNextPiece',
+		'togglePartArgument'					= 'userAction.togglePartArgument',
+		'pieceTakeNow'							= 'userAction.pieceTakeNow',
 		'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
 
-		'segmentAdLibLineItemStart'				= 'userAction.segmentAdLibLineItemStart',
-		'sourceLayerOnLineStop'					= 'userAction.sourceLayerOnLineStop',
-		'baselineAdLibItemStart'				= 'userAction.baselineAdLibItemStart',
-		'segmentAdLibLineItemStop'				= 'userAction.segmentAdLibLineItemStop',
+		'segmentAdLibPieceStart'				= 'userAction.segmentAdLibPieceStart',
+		'sourceLayerOnPartStop'					= 'userAction.sourceLayerOnPartStop',
+		'baselineAdLibPieceStart'				= 'userAction.baselineAdLibPieceStart',
+		'segmentAdLibPieceStop'					= 'userAction.segmentAdLibPieceStop',
 
-		'sourceLayerStickyItemStart'			= 'userAction.sourceLayerStickyItemStart',
+		'sourceLayerStickyPieceStart'			= 'userAction.sourceLayerStickyPieceStart',
 
 		'activateHold'							= 'userAction.activateHold',
 
@@ -37,8 +37,8 @@ export namespace UserActionAPI {
 
 		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',
 
-		'removeRundown'					= 'userAction.removeRundown',
-		'resyncRundown'					= 'userAction.resyncRundown',
+		'removeRundown'						= 'userAction.removeRundown',
+		'resyncRundown'						= 'userAction.resyncRundown',
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',

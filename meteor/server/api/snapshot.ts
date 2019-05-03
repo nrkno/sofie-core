@@ -111,8 +111,8 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	const pieces = Pieces.find({ rundownId }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId }).fetch()
 	const mediaObjectIds: Array<string> = [
-		...pieces.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName)),
-		...adLibPieces.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
+		...pieces.filter(piece => piece.content && piece.content.fileName).map((piece) => ((piece.content as AudioContent).fileName)),
+		...adLibPieces.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()

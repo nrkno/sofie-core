@@ -3,11 +3,12 @@ import { NoteType } from './notes'
 import * as _ from 'underscore'
 
 export namespace RundownAPI {
-	/** A generic list of playback availability statuses for a source layer/line item */
-	export enum LineItemStatusCode {
+	/** A generic list of playback availability statuses for a takeable item (Part / Piece) */
+	export enum TakeItemStatusCode {
+
 		/** No status has been determined (yet) */
 		UNKNOWN = -1,
-		/** No fault with item, can be played */
+		/** No fault with part, can be played */
 		OK = 0,
 		/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
 		SOURCE_MISSING = 1,

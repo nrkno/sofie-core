@@ -133,7 +133,7 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 	let rundown = Rundowns.findOne(removedPart.rundownId)
 	if (rundown) {
 		// If the replaced segment is next-to-be-played out,
-		// instead make the next-to-be-played-out item the one in it's place
+		// instead make the next-to-be-played-out part the one in it's place
 		if (
 			rundown.active &&
 			rundown.nextPartId === removedPart._id
@@ -143,13 +143,13 @@ export function afterRemovePart (removedPart: DBPart, replacedByPart?: DBPart) {
 					rundownId: removedPart.rundownId
 				}, removedPart._rank)
 
-				let nextPartInLine = fetchAfter(Parts, {
+				let nextPart = fetchAfter(Parts, {
 					rundownId: removedPart.rundownId,
 					_id: { $ne: removedPart._id }
 				}, partBefore ? partBefore._rank : null)
 
-				if (nextPartInLine) {
-					replacedByPart = nextPartInLine
+				if (nextPart) {
+					replacedByPart = nextPart
 				}
 			}
 			ServerPlayoutAPI.setNextPart(rundown._id, replacedByPart ? replacedByPart._id : null)
