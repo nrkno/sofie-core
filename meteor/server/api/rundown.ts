@@ -167,7 +167,6 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	}
 }
 
-// TODO - verify this still works with new ingest model
 export function updateDynamicPartRanks (rundownId: string): Array<Part> {
 	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 

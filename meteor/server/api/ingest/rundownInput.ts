@@ -41,7 +41,7 @@ import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
 import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
 import { PackageInfo } from '../../coreSystem'
-import { updateExpectedMediaItemsOnPart, updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
@@ -437,6 +437,7 @@ export function updateSegmentFromIngestData (
 		saveIntoDb<Part, DBPart>(Parts, {
 			rundownId: rundown._id,
 			segmentId: segmentId,
+			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted parts (such as adLib parts)
 		}, parts, {
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundown._id, parts)
@@ -479,6 +480,7 @@ export function updateSegmentFromIngestData (
 	if (didChange) {
 		updateExpectedMediaItemsOnRundown(rundown._id)
 		updateDynamicPartRanks(rundown._id)
+		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 	}
 	return didChange
 }
@@ -507,9 +509,6 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		updateSegmentFromIngestData(studio, rundown, ingestSegment)
-
-		updateExpectedMediaItemsOnPart(rundown._id, part._id)
-		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
@@ -530,9 +529,6 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		updateSegmentFromIngestData(studio, rundown, ingestSegment)
-
-		updateExpectedMediaItemsOnPart(rundown._id, partId)
-		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
 	})
 }
 
