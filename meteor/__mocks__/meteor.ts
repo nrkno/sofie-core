@@ -68,6 +68,8 @@ export namespace MeteorMock {
 	export let mockUser: Meteor.User | undefined = undefined
 	export let mockStartupFunctions: Function[] = []
 
+	export let absolutePath = process.cwd()
+
 	export function user (): Meteor.User | undefined {
 		return mockUser
 	}
@@ -201,7 +203,6 @@ export namespace MeteorMock {
 		}
 		return fcn
 	}
-
 	/*
 	export function subscribe () {
 

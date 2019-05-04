@@ -280,7 +280,9 @@ export namespace ServerPeripheralDeviceAPI {
 	export function requestUserAuthToken (id: string, token: string, authUrl: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
-
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			throw new Meteor.Error(400, 'can only request user auth token for peripheral device of spreadsheet type')
+		}
 		check(authUrl, String)
 
 		PeripheralDevices.update(peripheralDevice._id, {$set: {
@@ -290,6 +292,9 @@ export namespace ServerPeripheralDeviceAPI {
 	export function storeAccessToken (id: string, token: string, accessToken: any) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			throw new Meteor.Error(400, 'can only store access token for peripheral device of spreadsheet type')
+		}
 
 		PeripheralDevices.update(peripheralDevice._id, {$set: {
 			accessTokenUrl: '',

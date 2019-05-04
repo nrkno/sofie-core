@@ -59,7 +59,7 @@ if (logToFile || logPath !== '') {
 			leadingZeros(time.getMonth(),2) + '-' +
 			leadingZeros(time.getDate(),2) + '_' +
 			leadingZeros(time.getHours(),2) + '_' +
-			leadingZeros(time.getMinutes(),2) + '_ ' +
+			leadingZeros(time.getMinutes(),2) + '_' +
 			leadingZeros(time.getSeconds(),2)
 		let logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'

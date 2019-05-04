@@ -22,6 +22,7 @@ import {
 	getCurrentTime
 } from '../../../lib/lib'
 import { runInFiber } from '../../../__mocks__/Fibers'
+import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue', () => {
 
@@ -57,6 +58,7 @@ describe('Test external message queue', () => {
 	})
 
 	testInFiber('add a slack-type message', () => {
+		setLoggerLevel('debug')
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
