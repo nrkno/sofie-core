@@ -82,7 +82,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 
 		this.state = {
 			moving: false,
-			shelfHeight: localStorage.getItem('rundownView.inspectorDrawer.shelfHeight') || '50vh',
+			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
 			selectedTab: ShelfTabs.ADLIB
 		}
@@ -217,7 +217,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && (window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN)) {
 				stateChange = _.extend(stateChange, {
-					drawerHeight: (Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
+					shelfHeight: (Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
 				})
 				shouldBeExpanded = true
 			} else {
@@ -231,7 +231,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
-		localStorage.setItem('rundownView.inspectorDrawer.drawerHeight', this.state.shelfHeight)
+		localStorage.setItem('rundownView.shelf.shelfHeight', this.state.shelfHeight)
 	}
 
 	dragHandle = (e: MouseEvent) => {

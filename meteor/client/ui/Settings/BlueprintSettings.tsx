@@ -14,6 +14,7 @@ import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IProps {
 	match: {
@@ -84,9 +85,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								'content-type': 'text/javascript'
 							},
 						}).then(res => {
-							console.log('Blueprint restore success')
+							// console.log('Blueprint restore success')
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
 						}).catch(err => {
-							console.error('Blueprint restore failure: ', err)
+							// console.error('Blueprint restore failure: ', err)
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
 						})
 					}
 				},

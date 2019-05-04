@@ -60,7 +60,7 @@ describe('ClientAPI', () => {
 		})
 
 		it('Logs error messages when responseError is returned', () => {
-			Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.take, ...mockArgs)
+			const response = Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.take, ...mockArgs)
 
 			expect(mockMethods[UserActionAPI.methods.take]).toBeCalledTimes(1)
 
@@ -73,6 +73,7 @@ describe('ClientAPI', () => {
 			}
 			expect(logItem.method).toBe(UserActionAPI.methods.take)
 			expect(logItem.success).toBe(false)
+			expect(ClientAPI.isClientResponseSuccess(response)).toBe(false)
 			expect(logItem.userId).toBeDefined()
 			expect(logItem.errorMessage).toMatch(/^ClientResponseError: /)
 		})

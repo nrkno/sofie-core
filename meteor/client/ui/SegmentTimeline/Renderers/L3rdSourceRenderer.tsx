@@ -97,12 +97,12 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		}
 
 		return <React.Fragment>
-					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						<span className='segment-timeline__layer-item__label'>
+					<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+						<span className='segment-timeline__piece__label'>
 							{this.props.piece.name}
 						</span>
 					</span>
-					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+					<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 						{this.renderInfiniteIcon()}
 						{this.renderOverflowTimeLabel()}
 					</span>

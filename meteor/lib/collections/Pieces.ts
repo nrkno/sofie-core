@@ -23,7 +23,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	rundownId: string
 
 	/** Playback availability status */
-	status: RundownAPI.TakeItemStatusCode
+	status: RundownAPI.PieceStatusCode
 	/** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
 	duration?: number
 	/** A flag to signal a given Piece has been deactivated manually */

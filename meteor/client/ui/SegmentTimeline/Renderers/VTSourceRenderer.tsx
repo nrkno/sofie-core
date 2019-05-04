@@ -256,38 +256,38 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 					{this.renderInfiniteItemContentEnded()}
 					{this.state.scenes &&
 						this.state.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
-						<span className='segment-timeline__layer-item__scene-marker' key={i}
+						<span className='segment-timeline__piece__scene-marker' key={i}
 							style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.state.freezes &&
 						this.state.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
-						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start}
+						<span className='segment-timeline__piece__anomaly-marker' key={i.start}
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.state.blacks &&
 						this.state.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
-						<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start}
+						<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
-					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						<span className={ClassNames('segment-timeline__layer-item__label', {
+					<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+						<span className={ClassNames('segment-timeline__piece__label', {
 							'overflow-label': this.end !== ''
 						})}>
 							{this.begin}
 						</span>
 						{(this.begin && this.end === '' && vtContent && vtContent.loop) &&
-							(<div className='segment-timeline__layer-item__label label-icon'>
+							(<div className='segment-timeline__piece__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
 						}
 						{this.renderContentTrimmed()}
 					</span>
-					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+					<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 						{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
-							(<div className='segment-timeline__layer-item__label label-icon'>
+							(<div className='segment-timeline__piece__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
 						}
 						{this.renderInfiniteIcon()}
 						{this.renderOverflowTimeLabel()}
-						<span className='segment-timeline__layer-item__label last-words'>
+						<span className='segment-timeline__piece__label last-words'>
 							{this.end}
 						</span>
 					</span>

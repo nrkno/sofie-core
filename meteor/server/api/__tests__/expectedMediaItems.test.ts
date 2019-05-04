@@ -99,7 +99,7 @@ describe('Expected Media Items', () => {
 			partId: rdId + '_' + mockPart0,
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
-			status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			content: literal<VTContent>({
 				fileName: mockFileName0,
 				path: mockPath0,
@@ -140,7 +140,7 @@ describe('Expected Media Items', () => {
 			partId: rdId + '_' + mockPart1,
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
-			status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			content: literal<VTContent>({
 				fileName: mockFileName1,
 				path: mockPath1,
@@ -166,7 +166,7 @@ describe('Expected Media Items', () => {
 			partId: rdId + '_' + mockPart1,
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
-			status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			trigger: undefined,
 			content: literal<VTContent>({
 				fileName: mockFileName1,
@@ -255,7 +255,8 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(2)
 
-			rd.remove()
+			Rundowns.remove(rd._id)
+			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart1)
 
 			items = ExpectedMediaItems.find({
 				rundownId: rdId1,

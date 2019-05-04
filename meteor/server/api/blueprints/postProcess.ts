@@ -26,7 +26,7 @@ export function postProcessPieces (innerContext: IRundownContext, pieces: IBluep
 		let piece: Piece = {
 			rundownId: innerContext.rundown._id,
 			partId: partId,
-			status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
@@ -62,7 +62,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 			_id: innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`),
 			rundownId: innerContext.rundown._id,
 			partId: partId,
-			status: RundownAPI.TakeItemStatusCode.UNKNOWN,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			trigger: undefined,
 			disabled: false,
 			...itemOrig

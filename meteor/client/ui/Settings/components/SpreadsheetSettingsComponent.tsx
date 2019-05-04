@@ -48,11 +48,11 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 					'content-type': 'text/javascript'
 				}
 			}).then(res => {
-				console.log('Upload Credentials success')
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, 'Uploaded!', ''))
+				// console.log('Upload Credentials success')
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Spreadsheet credentials succesfully uploaded.'), 'SpreadsheetSettingsComponent'))
 			}).catch(err => {
-				console.error('Blueprint restore failure: ', err)
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, 'Error during upload: ' + err, ''))
+				//console.error('Blueprint restore failure: ', err)
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to upload spreadsheet credentials: {{errorMessage}}', { errorMessage: err + '' }), 'SpreadsheetSettingsComponent'))
 			})
 
 			// let uploadFileContents = (e2.target as any).result

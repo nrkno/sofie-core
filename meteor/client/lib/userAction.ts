@@ -35,7 +35,7 @@ export function doUserAction (
 		}
 
 		if (err) {
-			console.error(err)
+			// console.error(err) - this is a result of an error server-side. Will be logged, no reason to print it out to console
 			NotificationCenter.push(
 				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', { actionName: userActionMethodName(t, method) }), 'userAction')
 			)

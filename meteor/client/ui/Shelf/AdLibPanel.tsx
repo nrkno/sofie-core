@@ -28,9 +28,9 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
-	onSelectAdLib: (aSLine: AdLibPieceUi) => void
-	onToggleAdLib: (aSLine: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
-	selectedItem: AdLibPieceUi | undefined
+	onSelectAdLib: (piece: AdLibPieceUi) => void
+	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
+	selectedPart: AdLibPieceUi | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 	showStyleBase: ShowStyleBase
@@ -101,7 +101,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 				<tbody id={'adlib-panel__list-view__' + seg._id} key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
 					'live': seg.isLive,
 					'next': seg.isNext && !seg.isLive,
-					'past': seg.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
+					'past': seg.parts.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
 				})}>
 					<tr className='adlib-panel__list-view__list__seg-header'>
 						<td colSpan={9}>
@@ -109,7 +109,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						</td>
 					</tr>
 					{
-						seg.items && seg.items.
+						seg.pieces && seg.pieces.
 							filter((item) => {
 								if (!this.props.filter) return true
 								if (item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) return true
@@ -120,7 +120,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 									<AdLibListItem
 										key={item._id}
 										item={item}
-										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
 										layer={this.state.sourceLayers[item.sourceLayerId]}
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
@@ -224,8 +224,8 @@ export interface AdLibPieceUi extends AdLibPiece {
 
 export interface SegmentUi extends Segment {
 	/** Pieces belonging to this part */
-	segLines: Array<Part>
-	items?: Array<AdLibPieceUi>
+	parts: Array<Part>
+	pieces?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
 }
@@ -243,7 +243,7 @@ interface IProps {
 }
 
 interface IState {
-	selectedItem: AdLibPiece | undefined
+	selectedPart: AdLibPiece | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
@@ -270,9 +270,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	const uiSegments = props.rundown ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
-		seg.segLines = segSource.getParts()
-		let segmentAdLibItems: Array<AdLibPiece> = []
-		seg.segLines.forEach((part) => {
+		seg.parts = segSource.getParts()
+		let segmentAdLibPieces: Array<AdLibPiece> = []
+		seg.parts.forEach((part) => {
 			if (part._id === props.rundown.currentPartId) {
 				seg.isLive = true
 				liveSegment = seg
@@ -280,13 +280,13 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			if (part._id === props.rundown.nextPartId) {
 				seg.isNext = true
 			}
-			segmentAdLibItems = segmentAdLibItems.concat(part.getAdLibPieces())
+			segmentAdLibPieces = segmentAdLibPieces.concat(part.getAdLibPieces())
 		})
-		seg.items = segmentAdLibItems
+		seg.pieces = segmentAdLibPieces
 
 		// automatically assign hotkeys based on adLibItem index
 		if (seg.isLive) {
-			seg.items.forEach((item) => {
+			seg.pieces.forEach((item) => {
 				let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
 
 				if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
@@ -315,7 +315,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		super(props)
 
 		this.state = {
-			selectedItem: undefined,
+			selectedPart: undefined,
 			selectedSegment: undefined,
 			filter: undefined,
 			followLive: true
@@ -381,8 +381,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			e.preventDefault()
 		}
 
-		if (this.props.liveSegment && this.props.liveSegment.items) {
-			this.props.liveSegment.items.forEach((item) => {
+		if (this.props.liveSegment && this.props.liveSegment.pieces) {
+			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
@@ -412,28 +412,28 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	onSelectAdLib = (aSLine: AdLibPieceUi) => {
+	onSelectAdLib = (piece: AdLibPieceUi) => {
 		// console.log(aSLine)
 		this.setState({
-			selectedItem: aSLine
+			selectedPart: piece
 		})
 	}
 
-	onToggleAdLib = (aSLine: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (aSLine.invalid) {
+		if (piece.invalid) {
 			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
 			return
 		}
 
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[aSLine.sourceLayerId] &&
-			!this.props.sourceLayerLookup[aSLine.sourceLayerId].isQueueable) {
-			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
+			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
+			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, aSLine._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false])
 		}
 	}
 
@@ -459,7 +459,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 				<li className={ClassNames('adlib-panel__segments__segment', {
 					'live': item.isLive,
 					'next': item.isNext && !item.isLive,
-					'past': item.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
+					'past': item.parts.reduce((memo, part) => { return part.startedPlayback && part.duration ? memo : false }, true) === true
 				})} onClick={(e) => this.onSelectSegment(item)} key={item._id} tabIndex={0}>
 					{item.name}
 				</li>
@@ -480,7 +480,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					uiSegments={this.props.uiSegments}
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
-					selectedItem={this.state.selectedItem}
+					selectedPart={this.state.selectedPart}
 					selectedSegment={this.state.selectedSegment}
 					showStyleBase={this.props.showStyleBase}
 					filter={this.state.filter} />
