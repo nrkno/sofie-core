@@ -438,10 +438,7 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 				const durations: RundownTiming.RundownTimingContext
 					= this.context.durations
 
-				const allProps: WithTiming<IProps> = Object.assign({
-					timingDurations: durations
-				}, this.props)
-				return <WrappedComponent { ...allProps } />
+				return <WrappedComponent {...this.props} timingDurations={durations} />
 			}
 		}
 	}
