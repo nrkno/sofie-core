@@ -44,12 +44,12 @@ methods[PlayoutAPI.methods.rundownActivateHold] = (rundownId: string) => {
 methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownId: string, undo?: boolean) => {
 	return ServerPlayoutAPI.disableNextPiece(rundownId, undo)
 }
-methods[PlayoutAPI.methods.partPlaybackStartedCallback] = (rundownId: string, partId: string, startedPlayback: number) => {
-	return ServerPlayoutAPI.onPartPlaybackStarted(rundownId, partId, startedPlayback)
-}
-methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
-	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
-}
+// methods[PlayoutAPI.methods.partPlaybackStartedCallback] = (rundownId: string, partId: string, startedPlayback: number) => {
+// 	return ServerPlayoutAPI.onPartPlaybackStarted(rundownId, partId, startedPlayback)
+// }
+// methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
+// 	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
+// }
 methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownId: string, partId: string, pieceId: string, queue: boolean) => {
 	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, pieceId, queue)
 }
