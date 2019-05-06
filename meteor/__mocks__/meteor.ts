@@ -41,10 +41,10 @@ namespace Meteor {
 }
 const $ = {
 	Error,
-	get setTimeout () { return setTimeout },
-	get setInterval () { return setInterval },
-	get clearTimeout () { return clearTimeout },
-	get clearInterval () { return clearInterval },
+	get setTimeout (): Function { return setTimeout },
+	get setInterval (): Function { return setInterval },
+	get clearTimeout (): Function { return clearTimeout },
+	get clearInterval (): Function { return clearInterval },
 }
 
 const mockThis = {

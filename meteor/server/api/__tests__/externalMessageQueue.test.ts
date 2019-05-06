@@ -144,9 +144,14 @@ describe('Test external message queue', () => {
 		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, true, (err: Error) => {
 			expect(err).toBeFalsy()
 		})
+
+		jest.runOnlyPendingTimers()
+
 		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, false, (err: Error) => {
 			expect(err).toBeFalsy()
 		})
+
+		jest.runOnlyPendingTimers()
 	})
 
 	testInFiber('remove', () => {
