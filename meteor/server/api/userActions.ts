@@ -66,7 +66,8 @@ export function take (rundownId: string): ClientAPI.ClientResponse {
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 			}
 		} else {
-			throw new Meteor.Error(404, `Part "${rundown.currentPartId}", set as currentPart in "${rundownId}", not found!`)
+			// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
+			logger.error(`Part "${rundown.currentPartId}", set as currentPart in "${rundownId}", not found!`)
 		}
 	}
 	return ServerPlayoutAPI.takeNextPart(rundown._id)
