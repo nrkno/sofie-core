@@ -362,7 +362,7 @@ export interface WithTimingOptions {
 	isHighResolution?: boolean
 	filter?: string | any[]
 }
-export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps
+export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & { children?: React.ReactNode }
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
 
 /**
