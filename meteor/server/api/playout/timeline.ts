@@ -328,7 +328,7 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 					_id: '', // set later
 					studioId: o.studioId,
 					objectType: o.objectType,
-					inGroup: o._id
+					inGroup: o.id
 				}
 				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o._id})`, childFixed)
 				childFixed._id = getTimelineId(childFixed)
@@ -604,7 +604,7 @@ function createPartGroupFirstObject (
 			type: TimelineContentTypeOther.NOTHING,
 		},
 		// isGroup: true,
-		inGroup: partGroup._id,
+		inGroup: partGroup.id,
 		partId: part._id,
 		classes: (part.classes || []).concat(previousPart ? previousPart.classesForNext || [] : [])
 	})
@@ -740,7 +740,7 @@ function transformPartIntoTimeline (
 						...o,
 						_id: '', // set later
 						studioId: '', // set later
-						inGroup: partGroup ? pieceGroup._id : undefined,
+						inGroup: partGroup ? pieceGroup.id : undefined,
 						rundownId: rundown._id,
 						objectType: TimelineObjType.RUNDOWN
 					})

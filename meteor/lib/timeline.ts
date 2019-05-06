@@ -19,8 +19,8 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			)
 	   )
 
-	   if (!transformedObj.content) transformedObj.content = {}
-	   if (!transformedObj.content.objects) transformedObj.content.objects = []
+		if (!transformedObj.content) transformedObj.content = {}
+		if (!transformedObj.content.objects) transformedObj.content.objects = []
 
 		if (obj['partId']) {
 			// Will cause a callback to be called, when the object starts to play:

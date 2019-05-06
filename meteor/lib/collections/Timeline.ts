@@ -28,7 +28,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	trigger: TimelineTypes.TimelineTrigger & {
 		setFromNow?: boolean
 	}
-
+	/** The id of the group object this object is in  */
 	inGroup?: string
 
 	metadata?: {

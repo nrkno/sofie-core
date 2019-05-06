@@ -105,7 +105,7 @@ export function createPieceGroupFirstObject (
 			type: TimelineContentTypeOther.NOTHING,
 		},
 		classes: firstObjClasses,
-		inGroup: pieceGroup._id,
+		inGroup: pieceGroup.id,
 		pieceId: piece._id,
 	})
 }
@@ -122,7 +122,7 @@ export function createPieceGroup (
 			type: TimelineContentTypeOther.GROUP,
 			objects: []
 		},
-		inGroup: partGroup && partGroup._id,
+		inGroup: partGroup && partGroup.id,
 		isGroup: true,
 		rundownId: item.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
