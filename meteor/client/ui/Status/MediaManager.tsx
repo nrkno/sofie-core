@@ -227,7 +227,7 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 				</VelocityReact.VelocityComponent>
 			</div>
 			<div className='workflow__header__summary'>
-				{i.comment ?
+				{(i.comment && i.name !== i.comment) ?
 					<div className='workflow__header__name'>
 						<span className='workflow__header__name__name'>{i.name || 'Unnamed Workflow'}</span>
 						<span className='workflow__header__name__comment'>{i.comment}</span>
