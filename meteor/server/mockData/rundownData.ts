@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -10,6 +10,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
 import { Parts } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
+import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -71,5 +72,11 @@ setMeteorMethods({
 		updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd)
 
 		logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
+	},
+
+	'debug_recreateExpectedMediaItems' () {
+		const rundowns = Rundowns.find().fetch()
+
+		rundowns.map((i) => updateExpectedMediaItemsOnRundown(i._id))
 	}
 })
