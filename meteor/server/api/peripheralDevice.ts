@@ -133,7 +133,8 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 	export const timelineTriggerTime = syncFunction(function timelineTriggerTime (id: string, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+		if (!peripheralDevice) throw new Meteor.Error(404, `peripheralDevice "${id}" not found!`)
+		if (!peripheralDevice.studioId) throw new Meteor.Error(401, `peripheralDevice "${id}" not attached to a studio`)
 
 		// check(r.time, Number)
 		check(results, Array)
@@ -163,10 +164,9 @@ export namespace ServerPeripheralDeviceAPI {
 				}},{
 					multi: true
 				})
-			}
 
-			// Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
-			ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(o.id, o.time)
+				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj._id, o.time)
+			}
 		})
 
 		// After we've updated the timeline, we must call afterUpdateTimeline!

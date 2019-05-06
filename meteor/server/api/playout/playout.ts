@@ -14,7 +14,7 @@ import { getCurrentTime,
 	asyncCollectionUpsert,
 	waitForPromise,
 	makePromise} from '../../../lib/lib'
-import { Timeline } from '../../../lib/collections/Timeline'
+import { Timeline, getTimelineId } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -1074,11 +1074,11 @@ export namespace ServerPlayoutAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
+	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObjId: string, time: number) {
 		check(timelineObjId, String)
 		check(time, Number)
 
-		const tObj = Timeline.findOne(timelineObjId)
+		const tObj = Timeline.findOne(getTimelineId(studioId, timelineObjId))
 		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
 
 		if (tObj.metadata && tObj.metadata.pieceId) {

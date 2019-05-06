@@ -44,12 +44,12 @@ methods[PlayoutAPI.methods.rundownActivateHold] = (rundownId: string) => {
 methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownId: string, undo?: boolean) => {
 	return ServerPlayoutAPI.disableNextPiece(rundownId, undo)
 }
-methods[PlayoutAPI.methods.partPlaybackStartedCallback] = (rundownId: string, partId: string, startedPlayback: number) => {
-	return ServerPlayoutAPI.onPartPlaybackStarted(rundownId, partId, startedPlayback)
-}
-methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
-	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
-}
+// methods[PlayoutAPI.methods.partPlaybackStartedCallback] = (rundownId: string, partId: string, startedPlayback: number) => {
+// 	return ServerPlayoutAPI.onPartPlaybackStarted(rundownId, partId, startedPlayback)
+// }
+// methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
+// 	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
+// }
 methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownId: string, partId: string, pieceId: string, queue: boolean) => {
 	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, pieceId, queue)
 }
@@ -62,9 +62,9 @@ methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownId: string, partId: 
 methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownId: string, partId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownId, partId, sourceLayerId)
 }
-methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: string, time: number) => {
-	return ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(timelineObjId, time)
-}
+// methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: string, time: number) => {
+// 	return ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(timelineObjId, time)
+// }
 methods[PlayoutAPI.methods.sourceLayerStickyPieceStart] = (rundownId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownId, sourceLayerId)
 }
