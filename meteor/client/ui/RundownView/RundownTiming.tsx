@@ -268,7 +268,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
 				)) {
 					this.displayDurationGroups[part.displayDurationGroup] = (this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
-					displayDuration = Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) || this.displayDurationGroups[part.displayDurationGroup]
+					displayDuration = Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) || this.displayDurationGroups[part.displayDurationGroup] || this.props.defaultDuration || 3000
 					memberOfDisplayDurationGroup = true
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
@@ -362,10 +362,7 @@ export interface WithTimingOptions {
 	isHighResolution?: boolean
 	filter?: string | any[]
 }
-
-export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & {
-	children?: React.ReactNode
-}
+export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
 
 /**
