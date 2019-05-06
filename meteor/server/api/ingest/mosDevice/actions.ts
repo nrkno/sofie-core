@@ -19,7 +19,7 @@ export namespace MOSDeviceActions {
 					cb(err)
 				} else {
 					try {
-						logger.info('triggerGetRundown reply ' + mosRunningOrder.ID)
+						logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID)
 						logger.debug(mosRunningOrder)
 
 						handleMosRundownData(peripheralDevice, mosRunningOrder, false)
@@ -28,7 +28,7 @@ export namespace MOSDeviceActions {
 						cb(e)
 					}
 				}
-			}, 'triggerGetRundown', rundown.externalId)
+			}, 'triggerGetRunningOrder', rundown.externalId)
 		}
 	)
 	export function notifyCurrentPlayingPart (
