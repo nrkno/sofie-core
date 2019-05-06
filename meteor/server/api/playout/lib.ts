@@ -232,6 +232,13 @@ function resetPart (part: DBPart): Promise<void> {
 	}, {
 		multi: true
 	}))
+	// remove parts that have been dynamically queued for after this part (queued adLibs)
+	ps.push(asyncCollectionRemove(Parts, {
+		rundownId: part.rundownId,
+		afterPart: part._id,
+		dynamicallyInserted: true
+	}))
+
 	// Remove all pieces that have been dynamically created (such as adLib pieces)
 	ps.push(asyncCollectionRemove(Pieces, {
 		rundownId: part.rundownId,

@@ -174,7 +174,7 @@ export namespace ServerPlayoutAdLibAPI {
 			rundownId: rundown._id,
 			title: adLibPiece.name,
 			dynamicallyInserted: true,
-			afterPart: part._id,
+			afterPart: part.afterPart || part._id,
 			typeVariant: 'adlib'
 		})
 
