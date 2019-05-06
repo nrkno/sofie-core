@@ -208,6 +208,15 @@ export namespace MeteorMock {
 
 	}
 	*/
+	// -- Mock functions: --------------------------
+	/**
+	 * Run the Meteor.startup() functions
+	 */
+	export function mockRunMeteorStartup () {
+		_.each(mockStartupFunctions, fcn => {
+			fcn()
+		})
+	}
 }
 export function setup () {
 	return {
