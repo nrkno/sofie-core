@@ -106,7 +106,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 	}
 	renderPart () {
 		return (
-			<div className='segment-timeline__part' data-mos-id={this.props.part ? this.props.part._id : '(NONE)'}>
+			<div className='segment-timeline__part' data-obj-id={this.props.part ? this.props.part._id : '(NONE)'}>
 				{this.renderOutputGroups()}
 			</div>
 		)

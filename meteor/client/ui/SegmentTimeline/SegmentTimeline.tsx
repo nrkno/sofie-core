@@ -520,7 +520,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					'has-guest-items': this.props.hasGuestItems,
 					'has-remote-items': this.props.hasRemoteItems
 				})}
-			data-mos-id={this.props.segment._id} ref={this.setSegmentRef}>
+			data-obj-id={this.props.segment._id} ref={this.setSegmentRef}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'
 					collect={this.getSegmentContext}
 					attributes={{

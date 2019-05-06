@@ -409,7 +409,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					'invalid': this.props.part.invalid,
 
 					'duration-settling': this.state.isDurationSettling
-				})} data-mos-id={this.props.part._id}
+				})} data-obj-id={this.props.part._id}
 					id={SegmentTimelineLineElementId + this.props.part._id}
 					style={this.getLayerStyle()}
 				>
@@ -497,7 +497,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				<div className={ClassNames('segment-timeline__part', {
 					'live': this.state.isLive,
 					'next': this.state.isNext
-				})} data-mos-id={this.props.part._id}
+				})} data-obj-id={this.props.part._id}
 					style={this.getLayerStyle()}
 				>
 					{ /* render it empty, just to take up space */ }

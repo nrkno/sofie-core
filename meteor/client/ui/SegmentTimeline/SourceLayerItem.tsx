@@ -480,7 +480,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 					'disabled': this.props.piece.disabled
 				})}
-					data-mos-id={this.props.piece._id}
+					data-obj-id={this.props.piece._id}
 					ref={this.setRef}
 					onClick={this.itemClick}
 					onDoubleClick={this.itemDblClick}
@@ -528,7 +528,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 			return (
 				<div className='segment-timeline__piece'
-					data-mos-id={this.props.piece._id}
+					data-obj-id={this.props.piece._id}
 					ref={this.setRef}
 					style={this.getItemStyle()}>
 				</div>
