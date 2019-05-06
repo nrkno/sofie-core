@@ -19,20 +19,20 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	_.each(studio.mappings || {}, (m, l) => {
 
-		const res = findLookaheadForLLayer(rundownData, l, m.lookahead)
-		if (res.length === 0) {
+		const lookaheadObjs = findLookaheadForLLayer(rundownData, l, m.lookahead)
+		if (lookaheadObjs.length === 0) {
 			return
 		}
 
-		for (let i = 0; i < res.length; i++) {
-			const r = clone(res[i].obj) as TimelineObjGeneric
+		for (let i = 0; i < lookaheadObjs.length; i++) {
+			const r = clone(lookaheadObjs[i].obj) as TimelineObjGeneric
 
 			let trigger: TimelineTrigger = {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: 1 // Absolute 0 without a group doesnt work
 			}
 			if (i !== 0) {
-				const prevObj = res[i - 1].obj
+				const prevObj = lookaheadObjs[i - 1].obj
 				const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
 				// Start with previous piece
@@ -44,10 +44,10 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			}
 			if (!r.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			r.id = 'lookahead_' + i + '_' + r.id
+			r.id = `lookahead_${i}_${r.id}`
 			r.priority = 0.1
-			const finiteDuration = res[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && res[i].partId === activeRundown.nextPartId)
-			r.duration = finiteDuration ? `#${res[i].obj.id}.start - #.start` : 0
+			const finiteDuration = lookaheadObjs[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activeRundown.nextPartId)
+			r.duration = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start - #.start` : 0
 			r.trigger = trigger
 			r.isBackground = true
 			delete r.inGroup // force it to be cleared
@@ -253,7 +253,13 @@ export function findLookaheadForLLayer (
 
 				const transObj = orderedItems.find(i => !!i.isTransition)
 				const transObj2 = transObj ? pieceGroup.pieces.find(l => l._id === transObj._id) : undefined
-				const hasTransition = allowTransition && transObj2 && transObj2.content && transObj2.content.timelineObjects && transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
+				const hasTransition = (
+					allowTransition &&
+					transObj2 &&
+					transObj2.content &&
+					transObj2.content.timelineObjects &&
+					transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
+				)
 
 				const res: TimelineObjRundown[] = []
 				orderedItems.forEach(i => {
@@ -267,7 +273,12 @@ export function findLookaheadForLLayer (
 					}
 
 					// If there is a transition and this piece is abs0, it is assumed to be the primary piece and so does not need lookahead
-					if (hasTransition && !i.isTransition && piece.trigger.type === TriggerType.TIME_ABSOLUTE && piece.trigger.value === 0) {
+					if (
+						hasTransition &&
+						!i.isTransition &&
+						piece.trigger.type === TriggerType.TIME_ABSOLUTE &&
+						piece.trigger.value === 0
+					) {
 						return
 					}
 
@@ -290,11 +301,11 @@ export function findLookaheadForLLayer (
 		return allObjs
 	}
 
-	const res: {obj: TimelineObjRundown, partId: string}[] = []
+	const lookaheadObjs: {obj: TimelineObjRundown, partId: string}[] = []
 
 	const partId = pieceGroup.partId
 	const objs = findObjectForPart()
-	objs.forEach(o => res.push({ obj: o, partId: partId }))
+	objs.forEach(o => lookaheadObjs.push({ obj: o, partId: partId }))
 
 	// this is the current one, so look ahead to next to find the next thing to preload too
 	if (pieceGroup && pieceGroup.partId === activeRundown.currentPartId) {
@@ -311,9 +322,9 @@ export function findLookaheadForLLayer (
 		if (pieceGroup) {
 			const partId2 = pieceGroup.partId
 			const objs2 = findObjectForPart()
-			objs2.forEach(o => res.push({ obj: o, partId: partId2 }))
+			objs2.forEach(o => lookaheadObjs.push({ obj: o, partId: partId2 }))
 		}
 	}
 
-	return res
+	return lookaheadObjs
 }
