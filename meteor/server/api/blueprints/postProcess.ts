@@ -41,7 +41,7 @@ export function postProcessPieces (innerContext: IRundownContext, pieces: IBluep
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const obj = convertTimelineObject(innerContext.rundown._id, o)
 
-				if (!obj.id) obj.id = innerContext.getHashId(blueprintId + '_' + (i++))
+				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_' + (i++))
 
 				if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(obj.id) + '")')
 				timelineUniqueIds[obj.id] = true
@@ -78,7 +78,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const obj = convertTimelineObject(innerContext.rundown._id, o)
 
-				if (!obj.id) obj.id = innerContext.getHashId(blueprintId + '_adlib_' + (i++))
+				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_adlib_' + (i++))
 
 				if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(obj.id) + '")')
 				timelineUniqueIds[obj.id] = true
