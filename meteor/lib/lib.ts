@@ -775,6 +775,10 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 						ok = (s.$in.indexOf(oAttr) !== -1)
 					} else if (_.has(s,'$nin')) {
 						ok = (s.$nin.indexOf(oAttr) === -1)
+					} else if (_.has(s,'$not')) {
+						let innerSelector: any = {}
+						innerSelector[key] = s.$not
+						ok = !mongoWhere(o, innerSelector)
 					} else {
 						if (_.isObject(oAttr)) {
 							ok = mongoWhere(oAttr, s)
