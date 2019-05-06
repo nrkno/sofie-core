@@ -99,6 +99,10 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
+		if (status.statusCode < PeripheralDeviceAPI.StatusCode.UNKNOWN ||
+			status.statusCode > PeripheralDeviceAPI.StatusCode.FATAL) {
+			throw new Meteor.Error(400, 'device status code is not known')
+		}
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")

@@ -209,8 +209,8 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('killProcess with a rundown present', () => { // test this does not shutdown because Rundown stored
 		setLoggerLevel('debug')
 		try {
-			let killed = Meteor.call(PeripheralDeviceAPI.methods.killProcess, device._id, device.token, true)
-			expect(killed).toBe(false)
+			Meteor.call(PeripheralDeviceAPI.methods.killProcess, device._id, device.token, true)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[400] Unable to run killProcess: Rundowns not empty!`)
 		}
@@ -224,7 +224,7 @@ describe('test peripheralDevice general API methods', () => {
 			expect(result).toBe('european')
 			throwPlease = true
 			Meteor.call(PeripheralDeviceAPI.methods.testMethod, device._id, device.token, 'european', throwPlease)
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			if (throwPlease) {
 				expect(e.message).toBe('[418] Error thrown, as requested')
@@ -246,7 +246,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		try {
 			Meteor.call(PeripheralDeviceAPI.methods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[400] can only request user auth token for peripheral device of spreadsheet type')
 		}
@@ -269,7 +269,7 @@ describe('test peripheralDevice general API methods', () => {
 		setLoggerLevel('debug')
 		try {
 			Meteor.call(PeripheralDeviceAPI.methods.storeAccessToken, device._id, device.token, 'http://auth.url/')
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[400] can only store access token for peripheral device of spreadsheet type')
 		}
@@ -291,8 +291,58 @@ describe('test peripheralDevice general API methods', () => {
 		setLoggerLevel('debug')
 		Meteor.call(PeripheralDeviceAPI.methods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
+
+		device = setupDefaultStudioEnvironment().device
+		expect(PeripheralDevices.findOne()).toBeTruthy()
 	})
 
+	testInFiber('initialize with bad arguments', () => {
+		let options: PeripheralDeviceAPI.InitOptions = {
+			category: PeripheralDeviceAPI.DeviceCategory.INGEST,
+			type: PeripheralDeviceAPI.DeviceType.MOS,
+			subType: 'mos_connection',
+			name: 'test',
+			connectionId: 'test'
+		}
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.initialize, 'wibbly', device.token, options)
+			fail('expected to throw')
+		} catch (e) {
+			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
+		}
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token.slice(0, -1), options)
+			fail('expected to throw')
+		} catch (e) {
+			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`)
+		}
+
+	})
+
+	testInFiber('setStatus with bad arguments', () => {
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.setStatus, 'wibbly', device.token, { statusCode: 0 })
+			fail('expected to throw')
+		} catch (e) {
+			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
+		}
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token.slice(0, -1), { statusCode: 0 })
+			fail('expected to throw')
+		} catch (e) {
+			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`)
+		}
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token, { statusCode: 42 })
+			fail('expected to throw')
+		} catch (e) {
+			expect(e.message).toBe(`[400] device status code is not known`)
+		}
+
+	})
 	// it('peripheralDevice.initialize() with bad arguments', async function () {
 	// 	let deviceId = Random.id()
 	// 	let token = Random.id()
