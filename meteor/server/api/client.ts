@@ -63,6 +63,7 @@ export namespace ServerClientAPI {
 		} catch (e) {
 			// console.log('eeeeeeeeeeeeeee')
 			// allow the exception to be handled by the Client code
+			logger.error(`Error in ${methodName}`)
 			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 			logger.error(errMsg + '\n' + (e.stack || ''))
 			UserActionsLog.update(actionId, {$set: {
