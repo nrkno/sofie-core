@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { MeteorMock } from '../../../__mocks__/meteor'
 import { queueExternalMessages } from '../ExternalMessageQueue'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import {
@@ -25,6 +26,8 @@ import { runInFiber } from '../../../__mocks__/Fibers'
 import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue', () => {
+
+	jest.useFakeTimers()
 
 	let studioEnv = setupDefaultStudioEnvironment()
 	let rundown: Rundown
@@ -132,6 +135,20 @@ describe('Test external message queue', () => {
 		}
 	})
 
+	testInFiber('setRunMessageQueue', () => {
+		setLoggerLevel('debug')
+		MeteorMock.mockRunMeteorStartup()
+
+		jest.runOnlyPendingTimers()
+
+		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, true, (err: Error) => {
+			expect(err).toBeFalsy()
+		})
+		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, false, (err: Error) => {
+			expect(err).toBeFalsy()
+		})
+	})
+
 	testInFiber('remove', () => {
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
@@ -139,15 +156,6 @@ describe('Test external message queue', () => {
 		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
-	})
-
-	testInFiber('setRunMessageQueue', () => {
-		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, true, (err: Error) => {
-			expect(err).toBeFalsy()
-		})
-		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, false, (err: Error) => {
-			expect(err).toBeFalsy()
-		})
 	})
 
 	testInFiber('add a soap-type message', () => {

@@ -77,10 +77,11 @@ export function triggerdoMessageQueue (time?: number) {
 	}
 }
 Meteor.startup(() => {
+	console.log('Starting up message queue', runMessageQueue, triggerdoMessageQueueTimeout, setTimeout.toString())
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue () {
-	// console.log('doMessageQueue')
+	console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000 // 1 minute
 	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false

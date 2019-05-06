@@ -1,4 +1,4 @@
-import _ from 'underscore'
+import * as _ from 'underscore'
 import { Fiber, runInFiber } from './Fibers'
 
 namespace Meteor {
@@ -41,10 +41,10 @@ namespace Meteor {
 }
 const $ = {
 	Error,
-	setTimeout,
-	setInterval,
-	clearTimeout,
-	clearInterval,
+	get setTimeout () { return setTimeout },
+	get setInterval () { return setInterval },
+	get clearTimeout () { return clearTimeout },
+	get clearInterval () { return clearInterval },
 }
 
 const mockThis = {
@@ -213,6 +213,7 @@ export namespace MeteorMock {
 	 * Run the Meteor.startup() functions
 	 */
 	export function mockRunMeteorStartup () {
+		console.log('>>>', _)
 		_.each(mockStartupFunctions, fcn => {
 			fcn()
 		})

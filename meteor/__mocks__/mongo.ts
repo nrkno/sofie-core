@@ -69,6 +69,9 @@ export namespace MongoMock {
 							// stub
 						}
 					}
+				},
+				forEach (f) {
+					docs.forEach(f)
 				}
 			}
 		}
@@ -162,6 +165,9 @@ export namespace MongoMock {
 			}
 		}
 
+		_ensureIndex (obj: any) {
+			// todo
+		}
 		allow () {
 			// todo
 		}
