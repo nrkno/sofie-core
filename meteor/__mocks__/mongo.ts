@@ -1,9 +1,18 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath, mongoWhere } from '../lib/lib'
+import { pushOntoPath, setOntoPath, mongoWhere, literal } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
+import { Mongo } from 'meteor/mongo'
+import { Random } from 'meteor/random'
+import { Meteor } from 'meteor/meteor'
 const clone = require('fast-clone')
+
+interface ObserverEntry {
+	id: string
+	callbacks: Mongo.ObserveChangesCallbacks
+	query: any
+}
 
 export namespace MongoMock {
 	export interface MockCollections<T extends CollectionObject> {
@@ -23,6 +32,7 @@ export namespace MongoMock {
 		private localName: string
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
+		private observers: ObserverEntry[] = []
 
 		constructor (localName: string, options: any) {
 			this.localName = localName
@@ -38,6 +48,8 @@ export namespace MongoMock {
 				[this.documents[query._id]] :
 				_.filter(docsArray, (doc) => mongoWhere(doc, query))
 			))
+
+			const observers = this.observers
 
 			return {
 				_fetchRaw: () => {
@@ -63,10 +75,18 @@ export namespace MongoMock {
 						}
 					}
 				},
-				observeChanges (clbs) {
+				observeChanges (clbs: Mongo.ObserveChangesCallbacks) { // todo - finish implementing uses of callbacks
+					const id = Random.id(5)
+					observers.push(literal<ObserverEntry>({
+						id: id,
+						callbacks: clbs,
+						query: query
+					}))
 					return {
 						stop () {
-							// stub
+							const index = observers.findIndex(o => o.id === id)
+							if (index === -1) throw new Meteor.Error(500, 'Cannot stop observer that is not registered')
+							observers.splice(index, 1)
 						}
 					}
 				},
@@ -127,7 +147,21 @@ export namespace MongoMock {
 				if (this.documents[d._id]) {
 					throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
 				}
+
 				this.documents[d._id] = d
+
+				_.each(this.observers, obs => {
+					if (mongoWhere(d, obs.query)) {
+						const fields = _.keys(_.omit(d, '_id'))
+						if (obs.callbacks.addedBefore) {
+							obs.callbacks.addedBefore(d._id, fields, null as any)
+						}
+						if (obs.callbacks.added) {
+							obs.callbacks.added(d._id, fields)
+						}
+					}
+				})
+
 				if (cb) cb(undefined, d._id)
 				else return d._id
 			} catch (error) {

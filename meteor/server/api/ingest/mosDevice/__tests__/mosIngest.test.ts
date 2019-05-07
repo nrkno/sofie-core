@@ -11,10 +11,9 @@ import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Segments, DBSegment } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
-const clone = require('fast-clone')
+import { literal } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
-import { literal, partialExceptId } from '../../../../../lib/lib';
 
 require('../api.ts') // include in order to create the Meteor methods needed
 

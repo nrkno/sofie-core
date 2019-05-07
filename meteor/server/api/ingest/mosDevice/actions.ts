@@ -7,6 +7,7 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { parseMosString } from './lib'
 
 export namespace MOSDeviceActions {
 	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => void = Meteor.wrapAsync(
@@ -21,6 +22,10 @@ export namespace MOSDeviceActions {
 					try {
 						logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID)
 						logger.debug(mosRunningOrder)
+
+						if (parseMosString(mosRunningOrder.ID) !== rundown.externalId) {
+							throw new Meteor.Error(401, `Expected triggerGetRunningOrder reply for ${rundown.externalId} but got ${parseMosString(mosRunningOrder.ID)}`)
+						}
 
 						handleMosRundownData(peripheralDevice, mosRunningOrder, false)
 						cb(null)

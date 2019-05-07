@@ -7,17 +7,17 @@ import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
 
 export function getRundownIdFromMosRO (studio: Studio, runningOrderMosId: MOS.MosString128) {
 	if (!runningOrderMosId) throw new Meteor.Error(401, 'parameter runningOrderMosId missing!')
-	return getRundownId(studio, runningOrderMosId.toString())
+	return getRundownId(studio, parseMosString(runningOrderMosId))
 }
 
 export function getRundownFromMosRO (studio: Studio, runningOrderMosId: MOS.MosString128) {
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
-	return getRundown(rundownId, runningOrderMosId.toString())
+	return getRundown(rundownId, parseMosString(runningOrderMosId))
 }
 
 export function getPartIdFromMosStory (rundownId: string, partMosId: MOS.MosString128) {
 	if (!partMosId) throw new Meteor.Error(401, 'parameter partMosId missing!')
-	return getPartId(rundownId, partMosId.toString())
+	return getPartId(rundownId, parseMosString(partMosId))
 }
 
 export function getSegmentExternalId (rundownId: string, ingestPart: IngestPart, rank: number) {
@@ -41,4 +41,9 @@ export function fixIllegalObject (o: any) {
 			fixIllegalObject(val)
 		})
 	}
+}
+
+export function parseMosString (str: MOS.MosString128) {
+	if (!str) throw new Meteor.Error(401, 'parameter missing!')
+	return str['_str'] || str.toString()
 }

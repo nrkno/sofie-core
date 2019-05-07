@@ -2,12 +2,13 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown } from '../lib'
+import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
 	getSegmentExternalId,
-	fixIllegalObject
+	fixIllegalObject,
+	parseMosString
 } from './lib'
 import { literal, asyncCollectionUpdate } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
@@ -33,13 +34,13 @@ function storiesToIngestParts (rundownId: string, stories: MOS.IMOSStory[], unde
 	return _.map(stories, (s, i) => {
 		if (!s) return null
 
-		const name = (s.Slug ? s.Slug.toString() : '')
+		const name = (s.Slug ? parseMosString(s.Slug) : '')
 		return {
-			externalId: s.ID.toString(),
+			externalId: parseMosString(s.ID),
 			partId: getPartIdFromMosStory(rundownId, s.ID),
 			segmentName: name.split(';')[0],
 			ingest: literal<IngestPart>({
-				externalId: s.ID.toString(),
+				externalId: parseMosString(s.ID),
 				name: name,
 				rank: i,
 				payload: undefinedPayload ? undefined : {},
@@ -89,7 +90,7 @@ export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRun
 
 		// If this is a reload of a RO, then use cached data to make the change more seamless
 		if (!createFresh) {
-			const partIds = _.map(parts, s => s.externalId)
+			const partIds = _.map(parts, p => p.partId)
 			const partCache = IngestDataCache.find({
 				rundownId: rundownId,
 				partId: { $in: partIds },
@@ -97,7 +98,11 @@ export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRun
 			}).fetch()
 
 			const partCacheMap: { [id: string]: IngestPart } = {}
-			_.each(partCache, p => partCacheMap[p._id] = p.data as IngestPart)
+			_.each(partCache, p => {
+				if (p.partId) {
+					partCacheMap[p.partId] = p.data as IngestPart
+				}
+			})
 
 			_.each(parts, s => {
 				const cached = partCacheMap[s.partId]
@@ -110,8 +115,8 @@ export function handleMosRundownData (peripheralDevice: PeripheralDevice, mosRun
 		const ingestSegments = groupedPartsToSegments(rundownId, groupedStories)
 
 		const ingestRundown = literal<IngestRundown>({
-			externalId: mosRunningOrder.ID.toString(),
-			name: mosRunningOrder.Slug.toString(),
+			externalId: parseMosString(mosRunningOrder.ID),
+			name: parseMosString(mosRunningOrder.Slug),
 			type: 'mos',
 			segments: ingestSegments,
 			payload: mosRunningOrder
@@ -125,7 +130,7 @@ export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, mo
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrderBase.ID)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId, mosRunningOrderBase.ID.toString())
+		const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
 		if (!canBeUpdated(rundown)) return // TODO - more stuff in this file need this guard?
 
 		// Load the blueprint to process the data
@@ -164,14 +169,14 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundownId, cachedPartData.segmentId)
 
 		const ingestPart: IngestPart = cachedPartData.data
-		ingestPart.name = story.Slug ? story.Slug.toString() : ''
+		ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
 		ingestPart.payload = story
 
 		// Need the raw id, not the hashed copy
 		const segmentId = getSegmentExternalId(rundownId, ingestPart, ingestSegment.rank)
 
 		// Update db with the full story:
-		handleUpdatedPartInner(studio, rundownId, runningOrderExternalId.toString(), segmentId, ingestPart)
+		handleUpdatedPartInner(studio, rundownId, parseMosString(runningOrderExternalId), segmentId, ingestPart)
 	})
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, stories: Array<MOS.MosString128>) {
@@ -181,14 +186,14 @@ export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runnin
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId, runningOrderMosId.toString())
+		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
 		const ingestRundown = loadCachedRundownData(rundown._id)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 		const ingestPartIds = _.map(ingestParts, part => part.externalId)
 
-		const storyIds = _.map(stories, s => s.toString())
+		const storyIds = _.map(stories, parseMosString)
 		const missingIds = _.filter(storyIds, id => ingestPartIds.indexOf(id) === -1)
 		if (missingIds.length > 0) {
 			throw new Meteor.Error(404, `Parts ${missingIds.join(', ')} in rundown ${rundown.externalId} were not found`)
@@ -220,13 +225,13 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId, runningOrderMosId.toString())
+		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
 		const ingestRundown = loadCachedRundownData(rundown._id)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const previousPartIdStr = previousPartId.toString()
+		const previousPartIdStr = parseMosString(previousPartId)
 		const oldIndex = ingestParts.findIndex(p => p.externalId === previousPartIdStr)
 		if (oldIndex === -1) throw new Meteor.Error(404, `Part ${previousPartIdStr} in rundown ${rundown.externalId} not found`)
 
@@ -275,15 +280,15 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId, runningOrderMosId.toString())
+		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
 		const ingestRundown = loadCachedRundownData(rundown._id)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const story0Index = ingestParts.findIndex(p => p.externalId === story0.toString())
+		const story0Index = ingestParts.findIndex(p => p.externalId === parseMosString(story0))
 		if (story0Index === -1) throw new Meteor.Error(404, `Failed to find story ${story0}`)
-		const story1Index = ingestParts.findIndex(p => p.externalId === story1.toString())
+		const story1Index = ingestParts.findIndex(p => p.externalId === parseMosString(story1))
 		if (story1Index === -1) throw new Meteor.Error(404, `Failed to find story ${story1}`)
 
 		// Don't bother swapping with itself
@@ -299,7 +304,7 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 		if (!rundown.nextPartManual && rundown.nextPartId) {
 			const parts = Parts.find({
 				rundownId: rundown._id,
-				externalId: { $in: [ story0.toString(), story1.toString() ] }
+				externalId: { $in: [ parseMosString(story0), parseMosString(story1) ] }
 			}).fetch()
 			const nextPart = parts.find(p => p._id === rundown.nextPartId)
 			// One of the swapped was next so it should now be the other
@@ -318,20 +323,20 @@ export function handleMoveStories (peripheralDevice: PeripheralDevice, runningOr
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId, runningOrderMosId.toString())
+		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
 		const ingestRundown = loadCachedRundownData(rundown._id)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 		// Get story data
-		const storyIds = _.map(stories, s => s.toString())
+		const storyIds = _.map(stories, parseMosString)
 		const movingParts = _.sortBy(ingestParts.filter(p => storyIds.indexOf(p.externalId) !== -1), p => storyIds.indexOf(p.externalId))
 
 		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
 
 		// Find insert point
-		const insertBeforeStr = insertBefore ? insertBefore.toString() || '' : ''
+		const insertBeforeStr = insertBefore ? parseMosString(insertBefore) || '' : ''
 		const insertIndex = insertBeforeStr !== '' ? filteredParts.findIndex(p => p.externalId === insertBeforeStr) : filteredParts.length
 		if (insertIndex === -1) throw new Meteor.Error(404, `Failed to find story ${insertBefore}`)
 

@@ -266,10 +266,11 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 				const parts: BlueprintResultPart[] = []
 
 				_.each(ingestSegment.parts, ingestPart => {
+					// console.log(ingestPart.payload, ingestPart.externalId)
 					const part: IBlueprintPart = {
 						externalId: ingestPart.externalId,
 						title: ingestPart.name,
-						// metaData:
+						metaData: ingestPart.payload,
 						// autoNext?: boolean;
 						// autoNextOverlap?: number;
 						// prerollDuration?: number;

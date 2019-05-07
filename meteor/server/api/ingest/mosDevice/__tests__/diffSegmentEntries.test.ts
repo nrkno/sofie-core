@@ -153,7 +153,7 @@ describe('Ingest: MOS', () => {
 
 			const diff = diffSegmentEntries(sampleData, sampleData2)
 			expect(diff.changed).toHaveLength(0)
-			expect(diff.rankChanged).toEqual([0, 1, 2])
+			expect(diff.rankChanged).toEqual([[1,0], [2,1], [3,2]])
 			expect(diff.removed).toEqual([0])
 			expect(diff.unchanged).toHaveLength(0)
 
@@ -164,7 +164,7 @@ describe('Ingest: MOS', () => {
 
 			const diff2 = diffSegmentEntries(sampleData, sampleData3)
 			expect(diff2.changed).toHaveLength(0)
-			expect(diff2.rankChanged).toEqual([1, 2])
+			expect(diff2.rankChanged).toEqual([[2,1], [3,2]])
 			expect(diff2.removed).toEqual([1])
 			expect(diff2.unchanged).toEqual([0])
 
@@ -268,7 +268,7 @@ describe('Ingest: MOS', () => {
 
 			const diff = diffSegmentEntries(sampleData, sampleData2)
 			expect(diff.changed).toEqual([0])
-			expect(diff.rankChanged).toEqual([1, 2, 3, 4])
+			expect(diff.rankChanged).toEqual([[0,1], [1,2], [2,3], [3,4]])
 			expect(diff.removed).toHaveLength(0)
 			expect(diff.unchanged).toHaveLength(0)
 
@@ -281,7 +281,7 @@ describe('Ingest: MOS', () => {
 
 			const diff2 = diffSegmentEntries(sampleData, sampleData3)
 			expect(diff2.changed).toEqual([1])
-			expect(diff2.rankChanged).toEqual([2, 3, 4])
+			expect(diff2.rankChanged).toEqual([[1,2], [2,3], [3,4]])
 			expect(diff2.removed).toHaveLength(0)
 			expect(diff2.unchanged).toEqual([0])
 
@@ -312,7 +312,7 @@ describe('Ingest: MOS', () => {
 
 			const diff = diffSegmentEntries(sampleData, sampleData2)
 			expect(diff.changed).toEqual([0, 1, 2])
-			expect(diff.rankChanged).toEqual([3, 4, 5])
+			expect(diff.rankChanged).toEqual([[1,3], [2,4], [3,5]])
 			expect(diff.removed).toHaveLength(0)
 			expect(diff.unchanged).toHaveLength(0)
 
@@ -328,7 +328,7 @@ describe('Ingest: MOS', () => {
 
 			const diff2 = diffSegmentEntries(sampleData, sampleData3)
 			expect(diff2.changed).toEqual([1, 2, 3])
-			expect(diff2.rankChanged).toEqual([4, 5])
+			expect(diff2.rankChanged).toEqual([[2,4], [3,5]])
 			expect(diff2.removed).toHaveLength(0)
 			expect(diff2.unchanged).toEqual([0])
 		})

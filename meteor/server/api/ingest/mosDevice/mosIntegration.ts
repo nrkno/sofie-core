@@ -8,7 +8,7 @@ import { PeripheralDeviceSecurity } from '../../../security/peripheralDevices'
 import { logger } from '../../../logging'
 import { getStudioFromDevice, canBeUpdated } from '../lib'
 import { handleRemovedRundown } from '../rundownInput'
-import { getPartIdFromMosStory, getRundownFromMosRO } from './lib'
+import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories, handleMosRundownMetadata } from './ingest'
 
 export namespace MosIntegration {
@@ -29,7 +29,7 @@ export namespace MosIntegration {
 	export function mosRoDelete (id: string, token: string, rundownId: MOS.MosString128, force?: boolean) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoDelete ' + rundownId)
-		handleRemovedRundown(peripheralDevice, rundownId.toString())
+		handleRemovedRundown(peripheralDevice, parseMosString(rundownId))
 	}
 	export function mosRoMetadata (id: string, token: string, rundownData: MOS.IMOSRunningOrderBase) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
