@@ -244,7 +244,7 @@ describe('lib/lib', () => {
 		expect(formatDurationAsTimecode((2 * 3600 + 5 * 60 + 7) * 1000 + 500)).toEqual('02:05:07:12')
 	})
 	testInFiber('formatDateTime', () => {
-		expect(formatDateTime(1556194064374)).toEqual('2019-04-25 14:07:44')
+		expect(formatDateTime(1556194064374)).toMatch(/2019-04-\d{2} \d{2}:\d{2}:\d{2}/)
 	})
 	testInFiber('removeNullyProperties', () => {
 		expect(removeNullyProperties({
