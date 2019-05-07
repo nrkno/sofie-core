@@ -125,7 +125,6 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				duration: Math.min(this.state.maxDuration - this.state.inPoint, Math.max(0, val - this.state.inPoint))
 			}
 			this.setState(ns)
-			console.log(this.state.maxDuration, ns.duration)
 			this.props.onChange((ns.outPoint - ns.duration) / this.fps * 1000, ns.duration / this.fps * 1000)
 		} else {
 			const out = this.state.inPoint + 1
