@@ -248,10 +248,9 @@ export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId
 	const sli = SegmentLineItems.findOne(sliId)
 	if (!sli) throw new Meteor.Error(404, `SegmentLineItem "${sliId}" not found!`)
 
-	return ClientAPI.responseSuccess(
-		replaceStoryItem(runningOrder, sli, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
-	)
-
+	return replaceStoryItem(runningOrder, sli, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
+		.then((res) => ClientAPI.responseSuccess(res))
+		.catch((err) => ClientAPI.responseError(err))
 }
 export function segmentAdLibLineItemStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 	check(roId, String)
@@ -424,7 +423,7 @@ export function mediaAbortWorkflow (workflowId: string) {
 }
 
 interface UserMethods {
-	[method: string]: (...args: any[]) => ClientAPI.ClientResponse
+	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
 let methods: UserMethods = {}
 
@@ -464,8 +463,8 @@ methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (roId: strin
 methods[UserActionAPI.methods.segmentLineItemTakeNow] = function (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse {
 	return segmentLineItemTakeNow.call(this, roId, slId, sliId)
 }
-methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
-	return segmentLineItemSetInOutPoints(roId, slId, sliId, inPoint, duration)
+methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, duration: number): ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse> {
+	return segmentLineItemSetInOutPoints.call(this, roId, slId, sliId, inPoint, duration)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (roId: string, slId: string, salliId: string, queue: boolean) {
 	return segmentAdLibLineItemStart.call(this, roId, slId, salliId, queue)
