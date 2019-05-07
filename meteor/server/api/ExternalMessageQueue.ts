@@ -24,6 +24,7 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { Fiber } from '../../__mocks__/Fibers'
 
 export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -80,7 +81,7 @@ Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue () {
-	// console.log('doMessageQueue')
+	// console.log('doMessageQueue', ExternalMessageQueue.find().fetch())
 	let tryInterval = 1 * 60 * 1000 // 1 minute
 	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
@@ -88,7 +89,7 @@ function doMessageQueue () {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
 			expires: { $gt: now },
-			lastTry: { $not: { $gt: now - tryInterval } },
+		  lastTry: { $not: { $gt: now - tryInterval } },
 			sent: { $not: { $gt: 0 } },
 			hold: { $not: { $eq: true } },
 			errorFatal: { $not: { $eq: true } },
@@ -104,7 +105,7 @@ function doMessageQueue () {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
-		// console.log('>>>', now, messagesToSend)
+		// console.log('>>>', Fiber.current, messagesToSend)
 	 	messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
 			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
 		})

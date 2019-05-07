@@ -23,6 +23,9 @@ import {
 	getCurrentTime
 } from '../../../lib/lib'
 import { runInFiber } from '../../../__mocks__/Fibers'
+import { sendSOAPMessage } from '../integration/soap'
+import { sendSlackMessageToWebhook } from '../integration/slack'
+import { sendRabbitMQMessage } from '../integration/rabbitMQ'
 import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue', () => {
@@ -136,22 +139,14 @@ describe('Test external message queue', () => {
 	})
 
 	testInFiber('setRunMessageQueue', () => {
-		setLoggerLevel('debug')
-		MeteorMock.mockRunMeteorStartup()
-
-		jest.runOnlyPendingTimers()
-
-		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, true, (err: Error) => {
-			expect(err).toBeFalsy()
-		})
-
-		jest.runOnlyPendingTimers()
 
 		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, false, (err: Error) => {
 			expect(err).toBeFalsy()
 		})
 
-		jest.runOnlyPendingTimers()
+		Meteor.call(ExternalMessageQueueAPI.methods.setRunMessageQueue, true, (err: Error) => {
+			expect(err).toBeFalsy()
+		})
 	})
 
 	testInFiber('remove', () => {
@@ -163,56 +158,103 @@ describe('Test external message queue', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 
-	testInFiber('add a soap-type message', () => {
+	testInFiber('send a slack-type message', async () => {
+		setLoggerLevel('debug')
+		MeteorMock.mockRunMeteorStartup()
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
-		// TODO
-		// const slackMessage: ExternalMessageQueueObjSlack = {
-		// 	type: IBlueprintExternalMessageQueueType.SLACK,
-		// 	receiver: 'fred',
-		// 	message: 'whats up doc?',
-		// }
-		// expect(rundown).toBeTruthy()
-		// queueExternalMessages(rundown, [ slackMessage ])
-		//
-		// expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		// let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-		// expect(message).toBeTruthy()
-		// expect(message).toMatchObject({
-		// 	type: 'slack',
-		// 	receiver: slackMessage.receiver,
-		// 	tryCount: 0,
-		// 	studioId: rundown.studioId,
-		// 	rundownId: rundown._id,
-		// })
-		// expect(message.expires).toBeGreaterThan(getCurrentTime())
+		const slackMessage: ExternalMessageQueueObjSlack = {
+			type: IBlueprintExternalMessageQueueType.SLACK,
+			receiver: 'fred',
+			message: 'whats up doc?',
+		}
+		expect(rundown).toBeTruthy()
+		queueExternalMessages(rundown, [ slackMessage ])
+
+		expect(ExternalMessageQueue.findOne()).toBeTruthy()
+		jest.runOnlyPendingTimers()
+		jest.runOnlyPendingTimers() // Two turns of the wheel
+
+		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(1)
+		await (sendSlackMessageToWebhook as jest.Mock).mock.results[0].value
+		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.sent).toBeGreaterThanOrEqual(getCurrentTime() - 100)
+		expect(message.sent).toBeGreaterThanOrEqual(getCurrentTime() - 100)
+		expect(message.sentReply).toBeTruthy()
+		expect(message.tryCount).toBe(1)
+		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
+
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 
-	testInFiber('add a rabbit MQ-type message', () => {
-
+	testInFiber('send a soap-type message', async () => {
+		setLoggerLevel('debug')
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
-		// TODO
-		// const slackMessage: ExternalMessageQueueObjSlack = {
-		// 	type: IBlueprintExternalMessageQueueType.SLACK,
-		// 	receiver: 'fred',
-		// 	message: 'whats up doc?',
-		// }
-		// expect(rundown).toBeTruthy()
-		// queueExternalMessages(rundown, [ slackMessage ])
-		//
-		// expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		// let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-		// expect(message).toBeTruthy()
-		// expect(message).toMatchObject({
-		// 	type: 'slack',
-		// 	receiver: slackMessage.receiver,
-		// 	tryCount: 0,
-		// 	studioId: rundown.studioId,
-		// 	rundownId: rundown._id,
-		// })
-		// expect(message.expires).toBeGreaterThan(getCurrentTime())
+		const soapMessage: ExternalMessageQueueObjSOAP = {
+			type: IBlueprintExternalMessageQueueType.SOAP,
+			receiver: { url: 'http://clean.me/with/soap' },
+			message: {
+				fcn: 'CallMeMaybe',
+				clip_key: {},
+				clip: {}
+			}
+		}
+		expect(rundown).toBeTruthy()
+		queueExternalMessages(rundown, [ soapMessage ])
+
+		expect(ExternalMessageQueue.findOne()).toBeTruthy()
+		jest.runOnlyPendingTimers()
+
+		expect(sendSOAPMessage).toHaveBeenCalledTimes(1)
+		await (sendSOAPMessage as jest.Mock).mock.results[0].value
+		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.sent).toBeGreaterThanOrEqual(getCurrentTime() - 100)
+		expect(message.sent).toBeGreaterThanOrEqual(getCurrentTime() - 100)
+		expect(message.sentReply).toBeUndefined()
+		expect(message.tryCount).toBe(1)
+		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
+
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+	})
+
+	testInFiber('send a rabbit MQ-type message', async () => {
+		setLoggerLevel('debug')
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+
+		const rabbitMessage: ExternalMessageQueueObjRabbitMQ = {
+			type: IBlueprintExternalMessageQueueType.RABBIT_MQ,
+			receiver: {
+				host: 'roger',
+				topic: 'the rabbit'
+			},
+			message: {
+				routingKey: 'toMyDoor',
+				message: 'what\'s up doc?',
+				headers: {}
+			}
+		}
+		expect(rundown).toBeTruthy()
+		queueExternalMessages(rundown, [ rabbitMessage ])
+
+		expect(ExternalMessageQueue.findOne()).toBeTruthy()
+		jest.runOnlyPendingTimers()
+
+		expect(sendRabbitMQMessage).toHaveBeenCalledTimes(1)
+		await (sendRabbitMQMessage as jest.Mock).mock.results[0].value
+		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.sent).toBeGreaterThanOrEqual(getCurrentTime() - 100)
+		expect(message.sent).toBeGreaterThanOrEqual(getCurrentTime() - 100)
+		expect(message.sentReply).toBeUndefined()
+		expect(message.tryCount).toBe(1)
+
+		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
+
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 
 })

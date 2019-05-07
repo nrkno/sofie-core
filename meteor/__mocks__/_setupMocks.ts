@@ -17,6 +17,10 @@ jest.mock('meteor/mdg:validated-method',	require('./validated-method').setup,		{
 
 jest.mock('meteor/mongo',					require('./mongo').setup,				    { virtual: true })
 
+jest.mock('../server/api/integration/slack', require('./slack').setup, { virtual: true })
+jest.mock('../server/api/integration/soap', require('./soap').setup, { virtual: true })
+jest.mock('../server/api/integration/rabbitMQ', require('./rabbitMQ').setup, { virtual: true })
+
 require('../server/api/logger.ts')
 
 beforeEach(() => {

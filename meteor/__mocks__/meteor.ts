@@ -213,7 +213,6 @@ export namespace MeteorMock {
 	 * Run the Meteor.startup() functions
 	 */
 	export function mockRunMeteorStartup () {
-		console.log('>>>', _)
 		_.each(mockStartupFunctions, fcn => {
 			fcn()
 		})
