@@ -57,7 +57,7 @@ export namespace MosIntegration {
 		logger.debug(status)
 
 		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, status.ID)
+		const rundown = getRundownFromMosRO(studio, status.RunningOrderId)
 		if (!canBeUpdated(rundown)) return
 
 		// Save Stories (aka Part ) status into database:
@@ -69,7 +69,7 @@ export namespace MosIntegration {
 			Parts.update(part._id, {$set: {
 				status: status.Status
 			}})
-		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in rundown ' + status.RunningOrderId + ' not found')
+		} else throw new Meteor.Error(404, 'Part ' + status.ID + ' in rundown ' + status.RunningOrderId + ' not found')
 	}
 	export function mosRoStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -85,7 +85,6 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		// TODO - test
 		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
 	}
 	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {

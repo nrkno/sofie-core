@@ -147,12 +147,13 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingest
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const existingDbRundown = Rundowns.findOne(rundownId)
-		if (!canBeUpdated(existingDbRundown)) return
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedRundownInner(studio, rundownId, ingestRundown, dataSource, peripheralDevice))
+}
+export function handleUpdatedRundownInner (studio: Studio, rundownId: string, ingestRundown: IngestRundown, dataSource?: string, peripheralDevice?: PeripheralDevice) {
+	const existingDbRundown = Rundowns.findOne(rundownId)
+	if (!canBeUpdated(existingDbRundown)) return
 
-		updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
-	})
+	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
 export function updateRundownAndSaveCache (
 	studio: Studio,
@@ -515,21 +516,22 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
-		const rundown = getRundown(rundownId, rundownExternalId)
-		const segmentId = getSegmentId(rundown._id, segmentExternalId)
-		const partId = getPartId(rundown._id, ingestPart.externalId)
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedPartInner(studio, rundownId, rundownExternalId, segmentExternalId, ingestPart))
+}
+export function handleUpdatedPartInner (studio: Studio, rundownId: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
+	const rundown = getRundown(rundownId, rundownExternalId)
+	const segmentId = getSegmentId(rundown._id, segmentExternalId)
+	const partId = getPartId(rundown._id, ingestPart.externalId)
 
-		if (!canBeUpdated(rundown, segmentId, partId)) return
+	if (!canBeUpdated(rundown, segmentId, partId)) return
 
-		// Blueprints will handle the creation of the Part
-		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
-		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
-		ingestSegment.parts.push(ingestPart)
+	// Blueprints will handle the creation of the Part
+	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+	ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
+	ingestSegment.parts.push(ingestPart)
 
-		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
-	})
+	saveSegmentCache(rundown._id, segmentId, ingestSegment)
+	updateSegmentFromIngestData(studio, rundown, ingestSegment)
 }
 
 function generateSegmentContents (

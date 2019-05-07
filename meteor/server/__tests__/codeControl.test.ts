@@ -175,5 +175,7 @@ describe('codeControl', () => {
 
 			logger.info('Run all tests successfully!')
 		}, 10)
+
+		waitTime(2500)
 	})
 })

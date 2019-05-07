@@ -516,6 +516,7 @@ export namespace ServerPlayoutAPI {
 	}
 	/*
 	// TODO: I could not figure out if this is used anywhere, therefore removing temporarily / Nyman
+	// It was used by mosRoStoryMove, but the logic using this was not yet reimplemented
 
 	export function rundownStoriesMoved (rundownId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
 		check(rundownId, String)

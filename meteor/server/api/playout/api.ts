@@ -38,9 +38,6 @@ methods[PlayoutAPI.methods.rundownSetNext] = (rundownId: string, partId: string,
 methods[PlayoutAPI.methods.rundownActivateHold] = (rundownId: string) => {
 	return ServerPlayoutAPI.activateHold(rundownId)
 }
-// methods[PlayoutAPI.methods.rundownStoriesMoved] = (rundownId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) => {
-// 	return ServerPlayoutAPI.rundownStoriesMoved(rundownId, onAirNextWindowWidth, nextPosition)
-// }
 methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownId: string, undo?: boolean) => {
 	return ServerPlayoutAPI.disableNextPiece(rundownId, undo)
 }

@@ -31,7 +31,6 @@ export namespace UserActionAPI {
 
 		'saveEvaluation' 						= 'userAction.saveEvaluation',
 
-		// 'rundownStoriesMoved'						= 'userAction.rundownStoriesMoved',
 		// 'partPlaybackStartedCallback'	= 'userAction.partPlaybackStartedCallback',
 		// 'piecePlaybackStartedCallback'= 'userAction.piecePlaybackStartedCallback',
 
