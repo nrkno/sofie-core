@@ -255,11 +255,10 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	const piece = Pieces.findOne(pieceId)
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
-	return ClientAPI.responseSuccess(
-		// TODO: replace this with a general, non-MOS specific method
-		MOSDeviceActions.setPieceInOutPoint(rundown, piece, partCache.data as IngestPart, inPoint / 1000, duration / 1000) // MOS data is in seconds
-	)
-
+	// TODO: replace this with a general, non-MOS specific method
+	return MOSDeviceActions.setPieceInOutPoint(rundown, piece, partCache.data as IngestPart, inPoint / 1000, duration / 1000) // MOS data is in seconds
+		.then((res) => ClientAPI.responseSuccess(res))
+		.catch((err) => ClientAPI.responseError(err))
 }
 export function segmentAdLibPieceStart (rundownId: string, partId: string, slaiId: string, queue: boolean) {
 	check(rundownId, String)
@@ -432,7 +431,7 @@ export function mediaAbortWorkflow (workflowId: string) {
 }
 
 interface UserMethods {
-	[method: string]: (...args: any[]) => ClientAPI.ClientResponse
+	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
 let methods: UserMethods = {}
 
@@ -473,7 +472,7 @@ methods[UserActionAPI.methods.pieceTakeNow] = function (rundownId: string, partI
 	return pieceTakeNow.call(this, rundownId, partId, pieceId)
 }
 methods[UserActionAPI.methods.setInOutPoints] = function (rundownId: string, partId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
-	return pieceSetInOutPoints(rundownId, partId, pieceId, inPoint, duration)
+	return pieceSetInOutPoints.call(this, rundownId, partId, pieceId, inPoint, duration)
 }
 methods[UserActionAPI.methods.segmentAdLibPieceStart] = function (rundownId: string, partId: string, salliId: string, queue: boolean) {
 	return segmentAdLibPieceStart.call(this, rundownId, partId, salliId, queue)
