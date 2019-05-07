@@ -5,7 +5,7 @@ import {
 
 export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
 	return new Promise((resolve, reject) => {
-		setImmediate(() => resolve())
+		process.nextTick(() => resolve())
 	})
 }
 

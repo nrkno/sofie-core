@@ -3,7 +3,7 @@ import { ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue
 
 export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
 	return new Promise((resolve, reject) => {
-		setImmediate(() => resolve())
+		process.nextTick(() => resolve())
 	})
 }
 

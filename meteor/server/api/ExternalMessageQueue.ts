@@ -24,7 +24,6 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
-import { Fiber } from '../../__mocks__/Fibers'
 
 export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -105,7 +104,7 @@ function doMessageQueue () {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
-		// console.log('>>>', Fiber.current, messagesToSend)
+		// console.log('>>>', now, messagesToSend)
 	 	messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
 			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
 		})
