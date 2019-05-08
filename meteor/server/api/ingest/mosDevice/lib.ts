@@ -43,7 +43,7 @@ export function fixIllegalObject (o: any) {
 	}
 }
 
-export function parseMosString (str: MOS.MosString128) {
+export function parseMosString (str: MOS.MosString128): string {
 	if (!str) throw new Meteor.Error(401, 'parameter missing!')
 	return str['_str'] || str.toString()
 }

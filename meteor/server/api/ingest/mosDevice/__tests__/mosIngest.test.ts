@@ -2,18 +2,17 @@ import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
-import {
-	setupDefaultStudioEnvironment
-} from '../../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { setLoggerLevel } from '../../../logger'
+import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
+import { UpdateNext } from '../updateNext'
+jest.mock('../updateNext')
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -31,7 +30,7 @@ function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
 	})
 }
 
-describe('Test recieved mos actions', () => {
+describe('Test recieved mos ingest payloads', () => {
 
 	let device: PeripheralDevice
 	beforeAll(() => {
@@ -270,6 +269,8 @@ describe('Test recieved mos actions', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryInsert, device._id, device.token, action, [newPartData])
 
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(rundown, action.StoryID.toString(), [newPartData.ID.toString()], false)
+
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
 
@@ -292,6 +293,8 @@ describe('Test recieved mos actions', () => {
 		})
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryInsert, device._id, device.token, action, [newPartData])
+
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(rundown, action.StoryID.toString(), [newPartData.ID.toString()], false)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
@@ -393,6 +396,8 @@ describe('Test recieved mos actions', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryReplace, device._id, device.token, action, [newPartData])
 
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(rundown, action.StoryID.toString(), [newPartData.ID.toString()], true)
+
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
 
@@ -440,6 +445,8 @@ describe('Test recieved mos actions', () => {
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryDelete, device._id, device.token, action, partExternalIds)
 
 		expect(Parts.find({ externalId: { $in: partExternalIds } }).count()).toEqual(0)
+
+		expect(UpdateNext.afterDeletePart).toHaveBeenCalledWith(rundown)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
@@ -541,6 +548,8 @@ describe('Test recieved mos actions', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story1)
 
+		expect(UpdateNext.afterSwapParts).toHaveBeenCalledWith(rundown, story0.toString(), story1.toString())
+
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
 
@@ -564,6 +573,8 @@ describe('Test recieved mos actions', () => {
 		const story1 = new MOS.MosString128('ro1;s1;p3')
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story1)
+
+		expect(UpdateNext.afterSwapParts).toHaveBeenCalledWith(rundown, story0.toString(), story1.toString())
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
@@ -632,6 +643,8 @@ describe('Test recieved mos actions', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story1)
 
+		expect(UpdateNext.afterSwapParts).toHaveBeenCalledWith(rundown, story0.toString(), story1.toString())
+
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
 
@@ -643,6 +656,130 @@ describe('Test recieved mos actions', () => {
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 	})
 
+	testInFiber('mosRoStorySwap: Swap across segments2', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+		const story0 = new MOS.MosString128('ro1;s1;p2')
+		const story1 = new MOS.MosString128('ro1;s2;p2')
+
+		const updateNextMock = jest.spyOn(UpdateNext, 'afterSwapParts')
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story1)
+
+		expect(updateNextMock).toHaveBeenCalledWith(rundown, story0.toString(), story1.toString())
+
+		// Don't care about the result here, just making sure there isnt an exception while updating the db
+	})
+
+	testInFiber('mosRoStoryMove: Within segment', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128('ro1;s1;p2'),
+		})
+		const story0 = 'ro1;s1;p3'
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryMove, device._id, device.token, action, [new MOS.MosString128(story0)])
+
+		expect(UpdateNext.afterMoveParts).toHaveBeenCalledWith(rundown)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+
+		const partMap = mockRO.segmentIdMap()
+		partMap[0].parts[1] = 'ro1;s1;p3'
+		partMap[0].parts[2] = 'ro1;s1;p2'
+		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+	})
+
+	testInFiber('mosRoStoryMove: Move whole segment to end', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128(''),
+		})
+		const stories = [
+			new MOS.MosString128('ro1;s1;p1'),
+			new MOS.MosString128('ro1;s1;p2'),
+			new MOS.MosString128('ro1;s1;p3'),
+		]
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryMove, device._id, device.token, action, stories)
+
+		expect(UpdateNext.afterMoveParts).toHaveBeenCalledWith(rundown)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+
+		const partMap = mockRO.segmentIdMap()
+		const old = partMap.splice(0, 1)
+		partMap.splice(3, 0, ...old)
+		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+	})
+
+	testInFiber('mosRoStoryMove: Invalid before ID', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128('fakeId'),
+		})
+		const stories = [
+			new MOS.MosString128('ro1;s1;p1'),
+			new MOS.MosString128('ro1;s1;p2'),
+			new MOS.MosString128('ro1;s1;p3'),
+		]
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryMove, device._id, device.token, action, stories)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`)
+		}
+	})
+
+	testInFiber('mosRoStoryMove: Invalid before self', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128('ro1;s1;p2'),
+		})
+		const stories = [
+			new MOS.MosString128('ro1;s1;p1'),
+			new MOS.MosString128('ro1;s1;p2'),
+			new MOS.MosString128('ro1;s1;p3'),
+		]
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryMove, device._id, device.token, action, stories)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`)
+		}
+	})
 
 
 })
