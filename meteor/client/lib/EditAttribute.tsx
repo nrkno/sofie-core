@@ -146,7 +146,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		return this.props.mutateDisplayValue ? this.props.mutateDisplayValue(v) : v
 	}
 	getAttributeText () {
-		return this.getAttribute()
+		return this.getAttribute() + ''
 	}
 	getEditAttribute () {
 		return (this.state.editing ? this.state.value : this.getAttribute())
@@ -465,7 +465,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 				// if currentOption not found, then add it to the list:
 				options.push({
 					name: 'Value: ' + currentValue,
-					value: currentValue
+					value: currentValue)
 				})
 			}
 		}
@@ -481,11 +481,11 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 			<select
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-				value={this.getAttribute()}
+				value={this.getAttributeText()}
 				onChange={this.handleChange}
 			>
 				{this.getOptions(true).map((o) => (
-					<option key={o.i} value={o.value}>{o.name}</option>
+					<option key={o.i} value={o.value + ''}>{o.name}</option>
 				))}
 			</select>
 		)
