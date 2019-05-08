@@ -362,11 +362,11 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
 		check(part._id, String)
 
-		return loadCachedIngestPart(this.rundown._id, part._id)
+		return loadCachedIngestPart(this.rundown._id, this.rundown.externalId, part._id, part.externalId)
 	}
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown (): IngestRundown | undefined {
-		return loadCachedRundownData(this.rundown._id)
+		return loadCachedRundownData(this.rundown._id, this.rundown.externalId)
 	}
 
 	/**

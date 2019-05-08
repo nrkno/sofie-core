@@ -6,11 +6,11 @@ import { IngestDataCacheObj, IngestDataCache, IngestCacheType, IngestDataCacheOb
 import { getSegmentId, getPartId } from './lib'
 import { logger } from '../../../lib/logging'
 
-export function loadCachedRundownData (rundownId: string): IngestRundown {
+export function loadCachedRundownData (rundownId: string, rundownExternalId: string): IngestRundown {
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
-	if (!baseEntry) throw new Meteor.Error(404, 'Failed to find cached rundown')
+	if (!baseEntry) throw new Meteor.Error(404, `Rundown ${rundownExternalId} has no cached ingest data`)
 
 	const ingestRundown = baseEntry.data as IngestRundown
 
@@ -32,18 +32,17 @@ export function loadCachedRundownData (rundownId: string): IngestRundown {
 
 	return ingestRundown
 }
-export function loadCachedIngestSegment (rundownId: string, segmentId: string): IngestSegment {
-
+export function loadCachedIngestSegment (rundownId: string, rundownExternalId: string, segmentId: string, segmentExternalId: string): IngestSegment {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		segmentId: segmentId,
 	}).fetch()
 
 	const segmentEntries = cacheEntries.filter(e => e.type === IngestCacheType.SEGMENT)
-	if (segmentEntries.length > 1) logger.warn(`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownId}", segmentId: "${segmentId}"`)
+	if (segmentEntries.length > 1) logger.warn(`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", segmentId: "${segmentExternalId}"`)
 
 	const segmentEntry = segmentEntries[0]
-	if (!segmentEntry) throw new Meteor.Error(404, 'Failed to find cached segment')
+	if (!segmentEntry) throw new Meteor.Error(404, `Segment "${segmentExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`)
 	if (segmentEntry.type !== IngestCacheType.SEGMENT) throw new Meteor.Error(500, 'Wrong type on cached segment')
 
 	const ingestSegment: IngestSegment = segmentEntry.data
@@ -58,21 +57,21 @@ export function loadCachedIngestSegment (rundownId: string, segmentId: string): 
 
 	return ingestSegment
 }
-export function loadIngestDataCachePart (rundownId: string, partId: string): IngestDataCacheObjPart {
+export function loadIngestDataCachePart (rundownId: string, rundownExternalId: string, partId: string, partExternalId: string): IngestDataCacheObjPart {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		partId: partId,
 		type: IngestCacheType.PART
 	}).fetch()
-	if (cacheEntries.length > 1) logger.warn(`There are multiple parts (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownId}", partId: "${partId}"`)
+	if (cacheEntries.length > 1) logger.warn(`There are multiple parts (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", partId: "${partExternalId}"`)
 
 	const partEntry = cacheEntries[0]
-	if (!partEntry) throw new Meteor.Error(404, 'Failed to find cached part')
+	if (!partEntry) throw new Meteor.Error(404, `Part "${partExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`)
 	if (partEntry.type !== IngestCacheType.PART) throw new Meteor.Error(500, 'Wrong type on cached part')
 	return partEntry
 }
-export function loadCachedIngestPart (rundownId: string, partId: string): IngestPart {
-	return loadIngestDataCachePart(rundownId, partId).data
+export function loadCachedIngestPart (rundownId: string, rundownExternalId: string, partId: string, partExternalId: string): IngestPart {
+	return loadIngestDataCachePart(rundownId, rundownExternalId, partId, partExternalId).data
 }
 
 export function saveRundownCache (rundownId: string, ingestRundown: IngestRundown) {

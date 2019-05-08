@@ -470,4 +470,128 @@ describe('Test recieved mos actions', () => {
 		expect(Parts.find({ externalId: { $in: partExternalIds } }).count()).toEqual(1)
 	})
 
+	testInFiber('mosRoFullStory: Valid data', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const story = literal<MOS.IMOSROFullStory>({
+			RunningOrderId: new MOS.MosString128(rundown.externalId),
+			ID: new MOS.MosString128('ro1;s1;p2'),
+			Body: []
+		})
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, device._id, device.token, story)
+
+		const part = Parts.findOne({ externalId: story.ID.toString() }) as Part
+		expect(part).toBeTruthy()
+		expect(part.metaData).toEqual(story)
+	})
+
+	testInFiber('mosRoFullStory: Unknown Part', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const story = literal<MOS.IMOSROFullStory>({
+			RunningOrderId: new MOS.MosString128(rundown.externalId),
+			ID: new MOS.MosString128('fakeId'),
+			Body: []
+		})
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, device._id, device.token, story)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Part "${story.ID.toString()}" in rundown "${rundown.externalId}" is missing cached ingest data`)
+		}
+	})
+
+	testInFiber('mosRoFullStory: Unknown Rundown', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const story = literal<MOS.IMOSROFullStory>({
+			RunningOrderId: new MOS.MosString128('fakeId'),
+			ID: new MOS.MosString128('ro1;s1;p2'),
+			Body: []
+		})
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, device._id, device.token, story)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Rundown ${story.RunningOrderId.toString()} not found`)
+		}
+	})
+
+	testInFiber('mosRoStorySwap: Within same segment', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+		const story0 = new MOS.MosString128('ro1;s1;p1')
+		const story1 = new MOS.MosString128('ro1;s1;p3')
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story1)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+
+		const partMap = mockRO.segmentIdMap()
+		partMap[0].parts[0] = 'ro1;s1;p3'
+		partMap[0].parts[2] = 'ro1;s1;p1'
+		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+	})
+
+	testInFiber('mosRoStorySwap: Swap with self', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+		const story0 = new MOS.MosString128('ro1;s1;p1')
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story0)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[400] Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`)
+		}
+	})
+
+	testInFiber('mosRoStorySwap: Story not found', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+		const story0 = new MOS.MosString128('ro1;s1;p1')
+		const story1 = new MOS.MosString128('ro1;s1;p99')
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story0, story1)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
+		}
+
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoStorySwap, device._id, device.token, action, story1, story0)
+			expect(true).toBe(false) // Please throw and don't get here
+		} catch (e) {
+			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
+		}
+	})
+
+
+
 })

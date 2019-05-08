@@ -158,7 +158,6 @@ export namespace MosIntegration {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
 
-		// TODO - test
 		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 	}
 	export function mosRoReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {

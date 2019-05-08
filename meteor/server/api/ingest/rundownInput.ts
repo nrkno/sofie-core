@@ -505,7 +505,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		if (!part) throw new Meteor.Error(404, 'Part not found')
 
 		// Blueprints will handle the deletion of the Part
-		const ingestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+		const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
@@ -516,17 +516,20 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedPartInner(studio, rundownId, rundownExternalId, segmentExternalId, ingestPart))
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+
+		handleUpdatedPartInner(studio, rundown, segmentExternalId, ingestPart)
+	})
 }
-export function handleUpdatedPartInner (studio: Studio, rundownId: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
-	const rundown = getRundown(rundownId, rundownExternalId)
+export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmentExternalId: string, ingestPart: IngestPart) {
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
 
 	if (!canBeUpdated(rundown, segmentId, partId)) return
 
 	// Blueprints will handle the creation of the Part
-	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
 	ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
 	ingestSegment.parts.push(ingestPart)
 

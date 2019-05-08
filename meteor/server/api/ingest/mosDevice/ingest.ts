@@ -139,7 +139,7 @@ export function handleMosRundownMetadata (peripheralDevice: PeripheralDevice, mo
 		const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
 
 		// Load the cached RO Data
-		const ingestRundown = loadCachedRundownData(rundown._id)
+		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
 		// TODO - verify this doesn't lose data, it was doing more work before
 
@@ -152,31 +152,31 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	// @ts-ignore
 	// logger.debug(story)
 
-	const runningOrderExternalId = story.RunningOrderId
-
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, runningOrderExternalId)
+	const rundownId = getRundownIdFromMosRO(studio, story.RunningOrderId)
 	const partId = getPartIdFromMosStory(rundownId, story.ID)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, parseMosString(story.RunningOrderId))
 		// canBeUpdated is done inside handleUpdatedPartInner
 
-		const cachedPartData = loadIngestDataCachePart(rundownId, partId)
+		const cachedPartData = loadIngestDataCachePart(rundownId, parseMosString(story.RunningOrderId), partId, parseMosString(story.ID))
 		if (!cachedPartData.segmentId) {
 			throw new Meteor.Error(500, `SegmentId missing for part "${partId}" (MOSFullStory)`)
 		}
 
-		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundownId, cachedPartData.segmentId)
+		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundownId, parseMosString(story.RunningOrderId), cachedPartData.segmentId, cachedPartData.segmentId)
 
 		const ingestPart: IngestPart = cachedPartData.data
-		ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
+		// TODO - can the name change during a fullStory? If so then we need to be sure to update the segment groupings too
+		// ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
 		ingestPart.payload = story
 
 		// Need the raw id, not the hashed copy
 		const segmentId = getSegmentExternalId(rundownId, ingestPart, ingestSegment.rank)
 
 		// Update db with the full story:
-		handleUpdatedPartInner(studio, rundownId, parseMosString(runningOrderExternalId), segmentId, ingestPart)
+		handleUpdatedPartInner(studio, rundown, segmentId, ingestPart)
 	})
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, stories: Array<MOS.MosString128>) {
@@ -189,7 +189,7 @@ export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runnin
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
-		const ingestRundown = loadCachedRundownData(rundown._id)
+		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 		const ingestPartIds = _.map(ingestParts, part => part.externalId)
 
@@ -228,7 +228,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
-		const ingestRundown = loadCachedRundownData(rundown._id)
+		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 		const previousPartIdStr = parseMosString(previousPartId)
@@ -250,6 +250,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
+		// TODO - test
 		// Update next if we inserted before the part that is next
 		// Note: the case where we remove the previous line is handled inside diffAndApplyChanges
 		if (!removePrevious && !rundown.nextPartManual && rundown.nextPartId) {
@@ -279,20 +280,21 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
+	const story0Str = parseMosString(story0)
+	const story1Str = parseMosString(story1)
+	if (story0Str === story1Str) throw new Meteor.Error(400, `Cannot swap part ${story0Str} with itself in rundown ${parseMosString(runningOrderMosId)}`)
+
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
-		const ingestRundown = loadCachedRundownData(rundown._id)
+		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const story0Index = ingestParts.findIndex(p => p.externalId === parseMosString(story0))
-		if (story0Index === -1) throw new Meteor.Error(404, `Failed to find story ${story0}`)
-		const story1Index = ingestParts.findIndex(p => p.externalId === parseMosString(story1))
-		if (story1Index === -1) throw new Meteor.Error(404, `Failed to find story ${story1}`)
-
-		// Don't bother swapping with itself
-		if (story0Index === story1Index) return
+		const story0Index = ingestParts.findIndex(p => p.externalId === story0Str)
+		if (story0Index === -1) throw new Meteor.Error(404, `Story ${story0} not found in rundown ${parseMosString(runningOrderMosId)}`)
+		const story1Index = ingestParts.findIndex(p => p.externalId === story1Str)
+		if (story1Index === -1) throw new Meteor.Error(404, `Story ${story1} not found in rundown ${parseMosString(runningOrderMosId)}`)
 
 		const tmp = ingestParts[story0Index]
 		ingestParts[story0Index] = ingestParts[story1Index]
@@ -300,11 +302,12 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
+		// TODO - test
 		// Update next
 		if (!rundown.nextPartManual && rundown.nextPartId) {
 			const parts = Parts.find({
 				rundownId: rundown._id,
-				externalId: { $in: [ parseMosString(story0), parseMosString(story1) ] }
+				externalId: { $in: [ story0Str, story1Str ] }
 			}).fetch()
 			const nextPart = parts.find(p => p._id === rundown.nextPartId)
 			// One of the swapped was next so it should now be the other
@@ -326,7 +329,7 @@ export function handleMoveStories (peripheralDevice: PeripheralDevice, runningOr
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
-		const ingestRundown = loadCachedRundownData(rundown._id)
+		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 		// Get story data
