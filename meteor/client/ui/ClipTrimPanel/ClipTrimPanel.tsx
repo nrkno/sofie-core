@@ -9,7 +9,6 @@ import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
-import { getDeveloperMode } from '../../lib/localStorage';
 
 export interface IProps {
 	segmentLineItemId: string
@@ -147,14 +146,14 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 
 		return (
 			<div className='clip-trim-panel'>
-				{getDeveloperMode() && <div className='clip-trim-panel__monitors'>
+				<div className='clip-trim-panel__monitors'>
 					<div className='clip-trim-panel__monitors__monitor'>
 						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.inPoint / this.fps} onCurrentTimeChange={(time) => this.onInChange(time * this.fps)} />
 					</div>
 					<div className='clip-trim-panel__monitors__monitor'>
 						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.outPoint / this.fps} onCurrentTimeChange={(time) => this.onOutChange(time * this.fps)} />
 					</div>
-				</div>}
+				</div>
 				<div className='clip-trim-panel__timecode-encoders'>
 					<div className='clip-trim-panel__timecode-encoders__input'>
 						<label>{t('In')}</label>

@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import * as faStepForward from '@fortawesome/fontawesome-free-solid/faStepForward'
-import * as faStepBackward from '@fortawesome/fontawesome-free-solid/faStepBackward'
-import * as faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
-import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
-import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+// import * as faStepForward from '@fortawesome/fontawesome-free-solid/faStepForward'
+// import * as faStepBackward from '@fortawesome/fontawesome-free-solid/faStepBackward'
+// import * as faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
+// import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
+// import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
+// import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as $ from 'jquery'
 
 export interface IProps {
@@ -20,6 +20,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	private videoEl: HTMLVideoElement
 	private retryCount: number = 0
 	private internalTime: number = 0
+	private isMouseDown: boolean = false
 
 	constructor (props: Translated<IProps>) {
 		super(props)
@@ -27,9 +28,19 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 		this.internalTime = props.currentTime || 0
 	}
 
+	videoMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.isMouseDown = true
+		window.addEventListener('mouseup', this.videoMouseUp)
+	}
+
+	videoMouseUp = (e: MouseEvent): void => {
+		this.isMouseDown = false
+		window.removeEventListener('mouseup', this.videoMouseUp)
+	}
+
 	videoMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		const pos = $(this.videoEl).offset()
-		if (pos) {
+		if (this.isMouseDown && pos) {
 			if (this.videoEl.readyState <= 2) { // we are moving around the video, but the player is stuck
 				this.retryCount++
 			} else {
@@ -46,6 +57,9 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 			if (Number.isFinite(targetTime)) {
 				this.videoEl.currentTime = targetTime
 				this.internalTime = targetTime
+				if (this.props.onCurrentTimeChange) {
+					this.props.onCurrentTimeChange(this.internalTime)
+				}
 			}
 		}
 	}
@@ -53,12 +67,6 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	videoMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.videoEl.currentTime = this.props.currentTime || 0
 		this.internalTime = this.props.currentTime || 0
-	}
-
-	videoClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (this.props.onCurrentTimeChange) {
-			this.props.onCurrentTimeChange(this.internalTime)
-		}
 	}
 
 	handleStepBack = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -106,17 +114,17 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	render () {
 		return (
 			<div className='video-edit-monitor'>
-				<div className='video-edit-monitor__monitor' onMouseMove={this.videoMouseMove} onMouseLeave={this.videoMouseLeave} onClick={this.videoClick}>
+				<div className='video-edit-monitor__monitor' onMouseMove={this.videoMouseMove} onMouseLeave={this.videoMouseLeave}>
 					<video className='video-edit-monitor__video' ref={this.setVideo}></video>
 				</div>
 				<div className='video-edit-monitor__waveform'></div>
-				<div className='video-edit-monitor__buttons'>
+				{ /* <div className='video-edit-monitor__buttons'>
 					{this.props.fps && <button className='video-edit-monitor__button' onClick={this.handleStepBack}><FontAwesomeIcon icon={faStepBackward} /></button>}
 					<button className='video-edit-monitor__button' onClick={this.handleFastBackward}><FontAwesomeIcon icon={faFastBackward} /></button>
 					<button className='video-edit-monitor__button' onClick={this.handlePlay}><FontAwesomeIcon icon={faPlay} /> 1s</button>
 					{this.props.fps && <button className='video-edit-monitor__button' onClick={this.handleStepForward}><FontAwesomeIcon icon={faStepForward} /></button>}
 					<button className='video-edit-monitor__button' onClick={this.handleFastForward}><FontAwesomeIcon icon={faFastForward} /></button>
-				</div>
+				</div> */}
 			</div>
 		)
 	}
