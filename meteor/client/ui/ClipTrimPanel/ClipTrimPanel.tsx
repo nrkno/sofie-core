@@ -148,10 +148,10 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			<div className='clip-trim-panel'>
 				<div className='clip-trim-panel__monitors'>
 					<div className='clip-trim-panel__monitors__monitor'>
-						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.inPoint / this.fps} onCurrentTimeChange={(time) => this.onInChange(time * this.fps)} />
+						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.inPoint / this.fps} duration={this.props.maxDuration / 1000} onCurrentTimeChange={(time) => this.onInChange(time * this.fps)} />
 					</div>
 					<div className='clip-trim-panel__monitors__monitor'>
-						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.outPoint / this.fps} onCurrentTimeChange={(time) => this.onOutChange(time * this.fps)} />
+						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.outPoint / this.fps} duration={this.props.maxDuration / 1000} onCurrentTimeChange={(time) => this.onOutChange(time * this.fps)} />
 					</div>
 				</div>
 				<div className='clip-trim-panel__timecode-encoders'>
