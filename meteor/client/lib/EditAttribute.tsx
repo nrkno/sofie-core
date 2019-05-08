@@ -465,7 +465,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 				// if currentOption not found, then add it to the list:
 				options.push({
 					name: 'Value: ' + currentValue,
-					value: currentValue)
+					value: currentValue
 				})
 			}
 		}
