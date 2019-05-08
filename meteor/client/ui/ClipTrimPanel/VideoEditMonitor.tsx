@@ -12,6 +12,7 @@ import * as classNames from 'classnames'
 
 export interface IProps {
 	currentTime?: number
+	duration?: number
 	onCurrentTimeChange?: (currentTime: number) => void
 	src: string | undefined
 	fps?: number
@@ -25,6 +26,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	private videoEl: HTMLVideoElement
 	private retryCount: number = 0
 	private internalTime: number = 0
+	private lastPosition: number
 
 	constructor (props: Translated<IProps>) {
 		super(props)
@@ -40,18 +42,27 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 			isMouseDown: true
 		})
 		window.addEventListener('mouseup', this.videoMouseUp)
+		window.addEventListener('mousemove', this.videoMouseMove)
+		this.lastPosition = e.pageX
 	}
 
 	videoMouseUp = (e: MouseEvent): void => {
 		this.setState({
 			isMouseDown: false
 		})
-		window.removeEventListener('mouseup', this.videoMouseUp)
+		this.cleanUpListeners()
 	}
 
-	videoMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+	cleanUpListeners = () => {
+		window.removeEventListener('mouseup', this.videoMouseUp)
+		window.removeEventListener('mousemove', this.videoMouseMove)
+	}
+
+	videoMouseMove = (e: MouseEvent) => {
 		const pos = $(this.videoEl).offset()
 		if (this.state.isMouseDown && pos) {
+			e.preventDefault()
+
 			if (this.videoEl.readyState <= 2) { // we are moving around the video, but the player is stuck
 				this.retryCount++
 			} else {
@@ -63,8 +74,9 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 				this.retryCount = 0
 			}
 
-			const position = (e.pageX - pos.left) / this.videoEl.clientWidth
-			const targetTime = Math.max(0, Math.min(this.videoEl.duration * position, this.videoEl.duration - 0.01))
+			const delta = (e.pageX - this.lastPosition) / (this.videoEl.clientWidth * 3)
+			const targetTime = Math.max(0, Math.min(this.internalTime + (this.props.duration || this.videoEl.duration) * delta, (this.props.duration || this.videoEl.duration) - 0.001))
+			console.log(delta, targetTime, this.props.duration)
 			if (Number.isFinite(targetTime)) {
 				this.videoEl.currentTime = targetTime
 				this.internalTime = targetTime
@@ -72,12 +84,8 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 					this.props.onCurrentTimeChange(this.internalTime)
 				}
 			}
+			this.lastPosition = e.pageX
 		}
-	}
-
-	videoMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.videoEl.currentTime = this.props.currentTime || 0
-		this.internalTime = this.props.currentTime || 0
 	}
 
 	handleStepBack = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -100,7 +108,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 
 	handleStepForward = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (this.props.fps) {
-			this.internalTime = Math.min(this.videoEl.duration, this.internalTime + 1 / this.props.fps)
+			this.internalTime = Math.min((this.props.duration || this.videoEl.duration), this.internalTime + 1 / this.props.fps)
 			this.videoEl.currentTime = this.internalTime
 			if (this.props.onCurrentTimeChange) {
 				this.props.onCurrentTimeChange(this.internalTime)
@@ -110,6 +118,10 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 
 	handleFastForward = (e: React.MouseEvent<HTMLButtonElement>) => {
 		// TODO
+	}
+
+	componentWillUnmount () {
+		this.cleanUpListeners()
 	}
 
 	componentDidUpdate () {
@@ -126,8 +138,8 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 		return (
 			<div className='video-edit-monitor'>
 				<div className={classNames('video-edit-monitor__monitor', {
-					'video-editor-monitor__monitor--mouse-down': this.state.isMouseDown
-				})} onMouseMove={this.videoMouseMove} onMouseLeave={this.videoMouseLeave}>
+					'video-edit-monitor__monitor--mouse-down': this.state.isMouseDown
+				})} onMouseDown={this.videoMouseDown}>
 					<video className='video-edit-monitor__video' ref={this.setVideo}></video>
 				</div>
 				<div className='video-edit-monitor__waveform'></div>
