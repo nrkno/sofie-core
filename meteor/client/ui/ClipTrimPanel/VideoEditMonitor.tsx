@@ -9,6 +9,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 // import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
 // import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as $ from 'jquery'
+import * as classNames from 'classnames'
 
 export interface IProps {
 	currentTime?: number
@@ -17,31 +18,41 @@ export interface IProps {
 	fps?: number
 }
 
-export const VideoEditMonitor = translate()(class VideoEditMonitor extends React.Component<Translated<IProps>> {
+interface IState {
+	isMouseDown: boolean
+}
+
+export const VideoEditMonitor = translate()(class VideoEditMonitor extends React.Component<Translated<IProps>, IState> {
 	private videoEl: HTMLVideoElement
 	private retryCount: number = 0
 	private internalTime: number = 0
-	private isMouseDown: boolean = false
 
 	constructor (props: Translated<IProps>) {
 		super(props)
 
 		this.internalTime = props.currentTime || 0
+		this.state = {
+			isMouseDown: false
+		}
 	}
 
 	videoMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.isMouseDown = true
+		this.setState({
+			isMouseDown: true
+		})
 		window.addEventListener('mouseup', this.videoMouseUp)
 	}
 
 	videoMouseUp = (e: MouseEvent): void => {
-		this.isMouseDown = false
+		this.setState({
+			isMouseDown: false
+		})
 		window.removeEventListener('mouseup', this.videoMouseUp)
 	}
 
 	videoMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		const pos = $(this.videoEl).offset()
-		if (this.isMouseDown && pos) {
+		if (this.state.isMouseDown && pos) {
 			if (this.videoEl.readyState <= 2) { // we are moving around the video, but the player is stuck
 				this.retryCount++
 			} else {
@@ -115,7 +126,9 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	render () {
 		return (
 			<div className='video-edit-monitor'>
-				<div className='video-edit-monitor__monitor' onMouseMove={this.videoMouseMove} onMouseLeave={this.videoMouseLeave}>
+				<div className={classNames('video-edit-monitor__monitor', {
+					'video-editor-monitor__monitor--mouse-down': this.state.isMouseDown
+				})} onMouseMove={this.videoMouseMove} onMouseLeave={this.videoMouseLeave}>
 					<video className='video-edit-monitor__video' ref={this.setVideo}></video>
 				</div>
 				<div className='video-edit-monitor__waveform'></div>

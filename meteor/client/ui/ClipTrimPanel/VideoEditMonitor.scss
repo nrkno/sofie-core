@@ -1,12 +1,13 @@
 .video-edit-monitor {
 	background: #2A2A2A;
-	box-shadow: 0 0 15px rgba(0,0,0,0.8);
+	box-shadow: 0 0 7px rgba(0,0,0,0.4);
 
 	> .video-edit-monitor__monitor {
 		position: relative;
 		padding-bottom: 56.25%;
 		height: 0;
 		background: black;
+		cursor: grab;
 
 		> video {
 			position: absolute;
@@ -14,6 +15,10 @@
 			left: 0;
 			width: 100%;
 			height: 100%;
+		}
+
+		&.video-edit-monitor__monitor--mouse-down {
+			cursor: grabbing;
 		}
 	}
 
