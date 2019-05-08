@@ -6,11 +6,9 @@ import {
 	ExternalMessageQueue,
 	ExternalMessageQueueObj
 } from '../../../lib/collections/ExternalMessageQueue'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
 	ExternalMessageQueueObjSOAP,
-	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 	ExternalMessageQueueObjSlack
@@ -26,7 +24,7 @@ import { runInFiber } from '../../../__mocks__/Fibers'
 import { sendSOAPMessage } from '../integration/soap'
 import { sendSlackMessageToWebhook } from '../integration/slack'
 import { sendRabbitMQMessage } from '../integration/rabbitMQ'
-import { setLoggerLevel } from '../../../server/api/logger'
+// import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {
 
@@ -62,7 +60,7 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('add a slack-type message', () => {
-		setLoggerLevel('debug')
+		// setLoggerLevel('debug')
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
@@ -170,7 +168,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('send a slack-type message', async () => {
-		setLoggerLevel('debug')
+		// setLoggerLevel('debug')
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
@@ -199,62 +197,133 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 
-	testInFiber('fail to send a slack-type message', async () => {
-		setLoggerLevel('debug')
-		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+	describe('failing to send a message and retrying', () => {
 
-		const slackMessage: ExternalMessageQueueObjSlack = {
-			type: IBlueprintExternalMessageQueueType.SLACK,
-			receiver: 'fred',
-			message: 'whats error doc?',
-		}
-		expect(rundown).toBeTruthy()
-		queueExternalMessages(rundown, [ slackMessage ])
+		let message: ExternalMessageQueueObj
 
-		expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		jest.runOnlyPendingTimers()
+		afterAll(() => {
+			if (!message) return
+			Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
+			expect(ExternalMessageQueue.findOne()).toBeFalsy()
+		})
 
-		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2)
-		try {
-			await (sendSlackMessageToWebhook as jest.Mock).mock.results[1].value
-			fail('promise should reject')
-		} catch (e) {
-			expect(e.message).toBe('[500] Failed to send slack message')
-		}
+		testInFiber('fail to send a slack-type message', async () => {
+			// setLoggerLevel('debug')
+			expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-		expect(message).toBeTruthy()
-		expect(message.errorMessage).toBe('Failed to send slack message')
-		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
-		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
-		expect(message.tryCount).toBe(1)
-		expect(message.sent).toBeUndefined()
+			const slackMessage: ExternalMessageQueueObjSlack = {
+				type: IBlueprintExternalMessageQueueType.SLACK,
+				receiver: 'fred',
+				message: 'whats error doc?',
+				retryUntil: getCurrentTime() + 1000000
+			}
+			expect(rundown).toBeTruthy()
+			queueExternalMessages(rundown, [ slackMessage ])
 
-		jest.runOnlyPendingTimers()
-		// Does not try to send again yet ... too close to lastTry
-		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2)
+			expect(ExternalMessageQueue.findOne()).toBeTruthy()
+			jest.runOnlyPendingTimers()
 
-		// Reset the last try clock
-		ExternalMessageQueue.update(message._id, { $set: {
-			lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
-		} })
-		jest.runOnlyPendingTimers()
-		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
+			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2)
+			try {
+				await (sendSlackMessageToWebhook as jest.Mock).mock.results[1].value
+				fail('promise should reject')
+			} catch (e) {
+				expect(e.message).toBe('[500] Failed to send slack message')
+			}
 
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-		expect(message).toBeTruthy()
-		expect(message.errorMessage).toBe('Failed to send slack message')
-		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
-		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
-		expect(message.tryCount).toBe(2)
-		expect(message.sent).toBeUndefined()
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			expect(message).toBeTruthy()
+			expect(message.errorMessage).toBe('Failed to send slack message')
+			expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
+			expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
+			expect(message.tryCount).toBe(1)
+			expect(message.sent).toBeUndefined()
+		})
 
-		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
-		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+		test('does not try to send again immediately', () => {
+			// setLoggerLevel('debug')
+			jest.runOnlyPendingTimers()
+			// Does not try to send again yet ... too close to lastTry
+			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2)
+		})
+
+		test('after a minute, tries to resend', () => {
+			// setLoggerLevel('debug')
+			// Reset the last try clock
+			ExternalMessageQueue.update(message._id, { $set: {
+				lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
+			} })
+			jest.runOnlyPendingTimers()
+			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
+
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			expect(message).toBeTruthy()
+			expect(message.errorMessage).toBe('Failed to send slack message')
+			expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
+			expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
+			expect(message.tryCount).toBe(2)
+			expect(message.sent).toBeUndefined()
+		})
+
+		test('does not retry to send if on hold', () => {
+			// setLoggerLevel('debug')
+
+			Meteor.call(ExternalMessageQueueAPI.methods.toggleHold, message._id)
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			expect(message).toBeTruthy()
+			expect(message.hold).toBe(true)
+
+			ExternalMessageQueue.update(message._id, { $set: {
+				lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
+			} })
+			jest.runOnlyPendingTimers()
+			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
+
+			Meteor.call(ExternalMessageQueueAPI.methods.toggleHold, message._id)
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			expect(message).toBeTruthy()
+			expect(message.hold).toBe(false)
+		})
+
+		test('does not retry after retryUntil time', () => {
+			// setLoggerLevel('debug')
+
+			ExternalMessageQueue.update(message._id, { $set: {
+				lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0,
+				retryUntil: getCurrentTime() - 10
+			} })
+			jest.runOnlyPendingTimers()
+			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
+		})
+
+		test('can be forced to retry manually once', () => {
+			// setLoggerLevel('debug')
+
+			Meteor.call(ExternalMessageQueueAPI.methods.toggleHold, message._id)
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			expect(message).toBeTruthy()
+			expect(message.hold).toBe(true)
+			expect(message.retryUntil).toBeLessThan(getCurrentTime())
+			expect(message.manualRetry).toBe(false)
+
+			Meteor.call(ExternalMessageQueueAPI.methods.retry, message._id)
+
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			jest.runOnlyPendingTimers()
+			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(4)
+
+			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+			expect(message).toBeTruthy()
+			expect(message.hold).toBe(false) // expected to take message off hold
+			expect(message.manualRetry).toBe(false)
+			expect(message.tryCount).toBe(3)
+			expect(message.sent).toBeUndefined()
+		})
+
 	})
 
 	testInFiber('send a soap-type message', async () => {
-		setLoggerLevel('debug')
+		// setLoggerLevel('debug')
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const soapMessage: ExternalMessageQueueObjSOAP = {
@@ -285,8 +354,49 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 
-	/* testInFiber('fatal error when sending a soap-type message', async () => {
-		setLoggerLevel('debug')
+	testInFiber('fail to send a soap message', async () => {
+		// setLoggerLevel('debug')
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+
+		const soapMessage: ExternalMessageQueueObjSOAP = {
+			type: IBlueprintExternalMessageQueueType.SOAP,
+			receiver: { url: 'http://clean.me/with/soap' },
+			message: {
+				fcn: 'CallMeMaybe error',
+				clip_key: {},
+				clip: {}
+			}
+		}
+		expect(rundown).toBeTruthy()
+		queueExternalMessages(rundown, [ soapMessage ])
+
+		expect(ExternalMessageQueue.findOne()).toBeTruthy()
+		jest.runOnlyPendingTimers()
+
+		expect(sendSOAPMessage).toHaveBeenCalledTimes(2)
+		try {
+			await (sendSOAPMessage as jest.Mock).mock.results[1].value
+			fail('promise should reject')
+		} catch (e) {
+			expect(e.message).toBe('[500] Failed to send SOAP message')
+		}
+
+		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.errorMessage).toBe('Failed to send SOAP message')
+		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
+		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
+		expect(message.tryCount).toBe(1)
+		expect(message.sent).toBeUndefined()
+
+		// Retry behavior tested for slack messages
+
+		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+	})
+
+	testInFiber('fatal error when sending a soap-type message', async () => {
+		// setLoggerLevel('debug')
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const soapMessage: ExternalMessageQueueObjSOAP = {
@@ -302,51 +412,39 @@ describe('Test sending messages to mocked endpoints', () => {
 		queueExternalMessages(rundown, [ soapMessage ])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		console.log(ExternalMessageQueue.findOne())
-		jest.runOnlyPendingTimers()
 		jest.runOnlyPendingTimers()
 
-		expect(sendSOAPMessage).toHaveBeenCalledTimes(2)
+		expect(sendSOAPMessage).toHaveBeenCalledTimes(3)
 		try {
-			await (sendSOAPMessage as jest.Mock).mock.results[1].value.then(console.log, console.error)
+			await (sendSOAPMessage as jest.Mock).mock.results[2].value
 			fail('promise should reject')
 		} catch (e) {
-			expect(e.message).toBe('[500] Failed to send slack message')
+			expect(e.message).toBe('[401] Fatal error sending SOAP message.')
 		}
 
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
-		expect(message.errorMessage).toBe('Failed to send slack message')
+		expect(message.errorMessage).toBe('Fatal error sending SOAP message.')
 		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
+		expect(message.errorFatal).toBe(true)
 		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
 		expect(message.tryCount).toBe(1)
 		expect(message.sent).toBeUndefined()
-
-		jest.runOnlyPendingTimers()
-		// Does not try to send again yet ... too close to lastTry
-		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2)
 
 		// Reset the last try clock
 		ExternalMessageQueue.update(message._id, { $set: {
 			lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
 		} })
 		jest.runOnlyPendingTimers()
-		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
-
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-		expect(message).toBeTruthy()
-		expect(message.errorMessage).toBe('Failed to send slack message')
-		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
-		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
-		expect(message.tryCount).toBe(2)
-		expect(message.sent).toBeUndefined()
+		// Does not send again - error is fatal
+		expect(sendSOAPMessage).toHaveBeenCalledTimes(3)
 
 		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
-	}) */
+	})
 
 	testInFiber('send a rabbit MQ-type message', async () => {
-		setLoggerLevel('debug')
+		// setLoggerLevel('debug')
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const rabbitMessage: ExternalMessageQueueObjRabbitMQ = {
@@ -378,6 +476,80 @@ describe('Test sending messages to mocked endpoints', () => {
 
 		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
 
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+	})
+
+	testInFiber('fail to send a rabbitMQ-type message', async () => {
+		// setLoggerLevel('debug')
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+
+		const rabbitMessage: ExternalMessageQueueObjRabbitMQ = {
+			type: IBlueprintExternalMessageQueueType.RABBIT_MQ,
+			receiver: {
+				host: 'roger',
+				topic: 'the rabbit'
+			},
+			message: {
+				routingKey: 'toMyDoor',
+				message: 'what\'s error doc?',
+				headers: {}
+			}
+		}
+		expect(rundown).toBeTruthy()
+		queueExternalMessages(rundown, [ rabbitMessage ])
+
+		expect(ExternalMessageQueue.findOne()).toBeTruthy()
+		jest.runOnlyPendingTimers()
+
+		expect(sendRabbitMQMessage).toHaveBeenCalledTimes(2)
+		try {
+			await (sendRabbitMQMessage as jest.Mock).mock.results[1].value
+			fail('promise should reject')
+		} catch (e) {
+			expect(e.message).toBe('[500] Failed to send slack rabbitMQ message')
+		}
+
+		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.errorMessage).toBe('Failed to send slack rabbitMQ message')
+		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100)
+		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100)
+		expect(message.tryCount).toBe(1)
+		expect(message.sent).toBeUndefined()
+
+		// Retry behavior tested for slack messages
+
+		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+	})
+
+	testInFiber('does not send expired messages', () => {
+		// setLoggerLevel('debug')
+		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+
+		const slackMessage: ExternalMessageQueueObjSlack = {
+			type: IBlueprintExternalMessageQueueType.SLACK,
+			receiver: 'fred',
+			message: 'what\'s up doc?',
+		}
+		expect(rundown).toBeTruthy()
+		queueExternalMessages(rundown, [ slackMessage ])
+
+		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.expires).toBeGreaterThan(getCurrentTime())
+
+		ExternalMessageQueue.update(message._id, { $set : {
+			expires: getCurrentTime() - 365 * 24 * 3600 * 1000 }}) // so last year!
+		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		expect(message).toBeTruthy()
+		expect(message.expires).toBeLessThan(getCurrentTime())
+
+		jest.runOnlyPendingTimers()
+
+		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(4) // i.e. not called again
+
+		Meteor.call(ExternalMessageQueueAPI.methods.remove, message._id)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 })

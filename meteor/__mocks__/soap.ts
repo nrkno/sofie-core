@@ -5,6 +5,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 // Cyclic dependency issues with import of throwFatalError
 // import { throwFatalError } from '../server/api/ExternalMessageQueue'
+import { Fiber } from './Fibers'
 
 export function throwFatalError (msg: ExternalMessageQueueObj, e: Meteor.Error) {
 
@@ -19,7 +20,13 @@ export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & Extern
 	return new Promise((resolve, reject) => {
 		process.nextTick(() => {
 			if (msg.message.fcn.match(/fatal/)) {
-				throwFatalError(msg, new Meteor.Error(401, 'Fatal error sending SOAP message'))
+				try {
+					throwFatalError(msg, new Meteor.Error(401, 'Fatal error sending SOAP message.'))
+				} catch (e) {
+					reject(e)
+				}
+			} else if (msg.message.fcn.match(/error/)) {
+				reject(new Meteor.Error(500, 'Failed to send SOAP message'))
 			} else {
 				resolve()
 			}
