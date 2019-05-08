@@ -66,41 +66,43 @@ function userActionMethodName (
 ) {
 	switch (method) {
 		// @todo: go through these and set better names:
-		case UserActionAPI.methods.take: return 'Take'
-		case UserActionAPI.methods.setNext: return 'Setting Next'
-		case UserActionAPI.methods.moveNext: return 'Moving Next'
+		case UserActionAPI.methods.take: return t('Take')
+		case UserActionAPI.methods.setNext: return t('Setting Next')
+		case UserActionAPI.methods.moveNext: return t('Moving Next')
 
-		case UserActionAPI.methods.prepareForBroadcast: return 'Preparing for broadcast'
-		case UserActionAPI.methods.resetRundown: return 'Resetting Rundown'
-		case UserActionAPI.methods.resetAndActivate: return 'Resetting and activating Rundown'
-		case UserActionAPI.methods.activate: return 'Activating Rundown'
-		case UserActionAPI.methods.deactivate: return 'Deactivating Rundown'
-		case UserActionAPI.methods.reloadData: return 'Reloading rundown data'
+		case UserActionAPI.methods.prepareForBroadcast: return t('Preparing for broadcast')
+		case UserActionAPI.methods.resetRundown: return t('Resetting Rundown')
+		case UserActionAPI.methods.resetAndActivate: return t('Resetting and activating Rundown')
+		case UserActionAPI.methods.activate: return t('Activating Rundown')
+		case UserActionAPI.methods.deactivate: return t('Deactivating Rundown')
+		case UserActionAPI.methods.reloadData: return t('Reloading rundown data')
 
-		case UserActionAPI.methods.disableNextPiece: return 'Disabling next piece'
-		case UserActionAPI.methods.togglePartArgument: return 'Toggling Part-Argument'
-		case UserActionAPI.methods.pieceTakeNow: return 'Taking Piece'
+		case UserActionAPI.methods.disableNextPiece: return t('Disabling next piece')
+		case UserActionAPI.methods.togglePartArgument: return t('Toggling Part-Argument')
+		case UserActionAPI.methods.pieceTakeNow: return t('Taking Piece')
 
-		case UserActionAPI.methods.segmentAdLibPieceStart: return 'Starting AdLib-piece'
-		case UserActionAPI.methods.baselineAdLibPieceStart: return 'Starting AdLib-piece'
-		case UserActionAPI.methods.segmentAdLibPieceStop: return 'Stopping AdLib-piece'
+		case UserActionAPI.methods.segmentAdLibPieceStart: return t('Starting AdLib-piece')
+		case UserActionAPI.methods.baselineAdLibPieceStart: return t('Starting AdLib-piece')
+		case UserActionAPI.methods.segmentAdLibPieceStop: return t('Stopping AdLib-piece')
 
-		case UserActionAPI.methods.sourceLayerStickyPieceStart: return 'Starting sticky-pice'
+		case UserActionAPI.methods.sourceLayerStickyPieceStart: return t('Starting sticky-pice')
 
-		case UserActionAPI.methods.activateHold: return 'Activating Hold'
+		case UserActionAPI.methods.activateHold: return t('Activating Hold')
 
-		case UserActionAPI.methods.saveEvaluation: return 'Saving Evaluation'
+		case UserActionAPI.methods.saveEvaluation: return t('Saving Evaluation')
 
-		case UserActionAPI.methods.storeRundownSnapshot: return 'Creating Snapshot for debugging'
+		case UserActionAPI.methods.storeRundownSnapshot: return t('Creating Snapshot for debugging')
 
-		case UserActionAPI.methods.sourceLayerOnPartStop: return 'Stopping source layer'
+		case UserActionAPI.methods.sourceLayerOnPartStop: return t('Stopping source layer')
 
-		case UserActionAPI.methods.removeRundown: return 'Removing Rundown'
-		case UserActionAPI.methods.resyncRundown: return 'Re-syncing Rundown'
+		case UserActionAPI.methods.removeRundown: return t('Removing Rundown')
+		case UserActionAPI.methods.resyncRundown: return t('Re-syncing Rundown')
 
-		case UserActionAPI.methods.recordStop: return 'Stopping recording'
-		case UserActionAPI.methods.recordStart: return 'Starting recording'
-		case UserActionAPI.methods.recordDelete: return 'Deleting recording'
+		case UserActionAPI.methods.recordStop: return t('Stopping recording')
+		case UserActionAPI.methods.recordStart: return t('Starting recording')
+		case UserActionAPI.methods.recordDelete: return t('Deleting recording')
+
+		case UserActionAPI.methods.setInOutPoints: return t('Setting In/Out points')
 	}
 	return method // fallback
 
