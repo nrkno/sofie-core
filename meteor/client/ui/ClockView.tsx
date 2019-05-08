@@ -187,10 +187,10 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 									<div style={{ display: 'inline-block', height: '18vh' }}>
 										<img style={{ height: '12vh', paddingTop: '2vh' }} src='/icons/auto-presenter-screen.svg' />
 									</div> : ''}
-									{nextPart ? nextPart.slug.split(';')[0] : '_'}
+									{nextPart && nextPart.slug ? nextPart.slug.split(';')[0] : '_'}
 								</div>
 								<div className='clocks-part-title clocks-part-title'>
-									{nextPart ?
+									{nextPart && nextPart.slug ?
 										<PieceNameContainer partSlug={nextPart.slug} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 									: '_'}
 								</div>
