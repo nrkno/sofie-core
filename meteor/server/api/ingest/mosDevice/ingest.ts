@@ -70,7 +70,7 @@ function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string, parts:
 }
 function groupedPartsToSegments (rundownId: string, groupedParts: { name: string, parts: IngestPart[]}[]): IngestSegment[] {
 	return _.map(groupedParts, (grp, i) => literal<IngestSegment>({
-		externalId: getSegmentExternalId(rundownId, grp.parts[0], i),
+		externalId: getSegmentExternalId(rundownId, grp.parts[0]),
 		name: grp.name,
 		rank: i,
 		parts: grp.parts,
@@ -172,11 +172,8 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 		// ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
 		ingestPart.payload = story
 
-		// Need the raw id, not the hashed copy
-		const segmentId = getSegmentExternalId(rundownId, ingestPart, ingestSegment.rank)
-
 		// Update db with the full story:
-		handleUpdatedPartInner(studio, rundown, segmentId, ingestPart)
+		handleUpdatedPartInner(studio, rundown, ingestSegment.externalId, ingestPart)
 	})
 }
 export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, stories: Array<MOS.MosString128>) {
@@ -367,41 +364,22 @@ function diffAndApplyChanges (studio: Studio, rundown: Rundown, ingestRundown: I
 	saveRundownCache(rundown._id, newIngestRundown)
 
 	// Update segment ranks
-	// let ps: Array<Promise<any>> = []
-	// _.each(segmentDiff.changed, rank => {
-	// 	ps.push(asyncCollectionUpdate(Segments, {
-	// 		rundownId: rundown._id,
-	// 		_id: getSegmentId(rundown._id, newIngestRundown.segments[rank].externalId)
-	// 	}, { $set: {
-	// 		_rank: rank
-	// 	}}))
-	// })
-	// // _.each(segmentDiff.rankChanged, i => {
-	// // 	ps.push(asyncCollectionUpdate(Segments, {
-	// // 		rundownId: rundown._id,
-	// // 		_id: getSegmentId(rundown._id, newIngestRundown.segments[rank].externalId)
-	// // 	}, { $set: {
-	// // 		_rank: rank
-	// // 	}}))
-	// // })
-	// Promise.all(ps)
-	// TODO - are rankChanged being 'renamed' properly? - NO. this needs fixing
-	// For now below we are very brute force removing and regenerating anything that had a rank change
-
+	let ps: Array<Promise<any>> = []
+	_.each(segmentDiff.rankChanged, ranks => {
+		const rank = ranks[1]
+		ps.push(asyncCollectionUpdate(Segments, {
+			rundownId: rundown._id,
+			_id: getSegmentId(rundown._id, newIngestRundown.segments[rank].externalId)
+		}, { $set: {
+			_rank: rank
+		}}))
+	})
 	// Remove old segments
-	const removed = [
-		...segmentDiff.removed,
-		..._.map(segmentDiff.rankChanged, n => n[0])
-	]
-	const removedSegmentIds = _.map(removed, i => getSegmentId(rundown._id, ingestRundown.segments[i].externalId))
+	const removedSegmentIds = _.map(segmentDiff.removed, i => getSegmentId(rundown._id, ingestRundown.segments[i].externalId))
 	removeSegments(rundown._id, removedSegmentIds)
 
 	// Create/Update segments
-	const changed = [
-		...segmentDiff.changed,
-		..._.map(segmentDiff.rankChanged, n => n[1])
-	]
-	for (const i of changed) {
+	for (const i of segmentDiff.changed) {
 		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])
 	}
 
@@ -418,11 +396,13 @@ function diffAndApplyChanges (studio: Studio, rundown: Rundown, ingestRundown: I
 }
 
 export interface SegmentEntry {
+	id: string
 	name: string
 	parts: string[]
 }
 function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[] {
 	return _.map(ingestSegments, s => ({
+		id: s.externalId,
 		name: s.name,
 		parts: _.map(s.parts, p => p.externalId)
 	}))
@@ -463,6 +443,10 @@ export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmen
 	_.each(unusedNewSegmentEntries, (e, i) => {
 		const matching = unusedOldSegmentEntries.findIndex(o => o.e.name === e.e.name)
 		if (matching !== -1) {
+			const oldItem = unusedOldSegmentEntries[matching]
+			if (e.e.id !== oldItem.e.id) { // If Id has changed, then the old one needs to be explicitly removed
+				removed.push(oldItem.i)
+			}
 			changed.push(e.i)
 			unusedOldSegmentEntries.splice(matching, 1)
 			prune.push(i)

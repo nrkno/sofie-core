@@ -20,8 +20,8 @@ export function getPartIdFromMosStory (rundownId: string, partMosId: MOS.MosStri
 	return getPartId(rundownId, parseMosString(partMosId))
 }
 
-export function getSegmentExternalId (rundownId: string, ingestPart: IngestPart, rank: number) {
-	return `${rundownId}_${ingestPart.name.split(';')[0]}_${rank}`
+export function getSegmentExternalId (rundownId: string, ingestPart: IngestPart) {
+	return `${rundownId}_${ingestPart.name.split(';')[0]}_${ingestPart.externalId}`
 }
 
 export function fixIllegalObject (o: any) {
