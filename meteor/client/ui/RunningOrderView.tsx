@@ -1340,13 +1340,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onSetNext = (segmentLine: SegmentLine, e: any, offset?: number) => {
+	onSetNext = (segmentLine: SegmentLine, e: any, offset?: number, take?: boolean) => {
 		const {t} = this.props
 		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.runningOrder) {
 			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.runningOrder._id, segmentLine._id, offset], () => {
 				this.setState({
 					manualSetAsNext: true
 				})
+				if (!err && take && this.props.runningOrder) {
+					doUserAction(t, e, UserActionAPI.methods.take, [this.props.runningOrder._id])
+				}
 			})
 		}
 	}
