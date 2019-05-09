@@ -1,0 +1,109 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
+            - v3-node-cache-{{ .Branch }}
+      - run:
+          name: Meteor NPM install
+          command: cd meteor && meteor npm install
+          no_output_timeout: 60m
+      - run:
+          name: Meteor Build
+          command: cd meteor && meteor build --allow-superuser --directory .
+          no_output_timeout: 60m
+      - run:
+          name: Meteor Bundle NPM Build
+          command: cd meteor/bundle/programs/server && npm install
+          no_output_timeout: 60m
+      - save_cache:
+          key: v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
+          paths: 
+            - meteor/node_modules
+            - ~/.meteor
+      - save_cache:
+          key: v3-node-cache-{{ .Branch }}
+          paths: 
+            - meteor/node_modules
+            - ~/.meteor
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  tests:
+    docker:
+      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run Meteor Tests
+          command: cd meteor && meteor npm run test
+          no_output_timeout: 60m
+  publish-tag:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 18.06.0-ce
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Docker Image
+          command: docker build -f Dockerfile.circle . -t sofietv/tv-automation-server-core:$CIRCLE_TAG
+      - run:
+           name: Publish Docker Image to Docker Hub
+           command: |
+             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+             docker push sofietv/tv-automation-server-core:$CIRCLE_TAG
+  publish-branch:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 18.06.0-ce
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Docker Image
+          command: docker build -f Dockerfile.circle . -t sofietv/tv-automation-server-core:$CIRCLE_BRANCH
+      - run:
+           name: Publish Docker Image to Docker Hub
+           command: |
+             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+             docker push sofietv/tv-automation-server-core:$CIRCLE_BRANCH
+
+workflows:
+  version: 2
+  btp:
+    jobs:
+      - build
+      - tests:
+          requires:
+            - build
+      - publish-tag:
+          requires:
+            - tests
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - publish-branch:
+          requires:
+            - tests
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: 
+                - master
+                - develop
+                - stage
