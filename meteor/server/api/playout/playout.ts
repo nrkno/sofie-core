@@ -373,7 +373,7 @@ export namespace ServerPlayoutAPI {
 	}
 	export function setNextPartInner (
 		rundown: Rundown,
-		nextPartId: string | null,
+		nextPartId: string | DBPart | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
 	) {
@@ -381,9 +381,13 @@ export namespace ServerPlayoutAPI {
 
 		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundown._id}" cannot change next during hold!`)
 
-		let nextPart: Part | null = null
+		let nextPart: DBPart | null = null
 		if (nextPartId) {
-			nextPart = Parts.findOne(nextPartId) || null
+			if (_.isString(nextPartId)) {
+				nextPart = Parts.findOne(nextPartId) || null
+			} else if (_.isObject(nextPartId)) {
+				nextPart = nextPartId
+			}
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 

@@ -145,8 +145,7 @@ function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
 	}, { sort: { _rank: -1 } })
 }
 export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
-	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbPart.segmentId)
-	// const ingestPart = loadCachedIngestPart(dbRundown._id, dbPart._id)
+	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbRundown.externalId, dbPart.segmentId, dbPart.segmentId)
 
 	const studio = Studios.findOne(dbRundown.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)

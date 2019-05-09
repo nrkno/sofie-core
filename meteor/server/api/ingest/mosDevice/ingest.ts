@@ -200,7 +200,7 @@ export function handleMosDeleteStory (peripheralDevice: PeripheralDevice, runnin
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
 
-		UpdateNext.afterDeletePart(rundown)
+		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 
@@ -229,9 +229,9 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const previousPartIdStr = parseMosString(previousPartId)
-		const oldIndex = ingestParts.findIndex(p => p.externalId === previousPartIdStr)
-		if (oldIndex === -1) throw new Meteor.Error(404, `Part ${previousPartIdStr} in rundown ${rundown.externalId} not found`)
+		const insertBeforePartIdStr = parseMosString(previousPartId)
+		const oldIndex = ingestParts.findIndex(p => p.externalId === insertBeforePartIdStr)
+		if (oldIndex === -1) throw new Meteor.Error(404, `Part ${insertBeforePartIdStr} in rundown ${rundown.externalId} not found`)
 
 		const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true))
 		const newPartIds = _.map(newParts, part => part.externalId)
@@ -248,7 +248,7 @@ export function handleInsertParts (peripheralDevice: PeripheralDevice, runningOr
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
-		UpdateNext.afterInsertParts(rundown, previousPartIdStr, newPartIds, removePrevious)
+		UpdateNext.afterInsertParts(rundown, newPartIds, removePrevious)
 	})
 }
 export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, story0: MOS.MosString128, story1: MOS.MosString128) {
@@ -277,7 +277,7 @@ export function handleSwapStories (peripheralDevice: PeripheralDevice, runningOr
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
-		UpdateNext.afterSwapParts(rundown, story0Str, story1Str)
+		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 export function handleMoveStories (peripheralDevice: PeripheralDevice, runningOrderMosId: MOS.MosString128, insertBefore: MOS.MosString128, stories: MOS.MosString128[]) {

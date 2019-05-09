@@ -755,6 +755,16 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 				} else {
 					ok = false
 				}
+			} else if (key === '$or') {
+				if (_.isArray(s)) {
+					let ok2 = false
+					_.each(s, innerSelector => {
+						ok2 = ok2 || mongoWhere(o, innerSelector)
+					})
+					ok = ok2
+				} else {
+					throw new Error('An $or filter must be an array')
+				}
 			} else {
 				let oAttr = o[key]
 
@@ -775,6 +785,8 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 						ok = (s.$in.indexOf(oAttr) !== -1)
 					} else if (_.has(s,'$nin')) {
 						ok = (s.$nin.indexOf(oAttr) === -1)
+					} else if (_.has(s,'$exists')) {
+						ok = (key in o) === !!s.$exists
 					} else if (_.has(s,'$not')) {
 						let innerSelector: any = {}
 						innerSelector[key] = s.$not
