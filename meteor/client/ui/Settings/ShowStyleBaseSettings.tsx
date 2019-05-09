@@ -1229,8 +1229,12 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 									</div>
 								</div>
 								<div className='row'>
-									<div className='col c12 r1-c12'>
-										<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(showStyleVariant)} object={showStyleVariant} />
+									<div className='col c12 r1-c12 phs'>
+										<ConfigManifestSettings
+											t={this.props.t}
+											manifest={collectConfigs(showStyleVariant)}
+											object={showStyleVariant}
+											subPanel={true} />
 									</div>
 								</div>
 								<div className='mod alright'>
@@ -1251,7 +1255,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		return (
 			<div>
 				<h2 className='mhn'>{t('Variants')}</h2>
-				<table className='expando settings-studio-showStyleVariants-table'>
+				<table className='table expando settings-studio-showStyleVariants-table'>
 					<tbody>
 						{this.renderShowStyleVariants()}
 					</tbody>
