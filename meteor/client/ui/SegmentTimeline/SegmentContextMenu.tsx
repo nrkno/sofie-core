@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 
 interface IProps {
-	onSetNext: (part: Part | undefined, e: any, offset?: number) => void
+	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
 	rundown?: Rundown
 	studioMode: boolean
 	contextMenuContext: any
@@ -68,7 +68,8 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 	}
 
 	onPlayFromHere = (part, e) => {
-		// TODO
+		let offset = this.getTimePosition()
+		this.props.onSetNext(part, e, offset || 0, true)
 	}
 
 	private getSLStartsAt = (): number | null => {

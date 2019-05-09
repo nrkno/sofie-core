@@ -1346,13 +1346,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onSetNext = (part: Part, e: any, offset?: number) => {
+	onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
 		const { t } = this.props
 		if (this.state.studioMode && part && part._id && this.props.rundown) {
-			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, part._id, offset], () => {
+			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, part._id, offset], (err, res) => {
 				this.setState({
 					manualSetAsNext: true
 				})
+				if (!err && take && this.props.rundown) {
+					doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+				}
 			})
 		}
 	}
