@@ -1,0 +1,9 @@
+{
+	"arrowParens": "always",
+	"htmlWhitespaceSensitivity": "strict",
+	"printWidth": 120,
+	"singleQuote": true,
+	"jsxSingleQuote": true,
+	"tslintIntegration": true,
+	"eslintIntegration": true
+}
