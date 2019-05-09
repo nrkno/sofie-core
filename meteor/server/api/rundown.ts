@@ -161,8 +161,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 				_id: { $ne: oldNextPart._id }
 			}, partBefore ? partBefore._rank : null)
 
-			// TODO - should this be setNextPartInner?
-			ServerPlayoutAPI.setNextPart(rundown._id, newNextPart ? newNextPart._id : null)
+			ServerPlayoutAPI.setNextPartInner(rundown, newNextPart ? newNextPart : null)
 		}
 	}
 }

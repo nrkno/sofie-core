@@ -162,7 +162,7 @@ export function handleMosRundownMetadata (
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
-		if (!canBeUpdated(rundown)) return // TODO - more stuff in this file need this guard?
+		if (!canBeUpdated(rundown)) return
 
 		// Load the blueprint to process the data
 		const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
@@ -273,7 +273,7 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 	})
 	return ingestParts
 }
-export function handleInsertParts(
+export function handleInsertParts (
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	previousPartId: MOS.MosString128,
@@ -412,7 +412,7 @@ export function handleMoveStories (
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
 
-		UpdateNext.afterMoveParts(rundown)
+		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 

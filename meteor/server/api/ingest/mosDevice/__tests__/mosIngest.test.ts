@@ -691,7 +691,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryMove, device._id, device.token, action, [new MOS.MosString128(story0)])
 
-		expect(UpdateNext.afterMoveParts).toHaveBeenCalledWith(rundown)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
@@ -721,7 +721,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryMove, device._id, device.token, action, stories)
 
-		expect(UpdateNext.afterMoveParts).toHaveBeenCalledWith(rundown)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()

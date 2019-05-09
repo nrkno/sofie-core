@@ -26,7 +26,6 @@ import {
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios } from '../../../lib/collections/Studios'
-import { syncFunction } from '../../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
 let clone = require('fast-clone')
 import { ClientAPI } from '../../../lib/api/client'
@@ -482,7 +481,7 @@ export namespace ServerPlayoutAPI {
 				// Skip it, then (ie run the whole thing again)
 				return moveNextPart(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
 			} else {
-				setNextPart(rundown._id, part._id, setManually)
+				setNextPartInner(rundown, part, setManually)
 				return part._id
 			}
 		})
@@ -518,46 +517,6 @@ export namespace ServerPlayoutAPI {
 			return ClientAPI.responseSuccess()
 		})
 	}
-	/*
-	// TODO: I could not figure out if this is used anywhere, therefore removing temporarily / Nyman
-	// It was used by mosRoStoryMove, but the logic using this was not yet reimplemented
-
-	export function rundownStoriesMoved (rundownId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
-		check(rundownId, String)
-		check(onAirNextWindowWidth, Match.Maybe(Number))
-		check(nextPosition, Match.Maybe(Number))
-
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-
-		if (rundown.nextPartId) {
-			let currentPart: Part | undefined = undefined
-			let nextPart: Part | undefined = undefined
-			if (rundown.currentPartId) {
-				currentPart = Parts.findOne(rundown.currentPartId)
-			}
-			if (rundown.nextPartId) {
-				nextPart = Parts.findOne(rundown.nextPartId)
-			}
-			if (currentPart && onAirNextWindowWidth === 2) { // the next line was next to onAir line
-				const newNextPart = rundown.getParts({
-					_rank: {
-						$gt: currentPart._rank
-					}
-				}, {
-					limit: 1
-				})[0]
-				libSetNextPart(rundown, newNextPart || null)
-			} else if (!currentPart && nextPart && onAirNextWindowWidth === undefined && nextPosition !== undefined) {
-				const newNextPart = rundown.getParts({}, {
-					limit: nextPosition
-				})[0]
-				libSetNextPart(rundown, newNextPart || null)
-
-			}
-		}
-	}
-	*/
 	export function disableNextPiece (rundownId: string, undo?: boolean) {
 		check(rundownId, String)
 

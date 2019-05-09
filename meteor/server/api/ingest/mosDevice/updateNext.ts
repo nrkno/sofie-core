@@ -66,10 +66,4 @@ export namespace UpdateNext {
 			UpdateNext.ensureNextPartIsValid(rundown)
 		}
 	}
-
-	export function afterMoveParts (rundown: Rundown) {
-		// TODO
-
-		UpdateNext.ensureNextPartIsValid(rundown)
-	}
 }
