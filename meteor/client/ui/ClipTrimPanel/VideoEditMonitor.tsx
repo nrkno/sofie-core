@@ -74,7 +74,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 				this.retryCount = 0
 			}
 
-			const delta = (e.pageX - this.lastPosition) / (this.videoEl.clientWidth * 3)
+			const delta = (e.pageX - this.lastPosition) / Math.min(document.body.clientWidth, this.videoEl.clientWidth * 3)
 			const targetTime = Math.max(0, Math.min(this.internalTime + (this.props.duration || this.videoEl.duration) * delta, (this.props.duration || this.videoEl.duration) - 0.001))
 			if (Number.isFinite(targetTime)) {
 				this.videoEl.currentTime = targetTime
