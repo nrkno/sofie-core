@@ -30,8 +30,8 @@ describe('Test external message queue static methods', () => {
 
 	let studioEnv = setupDefaultStudioEnvironment()
 	let rundown: Rundown
-	beforeAll(() => {
-		runInFiber(() => {
+	beforeAll(async () => {
+		await runInFiber(() => {
 			let now = getCurrentTime()
 			Rundowns.insert({
 				_id: 'rundown_1',

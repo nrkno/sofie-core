@@ -852,8 +852,9 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
  * @param obj Object
  * @param path Path to array in object
  * @param valueToPush Value to push onto array
+ * @returns Whether the value was changed
  */
-export function setOntoPath<T> (obj: Object, path: string, valueToSet: T): void {
+export function setOntoPath<T> (obj: Object, path: string, valueToSet: T) {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
 	let attrs = path.split('.')

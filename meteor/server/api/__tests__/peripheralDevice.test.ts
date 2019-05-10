@@ -141,11 +141,24 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('pingWithCommand and functionReply', () => {
 		setLoggerLevel('debug')
+
+		let resultErr = undefined
+		let resultMessage = undefined
+		let pingCompleted = (err, msg) => {
+			resultErr = err
+			resultMessage = msg
+		}
+
 		// This is very odd. Ping command is sent and lastSeen updated before response
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		let device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		expect(device2).toBeTruthy()
+		// Decrease lastSeen to ensure that the call below updates it
+		let lastSeen = device2.lastSeen - 100
+		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
+
 		let message = 'Waving!'
-		Meteor.call(PeripheralDeviceAPI.methods.pingWithCommand, device._id, device.token, message)
+		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
+		Meteor.call(PeripheralDeviceAPI.methods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
 		expect(command).toBeTruthy()
@@ -153,13 +166,16 @@ describe('test peripheralDevice general API methods', () => {
 		expect(command.functionName).toBe('pingResponse')
 		expect(command.args).toEqual([ message ])
 
-		Meteor.call(PeripheralDeviceAPI.methods.functionReply, device._id, device.token, command._id, undefined, 'Waving back!')
-		command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
-		expect(command.hasReply).toBeTruthy()
-		expect(command.reply).toBe('Waving back!')
+		expect(resultErr).toBeUndefined()
+		expect(resultMessage).toBeUndefined()
 
-		PeripheralDeviceCommands.remove(command._id)
+		let replyMessage = 'Waving back!'
+		Meteor.call(PeripheralDeviceAPI.methods.functionReply, device._id, device.token, command._id, undefined, replyMessage)
 		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
+
+		expect(resultErr).toBeNull()
+		expect(resultMessage).toEqual(replyMessage)
+
 	})
 
 	/* testInFiber('partPlaybackStarted', () => {

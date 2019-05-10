@@ -201,7 +201,6 @@ export namespace MeteorMock {
 
 			return returnValue
 		}
-		return fcn
 	}
 	/*
 	export function subscribe () {

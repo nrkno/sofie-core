@@ -6,10 +6,10 @@ export function testInFiber (testName: string, fcn: Function) {
 	})
 }
 
-function testInFiberOnly (testName: string, fcn: Function) {
+export function testInFiberOnly (testName: string, fcn: Function) {
 	test.only(testName, async () => {
 		await runInFiber(fcn)
 	})
 }
 
-testInFiber.only = testInFiberOnly
+// testInFiber.only = testInFiberOnly

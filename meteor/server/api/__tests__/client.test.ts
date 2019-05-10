@@ -121,6 +121,8 @@ describe('ClientAPI', () => {
 		const mockArgs = ['mockArg1', 'mockArg2']
 		const mockMethods = {}
 
+		jest.useFakeTimers()
+
 		it('Exports a Meteor method to the client', () => {
 			expect(MeteorMock.mockMethods[ClientAPI.methods.callPeripheralDeviceFunction]).toBeTruthy()
 		})
@@ -165,8 +167,6 @@ describe('ClientAPI', () => {
 							reply: 'OK'
 						}
 					})
-					// This will probably resolve after around 3s, since that is the timeout time
-					// of checkReply and the observeChanges is not implemented in the mock
 					return promise.then((value) => {
 						const log = UserActionsLog.findOne({
 							method: logMethodName

@@ -55,7 +55,9 @@ export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | 
 	if (!studio.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(studio.blueprintId)
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+	if (!blueprint) {
+		throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+	}
 
 	if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) {
 		throw new Meteor.Error(500, `Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}"!`)
@@ -76,7 +78,9 @@ export function getBlueprintOfRundown (runnningOrder: Rundown): WrappedShowStyle
 
 export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
 	const blueprint = loadBlueprintsById(showStyleBase.blueprintId)
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
+	if (!blueprint) {
+		throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
+	}
 
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
 		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`)
@@ -116,6 +120,7 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBl
 	if (cached) {
 		return cached.fcn
 	} else {
+		// Inject some commonly used libraries, so that they don't have to be bundled into the blueprints
 		const context = {
 			_,
 			moment,
@@ -124,7 +129,7 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBl
 		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
 		let manifest = entry.default
 
-		// Wrap the functions in manifest, to emit better errors
+		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {
 			let value = manifest[key]
 			if (_.isFunction(value)) {

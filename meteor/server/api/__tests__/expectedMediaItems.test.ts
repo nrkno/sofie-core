@@ -186,7 +186,7 @@ describe('Expected Media Items', () => {
 	}))
 
 	describe('Based on a Rundown', () => {
-		testInFiber.only('Generates ExpectedMediaItems based on a Rundown', () => {
+		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
 			updateExpectedMediaItemsOnRundown(rdId0)
 
 			const items = ExpectedMediaItems.find({
@@ -195,7 +195,7 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(4)
 		})
-		testInFiber.only('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
+		testInFiber('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
 			const rd = Rundowns.findOne(rdId0)
 			if (!rd) {
 				fail()
@@ -214,7 +214,7 @@ describe('Expected Media Items', () => {
 	})
 
 	describe('Based on a Part', () => {
-		testInFiber.only('Generates ExpectedMediaItems based on a Part', () => {
+		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
 			expect(Rundowns.findOne(rdId1)).toBeTruthy()
 			expect(Parts.findOne(rdId1 + '_' + mockPart0)).toBeTruthy()
 			expect(Pieces.find({ partId: rdId1 + '_' + mockPart0 }).count()).toBe(1)
@@ -227,7 +227,7 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(2)
 		})
-		testInFiber.only('Removes all ExpectedMediaItems if a Part has been deleted', () => {
+		testInFiber('Removes all ExpectedMediaItems if a Part has been deleted', () => {
 			Parts.remove({
 				_id: rdId1 + '_' + mockPart0
 			})
@@ -240,7 +240,7 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(0)
 		})
-		testInFiber.only('Removes all ExpectedMediaItems if a Rundown has been deleted', () => {
+		testInFiber('Removes all ExpectedMediaItems if a Rundown has been deleted', () => {
 			const rd = Rundowns.findOne(rdId1)
 			if (!rd) {
 				fail()

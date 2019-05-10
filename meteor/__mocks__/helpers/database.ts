@@ -34,7 +34,8 @@ import {
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '../../lib/collections/Blueprints'
+import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
 import { literal } from '../../lib/lib'
 
@@ -76,6 +77,23 @@ export function setupMockPeripheralDevice (
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
 	PeripheralDevices.insert(device)
 	return device
+}
+export function setupMockCore (doc?: Partial<ICoreSystem>): ICoreSystem {
+	doc = doc || {}
+
+	const defaultCore: ICoreSystem = {
+		_id: SYSTEM_ID,
+		name: 'mock Core',
+		created: 0,
+		modified: 0,
+		version: '0.0.0',
+		previousVersion: '0.0.0',
+		storePath: '',
+	}
+	const coreSystem = _.extend(defaultCore, doc)
+	CoreSystem.remove(SYSTEM_ID)
+	CoreSystem.insert(coreSystem)
+	return coreSystem
 }
 export function setupMockStudio (doc?: Partial<DBStudio>): Studio {
 	doc = doc || {}
@@ -321,6 +339,8 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 
 export function setupDefaultStudioEnvironment () {
 
+	const core = setupMockCore({})
+
 	const showStyleBaseId = Random.id()
 	const showStyleVariantId = Random.id()
 
@@ -349,6 +369,7 @@ export function setupDefaultStudioEnvironment () {
 		showStyleBase,
 		showStyleVariant,
 		studio,
+		core,
 		device
 	}
 }
