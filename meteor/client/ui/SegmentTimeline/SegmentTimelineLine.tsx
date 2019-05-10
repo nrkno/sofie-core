@@ -258,7 +258,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				Math.max(
 				(
 					(startedPlayback && props.timingDurations.partDurations &&
-						(SegmentTimelineLine0.getCurrentLiveLinePosition(props.part) + SegmentTimelineLine0.getLiveLineTimePadding(props.timeScale))
+						(SegmentTimelineLine0.getCurrentLiveLinePosition(props.part) +
+							SegmentTimelineLine0.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.partDurations ?
 						(props.part.displayDuration || props.timingDurations.partDurations[props.part._id]) :
@@ -283,7 +284,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						(startedPlayback && nextProps.timingDurations.partDurations &&
 							(nextProps.relative ?
 								SegmentTimelineLine0.getCurrentLiveLinePosition(nextProps.part) :
-								SegmentTimelineLine0.getCurrentLiveLinePosition(nextProps.part) + SegmentTimelineLine0.getLiveLineTimePadding(nextProps.timeScale))
+								SegmentTimelineLine0.getCurrentLiveLinePosition(nextProps.part) +
+									SegmentTimelineLine0.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.partDurations ?
 						(nextProps.part.displayDuration || nextProps.timingDurations.partDurations[nextProps.part._id]) :
@@ -308,7 +310,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			if (part.duration) {
 				return part.duration
 			} else {
-				return getCurrentTime() - (part.getLastStartedPlayback() || 0)
+				return getCurrentTime() - (part.getLastStartedPlayback() || 0) + (part.getLastPlayOffset() || 0)
 			}
 		} else {
 			return 0
@@ -335,8 +337,12 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	getLineDuration (): number {
 		// const part = this.props.part
 
-		return Math.max(this.state.liveDuration,
-			this.props.part.duration || this.props.part.renderedDuration || 0)
+		const playOffset = this.props.part.timings ? (_.last(this.props.part.timings.playOffset) || 0) : 0
+
+		return Math.max(
+			this.state.liveDuration,
+			(this.props.part.duration || this.props.part.renderedDuration || 0) + playOffset
+		)
 
 		/* return part.duration !== undefined ? part.duration : Math.max(
 			((this.props.timingDurations.partDurations && this.props.timingDurations.partDurations[part._id]) || 0),
@@ -344,14 +350,26 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	}
 
 	getPartStartsAt (): number {
-		return Math.max(0, (this.props.firstPartInSegment && this.props.timingDurations.partDisplayStartsAt && (this.props.timingDurations.partDisplayStartsAt[this.props.part._id] - this.props.timingDurations.partDisplayStartsAt[this.props.firstPartInSegment._id])) || 0)
+		return Math.max(0, (this.props.firstPartInSegment &&
+			this.props.timingDurations.partDisplayStartsAt &&
+			(
+				this.props.timingDurations.partDisplayStartsAt[this.props.part._id] -
+				this.props.timingDurations.partDisplayStartsAt[this.props.firstPartInSegment._id]
+			)
+		) || 0)
 	}
 
 	isInsideViewport () {
 		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.part, this.getPartStartsAt(), this.getLineDuration())
+			return RundownUtils.isInsideViewport(
+				this.props.scrollLeft,
+				this.props.scrollWidth,
+				this.props.part,
+				this.getPartStartsAt(),
+				this.getLineDuration()
+			)
 		}
 	}
 
