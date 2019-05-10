@@ -43,7 +43,7 @@ jobs:
           at: .
       - run:
           name: Run Meteor Tests
-          command: cd meteor && meteor npm run test
+          command: cd meteor && meteor npm run prepareForTest && meteor npm run test 
           no_output_timeout: 60m
   publish-tag:
     docker:
