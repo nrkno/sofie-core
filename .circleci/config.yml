@@ -39,11 +39,10 @@ jobs:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.6.1.4
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
       - run:
           name: Run Meteor Tests
-          command: cd meteor && meteor npm run prepareForTest && meteor npm run ci 
+          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci 
           no_output_timeout: 60m
   publish-tag:
     docker:
@@ -85,9 +84,7 @@ workflows:
   build-test-publish:
     jobs:
       - build
-      - tests:
-          requires:
-            - build
+      - tests
       - publish-tag:
           requires:
             - build
