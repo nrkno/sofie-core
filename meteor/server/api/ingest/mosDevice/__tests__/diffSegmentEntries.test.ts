@@ -7,6 +7,7 @@ describe('Ingest: MOS', () => {
 	describe('diffSegmentEntries', () => {
 		const sampleData: SegmentEntry[] = [
 			{
+				'id': 'overblik',
 				'name': 'Overblik',
 				'parts': [
 					'2012R2ENPS8VM;P_ENPSMOS\\W\\F_HOLD ROs\\R_B10067B2-434B-4CF3-AFB1A02EEF8760CB;C355011E-B1E2-425E-AA3D07094F51297F',
@@ -17,6 +18,7 @@ describe('Ingest: MOS', () => {
 				]
 			},
 			{
+				'id': 'moller',
 				'name': 'Møller og DBU',
 				'parts': [
 					'2012R2ENPS8VM;P_ENPSMOS\\W\\F_HOLD ROs\\R_B10067B2-434B-4CF3-AFB1A02EEF8760CB;0D1D077D-9720-4560-BB605A012DFAF93E',
@@ -26,12 +28,14 @@ describe('Ingest: MOS', () => {
 				]
 			},
 			{
+				'id': 'webhenvisning',
 				'name': 'Webhenvisning TV 2 Sporten',
 				'parts': [
 					'2012R2ENPS8VM;P_ENPSMOS\\W\\F_HOLD ROs\\R_B10067B2-434B-4CF3-AFB1A02EEF8760CB;56CB0445-5782-4F92-A0C24CCA21FE9969'
 				]
 			},
 			{
+				'id': 'moller2',
 				'name': 'Møller og DBU',
 				'parts': [
 					'2012R2ENPS8VM;P_ENPSMOS\\W\\F_HOLD ROs\\R_B10067B2-434B-4CF3-AFB1A02EEF8760CB;3487F683-5939-4A37-B41C095014F35C2E',
@@ -262,6 +266,7 @@ describe('Ingest: MOS', () => {
 			// First segment
 			const sampleData2: SegmentEntry[] = JSON.parse(JSON.stringify(sampleData))
 			sampleData2.splice(0, 0, {
+				id: 'new',
 				name: 'NEW NAME',
 				parts: [ 'abc' ]
 			})
@@ -275,6 +280,7 @@ describe('Ingest: MOS', () => {
 			// Middle segment
 			const sampleData3: SegmentEntry[] = JSON.parse(JSON.stringify(sampleData))
 			sampleData3.splice(1, 0, {
+				id: 'new',
 				name: 'NEW NAME',
 				parts: [ 'abc' ]
 			})
@@ -288,6 +294,7 @@ describe('Ingest: MOS', () => {
 			// Last segment
 			const sampleData4: SegmentEntry[] = JSON.parse(JSON.stringify(sampleData))
 			sampleData4.push({
+				id: 'new',
 				name: 'NEW NAME',
 				parts: [ 'abc' ]
 			})
@@ -303,9 +310,11 @@ describe('Ingest: MOS', () => {
 			// // First segment
 			const sampleData2: SegmentEntry[] = JSON.parse(JSON.stringify(sampleData))
 			sampleData2.splice(1, 0, {
+				id: 'new',
 				name: 'NEW NAME',
 				parts: [ 'abc' ]
 			}, {
+				id: sampleData2[0].id + '2',
 				name: sampleData2[0].name,
 				parts: sampleData2[0].parts.splice(4, 5)
 			})
@@ -319,9 +328,11 @@ describe('Ingest: MOS', () => {
 			// Middle segment
 			const sampleData3: SegmentEntry[] = JSON.parse(JSON.stringify(sampleData))
 			sampleData3.splice(2, 0, {
+				id: 'new',
 				name: 'NEW NAME',
 				parts: [ 'abc' ]
 			}, {
+				id: sampleData2[0].id + '2',
 				name: sampleData3[1].name,
 				parts: sampleData3[1].parts.splice(3, 1)
 			})
