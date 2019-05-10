@@ -82,7 +82,7 @@ jobs:
 
 workflows:
   version: 2
-  btp:
+  build-test-publish:
     jobs:
       - build
       - tests:
@@ -90,7 +90,7 @@ workflows:
             - build
       - publish-tag:
           requires:
-            - tests
+            - build
           filters:
             tags:
               only: /.*/
@@ -98,7 +98,7 @@ workflows:
               ignore: /.*/
       - publish-branch:
           requires:
-            - tests
+            - build
           filters:
             tags:
               ignore: /.*/
