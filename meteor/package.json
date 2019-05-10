@@ -123,6 +123,6 @@
     "tslint": "^5.16.0",
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.8.0",
-    "typescript": "^3.3.3333"
+    "typescript": "2.8.3"
   }
 }
