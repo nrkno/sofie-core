@@ -100,7 +100,7 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time) => void
 	ps.push(makePromise(() => {
 		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
 			studioId: studio._id,
-			statObject: { $ne: true }
+			objectType: { $ne: TimelineObjType.STAT }
 		}, timelineObjs, {
 			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
 				// do not overwrite enable when the enable has been denowified
@@ -131,7 +131,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	if (!timelineObjs) {
 		timelineObjs = Timeline.find({
 			studioId: studio._id,
-			statObject: { $ne: true }
+			objectType: { $ne: TimelineObjType.STAT }
 		}).fetch()
 	}
 
@@ -151,7 +151,6 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 		_id: '', // set later
 		studioId: studio._id,
 		objectType: TimelineObjType.STAT,
-		statObject: true,
 		content: {
 			deviceType: DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.NOTHING,
@@ -553,7 +552,7 @@ function createPartGroup (part: Part, duration: number | string): TimelineObjGro
 		objectType: TimelineObjType.RUNDOWN,
 		enable: {
 			start: 'now',
-			duration: duration
+			duration: duration || undefined
 		},
 		priority: 5,
 		layer: '', // These should coexist
@@ -605,8 +604,10 @@ function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObjGeneric>, cu
 			let lawoObj = obj as TimelineObjLawoAny & TimelineObjGeneric
 			if (lawoObj.content.type === TimelineContentTypeLawo.SOURCE) {
 				_.each(lawoObj.content, (val, key) => {
-					// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
-					lawoObj.content[key].triggerValue = currentPartId || ''
+					if (_.isObject(lawoObj.content[key])) {
+						// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
+						lawoObj.content[key].triggerValue = currentPartId || ''
+					}
 				})
 			}
 		}
@@ -616,7 +617,7 @@ function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObjGeneric>, cu
 function validateNoraPreload (timelineObjs: Array<TimelineObjGeneric>) {
 	const toRemoveIds: Array<string> = []
 	_.each(timelineObjs, obj => {
-		if (obj.content.deviceType === DeviceType.HTTPSEND && obj.isBackground) {
+		if (obj.content.deviceType === DeviceType.HTTPSEND && obj.isLookahead) {
 			const httpObj = obj as TimelineObjHTTPRequest & TimelineObjGeneric
 
 			// ignore normal objects

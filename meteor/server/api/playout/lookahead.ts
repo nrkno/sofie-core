@@ -45,7 +45,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			r.id = `lookahead_${i}_${r.id}`
 			r.priority = 0.1
 			r.enable = enable
-			r.isBackground = true
+			r.isLookahead = true
 			delete r.inGroup // force it to be cleared
 
 			if (m.lookahead === LookaheadMode.PRELOAD) {

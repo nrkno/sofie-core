@@ -34,11 +34,9 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	metadata?: {
 		[key: string]: any
 	}
-	/** Only set to true for the "magic" statistic objects, used to trigger playout */
-	statObject?: boolean
 
 	/** Only set to true when an object is inserted by lookahead */
-	isBackground?: boolean
+	isLookahead?: boolean
 	/** Set when an object is on a virtual layer for lookahead, so that it can be routed correctly */
 	originalLayer?: string | number
 }
@@ -56,8 +54,6 @@ export enum TimelineObjType {
 }
 export interface TimelineObjStat extends TimelineObjGeneric {
 	objectType: TimelineObjType.STAT
-	/** To be deprecated later, it's enought to identify with TimelineObjType.STAT  */
-	statObject: true
 	content: {
 		deviceType: DeviceType.ABSTRACT
 		type: TimelineContentTypeOther.NOTHING

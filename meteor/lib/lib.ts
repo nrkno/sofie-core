@@ -371,16 +371,22 @@ export function objectPathSet (obj: any, path: string, value: any) {
 export function stringifyObjects (objs: any): string {
 	if (_.isArray(objs)) {
 		return _.map(objs, (obj) => {
-			return stringifyObjects(obj)
+			if (obj !== undefined) {
+				return stringifyObjects(obj)
+			}
 		}).join(',')
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
 		let keys = _.sortBy(_.keys(objs), (k) => k)
 
-		return _.map(keys, (key) => {
-			return key + '=' + stringifyObjects(objs[key])
-		}).join(',')
+		return _.compact(_.map(keys, (key) => {
+			if (objs[key] !== undefined) {
+				return key + '=' + stringifyObjects(objs[key])
+			} else {
+				return null
+			}
+		})).join(',')
 	} else {
 		return objs + ''
 	}

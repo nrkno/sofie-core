@@ -231,6 +231,8 @@ function updateRundownFromIngestData (
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
+	} else {
+		// TODO - this needs to set something..
 	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
