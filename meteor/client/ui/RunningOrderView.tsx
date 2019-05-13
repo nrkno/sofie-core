@@ -1210,14 +1210,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSelectSegmentLineItem = (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
-		if (sli && sli.content && (sli.content as VTContent).editable &&
-			((((sli.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-			((sli.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
-			this.setState({
-				isClipTrimmerOpen: true,
-				selectedSegmentLineItem: sli
-			})
-		}
+		// if (sli && sli.content && (sli.content as VTContent).editable &&
+		// 	((((sli.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+		// 	((sli.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+		// 	this.setState({
+		// 		isClipTrimmerOpen: true,
+		// 		selectedSegmentLineItem: sli
+		// 	})
+		// }
 	}
 
 	componentWillUnmount () {
