@@ -287,9 +287,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	onAirLineRefresh = () => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
 			const partOffset = this.context.durations &&
-									  this.context.durations.partDisplayStartsAt &&
-									  (this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id] - this.context.durations.partDisplayStartsAt[this.props.parts[0]._id])
-									  || 0
+				this.context.durations.partDisplayStartsAt &&
+				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
+					- this.context.durations.partDisplayStartsAt[this.props.parts[0]._id])
+				|| 0
 
 			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
@@ -298,16 +299,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				(getCurrentTime() - lastStartedPlayback + partOffset + lastPlayOffset) :
 				partOffset
 
-			let onAirLineDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
+			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
 			if (this.props.currentLivePart.displayDurationGroup && !this.props.currentLivePart.displayDuration) {
-				onAirLineDuration = this.props.currentLivePart.renderedDuration || onAirLineDuration
+				onAirPartDuration = this.props.currentLivePart.renderedDuration || onAirPartDuration
 			}
 
 			this.setState(_.extend({
 				livePosition: newLivePosition,
 				displayTimecode: this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-					(getCurrentTime() - (lastStartedPlayback + onAirLineDuration)) :
-					(onAirLineDuration * -1)
+					(getCurrentTime() - (lastStartedPlayback + onAirPartDuration)) :
+					(onAirPartDuration * -1)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 			} : null))

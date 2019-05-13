@@ -258,6 +258,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				totalRundownDuration += part.expectedDuration || 0
 
 				const lastStartedPlayback = part.getLastStartedPlayback()
+				const playOffset = part.timings && part.timings.playOffset && _.last(part.timings.playOffset) || 0
 
 				// asPlayed is the actual duration so far and expected durations in unplayed lines
 				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
@@ -267,16 +268,15 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					!part.duration &&
 					lastStartedPlayback + (part.expectedDuration || 0) < now
 				) {
-					asPlayedRundownDuration += (now - lastStartedPlayback)
+					asPlayedRundownDuration += (now - lastStartedPlayback) - playOffset
 				} else {
-					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0)
+					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0) - playOffset
 				}
 
 				let partDuration = 0
 				let partDisplayDuration = 0
 				let displayDurationFromGroup = 0
 
-				const playOffset = part.timings && part.timings.playOffset && _.last(part.timings.playOffset) || 0
 
 				// Display Duration groups are groups of two or more Parts, where some of them have an
 				// expectedDuration and some have 0.
@@ -304,14 +304,14 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 						(now - lastStartedPlayback))
 					partDisplayDuration = Math.max((part.duration || displayDurationFromGroup || part.expectedDuration || 0),
 						(now - lastStartedPlayback)) + playOffset
-					this.partPlayed[part._id] = (now - lastStartedPlayback + playOffset)
+					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
 				} else {
 					partDuration = part.duration || part.expectedDuration || 0
 					partDisplayDuration = Math.max(0, part.duration && part.duration + playOffset
 						|| displayDurationFromGroup
 						|| part.expectedDuration
 						|| 0)
-					this.partPlayed[part._id] = (part.duration || 0) + playOffset
+					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
 					this.displayDurationGroups[part.displayDurationGroup] = Math.max(0,
