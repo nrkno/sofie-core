@@ -10,7 +10,8 @@ import {
 	waitForPromiseAll,
 	asyncCollectionRemove,
 	Time,
-	pushOntoPath
+	pushOntoPath,
+	clone
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -18,7 +19,6 @@ import { updateSegmentFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
-let clone = require('fast-clone')
 
 /**
  * Reset the rundown:
@@ -314,11 +314,10 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 
 		o.id = prefix + o.id
 
-		if (typeof o.duration === 'string') {
-			o.duration = replaceIds(o.duration)
-		}
-		if (typeof o.trigger.value === 'string') {
-			o.trigger.value = replaceIds(o.trigger.value)
+		for (const key of _.keys(o.enable)) {
+			if (typeof o.enable[key] === 'string') {
+				o.enable[key] = replaceIds(o.enable[key])
+			}
 		}
 
 		if (typeof o.inGroup === 'string') {

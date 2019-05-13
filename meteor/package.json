@@ -84,7 +84,7 @@
     "safer-eval": "^1.2.3",
     "semver": "^6.0.0",
     "soap": "^0.24.0",
-    "superfly-timeline": "^6.0.3",
+    "superfly-timeline": "^7.0.2",
     "timecode": "0.0.4",
     "timeline-state-resolver-types": "^2.1.0",
     "tv-automation-sofie-blueprints-integration": "^0.21.0",

@@ -8,12 +8,11 @@ import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integra
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { TriggerType } from 'timeline-state-resolver-types/dist/superfly-timeline'
 import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
-import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces';
+import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -87,9 +86,8 @@ describe('Expected Media Items', () => {
 		Pieces.insert(literal<Piece>({
 			_id: rdId + '_' + mockPiece0,
 			name: '',
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 0
+			start: {
+				offset: 0
 			},
 			expectedDuration: 0,
 			adlibPreroll: 0,
@@ -128,9 +126,8 @@ describe('Expected Media Items', () => {
 		Pieces.insert(literal<Piece>({
 			_id: rdId + '_' + mockPiece1,
 			name: '',
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 0
+			start: {
+				offset: 0
 			},
 			expectedDuration: 0,
 			adlibPreroll: 0,
@@ -167,7 +164,7 @@ describe('Expected Media Items', () => {
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			trigger: undefined,
+			// trigger: undefined,
 			content: literal<VTContent>({
 				fileName: mockFileName1,
 				path: mockPath1,

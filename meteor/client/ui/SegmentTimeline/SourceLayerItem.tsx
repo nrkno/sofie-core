@@ -493,7 +493,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.piece.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
+								{this.props.piece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
 							</div>
 						)
 					}

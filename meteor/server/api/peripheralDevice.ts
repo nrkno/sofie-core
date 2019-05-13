@@ -163,8 +163,8 @@ export namespace ServerPeripheralDeviceAPI {
 				Timeline.update({
 					_id: getTimelineId(obj.studioId, o.id)
 				}, {$set: {
-					'trigger.value': o.time,
-					'trigger.setFromNow': true
+					'enable.start': o.time,
+					'enable.setFromNow': true
 				}},{
 					multi: true
 				})

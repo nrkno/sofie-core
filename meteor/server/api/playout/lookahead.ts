@@ -1,15 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { LookaheadMode, TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
-import { TimelineTrigger, TriggerType } from 'superfly-timeline'
 import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
-import { extendMandadory } from '../../../lib/lib'
-let clone = require('fast-clone')
+import { extendMandadory, clone } from '../../../lib/lib'
+import { TimelineEnable } from 'superfly-timeline'
 
 export function getLookeaheadObjects (rundownData: RundownData, studio: Studio): Array<TimelineObjGeneric> {
 	const activeRundown = rundownData.rundown
@@ -19,7 +18,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	_.each(studio.mappings || {}, (m, l) => {
 
-		const lookaheadObjs = findLookaheadForLLayer(rundownData, l, m.lookahead)
+		const lookaheadObjs = findLookaheadForlayer(rundownData, l, m.lookahead)
 		if (lookaheadObjs.length === 0) {
 			return
 		}
@@ -27,9 +26,8 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 		for (let i = 0; i < lookaheadObjs.length; i++) {
 			const r = clone(lookaheadObjs[i].obj) as TimelineObjGeneric
 
-			let trigger: TimelineTrigger = {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 1 // Absolute 0 without a group doesnt work
+			let enable: TimelineEnable = {
+				start: 1 // Absolute 0 without a group doesnt work
 			}
 			if (i !== 0) {
 				const prevObj = lookaheadObjs[i - 1].obj
@@ -37,24 +35,22 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 
 				// Start with previous piece
 				const startOffset = prevHasDelayFlag ? 1000 : 0
-				trigger = {
-					type: TriggerType.TIME_RELATIVE,
-					value: `#${prevObj.id}.start + ${startOffset}`
-				}
+				enable.start = `#${prevObj.id}.start + ${startOffset}`
 			}
 			if (!r.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
+			const finiteDuration = lookaheadObjs[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activeRundown.nextPartId)
+			enable.duration = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start - #.start` : 0
+
 			r.id = `lookahead_${i}_${r.id}`
 			r.priority = 0.1
-			const finiteDuration = lookaheadObjs[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activeRundown.nextPartId)
-			r.duration = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start - #.start` : 0
-			r.trigger = trigger
+			r.enable = enable
 			r.isBackground = true
 			delete r.inGroup // force it to be cleared
 
 			if (m.lookahead === LookaheadMode.PRELOAD) {
-				r.originalLLayer = r.LLayer
-				r.LLayer += '_lookahead'
+				r.originalLayer = r.layer
+				r.layer += '_lookahead'
 			}
 
 			timelineObjs.push(r)
@@ -63,7 +59,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 	return timelineObjs
 }
 
-export function findLookaheadForLLayer (
+export function findLookaheadForlayer (
 	rundownData: RundownData,
 	layer: string,
 	mode: LookaheadMode
@@ -87,7 +83,7 @@ export function findLookaheadForLLayer (
 		return !!(
 			piece.content &&
 			piece.content.timelineObjects &&
-			_.find(piece.content.timelineObjects, (o) => (o && o.LLayer === layer))
+			_.find(piece.content.timelineObjects, (o) => (o && o.layer === layer))
 		)
 	})
 	if (layerItems.length === 0) {
@@ -98,7 +94,7 @@ export function findLookaheadForLLayer (
 	if (mode === LookaheadMode.RETAIN && layerItems.length === 1) {
 		const i = layerItems[0]
 		if (i.content && i.content.timelineObjects) {
-			const r = i.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
+			const r = i.content.timelineObjects.find(o => o !== null && o.layer === layer)
 			if (r) {
 				fixTimelineId(r)
 				return [{ obj: r as TimelineObjRundown, partId: i.partId }]
@@ -122,7 +118,7 @@ export function findLookaheadForLLayer (
 	let currentSegmentId: string | undefined
 
 	if (!partInfo) {
-		// calculate ordered list of parts, which can be cached for other llayers
+		// calculate ordered list of parts, which can be cached for other layers
 		const parts = rundownData.parts.map(part => ({
 			id: part._id,
 			rank: part._rank,
@@ -258,7 +254,7 @@ export function findLookaheadForLLayer (
 					transObj2 &&
 					transObj2.content &&
 					transObj2.content.timelineObjects &&
-					transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
+					transObj2.content.timelineObjects.find(o => o != null && o.layer === layer)
 				)
 
 				const res: TimelineObjRundown[] = []
@@ -276,14 +272,13 @@ export function findLookaheadForLLayer (
 					if (
 						hasTransition &&
 						!i.isTransition &&
-						piece.trigger.type === TriggerType.TIME_ABSOLUTE &&
-						piece.trigger.value === 0
+						piece.enable.start === 0 // <-- need to discuss this!
 					) {
 						return
 					}
 
 					// Note: This is assuming that there is only one use of a layer in each piece.
-					const obj = piece.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
+					const obj = piece.content.timelineObjects.find(o => o !== null && o.layer === layer)
 					if (obj) {
 						res.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(obj, {
 							_id: '', // set later

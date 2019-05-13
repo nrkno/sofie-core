@@ -8,6 +8,7 @@ import Moment from 'react-moment'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import * as _ from 'underscore'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
@@ -95,7 +96,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
 			(prevProps.piece.duration !== this.props.piece.duration) ||
 			(prevProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
-			(prevProps.piece.trigger !== this.props.piece.trigger)) {
+			!_.isEqual(prevProps.piece.enable, this.props.piece.enable)
+		) {
 			_forceSizingRecheck = true
 		}
 

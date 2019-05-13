@@ -17,7 +17,6 @@ import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
 import { updateDynamicPartRanks } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
-import { TriggerType } from 'superfly-timeline'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
 
@@ -62,13 +61,20 @@ export namespace ServerPlayoutAdLibAPI {
 				)
 			}
 
-			// disable the original piece if from the same Part
+			// Disable the original piece if from the same Part
 			if (piece.partId === part._id) {
 				const pieces = getResolvedPieces(part)
 				const resPiece = pieces.find(p => p._id === piece._id)
 
 				if (piece.startedPlayback && piece.startedPlayback <= getCurrentTime()) {
-					if (resPiece && resPiece.duration !== undefined && (piece.infiniteMode || piece.startedPlayback + resPiece.duration >= getCurrentTime())) {
+					if (
+						resPiece &&
+						resPiece.duration !== undefined &&
+						(
+							piece.infiniteMode ||
+							piece.startedPlayback + resPiece.duration >= getCurrentTime()
+						)
+					) {
 						// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
 						throw new Meteor.Error(409, `Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
 					}
@@ -217,8 +223,8 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			let newExpectedDuration = 1 // smallest, non-zerundown duration
-			if (alCopyPieceTObj.trigger.type === TriggerType.TIME_ABSOLUTE && _.isNumber(alCopyPieceTObj.trigger.value)) {
-				const actualStartTime = parentOffset + alCopyPieceTObj.trigger.value
+			if (_.isNumber(alCopyPieceTObj.enable.start)) {
+				const actualStartTime = parentOffset + alCopyPieceTObj.enable.start
 				newExpectedDuration = getCurrentTime() - actualStartTime
 			} else {
 				logger.warn(`"${pieceId}" timeline object is not positioned absolutely or is still set to play now, assuming it's about to be played.`)

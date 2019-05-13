@@ -5,98 +5,9 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
 import { getCurrentTime } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
-
-/**
- * Note: this is a temporary function, which converts a timelineObject of the OLD type to the new (v2)
- * @param obj
- */
-function convertTimelineObject (obj: any): any {
-	const newObj: any = {
-		id: obj.id,
-		enable: {
-		},
-		layer: obj.LLayer,
-		// children?: Array<TimelineObject>
-		// keyframes?: Array<TimelineKeyframe>
-		classes: obj.classes,
-		disabled: obj.disabled,
-		isGroup: obj.isGroup,
-		priority: obj.priority,
-		content: obj.content
-	}
-
-	if (obj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-		newObj.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.TIME_RELATIVE) {
-		newObj.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.LOGICAL) {
-		newObj.enable.while = obj.trigger.value
-		// if (newObj.enable.while === '1') {
-		// 	newObj.enable.while = 'true'
-		// } else if (newObj.enable.while === '0') {
-		// 	newObj.enable.while = 'false'
-		// }
-	}
-	if (obj.duration) {
-		newObj.enable.duration = obj.duration
-	}
-	// @ts-ignore
-	if (obj.legacyRepeatingTime) {
-		// @ts-ignore
-		newObj.enable.repeating = obj.legacyRepeatingTime
-	}
-	// @ts-ignore
-	if (obj.legacyEndTime) {
-		// @ts-ignore
-		newObj.enable.end = obj.legacyEndTime
-	}
-	if (obj.content.keyframes) {
-		newObj.keyframes = []
-		_.each(obj.content.keyframes, (kf: any) => {
-			newObj.keyframes.push(convertTimelineKeyframe(kf))
-		})
-		delete obj.content.keyframes
-	}
-	if (obj.isGroup && obj.content.objects) {
-		newObj.isGroup = true
-		newObj.children = []
-		_.each(obj.content.objects, (obj: any) => {
-			newObj.children.push(convertTimelineObject(obj))
-		})
-		delete obj.content.objects
-	}
-	if (newObj.isGroup && !newObj.children) {
-		newObj.children = []
-	}
-	return newObj
-}
-function convertTimelineKeyframe (obj: any): any {
-	const newKf: any = {
-		id: obj.id,
-		enable: {
-		},
-		// children?: Array<TimelineObject>
-		// keyframes?: Array<TimelineKeyframe>
-		classes: obj.classes,
-		// disabled: boolean
-		content: obj.content
-	}
-	if (obj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-		newKf.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.TIME_RELATIVE) {
-		newKf.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.LOGICAL) {
-		newKf.enable.while = obj.trigger.value
-	}
-	if (obj.duration) {
-		newKf.enable.duration = obj.duration
-	}
-	return newKf
-}
 
 interface ITimelineViewProps {
 	match?: {
@@ -231,9 +142,9 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 			let o = _.clone(obj)
 			delete o._id
 
-			if (o.trigger.value === 'now') o.trigger.value = getCurrentTime() // tmp
+			if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
 
-			if (o.id) return convertTimelineObject(o) // Note: this is a temporary conversion. When we've moved to timeline v2 this can be removed.
+			return o
 		}))
 
 		this.newTimeline = timeline

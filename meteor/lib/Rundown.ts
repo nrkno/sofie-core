@@ -196,7 +196,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		let previousPart: PartExtended
 		// fetch all the pieces for the parts
 		partsE = _.map(parts, (part, itIndex) => {
-			let partTimeline: SuperTimeline.UnresolvedTimeline = []
+			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
 			let partE: PartExtended = extendMandadory(part, {
@@ -242,9 +242,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
 					id: getPieceGroupId(piece),
-					trigger: offsetTrigger(piece.trigger, TIMELINE_TEMP_OFFSET),
-					duration: piece.durationOverride || piece.duration || piece.expectedDuration || 0,
-					LLayer: piece.outputLayerId,
+					enable: calcEnable(piece, TIMELINE_TEMP_OFFSET),
+					layer: piece.outputLayerId,
 					content: {
 						id: piece._id
 					}
@@ -299,20 +298,28 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			})
 
 			// Use the SuperTimeline library to resolve all the items within the Part
-			let partRTimeline = SuperTimeline.Resolver.getTimelineInWindow(partTimeline)
+			let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 			// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 			let furthestDuration = 0
-			partRTimeline.resolved.forEach((tlItem) => {
-				// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
-				let piece = piecesLookup[tlItem.content.id]
-				piece.renderedDuration = tlItem.resolved.outerDuration || null
+			_.each(tlResolved.objects, (obj) => {
+				if (obj.resolved.resolved) {
+					// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
+					let piece = piecesLookup[obj.content.id]
+					const instance = obj.resolved.instances[0]
+					if (instance) {
+						piece.renderedDuration = instance.end ? (instance.end - instance.start) : null
 
-				// if there is no renderedInPoint, use 0 as the starting time for the item
-				piece.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
+						// if there is no renderedInPoint, use 0 as the starting time for the item
+						piece.renderedInPoint = instance.start ? instance.start - TIMELINE_TEMP_OFFSET : 0
 
-				// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
-				if (Number.isFinite(piece.renderedDuration || 0) && ((piece.renderedInPoint || 0) + (piece.renderedDuration || 0) > furthestDuration)) {
-					furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
+						// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
+						if (
+							Number.isFinite(piece.renderedDuration || 0) &&
+							(piece.renderedInPoint || 0) + (piece.renderedDuration || 0) > furthestDuration
+						) {
+							furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
+						}
+					}
 				}
 			})
 
@@ -454,25 +461,24 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 }
 
-function offsetTrigger (
-	trigger: {
-		type: SuperTimeline.TriggerType,
-		value: string | number | null
-	},
-	offset
-) {
-	if (trigger.type !== SuperTimeline.TriggerType.TIME_ABSOLUTE) {
-		return trigger
+function calcEnable (piece: PieceExtended, offset: number): SuperTimeline.TimelineEnable {
+
+	const duration = piece.durationOverride || piece.duration || piece.expectedDuration || 0
+
+	if (piece.enable.start === 'now') {
+		return {
+			start: offset,
+			duration: duration
+		}
+	} else if (typeof piece.enable.start === 'number') {
+		return {
+			start: piece.enable.start + offset,
+			duration: duration
+		}
 	} else {
-		if (trigger.type === SuperTimeline.TriggerType.TIME_ABSOLUTE && trigger.value === 'now') {
-			return _.extend({}, trigger, {
-				// value: part.startedPlayback ? getCurrentTime() - part.startedPlayback : offset
-				value: offset
-			})
-		} else {
-			return _.extend({}, trigger, {
-				value: trigger.value + offset
-			})
+		return {
+			...piece.enable,
+			duration: duration
 		}
 	}
 }

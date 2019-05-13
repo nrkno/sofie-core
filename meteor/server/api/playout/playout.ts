@@ -13,9 +13,9 @@ import { getCurrentTime,
 	asyncCollectionInsert,
 	asyncCollectionUpsert,
 	waitForPromise,
-	makePromise} from '../../../lib/lib'
+	makePromise,
+	clone} from '../../../lib/lib'
 import { Timeline, getTimelineId } from '../../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -27,7 +27,6 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios } from '../../../lib/collections/Studios'
 import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
-let clone = require('fast-clone')
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -949,29 +948,42 @@ export namespace ServerPlayoutAPI {
 			const relativeNow = now - (part.getLastStartedPlayback() || 0)
 			const orderedPieces = getResolvedPieces(part)
 
-			orderedPieces.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
-				if (!i.durationOverride) {
-					let newExpectedDuration: number | undefined = undefined
+			orderedPieces.forEach((piece) => {
+				if (piece.sourceLayerId === sourceLayerId) {
+					if (!piece.durationOverride) {
+						let newExpectedDuration: number | undefined = undefined
 
-					if (i.infiniteId && i.infiniteId !== i._id && part) {
-						const partStarted = part.getLastStartedPlayback()
-						if (partStarted) {
-							newExpectedDuration = now - partStarted
-						}
-					} else if (i.startedPlayback && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
-						newExpectedDuration = now - i.startedPlayback
-					}
-
-					if (newExpectedDuration !== undefined) {
-						console.log(`Cropping piece "${i._id}" at ${newExpectedDuration}`)
-
-						Pieces.update({
-							_id: i._id
-						}, {
-							$set: {
-								durationOverride: newExpectedDuration
+						if (piece.infiniteId && piece.infiniteId !== piece._id && part) {
+							const partStarted = part.getLastStartedPlayback()
+							if (partStarted) {
+								newExpectedDuration = now - partStarted
 							}
-						})
+						} else if (
+							piece.startedPlayback &&
+							(
+								(piece.enable.start || 0) < relativeNow
+							) &&
+							(
+								(
+									(piece.enable.start as number || 0) + (piece.duration || 0) > relativeNow
+								) ||
+								piece.duration === 0
+							)
+						) {
+							newExpectedDuration = now - piece.startedPlayback
+						}
+
+						if (newExpectedDuration !== undefined) {
+							console.log(`Cropping piece "${piece._id}" at ${newExpectedDuration}`)
+
+							Pieces.update({
+								_id: piece._id
+							}, {
+								$set: {
+									durationOverride: newExpectedDuration
+								}
+							})
+						}
 					}
 				}
 			})
@@ -1051,9 +1063,8 @@ export namespace ServerPlayoutAPI {
 				_id: tObj.metadata.pieceId
 			}, {
 				$set: {
-					trigger: {
-						type: TriggerType.TIME_ABSOLUTE,
-						value: time
+					enable: {
+						start: time
 					}
 				}
 			})
@@ -1085,7 +1096,7 @@ export namespace ServerPlayoutAPI {
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
 
-			const versionsContent = markerObject.content.versions || {}
+			const versionsContent = (markerObject.metadata || {}).versions || {}
 
 			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
 
@@ -1123,9 +1134,8 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 				let overflowedItem = _.extend({
 					_id: Random.id(),
 					partId: nextPart._id,
-					trigger: {
-						type: TriggerType.TIME_ABSOLUTE,
-						value: 0
+					enable: {
+						start: 0
 					},
 					dynamicallyInserted: true,
 					continuesRefId: piece._id,

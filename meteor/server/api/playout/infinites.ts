@@ -149,7 +149,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 				   // If something starts at the beginning, then dont bother adding this infinite.
 				   // Otherwise we should add the infinite but set it to end at the start of the first piece
-				   if (firstExistingPiece.trigger.type === Timeline.TriggerType.TIME_ABSOLUTE && firstExistingPiece.trigger.value === 0) {
+				   if (firstExistingPiece.enable.start === 0) {
 					   // skip the infinite, as it will never show
 					   allowInsert = false
 				   }
@@ -157,10 +157,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   }
 		   newPiece.partId = part._id
 		   newPiece.continuesRefId = newPiece._id
-		   newPiece.trigger = {
-			   type: Timeline.TriggerType.TIME_ABSOLUTE,
-			   value: 0
-		   }
+		   newPiece.enable = { start: 0 }
 		   newPiece._id = newPiece.infiniteId + '_' + part._id
 		   newPiece.startedPlayback = undefined
 		   newPiece.stoppedPlayback = undefined

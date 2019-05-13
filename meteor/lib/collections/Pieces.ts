@@ -39,7 +39,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 		/** The out transition for the piece */
 		outTransition?: TimelineTransition
 	}
-	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
+	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: string
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: string

@@ -4,9 +4,10 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
-import { Timeline as TimelineTypes } from 'timeline-state-resolver-types'
+import { Timeline as TimelineTypes, TSRTimelineObj, DeviceType } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
 import { logger } from '../logging'
+import { TimelineEnable } from 'superfly-timeline'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -25,9 +26,8 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	objectType: TimelineObjType
 
-	trigger: TimelineTypes.TimelineTrigger & {
-		setFromNow?: boolean
-	}
+	enable: TimelineEnable & { setFromNow?: boolean }
+
 	/** The id of the group object this object is in  */
 	inGroup?: string
 
@@ -40,7 +40,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Only set to true when an object is inserted by lookahead */
 	isBackground?: boolean
 	/** Set when an object is on a virtual layer for lookahead, so that it can be routed correctly */
-	originalLLayer?: string | number
+	originalLayer?: string | number
 }
 // export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 
@@ -59,6 +59,7 @@ export interface TimelineObjStat extends TimelineObjGeneric {
 	/** To be deprecated later, it's enought to identify with TimelineObjType.STAT  */
 	statObject: true
 	content: {
+		deviceType: DeviceType.ABSTRACT
 		type: TimelineContentTypeOther.NOTHING
 		modified: Time
 		objCount: number
@@ -79,8 +80,8 @@ export interface TimelineObjManual extends TimelineObjGeneric {
 export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 	content: {
 		type: TimelineContentTypeOther.GROUP
-		objects: Array<TimelineObjGeneric>
 	}
+	children: TimelineObjGeneric[]
 	isGroup: true
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
@@ -89,10 +90,28 @@ export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
 }
 export interface TimelineObjPartAbstract extends TimelineObjRundown { // used for sending callbacks
-	partId?: string
+	content: {
+		deviceType: DeviceType.ABSTRACT
+		type: 'callback'
+		callBack: 'partPlaybackStarted'
+		callBackStopped: 'partPlaybackStopped'
+		callBackData: {
+			rundownId: string
+			partId: string
+		}
+	}
 }
 export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used for sending callbacks
-	pieceId?: string
+	content: {
+		deviceType: DeviceType.ABSTRACT
+		type: 'callback'
+		callBack: 'piecePlaybackStarted'
+		callBackStopped: 'piecePlaybackStopped'
+		callBackData: {
+			rundownId: string,
+			pieceId: string
+		}
+	}
 }
 
 export function getTimelineId (obj: TimelineObjGeneric): string

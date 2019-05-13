@@ -8,6 +8,12 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as crypto from 'crypto'
+const cloneOrg = require('fast-clone')
+
+export function clone<T> (o: T): T {
+	// Use this instead of fast-clone directly, as this retains the type
+	return cloneOrg(o)
+}
 
 export function getHash (str: string): string {
 	const hash = crypto.createHash('sha1')

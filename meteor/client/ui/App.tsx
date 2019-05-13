@@ -23,7 +23,6 @@ import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
-import { NymansPlayground } from './NymansPlayground'
 import {
   BrowserRouter as Router,
   Route,
@@ -103,7 +102,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
-							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />
 							<Route path='/testTools' component={TestTools} />
