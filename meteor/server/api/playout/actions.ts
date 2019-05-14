@@ -94,15 +94,6 @@ export function deactivateRundown (rundown: Rundown) {
 		})
 	}
 
-	// clean up all runtime baseline objects
-	RundownBaselineObjs.remove({
-		rundownId: rundown._id
-	})
-
-	RundownBaselineAdLibPieces.remove({
-		rundownId: rundown._id
-	})
-
 	updateTimeline(rundown.studioId)
 
 	IngestActions.notifyCurrentPlayingPart(rundown, null)

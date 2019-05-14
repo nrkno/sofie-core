@@ -421,7 +421,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(previousPart, currentPart, true)
 				previousPartGroup = createPartGroup(previousPart, `#${getPartGroupId(currentPart)}.start + ${prevPartOverlapDuration} - #.start`)
 				previousPartGroup.priority = -1
-				previousPartGroup.enable = { start: previousPart.getLastStartedPlayback() || 0 }
+				previousPartGroup.enable.start = previousPart.getLastStartedPlayback() || 0
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
 				const skipIds = currentInfinitePieces.map(l => l.infiniteId || '')
@@ -449,7 +449,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		const currentPartDuration = !isFollowed ? 0 : calcPartTargetDuration(previousPart, currentPart)
 		currentPartGroup = createPartGroup(currentPart, currentPartDuration)
 		if (currentPart.startedPlayback && currentPart.getLastStartedPlayback()) { // If we are recalculating the currentPart, then ensure it doesnt think it is starting now
-			currentPartGroup.enable = { start: currentPart.getLastStartedPlayback() || 0 }
+			currentPartGroup.enable.start = currentPart.getLastStartedPlayback() || 0
 		}
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger

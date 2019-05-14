@@ -40,7 +40,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			if (!r.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			const finiteDuration = lookaheadObjs[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activeRundown.nextPartId)
-			enable.duration = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start - #.start` : 0
+			enable.duration = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start - #.start` : undefined
 
 			r.id = `lookahead_${i}_${r.id}`
 			r.priority = 0.1
