@@ -1570,7 +1570,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						rundown={this.props.rundown}
 						defaultDuration={DEFAULT_DISPLAY_DURATION}>
 						<div className={ClassNames('rundown-view', {
-							'notification-center-open': this.state.isNotificationsCenterOpen
+							'notification-center-open': this.state.isNotificationsCenterOpen,
+							'rundown-view--studio-mode': this.state.studioMode
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
 								{ this.state.studioMode && <KeyboardFocusMarker /> }

@@ -2073,4 +2073,23 @@ body.vertical-overflow-only {
 	}
 }
 
+.rundown-view {
+	&:not(.rundown-view--studio-mode) {
+		.in-studio {
+			display: none;
+		}
+		.not-in-studio {
+			display: unset;
+		}
+	}
+	&.rundown-view--studio-mode {
+		.in-studio {
+			display: unset;
+		}
+		.not-in-studio {
+			display: none;
+		}
+	}
+}
+
 @import "rundownOverview";
