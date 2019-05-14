@@ -1,9 +1,8 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
-
+import * as Velocity from 'velocity-animate'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
@@ -35,16 +34,16 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		}
 	}
 
-	render () {
+	render() {
 		const { item } = this.props
 
-		const defaultActions: NotificationAction[] 		= _.filter(item.actions || [], i => i.type === 'default')
-		const allActions: NotificationAction[] 	= item.actions || []
+		const defaultActions: NotificationAction[] = _.filter(item.actions || [], i => i.type === 'default')
+		const allActions: NotificationAction[] = item.actions || []
 
 		const defaultAction: NotificationAction | undefined = (
 			defaultActions.length === 1 && allActions.length === 1 ?
-			defaultActions[0] :
-			undefined
+				defaultActions[0] :
+				undefined
 		)
 
 		return <div className={ClassNames('notification-pop-up', {
@@ -59,7 +58,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 
 			'is-highlighted': this.props.isHighlighted
 		})}
-		onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}
+			onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}
 		>
 			<div className='notification-pop-up__header'>
 				<WarningIcon />
@@ -68,27 +67,27 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				{item.message}
 				{(
 					!defaultAction && allActions.length ?
-					<div className='notification-pop-up__actions'>
-						{_.map(allActions, (action: NotificationAction, i: number) => {
-							return (
-								<button key={i} className={ClassNames('btn', (
-									['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
-								))} onClick={e => this.triggerEvent(action, e)}>
-									{action.label}
-								</button>
-							)
-						})}
-					</div>
-					: null
+						<div className='notification-pop-up__actions'>
+							{_.map(allActions, (action: NotificationAction, i: number) => {
+								return (
+									<button key={i} className={ClassNames('btn', (
+										['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
+									))} onClick={e => this.triggerEvent(action, e)}>
+										{action.label}
+									</button>
+								)
+							})}
+						</div>
+						: null
 				)}
 			</div>
 			{this.props.showDismiss &&
 				<ContextMenuTrigger id='context-menu-dissmiss-all' attributes={{ className: 'notification-pop-up__dismiss' }}>
-				{/* <div className='notification-pop-up__dismiss'> */}
+					{/* <div className='notification-pop-up__dismiss'> */}
 					<button className='notification-pop-up__dismiss__button' onClick={(e) => (e.stopPropagation(), (typeof this.props.onDismiss === 'function' && this.props.onDismiss(e)))}>
 						<CoreIcon id='nrk-close' />
 					</button>
-				{/* </div> */}
+					{/* </div> */}
 				</ContextMenuTrigger>
 			}
 		</div>
@@ -127,7 +126,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		highlightedLevel: NotificationCenter.getHighlightedLevel()
 	}
 })(class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	dismissNotification (item: Notification) {
+	dismissNotification(item: Notification) {
 		if (item.persistent) {
 			item.snooze()
 		} else {
@@ -135,43 +134,56 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 	}
 
-	dismissAll () {
+	dismissAll() {
 		for (const notification of this.props.notifications) {
 			this.dismissNotification(notification)
 		}
 	}
 
-	UNSAFE_componentWillUpdate () {
-		const items = $('.notification-pop-up.is-highlighted')
-		items.css('animationName', '')
+	UNSAFE_componentWillUpdate() {
+		document.querySelectorAll('.notification-pop-up.is-highlighted').forEach((item: HTMLElement) => {
+			item.style.animationName = ''
+		})
 	}
 
-	componentDidUpdate (prevProps, prevState, snapshot) {
+	componentDidUpdate(prevProps, prevState, snapshot) {
 		if (super.componentDidUpdate) super.componentDidUpdate(prevProps, prevState, snapshot)
 
 		if (this.props.highlightedSource && this.props.highlightedLevel) {
-			const items = $('.notification-pop-up.is-highlighted')
+			const items: NodeListOf<HTMLElement> = document.querySelectorAll('.notification-pop-up.is-highlighted')
 			if (items.length > 0) {
 				// scroll to highlighted items
-				const position = $(items[0]).position() || { top: 0 }
-				const container = $('.notification-center-panel .notification-pop-ups')
-				container && container.animate({
-					scrollTop: (container.scrollTop() || 0) + position.top - 10
-				}, {
-					queue: false,
-					duration: 1000
+				const currentAnimationName = getComputedStyle(items[0]).getPropertyValue('animation-name')
+
+				const container = document.querySelector('.notification-center-panel .notification-pop-ups')
+				if (container) {
+					const containerScrollTop = container.scrollTop
+					const offsetTop = items[0].offsetTop || 0
+
+					Velocity(container, {
+						scrollTop: containerScrollTop + offsetTop - 10
+					}, {
+							queue: false,
+							duration: 1000
+						})
+				}
+
+				items.forEach(item => {
+					item.style.animationName = 'none'
 				})
 
-				const value = items.css('animationName')
-				items.css('animationName', 'none')
-				setTimeout(function () {
-					if (value !== 'none') items.css('animationName', value)
-				})
+				if (currentAnimationName !== 'none') {
+					window.requestAnimationFrame(function () {
+						items.forEach(item => {
+							item.style.animationName = currentAnimationName
+						})
+					})
+				}
 			}
 		}
 	}
 
-	render () {
+	render() {
 		const { t, highlightedSource, highlightedLevel } = this.props
 		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => Notification.compare(a, b)).map(item => (
 			<NotificationPopUp key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
@@ -209,7 +221,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
  * @extends React.Component
  */
 export class NotificationCenterPanel extends React.Component {
-	render () {
+	render() {
 		return (
 			<div className='notification-center-panel'>
 				<NotificationCenterPopUps showEmptyListLabel={true} showSnoozed={true} />
@@ -244,14 +256,14 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 		count: NotificationCenter.count()
 	}
 })(class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
-	render () {
+	render() {
 		return (
 			<button className={ClassNames('status-bar__controls__button', 'notifications__toggle-button', {
 				'status-bar__controls__button--open': this.props.isOpen,
 				'has-items': this.props.count > 0
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<WarningIcon />
-				{ this.props.count > 0 &&
+				{this.props.count > 0 &&
 					<span className='notifications__toggle-button__count'>{this.props.count > 99 ? '99+' : this.props.count}</span>
 				}
 			</button>
