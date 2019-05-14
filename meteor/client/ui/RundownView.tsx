@@ -1422,8 +1422,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onContextMenu={this.onContextMenu}
 								onSegmentScroll={this.onSegmentScroll}
 								isLastSegment={index === array.length - 1}
-								onItemClick={this.onSelectPiece}
-								onItemDoubleClick={this.onPieceDoubleClick}
+								onPieceClick={this.onSelectPiece}
+								onPieceDoubleClick={this.onPieceDoubleClick}
 								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
 						</ErrorBoundary>
