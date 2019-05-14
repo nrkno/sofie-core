@@ -11,6 +11,7 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { SpreadsheetDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/spreadsheet'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { fetchFrom } from '../../../lib/lib';
 interface ISpreadsheetSettingsComponentState {
 }
 interface ISpreadsheetSettingsComponentProps {
@@ -41,17 +42,15 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 
 			let uploadFileContents = (e2.target as any).result
 
-			fetch(`/devices/${this.props.device._id}/uploadCredentials`, {
+			fetchFrom(`/devices/${this.props.device._id}/uploadCredentials`, {
 				method: 'POST',
 				body: uploadFileContents,
 				headers: {
 					'content-type': 'text/javascript'
 				}
 			}).then(res => {
-				// console.log('Upload Credentials success')
 				NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Spreadsheet credentials succesfully uploaded.'), 'SpreadsheetSettingsComponent'))
 			}).catch(err => {
-				//console.error('Blueprint restore failure: ', err)
 				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to upload spreadsheet credentials: {{errorMessage}}', { errorMessage: err + '' }), 'SpreadsheetSettingsComponent'))
 			})
 
