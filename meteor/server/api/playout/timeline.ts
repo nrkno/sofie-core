@@ -419,9 +419,16 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 			if (previousPart.getLastStartedPlayback()) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(previousPart, currentPart, true)
-				previousPartGroup = createPartGroup(previousPart, `#${getPartGroupId(currentPart)}.start + ${prevPartOverlapDuration} - #.start`)
+				const previousPartGroupEnable = {
+					start: previousPart.getLastStartedPlayback() || 0,
+					end: `#${getPartGroupId(currentPart)}.start + ${prevPartOverlapDuration}`
+				}
+				// If autonext with an overlap, keep the previous line alive for the specified overlap
+				if (previousPart.autoNext && previousPart.autoNextOverlap) {
+					previousPartGroupEnable.end = `#${getPartGroupId(currentPart)}.start + ${previousPart.autoNextOverlap || 0}`
+				}
+				previousPartGroup = createPartGroup(previousPart, previousPartGroupEnable)
 				previousPartGroup.priority = -1
-				previousPartGroup.enable.start = previousPart.getLastStartedPlayback() || 0
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
 				const skipIds = currentInfinitePieces.map(l => l.infiniteId || '')
@@ -434,11 +441,6 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 				prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
 
-				// If autonext with an overlap, keep the previous line alive for the specified overlap
-				if (previousPart.autoNext && previousPart.autoNextOverlap) {
-					previousPartGroup.enable.duration = `#${getPartGroupId(currentPart)}.start + ${previousPart.autoNextOverlap || 0} - #.start`
-				}
-
 				timelineObjs = timelineObjs.concat(prevObjs)
 			}
 		}
@@ -446,15 +448,17 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// fetch pieces
 		// fetch the timelineobjs in pieces
 		const isFollowed = nextPart && currentPart.autoNext
-		const currentPartDuration = !isFollowed ? 0 : calcPartTargetDuration(previousPart, currentPart)
-		currentPartGroup = createPartGroup(currentPart, currentPartDuration)
+		const currentPartEnable = literal<TimelineTypes.TimelineEnable>({
+			duration: !isFollowed ? undefined : calcPartTargetDuration(previousPart, currentPart)
+		})
 		if (currentPart.startedPlayback && currentPart.getLastStartedPlayback()) { // If we are recalculating the currentPart, then ensure it doesnt think it is starting now
-			currentPartGroup.enable.start = currentPart.getLastStartedPlayback() || 0
+			currentPartEnable.start = currentPart.getLastStartedPlayback() || 0
 		}
+		currentPartGroup = createPartGroup(currentPart, currentPartEnable)
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
-			const infiniteGroup = createPartGroup(currentPart, piece.expectedDuration || 0)
+			const infiniteGroup = createPartGroup(currentPart, { duration: piece.expectedDuration || undefined })
 			infiniteGroup.id = getPartGroupId(piece._id) + '_infinite'
 			infiniteGroup.priority = 1
 
@@ -502,7 +506,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextPart && currentPart.autoNext) {
 			// console.log('This part will autonext')
-			let nextPieceGroup = createPartGroup(nextPart, 0)
+			let nextPieceGroup = createPartGroup(nextPart, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(currentPart, nextPart)
 
@@ -543,17 +547,17 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 	return timelineObjs
 }
-function createPartGroup (part: Part, duration: number | string): TimelineObjGroupPart & TimelineObjRundown {
+function createPartGroup (part: Part, enable: TimelineTypes.TimelineEnable): TimelineObjGroupPart & TimelineObjRundown {
+	if (!enable.start) { // TODO - is this loose enough?
+		enable.start = 'now'
+	}
 	let partGrp = literal<TimelineObjGroupPart & TimelineObjRundown>({
 		id: getPartGroupId(part),
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
-		enable: {
-			start: 'now',
-			duration: duration || undefined
-		},
+		enable: enable,
 		priority: 5,
 		layer: '', // These should coexist
 		content: {
