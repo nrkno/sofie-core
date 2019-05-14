@@ -45,6 +45,7 @@ import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
+import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -368,9 +369,7 @@ function updateRundownFromIngestData (
 	)
 	const didChange = anythingChanged(changes)
 	if (didChange) {
-		updateExpectedMediaItemsOnRundown(dbRundown._id)
-		updateDynamicPartRanks(dbRundown._id)
-		triggerUpdateTimelineAfterIngestData(rundownId, _.map(segments, s => s._id))
+		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
 	return didChange
 }
@@ -481,11 +480,16 @@ export function updateSegmentFromIngestData (
 
 	const didChange = anythingChanged(changes)
 	if (didChange) {
-		updateExpectedMediaItemsOnRundown(rundown._id)
-		updateDynamicPartRanks(rundown._id)
-		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
+		afterIngestChangedData(rundown, [segmentId])
 	}
 	return didChange
+}
+function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+	// To be called after rundown has been changed
+	updateExpectedMediaItemsOnRundown(rundown._id)
+	updateDynamicPartRanks(rundown._id)
+	updateSourceLayerInfinitesAfterPart(rundown)
+	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {

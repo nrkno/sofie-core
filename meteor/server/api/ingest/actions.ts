@@ -4,12 +4,18 @@ import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
+import { check } from 'meteor/check'
+import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { loadCachedRundownData } from './ingestCache'
+import { resetRundown } from '../playout/lib'
+import { handleUpdatedRundown } from './rundownInput'
+import { logger } from '../../logging'
+import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
 */
 export namespace IngestActions {
-
 	/**
 	 * Trigger a reload of a rundown
 	 */
@@ -53,14 +59,46 @@ export namespace IngestActions {
 			delete rundown.notifiedCurrentPlayingPartExternalId
 		}
 
-		// TODO: refacor this into something nicer perhaps?
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-			MOSDeviceActions.notifyCurrentPlayingPart(device, rundown, rundown.notifiedCurrentPlayingPartExternalId || null, currentPlayingPartExternalId)
-		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
-			// TODO
-		} else {
-			throw new Meteor.Error(400, `The device ${device._id} does not support the method "notifyCurrentPlayingPart"`)
+		if (
+			device.category === PeripheralDeviceAPI.DeviceCategory.INGEST &&
+			device.type === PeripheralDeviceAPI.DeviceType.MOS // TODO: refacor this into something nicer perhaps?
+		) {
+			MOSDeviceActions.notifyCurrentPlayingPart(
+				device,
+				rundown,
+				rundown.notifiedCurrentPlayingPartExternalId || null,
+				currentPlayingPartExternalId
+			)
+		}
+	}
+	/**
+	 * Run the cached data through blueprints in order to re-generate the Rundown
+	 */
+	export function regenerateRundown (rundownId: string) {
+		check(rundownId, String)
+
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) {
+			throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
 		}
 
+		logger.info(`Regenerating rundown ${rundown.name} (${rundown._id})`)
+
+		const peripheralDevice = PeripheralDevices.findOne(
+			rundown.peripheralDeviceId
+		)
+		if (!peripheralDevice) {
+			throw new Meteor.Error(
+				404,
+				'MOS Device not found to be used for mock rundown!'
+			)
+		}
+
+		const ingestRundown = loadCachedRundownData(rundownId, rundown.externalId)
+
+		// Reset the rundown (remove adlibs, etc):
+		resetRundown(rundown)
+
+		handleUpdatedRundown(peripheralDevice, ingestRundown, 'mock')
 	}
 }

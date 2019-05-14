@@ -15,6 +15,8 @@ let methods: Methods = {}
 methods['debug_rundownRunBlueprints'] = (rundownId: string, deleteFirst?: boolean) => {
 	check(rundownId, String)
 
+	// Note: This function has been (more or less) moved to regenerateRundown()
+
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 

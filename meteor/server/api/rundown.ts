@@ -165,7 +165,10 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		}
 	}
 }
-
+/**
+ * Update the ordering of Adlibbed parts (queued adlibs)
+ * @param rundownId
+ */
 export function updateDynamicPartRanks (rundownId: string): Array<Part> {
 	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
