@@ -274,7 +274,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			if (this.props.segmentLine.duration) {
 				return this.props.segmentLine.duration
 			} else {
-				return getCurrentTime() - (this.props.segmentLine.getLastStartedPlayback() || 0)
+				return getCurrentTime() - (this.props.segmentLine.getLastStartedPlayback() || 0) + (this.props.segmentLine.getLastPlayOffset() || 0)
 			}
 		} else {
 			return 0
@@ -336,8 +336,10 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	getLineDuration (): number {
 		// const segmentLine = this.props.segmentLine
 
+		const playOffset = this.props.segmentLine.getLastPlayOffset() || 0
+
 		return Math.max(this.state.liveDuration,
-			this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0)
+			(this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) + playOffset)
 
 		/* return segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
 			((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),

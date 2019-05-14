@@ -1,4 +1,3 @@
-/// <reference lib="dom" />
 import * as React from 'react'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'

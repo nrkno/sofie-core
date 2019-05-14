@@ -106,12 +106,12 @@ export namespace RundownUtils {
 					(segmentLineItem !== undefined ?
 						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
 							(segmentLine.duration !== undefined ?
-								segmentLine.duration :
+								(segmentLine.duration + (segmentLine.getLastPlayOffset() || 0)) :
 								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
 							)
 						) :
 						(segmentLine.duration !== undefined ?
-							segmentLine.duration :
+							(segmentLine.duration + (segmentLine.getLastPlayOffset() || 0)) :
 							(segmentLineDuration || segmentLine.renderedDuration || 0)
 						)
 					)

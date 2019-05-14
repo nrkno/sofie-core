@@ -229,14 +229,14 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 					memberOfDisplayDurationGroup = true
 				}
 				if (item.startedPlayback && lastStartedPlayback && !item.duration) {
-					currentRemaining = Math.max(0, (item.duration || displayDuration || item.expectedDuration || 0) - (now - lastStartedPlayback))
+					currentRemaining = Math.max(0, (item.duration || displayDuration || item.expectedDuration || 0) - (now - lastStartedPlayback)) + playOffset
 					segLineDuration = Math.max((item.duration || item.expectedDuration || 0), (now - lastStartedPlayback))
-					segLineDisplayDuration = Math.max((item.duration || displayDuration || item.expectedDuration || 0), (now - lastStartedPlayback))
-					segLinePlayed[item._id] = (now - lastStartedPlayback)
+					segLineDisplayDuration = Math.max((item.duration || displayDuration || item.expectedDuration || 0), (now - lastStartedPlayback)) + playOffset
+					segLinePlayed[item._id] = (now - lastStartedPlayback + playOffset)
 				} else {
 					segLineDuration = item.duration || item.expectedDuration || 0
-					segLineDisplayDuration = Math.max(0, item.duration || displayDuration || item.expectedDuration || 0)
-					segLinePlayed[item._id] = item.duration || 0
+					segLineDisplayDuration = Math.max(0, item.duration && item.duration + playOffset || displayDuration || item.expectedDuration || 0)
+					segLinePlayed[item._id] = (item.duration || 0) + playOffset
 				}
 				if (memberOfDisplayDurationGroup && item.displayDurationGroup) {
 					displayDurationGroups[item.displayDurationGroup] = Math.max(0, displayDurationGroups[item.displayDurationGroup] - segLineDisplayDuration)
