@@ -94,6 +94,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
+				// TODO - this query appears to be unable to load any data
 				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
 
 				if (timelineObj) {

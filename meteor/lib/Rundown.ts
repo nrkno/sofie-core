@@ -319,6 +319,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 						) {
 							furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
 						}
+					} else {
+						// TODO - should this piece be removed?
 					}
 				}
 			})
@@ -463,7 +465,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 function calcEnable (piece: PieceExtended, offset: number): SuperTimeline.TimelineEnable {
 
-	const duration = piece.durationOverride || piece.duration || piece.expectedDuration || 0
+	const duration = piece.durationOverride || piece.duration || piece.expectedDuration || undefined
 
 	if (piece.enable.start === 'now') {
 		return {

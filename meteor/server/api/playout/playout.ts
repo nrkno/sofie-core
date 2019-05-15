@@ -14,8 +14,9 @@ import { getCurrentTime,
 	asyncCollectionUpsert,
 	waitForPromise,
 	makePromise,
-	clone} from '../../../lib/lib'
-import { Timeline, getTimelineId } from '../../../lib/collections/Timeline'
+	clone,
+	literal} from '../../../lib/lib'
+import { Timeline, getTimelineId, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -1050,17 +1051,15 @@ export namespace ServerPlayoutAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObjId: string, time: number) {
-		check(timelineObjId, String)
+	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObj: TimelineObjGeneric, time: number) {
+		check(timelineObj, Object)
 		check(time, Number)
 
-		const tObj = Timeline.findOne(getTimelineId(studioId, timelineObjId))
-		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
-
-		if (tObj.metadata && tObj.metadata.pieceId) {
-			logger.debug('Update piece: ', tObj.metadata.pieceId, (new Date(time)).toTimeString())
+		// TODO - this is a destructive action... It needs to either backup the original, or only run on dynamically inserted
+		if (timelineObj.metadata && timelineObj.metadata.pieceId) {
+			logger.debug('Update piece: ', timelineObj.metadata.pieceId, (new Date(time)).toTimeString())
 			Pieces.update({
-				_id: tObj.metadata.pieceId
+				_id: timelineObj.metadata.pieceId
 			}, {
 				$set: {
 					enable: {
@@ -1131,7 +1130,7 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 		currentPieces.forEach((piece) => {
 			if (piece.overflows && typeof piece.expectedDuration === 'number' && piece.expectedDuration > 0 && piece.duration === undefined && piece.durationOverride === undefined) {
 				// Clone an overflowing piece
-				let overflowedItem = _.extend({
+				let overflowedItem = literal<Piece>({
 					_id: Random.id(),
 					partId: nextPart._id,
 					enable: {
@@ -1141,8 +1140,9 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 					continuesRefId: piece._id,
 
 					// Subtract the amount played from the expected duration
-					expectedDuration: Math.max(0, piece.expectedDuration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
-				}, _.omit(clone(piece) as Piece, 'startedPlayback', 'duration', 'overflows'))
+					expectedDuration: Math.max(0, piece.expectedDuration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime())),
+					..._.omit(clone(piece) as Piece, 'startedPlayback', 'duration', 'overflows')
+				})
 
 				if (overflowedItem.expectedDuration > 0) {
 					ps.push(asyncCollectionInsert(Pieces, overflowedItem))

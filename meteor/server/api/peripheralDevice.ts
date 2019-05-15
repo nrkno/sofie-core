@@ -140,6 +140,8 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, `peripheralDevice "${id}" not found!`)
 		if (!peripheralDevice.studioId) throw new Meteor.Error(401, `peripheralDevice "${id}" not attached to a studio`)
 
+		const studioId = peripheralDevice.studioId
+
 		// check(r.time, Number)
 		check(results, Array)
 		_.each(results, (o) => {
@@ -147,39 +149,34 @@ export namespace ServerPeripheralDeviceAPI {
 			check(o.time, Number)
 		})
 
-		let studioIds: {[studioId: string]: true} = {}
-
 		_.each(results, (o) => {
 			check(o.id, String)
 
 			// check(o.time, Number)
 			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
-			let obj = Timeline.findOne(o.id)
-
+			const id = getTimelineId(studioId, o.id)
+			const obj = Timeline.findOne(id)
 			if (obj) {
-				studioIds[obj.studioId] = true
-
 				Timeline.update({
-					_id: getTimelineId(obj.studioId, o.id)
+					_id: id
 				}, {$set: {
 					'enable.start': o.time,
 					'enable.setFromNow': true
-				}},{
-					multi: true
-				})
+				}})
 
-				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj._id, o.time)
+				obj.enable.start = o.time
+				obj.enable.setFromNow = true
+
+				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj, o.time)
 			}
 		})
 
 		// After we've updated the timeline, we must call afterUpdateTimeline!
-		_.each(studioIds, (_val, studioId) => {
-			let studio = Studios.findOne(studioId)
-			if (studio) {
-				afterUpdateTimeline(studio)
-			}
-		})
+		const studio = Studios.findOne(studioId)
+		if (studio) {
+			afterUpdateTimeline(studio)
+		}
 	}, 'timelineTriggerTime$0,$1')
 	export function partPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
 		// This is called from the playout-gateway when a part starts playing.
