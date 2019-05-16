@@ -7,7 +7,6 @@ import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import Moment from 'react-moment'
@@ -57,7 +56,7 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 
-type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
+type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -67,7 +66,7 @@ interface IKeyboardFocusMarkerProps {
 class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
 	keyboardFocusInterval: number
 
-	constructor (props: IKeyboardFocusMarkerProps) {
+	constructor(props: IKeyboardFocusMarkerProps) {
 		super(props)
 
 		this.state = {
@@ -75,14 +74,18 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.keyboardFocusInterval = Meteor.setInterval(this.checkFocus, 3000)
-		$(document.body).on('focusin mousedown focus', this.checkFocus)
+		document.body.addEventListener('focusin', this.checkFocus)
+		document.body.addEventListener('focus', this.checkFocus)
+		document.body.addEventListener('mousedown', this.checkFocus)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		Meteor.clearInterval(this.keyboardFocusInterval)
-		$(document.body).off('focusin mousedown focus', this.checkFocus)
+		document.body.removeEventListener('focusin', this.checkFocus)
+		document.body.removeEventListener('focus', this.checkFocus)
+		document.body.removeEventListener('mousedown', this.checkFocus)
 	}
 
 	checkFocus = () => {
@@ -94,7 +97,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		}
 	}
 
-	render () {
+	render() {
 		if (this.state.inFocus) {
 			return null
 		} else {
@@ -121,13 +124,13 @@ const WarningDisplay = translate()(timer(5000)(
 	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
 		private REHEARSAL_MARGIN = 1 * 60 * 1000
 
-		constructor (props: Translated<ITimingWarningProps>) {
+		constructor(props: Translated<ITimingWarningProps>) {
 			super(props)
 
 			this.state = {}
 		}
 
-		componentDidUpdate (prevProps: ITimingWarningProps) {
+		componentDidUpdate(prevProps: ITimingWarningProps) {
 			if ((this.props.rundown.active && !prevProps.rundown.active && this.props.rundown.rehearsal) ||
 				(this.props.rundown.rehearsal !== prevProps.rundown.rehearsal)) {
 				this.setState({
@@ -163,7 +166,7 @@ const WarningDisplay = translate()(timer(5000)(
 			this.props.oneMinuteBeforeAction(e)
 		}
 
-		render () {
+		render() {
 			const { t } = this.props
 
 			if (!this.props.rundown) return null
@@ -216,97 +219,97 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_NEXT_UP = 'shift+f10',
 	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR	= 'backspace'
+	RUNDOWN_LOG_ERROR = 'backspace'
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
-class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
-	render () {
-		const { t } = this.props
+	class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
+		render() {
+			const { t } = this.props
 
-		if (!this.props.rundown) return null
+			if (!this.props.rundown) return null
 
-		return (
-			<div className='timing mod'>
-				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
-					<span className='timing-clock plan-start left'>
-						<span className='timing-clock-label left'>{t('Started')}</span>
-						<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.startedPlayback} />
-					</span> :
-					<span className='timing-clock plan-start left'>
-						<span className='timing-clock-label left'>{t('Planned Start')}</span>
-						<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart} />
-					</span>
-				}
-				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
-					this.props.rundown.expectedStart &&
+			return (
+				<div className='timing mod'>
+					{this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
+						<span className='timing-clock plan-start left'>
+							<span className='timing-clock-label left'>{t('Started')}</span>
+							<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.startedPlayback} />
+						</span> :
+						<span className='timing-clock plan-start left'>
+							<span className='timing-clock-label left'>{t('Planned Start')}</span>
+							<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart} />
+						</span>
+					}
+					{this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
+						this.props.rundown.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.rundown.startedPlayback - this.props.rundown.expectedStart, true, false, true, true, true)}
 						</span>
-					:
-					this.props.rundown.expectedStart &&
+						:
+						this.props.rundown.expectedStart &&
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundown.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundown.expectedStart, true, false, true, true, true)}
 						</span>
-				}
-				<span className='timing-clock time-now'>
-					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
-					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
-						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
-						: null
 					}
-				</span>
-				{ this.props.rundown.expectedDuration ?
-					(<React.Fragment>
-						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
-							<span className='timing-clock plan-end right visual-last-child'>
-								<span className='timing-clock-label right'>{t('Planned End')}</span>
-								<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart + this.props.rundown.expectedDuration} />
-							</span>
+					<span className='timing-clock time-now'>
+						<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+						{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
+							<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
+							: null
 						}
-						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
-							<span className='timing-clock countdown plan-end right'>
-								{RundownUtils.formatDiffToTimecode(getCurrentTime() - (this.props.rundown.expectedStart + this.props.rundown.expectedDuration), true, true, true)}
-							</span>
-						}
-						{this.props.rundown.expectedDuration &&
-							<span className={ClassNames('timing-clock heavy-light right', {
-								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.rundown.expectedDuration || 0),
-								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.rundown.expectedDuration || 0)
-							})}>
-								<span className='timing-clock-label right'>{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.rundown.expectedDuration, true, false, true, true, true, undefined, true)}
-							</span>
-						}
-					</React.Fragment>) :
-					(<React.Fragment>
-						{this.props.timingDurations ?
-							<span className='timing-clock plan-end right visual-last-child'>
-								<span className='timing-clock-label right'>{t('Expected End')}</span>
-								<Moment interval={0} format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.totalRundownDuration || 0)} />
-							</span> :
-							null
-						}
-						{this.props.timingDurations ?
-							<span className={ClassNames('timing-clock heavy-light right', {
-								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0),
-								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0)
-							})}>
-								<span className='timing-clock-label right'>{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)}
-							</span> :
-							null
-						}
-					</React.Fragment>)
-				}
-			</div>
-		)
-	}
-}))
+					</span>
+					{this.props.rundown.expectedDuration ?
+						(<React.Fragment>
+							{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
+								<span className='timing-clock plan-end right visual-last-child'>
+									<span className='timing-clock-label right'>{t('Planned End')}</span>
+									<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart + this.props.rundown.expectedDuration} />
+								</span>
+							}
+							{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
+								<span className='timing-clock countdown plan-end right'>
+									{RundownUtils.formatDiffToTimecode(getCurrentTime() - (this.props.rundown.expectedStart + this.props.rundown.expectedDuration), true, true, true)}
+								</span>
+							}
+							{this.props.rundown.expectedDuration &&
+								<span className={ClassNames('timing-clock heavy-light right', {
+									'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.rundown.expectedDuration || 0),
+									'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.rundown.expectedDuration || 0)
+								})}>
+									<span className='timing-clock-label right'>{t('Diff')}</span>
+									{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.rundown.expectedDuration, true, false, true, true, true, undefined, true)}
+								</span>
+							}
+						</React.Fragment>) :
+						(<React.Fragment>
+							{this.props.timingDurations ?
+								<span className='timing-clock plan-end right visual-last-child'>
+									<span className='timing-clock-label right'>{t('Expected End')}</span>
+									<Moment interval={0} format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.totalRundownDuration || 0)} />
+								</span> :
+								null
+							}
+							{this.props.timingDurations ?
+								<span className={ClassNames('timing-clock heavy-light right', {
+									'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0),
+									'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0)
+								})}>
+									<span className='timing-clock-label right'>{t('Diff')}</span>
+									{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)}
+								</span> :
+								null
+							}
+						</React.Fragment>)
+					}
+				</div>
+			)
+		}
+	}))
 
 interface HotkeyDefinition {
 	key: string
@@ -327,6 +330,13 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
+function preventDefault(e: Event): void {
+	e.preventDefault()
+	e.stopImmediatePropagation()
+	e.stopPropagation()
+}
+
+
 const RundownHeader = translate()(class extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 	bindKeys: Array<{
 		key: string,
@@ -336,7 +346,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		global?: boolean
 		coolDown?: number
 	}> = []
-	constructor (props: Translated<IRundownHeaderProps>) {
+	constructor(props: Translated<IRundownHeaderProps>) {
 		super(props)
 
 		const { t } = props
@@ -347,51 +357,51 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					up: this.keyTake,
 					label: t('Take'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_TAKE2,
 					up: this.keyTake,
 					label: t('Take'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
 					up: this.keyHold,
 					label: t('Hold')
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 					up: this.keyActivate,
 					label: t('Activate'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE2,
 					up: this.keyActivate,
 					label: t('Activate'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE3,
 					up: this.keyActivate,
 					label: t('Activate'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_DEACTIVATE,
 					up: this.keyDeactivate,
 					label: t('Deactivate'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE_REHEARSAL,
 					up: this.keyActivateRehearsal,
 					label: t('Activate (Rehearsal)'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
 					up: this.keyResetRundown,
 					label: t('Reload Rundown'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 					up: this.keyResetRundown,
 					label: t('Reload Rundown'),
 					global: true
-				},{
+				}, {
 					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
 					label: t('Move Next forwards'),
@@ -442,16 +452,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			isError: false
 		}
 	}
-	componentDidMount () {
-		// $(document).on("keydown", function(e) {
-		// 	console.log(e)
-		// })
-
-		let preventDefault = (e: Event) => {
-			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
-		}
+	componentDidMount() {
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 			let lastUsed = Date.now()
@@ -483,7 +484,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		reloadRundownClick.set(this.reloadRundown)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
@@ -592,10 +593,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id])
 		}
 	}
-	rundownShouldHaveStarted () {
+	rundownShouldHaveStarted() {
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0)
 	}
-	rundownShouldHaveEnded () {
+	rundownShouldHaveEnded() {
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0) + (this.props.rundown.expectedDuration || 0)
 	}
 
@@ -797,10 +798,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		}
 	}
 
-	rewindSegments () {
+	rewindSegments() {
 		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 	}
-	deferFlushAndRewindSegments () {
+	deferFlushAndRewindSegments() {
 		// Do a rewind later, when the UI has updated
 		Meteor.defer(() => {
 			Tracker.flush()
@@ -811,7 +812,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		})
 	}
 
-	render () {
+	render() {
 		if (this.state.isError) {
 			throw new Error('Dupa')
 		}
@@ -919,7 +920,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					</div>
 					<div className='row dark'>
 						<div className='col c12 rundown-overview'>
-							{ this.props.rundown && <RundownOverview rundownId={this.props.rundown._id} /> }
+							{this.props.rundown && <RundownOverview rundownId={this.props.rundown._id} />}
 						</div>
 					</div>
 				</ContextMenuTrigger>
@@ -958,9 +959,9 @@ interface IState {
 }
 
 export enum RundownViewEvents {
-	'rewindsegments'	=	'sofie:rundownRewindSegments',
-	'goToLiveSegment'	=	'sofie:goToLiveSegment',
-	'goToTop'			=	'sofie:goToTop'
+	'rewindsegments' = 'sofie:rundownRewindSegments',
+	'goToLiveSegment' = 'sofie:goToLiveSegment',
+	'goToTop' = 'sofie:goToTop'
 }
 
 interface ITrackedProps {
@@ -994,422 +995,414 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId)
 	}
 })(
-class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
-	private bindKeys: Array<{
-		key: string,
-		up?: (e: KeyboardEvent) => any,
-		down?: (e: KeyboardEvent) => any,
-		label: string,
-		global?: boolean
-	}> = []
-	private usedArgumentKeys: Array<{
-		key: string,
-		up?: (e: KeyboardEvent) => any,
-		down?: (e: KeyboardEvent) => any,
-		label: string,
-		global?: boolean
-	}> = []
-	private _inspectorDrawer: WrappedShelf | null
+		private bindKeys: Array<{
+			key: string,
+			up?: (e: KeyboardEvent) => any,
+			down?: (e: KeyboardEvent) => any,
+			label: string,
+			global?: boolean
+		}> = []
+		private usedArgumentKeys: Array<{
+			key: string,
+			up?: (e: KeyboardEvent) => any,
+			down?: (e: KeyboardEvent) => any,
+			label: string,
+			global?: boolean
+		}> = []
+		private _inspectorDrawer: WrappedShelf | null
 
-	constructor (props: Translated<IProps & ITrackedProps>) {
-		super(props)
+		constructor(props: Translated<IProps & ITrackedProps>) {
+			super(props)
 
-		const { t } = this.props
+			const { t } = this.props
 
-		this.bindKeys = [
-			{
-				key: RundownViewKbdShortcuts.RUNDOWN_GO_TO_LIVE,
-				up: this.onGoToLiveSegment,
-				label: t('Go to On Air line'),
-				global: true
-			},
-			{
-				key: RundownViewKbdShortcuts.RUNDOWN_REWIND_SEGMENTS,
-				up: this.onRewindSegments,
-				label: t('Rewind segments to start'),
-				global: true
-			}
-		]
-
-		this.usedArgumentKeys = []
-
-		this.state = {
-			timeScale: 0.03,
-			studioMode: getStudioMode(),
-			contextMenuContext: null,
-			bottomMargin: '',
-			followLiveSegments: true,
-			manualSetAsNext: false,
-			subsReady: false,
-			usedHotkeys: _.clone(this.bindKeys).concat([
-				// Register additional hotkeys or legend entries
+			this.bindKeys = [
 				{
-					key: 'Esc',
-					label: t('Cancel currently pressed hotkey')
+					key: RundownViewKbdShortcuts.RUNDOWN_GO_TO_LIVE,
+					up: this.onGoToLiveSegment,
+					label: t('Go to On Air line'),
+					global: true
 				},
 				{
-					key: 'F11',
-					label: t('Change to fullscreen mode')
+					key: RundownViewKbdShortcuts.RUNDOWN_REWIND_SEGMENTS,
+					up: this.onRewindSegments,
+					label: t('Rewind segments to start'),
+					global: true
 				}
-			]),
-			isNotificationsCenterOpen: false,
-			isSupportPanelOpen: false,
-			isInspectorDrawerExpanded: false,
-			isClipTrimmerOpen: false,
-			selectedPiece: undefined
-		}
-	}
+			]
 
-	componentWillMount () {
-		// Subscribe to data:
-		let rundownId = this.props.rundownId
+			this.usedArgumentKeys = []
 
-		this.subscribe(PubSub.rundowns, {
-			_id: rundownId
-		})
-		this.subscribe(PubSub.segments, {
-			rundownId: rundownId
-		})
-		this.subscribe(PubSub.parts, {
-			rundownId: rundownId
-		})
-		this.subscribe(PubSub.pieces, {
-			rundownId: rundownId
-		})
-		this.subscribe(PubSub.adLibPieces, {
-			rundownId: rundownId
-		})
-		this.autorun(() => {
-			let rundown = Rundowns.findOne(rundownId)
-			if (rundown) {
-				this.subscribe(PubSub.studios, {
-					_id: rundown.studioId
-				})
-				this.subscribe(PubSub.showStyleBases, {
-					_id: rundown.showStyleBaseId
-				})
-			}
-		})
-		this.autorun(() => {
-			let subsReady = this.subscriptionsReady()
-			if (subsReady !== this.state.subsReady) {
-				this.setState({
-					subsReady: subsReady
-				})
-			}
-		})
-	}
-
-	componentDidMount () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
-		$(window).on('scroll', this.onWindowScroll)
-		let preventDefault = (e) => {
-			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
-		}
-		_.each(this.bindKeys, (k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
-			if (k.up) {
-				method(k.key, (e: KeyboardEvent) => {
-					if (k.up) k.up(e)
-				}, 'keyup')
-				method(k.key, (e: KeyboardEvent) => {
-					preventDefault(e)
-				}, 'keydown')
-			}
-			if (k.down) {
-				method(k.key, (e: KeyboardEvent) => {
-					if (k.down) k.down(e)
-				}, 'keydown')
-			}
-		})
-
-		rundownNotificationHandler.set(this.onRONotificationClick)
-
-		window.addEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-		window.addEventListener(RundownViewEvents.goToTop, this.onGoToTop)
-	}
-
-	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
-		if (this.props.rundown &&
-			prevProps.rundown && prevProps.rundown.currentPartId !== this.props.rundown.currentPartId &&
-			this.state.manualSetAsNext) {
-
-			this.setState({
+			this.state = {
+				timeScale: 0.03,
+				studioMode: getStudioMode(),
+				contextMenuContext: null,
+				bottomMargin: '',
+				followLiveSegments: true,
 				manualSetAsNext: false,
-				followLiveSegments: true
-			})
-		} else if (this.props.rundown &&
-			prevProps.rundown && prevProps.rundown.active && !this.props.rundown.active) {
-			this.setState({
-				followLiveSegments: true
-			})
-		} else if (this.props.rundown &&
-			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
-			this.props.rundown.nextPartId) {
-			scrollToPart(this.props.rundown.nextPartId)
-		}
-
-		if (typeof this.props.rundown !== typeof this.props.rundown ||
-			(this.props.rundown || { _id: '' })._id !== (prevProps.rundown || { _id: '' })._id ||
-			(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
-			this.state.studioMode !== prevState.studioMode) {
-			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
-				$(window).on('beforeunload', this.onBeforeUnload)
-			} else {
-				$(window).off('beforeunload', this.onBeforeUnload)
-			}
-		}
-
-		if (typeof this.props.showStyleBase !== typeof prevProps.showStyleBase ||
-			this.props.showStyleBase && this.props.showStyleBase.runtimeArguments) {
-			this.refreshHotkeys()
-		}
-	}
-
-	refreshHotkeys = () => {
-		const { t } = this.props
-		let preventDefault = (e) => {
-			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
-		}
-		const noOp = (e) => {
-			preventDefault(e)
-		}
-
-		this.usedArgumentKeys.forEach((k) => {
-			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
-			}
-			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
-			}
-		})
-		this.usedArgumentKeys = []
-
-		if (this.props.showStyleBase) {
-			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
-				const combos = i.hotkeys.split(',')
-				_.each(combos, (combo: string) => {
-					const handler = (e: KeyboardEvent) => {
-						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
-							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
-								this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
-							])
-						}
+				subsReady: false,
+				usedHotkeys: _.clone(this.bindKeys).concat([
+					// Register additional hotkeys or legend entries
+					{
+						key: 'Esc',
+						label: t('Cancel currently pressed hotkey')
+					},
+					{
+						key: 'F11',
+						label: t('Change to fullscreen mode')
 					}
-					this.usedArgumentKeys.push({
-						up: handler,
-						key: combo,
-						label: i.label || ''
+				]),
+				isNotificationsCenterOpen: false,
+				isSupportPanelOpen: false,
+				isInspectorDrawerExpanded: false,
+				isClipTrimmerOpen: false,
+				selectedPiece: undefined
+			}
+		}
+
+		componentWillMount() {
+			// Subscribe to data:
+			let rundownId = this.props.rundownId
+
+			this.subscribe(PubSub.rundowns, {
+				_id: rundownId
+			})
+			this.subscribe(PubSub.segments, {
+				rundownId: rundownId
+			})
+			this.subscribe(PubSub.parts, {
+				rundownId: rundownId
+			})
+			this.subscribe(PubSub.pieces, {
+				rundownId: rundownId
+			})
+			this.subscribe(PubSub.adLibPieces, {
+				rundownId: rundownId
+			})
+			this.autorun(() => {
+				let rundown = Rundowns.findOne(rundownId)
+				if (rundown) {
+					this.subscribe(PubSub.studios, {
+						_id: rundown.studioId
 					})
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
+					this.subscribe(PubSub.showStyleBases, {
+						_id: rundown.showStyleBaseId
+					})
+				}
+			})
+			this.autorun(() => {
+				let subsReady = this.subscriptionsReady()
+				if (subsReady !== this.state.subsReady) {
+					this.setState({
+						subsReady: subsReady
+					})
+				}
+			})
+		}
+
+		componentDidMount() {
+			document.body.classList.add('dark', 'vertical-overflow-only')
+			window.addEventListener('scroll', this.onWindowScroll)
+
+			_.each(this.bindKeys, (k) => {
+				const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
+				if (k.up) {
+					method(k.key, (e: KeyboardEvent) => {
+						if (k.up) k.up(e)
+					}, 'keyup')
+					method(k.key, (e: KeyboardEvent) => {
+						preventDefault(e)
+					}, 'keydown')
+				}
+				if (k.down) {
+					method(k.key, (e: KeyboardEvent) => {
+						if (k.down) k.down(e)
+					}, 'keydown')
+				}
+			})
+
+			rundownNotificationHandler.set(this.onRONotificationClick)
+
+			window.addEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+			window.addEventListener(RundownViewEvents.goToTop, this.onGoToTop)
+		}
+
+		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
+			if (this.props.rundown &&
+				prevProps.rundown && prevProps.rundown.currentPartId !== this.props.rundown.currentPartId &&
+				this.state.manualSetAsNext) {
+
+				this.setState({
+					manualSetAsNext: false,
+					followLiveSegments: true
 				})
-			})
-		}
-	}
-
-	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		if (piece && piece.content && (piece.content as VTContent).editable &&
-			((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-			((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
-			this.setState({
-				isClipTrimmerOpen: true,
-				selectedPiece: piece
-
-			})
-		}
-	}
-
-	componentWillUnmount () {
-		this._cleanUp()
-		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
-		$(window).off('scroll', this.onWindowScroll)
-		$(window).off('beforeunload', this.onBeforeUnload)
-
-		_.each(this.bindKeys, (k) => {
-			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
+			} else if (this.props.rundown &&
+				prevProps.rundown && prevProps.rundown.active && !this.props.rundown.active) {
+				this.setState({
+					followLiveSegments: true
+				})
+			} else if (this.props.rundown &&
+				prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
+				this.props.rundown.nextPartId) {
+				scrollToPart(this.props.rundown.nextPartId)
 			}
-			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
+
+			if (typeof this.props.rundown !== typeof this.props.rundown ||
+				(this.props.rundown || { _id: '' })._id !== (prevProps.rundown || { _id: '' })._id ||
+				(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
+				this.state.studioMode !== prevState.studioMode) {
+				if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
+					window.addEventListener('beforeunload', this.onBeforeUnload)
+				} else {
+					window.removeEventListener('beforeunload', this.onBeforeUnload)
+				}
 			}
-		})
 
-		_.each(this.usedArgumentKeys, (k) => {
-			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			if (typeof this.props.showStyleBase !== typeof prevProps.showStyleBase ||
+				this.props.showStyleBase && this.props.showStyleBase.runtimeArguments) {
+				this.refreshHotkeys()
 			}
-			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+		}
+
+		refreshHotkeys = () => {
+			const { t } = this.props
+
+			const noOp = (e: Event) => {
+				preventDefault(e)
 			}
-		})
 
-		window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-		window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)
-	}
-
-	onBeforeUnload = (e: any) => {
-		const { t } = this.props
-
-		e.preventDefault()
-		e.returnValue = t('This rundown is now active. Are you sure you want to exit this screen?')
-
-		return t('This rundown is now active. Are you sure you want to exit this screen?')
-	}
-
-	onRewindSegments = () => {
-		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-	}
-
-	onTimeScaleChange = (timeScaleVal) => {
-		if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
-			this.setState({
-				timeScale: timeScaleVal
+			this.usedArgumentKeys.forEach((k) => {
+				if (k.up) {
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				}
+				if (k.down) {
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				}
 			})
-		}
-	}
+			this.usedArgumentKeys = []
 
-	onSegmentScroll = () => {
-		if (this.state.followLiveSegments && this.props.rundown && this.props.rundown.active) {
-			this.setState({
-				followLiveSegments: false
+			if (this.props.showStyleBase) {
+				_.each(this.props.showStyleBase.runtimeArguments, (i) => {
+					const combos = i.hotkeys.split(',')
+					_.each(combos, (combo: string) => {
+						const handler = (e: KeyboardEvent) => {
+							if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
+								doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+									this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
+								])
+							}
+						}
+						this.usedArgumentKeys.push({
+							up: handler,
+							key: combo,
+							label: i.label || ''
+						})
+						mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+						mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
+					})
+				})
+			}
+		}
+
+		onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
+			if (piece && piece.content && (piece.content as VTContent).editable &&
+				((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+					((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+				this.setState({
+					isClipTrimmerOpen: true,
+					selectedPiece: piece
+
+				})
+			}
+		}
+
+		componentWillUnmount() {
+			this._cleanUp()
+			document.body.classList.remove('dark', 'vertical-overflow-only')
+			window.removeEventListener('scroll', this.onWindowScroll)
+			window.removeEventListener('beforeunload', this.onBeforeUnload)
+
+			_.each(this.bindKeys, (k) => {
+				if (k.up) {
+					mousetrap.unbind(k.key, 'keyup')
+					mousetrap.unbind(k.key, 'keydown')
+				}
+				if (k.down) {
+					mousetrap.unbind(k.key, 'keydown')
+				}
 			})
-		}
-	}
 
-	onWindowScroll = (e: JQuery.Event) => {
-		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
-		if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
-			this.setState({
-				followLiveSegments: false
+			_.each(this.usedArgumentKeys, (k) => {
+				if (k.up) {
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				}
+				if (k.down) {
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				}
 			})
-		}
-	}
 
-	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
-			// @ts-ignore
-			!window.keyboardModifiers.altRight &&
-			e.deltaY !== 0) {
-			this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
+			window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+			window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)
+		}
+
+		onBeforeUnload = (e: any) => {
+			const { t } = this.props
+
 			e.preventDefault()
+			e.returnValue = t('This rundown is now active. Are you sure you want to exit this screen?')
+
+			return t('This rundown is now active. Are you sure you want to exit this screen?')
 		}
-	}
 
-	onGoToTop = () => {
-		scrollToPosition(0)
+		onRewindSegments = () => {
+			window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+		}
 
-		Meteor.setTimeout(() => {
-			this.setState({
-				followLiveSegments: true
-			})
-		}, 400)
-	}
-	onGoToLiveSegment = () => {
-		if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentPartId &&
-			this.props.rundown.nextPartId) {
-			this.setState({
-				followLiveSegments: true
-			})
-			scrollToPart(this.props.rundown.nextPartId)
-			// allow for the scroll to finish
+		onTimeScaleChange = (timeScaleVal) => {
+			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
+				this.setState({
+					timeScale: timeScaleVal
+				})
+			}
+		}
+
+		onSegmentScroll = () => {
+			if (this.state.followLiveSegments && this.props.rundown && this.props.rundown.active) {
+				this.setState({
+					followLiveSegments: false
+				})
+			}
+		}
+
+		onWindowScroll = (e: Event) => {
+			const isAutoScrolling = document.body.classList.contains('auto-scrolling')
+			if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
+				this.setState({
+					followLiveSegments: false
+				})
+			}
+		}
+
+		onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+			if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
+				// @ts-ignore
+				!window.keyboardModifiers.altRight &&
+				e.deltaY !== 0) {
+				this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
+				e.preventDefault()
+			}
+		}
+
+		onGoToTop = () => {
+			scrollToPosition(0)
+
 			Meteor.setTimeout(() => {
 				this.setState({
 					followLiveSegments: true
 				})
-				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 			}, 400)
-		} else {
+		}
+		onGoToLiveSegment = () => {
+			if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentPartId &&
+				this.props.rundown.nextPartId) {
+				this.setState({
+					followLiveSegments: true
+				})
+				scrollToPart(this.props.rundown.nextPartId)
+				// allow for the scroll to finish
+				Meteor.setTimeout(() => {
+					this.setState({
+						followLiveSegments: true
+					})
+					window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+				}, 400)
+			} else {
+				this.setState({
+					followLiveSegments: true
+				})
+			}
+		}
+
+		onActivate = (isRehearsal: boolean) => {
 			this.setState({
 				followLiveSegments: true
 			})
 		}
-	}
 
-	onActivate = (isRehearsal: boolean) => {
-		this.setState({
-			followLiveSegments: true
-		})
-	}
-
-	onContextMenu = (contextMenuContext: any) => {
-		this.setState({
-			contextMenuContext
-		})
-	}
-
-	onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
-		const { t } = this.props
-		if (this.state.studioMode && part && part._id && this.props.rundown) {
-			doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, part._id, offset], (err, res) => {
-				this.setState({
-					manualSetAsNext: true
-				})
-				if (!err && take && this.props.rundown) {
-					doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
-				}
+		onContextMenu = (contextMenuContext: any) => {
+			this.setState({
+				contextMenuContext
 			})
 		}
-	}
 
-	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		const { t } = this.props
-		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.rundown._id, this.props.rundown.currentPartId, item._id])
+		onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
+			const { t } = this.props
+			if (this.state.studioMode && part && part._id && this.props.rundown) {
+				doUserAction(t, e, UserActionAPI.methods.setNext, [this.props.rundown._id, part._id, offset], (err, res) => {
+					this.setState({
+						manualSetAsNext: true
+					})
+					if (!err && take && this.props.rundown) {
+						doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+					}
+				})
+			}
 		}
-	}
 
-	onRONotificationClick = (e: RONotificationEvent) => {
-		if (e.sourceLocator) {
-			let segmentId = e.sourceLocator.segmentId
+		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
+			const { t } = this.props
+			if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentPartId) {
+				doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.rundown._id, this.props.rundown.currentPartId, item._id])
+			}
+		}
 
-			if (!segmentId) {
-				if (e.sourceLocator.partId) {
-					let part = Parts.findOne(e.sourceLocator.partId)
-					if (part) {
-						segmentId = part.segmentId
+		onRONotificationClick = (e: RONotificationEvent) => {
+			if (e.sourceLocator) {
+				let segmentId = e.sourceLocator.segmentId
+
+				if (!segmentId) {
+					if (e.sourceLocator.partId) {
+						let part = Parts.findOne(e.sourceLocator.partId)
+						if (part) {
+							segmentId = part.segmentId
+						}
 					}
 				}
-			}
-			if (segmentId) {
-				scrollToSegment(segmentId)
+				if (segmentId) {
+					scrollToSegment(segmentId)
+				}
 			}
 		}
-	}
-	onHeaderNoteClick = (segmentId: string, level: NoteType) => {
-		NotificationCenter.snoozeAll()
-		const isOpen = this.state.isNotificationsCenterOpen
-		this.setState({
-			isNotificationsCenterOpen: true
-		})
-		setTimeout(function () {
-			NotificationCenter.highlightSource(segmentId, level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
-		}, isOpen ? 1 : 1000)
-	}
+		onHeaderNoteClick = (segmentId: string, level: NoteType) => {
+			NotificationCenter.snoozeAll()
+			const isOpen = this.state.isNotificationsCenterOpen
+			this.setState({
+				isNotificationsCenterOpen: true
+			})
+			setTimeout(function () {
+				NotificationCenter.highlightSource(segmentId, level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
+			}, isOpen ? 1 : 1000)
+		}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
-		this.setState({
-			isSupportPanelOpen: !this.state.isSupportPanelOpen
-		})
-	}
+		onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
+			this.setState({
+				isSupportPanelOpen: !this.state.isSupportPanelOpen
+			})
+		}
 
-	renderSegments () {
-		if (this.props.segments) {
-			return this.props.segments.map((segment, index, array) => {
-				if (
-					this.props.studio &&
-					this.props.rundown &&
-					this.props.showStyleBase
-				) {
-					return <ErrorBoundary key={segment._id}>
+		renderSegments() {
+			if (this.props.segments) {
+				return this.props.segments.map((segment, index, array) => {
+					if (
+						this.props.studio &&
+						this.props.rundown &&
+						this.props.showStyleBase
+					) {
+						return <ErrorBoundary key={segment._id}>
 							<SegmentTimelineContainer
 								studio={this.props.studio}
 								showStyleBase={this.props.showStyleBase}
@@ -1427,253 +1420,253 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
 						</ErrorBoundary>
-				}
-			})
-		} else {
-			return (
-				<div></div>
-			)
-		}
-	}
-
-	renderSegmentsList () {
-		const { t } = this.props
-
-		if (this.props.rundown) {
-			return (
-				<div className='segment-timeline-container'>
-					{this.renderSegments()}
-				</div>
-			)
-		} else {
-			return (
-				<div className='mod'>
-					<Spinner />
-				</div>
-			)
-		}
-	}
-
-	onChangeBottomMargin = (newBottomMargin: string) => {
-		this.setState({
-			bottomMargin: newBottomMargin
-		})
-	}
-
-	onRegisterHotkeys = (hotkeys: Array<HotkeyDefinition>) => {
-		// @ts-ignore
-		this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
-		this.setState({
-			usedHotkeys: this.state.usedHotkeys
-		})
-	}
-
-	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
-		if (!getDeveloperMode()) {
-			e.preventDefault()
-			e.stopPropagation()
-		}
-		return false
-	}
-
-	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
-		if (!this.state.isNotificationsCenterOpen === true) {
-			NotificationCenter.snoozeAll()
-			NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
-		}
-
-		this.setState({
-			isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen
-		})
-	}
-
-	onToggleHotkeys = () => {
-		if (!this.state.isInspectorDrawerExpanded) {
-			this.setState({
-				isInspectorDrawerExpanded: true
-			})
-			if (this._inspectorDrawer) {
-				this._inspectorDrawer.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
-			}
-		} else {
-			this.setState({
-				isInspectorDrawerExpanded: false
-			})
-		}
-	}
-
-	onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
-		const { t } = this.props
-
-		if (this.props.studio) {
-			const attachedPlayoutGateways = PeripheralDevices.find({
-				studioId: this.props.studio._id,
-				connected: true,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-			}).fetch()
-			if (attachedPlayoutGateways.length === 0) {
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'), 'RundownView'))
-				return
-			}
-			attachedPlayoutGateways.forEach((item) => {
-				PeripheralDevicesAPI.restartDevice(item, e).then(() => {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }), 'RundownView'))
-				}).catch(() => {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }), 'RundownView'))
+					}
 				})
+			} else {
+				return (
+					<div></div>
+				)
+			}
+		}
+
+		renderSegmentsList() {
+			const { t } = this.props
+
+			if (this.props.rundown) {
+				return (
+					<div className='segment-timeline-container'>
+						{this.renderSegments()}
+					</div>
+				)
+			} else {
+				return (
+					<div className='mod'>
+						<Spinner />
+					</div>
+				)
+			}
+		}
+
+		onChangeBottomMargin = (newBottomMargin: string) => {
+			this.setState({
+				bottomMargin: newBottomMargin
 			})
 		}
-	}
 
-	onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
-		const { t } = this.props
-		if (this.props.rundown) {
-			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'User requested log at' + getCurrentTime()], undefined,
-				t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
+		onRegisterHotkeys = (hotkeys: Array<HotkeyDefinition>) => {
+			// @ts-ignore
+			this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
+			this.setState({
+				usedHotkeys: this.state.usedHotkeys
+			})
 		}
-	}
 
-	onDrawerChangeExpanded = (value: boolean) => {
-		this.setState({
-			isInspectorDrawerExpanded: value
-		})
-	}
-
-	setInspectorDrawer = (isp: WrappedShelf | null) => {
-		this._inspectorDrawer = isp
-	}
-
-	onTake = (e: any) => {
-		const { t } = this.props
-		if (this.state.studioMode && this.props.rundown) {
-			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+		onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
+			if (!getDeveloperMode()) {
+				e.preventDefault()
+				e.stopPropagation()
+			}
+			return false
 		}
-	}
 
-	getStyle () {
-		return {
-			'marginBottom': this.state.bottomMargin
+		onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
+			if (!this.state.isNotificationsCenterOpen === true) {
+				NotificationCenter.snoozeAll()
+				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
+			}
+
+			this.setState({
+				isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen
+			})
 		}
-	}
 
-	render () {
-		const { t } = this.props
+		onToggleHotkeys = () => {
+			if (!this.state.isInspectorDrawerExpanded) {
+				this.setState({
+					isInspectorDrawerExpanded: true
+				})
+				if (this._inspectorDrawer) {
+					this._inspectorDrawer.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
+				}
+			} else {
+				this.setState({
+					isInspectorDrawerExpanded: false
+				})
+			}
+		}
 
-		if (this.state.subsReady) {
-			if (
-				this.props.rundown &&
-				this.props.studio &&
-				this.props.showStyleBase
-			) {
-				return (
-					<RundownTimingProvider
-						rundown={this.props.rundown}
-						defaultDuration={DEFAULT_DISPLAY_DURATION}>
-						<div className={ClassNames('rundown-view', {
-							'notification-center-open': this.state.isNotificationsCenterOpen
-						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
-							<ErrorBoundary>
-								{ this.state.studioMode && <KeyboardFocusMarker /> }
-							</ErrorBoundary>
-							<ErrorBoundary>
-								<RundownFullscreenControls
-									isFollowingOnAir={this.state.followLiveSegments}
-									onFollowOnAir={this.onGoToLiveSegment}
-									onRewindSegments={this.onRewindSegments}
-									isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
-									onToggleNotifications={this.onToggleNotifications}
-									isSupportPanelOpen={this.state.isSupportPanelOpen}
-									onToggleSupportPanel={this.onToggleSupportPanel}
-									isStudioMode={this.state.studioMode}
-									onTake={this.onTake} />
-							</ErrorBoundary>
-							<ErrorBoundary>
-								<VelocityReact.VelocityTransitionGroup enter={{
-									animation: {
-										translateX: ['0%', '100%']
-									}, easing: 'ease-out', duration: 300
-								}} leave={{
-									animation: {
-										translateX: ['100%', '0%']
-									}, easing: 'ease-in', duration: 500
-								}}>
-									{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
-								</VelocityReact.VelocityTransitionGroup>
-								<VelocityReact.VelocityTransitionGroup enter={{
-									animation: {
-										translateX: ['0%', '100%']
-									}, easing: 'ease-out', duration: 300
-								}} leave={{
-									animation: {
-										translateX: ['100%', '0%']
-									}, easing: 'ease-in', duration: 500
-								}}>
-									{this.state.isSupportPanelOpen &&
-										<SupportPopUp>
-											<button className='btn btn-primary' onClick={this.onToggleHotkeys}>{t('Show Hotkeys')}</button>
-											<button className='btn btn-primary' onClick={this.onTakeRundownSnapshot}>{t('Take a Snapshot')}</button>
-											<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
-										</SupportPopUp>
+		onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
+			const { t } = this.props
+
+			if (this.props.studio) {
+				const attachedPlayoutGateways = PeripheralDevices.find({
+					studioId: this.props.studio._id,
+					connected: true,
+					type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+				}).fetch()
+				if (attachedPlayoutGateways.length === 0) {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'), 'RundownView'))
+					return
+				}
+				attachedPlayoutGateways.forEach((item) => {
+					PeripheralDevicesAPI.restartDevice(item, e).then(() => {
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }), 'RundownView'))
+					}).catch(() => {
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }), 'RundownView'))
+					})
+				})
+			}
+		}
+
+		onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
+			const { t } = this.props
+			if (this.props.rundown) {
+				doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'User requested log at' + getCurrentTime()], undefined,
+					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
+			}
+		}
+
+		onDrawerChangeExpanded = (value: boolean) => {
+			this.setState({
+				isInspectorDrawerExpanded: value
+			})
+		}
+
+		setInspectorDrawer = (isp: WrappedShelf | null) => {
+			this._inspectorDrawer = isp
+		}
+
+		onTake = (e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.rundown) {
+				doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+			}
+		}
+
+		getStyle() {
+			return {
+				'marginBottom': this.state.bottomMargin
+			}
+		}
+
+		render() {
+			const { t } = this.props
+
+			if (this.state.subsReady) {
+				if (
+					this.props.rundown &&
+					this.props.studio &&
+					this.props.showStyleBase
+				) {
+					return (
+						<RundownTimingProvider
+							rundown={this.props.rundown}
+							defaultDuration={DEFAULT_DISPLAY_DURATION}>
+							<div className={ClassNames('rundown-view', {
+								'notification-center-open': this.state.isNotificationsCenterOpen
+							})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
+								<ErrorBoundary>
+									{this.state.studioMode && <KeyboardFocusMarker />}
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<RundownFullscreenControls
+										isFollowingOnAir={this.state.followLiveSegments}
+										onFollowOnAir={this.onGoToLiveSegment}
+										onRewindSegments={this.onRewindSegments}
+										isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
+										onToggleNotifications={this.onToggleNotifications}
+										isSupportPanelOpen={this.state.isSupportPanelOpen}
+										onToggleSupportPanel={this.onToggleSupportPanel}
+										isStudioMode={this.state.studioMode}
+										onTake={this.onTake} />
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<VelocityReact.VelocityTransitionGroup enter={{
+										animation: {
+											translateX: ['0%', '100%']
+										}, easing: 'ease-out', duration: 300
+									}} leave={{
+										animation: {
+											translateX: ['100%', '0%']
+										}, easing: 'ease-in', duration: 500
+									}}>
+										{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+									</VelocityReact.VelocityTransitionGroup>
+									<VelocityReact.VelocityTransitionGroup enter={{
+										animation: {
+											translateX: ['0%', '100%']
+										}, easing: 'ease-out', duration: 300
+									}} leave={{
+										animation: {
+											translateX: ['100%', '0%']
+										}, easing: 'ease-in', duration: 500
+									}}>
+										{this.state.isSupportPanelOpen &&
+											<SupportPopUp>
+												<button className='btn btn-primary' onClick={this.onToggleHotkeys}>{t('Show Hotkeys')}</button>
+												<button className='btn btn-primary' onClick={this.onTakeRundownSnapshot}>{t('Take a Snapshot')}</button>
+												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+											</SupportPopUp>
+										}
+									</VelocityReact.VelocityTransitionGroup>
+								</ErrorBoundary>
+								<ErrorBoundary>
+									{this.state.studioMode &&
+										<Prompt when={this.props.rundown.active || false} message={t('This rundown is now active. Are you sure you want to exit this screen?')} />
 									}
-								</VelocityReact.VelocityTransitionGroup>
-							</ErrorBoundary>
-							<ErrorBoundary>
-								{ this.state.studioMode &&
-									<Prompt when={this.props.rundown.active || false} message={t('This rundown is now active. Are you sure you want to exit this screen?')} />
-								}
-							</ErrorBoundary>
-							<ErrorBoundary>
-								<RundownHeader
-									rundown={this.props.rundown}
-									studio={this.props.studio}
-									onActivate={this.onActivate}
-									studioMode={this.state.studioMode}
-									onRegisterHotkeys={this.onRegisterHotkeys}
-									inActiveRundownView={this.props.inActiveRundownView} />
-							</ErrorBoundary>
-							<ErrorBoundary>
-								<SegmentContextMenu
-									contextMenuContext={this.state.contextMenuContext}
-									rundown={this.props.rundown}
-									onSetNext={this.onSetNext}
-									studioMode={this.state.studioMode} />
-							</ErrorBoundary>
-							<ErrorBoundary>
-								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studio &&
-									<ClipTrimDialog
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<RundownHeader
+										rundown={this.props.rundown}
 										studio={this.props.studio}
-										rundownId={this.props.rundownId}
-										selectedPiece={this.state.selectedPiece}
-										onClose={() => this.setState({ isClipTrimmerOpen: false })}
+										onActivate={this.onActivate}
+										studioMode={this.state.studioMode}
+										onRegisterHotkeys={this.onRegisterHotkeys}
+										inActiveRundownView={this.props.inActiveRundownView} />
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<SegmentContextMenu
+										contextMenuContext={this.state.contextMenuContext}
+										rundown={this.props.rundown}
+										onSetNext={this.onSetNext}
+										studioMode={this.state.studioMode} />
+								</ErrorBoundary>
+								<ErrorBoundary>
+									{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studio &&
+										<ClipTrimDialog
+											studio={this.props.studio}
+											rundownId={this.props.rundownId}
+											selectedPiece={this.state.selectedPiece}
+											onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>
-								}
-							</ErrorBoundary>
-							{this.renderSegmentsList()}
-							<ErrorBoundary>
-								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
-									rundown={this.props.rundown}
-								/> }
-							</ErrorBoundary>
-							<ErrorBoundary>
-								<Shelf
-									ref={this.setInspectorDrawer}
-									isExpanded={this.state.isInspectorDrawerExpanded}
-									onChangeExpanded={this.onDrawerChangeExpanded}
-									segments={this.props.segments}
-									hotkeys={this.state.usedHotkeys}
-									rundown={this.props.rundown}
-									showStyleBase={this.props.showStyleBase}
-									studioMode={this.state.studioMode}
-									onChangeBottomMargin={this.onChangeBottomMargin}
-									onRegisterHotkeys={this.onRegisterHotkeys} />
-							</ErrorBoundary>
-							<ErrorBoundary>
-								{this.props.rundown && this.props.studio && this.props.showStyleBase &&
-									<RundownNotifier rundownId={this.props.rundown._id} studio={this.props.studio} showStyleBase={this.props.showStyleBase} />
-								}
-							</ErrorBoundary>
-						</div>
-						{// USE IN CASE OF DEBUGGING EMERGENCY
+									}
+								</ErrorBoundary>
+								{this.renderSegmentsList()}
+								<ErrorBoundary>
+									{this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
+										rundown={this.props.rundown}
+									/>}
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<Shelf
+										ref={this.setInspectorDrawer}
+										isExpanded={this.state.isInspectorDrawerExpanded}
+										onChangeExpanded={this.onDrawerChangeExpanded}
+										segments={this.props.segments}
+										hotkeys={this.state.usedHotkeys}
+										rundown={this.props.rundown}
+										showStyleBase={this.props.showStyleBase}
+										studioMode={this.state.studioMode}
+										onChangeBottomMargin={this.onChangeBottomMargin}
+										onRegisterHotkeys={this.onRegisterHotkeys} />
+								</ErrorBoundary>
+								<ErrorBoundary>
+									{this.props.rundown && this.props.studio && this.props.showStyleBase &&
+										<RundownNotifier rundownId={this.props.rundown._id} studio={this.props.studio} showStyleBase={this.props.showStyleBase} />
+									}
+								</ErrorBoundary>
+							</div>
+							{// USE IN CASE OF DEBUGGING EMERGENCY
 						/* getDeveloperMode() && <div id='debug-console' className='debug-console' style={{
 							background: 'rgba(255,255,255,0.7)',
 							color: '#000',
@@ -1684,41 +1677,41 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							pointerEvents: 'none'
 						}}>
 						</div> */}
-					</RundownTimingProvider>
-				)
+						</RundownTimingProvider>
+					)
+				} else {
+					return (
+						<div className='rundown-view rundown-view--unpublished'>
+							<div className='rundown-view__label'>
+								<p>
+									{
+										!this.props.rundown ?
+											t('This rundown has been unpublished from Sofie.') :
+											!this.props.studio ?
+												t('Error: The studio of this Rundown was not found.') :
+												!this.props.showStyleBase ?
+													t('Error: The ShowStyle of this Rundown was not found.') :
+													t('Unknown error')
+									}
+								</p>
+								<p>
+									<Route render={({ history }) => (
+										<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
+											{t('Return to list')}
+										</button>
+									)} />
+								</p>
+							</div>
+						</div>
+					)
+				}
 			} else {
 				return (
-					<div className='rundown-view rundown-view--unpublished'>
-						<div className='rundown-view__label'>
-							<p>
-								{
-									!this.props.rundown ?
-										t('This rundown has been unpublished from Sofie.') :
-									!this.props.studio ?
-										t('Error: The studio of this Rundown was not found.') :
-									!this.props.showStyleBase ?
-										t('Error: The ShowStyle of this Rundown was not found.') :
-									t('Unknown error')
-								}
-							</p>
-							<p>
-								<Route render={({ history }) => (
-									<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
-										{t('Return to list')}
-									</button>
-								)} />
-							</p>
-						</div>
+					<div className='rundown-view rundown-view--loading'>
+						<Spinner />
 					</div>
 				)
 			}
-		} else {
-			return (
-				<div className='rundown-view rundown-view--loading'>
-					<Spinner />
-				</div>
-			)
 		}
 	}
-}
 )
