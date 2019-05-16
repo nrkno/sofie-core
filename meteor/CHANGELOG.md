@@ -2,9 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<a name="0.24.0-0"></a>
-## 0.24.0-0 (2019-04-12)
-
+<a name="0.24.0"></a>
+# 0.24.0 (2019-05-16)
 
 ### Features
 
@@ -66,6 +65,8 @@ All notable changes to this project will be documented in this file. See [standa
 * feat: show timecodes in SegmentLineContextMenus ([5df6e15](https://github.com/nrkno/tv-automation-server-core/commit/5df6e15))
 * feat: specific implementation: append Note on RunningOrder if segmentLine is not found ([a2ff6a2](https://github.com/nrkno/tv-automation-server-core/commit/a2ff6a2))
 * feat: take from here UI item ([ca26660](https://github.com/nrkno/tv-automation-server-core/commit/ca26660))
+* feat: change VideoEditMonitors behavior from hoverScrub to click-and-drag ([77327fe](https://github.com/nrkno/tv-automation-server-core/commit/77327fe))
+* feat: Change styling for video monitors ([a01de7d](https://github.com/nrkno/tv-automation-server-core/commit/a01de7d))
 
 
 ### Bug fixes
@@ -96,6 +97,19 @@ All notable changes to this project will be documented in this file. See [standa
 * fix: version handling ([4b9863a](https://github.com/nrkno/tv-automation-server-core/commit/4b9863a))
 * fix: Update blueprints-integration ([9870256](https://github.com/nrkno/tv-automation-server-core/commit/9870256))
 * fix: update blueprints-integration depencendy & update getHashId to match ([e1c12d2](https://github.com/nrkno/tv-automation-server-core/commit/e1c12d2))
+* fix: make sure that expectedMediaItems are purged along with the RO ([0d9dda1](https://github.com/nrkno/tv-automation-server-core/commit/0d9dda1))
+* fix: solve a problem with viewing recordings ([01c165b](https://github.com/nrkno/tv-automation-server-core/commit/01c165b))
+* fix: handle when error is thrown in function in makePromise ([b7094dd](https://github.com/nrkno/tv-automation-server-core/commit/b7094dd))
+* fix: multiply inPoint/duration by timeBase before sending back to MOS ([b576f26](https://github.com/nrkno/tv-automation-server-core/commit/b576f26))
+* fix: write back TimeBase when changing EditorialStart/Duration ([8012cea](https://github.com/nrkno/tv-automation-server-core/commit/8012cea))
+* fix: strip blueprint manifest versions of '^' ([54a5ecf](https://github.com/nrkno/tv-automation-server-core/commit/54a5ecf))
+* fix: solve an issue with content trimmed icon ([461617f](https://github.com/nrkno/tv-automation-server-core/commit/461617f))
+* fix: wait for response from MOS device until resolving segmentLineItemSetInOutPoints ([2572a11](https://github.com/nrkno/tv-automation-server-core/commit/2572a11))
+* fix: resolve an issue with dropdown EditAttribute not selecting the undefined option ([9f85845](https://github.com/nrkno/tv-automation-server-core/commit/9f85845))
+* fix: ensure that VideoEditMonitor is comfortably scrubbable at any window width ([a5e882a](https://github.com/nrkno/tv-automation-server-core/commit/a5e882a))
+* fix: implement Play from here ([bd79569](https://github.com/nrkno/tv-automation-server-core/commit/bd79569))
+* fix: backport timing changes for play-from-anywhere from R10 ([5d96b1e](https://github.com/nrkno/tv-automation-server-core/commit/5d96b1e))
+* fix: hide "Restart playout" from support panel when not in studio mode ([5820b00](https://github.com/nrkno/tv-automation-server-core/commit/5820b00))
 * fix(displayDurationGroup): fix GUI clocks for displayDurationGroups ([76e217e](https://github.com/nrkno/tv-automation-server-core/commit/76e217e))
 * fix(displayDurationGroup): use displayDurationGroup timing in presenter's screen ([9138845](https://github.com/nrkno/tv-automation-server-core/commit/9138845))
 * fix(lookahead): Give lookahead the correct limit when in the next SegmentLine during autonext ([0b20b9e](https://github.com/nrkno/tv-automation-server-core/commit/0b20b9e))
