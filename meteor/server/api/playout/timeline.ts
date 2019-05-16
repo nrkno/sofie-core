@@ -16,7 +16,6 @@ import {
 	TimelineObjType,
 	TimelineContentTypeOther,
 	TimelineObjRecording,
-	TimelineObjGroup,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
 	getTimelineId,
@@ -40,23 +39,18 @@ import {
 	asyncCollectionUpsert,
 	extendMandadory,
 	literal,
-	omit,
 	clone
 } from '../../../lib/lib'
 import { Rundowns, RundownData, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import {
-	TimelineContentTypeLawo,
-	TimelineObjLawoAny,
-	TimelineContentTypeHttp,
-	TimelineObjHTTPRequest,
 	Timeline as TimelineTypes,
 	DeviceType,
 	TSRTimelineObjBase
 } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
+import { loadStudioBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { StudioContext, RundownContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { RecordedFiles } from '../../../lib/collections/RecordedFiles'
@@ -208,7 +202,6 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 
 				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
 				if (showStyleBlueprint.onTimelineGenerate) {
-
 					const context = new RundownContext(activeRundown, studio)
 					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), (object: TSRTimelineObjBase) => {
 						return literal<TimelineObjGeneric>({
@@ -219,10 +212,6 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 						})
 					})
 				}
-
-				// TODO: Specific implementations, to be refactored into Blueprints:
-				setLawoObjectsTriggerValue(timelineObjs, activeRundown.currentPartId || undefined)
-				timelineObjs = validateNoraPreload(timelineObjs)
 
 				waitForPromise(promiseClearTimeline)
 
@@ -608,44 +597,6 @@ function createPartGroupFirstObject (
 	})
 }
 
-// TODO: Move this functionality to a blueprint?
-function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObjGeneric>, currentPartId: string | undefined) {
-
-	_.each(timelineObjs, (obj) => {
-		if (obj.content.deviceType === DeviceType.LAWO) {
-			let lawoObj = obj as TimelineObjLawoAny & TimelineObjGeneric
-			if (lawoObj.content.type === TimelineContentTypeLawo.SOURCE) {
-				_.each(lawoObj.content, (val, key) => {
-					if (_.isObject(lawoObj.content[key])) {
-						// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
-						lawoObj.content[key].triggerValue = currentPartId || ''
-					}
-				})
-			}
-		}
-	})
-}
-
-function validateNoraPreload (timelineObjs: Array<TimelineObjGeneric>) {
-	const toRemoveIds: Array<string> = []
-	_.each(timelineObjs, obj => {
-		if (obj.content.deviceType === DeviceType.HTTPSEND && obj.isLookahead) {
-			const httpObj = obj as TimelineObjHTTPRequest & TimelineObjGeneric
-
-			// ignore normal objects
-			if (httpObj.content.type === TimelineContentTypeHttp.POST) {
-				if (httpObj.content.params && httpObj.content.params.template && httpObj.content.params.template.event === 'take') {
-					httpObj.content.params.template.event = 'cue'
-				} else {
-					// something we don't understand, so dont lookahead on it
-					toRemoveIds.push(obj._id)
-				}
-			}
-		}
-	})
-
-	return timelineObjs.filter(o => toRemoveIds.indexOf(o._id) === -1)
-}
 function transformBaselineItemsIntoTimeline (rundown: Rundown, objs: RundownBaselineObj[]): Array<TimelineObjRundown> {
 	let timelineObjs: Array<TimelineObjRundown> = []
 	_.each(objs, (obj: RundownBaselineObj) => {

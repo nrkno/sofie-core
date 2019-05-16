@@ -34,11 +34,6 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	metadata?: {
 		[key: string]: any
 	}
-
-	/** Only set to true when an object is inserted by lookahead */
-	isLookahead?: boolean
-	/** Set when an object is on a virtual layer for lookahead, so that it can be routed correctly */
-	originalLayer?: string | number
 }
 // export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 

@@ -49,7 +49,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			delete r.inGroup // force it to be cleared
 
 			if (m.lookahead === LookaheadMode.PRELOAD) {
-				r.originalLayer = r.layer
+				r.lookaheadForLayer = r.layer
 				r.layer += '_lookahead'
 			}
 
