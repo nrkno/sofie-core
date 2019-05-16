@@ -27,7 +27,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   // figure out the baseline to set
 	   let prevPieces = getOrderedPiece(previousPart)
 	   _.each(prevPieces, piece => {
-		   if (!piece.infiniteMode || piece.duration || piece.durationOverride || piece.expectedDuration) {
+		   if (!piece.infiniteMode || piece.playoutDuration || piece.userDuration || piece.enable.end || piece.enable.duration) {
 			   delete activeInfinitePieces[piece.sourceLayerId]
 			   delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
 		   } else {
@@ -104,7 +104,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   }
 
 	   // stop if not running to the end and there is/was nothing active
-	   const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
+	   const midInfinites = currentInfinites.filter(i => !i.enable.end && !i.enable.duration && i.infiniteMode)
 	   if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && midInfinites.length === 0) {
 		   // TODO - this guard is useless, as all shows have klokke and logo as infinites throughout...
 		   // This should instead do a check after each iteration to check if anything changed (even fields such as name on the piece)
@@ -164,12 +164,13 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   newPiece.timings = undefined
 
 		   if (existingItems && existingItems.length) {
-			   newPiece.expectedDuration = `#${getPieceGroupId(existingItems[0])}.start - #.start`
+			   newPiece.enable.end = `#${getPieceGroupId(existingItems[0])}.start`
+			   delete newPiece.enable.duration
 			   newPiece.infiniteMode = PieceLifespan.Normal // it is no longer infinite, and the ui needs this to draw properly
 		   }
 
 		   if (existingPiece) { // Some properties need to be persisted
-			   newPiece.durationOverride = existingPiece.durationOverride
+			   newPiece.userDuration = existingPiece.userDuration
 			   newPiece.startedPlayback = existingPiece.startedPlayback
 			   newPiece.stoppedPlayback = existingPiece.stoppedPlayback
 			   newPiece.timings = existingPiece.timings
@@ -206,9 +207,10 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   for (let piece of newInfiniteContinations.concat(currentItems)) {
 		   if (
 			   !piece.infiniteMode ||
-			   piece.duration ||
-			   piece.durationOverride ||
-			   piece.expectedDuration
+			   piece.playoutDuration ||
+			   piece.userDuration ||
+			   piece.enable.end ||
+			   piece.enable.duration
 		   ) {
 			   delete activeInfinitePieces[piece.sourceLayerId]
 			   delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
@@ -246,8 +248,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	let ps: Array<Promise<any>> = []
 	for (const piece of pieces) {
 		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
-			expectedDuration: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0} - #.start`,
-			originalExpectedDuration: piece.originalExpectedDuration !== undefined ? piece.originalExpectedDuration : piece.expectedDuration,
+			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
 			infiniteMode: PieceLifespan.Normal,
 			originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
 		}}))

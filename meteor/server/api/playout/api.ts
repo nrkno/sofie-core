@@ -54,7 +54,7 @@ methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownId: string,
 	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownId, partId, pieceId, queue)
 }
 methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownId: string, partId: string, pieceId: string) => {
-	return ServerPlayoutAPI.startAdLibPiece(rundownId, partId, pieceId)
+	return ServerPlayoutAPI.stopAdLibPiece(rundownId, partId, pieceId)
 }
 methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownId: string, partId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownId, partId, sourceLayerId)

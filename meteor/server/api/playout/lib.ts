@@ -75,13 +75,9 @@ export function resetRundown (rundown: Rundown) {
 	// Reset any pieces that were modified by inserted adlibs
 	Pieces.update({
 		rundownId: rundown._id,
-		$or: [
-			{ originalExpectedDuration: { $exists: true } },
-			{ originalInfiniteMode: { $exists: true } }
-		]
+		originalInfiniteMode: { $exists: true }
 	}, {
 		$rename: {
-			originalExpectedDuration: 'expectedDuration',
 			originalInfiniteMode: 'infiniteMode'
 		}
 	}, { multi: true })
@@ -90,9 +86,9 @@ export function resetRundown (rundown: Rundown) {
 		rundownId: rundown._id
 	}, {
 		$unset: {
-			duration: 1,
+			playoutDuration: 1,
 			startedPlayback: 1,
-			durationOverride: 1,
+			userDuration: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -224,7 +220,7 @@ function resetPart (part: DBPart): Promise<void> {
 	}, {
 		$unset: {
 			startedPlayback: 1,
-			durationOverride: 1,
+			userDuration: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -249,13 +245,9 @@ function resetPart (part: DBPart): Promise<void> {
 	ps.push(asyncCollectionUpdate(Pieces, {
 		rundownId: part.rundownId,
 		partId: part._id,
-		$or: [
-			{ originalExpectedDuration: { $exists: true } },
-			{ originalInfiniteMode: { $exists: true } }
-		]
+		originalInfiniteMode: { $exists: true }
 	}, {
 		$rename: {
-			originalExpectedDuration: 'expectedDuration',
 			originalInfiniteMode: 'infiniteMode'
 		}
 	}, {

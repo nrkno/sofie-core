@@ -310,7 +310,7 @@ export namespace ServerPlayoutAPI {
 					// make the extension
 					const newPiece = clone(piece) as Piece
 					newPiece.partId = m.currentPartId
-					newPiece.expectedDuration = 0
+					newPiece.enable = { start: 0 }
 					const content = newPiece.content as VTContent
 					if (content.fileName && content.sourceDuration && piece.startedPlayback) {
 						content.seek = Math.min(content.sourceDuration, getCurrentTime() - piece.startedPlayback)
@@ -874,12 +874,12 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownId, partId, baselineAdLibPieceId, queue)
 	}
-	export function startAdLibPiece (rundownId: string, partId: string, pieceId: string) {
+	export function stopAdLibPiece (rundownId: string, partId: string, pieceId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
 
-		return ServerPlayoutAdLibAPI.startAdLibPiece(rundownId, partId, pieceId)
+		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownId, partId, pieceId)
 	}
 	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
 		check(rundownId, String)
@@ -951,7 +951,7 @@ export namespace ServerPlayoutAPI {
 
 			orderedPieces.forEach((piece) => {
 				if (piece.sourceLayerId === sourceLayerId) {
-					if (!piece.durationOverride) {
+					if (!piece.userDuration) {
 						let newExpectedDuration: number | undefined = undefined
 
 						if (piece.infiniteId && piece.infiniteId !== piece._id && part) {
@@ -960,16 +960,10 @@ export namespace ServerPlayoutAPI {
 								newExpectedDuration = now - partStarted
 							}
 						} else if (
-							piece.startedPlayback &&
-							(
-								(piece.enable.start || 0) < relativeNow
-							) &&
-							(
-								(
-									(piece.enable.start as number || 0) + (piece.duration || 0) > relativeNow
-								) ||
-								piece.duration === 0
-							)
+							piece.startedPlayback && // currently playing
+							_.isNumber(piece.enable.start) &&
+							(piece.enable.start || 0) < relativeNow && // is relative, and has started
+							!piece.stoppedPlayback // and not yet stopped
 						) {
 							newExpectedDuration = now - piece.startedPlayback
 						}
@@ -981,7 +975,9 @@ export namespace ServerPlayoutAPI {
 								_id: piece._id
 							}, {
 								$set: {
-									durationOverride: newExpectedDuration
+									userDuration: {
+										duration: newExpectedDuration
+									}
 								}
 							})
 						}
@@ -1128,23 +1124,24 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 		let ps: Array<Promise<any>> = []
 		const currentPieces = currentPart.getAllPieces()
 		currentPieces.forEach((piece) => {
-			if (piece.overflows && typeof piece.expectedDuration === 'number' && piece.expectedDuration > 0 && piece.duration === undefined && piece.durationOverride === undefined) {
-				// Clone an overflowing piece
-				let overflowedItem = literal<Piece>({
-					_id: Random.id(),
-					partId: nextPart._id,
-					enable: {
-						start: 0
-					},
-					dynamicallyInserted: true,
-					continuesRefId: piece._id,
+			if (piece.overflows && typeof piece.enable.duration === 'number' && piece.enable.duration > 0 && piece.playoutDuration === undefined && piece.userDuration === undefined) {
+				// Subtract the amount played from the duration
+				const remainingDuration = Math.max(0, piece.enable.duration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
 
-					// Subtract the amount played from the expected duration
-					expectedDuration: Math.max(0, piece.expectedDuration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime())),
-					..._.omit(clone(piece) as Piece, 'startedPlayback', 'duration', 'overflows')
-				})
+				if (remainingDuration > 0) {
+					// Clone an overflowing piece
+					let overflowedItem = literal<Piece>({
+						..._.omit(piece, 'startedPlayback', 'duration', 'overflows'),
+						_id: Random.id(),
+						partId: nextPart._id,
+						enable: {
+							start: 0,
+							duration: remainingDuration,
+						},
+						dynamicallyInserted: true,
+						continuesRefId: piece._id,
+					})
 
-				if (overflowedItem.expectedDuration > 0) {
 					ps.push(asyncCollectionInsert(Pieces, overflowedItem))
 					rundownData.pieces.push(overflowedItem) // update the cache
 				}

@@ -69,10 +69,10 @@ export namespace ServerPlayoutAdLibAPI {
 				if (piece.startedPlayback && piece.startedPlayback <= getCurrentTime()) {
 					if (
 						resPiece &&
-						resPiece.duration !== undefined &&
+						resPiece.playoutDuration !== undefined &&
 						(
 							piece.infiniteMode ||
-							piece.startedPlayback + resPiece.duration >= getCurrentTime()
+							piece.startedPlayback + resPiece.playoutDuration >= getCurrentTime()
 						)
 					) {
 						// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
@@ -188,7 +188,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		return newPartId
 	}
-	export function startAdLibPiece (rundownId: string, partId: string, pieceId: string) {
+	export function stopAdLibPiece (rundownId: string, partId: string, pieceId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
@@ -196,35 +196,41 @@ export namespace ServerPlayoutAdLibAPI {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Part AdLib-copy-pieces can be only manipulated in an active rundown!`)
+			if (rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part AdLib-copy-pieces can be only manipulated in a current part!`)
+
 			const part = Parts.findOne({
 				_id: partId,
 				rundownId: rundownId
 			})
 			if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-			const alCopyPiece = Pieces.findOne({
+
+			const piece = Pieces.findOne({
 				_id: pieceId,
 				rundownId: rundownId
 			})
+			if (!piece) throw new Meteor.Error(404, `Part AdLib-copy-piece "${pieceId}" not found!`)
+			if (!piece.dynamicallyInserted) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a dynamic Piece!`)
+			if (!piece.adLibSourceId) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a Part AdLib-copy-piece!`)
+
 			// To establish playback time, we need to look at the actual Timeline
-			const alCopyPieceTObj = Timeline.findOne({
+			const tlObj = Timeline.findOne({
 				_id: getPieceGroupId(pieceId)
 			})
-			let parentOffset = 0
-			if (!alCopyPiece) throw new Meteor.Error(404, `Part AdLib-copy-piece "${pieceId}" not found!`)
-			if (!alCopyPieceTObj) throw new Meteor.Error(404, `Part AdLib-copy-piece "${pieceId}" not found in the playout Timeline!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Part AdLib-copy-pieces can be only manipulated in an active rundown!`)
-			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part AdLib-copy-pieces can be only manipulated in a current part!`)
-			if (!alCopyPiece.dynamicallyInserted) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a dynamic Piece!`)
-			if (!alCopyPiece.adLibSourceId) throw new Meteor.Error(501, `"${pieceId}" does not appear to be a Part AdLib-copy-piece!`)
+			if (!tlObj) throw new Meteor.Error(404, `Part AdLib-copy-piece "${pieceId}" not found in the playout Timeline!`)
 
 			// The ad-lib item positioning will be relative to the startedPlayback of the part
+			let parentOffset = 0
 			if (part.startedPlayback) {
 				parentOffset = part.getLastStartedPlayback() || parentOffset
 			}
 
-			let newExpectedDuration = 1 // smallest, non-zerundown duration
-			if (_.isNumber(alCopyPieceTObj.enable.start)) {
-				const actualStartTime = parentOffset + alCopyPieceTObj.enable.start
+			let newExpectedDuration = 0
+			if (piece.startedPlayback) {
+				newExpectedDuration = getCurrentTime() - piece.startedPlayback
+			} else if (_.isNumber(tlObj.enable.start)) {
+				// If start is absolute within the part, we can do a better estimate
+				const actualStartTime = parentOffset + tlObj.enable.start
 				newExpectedDuration = getCurrentTime() - actualStartTime
 			} else {
 				logger.warn(`"${pieceId}" timeline object is not positioned absolutely or is still set to play now, assuming it's about to be played.`)
@@ -234,7 +240,9 @@ export namespace ServerPlayoutAdLibAPI {
 				_id: pieceId
 			}, {
 				$set: {
-					duration: newExpectedDuration
+					userDuration: {
+						duration: newExpectedDuration
+					}
 				}
 			})
 

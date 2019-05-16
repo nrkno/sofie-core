@@ -7,7 +7,7 @@ import {
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, extendMandadory } from './lib'
+import { normalizeArray, extendMandadory, literal } from './lib'
 import { Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
@@ -242,7 +242,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
 					id: getPieceGroupId(piece),
-					enable: calcEnable(piece, TIMELINE_TEMP_OFFSET),
+					enable: calculatePieceTimelineEnable(piece, TIMELINE_TEMP_OFFSET),
 					layer: piece.outputLayerId,
 					content: {
 						id: piece._id
@@ -355,8 +355,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 		// resolve the duration of a Piece to be used for display
 		const resolveDuration = (item: PieceExtended): number => {
-			const expectedDurationNumber = (typeof item.expectedDuration === 'number' ? item.expectedDuration || 0 : 0)
-			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber)
+			const expectedDurationNumber = (typeof item.enable.duration === 'number' ? item.enable.duration || 0 : 0)
+			const userDurationNumber = (item.userDuration && typeof item.userDuration.duration === 'number' ? item.userDuration.duration || 0 : 0)
+			return (item.playoutDuration || userDurationNumber || item.renderedDuration || expectedDurationNumber)
 		}
 
 		_.each<PartExtended>(partsE, (part) => {
@@ -463,24 +464,61 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 }
 
-function calcEnable (piece: PieceExtended, offset: number): SuperTimeline.TimelineEnable {
+export function calculatePieceTimelineEnable (piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
+	let offsetExpression = (val: SuperTimeline.Expression | undefined) => {
+		if (offset === undefined) {
+			return val
+		} else {
+			return literal<SuperTimeline.ExpressionObj>({
+				l: val || 0,
+				o: '+',
+				r: offset
+			})
+		}
+	}
 
-	const duration = piece.durationOverride || piece.duration || piece.expectedDuration || undefined
+	let duration: SuperTimeline.Expression | undefined = undefined
+	let end: SuperTimeline.Expression | undefined = undefined
+	if (piece.playoutDuration !== undefined) {
+		duration = piece.playoutDuration
+	} else if (piece.userDuration !== undefined) {
+		duration = piece.userDuration.duration
+		end = piece.userDuration.end
+	} else {
+		duration = piece.enable.duration
+		end = piece.enable.end
+	}
 
-	if (piece.enable.start === 'now') {
+	// const duration = piece.playoutDuration || piece.userDuration || piece.enable.duration
+	// If we have an end and not a start, then use that with a duration
+	if ((end !== undefined || piece.enable.end !== undefined) && piece.enable.start === undefined) {
 		return {
-			start: offset,
+			end: end !== undefined ? end : offsetExpression(piece.enable.end),
 			duration: duration
 		}
-	} else if (typeof piece.enable.start === 'number') {
-		return {
-			start: piece.enable.start + offset,
-			duration: duration
+	// Otherwise, if we have a start, then use that with either the end or duration
+	} else if (piece.enable.start !== undefined) {
+		let enable = literal<SuperTimeline.TimelineEnable>({})
+
+		if (piece.enable.start === 'now') {
+			enable.start = 'now'
+		} else {
+			enable.start = offsetExpression(piece.enable.start)
 		}
+
+		if (duration !== undefined) {
+			enable.duration = duration
+		} else if (end !== undefined) {
+			enable.end = end
+		} else {
+			enable.end = offsetExpression(piece.enable.end)
+		}
+		return enable
 	} else {
 		return {
-			...piece.enable,
-			duration: duration
+			start: 0,
+			duration: duration,
+			end: end,
 		}
 	}
 }

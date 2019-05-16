@@ -6,8 +6,6 @@ import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
-	expectedDuration: number | string
-
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 

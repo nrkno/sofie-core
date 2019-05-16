@@ -53,7 +53,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	updateTime = () => {
 		if (this.vPreview) {
 			const piece = this.props.piece
-			const itemDuration = ((piece.content ? piece.content.sourceDuration as number : undefined) || piece.duration || piece.renderedDuration || 0)
+			const itemDuration = ((piece.content ? piece.content.sourceDuration as number : undefined) || piece.playoutDuration || piece.renderedDuration || 0)
 			let targetTime = this.props.cursorTimePosition
 			let seek = ((piece.content ? piece.content.seek as number : undefined) || 0)
 			if (piece.content && piece.content.loop && this.vPreview.duration > 0) {

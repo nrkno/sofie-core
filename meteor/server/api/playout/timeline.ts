@@ -458,7 +458,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
-			const infiniteGroup = createPartGroup(currentPart, { duration: piece.expectedDuration || undefined })
+			const infiniteGroup = createPartGroup(currentPart, { duration: piece.enable.duration || undefined })
 			infiniteGroup.id = getPartGroupId(piece._id) + '_infinite'
 			infiniteGroup.priority = 1
 
@@ -477,9 +477,17 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 					// If an absolute time has been set by a hotkey, then update the duration to be correct
 					const partStartedPlayback = currentPart.getLastStartedPlayback()
-					if (piece.durationOverride && partStartedPlayback) {
-						const originalEndTime = partStartedPlayback + piece.durationOverride
-						infiniteGroup.enable.duration = originalEndTime - originalItem.startedPlayback
+					if (piece.userDuration && partStartedPlayback) {
+						const previousPartsDuration = (partStartedPlayback - originalItem.startedPlayback)
+						if (piece.userDuration.end) {
+							infiniteGroup.enable.end = piece.userDuration.end
+						} else {
+							infiniteGroup.enable.duration = {
+								l: piece.userDuration.duration || 0,
+								o: '+',
+								r: previousPartsDuration
+							}
+						}
 					}
 				}
 			}

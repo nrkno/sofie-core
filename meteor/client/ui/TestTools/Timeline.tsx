@@ -1,13 +1,18 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, Time } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
+import { TimelineState, Resolver } from 'superfly-timeline'
+import { transformTimeline } from '../../../lib/timeline'
+import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
+import { makeTableOfObject } from '../../lib/utilComponents'
+import { Tracker } from 'meteor/tracker'
 
 interface ITimelineViewProps {
 	match?: {
@@ -19,9 +24,7 @@ interface ITimelineViewProps {
 interface ITimelineViewState {
 }
 const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
-	return {
-		studios: Studios.find({}).fetch()
-	}
+	return {}
 })(class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {
 
 	constructor (props: Translated<ITimelineViewProps>) {
@@ -38,7 +41,10 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 					<h1>{t('Timeline')}</h1>
 				</header>
 				<div className='mod mvl'>
-					{this.props.match && this.props.match.params && <TimelineVisualizerInStudio studioId={this.props.match.params.studioId}/>}
+					{this.props.match && this.props.match.params && <div>
+						<TimelineVisualizerInStudio studioId={this.props.match.params.studioId} />
+						<ComponentTimelineSimulate studioId={this.props.match.params.studioId} />
+					</div>}
 				</div>
 			</div>
 		)
@@ -225,6 +231,78 @@ const TimelineStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSel
 							})
 						}
 					</ul>
+				</div>
+			</div>
+		)
+	}
+})
+
+interface ITimelineSimulateProps {
+	studioId: string
+}
+
+interface ITimelineSimulate {
+	state: TimelineState
+	now: Time
+}
+export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {}, ITimelineSimulate>((props: ITimelineSimulateProps) => {
+
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	let timeline = transformTimeline(
+		Timeline.find({
+			studioId: props.studioId
+		}, { sort: { _id: 1 } }).fetch()
+	)
+
+	// pre-process the timeline
+	let now = getCurrentTimeReactive()
+	// console.log('rerun')
+
+	// TODO - dont repeat unless changed
+	let tl = Resolver.resolveTimeline(timeline, { time: now })
+
+	let state = Resolver.getState(tl, now)
+
+	return {
+		now: now,
+		state: state
+	}
+})(
+class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulate> {
+	renderTimelineState () {
+		return _.map(_.sortBy(_.values(this.props.state.layers), o => o.layer), o => (
+			<tr key={o.layer}>
+				<td>{o.layer}</td>
+				<td>{o.id}</td>
+				<td>{makeTableOfObject(o.enable)}</td>
+				<td>{o.instance.end ? (o.instance.end - o.instance.start) : ''}</td>
+				<td>{o.content.type}</td>
+				<td>{makeTableOfObject(o.classes || [])}</td>
+				<td>{makeTableOfObject(o.content)}</td>
+			</tr>
+		))
+	}
+	render () {
+		return (
+			<div>
+				<h2>Timeline state</h2>
+				<div>
+					Time: {this.props.now}
+					<div>
+						<table><tbody>
+							<tr>
+								<th>Layer</th>
+								<th>id</th>
+								<th>Enable</th>
+								<th>Duration</th>
+								<th>type</th>
+								<th>classes</th>
+								<th>content</th>
+							</tr>
+							{this.renderTimelineState()}
+						</tbody></table>
+					</div>
 				</div>
 			</div>
 		)

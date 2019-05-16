@@ -116,7 +116,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				const nextIsTouching = !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration)))
+				const nextIsTouching = !!(this.props.piece.cropped || (this.props.piece.enable.end && _.isString(this.props.piece.enable.end)))
 
 				if (this.props.followLiveLine && this.props.isLiveLine) {
 					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
@@ -213,10 +213,11 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	getItemDuration = (): number => {
 		let piece = this.props.piece
 
-		const expectedDurationNumber = (typeof piece.expectedDuration === 'number' ? piece.expectedDuration || 0 : 0)
-		let itemDuration = Math.min(piece.durationOverride || piece.duration || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
+		const expectedDurationNumber = (typeof piece.enable.duration === 'number' ? piece.enable.duration || 0 : 0)
+		const userDurationNumber = (piece.userDuration && typeof piece.userDuration.duration === 'number' ? piece.userDuration.duration || 0 : 0)
+		let itemDuration = Math.min(piece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
 
-		if (piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal && !piece.cropped && !piece.duration && !piece.durationOverride) {
+		if (piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal && !piece.cropped && !piece.playoutDuration && !piece.userDuration) {
 			itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 		}
@@ -472,8 +473,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': (this.props.piece.duration === undefined && this.props.piece.durationOverride === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
-					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration))),
+					'infinite': (this.props.piece.playoutDuration === undefined && this.props.piece.userDuration === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
+					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.enable.end && _.isString(this.props.piece.enable.end))),
 
 					'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
 					'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
@@ -493,7 +494,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.piece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
+								{this.props.piece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.enable.duration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.enable.duration).substr(-5) : ''}
 							</div>
 						)
 					}

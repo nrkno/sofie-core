@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../api/rundown'
-import { TimelineTransition } from 'timeline-state-resolver-types'
+import { TimelineTransition, Timeline } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
 import { PartTimings } from './Parts'
 import { registerCollection } from '../lib'
@@ -9,7 +9,6 @@ import {
 	IBlueprintPieceGeneric,
 	IBlueprintPiece,
 	PieceLifespan,
-	Timeline,
 	BaseContent,
 } from 'tv-automation-sofie-blueprints-integration'
 
@@ -24,8 +23,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
-	/** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
-	duration?: number
 	/** A flag to signal a given Piece has been deactivated manually */
 	disabled?: boolean
 	/** A flag to signal that a given Piece should be hidden from the UI */
@@ -49,6 +46,8 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartTimings
+	/** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
+	playoutDuration?: number
 
 	isTransition?: boolean
 	extendOnHold?: boolean
@@ -58,11 +57,8 @@ export interface Piece extends PieceGeneric, IBlueprintPiece {
 	// -----------------------------------------------------------------------
 
 	partId: string
-	expectedDuration: number | string
-	/** This is a backup of the original expectedDuration of the piece, so that the normal field can be modified during playback and restored afterwards */
-	originalExpectedDuration?: number | string
 	/** This is set when an piece's duration needs to be overriden */
-	durationOverride?: number
+	userDuration?: Pick<Timeline.TimelineEnable, 'duration' | 'end'>
 	/** This is set when the piece is infinite, to deduplicate the contents on the timeline, while allowing out of order */
 	infiniteMode?: PieceLifespan
 	/** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */

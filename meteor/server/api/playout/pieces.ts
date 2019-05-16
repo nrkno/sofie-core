@@ -1,6 +1,6 @@
 
 /* tslint:disable:no-use-before-declare */
-import { Resolver } from 'superfly-timeline'
+import { Resolver, TimelineEnable, Expression as TimelineExpression } from 'superfly-timeline'
 import * as _ from 'underscore'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -24,6 +24,7 @@ import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
 import { DeviceType } from 'timeline-state-resolver-types'
+import { calculatePieceTimelineEnable } from '../../../lib/Rundown';
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -50,7 +51,7 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	})
 
 	let resolvedPieces: Array<PieceResolved> = []
-	let firstUnresolvedId: string = ''
+	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
 		const pieceId = (obj.metadata || {}).pieceId
@@ -64,12 +65,12 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 			piece.resolved = false
 
 			resolvedPieces.push(piece)
-			if (!firstUnresolvedId) firstUnresolvedId = obj.id
+			unresolvedIds.push(obj.id)
 		}
 	})
 
 	if (tlResolved.statistics.unresolvedCount > 0) {
-		logger.error(`Got ${tlResolved.statistics.unresolvedCount} unresolved timeline-objects for part #${part._id} (first is ${firstUnresolvedId})`)
+		logger.error(`Got ${tlResolved.statistics.unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
 
 	}
 	if (pieces.length !== resolvedPieces.length) {
@@ -132,10 +133,7 @@ export function createPieceGroup (
 		isGroup: true,
 		rundownId: piece.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
-		enable: {
-			...piece.enable,
-			duration: piece.durationOverride || piece.duration || piece.expectedDuration || undefined
-		},
+		enable: calculatePieceTimelineEnable(piece),
 		layer: piece.sourceLayerId,
 		metadata: {
 			pieceId: piece._id
@@ -210,13 +208,13 @@ export function getResolvedPieces (part: Part): Piece[] {
 	})
 
 	const processedPieces: Piece[] = events.map<Piece>(event => {
-		return {
+		return literal<Piece>({
 			...event.piece,
 			enable: {
 				start: Math.max(0, event.start - 1),
 			},
-			duration: Math.max(0, (event.end || 0) - event.start) || undefined
-		}
+			playoutDuration: Math.max(0, (event.end || 0) - event.start) || undefined
+		})
 	})
 
 	// crop infinite pieces
@@ -225,7 +223,8 @@ export function getResolvedPieces (part: Part): Piece[] {
 			for (let i = index + 1; i < source.length; i++) {
 				const sourcePiece = source[i]
 				if (piece.sourceLayerId === sourcePiece.sourceLayerId) {
-					piece.duration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
+					// TODO - verify this
+					piece.playoutDuration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
 					return
 				}
 			}
@@ -234,24 +233,20 @@ export function getResolvedPieces (part: Part): Piece[] {
 
 	return processedPieces
 }
+
+
 export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	// const oldId = piece._id
 	const newId = Random.id()
-	const newAdLibPiece = literal<AdLibPiece>(_.extend(
-		piece,
-		{
-			_id: newId,
-			enable: { start: 'now' },
-			dynamicallyInserted: true,
-			infiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode,
-			expectedDuration: piece.originalExpectedDuration !== undefined ? piece.originalExpectedDuration : piece.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
-		}
-	))
-	// delete newAdLibPiece.enable
-	delete newAdLibPiece.timings
-	delete newAdLibPiece.startedPlayback
-	delete newAdLibPiece['infiniteId']
-	delete newAdLibPiece['stoppedPlayback']
+	const newAdLibPiece = literal<AdLibPiece>({
+		..._.omit(piece, 'userDuration', 'timings', 'startedPlayback', 'stoppedPlayback', 'infiniteId'),
+		_id: newId,
+		_rank: 0,
+		disabled: false,
+		dynamicallyInserted: true,
+		infiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode,
+		expectedDuration: _.isNumber(piece.enable.duration) ? piece.enable.duration : 0
+	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
 		let contentObjects = newAdLibPiece.content.timelineObjects
@@ -273,23 +268,35 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 }
 
 export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part, queue: boolean): Piece {
+	let duration: number | string = 0
+	if (adLibPiece['expectedDuration']) {
+		duration = adLibPiece['expectedDuration']
+	} else if (adLibPiece['enable'] && adLibPiece['enable'].duration) {
+		duration = adLibPiece['enable'].duration
+	}
+
 	const newId = Random.id()
-	const newPiece = literal<Piece>(_.extend(
-		_.clone(adLibPiece),
-		{
-			_id: newId,
-			enable: {
-				start: (queue ? 0 : 'now')
-			},
-			partId: part._id,
-			adLibSourceId: adLibPiece._id,
-			dynamicallyInserted: !queue,
-			expectedDuration: adLibPiece.expectedDuration || 0, // set duration to infinite if not set by AdLibItem
-			timings: {
-				take: [getCurrentTime()]
-			}
+	const newPiece = literal<Piece>({
+		..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
+		_id: newId,
+		enable: {
+			start: (queue ? 0 : 'now'),
+			duration: duration
+		},
+		partId: part._id,
+		adLibSourceId: adLibPiece._id,
+		dynamicallyInserted: !queue,
+		// expectedDuration: adLibPiece.expectedDuration || 0, // set duration to infinite if not set by AdLibItem
+		timings: {
+			take: [getCurrentTime()],
+			startedPlayback: [],
+			next: [],
+			stoppedPlayback: [],
+			playOffset: [],
+			takeDone: [],
+			takeOut: [],
 		}
-	))
+	})
 
 	if (newPiece.content && newPiece.content.timelineObjects) {
 		let contentObjects = newPiece.content.timelineObjects

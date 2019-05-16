@@ -94,8 +94,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		if ((prevProps.partDuration !== this.props.partDuration) ||
 			(prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
 			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
-			(prevProps.piece.duration !== this.props.piece.duration) ||
-			(prevProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
+			(prevProps.piece.playoutDuration !== this.props.piece.playoutDuration) ||
+			!_.isEqual(prevProps.piece.userDuration, this.props.piece.userDuration) ||
 			!_.isEqual(prevProps.piece.enable, this.props.piece.enable)
 		) {
 			_forceSizingRecheck = true

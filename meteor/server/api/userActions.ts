@@ -315,7 +315,7 @@ export function segmentAdLibPieceStop (rundownId: string, partId: string, pieceI
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.startAdLibPiece(rundownId, partId, pieceId)
+		ServerPlayoutAPI.stopAdLibPiece(rundownId, partId, pieceId)
 	)
 }
 export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
