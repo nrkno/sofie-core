@@ -1,7 +1,6 @@
 import {
 	parseVersion,
 	getCoreSystem,
-	compareVersions,
 	setCoreSystemVersion,
 	Version
 } from '../../lib/collections/CoreSystem'
@@ -30,7 +29,10 @@ import {
 	InputFunctionStudio,
 	InputFunctionShowStyle,
 	MigrationContextStudio as IMigrationContextStudio,
-	MigrationContextShowStyle as IMigrationContextShowStyle
+	MigrationContextShowStyle as IMigrationContextShowStyle,
+	BlueprintManifestType,
+	ShowStyleBlueprintManifest,
+	StudioBlueprintManifest
 } from 'tv-automation-sofie-blueprints-integration'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
@@ -40,6 +42,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
 import { getHash } from '../../lib/lib'
+import * as semver from 'semver'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -47,11 +50,12 @@ import { getHash } from '../../lib/lib'
  * 0.18.0: Release 4   (2018-11-26)
  * 0.19.0: Release 5   (2019-01-11)
  * 0.20.0: Release 5.1 (2019-02-05)
- * 0.21.0: Release 6   (TBD, in testing)
- * 0.22.0: Release 7   (TBD)
- * 0.23.0: Release 8   (TBD)
+ * 0.21.0: Release 6   (never released)
+ * 0.22.0: Release 7   (2019-03-15)
+ * 0.23.0: Release 8   (2019-04-08)
+ * 0.24.0: Release 9   (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.23.0'
+export const CURRENT_SYSTEM_VERSION = '0.24.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
@@ -63,14 +67,14 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
  */
 export const UNSUPPORTED_VERSIONS = [
 	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
-	//    ShowStyleVariant, configs & layers wheremoved from studio to ShowStyles)
-	'0.18.0'
+	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
+	'<=0.18'
 ]
 
 export function isVersionSupported (version: Version) {
 	let isSupported: boolean = true
 	_.each(UNSUPPORTED_VERSIONS, (uv) => {
-		if (compareVersions(version, parseVersion(uv)) <= 0) {
+		if (semver.satisfies(version, uv)) {
 			isSupported = false
 		}
 	})
@@ -120,8 +124,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	let chunk: MigrationChunk = {
 		sourceType:				MigrationStepType.CORE,
 		sourceName:				'system',
-		_dbVersion: 			parseVersion(databaseSystem.version).toString(),
-		_targetVersion: 		parseVersion(CURRENT_SYSTEM_VERSION).toString(),
+		_dbVersion: 			parseVersion(databaseSystem.version),
+		_targetVersion: 		parseVersion(CURRENT_SYSTEM_VERSION),
 		_steps:					[]
 	}
 	migrationChunks.push(chunk)
@@ -146,7 +150,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 	Blueprints.find({}).forEach((blueprint) => {
 		if (blueprint.code) {
-			let bp = evalBlueprints(blueprint)
+			const rawBlueprint = evalBlueprints(blueprint)
 
 			console.log('Blueprint: ' + blueprint.name)
 
@@ -155,86 +159,128 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
-			// Find all showStyles that uses this blueprint:
-			let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
-			let studioIds: {[studioId: string]: true} = {}
-			ShowStyleBases.find({
-				blueprintId: blueprint._id
-			}).forEach((showStyleBase) => {
-				showStyleBaseIds[showStyleBase._id] = true
+			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+				const bp = rawBlueprint as ShowStyleBlueprintManifest
 
-				let chunk: MigrationChunk = {
-					sourceType:				MigrationStepType.SHOWSTYLE,
-					sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
-					blueprintId: 			blueprint._id,
-					sourceId: 				showStyleBase._id,
-					_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0').toString(),
-					_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
-					_steps:					[]
-				}
-				migrationChunks.push(chunk)
-				// Add show-style migration steps from blueprint:
-				_.each(bp.showStyleMigrations, (step) => {
-					allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_showStyle_' + showStyleBase._id + '_', {
-						id:						step.id,
-						overrideSteps:			step.overrideSteps,
-						validate:				step.validate,
-						canBeRunAutomatically:	step.canBeRunAutomatically,
-						migrate:				step.migrate,
-						input:					step.input,
-						dependOnResultFrom:		step.dependOnResultFrom,
-						version: 				step.version,
-						_version: 				parseVersion(step.version),
-						_validateResult: 		false, // to be set later
-						_rank: 					rank++,
-						chunk: 					chunk
-					}))
-				})
+				// Find all showStyles that uses this blueprint:
+				let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
+				let studioIds: {[studioId: string]: true} = {}
+				ShowStyleBases.find({
+					blueprintId: blueprint._id
+				}).forEach((showStyleBase) => {
+					showStyleBaseIds[showStyleBase._id] = true
 
-				// Find all studios that supports this showStyle
-				StudioInstallations.find({
-					supportedShowStyleBase: showStyleBase._id
-				}).forEach((studio) => {
-					if (!studioIds[studio._id]) { // only run once per blueprint and studio
-						studioIds[studio._id] = true
-
-						let chunk: MigrationChunk = {
-							sourceType:				MigrationStepType.STUDIO,
-							sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
-							blueprintId: 			blueprint._id,
-							sourceId: 				studio._id,
-							_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0').toString(),
-							_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
-							_steps:					[]
-						}
-						migrationChunks.push(chunk)
-						// Add studio migration steps from blueprint:
-						_.each(bp.studioMigrations, (step) => {
-							allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
-								id:						step.id,
-								overrideSteps:			step.overrideSteps,
-								validate:				step.validate,
-								canBeRunAutomatically:	step.canBeRunAutomatically,
-								migrate:				step.migrate,
-								input:					step.input,
-								dependOnResultFrom:		step.dependOnResultFrom,
-								version: 				step.version,
-								_version: 				parseVersion(step.version),
-								_validateResult: 		false, // to be set later
-								_rank: 					rank++,
-								chunk: 					chunk
-							}))
-						})
+					let chunk: MigrationChunk = {
+						sourceType:				MigrationStepType.SHOWSTYLE,
+						sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
+						blueprintId: 			blueprint._id,
+						sourceId: 				showStyleBase._id,
+						_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+						_targetVersion: 		parseVersion(bp.blueprintVersion),
+						_steps:					[]
 					}
+					migrationChunks.push(chunk)
+					// Add show-style migration steps from blueprint:
+					_.each(bp.showStyleMigrations, (step) => {
+						allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_showStyle_' + showStyleBase._id + '_', {
+							id:						step.id,
+							overrideSteps:			step.overrideSteps,
+							validate:				step.validate,
+							canBeRunAutomatically:	step.canBeRunAutomatically,
+							migrate:				step.migrate,
+							input:					step.input,
+							dependOnResultFrom:		step.dependOnResultFrom,
+							version: 				step.version,
+							_version: 				parseVersion(step.version),
+							_validateResult: 		false, // to be set later
+							_rank: 					rank++,
+							chunk: 					chunk
+						}))
+					})
+
+					// Find all studios that supports this showStyle
+					StudioInstallations.find({
+						supportedShowStyleBase: showStyleBase._id
+					}).forEach((studio) => {
+						if (!studioIds[studio._id]) { // only run once per blueprint and studio
+							studioIds[studio._id] = true
+
+							let chunk: MigrationChunk = {
+								sourceType:				MigrationStepType.STUDIO,
+								sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
+								blueprintId: 			blueprint._id,
+								sourceId: 				studio._id,
+								_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0').toString(),
+								_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
+								_steps:					[]
+							}
+							migrationChunks.push(chunk)
+							// Add studio migration steps from blueprint:
+							_.each(bp.studioMigrations, (step) => {
+								allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
+									id:						step.id,
+									overrideSteps:			step.overrideSteps,
+									validate:				step.validate,
+									canBeRunAutomatically:	step.canBeRunAutomatically,
+									migrate:				step.migrate,
+									input:					step.input,
+									dependOnResultFrom:		step.dependOnResultFrom,
+									version: 				step.version,
+									_version: 				parseVersion(step.version),
+									_validateResult: 		false, // to be set later
+									_rank: 					rank++,
+									chunk: 					chunk
+								}))
+							})
+						}
+					})
 				})
-			})
+			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
+				const bp = rawBlueprint as StudioBlueprintManifest
+				// Find all studios that use this blueprint
+				StudioInstallations.find({
+					blueprintId: blueprint._id
+				}).forEach((studio) => {
+					let chunk: MigrationChunk = {
+						sourceType:				MigrationStepType.STUDIO,
+						sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
+						blueprintId: 			blueprint._id,
+						sourceId: 				studio._id,
+						_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+						_targetVersion: 		parseVersion(bp.blueprintVersion),
+						_steps:					[]
+					}
+					migrationChunks.push(chunk)
+					// Add studio migration steps from blueprint:
+					_.each(bp.studioMigrations, (step) => {
+						allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
+							id:						step.id,
+							overrideSteps:			step.overrideSteps,
+							validate:				step.validate,
+							canBeRunAutomatically:	step.canBeRunAutomatically,
+							migrate:				step.migrate,
+							input:					step.input,
+							dependOnResultFrom:		step.dependOnResultFrom,
+							version: 				step.version,
+							_version: 				parseVersion(step.version),
+							_validateResult: 		false, // to be set later
+							_rank: 					rank++,
+							chunk: 					chunk
+						}))
+					})
+				})
+			} else {
+				// No migrations for system blueprints
+			}
 		}
 	})
 
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
-		let i = compareVersions(a._version, b._version)
-		if (i !== 0) return i
+
+		if (semver.gt(a._version, b._version)) return 1
+		if (semver.lt(a._version, b._version)) return -1
+
 		// Keep ranking within version:
 		if (a._rank > b._rank) return 1
 		if (a._rank < b._rank) return -1
@@ -257,8 +303,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 		if (partialMigration) return
 		if (
-			compareVersions(step._version, parseVersion(step.chunk._dbVersion)) > 0 && // step version is larger than database version
-			compareVersions(step._version, parseVersion(step.chunk._targetVersion)) <= 0 // // step version is less than (or equal) to system version
+			semver.gt(step._version, step.chunk._dbVersion) && // step version is larger than database version
+			semver.gte(step._version, step.chunk._targetVersion) // // step version is less than (or equal) to system version
 		) {
 			// Step is in play
 
@@ -405,7 +451,7 @@ export function runMigration (
 ): RunMigrationResult {
 
 	logger.info(`Migration: Starting`)
-	// logger.info(`Migration: Starting, from "${baseVersion.toString()}" to "${targetVersion.toString()}".`)
+	// logger.info(`Migration: Starting, from "${baseVersion}" to "${targetVersion}".`)
 
 	// Verify the input:
 	let migration = prepareMigration(true)
@@ -547,7 +593,7 @@ export function runMigration (
 function completeMigration (chunks: Array<MigrationChunk>) {
 	_.each(chunks, (chunk) => {
 		if (chunk.sourceType === MigrationStepType.CORE) {
-			setCoreSystemVersion(chunk._targetVersion.toString())
+			setCoreSystemVersion(chunk._targetVersion)
 		} else if (
 			chunk.sourceType === MigrationStepType.STUDIO ||
 			chunk.sourceType === MigrationStepType.SHOWSTYLE
@@ -561,12 +607,12 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 
 			let m: any = {}
 			if (chunk.sourceType === MigrationStepType.STUDIO) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[chunk.sourceId]}" to "${chunk._targetVersion.toString()}".`)
-				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion.toString()
+				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion
 
 			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[chunk.sourceId]}" to "${chunk._targetVersion.toString()}".`)
-				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion.toString()
+				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion
 
 			} else throw new Meteor.Error(500, `Bad chunk.sourcetype: "${chunk.sourceType}"`)
 
@@ -576,7 +622,7 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 }
 export function updateDatabaseVersion (targetVersionStr: string) {
 	let targetVersion = parseVersion(targetVersionStr)
-	setCoreSystemVersion(targetVersion.toString())
+	setCoreSystemVersion(targetVersion)
 }
 
 export function updateDatabaseVersionToSystem () {
@@ -588,9 +634,9 @@ function getMigrationStatus (): GetMigrationStatusResult {
 	let migration = prepareMigration(true)
 
 	return {
-		// databaseVersion:	 		databaseVersion.toString(),
+		// databaseVersion:	 		databaseVersion,
 		// databasePreviousVersion:	system.previousVersion,
-		// systemVersion:		 		systemVersion.toString(),
+		// systemVersion:		 		systemVersion,
 		migrationNeeded:	 			migration.steps.length > 0,
 
 		migration: {

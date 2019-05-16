@@ -79,6 +79,39 @@ This choice is persisted in browser's Local Storage, and the same language will 
 
 ## Operating the prompter screen
 
+The prompter has several operating modes, described further below.
+All modes are intended to be controlled by a computer mouse or similar, such as a presenter tool.
+To cycle between operating modes, press *both mouse keys* simultaneously.
+
+The prompter can be configured using URL parameters:
+
+| Query parameter | Type    | Description                                                                                     | Default  |
+|-----------------|---------|-------------------------------------------------------------------------------------------------|----------|
+| mirror          | string  | Mirror the display horisontally                                                                 |          |
+| vmirror         | string  | Mirror the display vertically                                                                   |          |
+| mode            | string  | Restrict the operating mode. Possible values: "normal", "speed", "smoothscroll"                 |          |
+| followtake      | 0 / 1   | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it | 1        |
+| fontsize        | number  | Set a custom font size of the text. 20 will fit in 5 lines of text, 14 will fit 7 lines etc..   | 14       |
+| marker          | string  | Set position of the read-marker. Possible values: "center", "top", "bottom", "hide"             | "hide"   |
+| margin          | number  | Set margin of screen (used on monitors with overscan), in %.                                    | 0        |
+
+Example: http://mySofie/prompter/studio0/?mode=smoothscroll&followTake=0&fontsize=20
+
+
+### Normal Scrolling
+Nothing fancy, use it like a normal web page
+
+### Speed control
+* Scrolling the mouse wheel sets the speed
+* Click Left mouse button to toggle scrolling
+* Hold Left mouse button to toggle scrolling
+* Click Right mouse button to toggle rewind scrolling
+* Hold Right mouse button to toggle rewind scrolling
+
+### Smooth scrolling
+* Scrolling the mouse wheel starts continous scrolling. Small speed adjustments can then be made by nudging the scroll wheel. Stop the scrolling by making a "larger scroll" on the wheel.
+
+
 The prompter can be operated using pressing & holding keyboard arrow keys: `Up` & `Down`. Press `Home` to enable auto-scroll mode. `Shift+Up` and `Shift+Down` scrolls in 3x speed. If the studio setup requries a mirrored-image prompter, you can append `?mirror=1` to enable mirror mode. This setting is not persisted in browser. 
 
 ## Translating Sofie

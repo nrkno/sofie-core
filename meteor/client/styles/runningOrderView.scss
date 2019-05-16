@@ -26,6 +26,8 @@ $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,
 $liveline-timecode-color:  #ffff00; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
+$previewline-color: rgb(38, 137, 186);
+
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
 */
@@ -723,6 +725,13 @@ body.vertical-overflow-only {
 				}
 			}
 		}
+		.segment-timeline__segment-line {
+			.segment-timeline__segment-line__invalid-cover {
+				background-image:
+					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
+					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
+			}
+		}
 	}
 
 	/* The timeline itself is constructed out of three overlapping layers:
@@ -783,7 +792,7 @@ body.vertical-overflow-only {
 
 		.segment-timeline__liveline__label {
 			position: absolute;
-			top: -1.13em;
+			top: -1.10em;
 			left: -0.2px;
 			color: #fff;
 			background-color: $general-live-color;
@@ -906,6 +915,19 @@ body.vertical-overflow-only {
 				min-width: 200%;
 				z-index: 0;
 			}
+			&.invalid {
+				background-color: #333;
+			}
+
+			.segment-timeline__segment-line__previewline {
+				display: block;
+				position: absolute;
+				top: -13px;
+				left: 0;
+				bottom: -1.3em;
+				border-left: 2px solid $previewline-color;
+				z-index: 10;
+			}
 
 			.segment-timeline__segment-line__nextline {
 				display: block;
@@ -981,8 +1003,23 @@ body.vertical-overflow-only {
 				}
 			}
 
+			.segment-timeline__segment-line__invalid-cover {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				z-index: 1;
+				pointer-events: none;
+				background-image:
+					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
+					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+
+			}
+
 			&:not(.live) {
-				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline),
+				.segment-timeline__segment-line__nextline.invalid:not(.segment-timeline__segment-line__nextline--endline) {
 					border-left-width: 1px;
 
 					&::before, &::after {
@@ -1047,7 +1084,7 @@ body.vertical-overflow-only {
 			}
 
 			&.next {
-				.segment-timeline__segment-line__nextline {
+				.segment-timeline__segment-line__nextline:not(.offset) {
 					.segment-timeline__segment-line__nextline__label {
 						> svg {
 							margin-left: 1px;
@@ -1056,7 +1093,7 @@ body.vertical-overflow-only {
 					}
 				}
 
-				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline):not(.offset) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
@@ -1250,6 +1287,8 @@ body.vertical-overflow-only {
 							pointer-events: none;
 							display: inline-block;
 							white-space: nowrap;
+
+							transform: translate3d(0, 0, 1px); // Just to make it render in front
 
 							&:not(.right-side) {
 								overflow: hidden;
@@ -1872,6 +1911,9 @@ body.vertical-overflow-only {
 	}
 	.mini-inspector__value {
 		font-weight: 500;
+		max-width: 60vw;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.mini-inspector__system {
 		font-weight: 300;

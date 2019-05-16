@@ -41,6 +41,7 @@ export interface ISourceLayerItemProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	followLiveLine: boolean
@@ -294,7 +295,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 		e.preventDefault()
 		e.stopPropagation()
-		// this.tempDisplayInOutpoints(e) // temporary disabled the temporary function in Release 8
+		this.props.onClick && this.props.onClick(this.props.segmentLineItem, e)
 
 	}
 	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {

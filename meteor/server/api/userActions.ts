@@ -8,7 +8,7 @@ import {
 } from '../../lib/collections/RunningOrders'
 import { getCurrentTime } from '../../lib/lib'
 import {
-	SegmentLines
+	SegmentLines, SegmentLine
 } from '../../lib/collections/SegmentLines'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout'
@@ -60,6 +60,7 @@ export function take (roId: string): ClientAPI.ClientResponse {
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
+				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 			}
 		} else {
@@ -68,7 +69,7 @@ export function take (roId: string): ClientAPI.ClientResponse {
 	}
 	return ServerPlayoutAPI.roTake(runningOrder)
 }
-export function setNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
+export function setNext (roId: string, nextSlId: string | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse {
 	check(roId, String)
 	if (nextSlId) check(nextSlId, String)
 
@@ -76,11 +77,19 @@ export function setNext (roId: string, nextSlId: string | null, setManually?: bo
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 	if (!runningOrder.active) return ClientAPI.responseError('RunningOrder is not active, please activate it before setting a segmentLine as Next')
 
+	let nextSegmentLine: SegmentLine | undefined
+	if (nextSlId) {
+		nextSegmentLine = SegmentLines.findOne(nextSlId)
+		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+
+		if (nextSegmentLine.invalid) return ClientAPI.responseError('SegmentLine is marked as invalid, cannot set as next.')
+	}
+
 	if (runningOrder.holdState && runningOrder.holdState !== RunningOrderHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	return ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually)
+	return ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually, timeOffset)
 }
 export function moveNext (
 	roId: string,
@@ -220,12 +229,12 @@ export function segmentLineItemTakeNow (roId: string, slId: string, sliId: strin
 		ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 	)
 }
-export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId: string, inPoint: number, outPoint: number) {
+export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId: string, inPoint: number, duration: number) {
 	check(roId, String)
 	check(slId, String)
 	check(sliId, String)
 	check(inPoint, Number)
-	check(outPoint, Number)
+	check(duration, Number)
 
 	const runningOrder = RunningOrders.findOne(roId)
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -239,10 +248,9 @@ export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId
 	const sli = SegmentLineItems.findOne(sliId)
 	if (!sli) throw new Meteor.Error(404, `SegmentLineItem "${sliId}" not found!`)
 
-	return ClientAPI.responseSuccess(
-		replaceStoryItem(runningOrder, sli, slCache, inPoint, outPoint)
-	)
-
+	return replaceStoryItem(runningOrder, sli, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
+		.then((res) => ClientAPI.responseSuccess(res))
+		.catch((err) => ClientAPI.responseError(err))
 }
 export function segmentAdLibLineItemStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 	check(roId, String)
@@ -415,15 +423,15 @@ export function mediaAbortWorkflow (workflowId: string) {
 }
 
 interface UserMethods {
-	[method: string]: (...args: any[]) => ClientAPI.ClientResponse
+	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
 let methods: UserMethods = {}
 
 methods[UserActionAPI.methods.take] = function (roId: string): ClientAPI.ClientResponse {
 	return take.call(this, roId)
 }
-methods[UserActionAPI.methods.setNext] = function (roId: string, slId: string): ClientAPI.ClientResponse {
-	return setNext.call(this, roId, slId, true)
+methods[UserActionAPI.methods.setNext] = function (roId: string, slId: string, timeOffset?: number): ClientAPI.ClientResponse {
+	return setNext.call(this, roId, slId, true, timeOffset)
 }
 methods[UserActionAPI.methods.moveNext] = function (roId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse {
 	return moveNext.call(this, roId, horisontalDelta, verticalDelta, true)
@@ -455,8 +463,8 @@ methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (roId: strin
 methods[UserActionAPI.methods.segmentLineItemTakeNow] = function (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse {
 	return segmentLineItemTakeNow.call(this, roId, slId, sliId)
 }
-methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, outPoint: number): ClientAPI.ClientResponse {
-	return segmentLineItemSetInOutPoints(roId, slId, sliId, inPoint, outPoint)
+methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, duration: number): ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse> {
+	return segmentLineItemSetInOutPoints.call(this, roId, slId, sliId, inPoint, duration)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (roId: string, slId: string, salliId: string, queue: boolean) {
 	return segmentAdLibLineItemStart.call(this, roId, slId, salliId, queue)

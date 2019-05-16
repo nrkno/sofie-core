@@ -15,6 +15,8 @@ import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems
 import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { RunningOrderNote } from '../api/notes'
+import { ExpectedMediaItems } from './ExpectedMediaItems';
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -66,6 +68,8 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	currentSegmentLineId: string | null
 	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	nextSegmentLineId: string | null
+	/** The time offset of the next line */
+	nextTimeOffset?: number | null
 	/** if nextSegmentLineId was set manually (ie from a user action) */
 	nextSegmentLineManual?: boolean
 	/** the id of the Previous Segment Line */
@@ -85,6 +89,9 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	holdState?: RunningOrderHoldState
 	/** What the source of the data was */
 	dataSource: string
+
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
+	notes?: Array<RunningOrderNote>
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -110,10 +117,12 @@ export class RunningOrder implements DBRunningOrder {
 	public nextSegmentLineManual?: boolean
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
+	public nextTimeOffset?: number
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
 	public holdState?: RunningOrderHoldState
 	public dataSource: string
+	public notes?: Array<RunningOrderNote>
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key: keyof DBRunningOrder) => {
@@ -172,6 +181,7 @@ export class RunningOrder implements DBRunningOrder {
 		SegmentLineAdLibItems.remove({ runningOrderId: this._id})
 		RunningOrderBaselineItems.remove({ runningOrderId: this._id})
 		RunningOrderBaselineAdLibItems.remove({ runningOrderId: this._id})
+		ExpectedMediaItems.remove({ runningOrderId: this._id })
 		this.removeCache()
 	}
 	touch () {
@@ -279,6 +289,17 @@ export class RunningOrder implements DBRunningOrder {
 			segmentLinesMap,
 			segmentLineItems
 		}
+	}
+	getNotes (): Array<RunningOrderNote> {
+		let notes: Array<RunningOrderNote> = []
+		notes = notes.concat(this.notes || [])
+
+		return notes
+	}
+	appendNote (note: RunningOrderNote): void {
+		RunningOrders.update(this._id, {$push: {
+			notes: note
+		}})
 	}
 }
 export interface RoData {

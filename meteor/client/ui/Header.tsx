@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { InjectedTranslateProps } from 'react-i18next'
 
 import { NavLink } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'

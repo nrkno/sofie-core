@@ -4,6 +4,7 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../logging'
+import * as semver from 'semver'
 
 export const SYSTEM_ID = 'core'
 export interface ICoreSystem {
@@ -16,6 +17,9 @@ export interface ICoreSystem {
 	version: string
 	/** Previous version, on the form x.y.z */
 	previousVersion: string | null
+
+	/** Id of the blueprint used by this system */
+	blueprintId?: string
 
 	/** File path to store persistant data (like snapshots, etc) */
 	storePath: string
@@ -55,13 +59,13 @@ export function setCoreSystemVersion (versionStr: string): string {
 
 	let version = parseVersion(versionStr)
 
-	if (version.toString() === versionStr) {
+	if (version === versionStr) {
 
-		logger.info(`Updating database version, from "${system.version}" to "${version.toString()}".`)
+		logger.info(`Updating database version, from "${system.version}" to "${version}".`)
 
 		let previousVersion: string | null = null
 
-		if (system.version && compareVersions(version, parseVersion(system.version)) > 0) { // the new version is higher than previous version
+		if (system.version && semver.gt(version, system.version)) { // the new version is higher than previous version
 			previousVersion = system.version
 		}
 
@@ -71,7 +75,7 @@ export function setCoreSystemVersion (versionStr: string): string {
 		}})
 		return versionStr
 	} else {
-		throw new Meteor.Error(500, `Unable to set version. Parsed version differ from expected: "${versionStr}", "${version.toString()}"`)
+		throw new Meteor.Error(500, `Unable to set version. Parsed version differ from expected: "${versionStr}", "${version}"`)
 	}
 }
 export function setCoreSystemStorePath (storePath: string): void {
@@ -85,71 +89,21 @@ export function setCoreSystemStorePath (storePath: string): void {
 		storePath: storePath
 	}})
 }
-export interface Version {
-	toString: () => string
-	major: number
-	minor: number
-	patch: number
-	label?: string
-}
+
+export type Version = string
+
 export function stripVersion (v: string): string {
 	return v.replace(/[^\d.]/g,'')
 }
 export function parseVersion (v: string | Version): Version {
-
-	let m: any
-	if (_.isString(v)) {
-		// https://github.com/semver/semver/issues/232
-		m = (v + '').match(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/)
-
-	} else if (_.isObject(v)) {
-		m = [
-			'',
-			v.major + '',
-			v.minor + '',
-			v.patch + '',
-			v.label + ''
-		]
-	}
-	if (m) {
-		let major = parseInt(m[1], 10)
-		let minor = parseInt(m[2], 10)
-		let patch = parseInt(m[3], 10)
-		let label = (m[4] ? (m[4] + '').trim() : '')
-		if (
-			!_.isNaN(major) &&
-			!_.isNaN(minor) &&
-			!_.isNaN(patch)
-		) {
-			return {
-				major: major,
-				minor: minor,
-				patch: patch,
-				label: label,
-				toString: () => {
-					return `${major}.${minor}.${patch}` + (label ? '-' + label : '')
-				}
-			}
-		}
-	}
-	throw new Meteor.Error(500, `Invalid version: "${v}"`)
+	const valid = semver.valid(v)
+	if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
+	return valid
 }
-/**
- * Compares versions, returns 1 if larger, -1 if smaller, 0 if equal.
- * (Excluding version label)
- * @param v0
- * @param v1
- */
-export function compareVersions (v0: Version, v1: Version): number {
-
-	if (v0.major > v1.major) return 1
-	if (v0.major < v1.major) return -1
-
-	if (v0.minor > v1.minor) return 1
-	if (v0.minor < v1.minor) return -1
-
-	if (v0.patch > v1.patch) return 1
-	if (v0.patch < v1.patch) return -1
-
-	return 0
+export function parseExpectedVersion (v: string | Version): Version {
+	let v2 = semver.coerce(v)
+	if (!v2) throw new Meteor.Error(500, `Bad expected version: "${v}"`)
+	const valid = semver.valid(v2)
+	if (!valid) throw new Meteor.Error(500, `Invalid expected version: "${v}"`)
+	return valid
 }

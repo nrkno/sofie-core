@@ -17,9 +17,7 @@ import {
 import {
 	SegmentLine,
 	SegmentLines,
-	DBSegmentLine,
-	SegmentLineNoteType,
-	SegmentLineNote
+	DBSegmentLine
 } from '../../../lib/collections/SegmentLines'
 import {
 	SegmentLineItem,
@@ -36,10 +34,12 @@ import {
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import {
-	loadBlueprints,
+	loadShowStyleBlueprints,
 	postProcessSegmentLineAdLibItems,
 	postProcessSegmentLineItems,
-	SegmentLineContext
+	SegmentLineContext,
+	loadStudioBlueprints,
+	StudioContext
 } from '../blueprints'
 import {
 	StudioInstallations,
@@ -75,6 +75,7 @@ import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
@@ -128,7 +129,20 @@ export function getSegmentLine (roID: MOS.MosString128, storyID: MOS.MosString12
 	})
 	if (segmentLine) {
 		return segmentLine
-	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+	} else {
+		let ro = getRO(roID)
+		if (ro) {
+			ro.appendNote({
+				type: NoteType.ERROR,
+				message: 'There was an error when receiving MOS-data. This might be fixed by triggering a "Reload ENPS Data".',
+				origin: {
+					name: ro.name,
+					roId: ro._id
+				}
+			})
+		}
+		throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+	}
 }
 
 /**
@@ -239,7 +253,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	let resultAdlibSli: SegmentLineAdLibItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
-		const blueprints = loadBlueprints(showStyleBase)
+		const blueprints = loadShowStyleBlueprints(showStyleBase)
 		let result = blueprints.getSegmentLine(context, story)
 
  		if (result) {
@@ -253,7 +267,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
 		notes = [{
-			type: SegmentLineNoteType.ERROR,
+			type: NoteType.ERROR,
 			origin: {
 				name: '',				roId: context.runningOrder._id,
 				segmentId: (context.segmentLine as DBSegmentLine).segmentId,
@@ -293,10 +307,12 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			classesForNext: 		resultSl.classesForNext || [],
 			displayDurationGroup: 	resultSl.displayDurationGroup || '', // TODO - or unset?
 			displayDuration: 		resultSl.displayDuration || 0, // TODO - or unset
+			invalid: 				resultSl.invalid || false
 		}})
 	} else {
 		SegmentLines.update(segmentLine._id, {$set: {
 			notes: notes,
+			invalid: true
 		}})
 	}
 
@@ -439,11 +455,13 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
 )
-export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, outPoint: number) {
+export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
 		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0].Content
-		story.EditorialStart = inPoint
-		story.EditorialDuration = outPoint
+		const timeBase = story.TimeBase || 1
+		story.EditorialStart = inPoint * timeBase
+		story.EditorialDuration = duration * timeBase
+		story.TimeBase = timeBase
 
 		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
 		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.mosDeviceId + '" not found' )
@@ -453,6 +471,54 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 			else resolve()
 		}, 'replaceStoryItem', slCache.data.RunningOrderId, slCache.data.ID, story)
 	})
+}
+function selectShowStyleVariant (studio: StudioInstallation, ro: MOS.IMOSRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+	const studioBlueprint = loadStudioBlueprints(studio)
+	if (studioBlueprint) {
+		const context = new StudioContext(studio)
+		const showStyleVariantId = studioBlueprint.getShowStyleVariantId(context, ro)
+		if (showStyleVariantId) {
+			const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
+			if (!showStyleVariant) {
+				throw new Meteor.Error(404, `ShowStyleVariant "${showStyleVariantId}" not found`)
+			}
+
+			const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
+			if (!showStyleBase) {
+				throw new Meteor.Error(404, `ShowStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
+			}
+
+			if (studio.supportedShowStyleBase.indexOf(showStyleBase._id) === -1) {
+				throw new Meteor.Error(404, `Studio "${studio._id}" does not support ShowStyleBase "${showStyleVariant.showStyleBaseId}"`)
+			}
+
+			return {
+				variant: showStyleVariant,
+				base: showStyleBase,
+			}
+		} else {
+			return null
+		}
+	} else {
+		const showStyleBaseId = _.first(studio.supportedShowStyleBase)
+		if (showStyleBaseId) {
+			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			if (!showStyleBase) {
+				throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
+			}
+			const showStyleVariant = ShowStyleVariants.findOne({ showStyleBaseId: showStyleBaseId })
+			if (!showStyleVariant) {
+				throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" has no variants`)
+			}
+
+			return {
+				variant: showStyleVariant,
+				base: showStyleBase,
+			}
+		} else {
+			return null
+		}
+	}
 }
 function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
@@ -476,11 +542,13 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
 	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
 
-	// the defaultShowStyleVariant is a temporary solution, to be replaced by a blueprint plugin
-	let defaultShowStyleVariant = ShowStyleVariants.findOne(studioInstallation.defaultShowStyleVariant) as ShowStyleVariant || {}
+	let showStyle = selectShowStyleVariant(studioInstallation, ro)
+	if (!showStyle) {
+		logger.warn('Studio blueprint rejected RO')
+		return
+	}
 
-	let showStyleBase = ShowStyleBases.findOne(defaultShowStyleVariant.showStyleBaseId) as ShowStyleBase || {}
-	let blueprint = Blueprints.findOne(showStyleBase.blueprintId) as Blueprint || {}
+	let blueprint = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
 
 	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
 		_.omit(literal<DBRunningOrder>({
@@ -488,8 +556,8 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
 			mosDeviceId: peripheralDevice._id,
-			showStyleVariantId: defaultShowStyleVariant._id,
-			showStyleBaseId: defaultShowStyleVariant.showStyleBaseId,
+			showStyleVariantId: showStyle.variant._id,
+			showStyleBaseId: showStyle.base._id,
 			name: ro.Slug.toString(),
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration),
@@ -498,8 +566,8 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 
 			importVersions: {
 				studioInstallation: studioInstallation._runningOrderVersionHash,
-				showStyleBase: showStyleBase._runningOrderVersionHash,
-				showStyleVariant: defaultShowStyleVariant._runningOrderVersionHash,
+				showStyleBase: showStyle.base._runningOrderVersionHash,
+				showStyleVariant: showStyle.variant._runningOrderVersionHash,
 				blueprint: blueprint.blueprintVersion,
 				core: PackageInfo.version,
 			},

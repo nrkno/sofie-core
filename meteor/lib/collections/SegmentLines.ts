@@ -16,6 +16,7 @@ import {
 	BlueprintRuntimeArguments,
 	MOS
 } from 'tv-automation-sofie-blueprints-integration'
+import { SegmentLineNote, NoteType } from '../api/notes'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
@@ -28,6 +29,8 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	segmentId: string
   /** The running order this line belongs to */
 	runningOrderId: string
+	/** When something bad has happened, we can mark the SL as invalid, which will prevent the user from TAKE:ing it */
+	invalid?: boolean
 	/** The story Slug (like a title, but slimier) */
 	slug: string
 	/** Should this item should progress to the next automatically */
@@ -101,24 +104,9 @@ export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings 
 	/** Point in time the SegmentLine stopped playing (ie the time of the playout) */
 	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
-	next: Array<Time>
-}
-
-export enum SegmentLineNoteType {
-	WARNING = 1,
-	ERROR = 2
-}
-export interface SegmentLineNote {
-	type: SegmentLineNoteType,
-	origin: {
-		name: string,
-		roId?: string,
-		segmentId?: string,
-		segmentLineId?: string,
-		segmentLineItemId?: string
-	},
-	message: string
-
+	next: Array<Time>,
+	/** The playback offset that was set for the last take */
+	playOffset: Array<Time>
 }
 
 export class SegmentLine implements DBSegmentLine {
@@ -127,6 +115,7 @@ export class SegmentLine implements DBSegmentLine {
 	public mosId: string
 	public segmentId: string
 	public runningOrderId: string
+	public invalid: boolean
 	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
@@ -224,7 +213,7 @@ export class SegmentLine implements DBSegmentLine {
 		)
 
 	}
-	getNotes (runtimeNotes?: boolean) {
+	getNotes (runtimeNotes?: boolean): Array<SegmentLineNote> {
 		let notes: Array<SegmentLineNote> = []
 		notes = notes.concat(this.notes || [])
 
@@ -242,9 +231,11 @@ export class SegmentLine implements DBSegmentLine {
 					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
 					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
-							type: SegmentLineNoteType.WARNING,
+							type: NoteType.WARNING,
 							origin: {
 								name: 'Media Check',
+								roId: this.runningOrderId,
+								segmentId: this.segmentId,
 								segmentLineId: this._id,
 								segmentLineItemId: item._id
 							},
@@ -262,6 +253,13 @@ export class SegmentLine implements DBSegmentLine {
 		if (!this.timings.startedPlayback || this.timings.startedPlayback.length === 0) return undefined
 
 		return this.timings.startedPlayback[this.timings.startedPlayback.length - 1]
+	}
+	getLastPlayOffset () {
+		if (!this.timings) return undefined
+
+		if (!this.timings.playOffset || this.timings.playOffset.length === 0) return undefined
+
+		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
 }
 

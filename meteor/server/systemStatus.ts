@@ -6,9 +6,10 @@ import { PeripheralDevices, PeripheralDevice } from '../lib/collections/Peripher
 import { getCurrentTime, Time } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from './methods'
-import { parseVersion } from '../lib/collections/CoreSystem'
+import { parseVersion, parseExpectedVersion } from '../lib/collections/CoreSystem'
 import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus, CheckError } from '../lib/api/systemStatus'
 import { getRelevantSystemVersions } from './coreSystem'
+import * as semver from 'semver'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
@@ -99,29 +100,36 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 					let versionStr = deviceVersions[libraryName]
 
 					let version = parseVersion(versionStr)
-					let expectedVersion = parseVersion(expectedVersionStr)
+					let expectedVersion = parseExpectedVersion(expectedVersionStr)
 
 					let statusCode = StatusCode.GOOD
 					let messages: Array<string> = []
 
-					if (
-						version.major === 0 &&
-						version.minor === 0 &&
-						version.patch === 0
-					) {
+					if (semver.satisfies(version, '0.0.0')) {
 						// if the major version is 0.0.0, ignore it
 					} else if (!versionStr) {
 						statusCode = StatusCode.BAD
 						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got undefined`)
-					} else if (version.major !== expectedVersion.major ) {
+					} else if (semver.satisfies(version, expectedVersion)) {
 						statusCode = StatusCode.BAD
-						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (major version differ)`)
-					} else if (version.minor < expectedVersion.minor ) {
-						statusCode = StatusCode.WARNING_MAJOR
-						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (minor version differ)`)
-					} else if (version.minor <= expectedVersion.minor && version.patch < expectedVersion.patch ) {
-						statusCode = StatusCode.WARNING_MINOR
-						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (patch version differ)`)
+
+						let message = `Version for ${libraryName}: "${versionStr}" does not satisy expected version "${expectedVersionStr}"`
+
+						const version0 = semver.coerce(version)
+						const expectedVersion0 = semver.coerce(expectedVersion)
+
+						if (version0 && expectedVersion0 && version0.major !== expectedVersion0.major ) {
+							statusCode = StatusCode.BAD
+							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (major version differ)`
+						} else if (version0 && expectedVersion0 && version0.minor < expectedVersion0.minor ) {
+							statusCode = StatusCode.WARNING_MAJOR
+							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (minor version differ)`
+						} else if (version0 && expectedVersion0 && version0.minor <= expectedVersion0.minor && version0.patch < expectedVersion0.patch ) {
+							statusCode = StatusCode.WARNING_MINOR
+							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (patch version differ)`
+						}
+
+						messages.push(message)
 					}
 
 					checks.push({

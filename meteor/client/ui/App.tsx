@@ -31,7 +31,7 @@ import {
   Redirect
 } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { PrompterView } from './PrompterView'
+import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 
 interface IAppState {
@@ -113,9 +113,10 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						</Switch>
 					</ErrorBoundary>
 					<Switch>
+						{/* Put views that should NOT have the Notification center here: */}
 						<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 						<Route path='/countdowns/presenter' component={NullComponent} />
-						<Route path='/prompter/:studioId' component={NullComponent} />
+
 						<Route path='/' component={ConnectionStatusNotification} />
 					</Switch>
 					<ModalDialogGlobalContainer />

@@ -1,3 +1,7 @@
+import { RunningOrder } from '../collections/RunningOrders'
+import { NoteType } from './notes'
+import * as _ from 'underscore'
+
 export namespace RunningOrderAPI {
 	/** A generic list of playback availability statuses for a source layer/line item */
 	export enum LineItemStatusCode {
@@ -19,4 +23,39 @@ export namespace RunningOrderAPI {
 		'unsyncRunningOrder' = 'rundown.unsyncRunningOrder',
 		'runningOrderNeedsUpdating' = 'rundown.runningOrderNeedsUpdating'
 	}
+}
+
+/** Run function in context of a runningOrder. If an error is encountered, the runnningOrder will be notified */
+export function runInRunningOrderContext<T> (ro: RunningOrder, fcn: () => T, errorInformMessage?: string): T {
+	try {
+		const result = fcn() as any
+		if (_.isObject(result) && result.then && result.catch) {
+			// is promise
+
+			// Intercept the error, then throw:
+			result.catch((e) => {
+				handleRunningOrderContextError(ro, errorInformMessage, e)
+				throw e
+			})
+		}
+		return result
+	} catch (e) {
+		// Intercept the error, then throw:
+		handleRunningOrderContextError(ro, errorInformMessage, e)
+		throw e
+	}
+}
+function handleRunningOrderContextError (ro: RunningOrder, errorInformMessage: string | undefined, error: any) {
+	ro.appendNote({
+		type: NoteType.ERROR,
+		message: (
+			errorInformMessage ?
+			errorInformMessage :
+			'Something went wrong when processing data this runningOrder.'
+		) + `Error message: ${(error || 'N/A').toString()}`,
+		origin: {
+			name: ro.name,
+			roId: ro._id
+		}
+	})
 }

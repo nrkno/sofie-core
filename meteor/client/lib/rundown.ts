@@ -1,5 +1,5 @@
 import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
-import * as Timecode from 'smpte-timecode'
+import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
@@ -23,7 +23,8 @@ export namespace RundownUtils {
 		} else {
 			if (showPlus) sign = '+'
 		}
-		const timeCodeString: String = (new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString()
+		const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: milliseconds * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate'])})
+		const timeCodeString: String = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
 
@@ -105,12 +106,12 @@ export namespace RundownUtils {
 					(segmentLineItem !== undefined ?
 						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
 							(segmentLine.duration !== undefined ?
-								segmentLine.duration :
+								(segmentLine.duration + (segmentLine.getLastPlayOffset() || 0)) :
 								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
 							)
 						) :
 						(segmentLine.duration !== undefined ?
-							segmentLine.duration :
+							(segmentLine.duration + (segmentLine.getLastPlayOffset() || 0)) :
 							(segmentLineDuration || segmentLine.renderedDuration || 0)
 						)
 					)

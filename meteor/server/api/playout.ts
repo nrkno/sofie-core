@@ -71,12 +71,15 @@ import {
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
 import {
-	loadBlueprints,
+	loadShowStyleBlueprints,
 	postProcessSegmentLineAdLibItems,
 	postProcessSegmentLineBaselineItems,
 	RunningOrderContext,
 	getBlueprintOfRunningOrder,
-	SegmentLineContext
+	SegmentLineContext,
+	loadStudioBlueprints,
+	StudioContext,
+	postProcessStudioBaselineObjects
 } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -101,6 +104,8 @@ import {
 	reportSegmentLineHasStopped,
 	reportSegmentLineItemHasStopped
 } from './asRunLog'
+import { Blueprints } from '../../lib/collections/Blueprints'
+const PackageInfo = require('../../package.json')
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -375,7 +380,7 @@ export namespace ServerPlayoutAPI {
 			logger.info('Building baseline items...')
 
 			const showStyleBase = runningOrder.getShowStyleBase()
-			let blueprint = loadBlueprints(showStyleBase)
+			let blueprint = loadShowStyleBlueprints(showStyleBase)
 
 			const context = new RunningOrderContext(runningOrder)
 
@@ -561,7 +566,12 @@ export namespace ServerPlayoutAPI {
 		const prevLine = getPreviousSegmentLine(runningOrder, sl)
 		updateSourceLayerInfinitesAfterLine(ro, prevLine)
 	}
-	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
+	function setNextSegmentLine (
+		runningOrder: RunningOrder,
+		nextSegmentLine: DBSegmentLine | null,
+		setManually?: boolean,
+		nextTimeOffset?: number | undefined
+	) {
 		let ps: Array<Promise<any>> = []
 		if (nextSegmentLine) {
 
@@ -569,13 +579,17 @@ export namespace ServerPlayoutAPI {
 			if (nextSegmentLine._id === runningOrder.currentSegmentLineId) {
 				throw new Meteor.Error(402, 'Not allowed to Next the currently playing SegmentLine')
 			}
+			if (nextSegmentLine.invalid) {
+				throw new Meteor.Error(400, 'SegmentLine is marked as invalid, cannot set as next.')
+			}
 
 			ps.push(resetSegmentLine(nextSegmentLine))
 
 			ps.push(asyncCollectionUpdate(RunningOrders, runningOrder._id, {
 				$set: {
 					nextSegmentLineId: nextSegmentLine._id,
-					nextSegmentLineManual: !!setManually
+					nextSegmentLineManual: !!setManually,
+					nextTimeOffset: nextTimeOffset || null
 				}
 			}))
 			ps.push(asyncCollectionUpdate(SegmentLines, nextSegmentLine._id, {
@@ -604,6 +618,9 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
 
+		let timeOffset: number | null = runningOrder.nextTimeOffset || null
+
+		let firstTake = !runningOrder.startedPlayback
 		let roData = runningOrder.fetchAllData()
 
 		const currentSL = runningOrder.currentSegmentLineId ? roData.segmentLinesMap[runningOrder.currentSegmentLineId] : undefined
@@ -619,8 +636,6 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 		}
-
-		const firstTake = !runningOrder.startedPlayback
 
 		if (runningOrder.holdState === RunningOrderHoldState.COMPLETE) {
 			RunningOrders.update(runningOrder._id, {
@@ -677,7 +692,8 @@ export namespace ServerPlayoutAPI {
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
 		// let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
 		let segmentLineAfter = fetchAfter(roData.segmentLines, {
-			runningOrderId: runningOrder._id
+			runningOrderId: runningOrder._id,
+			invalid: { $ne: true }
 		}, takeSegmentLine._rank)
 
 		let nextSegmentLine: DBSegmentLine | null = segmentLineAfter || null
@@ -708,7 +724,8 @@ export namespace ServerPlayoutAPI {
 		}))
 		ps.push(asyncCollectionUpdate(SegmentLines, takeSegmentLine._id, {
 			$push: {
-				'timings.take': now
+				'timings.take': now,
+				'timings.playOffset': timeOffset || 0
 			}
 		}))
 		if (m.previousSegmentLineId) {
@@ -761,7 +778,8 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 		waitForPromiseAll(ps)
-		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
+		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null, timeOffset)
+
 		// last:
 		SegmentLines.update(takeSegmentLine._id, {
 			$push: {
@@ -786,7 +804,12 @@ export namespace ServerPlayoutAPI {
 
 		return ClientAPI.responseSuccess()
 	}
-	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
+	export function roSetNext (
+		roId: string,
+		nextSlId: string | null,
+		setManually?: boolean,
+		nextTimeOffset?: number | undefined
+	): ClientAPI.ClientResponse {
 		check(roId, String)
 		if (nextSlId) check(nextSlId, String)
 
@@ -802,7 +825,7 @@ export namespace ServerPlayoutAPI {
 			if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
 		}
 
-		setNextSegmentLine(runningOrder, nextSegmentLine, setManually)
+		setNextSegmentLine(runningOrder, nextSegmentLine, setManually, nextTimeOffset)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
@@ -889,7 +912,7 @@ export namespace ServerPlayoutAPI {
 		let segmentLine = segmentLines[segmentLineIndex]
 		if (!segmentLine) throw new Meteor.Error(501, `SegmentLine index ${segmentLineIndex} not found in list of segmentLines!`)
 
-		if (segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineItemId) {
+		if ((segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineItemId) || segmentLine.invalid) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			return ServerPlayoutAPI.roMoveNext (roId, horisontalDelta, verticalDelta, setManually, segmentLine._id)
@@ -1357,6 +1380,8 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
+		if (adLibItem.invalid) throw new Meteor.Error(404, `Cannot take invalid Segment Line Ad Lib Item "${slaiId}"!`)
+
 		if (!queue && runningOrder.currentSegmentLineId !== slId) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
 		let orgSlId = slId
@@ -1701,6 +1726,51 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
+	export function updateStudioBaseline (studioId: string) {
+		check(studioId, String)
+
+		const activateRunningOrderCount = RunningOrders.find({
+			studioInstallationId: studioId,
+			active: true
+		}).count()
+		if (activateRunningOrderCount === 0) {
+			// This is only run when there is no ro active in the studio
+			updateTimeline(studioId)
+		}
+
+		return shouldUpdateStudioBaseline(studioId)
+	}
+	export function shouldUpdateStudioBaseline (studioId: string) {
+		check(studioId, String)
+
+		const studioInstallation = StudioInstallations.findOne(studioId)
+		if (!studioInstallation) throw new Meteor.Error(404, `StudioInstallation "${studioId}" not found!`)
+
+		const activateRunningOrderCount = RunningOrders.find({
+			studioInstallationId: studioInstallation._id,
+			active: true
+		}).count()
+		if (activateRunningOrderCount === 0) {
+			const markerId = `${studioInstallation._id}_baseline_version`
+			const markerObject = Timeline.findOne(markerId)
+			if (!markerObject) return 'noBaseline'
+
+			const versionsContent = markerObject.content.versions || {}
+
+			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
+
+			if (versionsContent.studioInstallation !== (studioInstallation._runningOrderVersionHash || 0)) return 'studioInstallation'
+
+			if (versionsContent.blueprintId !== studioInstallation.blueprintId) return 'blueprintId'
+			if (studioInstallation.blueprintId) {
+				const blueprint = Blueprints.findOne(studioInstallation.blueprintId)
+				if (!blueprint) return 'blueprintUnknown'
+				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
+			}
+		}
+
+		return false
+	}
 }
 
 let methods: Methods = {}
@@ -1731,8 +1801,8 @@ methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
 	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
 }
-methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
-	return ServerPlayoutAPI.roSetNext(roId, slId, true)
+methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string, timeOffset?: number | undefined) => {
+	return ServerPlayoutAPI.roSetNext(roId, slId, true, timeOffset)
 }
 methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
 	return ServerPlayoutAPI.roActivateHold(roId)
@@ -1766,6 +1836,12 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 }
 methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
+}
+methods[PlayoutAPI.methods.updateStudioBaseline] = (studioId: string) => {
+	return ServerPlayoutAPI.updateStudioBaseline(studioId)
+}
+methods[PlayoutAPI.methods.shouldUpdateStudioBaseline] = (studioId: string) => {
+	return ServerPlayoutAPI.shouldUpdateStudioBaseline(studioId)
 }
 
 _.each(methods, (fcn: Function, key) => {
@@ -1836,10 +1912,20 @@ function beforeTake (roData: RoData, currentSegmentLine: SegmentLine | null, nex
 	}
 }
 
-function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
+function afterTake (
+	runningOrder: RunningOrder,
+	takeSegmentLine: SegmentLine,
+	previousSegmentLine: SegmentLine | null,
+	timeOffset: number | null = null
+) {
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
+
+	let forceNowTime: number | undefined = undefined
+	if (timeOffset) {
+		forceNowTime = getCurrentTime() - timeOffset
+	}
 	// or after a new segmentLine has started playing
-	updateTimeline(runningOrder.studioInstallationId)
+	updateTimeline(runningOrder.studioInstallationId, forceNowTime)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
@@ -3036,13 +3122,36 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 					})
 				)
 			} else {
-				resolve([])
-				// remove everything:
-				// Timeline.remove({
-				// 	siId: studioInstallationId,
-				// 	objectType: TimelineObjType.RUNNINGORDER,
-				// 	statObject: {$ne: true},
-				// })
+				let studioBaseline: TimelineObjRunningOrder[] = []
+
+				const blueprint = loadStudioBlueprints(studioInstallation)
+				if (blueprint) {
+					const baselineObjs = blueprint.getBaseline(new StudioContext(studioInstallation))
+					studioBaseline = postProcessStudioBaselineObjects(studioInstallation, baselineObjs)
+
+					const id = `${studioInstallation._id}_baseline_version`
+					studioBaseline.push(literal<TimelineObjRunningOrder>({
+						_id: id,
+						id: id,
+						siId: '',
+						roId: '',
+						objectType: TimelineObjType.RUNNINGORDER,
+						trigger: { type: 0, value: 0 },
+						duration: 0,
+						LLayer: id,
+						isAbstract: true,
+						content: {
+							versions: {
+								core: PackageInfo.version,
+								blueprintId: studioInstallation.blueprintId,
+								blueprintVersion: blueprint.blueprintVersion,
+								studioInstallation: studioInstallation._runningOrderVersionHash,
+							}
+						}
+					}))
+				}
+
+				resolve(studioBaseline)
 			}
 		} catch (e) {
 			reject(e)

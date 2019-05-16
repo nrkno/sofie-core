@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
-import * as Timecode from 'smpte-timecode'
+import { Timecode } from 'timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { Mongo } from 'meteor/mongo'
@@ -318,13 +318,15 @@ export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }
 export function formatDateAsTimecode (date: Date) {
-	return Timecode(date, Settings['frameRate'], false).toString()
+	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: date, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	return tc.toString()
 }
 /**
  * @param duration time in milliseconds
  */
 export function formatDurationAsTimecode (duration: Time) {
-	return Timecode(duration * Settings['frameRate'] / 1000, Settings['frameRate'], false).toString()
+	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: duration * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	return tc.toString()
 }
 /**
  * Formats the time as human-readable time "YYYY-MM-DD hh:ii:ss"
@@ -731,9 +733,13 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 	})
 })
 export function makePromise<T> (fcn: () => T): Promise<T> {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
-			resolve(fcn())
+			try {
+				resolve(fcn())
+			} catch (e) {
+				reject(e)
+			}
 		})
 	})
 }
@@ -767,6 +773,8 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 						ok = (oAttr <= s.$lte)
 					} else if (_.has(s,'$eq')) {
 						ok = (oAttr === s.$eq)
+					} else if (_.has(s,'$ne')) {
+						ok = (oAttr !== s.$ne)
 					} else if (_.has(s,'$in')) {
 						ok = (oAttr.indexOf(s.$in) !== -1)
 					} else if (_.has(s,'$nin')) {
@@ -864,3 +872,5 @@ export function trimIfString<T extends any> (value: T): T {
 	if (_.isString(value)) return value.trim()
 	return value
 }
+export const firstIfArray: ((<T>(value: T | T[] | null | undefined) => T | null | undefined) | (<T>(value: T | T[]) => T) | (<T>(value: T | T[] | undefined) => T | undefined))
+	= (value) => _.isArray(value) ? _.first(value) : value

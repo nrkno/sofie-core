@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as $ from 'jquery'
 import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
@@ -25,6 +26,8 @@ import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
+export const SegmentTimelineLineElementId = 'running-order__segment__line__'
+
 interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
@@ -40,6 +43,7 @@ interface ISourceLayerProps {
 	isNextLine: boolean
 	outputGroupCollapsed: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	totalSegmentDuration?: number
@@ -53,11 +57,16 @@ interface ISourceLayerProps {
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
+	private mousePosition = {}
 
 	getSegmentLineContext = (props) => {
 		const ctx = {
 			segment: this.props.segment,
-			segmentLine: this.props.segmentLine
+			segmentLine: this.props.segmentLine,
+			segmentLineDocumentOffset: $('#' + SegmentTimelineLineElementId + this.props.segmentLine._id).offset(),
+			timeScale: this.props.timeScale,
+			mousePosition: this.mousePosition,
+			segmentLineStartsAt: this.props.startsAt
 		}
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
@@ -65,6 +74,10 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 		}
 
 		return ctx
+	}
+
+	onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.mousePosition = {left: e.pageX, top: e.pageY}
 	}
 
 	renderInside () {
@@ -85,6 +98,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 					<SourceLayerItemContainer key={segmentLineItem._id}
 						{...this.props}
 						// The following code is fine, just withTracker HOC messing with available props
+						onClick={this.props.onItemClick}
 						onDoubleClick={this.props.onItemDoubleClick}
 						mediaPreviewUrl={this.props.mediaPreviewUrl}
 						segmentLineItem={segmentLineItem}
@@ -108,7 +122,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	render () {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
-				className: 'segment-timeline__layer'
+				className: 'segment-timeline__layer',
+				onMouseUpCapture: (e) => this.onMouseUp(e)
 			}}
 				collect={this.getSegmentLineContext}>
 				{this.renderInside()}
@@ -132,6 +147,7 @@ interface IOutputGroupProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	liveLineHistorySize: number
@@ -197,6 +213,7 @@ interface IProps {
 	scrollWidth: number
 	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	autoNextSegmentLine: boolean
@@ -257,7 +274,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			if (this.props.segmentLine.duration) {
 				return this.props.segmentLine.duration
 			} else {
-				return getCurrentTime() - (this.props.segmentLine.getLastStartedPlayback() || 0)
+				return getCurrentTime() - (this.props.segmentLine.getLastStartedPlayback() || 0) + (this.props.segmentLine.getLastPlayOffset() || 0)
 			}
 		} else {
 			return 0
@@ -319,8 +336,10 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	getLineDuration (): number {
 		// const segmentLine = this.props.segmentLine
 
+		const playOffset = this.props.segmentLine.getLastPlayOffset() || 0
+
 		return Math.max(this.state.liveDuration,
-			this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0)
+			(this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) + playOffset)
 
 		/* return segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
 			((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),
@@ -390,21 +409,56 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				<div className={ClassNames('segment-timeline__segment-line', {
 					'live': this.state.isLive,
 					'next': this.state.isNext,
+					'invalid': this.props.segmentLine.invalid,
 
 					'duration-settling': this.state.isDurationSettling
 				})} data-mos-id={this.props.segmentLine._id}
+					id={SegmentTimelineLineElementId + this.props.segmentLine._id}
 					style={this.getLayerStyle()}
-					>
-					<div className={ClassNames('segment-timeline__segment-line__nextline', {
-						'auto-next': this.props.segmentLine.willProbablyAutoNext
+				>
+					{this.props.segmentLine.invalid ? <div className='segment-timeline__segment-line__invalid-cover'></div> : null }
+
+					<div className={ClassNames('segment-timeline__segment-line__nextline', { // This is the base, basic line
+						'auto-next': this.props.segmentLine.willProbablyAutoNext,
+						'invalid': this.props.segmentLine.invalid,
+						'offset': !!this.props.runningOrder.nextTimeOffset
 					})}>
 						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
 							'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
 						})}>
-							{ (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' '}
-							{ this.state.isNext && t('Next') }
+							{(
+								this.props.segmentLine.invalid ?
+									t('Invalid') :
+								[
+									(this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' ',
+									this.state.isNext && t('Next')
+								]
+							)}
 						</div>
 					</div>
+					{this.props.runningOrder.nextTimeOffset && this.state.isNext && // This is the off-set line
+						<div className={ClassNames('segment-timeline__segment-line__nextline', {
+							'auto-next': this.props.segmentLine.willProbablyAutoNext,
+							'invalid': this.props.segmentLine.invalid
+						})} style={{
+							'left': (this.props.relative ?
+								((this.props.runningOrder.nextTimeOffset / (this.getLineDuration() || 1) * 100) + '%') :
+								((this.props.runningOrder.nextTimeOffset * this.props.timeScale) + 'px')),
+						}}>
+							<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
+								'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
+							})}>
+								{(
+									this.props.segmentLine.invalid ?
+										t('Invalid') :
+									[
+										(this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' ',
+										this.state.isNext && t('Next')
+									]
+								)}
+							</div>
+						</div>
+					}
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
 						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {((this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt || {})[this.props.segmentLine._id]}

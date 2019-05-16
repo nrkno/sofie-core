@@ -146,7 +146,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		return this.props.mutateDisplayValue ? this.props.mutateDisplayValue(v) : v
 	}
 	getAttributeText () {
-		return this.getAttribute()
+		return this.getAttribute() + ''
 	}
 	getEditAttribute () {
 		return (this.state.editing ? this.state.value : this.getAttribute())
@@ -171,9 +171,15 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			this.props.updateFunction(this, newValue)
 		} else {
 			if (this.props.collection && this.props.attribute) {
-				let m = {}
-				m[this.props.attribute] = newValue
-				this.props.collection.update(this.props.obj._id, { $set: m })
+				if (newValue === undefined) {
+					let m = {}
+					m[this.props.attribute] = 1
+					this.props.collection.update(this.props.obj._id, { $unset: m })
+				} else {
+					let m = {}
+					m[this.props.attribute] = newValue
+					this.props.collection.update(this.props.obj._id, { $set: m })
+				}
 			}
 		}
 
@@ -475,11 +481,11 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 			<select
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-				value={this.getAttribute()}
+				value={this.getAttributeText()}
 				onChange={this.handleChange}
 			>
 				{this.getOptions(true).map((o) => (
-					<option key={o.i} value={o.value}>{o.name}</option>
+					<option key={o.i} value={o.value + ''}>{o.name}</option>
 				))}
 			</select>
 		)

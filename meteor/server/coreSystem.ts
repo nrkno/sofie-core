@@ -5,7 +5,7 @@ import {
 	getCoreSystemCursor,
 	parseVersion,
 	Version,
-	stripVersion
+	parseExpectedVersion
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -19,6 +19,7 @@ import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { logger } from './logging'
+import * as semver from 'semver'
 const PackageInfo = require('../package.json')
 
 function initializeCoreSystem () {
@@ -29,7 +30,7 @@ function initializeCoreSystem () {
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
-			version: version.toString(),
+			version: version,
 			previousVersion: null,
 			storePath: '' // to be filled in later
 		})
@@ -66,7 +67,7 @@ function checkDatabaseVersions () {
 		let dbVersion = databaseSystem.version ? parseVersion(databaseSystem.version) : null
 		let currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
-		setSystemStatus('databaseVersion', checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'database'))
+		setSystemStatus('databaseVersion', checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database'))
 
 		// Blueprints:
 		let blueprintIds: {[id: string]: true} = {}
@@ -95,10 +96,10 @@ function checkDatabaseVersions () {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = checkDatabaseVersion(
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+							parseExpectedVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
 							'to fix, run migration',
-							'blueprint',
-							'database'
+							'blueprint.blueprintVersion',
+							`databaseVersion.showStyle[${showStyleBase._id}]`
 						)
 					}
 
@@ -111,10 +112,10 @@ function checkDatabaseVersions () {
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+									parseExpectedVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
 									'to fix, run migration',
-									'blueprint',
-									'database'
+									'blueprint.blueprintVersion',
+									`databaseVersion.studio[${studio._id}]`
 								)
 							}
 						}
@@ -147,45 +148,74 @@ function checkDatabaseVersions () {
  * @param currentVersion
  * @param dbVersion
  */
-function checkDatabaseVersion (currentVersion: Version | null, dbVersion: Version | null, fixMessage: string, meName: string, theyName: string) {
-	if (dbVersion) {
+function checkDatabaseVersion (
+	currentVersion: Version | null,
+	expectVersion: Version | null,
+	fixMessage: string,
+	meName: string,
+	theyName: string
+): { statusCode: StatusCode, messages: string[] } {
+
+	if (currentVersion) currentVersion = semver.clean(currentVersion)
+
+	if (expectVersion) {
 		if (currentVersion) {
-			if (dbVersion.major !== currentVersion.major) {
-				return {
-					statusCode: StatusCode.BAD,
-					messages: [`Version mismatch (major version differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else if (dbVersion.minor !== currentVersion.minor) {
-				return {
-					statusCode: StatusCode.WARNING_MAJOR,
-					messages: [`Version mismatch (minor version differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else if (dbVersion.patch !== currentVersion.patch) {
-				return {
-					statusCode: StatusCode.WARNING_MINOR,
-					messages: [`Version mismatch (patch differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else if (dbVersion.label !== currentVersion.label) {
-				return {
-					statusCode: StatusCode.WARNING_MINOR,
-					messages: [`Version mismatch (label differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else {
+
+			if (semver.satisfies(currentVersion, expectVersion)) {
 				return {
 					statusCode: StatusCode.GOOD,
-					messages: [`${meName} version: ${currentVersion.toString()}`]
+					messages: [`${meName} version: ${currentVersion}`]
+				}
+			} else {
+
+				const currentV = new semver.SemVer(currentVersion, {includePrerelease: true})
+				const expectV = new semver.SemVer(expectVersion, {includePrerelease: true})
+
+				const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+
+				if (!expectV || !currentV) {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [ message ]
+					}
+				} else if (expectV.major !== currentV.major) {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [message]
+					}
+				} else if (expectV.minor !== currentV.minor) {
+					return {
+						statusCode: StatusCode.WARNING_MAJOR,
+						messages: [message]
+					}
+				} else if (expectV.patch !== currentV.patch) {
+					return {
+						statusCode: StatusCode.WARNING_MINOR,
+						messages: [message]
+					}
+				} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
+					return {
+						statusCode: StatusCode.WARNING_MINOR,
+						messages: [message]
+					}
+				} else {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [ message ]
+					}
 				}
 			}
+
 		} else {
 			return {
 				statusCode: StatusCode.FATAL,
-				messages: [`${meName} version missing`]
+				messages: [`Current ${meName} version missing (when comparing with ${theyName})`]
 			}
 		}
 	} else {
 		return {
 			statusCode: StatusCode.FATAL,
-			messages: [`${theyName} version missing`]
+			messages: [`Expected ${theyName} version missing (when comparing with ${meName})`]
 		}
 	}
 }
@@ -193,24 +223,21 @@ function checkDatabaseVersion (currentVersion: Version | null, dbVersion: Versio
 function checkBlueprintCompability (blueprint: Blueprint) {
 	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
 
-	let integrationVersionStr = stripVersion(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration'])
-	let TSRTypesVersionStr = stripVersion(PackageInfo.dependencies['timeline-state-resolver-types'])
-
 	let systemStatusId = 'blueprintCompability_' + blueprint._id
 
 	let integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseVersion(integrationVersionStr),
+		parseExpectedVersion(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']),
 		'Blueprint has to be updated',
-		'blueprint',
-		'core'
+		'blueprint.integrationVersion',
+		'core.tv-automation-sofie-blueprints-integration'
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseVersion(TSRTypesVersionStr),
+		parseExpectedVersion(PackageInfo.dependencies['timeline-state-resolver-types']),
 		'Blueprint has to be updated',
-		'blueprint',
-		'core'
+		'blueprint.TSRVersion',
+		'core.timeline-state-resolver-types'
 	)
 
 	let coreStatus: {
@@ -219,11 +246,11 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	} | undefined = undefined
 	if (blueprint.minimumCoreVersion) {
 		coreStatus = checkDatabaseVersion(
-			parseVersion(blueprint.minimumCoreVersion),
 			parseVersion(CURRENT_SYSTEM_VERSION),
+			parseExpectedVersion(blueprint.minimumCoreVersion),
 			'Blueprint does not support this version of core',
-			'minimum core',
-			'current core'
+			'blueprint.minimumCoreVersion',
+			'core system'
 		)
 	}
 
@@ -300,7 +327,7 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'react-router-dom',
 			'react-timer-hoc',
 			'safer-eval',
-			'smpte-timecode',
+			'timecode',
 			'soap',
 			'underscore',
 			'velocity-animate',

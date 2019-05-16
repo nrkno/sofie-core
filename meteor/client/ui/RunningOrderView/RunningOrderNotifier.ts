@@ -10,7 +10,7 @@ import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
+import { SegmentLines } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
@@ -22,6 +22,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
+import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRunningOrderClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -127,13 +128,16 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private reactiveRunningOrderStatus (runningOrderId: string | undefined) {
 		const t = i18nTranslator
+		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
+			const newNoteIds: Array<string> = []
 
 			const runningOrder = RunningOrders.findOne(runningOrderId)
 			if (runningOrder) {
 				let unsyncedId = runningOrder._id + '_unsynced'
 				let newNotification: Notification | undefined = undefined
+
 				if (runningOrder.unsynced) {
 					newNotification = new Notification(
 						unsyncedId,
@@ -163,6 +167,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 						],
 						-1
 					)
+					newNoteIds.push(unsyncedId)
 				}
 				if (newNotification && !Notification.isEqual(this._runningOrderStatus[unsyncedId], newNotification)) {
 					this._runningOrderStatus[unsyncedId] = newNotification
@@ -171,7 +176,36 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					delete this._runningOrderStatus[unsyncedId]
 					this._runningOrderStatusDep.changed()
 				}
+
+				let roNotesId = runningOrder._id + '_ronotes_'
+				if (runningOrder.notes) {
+					runningOrder.notes.forEach((note) => {
+						const roNoteId = roNotesId + note.origin.name + '_' + note.origin.roId + '_' + note.message + '_' + note.type
+						const newNotification = new Notification(
+							roNoteId,
+							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+							runningOrder.notes,
+							'RunningOrder',
+							getCurrentTime(),
+							true,
+							[],
+							-1
+						)
+						if (!Notification.isEqual(this._runningOrderStatus[roNoteId], newNotification)) {
+							this._runningOrderStatus[roNoteId] = newNotification
+							this._runningOrderStatusDep.changed()
+						}
+						newNoteIds.push(roNoteId)
+					})
+				}
 			}
+
+			_.difference(oldNoteIds, newNoteIds).forEach((item) => {
+				delete this._runningOrderStatus[item]
+				this._runningOrderStatusDep.changed()
+			})
+
+			oldNoteIds = newNoteIds
 		})
 	}
 
@@ -225,7 +259,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				rank: i._rank
 			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.roId) + '-' + item.origin.name + '-' + item.type
-				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
+				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: t('Show issue'),
 						type: 'default'
