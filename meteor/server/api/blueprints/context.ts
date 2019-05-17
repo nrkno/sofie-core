@@ -197,6 +197,13 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		this.notes = new NotesContext(contextName || studio.name, rundownId || '', segmentId, partId)
 	}
 
+	get handleNotesExternally () {
+		return this.notes.handleNotesExternally
+	}
+	set handleNotesExternally (val: boolean) {
+		this.notes.handleNotesExternally = val
+	}
+
 	getShowStyleBase (): ShowStyleBase {
 		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.showStyleBaseId + '" not found')

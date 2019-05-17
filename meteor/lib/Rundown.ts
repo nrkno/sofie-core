@@ -12,6 +12,7 @@ import { Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { ShowStyleBase } from './collections/ShowStyleBases'
+import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -464,19 +465,32 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 }
 
-export function calculatePieceTimelineEnable (piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
-	let offsetExpression = (val: SuperTimeline.Expression | undefined) => {
-		if (offset === undefined) {
-			return val
-		} else {
+export function offsetTimelineEnableExpression (val: SuperTimeline.Expression | undefined, offset: string | number | undefined) {
+	if (offset === undefined) {
+		return val
+	} else {
+		// return literal<SuperTimeline.ExpressionObj>({
+		// 	l: interpretExpression(val || null) || 0,
+		// 	o: '+',
+		// 	r: offset
+		// })
+		if (_.isString(val) || _.isNumber(val)) {
+			return `${val} + ${offset}`
+		} else if (_.isObject(val)) {
 			return literal<SuperTimeline.ExpressionObj>({
 				l: val || 0,
 				o: '+',
 				r: offset
 			})
+		} else if (val === undefined) {
+			return offset
+		} else { // Unreachable fallback case
+			return val
 		}
 	}
+}
 
+export function calculatePieceTimelineEnable (piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
 	let duration: SuperTimeline.Expression | undefined = undefined
 	let end: SuperTimeline.Expression | undefined = undefined
 	if (piece.playoutDuration !== undefined) {
@@ -489,11 +503,10 @@ export function calculatePieceTimelineEnable (piece: Piece, offset?: number): Su
 		end = piece.enable.end
 	}
 
-	// const duration = piece.playoutDuration || piece.userDuration || piece.enable.duration
 	// If we have an end and not a start, then use that with a duration
 	if ((end !== undefined || piece.enable.end !== undefined) && piece.enable.start === undefined) {
 		return {
-			end: end !== undefined ? end : offsetExpression(piece.enable.end),
+			end: end !== undefined ? end : offsetTimelineEnableExpression(piece.enable.end, offset),
 			duration: duration
 		}
 	// Otherwise, if we have a start, then use that with either the end or duration
@@ -503,15 +516,15 @@ export function calculatePieceTimelineEnable (piece: Piece, offset?: number): Su
 		if (piece.enable.start === 'now') {
 			enable.start = 'now'
 		} else {
-			enable.start = offsetExpression(piece.enable.start)
+			enable.start = offsetTimelineEnableExpression(piece.enable.start, offset)
 		}
 
 		if (duration !== undefined) {
 			enable.duration = duration
 		} else if (end !== undefined) {
 			enable.end = end
-		} else {
-			enable.end = offsetExpression(piece.enable.end)
+		} else if (piece.enable.end !== undefined) {
+			enable.end = offsetTimelineEnableExpression(piece.enable.end, offset)
 		}
 		return enable
 	} else {

@@ -289,7 +289,10 @@ function updateRundownFromIngestData (
 		const existingSegment = _.find(existingSegments, s => s._id === segmentId)
 		const existingParts = existingRundownParts.filter(p => p.segmentId === segmentId)
 
+		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
+
 		const context = new SegmentContext(dbRundown, studio, existingParts)
+		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -425,7 +428,11 @@ export function updateSegmentFromIngestData (
 		segmentId: segmentId
 	}).fetch()
 
+	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
+	console.log('seg', ingestSegment)
+
 	const context = new SegmentContext(rundown, studio, existingParts)
+	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)

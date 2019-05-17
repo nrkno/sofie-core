@@ -268,7 +268,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 }
 
 export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part, queue: boolean): Piece {
-	let duration: number | string = 0
+	let duration: number | string | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
 	} else if (adLibPiece['enable'] && adLibPiece['enable'].duration) {

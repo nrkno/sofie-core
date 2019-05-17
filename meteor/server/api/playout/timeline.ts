@@ -51,7 +51,7 @@ import {
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
-import { StudioContext, RundownContext } from '../blueprints/context'
+import { StudioContext, RundownContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from '../testTools'
@@ -60,6 +60,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { prefixAllObjectIds } from './lib'
 import { createPieceGroup, createPieceGroupFirstObject } from './pieces'
 import { PackageInfo } from '../../coreSystem'
+import { offsetTimelineEnableExpression } from '../../../lib/Rundown';
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -201,8 +202,9 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studio))
 
 				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
-				if (showStyleBlueprint.onTimelineGenerate) {
-					const context = new RundownContext(activeRundown, studio)
+				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundown.currentPartId) {
+					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
+					const context = new PartEventContext(activeRundown, studio, currentPart)
 					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), (object: TSRTimelineObjBase) => {
 						return literal<TimelineObjGeneric>({
 							...object,
@@ -471,11 +473,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 						if (piece.userDuration.end) {
 							infiniteGroup.enable.end = piece.userDuration.end
 						} else {
-							infiniteGroup.enable.duration = {
-								l: piece.userDuration.duration || 0,
-								o: '+',
-								r: previousPartsDuration
-							}
+							infiniteGroup.enable.duration = offsetTimelineEnableExpression(piece.userDuration.duration, previousPartsDuration)
 						}
 					}
 				}
@@ -508,7 +506,6 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				const overlapDuration = calcPartOverlapDuration(currentPart, nextPart)
 
 				nextPieceGroup.enable = {
-					// TODO - set end instead?
 					start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
 					duration: nextPieceGroup.enable.duration
 				}
