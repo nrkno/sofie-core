@@ -37,6 +37,7 @@ export enum PieceDisplayStyle {
  * @interface RundownLayoutFilter
  */
 export interface RundownLayoutFilter {
+	_id: string
 	name: string
 	rank: number
 	sourceLayerIds: string[] | undefined
@@ -64,7 +65,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilter {
 export interface RundownLayoutBase {
 	_id: string
 	showStyleBaseId: string
-	blueprintId: string
+	blueprintId?: string
 	userId?: string
 	name: string
 	type: RundownLayoutType
