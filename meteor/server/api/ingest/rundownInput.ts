@@ -272,11 +272,11 @@ function updateRundownFromIngestData (
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
 	const existingRundownParts = Parts.find({
-		rundownId: rundownId,
-		dynamicallyInserted: false
+		rundownId: dbRundown._id,
+		dynamicallyInserted: { $ne: true }
 	}).fetch()
 
-	const existingSegments = Segments.find({ rundown: dbRundown._id }).fetch()
+	const existingSegments = Segments.find({ rundownId: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
@@ -425,11 +425,11 @@ export function updateSegmentFromIngestData (
 	})
 	const existingParts = Parts.find({
 		rundownId: rundown._id,
-		segmentId: segmentId
+		segmentId: segmentId,
+		dynamicallyInserted: { $ne: true }
 	}).fetch()
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
-	console.log('seg', ingestSegment)
 
 	const context = new SegmentContext(rundown, studio, existingParts)
 	context.handleNotesExternally = true
