@@ -7,7 +7,6 @@ import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integratio
 import { Timeline as TimelineTypes, TSRTimelineObj, DeviceType } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { TimelineEnable } from 'superfly-timeline'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -26,7 +25,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	objectType: TimelineObjType
 
-	enable: TimelineEnable & { setFromNow?: boolean }
+	enable: TimelineTypes.TimelineEnable & { setFromNow?: boolean }
 
 	/** The id of the group object this object is in  */
 	inGroup?: string

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { LookaheadMode, TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, TimelineObjectCoreExt, Timeline as TimelineTypes } from 'tv-automation-sofie-blueprints-integration'
 import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -8,7 +8,6 @@ import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { extendMandadory, clone } from '../../../lib/lib'
-import { TimelineEnable } from 'superfly-timeline'
 
 export function getLookeaheadObjects (rundownData: RundownData, studio: Studio): Array<TimelineObjGeneric> {
 	const activeRundown = rundownData.rundown
@@ -26,7 +25,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 		for (let i = 0; i < lookaheadObjs.length; i++) {
 			const r = clone(lookaheadObjs[i].obj) as TimelineObjGeneric
 
-			let enable: TimelineEnable = {
+			let enable: TimelineTypes.TimelineEnable = {
 				start: 1 // Absolute 0 without a group doesnt work
 			}
 			if (i !== 0) {

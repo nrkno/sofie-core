@@ -1,6 +1,6 @@
 
 /* tslint:disable:no-use-before-declare */
-import { Resolver, TimelineEnable, Expression as TimelineExpression } from 'superfly-timeline'
+import { Resolver } from 'superfly-timeline'
 import * as _ from 'underscore'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
