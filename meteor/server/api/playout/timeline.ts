@@ -326,6 +326,12 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 			})
 			delete o.children
 		}
+
+		if (o.keyframes) {
+			_.each(o.keyframes, (kf, i) => {
+				kf.id = `${o.id}_keyframe_${i}`
+			})
+		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
 		o.studioId = studio._id
