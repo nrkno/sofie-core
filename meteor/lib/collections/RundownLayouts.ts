@@ -117,9 +117,8 @@ Meteor.startup(() => {
 		// 	objId: 1,
 		// 	mediaId: 1
 		// })
-		// RundownLayouts._ensureIndex({
-		// 	studioId: 1,
-		// 	mediaId: 1
-		// })
+		RundownLayouts._ensureIndex({
+			showStyleBaseId: 1
+		})
 	}
 })

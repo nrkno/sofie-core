@@ -6,9 +6,11 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as faDownload from '@fortawesome/fontawesome-free-solid/faDownload'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -16,7 +18,10 @@ import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration';
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { UploadButton } from '../../lib/uploadButton'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
@@ -25,6 +30,7 @@ export interface IProps {
 
 interface IState {
 	editedItems: string[]
+	uploadFileKey: number
 }
 
 interface ITrackedProps {
@@ -45,7 +51,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		super(props)
 
 		this.state = {
-			editedItems: []
+			editedItems: [],
+			uploadFileKey: Date.now()
 		}
 	}
 
@@ -111,6 +118,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				editedItems: this.state.editedItems
 			})
 		}
+	}
+
+	downloadItem = (item: RundownLayoutBase) => {
+		window.location.replace(`/rundownLayouts/${item._id}`)
 	}
 
 	finishEditItem = (item: RundownLayoutBase) => {
@@ -181,6 +192,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								collection={RundownLayouts}
 								className='input text-input input-l' />
 						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Display only Ad-Libs from current Segment')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.currentSegment`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Include Global Ad-Libs')}
+						</label>
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={`filters.${index}.rundownBaseline`}
+							obj={item}
+							options={rundownBaselineOptions}
+							type='dropdown'
+							label={t('Filter disabled')}
+							collection={RundownLayouts}
+							className='input text-input input-l dropdown' />
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
@@ -278,32 +315,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 						</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Include Global Ad-Libs')}
-						</label>
-						<EditAttribute
-							modifiedClassName='bghl'
-							attribute={`filters.${index}.rundownBaseline`}
-							obj={item}
-							options={rundownBaselineOptions}
-							type='dropdown'
-							label={t('Filter disabled')}
-							collection={RundownLayouts}
-							className='input text-input input-l dropdown' />
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Display only Ad-Libs from current Segment')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.currentSegment`}
-								obj={item}
-								type='checkbox'
-								collection={RundownLayouts}
-								className='mod mas' />
-						</label>
-					</div>
 				</div>
 			))}
 		</React.Fragment>
@@ -323,6 +334,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						{item.type}
 					</td>
 					<td className='settings-studio-rundown-layouts-table__actions table-item-actions c3'>
+						<button className='action-btn' onClick={(e) => this.downloadItem(item)}>
+							<FontAwesomeIcon icon={faDownload} />
+						</button>
 						<button className='action-btn' onClick={(e) => this.editItem(item)}>
 							<FontAwesomeIcon icon={faPencilAlt} />
 						</button>
@@ -381,6 +395,67 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		)
 	}
 
+	onUploadFile (e) {
+		const { t } = this.props
+
+		const file = e.target.files[0]
+		if (!file) {
+			return
+		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			// On file upload
+
+			this.setState({
+				uploadFileKey: Date.now()
+			})
+
+			let uploadFileContents = (e2.target as any).result
+
+			doModalDialog({
+				title: t('Update Blueprints?'),
+				yes: t('Update'),
+				no: t('Cancel'),
+				message: <React.Fragment>
+					<p>{t('Are you sure you want to upload the rundown layout from the file "{{fileName}}"?',
+						{ fileName: file.name })}</p>,
+				</React.Fragment>,
+				onAccept: () => {
+					if (uploadFileContents) {
+						fetch('/rundownLayouts', {
+							method: 'POST',
+							body: uploadFileContents,
+							headers: {
+								'content-type': 'text/javascript'
+							},
+						}).then(res => {
+							// console.log('Blueprint restore success')
+							NotificationCenter.push(new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								t('Rundown layout uploaded successfully.'),
+								'RundownLayouts'))
+						}).catch(err => {
+							// console.error('Blueprint restore failure: ', err)
+							NotificationCenter.push(new Notification(
+								undefined,
+								NoticeLevel.WARNING,
+								t('Failed to upload rundown layout: {{errorMessage}}', { errorMessage: err + '' }),
+								'RundownLayouts'))
+						})
+					}
+				},
+				onSecondary: () => {
+					this.setState({
+						uploadFileKey: Date.now()
+					})
+				}
+			})
+		}
+		reader.readAsText(file)
+	}
+
 	render () {
 		const { t } = this.props
 
@@ -396,6 +471,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<button className='btn btn-primary' onClick={this.onAddLayout}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
+					<UploadButton className='btn btn-secondary mls' onChange={(e) => console.log(e)} accept='application/json'>
+						<FontAwesomeIcon icon={faUpload} />
+					</UploadButton>
 				</div>
 			</div>
 		)

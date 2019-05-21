@@ -136,7 +136,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			case BlueprintManifestType.SYSTEM:
 				return (
 					<div>
-						<p>
+						<p className='mod mhn mvs'>
 							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
 								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
 							</button>

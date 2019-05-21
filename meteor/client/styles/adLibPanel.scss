@@ -71,7 +71,7 @@ $adlib-item-selected-color: #009DFF;
 		grid-column: list-view / end;
 		grid-row: tool-bar / list-view;
 
-		&--global {
+		&--no-segments {
 			grid-column: template-list / end;
 		}
 
@@ -91,6 +91,7 @@ $adlib-item-selected-color: #009DFF;
 				box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
 				line-height: 1.8em;
 				padding: 0 1em;
+				color: #fff;
 				
 				&:hover, &:focus {
 					background: #3b3b3b;
@@ -134,7 +135,7 @@ $adlib-item-selected-color: #009DFF;
 		overflow: hidden;
 		background: inherit;
 
-		&--global {
+		&--no-segments {
 			grid-column: template-list / end;
 		}
 
@@ -197,8 +198,8 @@ $adlib-item-selected-color: #009DFF;
 				text-align: center;
 			}
 			.adlib-panel__list-view__list__table__cell--name {
-				width: 25%;
-				max-width: 25%;
+				width: auto;
+				max-width: none;
 			}
 			.adlib-panel__list-view__list__table__cell--data {
 

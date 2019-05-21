@@ -16,14 +16,14 @@ import { CoreSystem } from '../../lib/collections/CoreSystem'
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
-	private _translater: TranslationFunction
+	private _translator: TranslationFunction
 
 	constructor (t: TranslationFunction) {
 		super()
 
 		this.subscribe(PubSub.coreSystem, null)
 
-		this._translater = t
+		this._translator = t
 
 		this._notificationList = new NotificationList([])
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
@@ -52,7 +52,15 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			const cs = CoreSystem.findOne()
 			let systemNotification: Notification | undefined = undefined
 			if (cs && cs.systemInfo && cs.systemInfo.enabled) {
-				systemNotification = new Notification(Random.id(), NoticeLevel.CRITICAL, cs.systemInfo.message, 'SystemMessage', undefined, true, undefined, 1000)
+				systemNotification = new Notification(
+					Random.id(),
+					NoticeLevel.CRITICAL,
+					cs.systemInfo.message,
+					'SystemMessage',
+					undefined,
+					true,
+					undefined,
+					1000)
 			}
 
 			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
@@ -115,7 +123,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		reason: string | undefined,
 		retryTime: number | undefined
 	): string | React.ReactElement<HTMLElement> | null {
-		const t = this._translater
+		const t = this._translator
 		switch (status) {
 			case 'connecting':
 				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>

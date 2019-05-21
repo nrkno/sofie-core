@@ -56,6 +56,7 @@ import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
+import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -955,6 +956,7 @@ interface IState {
 	isInspectorDrawerExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: PieceUi | undefined
+	rundownLayout: RundownLayout | undefined
 }
 
 export enum RundownViewEvents {
@@ -969,6 +971,7 @@ interface ITrackedProps {
 	segments: Array<Segment>
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
+	rundownLayouts?: Array<RundownLayoutBase>
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -981,6 +984,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	let rundown = Rundowns.findOne({ _id: rundownId })
 	let studio = rundown && Studios.findOne({ _id: rundown.studioId })
+
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownId: rundownId,
@@ -991,7 +995,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}).fetch() : [],
 		studio: studio,
-		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId)
+		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
+		rundownLayouts: rundown && RundownLayouts.find({
+			showStyleBaseId: rundown.showStyleBaseId }).fetch()
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1057,12 +1063,25 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			isSupportPanelOpen: false,
 			isInspectorDrawerExpanded: false,
 			isClipTrimmerOpen: false,
-			selectedPiece: undefined
+			selectedPiece: undefined,
+			rundownLayout: undefined
 		}
 	}
 
-	componentWillMount () {
-		// Subscribe to data:
+	static getDerivedStateFromProps (props: Translated<IProps & ITrackedProps>, state: IState) {
+		let selectedLayout: RundownLayout | undefined = undefined
+
+		if (props.rundownLayouts) {
+			selectedLayout = props.rundownLayouts
+				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT) as RundownLayout | undefined
+		}
+
+		return {
+			rundownLayout: selectedLayout
+		}
+	}
+
+	componentDidMount () {
 		let rundownId = this.props.rundownId
 
 		this.subscribe(PubSub.rundowns, {
@@ -1089,6 +1108,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				this.subscribe(PubSub.showStyleBases, {
 					_id: rundown.showStyleBaseId
 				})
+				this.subscribe(PubSub.rundownLayouts, {
+					showStyleBaseId: rundown.showStyleBaseId
+				})
 			}
 		})
 		this.autorun(() => {
@@ -1099,9 +1121,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				})
 			}
 		})
-	}
 
-	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 		$(window).on('scroll', this.onWindowScroll)
 		let preventDefault = (e) => {
@@ -1665,7 +1685,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
-									onRegisterHotkeys={this.onRegisterHotkeys} />
+									onRegisterHotkeys={this.onRegisterHotkeys}
+									rundownLayout={this.state.rundownLayout} />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								{this.props.rundown && this.props.studio && this.props.showStyleBase &&
