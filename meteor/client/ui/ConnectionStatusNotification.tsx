@@ -57,13 +57,21 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 
 			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
 
-			let newNotification: Notification | undefined = undefined
-			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected, (status === 'failed' || status === 'waiting' || status === 'offline') ? [
-				{
-					label: 'Show issue',
-					type: 'default'
-				}
-			] : undefined, -100)
+			let newNotification = new Notification(
+				Random.id(),
+				this.getNoticeLevel(status),
+				this.getStatusText(status, reason, retryTime),
+				t('Sofie Automation Server'),
+				Date.now(),
+				!connected,
+				(status === 'failed' || status === 'waiting' || status === 'offline')
+				? [
+					{
+						label: 'Show issue',
+						type: 'default'
+					}
+				] : undefined,
+				-100)
 			newNotification.on('action', (notification, type, e) => {
 				switch (type) {
 					case 'default':
@@ -102,7 +110,11 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 	}
 
-	private getStatusText (status: string, reason: string | undefined, retryTime: number | undefined): string | React.ReactChild | null {
+	private getStatusText (
+		status: string,
+		reason: string | undefined,
+		retryTime: number | undefined
+	): string | React.ReactElement<HTMLElement> | null {
 		const t = this._translater
 		switch (status) {
 			case 'connecting':
