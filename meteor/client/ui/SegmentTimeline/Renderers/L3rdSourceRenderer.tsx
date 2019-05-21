@@ -1,6 +1,6 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
+import { getElementWidth } from '../../../utils/dimensions'
 import { Time } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import Moment from 'react-moment'
@@ -22,8 +22,8 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 	rightLabel: HTMLElement
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -36,11 +36,11 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		this.rightLabel = e
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -50,7 +50,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		}
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
 		const noraContent = this.props.piece.content as NoraContent
@@ -97,47 +97,47 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		}
 
 		return <React.Fragment>
-					<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						<span className='segment-timeline__piece__label'>
-							{this.props.piece.name}
-						</span>
-					</span>
-					<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{this.renderInfiniteIcon()}
-						{this.renderOverflowTimeLabel()}
-					</span>
-					<FloatingInspector key={this.props.piece._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-						<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
-							{ templateName && <div className='mini-inspector__header'>{templateName}{
-								templateVariant && <span className='mini-inspector__sub-header'>{templateVariant}</span>
-							}</div>}
-							<table>
-								<tbody>
-									{properties.map((item) => (
-										<tr key={item.key}>
-											<td className='mini-inspector__label'>{item.key}</td>
-											<td className='mini-inspector__value'>{item.value}</td>
-										</tr>
-									))}
-									<tr>
-										<td className='mini-inspector__row--timing'></td>
-										<td className='mini-inspector__row--timing'>
-											<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedInPoint || 0)}</span>
-											{this.props.piece.infiniteMode ?
-												(
-													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextPart && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
-													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
-													(this.props.piece.infiniteMode === PieceLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
-												)
-												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedDuration || (_.isNumber(this.props.piece.expectedDuration) ? parseFloat(this.props.piece.expectedDuration as any as string) : 0))}</span>
-											}
-											{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</FloatingInspector>
-				</React.Fragment>
+			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+				<span className='segment-timeline__piece__label'>
+					{this.props.piece.name}
+				</span>
+			</span>
+			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+				{this.renderInfiniteIcon()}
+				{this.renderOverflowTimeLabel()}
+			</span>
+			<FloatingInspector key={this.props.piece._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+				<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
+					{templateName && <div className='mini-inspector__header'>{templateName}{
+						templateVariant && <span className='mini-inspector__sub-header'>{templateVariant}</span>
+					}</div>}
+					<table>
+						<tbody>
+							{properties.map((item) => (
+								<tr key={item.key}>
+									<td className='mini-inspector__label'>{item.key}</td>
+									<td className='mini-inspector__value'>{item.value}</td>
+								</tr>
+							))}
+							<tr>
+								<td className='mini-inspector__row--timing'></td>
+								<td className='mini-inspector__row--timing'>
+									<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedInPoint || 0)}</span>
+									{this.props.piece.infiniteMode ?
+										(
+											(this.props.piece.infiniteMode === PieceLifespan.OutOnNextPart && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
+											(this.props.piece.infiniteMode === PieceLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
+											(this.props.piece.infiniteMode === PieceLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
+										)
+										: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedDuration || (_.isNumber(this.props.piece.expectedDuration) ? parseFloat(this.props.piece.expectedDuration as any as string) : 0))}</span>
+									}
+									{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</FloatingInspector>
+		</React.Fragment>
 	}
 })

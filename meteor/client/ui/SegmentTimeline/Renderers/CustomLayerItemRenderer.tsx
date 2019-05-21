@@ -28,10 +28,10 @@ export interface ICustomLayerItemProps {
 	livePosition: number | null
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	elementPosition: JQueryCoordinates
-	cursorPosition: JQueryCoordinates
+	elementPosition: { top: number, left: number }
+	cursorPosition: { top: number, left: number }
 	cursorTimePosition: number
-	getItemLabelOffsetLeft?: () => {[key: string]: string}
+	getItemLabelOffsetLeft?: () => { [key: string]: string }
 	getItemLabelOffsetRight?: () => { [key: string]: string }
 	getItemDuration?: () => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
@@ -40,7 +40,7 @@ export interface ISourceLayerItemState {
 }
 
 export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IState extends ISourceLayerItemState> extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	getItemLabelOffsetLeft (): { [key: string]: string } {
+	getItemLabelOffsetLeft(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
 		} else {
@@ -48,7 +48,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getItemLabelOffsetRight (): { [key: string]: string } {
+	getItemLabelOffsetRight(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {
@@ -56,7 +56,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getFloatingInspectorStyle (): {
+	getFloatingInspectorStyle(): {
 		[key: string]: string
 	} {
 		return {
@@ -65,20 +65,20 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getItemDuration (): number {
+	getItemDuration(): number {
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration()
 		}
 		return this.props.partDuration
 	}
 
-	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {
+	setAnchoredElsWidths(leftAnchoredWidth: number, rightAnchoredWidth: number): void {
 		if (this.props.setAnchoredElsWidths && typeof this.props.setAnchoredElsWidths === 'function') {
 			return this.props.setAnchoredElsWidths(leftAnchoredWidth, rightAnchoredWidth)
 		}
 	}
 
-	renderOverflowTimeLabel () {
+	renderOverflowTimeLabel() {
 		const vtContent = this.props.piece.content as VTContent
 		if (!this.props.piece.duration && this.props.piece.content && vtContent.sourceDuration && ((this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration) > (this.props.partDuration || 0)) {
 			let time = (this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
@@ -91,7 +91,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	renderInfiniteItemContentEnded () {
+	renderInfiniteItemContentEnded() {
 		const content = this.props.piece.content as VTContent
 		const seek = content && content.seek ? content.seek : 0
 		if (this.props.piece.infiniteMode && content && content.sourceDuration && (this.props.piece.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.partDuration || 0)) {
@@ -100,18 +100,18 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		return null
 	}
 
-	renderInfiniteIcon () {
+	renderInfiniteIcon() {
 		return (this.props.piece.infiniteMode && this.props.piece.infiniteMode === PieceLifespan.Infinite && !this.props.piece.duration && !this.props.piece.durationOverride) ?
 			<div className='segment-timeline__piece__label label-icon label-infinite-icon'>
 				<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='#ffff00' viewBox='0 0 8 8'>
-  					<path d='M2 0c-1.31 0-2 1.01-2 2s.69 2 2 2c.79 0 1.42-.56 2-1.22.58.66 1.19 1.22 2 1.22 1.31 0 2-1.01 2-2s-.69-2-2-2c-.81 0-1.42.56-2 1.22-.58-.66-1.21-1.22-2-1.22zm0 1c.42 0 .88.47 1.34 1-.46.53-.92 1-1.34 1-.74 0-1-.54-1-1 0-.46.26-1 1-1zm4 0c.74 0 1 .54 1 1 0 .46-.26 1-1 1-.43 0-.89-.47-1.34-1 .46-.53.91-1 1.34-1z'
-  						transform='translate(0 2)' />
+					<path d='M2 0c-1.31 0-2 1.01-2 2s.69 2 2 2c.79 0 1.42-.56 2-1.22.58.66 1.19 1.22 2 1.22 1.31 0 2-1.01 2-2s-.69-2-2-2c-.81 0-1.42.56-2 1.22-.58-.66-1.21-1.22-2-1.22zm0 1c.42 0 .88.47 1.34 1-.46.53-.92 1-1.34 1-.74 0-1-.54-1-1 0-.46.26-1 1-1zm4 0c.74 0 1 .54 1 1 0 .46-.26 1-1 1-.43 0-.89-.47-1.34-1 .46-.53.91-1 1.34-1z'
+						transform='translate(0 2)' />
 				</svg>
 			</div>
 			: null
 	}
 
-	renderContentTrimmed () {
+	renderContentTrimmed() {
 		const vtContent = this.props.piece.content as VTContent
 		const duration = this.props.partDuration
 
@@ -122,7 +122,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			: null
 	}
 
-	render () {
+	render() {
 		return this.props.children
 	}
 }
