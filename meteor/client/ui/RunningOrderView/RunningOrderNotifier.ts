@@ -184,7 +184,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 						const newNotification = new Notification(
 							roNoteId,
 							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							runningOrder.notes,
+							note.message,
 							'RunningOrder',
 							getCurrentTime(),
 							true,
