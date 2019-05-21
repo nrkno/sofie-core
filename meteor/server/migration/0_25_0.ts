@@ -27,7 +27,7 @@ import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
 import { logger } from '../../lib/logging'
 
-// 0.25.0 // This is a big refactoring, with a LOT of renamings
+// 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
 
 	{
@@ -293,15 +293,4 @@ addMigrationSteps('0.25.0', [
 		}
 	},
 
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
 ])
