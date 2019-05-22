@@ -45,6 +45,7 @@ import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
+import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -231,6 +232,8 @@ function updateRundownFromIngestData (
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
+	} else {
+		// TODO - this needs to set something..
 	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
@@ -269,11 +272,11 @@ function updateRundownFromIngestData (
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
 	const existingRundownParts = Parts.find({
-		rundownId: rundownId,
-		dynamicallyInserted: false
+		rundownId: dbRundown._id,
+		dynamicallyInserted: { $ne: true }
 	}).fetch()
 
-	const existingSegments = Segments.find({ rundown: dbRundown._id }).fetch()
+	const existingSegments = Segments.find({ rundownId: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
@@ -286,7 +289,10 @@ function updateRundownFromIngestData (
 		const existingSegment = _.find(existingSegments, s => s._id === segmentId)
 		const existingParts = existingRundownParts.filter(p => p.segmentId === segmentId)
 
+		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
+
 		const context = new SegmentContext(dbRundown, studio, existingParts)
+		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -366,9 +372,7 @@ function updateRundownFromIngestData (
 	)
 	const didChange = anythingChanged(changes)
 	if (didChange) {
-		updateExpectedMediaItemsOnRundown(dbRundown._id)
-		updateDynamicPartRanks(dbRundown._id)
-		triggerUpdateTimelineAfterIngestData(rundownId, _.map(segments, s => s._id))
+		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
 	return didChange
 }
@@ -421,10 +425,14 @@ export function updateSegmentFromIngestData (
 	})
 	const existingParts = Parts.find({
 		rundownId: rundown._id,
-		segmentId: segmentId
+		segmentId: segmentId,
+		dynamicallyInserted: { $ne: true }
 	}).fetch()
 
+	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
+
 	const context = new SegmentContext(rundown, studio, existingParts)
+	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -479,11 +487,16 @@ export function updateSegmentFromIngestData (
 
 	const didChange = anythingChanged(changes)
 	if (didChange) {
-		updateExpectedMediaItemsOnRundown(rundown._id)
-		updateDynamicPartRanks(rundown._id)
-		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
+		afterIngestChangedData(rundown, [segmentId])
 	}
 	return didChange
+}
+function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+	// To be called after rundown has been changed
+	updateExpectedMediaItemsOnRundown(rundown._id)
+	updateDynamicPartRanks(rundown._id)
+	updateSourceLayerInfinitesAfterPart(rundown)
+	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {

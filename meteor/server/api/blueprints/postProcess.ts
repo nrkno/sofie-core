@@ -17,7 +17,7 @@ import {
 	RundownContext,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { Timeline } from 'timeline-state-resolver-types'
+import { Timeline, TSRTimelineObjBase } from 'timeline-state-resolver-types'
 
 export function postProcessPieces (innerContext: IRundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
 	let i = 0
@@ -63,7 +63,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 			rundownId: innerContext.rundown._id,
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			trigger: undefined,
+			// trigger: undefined,
 			disabled: false,
 			...itemOrig
 		}
@@ -91,7 +91,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 	})
 }
 
-export function postProcessStudioBaselineObjects (studio: Studio, objs: Timeline.TimelineObject[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects (studio: Studio, objs: TSRTimelineObjBase[]): TimelineObjRundown[] {
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(objs, (o, i) => {
 		const obj = convertTimelineObject('', o)

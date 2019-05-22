@@ -160,8 +160,8 @@ describe('Test sending messages to mocked endpoints', () => {
 	jest.useFakeTimers()
 
 	let rundown: Rundown
-	beforeAll(() => {
-		runInFiber(() => {
+	beforeAll(async () => {
+		await runInFiber(() => {
 			MeteorMock.mockRunMeteorStartup()
 			rundown = Rundowns.findOne() as Rundown
 		})

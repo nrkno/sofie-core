@@ -6,15 +6,12 @@ import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
-	expectedDuration: number | string
-
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
-	trigger: undefined
+	// trigger: undefined
 	disabled: false
 }
-
 export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece>
 	= new Mongo.Collection<AdLibPiece>('adLibPieces')
 registerCollection('AdLibPieces', AdLibPieces)

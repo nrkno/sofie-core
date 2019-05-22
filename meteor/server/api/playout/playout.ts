@@ -13,9 +13,10 @@ import { getCurrentTime,
 	asyncCollectionInsert,
 	asyncCollectionUpsert,
 	waitForPromise,
-	makePromise} from '../../../lib/lib'
-import { Timeline, getTimelineId } from '../../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
+	makePromise,
+	clone,
+	literal} from '../../../lib/lib'
+import { Timeline, getTimelineId, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -27,7 +28,6 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios } from '../../../lib/collections/Studios'
 import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
-let clone = require('fast-clone')
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -310,7 +310,7 @@ export namespace ServerPlayoutAPI {
 					// make the extension
 					const newPiece = clone(piece) as Piece
 					newPiece.partId = m.currentPartId
-					newPiece.expectedDuration = 0
+					newPiece.enable = { start: 0 }
 					const content = newPiece.content as VTContent
 					if (content.fileName && content.sourceDuration && piece.startedPlayback) {
 						content.seek = Math.min(content.sourceDuration, getCurrentTime() - piece.startedPlayback)
@@ -874,12 +874,12 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownId, partId, baselineAdLibPieceId, queue)
 	}
-	export function startAdLibPiece (rundownId: string, partId: string, pieceId: string) {
+	export function stopAdLibPiece (rundownId: string, partId: string, pieceId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
 
-		return ServerPlayoutAdLibAPI.startAdLibPiece(rundownId, partId, pieceId)
+		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownId, partId, pieceId)
 	}
 	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
 		check(rundownId, String)
@@ -949,29 +949,38 @@ export namespace ServerPlayoutAPI {
 			const relativeNow = now - (part.getLastStartedPlayback() || 0)
 			const orderedPieces = getResolvedPieces(part)
 
-			orderedPieces.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
-				if (!i.durationOverride) {
-					let newExpectedDuration: number | undefined = undefined
+			orderedPieces.forEach((piece) => {
+				if (piece.sourceLayerId === sourceLayerId) {
+					if (!piece.userDuration) {
+						let newExpectedDuration: number | undefined = undefined
 
-					if (i.infiniteId && i.infiniteId !== i._id && part) {
-						const partStarted = part.getLastStartedPlayback()
-						if (partStarted) {
-							newExpectedDuration = now - partStarted
-						}
-					} else if (i.startedPlayback && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
-						newExpectedDuration = now - i.startedPlayback
-					}
-
-					if (newExpectedDuration !== undefined) {
-						console.log(`Cropping piece "${i._id}" at ${newExpectedDuration}`)
-
-						Pieces.update({
-							_id: i._id
-						}, {
-							$set: {
-								durationOverride: newExpectedDuration
+						if (piece.infiniteId && piece.infiniteId !== piece._id && part) {
+							const partStarted = part.getLastStartedPlayback()
+							if (partStarted) {
+								newExpectedDuration = now - partStarted
 							}
-						})
+						} else if (
+							piece.startedPlayback && // currently playing
+							_.isNumber(piece.enable.start) &&
+							(piece.enable.start || 0) < relativeNow && // is relative, and has started
+							!piece.stoppedPlayback // and not yet stopped
+						) {
+							newExpectedDuration = now - piece.startedPlayback
+						}
+
+						if (newExpectedDuration !== undefined) {
+							console.log(`Cropping piece "${piece._id}" at ${newExpectedDuration}`)
+
+							Pieces.update({
+								_id: piece._id
+							}, {
+								$set: {
+									userDuration: {
+										duration: newExpectedDuration
+									}
+								}
+							})
+						}
 					}
 				}
 			})
@@ -1038,22 +1047,19 @@ export namespace ServerPlayoutAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObjId: string, time: number) {
-		check(timelineObjId, String)
+	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObj: TimelineObjGeneric, time: number) {
+		check(timelineObj, Object)
 		check(time, Number)
 
-		const tObj = Timeline.findOne(getTimelineId(studioId, timelineObjId))
-		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
-
-		if (tObj.metadata && tObj.metadata.pieceId) {
-			logger.debug('Update piece: ', tObj.metadata.pieceId, (new Date(time)).toTimeString())
+		// TODO - this is a destructive action... It needs to either backup the original, or only run on dynamically inserted
+		if (timelineObj.metadata && timelineObj.metadata.pieceId) {
+			logger.debug('Update piece: ', timelineObj.metadata.pieceId, (new Date(time)).toTimeString())
 			Pieces.update({
-				_id: tObj.metadata.pieceId
+				_id: timelineObj.metadata.pieceId
 			}, {
 				$set: {
-					trigger: {
-						type: TriggerType.TIME_ABSOLUTE,
-						value: time
+					enable: {
+						start: time
 					}
 				}
 			})
@@ -1085,7 +1091,7 @@ export namespace ServerPlayoutAPI {
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
 
-			const versionsContent = markerObject.content.versions || {}
+			const versionsContent = (markerObject.metadata || {}).versions || {}
 
 			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
 
@@ -1118,23 +1124,24 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 		let ps: Array<Promise<any>> = []
 		const currentPieces = currentPart.getAllPieces()
 		currentPieces.forEach((piece) => {
-			if (piece.overflows && typeof piece.expectedDuration === 'number' && piece.expectedDuration > 0 && piece.duration === undefined && piece.durationOverride === undefined) {
-				// Clone an overflowing piece
-				let overflowedItem = _.extend({
-					_id: Random.id(),
-					partId: nextPart._id,
-					trigger: {
-						type: TriggerType.TIME_ABSOLUTE,
-						value: 0
-					},
-					dynamicallyInserted: true,
-					continuesRefId: piece._id,
+			if (piece.overflows && typeof piece.enable.duration === 'number' && piece.enable.duration > 0 && piece.playoutDuration === undefined && piece.userDuration === undefined) {
+				// Subtract the amount played from the duration
+				const remainingDuration = Math.max(0, piece.enable.duration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
 
-					// Subtract the amount played from the expected duration
-					expectedDuration: Math.max(0, piece.expectedDuration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
-				}, _.omit(clone(piece) as Piece, 'startedPlayback', 'duration', 'overflows'))
+				if (remainingDuration > 0) {
+					// Clone an overflowing piece
+					let overflowedItem = literal<Piece>({
+						..._.omit(piece, 'startedPlayback', 'duration', 'overflows'),
+						_id: Random.id(),
+						partId: nextPart._id,
+						enable: {
+							start: 0,
+							duration: remainingDuration,
+						},
+						dynamicallyInserted: true,
+						continuesRefId: piece._id,
+					})
 
-				if (overflowedItem.expectedDuration > 0) {
 					ps.push(asyncCollectionInsert(Pieces, overflowedItem))
 					rundownData.pieces.push(overflowedItem) // update the cache
 				}

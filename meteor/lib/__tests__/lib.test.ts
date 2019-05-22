@@ -29,8 +29,8 @@ import {
 } from '../lib'
 import { setMeteorMethods } from '../../server/methods'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
-import { TriggerType } from 'timeline-state-resolver-types/dist/superfly-timeline'
 import { ExpectedMediaItems } from '../collections/ExpectedMediaItems'
+import { DeviceType } from 'timeline-state-resolver-types'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
@@ -57,7 +57,7 @@ describe('lib/lib', () => {
 				return v
 			}
 		})
-		const pValue = MeteorPromiseCall('myMethod', 'myValue').catch(e => { throw e })
+		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch(e => { throw e })
 		expect(pValue).toHaveProperty('then') // be a promise
 		const value = waitForPromise(pValue)
 		expect(value).toEqual('myValue')
@@ -71,9 +71,11 @@ describe('lib/lib', () => {
 		Timeline.insert({
 			_id: 'abc',
 			id: 'abc',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			LLayer: 'L1',
-			content: {},
+			enable: {
+				start: 0
+			},
+			layer: 'L1',
+			content: { deviceType: DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio',
 			classes: ['abc'] // to be removed
@@ -81,18 +83,22 @@ describe('lib/lib', () => {
 		Timeline.insert({
 			_id: 'abc2',
 			id: 'abc2',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			LLayer: 'L1',
-			content: {},
+			enable: {
+				start: 0
+			},
+			layer: 'L1',
+			content: { deviceType: DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio'
 		})
 		Timeline.insert({
 			_id: 'abc10',
 			id: 'abc10',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			LLayer: 'L1',
-			content: {},
+			enable: {
+				start: 0
+			},
+			layer: 'L1',
+			content: { deviceType: DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio2'
 		})
@@ -116,18 +122,22 @@ describe('lib/lib', () => {
 			{
 				_id: 'abc',
 				id: 'abc',
-				trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-				LLayer: 'L2', // changed property
-				content: {},
+				enable: {
+					start: 0
+				},
+				layer: 'L2', // changed property
+				content: { deviceType: DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
 				studioId: 'myStudio'
 			},
 			{ // insert object
 				_id: 'abc3',
 				id: 'abc3',
-				trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-				LLayer: 'L1',
-				content: {},
+				enable: {
+					start: 0
+				},
+				layer: 'L1',
+				content: { deviceType: DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
 				studioId: 'myStudio'
 			}
@@ -140,7 +150,7 @@ describe('lib/lib', () => {
 		const abc = Timeline.findOne('abc') as TimelineObjGeneric
 		expect(abc).toBeTruthy()
 		expect(abc.classes).toEqual(undefined)
-		expect(abc.LLayer).toEqual('L2')
+		expect(abc.layer).toEqual('L2')
 
 		expect(Timeline.find({
 			studioId: 'myStudio2'
@@ -198,23 +208,27 @@ describe('lib/lib', () => {
 		const obj = literal<TimelineObjGeneric>({
 			_id: 'abc',
 			id: 'abc',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			LLayer: 'L1',
-			content: {},
+			enable: {
+				start: 0
+			},
+			layer: 'L1',
+			content: { deviceType: DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio',
 		})
 		expect(obj).toEqual({
 			_id: 'abc',
 			id: 'abc',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			LLayer: 'L1',
-			content: {},
+			enable: {
+				start: 0
+			},
+			layer: 'L1',
+			content: { deviceType: DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio',
 		})
-		const LLayer: string | number = obj.LLayer // just to check typings
-		expect(LLayer).toBeTruthy()
+		const layer: string | number = obj.layer // just to check typings
+		expect(layer).toBeTruthy()
 	})
 	testInFiber('applyClassToDocument', () => {
 		class MyClass {

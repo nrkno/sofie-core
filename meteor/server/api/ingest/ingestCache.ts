@@ -24,6 +24,8 @@ export function loadCachedRundownData (rundownId: string, rundownExternalId: str
 					ingestSegment.parts.push(e.data as IngestSegment)
 				}
 			})
+
+			ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 			ingestRundown.segments.push(ingestSegment)
 		}
 	})
