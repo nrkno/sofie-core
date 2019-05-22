@@ -12,7 +12,7 @@ export function callPeripheralDeviceFunction (e: any, deviceFunctionName: string
 }
 
 export namespace PeripheralDevicesAPI {
-	export function restartDevice (dev: PeripheralDevice, e: React.SyntheticEvent<object>): Promise<any> {
+	export function restartDevice (dev: PeripheralDevice, e: Event | React.SyntheticEvent<object>): Promise<any> {
 		return new Promise((resolve, reject) => {
 			callPeripheralDeviceFunction(e, dev._id, 'killProcess', 1, (err, result) => {
 				if (err) {
