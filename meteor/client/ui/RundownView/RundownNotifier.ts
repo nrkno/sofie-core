@@ -195,7 +195,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						const newNotification = new Notification(
 							rundownNoteId,
 							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							rundown.notes,
+							note.message,
 							'Rundown',
 							getCurrentTime(),
 							true,
