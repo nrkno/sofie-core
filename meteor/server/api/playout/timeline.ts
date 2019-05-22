@@ -460,7 +460,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 			}
 
 			if (piece.infiniteId) {
-				const originalItem = _.find(rundownData.pieces, (piece => piece._id === piece.infiniteId))
+				const originalItem = _.find(rundownData.pieces, (p => p._id === piece.infiniteId))
 
 				// If we are a continuation, set the same start point to ensure that anything timed is correct
 				if (originalItem && originalItem.startedPlayback) {
