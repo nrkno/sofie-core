@@ -1,7 +1,24 @@
+/**
+ * Replicates the behavior of jQuery's width() function. Note that it's only
+ * really needed to get the width **excluding padding** for inline elements.
+ * For all other use cases there are properties on the Element itself 
+ * that can be read directly or via window.getComputedStyle.
+ * 
+ * @param element - the element to calculate width for
+ * @returns the calculated width of the element excluding padding
+ */
 export function getElementWidth(element: HTMLElement): number {
-	const computedWidth = Number(window.getComputedStyle(element).width)
+	const { width, paddingLeft, paddingRight } = window.getComputedStyle(element)
+	const computedWidth = Number(width)
 
-	return Number.isNaN(computedWidth) ? element.offsetWidth : computedWidth
+	if (!Number.isNaN(computedWidth)) {
+		return computedWidth
+	}
+
+	const computedPaddingLeft = paddingLeft ? Number.parseInt(paddingLeft, 10) : 0
+	const computedPaddingRight = paddingRight ? Number.parseInt(paddingRight, 10) : 0
+
+	return element.offsetWidth - computedPaddingLeft - computedPaddingRight
 }
 
 /**
