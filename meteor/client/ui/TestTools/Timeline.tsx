@@ -128,7 +128,7 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 		}
 	}
 	triggerLoadScript () {
-		loadScript('/scripts/timeline-visualizer.min.js', (err) => {
+		loadScript('/scripts/timeline-visualizer.js', (err) => {
 			this.setState({
 				scriptLoaded: !err,
 				scriptError: !!err
