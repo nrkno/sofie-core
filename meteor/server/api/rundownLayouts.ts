@@ -91,13 +91,13 @@ getJsRoute.route('/rundownLayouts/:id', (params, req: IncomingMessage, res: Serv
 
 	try {
 		content = JSON.stringify(layout, undefined, 2)
-		res.setHeader('Content-Disposition', `attachment; filename="${layout.name}.json"`)
+		res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(layout.name)}.json`)
 		res.setHeader('Content-Type', 'application/json')
 		res.statusCode = 200
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.error('Blueprint restore failed: ' + e)
+		logger.error('Rundown layout restore failed: ' + e)
 	}
 
 	res.end(content)
