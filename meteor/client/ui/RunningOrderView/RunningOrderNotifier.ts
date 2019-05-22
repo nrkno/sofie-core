@@ -23,6 +23,7 @@ import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
+import { PeripheralDevicesAPI } from '../../lib/clientAPI';
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRunningOrderClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -210,6 +211,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePeripheralDeviceStatus (studioInstallationId: string | undefined) {
+		const t = i18nTranslator
+
 		let oldDevItemIds: Array<string> = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
 		if (studioInstallationId) {
@@ -222,10 +225,41 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			const newDevItemIds = devices.map(item => item._id)
 
 			devices.forEach((item) => {
+				const parent = devices.find(i => i._id === item.parentDeviceId)
+
 				let newNotification: Notification | undefined = undefined
 
 				if (item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD || !item.connected) {
-					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true, undefined, -1)
+					newNotification = new Notification(
+						item._id,
+						this.convertDeviceStatus(item),
+						this.makeDeviceMessage(item),
+						'Devices',
+						getCurrentTime(),
+						true,
+						parent && parent.connected ? [
+							{
+								label: t('Restart'),
+								type: 'primary',
+								action: () => {
+									doModalDialog({
+										title: t('Restart {{device}}', { device: parent.name }),
+										message: t('Fixing this problem requires a restart to the host device. Are you sure you want to restart {{device}}?\n(This might affect output)', { device: parent.name }),
+										yes: t('Restart'),
+										no: t('Cancel'),
+										onAccept: (e) => {
+											PeripheralDevicesAPI.restartDevice(parent, e)
+												.then(() => {
+													NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: parent.name }), 'RundownNotifier'))
+												}).catch((err) => {
+													NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: parent.name, errorMessage: err + '' }), 'RundownNotifier'))
+												})
+										}
+									})
+								}
+							}
+						] : undefined,
+						-1)
 				}
 				if (newNotification && !Notification.isEqual(this._deviceStatus[item._id], newNotification)) {
 					this._deviceStatus[item._id] = newNotification
