@@ -146,7 +146,13 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 }
 export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
+	handleUpdatedRundownForStudio(studio, peripheralDevice, ingestRundown, dataSource)
+}
+export function handleUpdatedRundownForStudio (studio: Studio, peripheralDevice: PeripheralDevice | undefined, ingestRundown: IngestRundown, dataSource: string) {
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
+	if (peripheralDevice && peripheralDevice.studioId !== studio._id) {
+		throw new Meteor.Error(500, `PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio._id}"`)
+	}
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedRundownInner(studio, rundownId, ingestRundown, dataSource, peripheralDevice))
 }

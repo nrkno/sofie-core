@@ -8,9 +8,10 @@ import { check } from 'meteor/check'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown } from '../playout/lib'
-import { handleUpdatedRundown } from './rundownInput'
+import { handleUpdatedRundown, handleUpdatedRundownForStudio } from './rundownInput'
 import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
+import { Studio, Studios } from '../../../lib/collections/Studios';
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -74,7 +75,7 @@ export namespace IngestActions {
 	/**
 	 * Run the cached data through blueprints in order to re-generate the Rundown
 	 */
-	export function regenerateRundown (rundownId: string) {
+	export function regenerateRundown (rundownId: string, purgeExisting?: boolean) {
 		check(rundownId, String)
 
 		const rundown = Rundowns.findOne(rundownId)
@@ -88,17 +89,21 @@ export namespace IngestActions {
 			rundown.peripheralDeviceId
 		)
 		if (!peripheralDevice) {
-			throw new Meteor.Error(
-				404,
-				'MOS Device not found to be used for mock rundown!'
-			)
+			logger.info(`Rundown has no valid PeripheralDevices. Running without`)
+		}
+		const studio = Studios.findOne(rundown.studioId)
+		if (!studio) {
+			throw new Meteor.Error(404,`Studios "${rundown.studioId}" was not found for rundown "${rundown._id}"`)
 		}
 
 		const ingestRundown = loadCachedRundownData(rundownId, rundown.externalId)
+		if (purgeExisting) {
+			rundown.remove()
+		} else {
+			// Reset the rundown (remove adlibs, etc):
+			resetRundown(rundown)
+		}
 
-		// Reset the rundown (remove adlibs, etc):
-		resetRundown(rundown)
-
-		handleUpdatedRundown(peripheralDevice, ingestRundown, 'mock')
+		handleUpdatedRundownForStudio(studio, peripheralDevice, ingestRundown, rundown.dataSource)
 	}
 }
