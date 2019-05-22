@@ -56,6 +56,8 @@ const mockThis = {
 
 export namespace MeteorMock {
 
+	export let isTest: boolean = true
+
 	export let isClient: boolean = false
 	export let isCordova: boolean = false
 	export let isServer: boolean = true

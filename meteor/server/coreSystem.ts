@@ -386,7 +386,9 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 	return versions
 }
 function startupMessage () {
-	console.log('process started') // This is a message all Sofie processes log upon startup
+	if (!Meteor.isTest) {
+		console.log('process started') // This is a message all Sofie processes log upon startup
+	}
 
 	logger.info(`Core starting up`)
 	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
