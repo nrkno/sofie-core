@@ -250,7 +250,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<h2 className='mhn'>{t('Restore from Snapshot File')}</h2>
 					<div className='mdi'>
-						<UploadButton accept='application/json'
+						<UploadButton accept='application/json,.json'
 							className='btn btn-secondary'
 							onChange={(e) => this.onUploadFile(e)}
 							key={this.state.uploadFileKey}> 

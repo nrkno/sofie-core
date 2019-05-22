@@ -190,7 +190,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}
 
 					<div className='mod mvs mhn'>
-						<UploadButton className='btn btn-primary' accept='text/javascript' onChange={e => this.onUploadFile(e)} key={this.state.uploadFileKey}>
+						<UploadButton className='btn btn-primary' accept='text/javascript,.js' onChange={e => this.onUploadFile(e)} key={this.state.uploadFileKey}>
 							<FontAwesomeIcon icon={faUpload} />
 							<span>{t('Upload Blueprints')}</span>
 						</UploadButton>

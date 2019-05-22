@@ -472,7 +472,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<button className='btn btn-primary' onClick={this.onAddLayout}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					<UploadButton className='btn btn-secondary mls' onChange={(e) => console.log(e)} accept='application/json'>
+					<UploadButton className='btn btn-secondary mls' onChange={(e) => this.onUploadFile(e)} accept='application/json,.json'>
 						<FontAwesomeIcon icon={faUpload} />
 					</UploadButton>
 				</div>
