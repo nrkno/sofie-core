@@ -129,7 +129,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
 													(this.props.piece.infiniteMode === PieceLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
 												)
-												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedDuration || (_.isNumber(this.props.piece.expectedDuration) ? parseFloat(this.props.piece.expectedDuration as any as string) : 0))}</span>
+												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedDuration || (_.isNumber(this.props.piece.enable.duration) ? parseFloat(this.props.piece.enable.duration as any as string) : 0))}</span>
 											}
 											{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
 										</td>

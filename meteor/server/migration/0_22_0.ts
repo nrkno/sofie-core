@@ -5,17 +5,6 @@ import { setExpectedVersion } from './lib'
 
 // 0.22.0 (Release 7)
 addMigrationSteps('0.22.0', [
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.17.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.5.2'),
 ])

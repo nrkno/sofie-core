@@ -44,6 +44,8 @@ export namespace UserActionAPI {
 		'recordDelete'							= 'userAction.recordDelete',
 
 		'mediaRestartWorkflow'					= 'userAction.mediamanager.restartWorkflow',
-		'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow'
+		'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow',
+
+		'regenerateRundown'					= 'userAction.ingest.regenerateRundown'
 	}
 }

@@ -29,6 +29,7 @@ import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
+import { IngestActions } from './ingest/actions';
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -314,7 +315,7 @@ export function segmentAdLibPieceStop (rundownId: string, partId: string, pieceI
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.startAdLibPiece(rundownId, partId, pieceId)
+		ServerPlayoutAPI.stopAdLibPiece(rundownId, partId, pieceId)
 	)
 }
 export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
@@ -413,7 +414,6 @@ export function recordStart (studioId: string, fileName: string) {
 		ServerTestToolsAPI.recordStart(studioId, fileName)
 	)
 }
-
 export function recordDelete (id: string) {
 	return ClientAPI.responseSuccess(
 		ServerTestToolsAPI.recordDelete(id)
@@ -427,6 +427,20 @@ export function mediaRestartWorkflow (workflowId: string) {
 export function mediaAbortWorkflow (workflowId: string) {
 	return ClientAPI.responseSuccess(
 		MediaManagerAPI.abortWorkflow(workflowId)
+	)
+}
+export function regenerateRundown (rundownId: string) {
+	check(rundownId, String)
+
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
+
+	if (rundown.active) {
+		return ClientAPI.responseError(`Rundown is active, please deactivate it before regenerating it.`)
+	}
+
+	return ClientAPI.responseSuccess(
+		IngestActions.regenerateRundown(rundownId)
 	)
 }
 
@@ -518,6 +532,9 @@ methods[UserActionAPI.methods.mediaRestartWorkflow] = function (workflowId: stri
 }
 methods[UserActionAPI.methods.mediaAbortWorkflow] = function (workflowId: string) {
 	return mediaAbortWorkflow.call(this, workflowId)
+}
+methods[UserActionAPI.methods.regenerateRundown] = function (rundownId: string) {
+	return regenerateRundown.call(this, rundownId)
 }
 
 // Apply methods:

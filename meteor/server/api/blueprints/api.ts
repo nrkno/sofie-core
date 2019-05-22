@@ -85,6 +85,15 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 	newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
 	newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
 
+	if (
+		blueprint &&
+		blueprint.blueprintType &&
+		newBlueprint.blueprintType &&
+		blueprint.blueprintType !== newBlueprint.blueprintType
+	) {
+		throw new Meteor.Error(400, `Cannot replace old blueprint (of type "${blueprint.blueprintType}") with new blueprint of type "${newBlueprint.blueprintType}"`)
+	}
+
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
 	}

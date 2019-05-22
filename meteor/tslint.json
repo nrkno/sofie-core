@@ -18,7 +18,7 @@
 		"space-before-function-paren": true,
 		"no-trailing-whitespace": true,
 		"eofline": true,
-		"max-line-length": [true, 120],
+		// "max-line-length": [true, 120],
 		"linebreak-style": [true, "CRLF"],
 		"no-consecutive-blank-lines": [true, 2],
 		"new-parens": true,

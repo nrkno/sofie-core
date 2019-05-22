@@ -15,6 +15,7 @@ import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integratio
 import { Meteor } from 'meteor/meteor'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { fetchFrom } from '../../lib/lib';
 
 interface IProps {
 	match: {
@@ -78,15 +79,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents && blueprint) {
-						fetch('/blueprints/restore/' + blueprint._id, {
+						fetchFrom('/blueprints/restore/' + blueprint._id, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
 								'content-type': 'text/javascript'
 							},
-						}).then(res => {
-							// console.log('Blueprint restore success')
+						})
+						.then(response => {
 							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
+							// console.log('Blueprint restore success')
 						}).catch(err => {
 							// console.error('Blueprint restore failure: ', err)
 							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))

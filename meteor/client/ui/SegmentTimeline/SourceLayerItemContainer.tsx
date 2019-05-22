@@ -1,14 +1,10 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { TriggerType } from 'superfly-timeline'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { Pieces } from '../../../lib/collections/Pieces'
 import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
@@ -98,30 +94,29 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
+				// TODO - this query appears to be unable to load any data
 				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
 
 				if (timelineObj) {
 					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
-					if (timelineObj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-						segmentCopy.trigger = timelineObj.trigger
-						if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
-							segmentCopy.renderedInPoint = (timelineObj.trigger.value)
-						} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
-							if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
-								segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
-							} else {
-								segmentCopy.renderedInPoint = 0
-							}
+					segmentCopy.enable = timelineObj.enable
+					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
+						segmentCopy.renderedInPoint = timelineObj.enable.start
+					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
+						if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
+							segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
 						} else {
 							segmentCopy.renderedInPoint = 0
 						}
+					} else {
+						segmentCopy.renderedInPoint = 0
 					}
 
-					if (typeof timelineObj.duration !== 'string' && !segmentCopy.cropped) {
+					if (typeof timelineObj.enable.duration === 'number' && !segmentCopy.cropped) {
 						segmentCopy.renderedDuration = (
-							timelineObj.duration !== 0 ?
-							timelineObj.duration :
+							timelineObj.enable.duration !== 0 ?
+							timelineObj.enable.duration :
 							(props.partDuration - (segmentCopy.renderedInPoint || 0))
 						) || null
 					}

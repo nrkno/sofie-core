@@ -37,16 +37,4 @@ addMigrationSteps('0.23.0', [
 	},
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.18.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.5.3'),
-
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
 ])

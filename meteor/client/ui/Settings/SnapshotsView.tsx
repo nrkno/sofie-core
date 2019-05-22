@@ -12,7 +12,7 @@ import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { multilineText } from '../../lib/lib'
+import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IProps {
@@ -78,7 +78,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				title: t('Restore from this Snapshot file?'),
 				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
 				onAccept: () => {
-					fetch('/snapshot/restore', {
+					fetchFrom('/snapshot/restore', {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {

@@ -43,5 +43,26 @@ export function loadScript (url: string, callback: (err?: any) => void) {
 			}
 		})
 	}
+}
+/**
+ * Wrapper around fetch(), which doesn't rejects the promise if the result is an error
+ */
+export function fetchFrom (input: RequestInfo, init?: RequestInit) {
 
+	return fetch(input, init)
+	.then((response) => {
+		// Read the body:
+		return response.text()
+		.then((bodyText: string) => {
+			if (response.status !== 200) {
+				// If the response is bad, throw the error:
+				throw new Error(`${response.status}: ${bodyText || response.statusText || 'Unknown error'}`)
+			} else {
+				return {
+					...response,
+					bodyText: bodyText
+				}
+			}
+		})
+	})
 }

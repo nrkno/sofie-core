@@ -15,7 +15,8 @@ import {
 	MappingAtemType,
 	MappingCasparCG,
 	TimelineObjCCGMedia,
-	TimelineContentTypeCasparCg
+	TimelineContentTypeCasparCg,
+	DeviceType
 } from 'timeline-state-resolver-types'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import {
@@ -88,14 +89,15 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		let o: TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
-			trigger: {
-				type: TimelineTypes.TriggerType.TIME_ABSOLUTE,
-				value: 'now'
+			enable: {
+				start: 'now'
 			},
-			LLayer: mappingLayerId,
+			layer: mappingLayerId,
 			content: {
+				deviceType: DeviceType.ATEM,
 				type: TimelineContentTypeAtem.ME,
-				attributes: {
+
+				me: {
 					input: cam,
 					transition: AtemTransitionStyle.CUT
 				}
@@ -119,16 +121,16 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		let o: TimelineObjCCGMedia = {
 			id: 'caspar_' + mappingLayerId,
-			trigger: {
-				type: TimelineTypes.TriggerType.TIME_ABSOLUTE,
-				value: 'now'
+			enable: {
+				start: 'now'
 			},
-			LLayer: mappingLayerId,
+			layer: mappingLayerId,
 			content: {
+				deviceType: DeviceType.CASPARCG,
 				type: TimelineContentTypeCasparCg.MEDIA,
-				attributes: {
-					file: input + '',
-				}
+
+				file: input + '',
+
 			}
 		}
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
