@@ -22,6 +22,7 @@ import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { fetchFrom } from '../../lib/lib'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
@@ -423,7 +424,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents) {
-						fetch('/rundownLayouts', {
+						fetchFrom('/rundownLayouts', {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
