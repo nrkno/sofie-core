@@ -280,11 +280,19 @@ export function findLookaheadForlayer (
 					// Note: This is assuming that there is only one use of a layer in each piece.
 					const obj = piece.content.timelineObjects.find(o => o !== null && o.layer === layer)
 					if (obj) {
+						// Try and find a keyframe that is used when in a transition
+						let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
+						if (allowTransition) {
+							transitionKF = _.find(obj.keyframes || [], kf => kf.enable.while === '.is_transition')
+						}
+						const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
+
 						res.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(obj, {
 							_id: '', // set later
 							studioId: '', // set later
 							objectType: TimelineObjType.RUNDOWN,
-							rundownId: rundownData.rundown._id
+							rundownId: rundownData.rundown._id,
+							content: newContent
 						}))
 					}
 				})
