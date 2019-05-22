@@ -187,47 +187,51 @@ const AdLibListView = translate()(class extends React.Component<
 	}
 
 	renderSegments () {
-		return this.props.uiSegments.map((seg) => {
-			return (
-				<tbody key={seg._id}
-					className={ClassNames(
-						'adlib-panel__list-view__list__segment',
-						'adlib-panel__list-view__item__' + seg._id,
-						{
-							'live': seg.isLive,
-							'next': seg.isNext && !seg.isLive,
-							'past': seg.parts.reduce((memo, item) => {
-								return item.startedPlayback && item.duration ? memo : false
-							}, true) === true
-						})
-					}
-				>
-					<tr className='adlib-panel__list-view__list__seg-header'>
-						<td colSpan={4}>
-							{seg.name}
-						</td>
-					</tr>
-					{
-						seg.pieces && seg.pieces.
-							sort((a, b) => a._rank - b._rank).
-							filter((item) => this.matchFilter(item)).
-							map((item: AdLibPieceUi) => {
-								return (
-									<AdLibListItem
-										key={item._id}
-										item={item}
-										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-										layer={this.state.sourceLayers[item.sourceLayerId]}
-										outputLayer={this.state.outputLayers[item.outputLayerId]}
-										onToggleAdLib={this.props.onToggleAdLib}
-										onSelectAdLib={this.props.onSelectAdLib}
-										/>
-								)
+		return this.props.uiSegments
+			.filter(a => this.props.filter ?
+				this.props.filter.currentSegment ? a.isLive : true
+				: true)
+			.map((seg) => {
+				return (
+					<tbody key={seg._id}
+						className={ClassNames(
+							'adlib-panel__list-view__list__segment',
+							'adlib-panel__list-view__item__' + seg._id,
+							{
+								'live': seg.isLive,
+								'next': seg.isNext && !seg.isLive,
+								'past': seg.parts.reduce((memo, item) => {
+									return item.startedPlayback && item.duration ? memo : false
+								}, true) === true
 							})
-					}
-				</tbody>
-			)
-		})
+						}
+					>
+						<tr className='adlib-panel__list-view__list__seg-header'>
+							<td colSpan={4}>
+								{seg.name}
+							</td>
+						</tr>
+						{
+							seg.pieces && seg.pieces.
+								sort((a, b) => a._rank - b._rank).
+								filter((item) => this.matchFilter(item)).
+								map((item: AdLibPieceUi) => {
+									return (
+										<AdLibListItem
+											key={item._id}
+											item={item}
+											selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+											layer={this.state.sourceLayers[item.sourceLayerId]}
+											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											onToggleAdLib={this.props.onToggleAdLib}
+											onSelectAdLib={this.props.onSelectAdLib}
+											/>
+									)
+								})
+						}
+					</tbody>
+				)
+			})
 	}
 
 	setTableRef = (el) => {
