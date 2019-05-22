@@ -24,7 +24,7 @@ import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
 import { DeviceType } from 'timeline-state-resolver-types'
-import { calculatePieceTimelineEnable } from '../../../lib/Rundown';
+import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */

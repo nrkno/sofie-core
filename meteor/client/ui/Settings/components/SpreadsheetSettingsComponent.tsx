@@ -11,7 +11,7 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { SpreadsheetDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/spreadsheet'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { fetchFrom } from '../../../lib/lib';
+import { fetchFrom } from '../../../lib/lib'
 interface ISpreadsheetSettingsComponentState {
 }
 interface ISpreadsheetSettingsComponentProps {

@@ -192,8 +192,8 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				let s = b.start
 				let e = b.end
 				if (b.duration < 5000) {
-					s = b.start + b.duration * .5 - 2500
-					e = b.end - b.duration * .5 + 2500
+					s = b.start + b.duration * 0.5 - 2500
+					e = b.end - b.duration * 0.5 + 2500
 				}
 				if (s < time && e > time) {
 					show = true
@@ -209,8 +209,8 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				let s = b.start
 				let e = b.end
 				if (b.duration < 5000) {
-					s = b.start + b.duration * .5 - 2500
-					e = b.end - b.duration * .5 + 2500
+					s = b.start + b.duration * 0.5 - 2500
+					e = b.end - b.duration * 0.5 + 2500
 				}
 				if (s < time && e > time) {
 					show = true

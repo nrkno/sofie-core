@@ -29,7 +29,7 @@ import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
-import { IngestActions } from './ingest/actions';
+import { IngestActions } from './ingest/actions'
 
 const MINIMUM_TAKE_SPAN = 1000
 

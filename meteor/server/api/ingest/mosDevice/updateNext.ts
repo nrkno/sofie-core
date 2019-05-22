@@ -58,12 +58,12 @@ export namespace UpdateNext {
 
 				} else {
 					// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
-					UpdateNext.ensureNextPartIsValid(rundown)
+					ensureNextPartIsValid(rundown)
 				}
 			}
 		} else {
 			// Ensure next is valid
-			UpdateNext.ensureNextPartIsValid(rundown)
+			ensureNextPartIsValid(rundown)
 		}
 	}
 }

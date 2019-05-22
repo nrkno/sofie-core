@@ -87,21 +87,21 @@ export const mockRO = {
 			'segment': 'MCxHIjO7_t3PRHpLiX0vbzwx4gg_',
 		},
 		{
-			'parts':  [
+			'parts': [
 				'ro1;s2;p1',
 				'ro1;s2;p2',
 			],
 			'segment': 'Qz1OqWVatX_W4Sp5C0m8VhTTfME_',
 		},
 		{
-			'parts':  [
+			'parts': [
 				'ro1;s3;p1',
 				'ro1;s3;p2',
 			],
 			'segment': '8GUNgE7zUulco2K3yuhJ1Fyceeo_',
 		},
 		{
-			'parts':  [
+			'parts': [
 				'ro1;s4;p1',
 			],
 			'segment': 'XF9ZBDI5IouvkmTbounEfoJ6ijY_',

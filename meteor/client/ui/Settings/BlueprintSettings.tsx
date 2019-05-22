@@ -15,7 +15,7 @@ import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integratio
 import { Meteor } from 'meteor/meteor'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { fetchFrom } from '../../lib/lib';
+import { fetchFrom } from '../../lib/lib'
 
 interface IProps {
 	match: {

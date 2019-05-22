@@ -60,7 +60,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { prefixAllObjectIds } from './lib'
 import { createPieceGroup, createPieceGroupFirstObject } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { offsetTimelineEnableExpression } from '../../../lib/Rundown';
+import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...

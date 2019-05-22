@@ -57,7 +57,7 @@ describe('lib/lib', () => {
 				return v
 			}
 		})
-		const pValue = MeteorPromiseCall('myMethod', 'myValue').catch(e => { throw e })
+		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch(e => { throw e })
 		expect(pValue).toHaveProperty('then') // be a promise
 		const value = waitForPromise(pValue)
 		expect(value).toEqual('myValue')
