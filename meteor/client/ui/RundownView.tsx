@@ -1442,8 +1442,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onContextMenu={this.onContextMenu}
 								onSegmentScroll={this.onSegmentScroll}
 								isLastSegment={index === array.length - 1}
-								onItemClick={this.onSelectPiece}
-								onItemDoubleClick={this.onPieceDoubleClick}
+								onPieceClick={this.onSelectPiece}
+								onPieceDoubleClick={this.onPieceDoubleClick}
 								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
 						</ErrorBoundary>
@@ -1590,7 +1590,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						rundown={this.props.rundown}
 						defaultDuration={DEFAULT_DISPLAY_DURATION}>
 						<div className={ClassNames('rundown-view', {
-							'notification-center-open': this.state.isNotificationsCenterOpen
+							'notification-center-open': this.state.isNotificationsCenterOpen,
+							'rundown-view--studio-mode': this.state.studioMode
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
 								{ this.state.studioMode && <KeyboardFocusMarker /> }
@@ -1632,7 +1633,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 										<SupportPopUp>
 											<button className='btn btn-primary' onClick={this.onToggleHotkeys}>{t('Show Hotkeys')}</button>
 											<button className='btn btn-primary' onClick={this.onTakeRundownSnapshot}>{t('Take a Snapshot')}</button>
-											<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+											{this.state.studioMode &&
+												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+											}
 										</SupportPopUp>
 									}
 								</VelocityReact.VelocityTransitionGroup>
