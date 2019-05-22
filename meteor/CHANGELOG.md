@@ -4,6 +4,91 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [0.25.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v0.24.0...v0.25.0-0) (2019-05-22)
 
+## Major features, summary:
+### The Big Renaming
+  This release features a BIG refactoring and a lot of renamings. *Therefore, this release is NOT backwards compatible*
+  and requires updates to blueprints and reloading of rundowns in order to work (the settings are migrated automatically using migrations scripts).
+  Some of the most prominent renamings are:
+  * StudioInstallation -> Studio
+  * RunningOrder -> Rundown
+  * Segment (unchanged)
+  * SegmentLine -> Part
+  * SegmentLineItem -> Piece
+
+### New ingest data pipeline
+  In order to have better control over ingest data (MOS-data), we've added a standardized input pipeline, which the MOS-ingest hooks onto.
+  This is a step on the way to support different types of sources of input data.
+
+### New Timeline
+  This release also features the new Timeline (version 7.0), which gives better control and performance.
+
+### Unit tests
+  In order to achieve a safer development environment, higher code quality and catching bugs earlier, we've added Jest as test framework.
+  During the upcoming months, we'll be adding tests continously to increase the code coverage.
+
+### Features
+
+* add & remove studios ([81749b4](https://github.com/nrkno/tv-automation-server-core/commit/81749b4))
+* add a label of the source Piece on the ExpectedMediaItems ([bad1576](https://github.com/nrkno/tv-automation-server-core/commit/bad1576))
+* add category, type & subType to peripheralDevice ([34469f5](https://github.com/nrkno/tv-automation-server-core/commit/34469f5))
+* add default mocks ([2985af8](https://github.com/nrkno/tv-automation-server-core/commit/2985af8))
+* add editorconfig ([296f71d](https://github.com/nrkno/tv-automation-server-core/commit/296f71d))
+* add fetchFrom() as a wrapper for fetch(), to handle non-200 responses as errors ([4e3734c](https://github.com/nrkno/tv-automation-server-core/commit/4e3734c))
+* add fonts ([e617d60](https://github.com/nrkno/tv-automation-server-core/commit/e617d60))
+* add IngestActions.regenerateRundown, for debugging & resetting of rundown ([ebefd42](https://github.com/nrkno/tv-automation-server-core/commit/ebefd42))
+* add jest ([3fab0ed](https://github.com/nrkno/tv-automation-server-core/commit/3fab0ed))
+* add migrations for 0.25.0 ([9165255](https://github.com/nrkno/tv-automation-server-core/commit/9165255))
+* add retryDuration for external messages. ([c19d84b](https://github.com/nrkno/tv-automation-server-core/commit/c19d84b))
+* add some responsive styling to the RD view ([a133947](https://github.com/nrkno/tv-automation-server-core/commit/a133947))
+* add utility CSS classes for support message ([95e1424](https://github.com/nrkno/tv-automation-server-core/commit/95e1424))
+* add warning of unsent messages to rundown notifications ([f65309f](https://github.com/nrkno/tv-automation-server-core/commit/f65309f))
+* allow a place to store MediaWorkFlow comments ([a2c54fb](https://github.com/nrkno/tv-automation-server-core/commit/a2c54fb))
+* basic setup of jest ([6dd0fcd](https://github.com/nrkno/tv-automation-server-core/commit/6dd0fcd))
+* begin implementation of new blueprint interface (wip) ([d7aa2e4](https://github.com/nrkno/tv-automation-server-core/commit/d7aa2e4))
+* Change styling for video monitors ([5de76fc](https://github.com/nrkno/tv-automation-server-core/commit/5de76fc))
+* change VideoEditMonitors behavior from hoverScrub to click-and-drag ([bc1ed2c](https://github.com/nrkno/tv-automation-server-core/commit/bc1ed2c))
+* changed to retryUntil, added button ([1b31374](https://github.com/nrkno/tv-automation-server-core/commit/1b31374))
+* ClientAPI test suite ([69cad3f](https://github.com/nrkno/tv-automation-server-core/commit/69cad3f))
+* continue implementation of new blueprint interface ([b7d013d](https://github.com/nrkno/tv-automation-server-core/commit/b7d013d))
+* continue refactor of mos ingest logic ([c5b775a](https://github.com/nrkno/tv-automation-server-core/commit/c5b775a))
+* continue refactor of mos ingest logic ([ad6cbb1](https://github.com/nrkno/tv-automation-server-core/commit/ad6cbb1))
+* continued refactoring of ingest / mos data flow ([4ffe93a](https://github.com/nrkno/tv-automation-server-core/commit/4ffe93a))
+* css: import and use fonts in prompter ([97a8037](https://github.com/nrkno/tv-automation-server-core/commit/97a8037))
+* Generate full sl & sli data on create/update of both ro and segment ([7969c2e](https://github.com/nrkno/tv-automation-server-core/commit/7969c2e))
+* Handle SegmentLine data operations, with the help of an improved data cache ([9c84271](https://github.com/nrkno/tv-automation-server-core/commit/9c84271))
+* implement client-side error reporting to Core ([f747057](https://github.com/nrkno/tv-automation-server-core/commit/f747057))
+* implement fibers support when testing in Jest ([bb99e97](https://github.com/nrkno/tv-automation-server-core/commit/bb99e97))
+* implement mosRoStoryMove ([ab76cfb](https://github.com/nrkno/tv-automation-server-core/commit/ab76cfb))
+* implement support for Spreadsheet gateway ([44dab01](https://github.com/nrkno/tv-automation-server-core/commit/44dab01))
+* import MOS snapshot ([ad11dd6](https://github.com/nrkno/tv-automation-server-core/commit/ad11dd6))
+* improve code quality (switch div's to buttons where they should be) ([70d9348](https://github.com/nrkno/tv-automation-server-core/commit/70d9348))
+* Initial implementation of importing a running order from spreadsheet gateway (wip) ([870a500](https://github.com/nrkno/tv-automation-server-core/commit/870a500))
+* initial implementation of new general data ingest API ([a2b4987](https://github.com/nrkno/tv-automation-server-core/commit/a2b4987))
+* jest config & example implementation of module mocks ([43ac8fa](https://github.com/nrkno/tv-automation-server-core/commit/43ac8fa))
+* jest mocks ([9fdadf3](https://github.com/nrkno/tv-automation-server-core/commit/9fdadf3))
+* log message on startup ([c715266](https://github.com/nrkno/tv-automation-server-core/commit/c715266))
+* message queue retry button working with with retryUntil ([2fa05bb](https://github.com/nrkno/tv-automation-server-core/commit/2fa05bb))
+* mos-actions ([248db8a](https://github.com/nrkno/tv-automation-server-core/commit/248db8a))
+* Move some lawo and nora specific processing to blueprints ([a7a6aad](https://github.com/nrkno/tv-automation-server-core/commit/a7a6aad))
+* preliminary mongo mock implementation ([498b88f](https://github.com/nrkno/tv-automation-server-core/commit/498b88f))
+* Reimplement mock ro importing for new ingest data flow ([4b5ce20](https://github.com/nrkno/tv-automation-server-core/commit/4b5ce20))
+* reimplement remaining mos methods ([43b7ba1](https://github.com/nrkno/tv-automation-server-core/commit/43b7ba1))
+* rename files according to new naming convention ([406fad2](https://github.com/nrkno/tv-automation-server-core/commit/406fad2))
+* **ingest:** First pass at ensuring all playout and ingest functions share a global rundown lock to avoid concurrent updates ([4b0cb56](https://github.com/nrkno/tv-automation-server-core/commit/4b0cb56))
+* Rewrite debug rerun blueprints helper to use new ingest data cache ([29692e4](https://github.com/nrkno/tv-automation-server-core/commit/29692e4))
+* run automatic migration when starting up a fresh system, if possible. ([4fb4759](https://github.com/nrkno/tv-automation-server-core/commit/4fb4759))
+* RunningOrderDataImport tidying and unsync guards ([d0a12d8](https://github.com/nrkno/tv-automation-server-core/commit/d0a12d8))
+* send the window url in the client error report ([807ccc9](https://github.com/nrkno/tv-automation-server-core/commit/807ccc9))
+* some work on updating the next part on data changes ([5551707](https://github.com/nrkno/tv-automation-server-core/commit/5551707))
+* start on migration for 0.25.0 ([104a867](https://github.com/nrkno/tv-automation-server-core/commit/104a867))
+* support timeline v2 by Johan & Julian ([fd039d8](https://github.com/nrkno/tv-automation-server-core/commit/fd039d8))
+* support workFlow comments ([6181006](https://github.com/nrkno/tv-automation-server-core/commit/6181006))
+* syncFunction priorities ([4c99c11](https://github.com/nrkno/tv-automation-server-core/commit/4c99c11))
+* UI: Add Getting Started message on fresh system startup ([febe8ff](https://github.com/nrkno/tv-automation-server-core/commit/febe8ff))
+* Update baseline generation for new blueprint api ([79767bf](https://github.com/nrkno/tv-automation-server-core/commit/79767bf))
+* update dependencies ([6766d18](https://github.com/nrkno/tv-automation-server-core/commit/6766d18))
+* validatedMethod mock ([2f3a641](https://github.com/nrkno/tv-automation-server-core/commit/2f3a641))
+
 
 ### Bug Fixes
 
@@ -153,69 +238,6 @@ All notable changes to this project will be documented in this file. See [standa
 * write back TimeBase with EditorialStart/Duration ([96f8e21](https://github.com/nrkno/tv-automation-server-core/commit/96f8e21))
 * **mos:** Set next part logic after story updates ([2b8cf47](https://github.com/nrkno/tv-automation-server-core/commit/2b8cf47))
 
-
-### Features
-
-* add & remove studios ([81749b4](https://github.com/nrkno/tv-automation-server-core/commit/81749b4))
-* add a label of the source Piece on the ExpectedMediaItems ([bad1576](https://github.com/nrkno/tv-automation-server-core/commit/bad1576))
-* add category, type & subType to peripheralDevice ([34469f5](https://github.com/nrkno/tv-automation-server-core/commit/34469f5))
-* add default mocks ([2985af8](https://github.com/nrkno/tv-automation-server-core/commit/2985af8))
-* add editorconfig ([296f71d](https://github.com/nrkno/tv-automation-server-core/commit/296f71d))
-* add fetchFrom() as a wrapper for fetch(), to handle non-200 responses as errors ([4e3734c](https://github.com/nrkno/tv-automation-server-core/commit/4e3734c))
-* add fonts ([e617d60](https://github.com/nrkno/tv-automation-server-core/commit/e617d60))
-* add IngestActions.regenerateRundown, for debugging & resetting of rundown ([ebefd42](https://github.com/nrkno/tv-automation-server-core/commit/ebefd42))
-* add jest ([3fab0ed](https://github.com/nrkno/tv-automation-server-core/commit/3fab0ed))
-* add migrations for 0.25.0 ([9165255](https://github.com/nrkno/tv-automation-server-core/commit/9165255))
-* add retryDuration for external messages. ([c19d84b](https://github.com/nrkno/tv-automation-server-core/commit/c19d84b))
-* add some responsive styling to the RD view ([a133947](https://github.com/nrkno/tv-automation-server-core/commit/a133947))
-* add utility CSS classes for support message ([95e1424](https://github.com/nrkno/tv-automation-server-core/commit/95e1424))
-* add warning of unsent messages to rundown notifications ([f65309f](https://github.com/nrkno/tv-automation-server-core/commit/f65309f))
-* allow a place to store MediaWorkFlow comments ([a2c54fb](https://github.com/nrkno/tv-automation-server-core/commit/a2c54fb))
-* basic setup of jest ([6dd0fcd](https://github.com/nrkno/tv-automation-server-core/commit/6dd0fcd))
-* begin implementation of new blueprint interface (wip) ([d7aa2e4](https://github.com/nrkno/tv-automation-server-core/commit/d7aa2e4))
-* Change styling for video monitors ([5de76fc](https://github.com/nrkno/tv-automation-server-core/commit/5de76fc))
-* change VideoEditMonitors behavior from hoverScrub to click-and-drag ([bc1ed2c](https://github.com/nrkno/tv-automation-server-core/commit/bc1ed2c))
-* changed to retryUntil, added button ([1b31374](https://github.com/nrkno/tv-automation-server-core/commit/1b31374))
-* ClientAPI test suite ([69cad3f](https://github.com/nrkno/tv-automation-server-core/commit/69cad3f))
-* continue implementation of new blueprint interface ([b7d013d](https://github.com/nrkno/tv-automation-server-core/commit/b7d013d))
-* continue refactor of mos ingest logic ([c5b775a](https://github.com/nrkno/tv-automation-server-core/commit/c5b775a))
-* continue refactor of mos ingest logic ([ad6cbb1](https://github.com/nrkno/tv-automation-server-core/commit/ad6cbb1))
-* continued refactoring of ingest / mos data flow ([4ffe93a](https://github.com/nrkno/tv-automation-server-core/commit/4ffe93a))
-* css: import and use fonts in prompter ([97a8037](https://github.com/nrkno/tv-automation-server-core/commit/97a8037))
-* Generate full sl & sli data on create/update of both ro and segment ([7969c2e](https://github.com/nrkno/tv-automation-server-core/commit/7969c2e))
-* Handle SegmentLine data operations, with the help of an improved data cache ([9c84271](https://github.com/nrkno/tv-automation-server-core/commit/9c84271))
-* implement client-side error reporting to Core ([f747057](https://github.com/nrkno/tv-automation-server-core/commit/f747057))
-* implement fibers support when testing in Jest ([bb99e97](https://github.com/nrkno/tv-automation-server-core/commit/bb99e97))
-* implement mosRoStoryMove ([ab76cfb](https://github.com/nrkno/tv-automation-server-core/commit/ab76cfb))
-* implement support for Spreadsheet gateway ([44dab01](https://github.com/nrkno/tv-automation-server-core/commit/44dab01))
-* import MOS snapshot ([ad11dd6](https://github.com/nrkno/tv-automation-server-core/commit/ad11dd6))
-* improve code quality (switch div's to buttons where they should be) ([70d9348](https://github.com/nrkno/tv-automation-server-core/commit/70d9348))
-* Initial implementation of importing a running order from spreadsheet gateway (wip) ([870a500](https://github.com/nrkno/tv-automation-server-core/commit/870a500))
-* initial implementation of new general data ingest API ([a2b4987](https://github.com/nrkno/tv-automation-server-core/commit/a2b4987))
-* jest config & example implementation of module mocks ([43ac8fa](https://github.com/nrkno/tv-automation-server-core/commit/43ac8fa))
-* jest mocks ([9fdadf3](https://github.com/nrkno/tv-automation-server-core/commit/9fdadf3))
-* log message on startup ([c715266](https://github.com/nrkno/tv-automation-server-core/commit/c715266))
-* message queue retry button working with with retryUntil ([2fa05bb](https://github.com/nrkno/tv-automation-server-core/commit/2fa05bb))
-* mos-actions ([248db8a](https://github.com/nrkno/tv-automation-server-core/commit/248db8a))
-* Move some lawo and nora specific processing to blueprints ([a7a6aad](https://github.com/nrkno/tv-automation-server-core/commit/a7a6aad))
-* preliminary mongo mock implementation ([498b88f](https://github.com/nrkno/tv-automation-server-core/commit/498b88f))
-* Reimplement mock ro importing for new ingest data flow ([4b5ce20](https://github.com/nrkno/tv-automation-server-core/commit/4b5ce20))
-* reimplement remaining mos methods ([43b7ba1](https://github.com/nrkno/tv-automation-server-core/commit/43b7ba1))
-* rename files according to new naming convention ([406fad2](https://github.com/nrkno/tv-automation-server-core/commit/406fad2))
-* **ingest:** First pass at ensuring all playout and ingest functions share a global rundown lock to avoid concurrent updates ([4b0cb56](https://github.com/nrkno/tv-automation-server-core/commit/4b0cb56))
-* Rewrite debug rerun blueprints helper to use new ingest data cache ([29692e4](https://github.com/nrkno/tv-automation-server-core/commit/29692e4))
-* run automatic migration when starting up a fresh system, if possible. ([4fb4759](https://github.com/nrkno/tv-automation-server-core/commit/4fb4759))
-* RunningOrderDataImport tidying and unsync guards ([d0a12d8](https://github.com/nrkno/tv-automation-server-core/commit/d0a12d8))
-* send the window url in the client error report ([807ccc9](https://github.com/nrkno/tv-automation-server-core/commit/807ccc9))
-* some work on updating the next part on data changes ([5551707](https://github.com/nrkno/tv-automation-server-core/commit/5551707))
-* start on migration for 0.25.0 ([104a867](https://github.com/nrkno/tv-automation-server-core/commit/104a867))
-* support timeline v2 by Johan & Julian ([fd039d8](https://github.com/nrkno/tv-automation-server-core/commit/fd039d8))
-* support workFlow comments ([6181006](https://github.com/nrkno/tv-automation-server-core/commit/6181006))
-* syncFunction priorities ([4c99c11](https://github.com/nrkno/tv-automation-server-core/commit/4c99c11))
-* UI: Add Getting Started message on fresh system startup ([febe8ff](https://github.com/nrkno/tv-automation-server-core/commit/febe8ff))
-* Update baseline generation for new blueprint api ([79767bf](https://github.com/nrkno/tv-automation-server-core/commit/79767bf))
-* update dependencies ([6766d18](https://github.com/nrkno/tv-automation-server-core/commit/6766d18))
-* validatedMethod mock ([2f3a641](https://github.com/nrkno/tv-automation-server-core/commit/2f3a641))
 
 
 
