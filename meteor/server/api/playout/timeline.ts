@@ -545,7 +545,7 @@ function createPartGroup (part: Part, enable: TimelineTypes.TimelineEnable): Tim
 	if (!enable.start) { // TODO - is this loose enough?
 		enable.start = 'now'
 	}
-	let partGrp = literal<TimelineObjGroupPart & TimelineObjRundown>({
+	let partGrp = literal<TimelineObjGroupPart>({
 		id: getPartGroupId(part),
 		_id: '', // set later
 		studioId: '', // set later

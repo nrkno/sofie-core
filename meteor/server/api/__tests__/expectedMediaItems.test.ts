@@ -86,10 +86,9 @@ describe('Expected Media Items', () => {
 		Pieces.insert(literal<Piece>({
 			_id: rdId + '_' + mockPiece0,
 			name: '',
-			start: {
-				offset: 0
+			enable: {
+				start: 0
 			},
-			expectedDuration: 0,
 			adlibPreroll: 0,
 			externalId: '',
 			metaData: {},
@@ -126,10 +125,9 @@ describe('Expected Media Items', () => {
 		Pieces.insert(literal<Piece>({
 			_id: rdId + '_' + mockPiece1,
 			name: '',
-			start: {
-				offset: 0
+			enable: {
+				start: 0,
 			},
-			expectedDuration: 0,
 			adlibPreroll: 0,
 			externalId: '',
 			metaData: {},
