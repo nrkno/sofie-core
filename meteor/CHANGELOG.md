@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.24.1"></a>
+## [0.24.1](https://github.com/nrkno/tv-automation-server-core/compare/v0.24.0...v0.24.1) (2019-05-22)
+
+
+### Bug Fixes
+
+* Update tsr version ([92359bd](https://github.com/nrkno/tv-automation-server-core/commit/92359bd))
+* Using object as notification message ([f06aee6](https://github.com/nrkno/tv-automation-server-core/commit/f06aee6))
+
+
+
 <a name="0.24.0"></a>
 # 0.24.0 (2019-05-16)
 
