@@ -171,9 +171,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		return foundPositions[0] || null
 	}
-	getScrollPosition(): number | undefined {
-		return window.scrollY || window.pageYOffset || (document.documentElement || { scrollTop: undefined }).scrollTop
-	}
 	onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
 	}
@@ -193,7 +190,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		if (rundown !== undefined) {
 
-			const positionTop = this.getScrollPosition() || 0
+			const positionTop = window.scrollY
 			const positionBottom = positionTop + window.innerHeight
 
 			let currentPartElement: Element | null = null
@@ -215,10 +212,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				}
 			}
 
-			const currentPositionStart = currentPartElement ? currentPartElement.getBoundingClientRect().top + window.scrollY : null
-			const currentPositionEnd = currentPartElementAfter ? currentPartElementAfter.getBoundingClientRect().top + window.scrollY : null
+			const currentPositionStart = currentPartElement ? currentPartElement.getBoundingClientRect().top + positionTop : null
+			const currentPositionEnd = currentPartElementAfter ? currentPartElementAfter.getBoundingClientRect().top + positionTop : null
 
-			const nextPositionEnd = nextPartElementAfter ? nextPartElementAfter.getBoundingClientRect().top + window.scrollY : null
+			const nextPositionEnd = nextPartElementAfter ? nextPartElementAfter.getBoundingClientRect().top + positionTop : null
 
 			const takeIndicator = document.querySelector('.take-indicator')
 			if (takeIndicator) {
