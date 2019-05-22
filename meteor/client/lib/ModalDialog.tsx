@@ -32,7 +32,7 @@ interface ModalInput {
 	defaultValue?: any
 }
 export type ModalInputResult = {[attribute: string]: any}
-export type SomeEvent = Event | React.MouseEvent<HTMLElement>
+export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	boundKeys: Array<string> = []
 
