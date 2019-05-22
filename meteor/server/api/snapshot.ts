@@ -290,7 +290,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 	try {
 		let s: any = snapshotFcn()
 		response.setHeader('Content-Type', 'application/json')
-		response.setHeader('Content-Disposition', `attachment; filename="${s.snapshot.name}.json"`)
+		response.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(s.snapshot.name)}.json`)
 
 		let content = (
 			_.isString(s) ?

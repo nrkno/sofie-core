@@ -219,6 +219,7 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 		return (
 			<input type='text'
 				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}
@@ -351,9 +352,9 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 	render () {
 		return (
 			<label>
-				<span className='checkbox'>
+				<span className={'checkbox' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}>
 					<input type='checkbox'
-						className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+						className='form-control'
 
 						checked={this.isChecked()}
 						onChange={this.handleChange}

@@ -42,9 +42,16 @@ $inspector-drawer-tabs-height: 2.3em;
 		flex: 0 0;
 		display: flex;
 		flex-direction: row;
-		align-items: flex-start;
+		align-items: stretch;
 		justify-items: left;
 		min-height: $inspector-drawer-tabs-height;
+
+		.rundown-view__shelf__tabs__tab-group {
+			display: flex;
+			flex-grow: 0;
+			flex-shrink: 1;
+			overflow: hidden;
+		}
 
 		.rundown-view__shelf__tabs__tab {
 			position: relative;
