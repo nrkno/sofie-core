@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
+import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -48,7 +48,7 @@ interface IListViewStateHeader {
 const AdLibListView = translate()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 	table: HTMLTableElement
 
-	constructor (props: Translated<IListViewPropsHeader>) {
+	constructor(props: Translated<IListViewPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -57,7 +57,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		}
 	}
 
-	static getDerivedStateFromProps (props: IListViewPropsHeader, state) {
+	static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -82,20 +82,20 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		}
 	}
 
-	componentDidUpdate (prevProps: IListViewPropsHeader) {
+	componentDidUpdate(prevProps: IListViewPropsHeader) {
 		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
 			// scroll to selected segment
-			const segmentPosition = $('#adlib-panel__list-view__' + this.props.selectedSegment._id).position()
-			if (segmentPosition) {
-				const targetPosition = segmentPosition.top + ($(this.table).scrollTop() || 0)
-				$(this.table).animate({
+			const segment: HTMLElement | null = document.querySelector('#adlib-panel__list-view__' + this.props.selectedSegment._id)
+			if (segment) {
+				const targetPosition = segment.offsetTop + this.table.scrollTop
+				Velocity(this.table, {
 					'scrollTop': targetPosition
 				}, 250, 'swing')
 			}
 		}
 	}
 
-	renderSegments () {
+	renderSegments() {
 		return this.props.uiSegments.map((seg) => {
 			return (
 				<tbody id={'adlib-panel__list-view__' + seg._id} key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
@@ -125,7 +125,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
-										/>
+									/>
 								)
 							})
 					}
@@ -138,7 +138,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		this.table = el
 	}
 
-	render () {
+	render() {
 
 		return (
 			<div className='adlib-panel__list-view__list'>
@@ -161,7 +161,7 @@ interface IToolbarStateHader {
 const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
-	constructor (props: Translated<IToolbarPropsHeader>) {
+	constructor(props: Translated<IToolbarPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -188,16 +188,16 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 		this.searchInputChanged()
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div className='adlib-panel__list-view__toolbar'>
 				<div className='adlib-panel__list-view__toolbar__filter'>
 					<input className='adlib-panel__list-view__toolbar__filter__input' type='text'
-						   ref={this.setSearchInputRef}
-						   placeholder={t('Search...')}
-						   onChange={this.searchInputChanged} />
-					{ this.state.searchInputValue !== '' &&
+						ref={this.setSearchInputRef}
+						placeholder={t('Search...')}
+						onChange={this.searchInputChanged} />
+					{this.state.searchInputValue !== '' &&
 						<div className='adlib-panel__list-view__toolbar__filter__clear' onClick={this.clearSearchInput}>
 							<FontAwesomeIcon icon={faTimes} />
 						</div>
@@ -259,8 +259,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	const sourceLayerLookup: ISourceLayerLookup = (
 		props.showStyleBase && props.showStyleBase.sourceLayers ?
-		_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
-		{}
+			_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
+			{}
 	)
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
@@ -311,7 +311,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor (props: Translated<IProps & ITrackedProps>) {
+	constructor(props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -322,7 +322,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		}
 	}
 
-	componentWillMount () {
+	componentWillMount() {
 		this.subscribe(PubSub.segments, {
 			rundownId: this.props.rundown._id
 		})
@@ -343,7 +343,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		if (this.props.liveSegment) {
 			this.setState({
 				selectedSegment: this.props.liveSegment
@@ -353,7 +353,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IProps & ITrackedProps) {
+	componentDidUpdate(prevProps: IProps & ITrackedProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
@@ -366,7 +366,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this._cleanUp()
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
@@ -374,7 +374,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.usedHotkeys.length = 0
 	}
 
-	refreshKeyboardHotkeys () {
+	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
 
 		let preventDefault = (e) => {
@@ -453,7 +453,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	renderSegmentList () {
+	renderSegmentList() {
 		return this.props.uiSegments.map((item) => {
 			return (
 				<li className={ClassNames('adlib-panel__segments__segment', {
@@ -467,10 +467,10 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	renderListView () {
+	renderListView() {
 		// let a = new AdLibPanelToolbar({
-			// t: () => {},
-			// onFilterChange: () => { console.log('a') }
+		// t: () => {},
+		// onFilterChange: () => { console.log('a') }
 		// })
 		return (
 			<React.Fragment>
@@ -488,7 +488,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		)
 	}
 
-	render () {
+	render() {
 		if (this.props.visible) {
 			if (!this.props.uiSegments || !this.props.rundown) {
 				return <Spinner />
