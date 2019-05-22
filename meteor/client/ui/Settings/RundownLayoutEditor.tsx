@@ -5,12 +5,7 @@ import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faDownload from '@fortawesome/fontawesome-free-solid/faDownload'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
+import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -91,9 +86,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					sourceLayerTypes: undefined,
 					tags: undefined,
 					rank: 0,
-					rundownBaseline: false
+					rundownBaseline: false,
+					default: false
 				})
 			}
+		})
+	}
+
+	onToggleDefault = (item: RundownLayout, index: number, value: boolean) => {
+		const obj = _.object(item.filters.map((item, i) => [`filters.${i}.default`, i === index ? value : false]))
+		RundownLayouts.update(item._id, {
+			$set: obj
 		})
 	}
 
@@ -167,6 +170,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='rundown-layout-editor-filter mod pan mas' key={tab._id}>
 					<button className='action-btn right mod man pas' onClick={(e) => this.onRemoveFilter(item, tab)}>
 						<FontAwesomeIcon icon={faTrash} />
+					</button>
+					<button className={ClassNames('action-btn right mod man pas', {
+						'star': tab.default
+					})} onClick={(e) => this.onToggleDefault(item, index, !tab.default)}>
+						<FontAwesomeIcon icon={faStar} />
 					</button>
 					<div className='mod mvs mhs'>
 						<label className='field'>

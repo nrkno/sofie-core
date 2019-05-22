@@ -36,7 +36,7 @@ export enum PieceDisplayStyle {
  * @export
  * @interface RundownLayoutFilter
  */
-export interface RundownLayoutFilter {
+export interface RundownLayoutFilterBase {
 	_id: string
 	name: string
 	rank: number
@@ -55,7 +55,11 @@ export interface RundownLayoutFilter {
 	rundownBaseline: boolean | 'only'
 }
 
-export interface DashboardLayoutFilter extends RundownLayoutFilter {
+export interface RundownLayoutFilter extends RundownLayoutFilterBase {
+	default: boolean
+}
+
+export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	x: number
 	y: number
 	width: number
@@ -69,11 +73,12 @@ export interface RundownLayoutBase {
 	userId?: string
 	name: string
 	type: RundownLayoutType
-	filters: RundownLayoutFilter[]
+	filters: RundownLayoutFilterBase[]
 }
 
 export interface RundownLayout extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_LAYOUT
+	filters: RundownLayoutFilter[]
 }
 
 export enum ActionButtonType {
