@@ -525,7 +525,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(class extends EditAttributeBa
 					if (!_.isNaN(parseInt(key, 10))) { // key is a number (the key)
 						let enumValue = this.props.options[key]
 						let enumKey = this.props.options[enumValue]
-						options[enumValue] = enumKey
+						options[enumKey] = enumValue
 					}
 				}
 			} else {

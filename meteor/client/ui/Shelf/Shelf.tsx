@@ -283,7 +283,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						<div className={ClassNames('rundown-view__shelf__tabs__tab', {
 							'selected': this.state.selectedTab === ShelfTabs.ADLIB
 						})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
-						{this.props.rundownLayout && this.props.rundownLayout.filters.map(f =>
+						{this.props.rundownLayout && this.props.rundownLayout.filters
+							.sort((a, b) => a.rank - b.rank)
+							.map(f =>
 							<div className={ClassNames('rundown-view__shelf__tabs__tab', {
 								'selected': this.state.selectedTab === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`
 							})} 

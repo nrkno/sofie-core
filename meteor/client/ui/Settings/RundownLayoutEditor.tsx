@@ -261,12 +261,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							modifiedClassName='bghl'
 							attribute={`filters.${index}.sourceLayerTypes`}
 							obj={item}
-							options={_.map(SourceLayerType as any, (key, value) => { return { name: value, value: key } })}
+							options={SourceLayerType}
 							type='multiselect'
+							optionsAreNumbers={true}
 							label={t('Filter disabled')}
 							collection={RundownLayouts}
 							className='input text-input input-l dropdown'
-							mutateUpdateValue={v => v && v.length > 0 ? v : undefined} />
+							mutateUpdateValue={(v: string[] | undefined) => v && v.length > 0 ? v.map(a => parseInt(a, 10)) : undefined} />
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
