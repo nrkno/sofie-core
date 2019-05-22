@@ -824,12 +824,13 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	return ok
 }
 /**
- * Push a value into a object, and ensure the array exists
+ * Mutate a value on a object
  * @param obj Object
- * @param path Path to array in object
- * @param valueToPush Value to push onto array
+ * @param path Path to value in object
+ * @param mutator Operation to run on the object value
+ * @returns Result of the mutator
  */
-export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: Object, key: string) => T): T {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
 	let attrs = path.split('.')
@@ -849,44 +850,44 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 	})
 	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
 
-	if (!_.has(o,lastAttr)) {
-		o[lastAttr] = []
-	} else {
-		if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
-	}
-	let arr = o[lastAttr]
-
-	arr.push(valueToPush)
-	return arr
+	return mutator(o, lastAttr)
 }
 /**
  * Push a value into a object, and ensure the array exists
  * @param obj Object
  * @param path Path to array in object
  * @param valueToPush Value to push onto array
- * @returns Whether the value was changed
+ */
+export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+	let mutator = (o: Object, lastAttr: string) => {
+		if (!_.has(o,lastAttr)) {
+			o[lastAttr] = []
+		} else {
+			if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
+		}
+		let arr = o[lastAttr]
+
+		arr.push(valueToPush)
+		return arr
+	}
+	return mutatePath(obj, path, mutator)
+}
+/**
+ * Set a value into a object
+ * @param obj Object
+ * @param path Path to value in object
+ * @param valueToPush Value to set
  */
 export function setOntoPath<T> (obj: Object, path: string, valueToSet: T) {
-	if (!path) throw new Meteor.Error(500, 'parameter path missing')
-
-	let attrs = path.split('.')
-
-	let lastAttr = _.last(attrs)
-	let attrsExceptLast = attrs.slice(0, -1)
-
-	let o = obj
-	_.each(attrsExceptLast, (attr) => {
-
-		if (!_.has(o,attr)) {
-			o[attr] = {}
-		} else {
-			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
-		}
-		o = o[attr]
-	})
-	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
-
-	o[lastAttr] = valueToSet
+	mutatePath(obj, path, (parentObj: Object, key: string) => parentObj[key] = valueToSet)
+}
+/**
+ * Remove a value from a object
+ * @param obj Object
+ * @param path Path to value in object
+ */
+export function unsetPath (obj: Object, path: string) {
+	mutatePath(obj, path, (parentObj: Object, key: string) => delete parentObj[key])
 }
 /**
  * Replaces all invalid characters in order to make the path a valid one
