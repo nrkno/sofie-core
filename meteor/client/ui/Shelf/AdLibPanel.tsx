@@ -455,7 +455,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 				isSticky: true,
 				isGlobal: true,
 				expectedDuration: 0,
-				trigger: undefined,
 				disabled: false,
 				externalId: layer._id,
 				rundownId: '',
