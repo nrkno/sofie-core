@@ -3,7 +3,6 @@ import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 import * as mousetrap from 'mousetrap'
 
 import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
@@ -17,6 +16,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { getElementDocumentOffset } from '../../utils/positions';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -57,16 +57,16 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		x: number
 		y: number
 	} = {
-		x: 0,
-		y: 0
-	}
+			x: 0,
+			y: 0
+		}
 	private _mouseOffset: {
 		x: number
 		y: number
 	} = {
-		x: 0,
-		y: 0
-	}
+			x: 0,
+			y: 0
+		}
 	private _mouseDown: number
 
 	private bindKeys: Array<{
@@ -77,7 +77,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		global?: boolean
 	}> = []
 
-	constructor (props: Translated<ShelfProps>) {
+	constructor(props: Translated<ShelfProps>) {
 		super(props)
 
 		this.state = {
@@ -104,7 +104,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		]
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		let preventDefault = (e) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
@@ -132,7 +132,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		this.props.onRegisterHotkeys(this.bindKeys)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.unbind(k.key, 'keyup')
@@ -144,7 +144,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		})
 	}
 
-	componentDidUpdate (prevProps: ShelfProps, prevState: IState) {
+	componentDidUpdate(prevProps: ShelfProps, prevState: IState) {
 		if ((prevProps.isExpanded !== this.props.isExpanded) || (prevState.shelfHeight !== this.state.shelfHeight)) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
 				// console.log(this.state.expanded, this.getHeight())
@@ -153,12 +153,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		}
 	}
 
-	getHeight (): string {
+	getHeight(): string {
 		const top = parseFloat(this.state.shelfHeight.substr(0, this.state.shelfHeight.length - 2))
 		return this.props.isExpanded ? (100 - top).toString() + 'vh' : '0px'
 	}
 
-	getTop (newState?: boolean): string | undefined {
+	getTop(newState?: boolean): string | undefined {
 		return this.state.overrideHeight ?
 			((this.state.overrideHeight / window.innerHeight) * 100) + 'vh' :
 			((newState !== undefined ? newState : this.props.isExpanded) ?
@@ -167,7 +167,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				undefined)
 	}
 
-	getStyle () {
+	getStyle() {
 		return this.props.isExpanded ?
 			{
 				'top': this.getTop(),
@@ -248,10 +248,10 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		this._mouseStart.x = e.clientX
 		this._mouseStart.y = e.clientY
 
-		const handlePosition = $(e.currentTarget).offset()
+		const handlePosition = getElementDocumentOffset(e.currentTarget)
 		if (handlePosition) {
-			this._mouseOffset.x = (handlePosition.left - ($('html,body').scrollLeft() || 0)) - this._mouseStart.x
-			this._mouseOffset.y = (handlePosition.top - ($('html,body').scrollTop() || 0)) - this._mouseStart.y
+			this._mouseOffset.x = (handlePosition.left - document.body.scrollLeft) - this._mouseStart.x
+			this._mouseOffset.y = (handlePosition.top - document.body.scrollTop) - this._mouseStart.y
 		}
 
 		this._mouseDown = Date.now()
@@ -261,13 +261,13 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		})
 	}
 
-	switchTab (tab: ShelfTabs) {
+	switchTab(tab: ShelfTabs) {
 		this.setState({
 			selectedTab: tab
 		})
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div className='rundown-view__shelf dark' style={this.getStyle()}>
