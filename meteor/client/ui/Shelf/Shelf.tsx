@@ -19,6 +19,7 @@ import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
+import { UIStateStorage } from '../../lib/UIStateStorage';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -89,7 +90,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: undefined
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined)
 		}
 
 		const { t } = props
@@ -165,7 +166,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		if (this.state.selectedTab === undefined && this.props.rundownLayout) {
 			const defaultTab = this.props.rundownLayout.filters.find(i => i.default)
 			if (defaultTab) {
-				this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`)
+				this.setState({
+					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`
+				})
 			}
 		}
 	}
@@ -282,6 +285,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		this.setState({
 			selectedTab: tab
 		})
+
+		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, 'shelfTab', tab)
 	}
 
 	render () {
