@@ -202,7 +202,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 				let device = devices[i]
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '')
 
 				if (expectedVersion) {
 					try {
