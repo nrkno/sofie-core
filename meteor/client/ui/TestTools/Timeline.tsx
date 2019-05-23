@@ -12,7 +12,6 @@ import { TimelineState, Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../../lib/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
-import { Tracker } from 'meteor/tracker'
 
 interface ITimelineViewProps {
 	match?: {
@@ -58,6 +57,7 @@ interface ITimelineVisualizerInStudioState {
 	scriptLoaded?: boolean
 	scriptError?: boolean
 	showDetails: any
+	errorMsg?: string
 }
 interface ITimelineVisualizerInStudioTrackedProps {
 	timeline: Array<TimelineObjGeneric>
@@ -120,10 +120,17 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 				})
 			}
 			if (this.newTimeline) {
-				this.visualizer.updateTimeline(this.newTimeline, {
-
-				})
-				this.newTimeline = null
+				try {
+					this.visualizer.updateTimeline(this.newTimeline, {})
+					this.newTimeline = null
+					this.setState({
+						errorMsg: undefined
+					})
+				} catch (e) {
+					this.setState({
+						errorMsg: `Failed to update timeline:\n${e}`
+					})
+				}
 			}
 		}
 	}
@@ -168,6 +175,7 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 				{/* <script src='/script/timeline-visualizer.js'></script> */}
 				<div>Studio: {this.props.studioId}</div>
 				<div>Timeline objects: {this.props.timeline.length}</div>
+				{ this.state.errorMsg ? <div>{this.state.errorMsg}</div> : '' }
 				<div className='timeline'>
 					{
 						this.state.scriptLoaded ?
@@ -241,37 +249,45 @@ interface ITimelineSimulateProps {
 	studioId: string
 }
 
-interface ITimelineSimulate {
-	state: TimelineState
+interface ITimelineSimulateState {
+	errorMsg?: string
+	state?: TimelineState
 	now: Time
 }
-export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {}, ITimelineSimulate>((props: ITimelineSimulateProps) => {
-
-	// These properties will be exposed under this.props
-	// Note that these properties are reactively recalculated
-	let timeline = transformTimeline(
-		Timeline.find({
-			studioId: props.studioId
-		}, { sort: { _id: 1 } }).fetch()
-	)
-
-	// pre-process the timeline
+export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {}, ITimelineSimulateState>((props: ITimelineSimulateProps) => {
 	let now = getCurrentTimeReactive()
-	// console.log('rerun')
 
-	// TODO - dont repeat unless changed
-	let tl = Resolver.resolveTimeline(timeline, { time: now })
+	try {
+		// These properties will be exposed under this.props
+		// Note that these properties are reactively recalculated
+		let timeline = transformTimeline(
+			Timeline.find({
+				studioId: props.studioId
+			}, { sort: { _id: 1 } }).fetch()
+		)
 
-	let state = Resolver.getState(tl, now)
+		// console.log('rerun')
 
-	return {
-		now: now,
-		state: state
+		// TODO - dont repeat unless changed
+		let tl = Resolver.resolveTimeline(timeline, { time: now })
+		let allStates = Resolver.resolveAllStates(tl)
+
+		let state = Resolver.getState(allStates, now)
+
+		return {
+			now: now,
+			state: state
+		}
+	} catch (e) {
+		return {
+			now: now,
+			errorMsg: `Failed to update timeline:\n${e}`
+		}
 	}
 })(
-class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulate> {
-	renderTimelineState () {
-		return _.map(_.sortBy(_.values(this.props.state.layers), o => o.layer), o => (
+class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
+	renderTimelineState (state: TimelineState) {
+		return _.map(_.sortBy(_.values(state.layers), o => o.layer), o => (
 			<tr key={o.layer}>
 				<td>{o.layer}</td>
 				<td>{o.id}</td>
@@ -289,20 +305,24 @@ class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulate> {
 				<h2>Timeline state</h2>
 				<div>
 					Time: {this.props.now}
-					<div>
-						<table><tbody>
-							<tr>
-								<th>Layer</th>
-								<th>id</th>
-								<th>Enable</th>
-								<th>Duration</th>
-								<th>type</th>
-								<th>classes</th>
-								<th>content</th>
-							</tr>
-							{this.renderTimelineState()}
-						</tbody></table>
-					</div>
+					{
+						this.props.errorMsg
+						? <p>{this.props.errorMsg}</p>
+						: <div>
+							<table><tbody>
+								<tr>
+									<th>Layer</th>
+									<th>id</th>
+									<th>Enable</th>
+									<th>Duration</th>
+									<th>type</th>
+									<th>classes</th>
+									<th>content</th>
+								</tr>
+								{ this.props.state ? this.renderTimelineState(this.props.state) : ''}
+							</tbody></table>
+						</div>
+					}
 				</div>
 			</div>
 		)
