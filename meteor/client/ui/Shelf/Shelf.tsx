@@ -317,6 +317,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					<AdLibPanel
 						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
 						registerHotkeys={true}
+						
 						{...this.props}></AdLibPanel>
 					{this.props.rundownLayout && this.props.rundownLayout.filters.map(f =>
 						<AdLibPanel

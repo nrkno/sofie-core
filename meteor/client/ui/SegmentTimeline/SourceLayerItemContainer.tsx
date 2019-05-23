@@ -131,12 +131,12 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().config)
 				if (status !== props.piece.status || metadata) {
-					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
+					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
-					segmentCopy.status = status
-					segmentCopy.contentMetaData = metadata
+					pieceCopy.status = status
+					pieceCopy.contentMetaData = metadata
 
-					overrides.piece = _.extend(overrides.piece || {}, segmentCopy)
+					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
 				}
 			} else {
 				console.error(`Piece "${props.piece._id}" has no sourceLayer:`, props.piece)

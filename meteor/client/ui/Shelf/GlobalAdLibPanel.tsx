@@ -37,6 +37,7 @@ interface IListViewPropsHeader {
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
+	rundown: Rundown
 }
 
 interface IListViewStateHeader {
@@ -118,6 +119,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
+										rundown={this.props.rundown}
 									/>
 								)
 							} else if (item.sourceLayerId && item.outputLayerId &&
@@ -132,6 +134,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
+										rundown={this.props.rundown}
 									/>
 								)
 							} else {
@@ -477,7 +480,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					selectedPiece={this.state.selectedPiece}
 					showStyleBase={this.props.showStyleBase}
 					rundownAdLibs={this.props.rundownAdLibs}
-					searchFilter={this.state.filter} />
+					searchFilter={this.state.filter}
+					rundown={this.props.rundown} />
 			</React.Fragment>
 		)
 	}

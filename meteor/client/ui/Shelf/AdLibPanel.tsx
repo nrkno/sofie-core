@@ -42,6 +42,7 @@ interface IListViewPropsHeader {
 	noSegments: boolean
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
+	rundown: Rundown
 }
 
 interface IListViewStateHeader {
@@ -179,6 +180,7 @@ const AdLibListView = translate()(class extends React.Component<
 								outputLayer={this.state.outputLayers[item.outputLayerId]}
 								onToggleAdLib={this.props.onToggleAdLib}
 								onSelectAdLib={this.props.onSelectAdLib}
+								rundown={this.props.rundown}
 							/>
 						)
 					})
@@ -225,6 +227,7 @@ const AdLibListView = translate()(class extends React.Component<
 											outputLayer={this.state.outputLayers[item.outputLayerId]}
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
+											rundown={this.props.rundown}
 											/>
 									)
 								})
@@ -679,6 +682,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					showStyleBase={this.props.showStyleBase}
 					searchFilter={this.state.searchFilter}
 					filter={this.props.filter}
+					rundown={this.props.rundown}
 					noSegments={!withSegments} />
 			</React.Fragment>
 		)
