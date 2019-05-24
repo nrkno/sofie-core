@@ -21,7 +21,12 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	/** Studio installation Id */
 	studioId: string
+	/** Set if the timeline object is related to a certain rundown  */
 	rundownId?: string
+	/** Set if the timeline object is related to a certain part  */
+	partId?: string
+	/** Set if the timeline object is related to a certain piece  */
+	pieceId?: string
 
 	objectType: TimelineObjType
 

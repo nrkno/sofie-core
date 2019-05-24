@@ -556,6 +556,7 @@ function createPartGroup (part: Part, enable: TimelineTypes.TimelineEnable): Tim
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: part.rundownId,
+		partId: part._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
 		priority: 5,
@@ -581,6 +582,7 @@ function createPartGroupFirstObject (
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: part.rundownId,
+		partId: part._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: 'group_first_object',
@@ -697,6 +699,8 @@ function transformPartIntoTimeline (
 						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup.id : undefined,
 						rundownId: rundown._id,
+						partId: piece.partId,
+						pieceId: piece._id,
 						objectType: TimelineObjType.RUNDOWN
 					})
 				})

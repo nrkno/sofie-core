@@ -98,6 +98,8 @@ export function createPieceGroupFirstObject (
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: piece.rundownId,
+		partId: piece.partId,
+		pieceId: piece._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: piece.sourceLayerId + '_firstobject',
@@ -132,6 +134,8 @@ export function createPieceGroup (
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
 		rundownId: piece.rundownId,
+		partId: piece.partId,
+		pieceId: piece._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: calculatePieceTimelineEnable(piece),
 		layer: piece.sourceLayerId,
