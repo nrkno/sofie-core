@@ -168,11 +168,15 @@ postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: S
 		const body = (req as any).body
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+		let collection = body
+		if (_.isString(body)) {
+			if (body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+			collection = JSON.parse(body) as BlueprintManifestSet
+		} else if (!_.isObject(body)) {
+			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+		}
 
-		logger.info(`Got blueprint collection. ${body.length} bytes`)
-
-		const collection = JSON.parse(body) as BlueprintManifestSet
+		logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
 
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {

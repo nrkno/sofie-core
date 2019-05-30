@@ -123,13 +123,19 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 				try {
 					this.visualizer.updateTimeline(this.newTimeline, {})
 					this.newTimeline = null
-					this.setState({
-						errorMsg: undefined
-					})
+					if (this.state.errorMsg) {
+						this.setState({
+							errorMsg: undefined
+						})
+					}
 				} catch (e) {
-					this.setState({
-						errorMsg: `Failed to update timeline:\n${e}`
-					})
+					const msg = `Failed to update timeline:\n${e}`
+					this.newTimeline = null
+					if (msg !== this.state.errorMsg) {
+						this.setState({
+							errorMsg: msg
+						})
+					}
 				}
 			}
 		}

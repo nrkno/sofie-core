@@ -8,7 +8,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownTiming, computeSegmentDuration } from '../RundownView/RundownTiming'
-import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
+import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
 	IOutputLayerExtended,
@@ -190,8 +190,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		super(props)
 
 		this.state = {
-			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`rundownView.segment.${props.segmentId}.outputs`, {}),
-			collapsed: CollapsedStateStorage.getItemBoolean(`rundownView.segment.${props.segmentId}`, false),
+			collapsedOutputs: UIStateStorage.getItemBooleanMap(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}.outputs`, {}),
+			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
@@ -260,11 +260,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = { ...this.state.collapsedOutputs }
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
-		CollapsedStateStorage.setItem(`rundownView.segment.${this.props.segmentId}.outputs`, collapsedOutputs)
+		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, `segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
 	onCollapseSegmentToggle = () => {
-		CollapsedStateStorage.setItem(`rundownView.segment.${this.props.segmentId}`, !this.state.collapsed)
+		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, `segment.${this.props.segmentId}`, !this.state.collapsed)
 		this.setState({ collapsed: !this.state.collapsed })
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */

@@ -16,6 +16,9 @@ import { Meteor } from 'meteor/meteor'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
+import { UploadButton } from '../../lib/uploadButton'
+import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IProps {
 	match: {
@@ -138,7 +141,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			case BlueprintManifestType.SYSTEM:
 				return (
 					<div>
-						<p>
+						<p className='mod mhn mvs'>
 							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
 								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
 							</button>
@@ -157,7 +160,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<div className='mod mvs mhn'>
-						{t('Blueprint ID')} <i>{blueprint._id}</i>
+						{t('Blueprint ID')}: <i>{blueprint._id}</i>
 					</div>
 					<label className='field'>
 						{t('Blueprint Name')}
@@ -173,7 +176,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</label>
 					<div className='mod mvs mhn'>
-						{t('Blueprint Type')} <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
+						{t('Blueprint Type')}: <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
 					</div>
 					{ this.renderAssignment(blueprint) }
 					<div className='mod mvs mhn'>
@@ -187,13 +190,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}
 
 					<div className='mod mvs mhn'>
-					<label className='field'>
-						{t('Upload Blueprints')}
-						<div className='mdi'>
-							<input type='file' accept='.js' onChange={e => this.onUploadFile(e)} key={this.state.uploadFileKey} />
-							<span className='mdfx'></span>
-						</div>
-					</label>
+						<UploadButton className='btn btn-primary' accept='text/javascript,.js' onChange={e => this.onUploadFile(e)} key={this.state.uploadFileKey}>
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload Blueprints')}</span>
+						</UploadButton>
 					</div>
 				</div>
 			</div>

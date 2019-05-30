@@ -187,8 +187,7 @@ function updateRundownFromIngestData (
 	const showStyle = selectShowStyleVariant(studio, ingestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
-		// what to do here? remove the rundown? insert default rundowm?
-		return false
+		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint

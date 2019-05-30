@@ -7,6 +7,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { Time } from '../../../lib/lib'
+import { HTMLAttributes } from 'react';
 
 /**
  * Priority level for Notifications.
@@ -280,7 +281,7 @@ export const NotificationCenter = new NotificationCenter0()
 export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
-	message: string | React.ReactNode
+	message: string | React.ReactElement<HTMLElement> | null
 	source: string
 	persistent?: boolean
 	timeout?: number
@@ -292,13 +293,14 @@ export class Notification extends EventEmitter {
 	constructor (
 		id: string | undefined,
 		status: NoticeLevel,
-		message: string | React.ReactNode,
+		message: string | React.ReactElement<HTMLElement> | null,
 		source: string,
 		created?: Time,
 		persistent?: boolean,
 		actions?: Array<NotificationAction>,
 		rank?: number,
-		timeout?: number) {
+		timeout?: number
+	) {
 		super()
 
 		this.id = id

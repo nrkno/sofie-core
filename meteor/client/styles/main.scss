@@ -38,11 +38,21 @@ a:visited {
 
 	.checkbox {
 		vertical-align: bottom;
+
+		&.mod {
+			vertical-align: middle;
+		}
 	}
 
 	.btn, .btn-tight {
 		font-weight: 300;
 	}
+
+	input {
+		&::-webkit-input-placeholder, &::placeholder {
+			color: #bbb;
+		}
+	} 
 }
 
 .origo-pulse {

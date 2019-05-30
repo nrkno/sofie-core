@@ -125,7 +125,7 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 						</div>
 
 						<div className='mdi'>
-							<input type='file' accept='.json' onChange={e => this.onUploadCredentialsFile(e)} />
+							<input type='file' accept='application/json,.json' onChange={e => this.onUploadCredentialsFile(e)} />
 							<span className='mdfx'></span>
 						</div>
 					</div>

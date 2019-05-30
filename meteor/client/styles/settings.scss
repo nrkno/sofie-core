@@ -67,7 +67,7 @@
 	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table,
 	.settings-studio-mappings-table, .settings-studio-custom-config-table,
 	.settings-line-templates-snapshots, .settings-studio-device-httpsend-table,
-	.settings-studio-showStyleVariants-table {
+	.settings-studio-showStyleVariants-table, .settings-studio-rundown-layouts-table {
 		width: 100%;
 
 		> thead > tr {
@@ -123,5 +123,15 @@
 		&:hover {
 			background: #fff;
 		}
+	}
+
+	.rundown-layout-editor-filter {
+		border: 1px solid #f0f0f0;
+		background: #f9f9f9;
+		border-radius: 2px;
+	}
+
+	.star {
+		color: gold;
 	}
 }

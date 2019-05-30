@@ -9,11 +9,12 @@ import { Meteor } from 'meteor/meteor'
 import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
+import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { UploadButton } from '../../lib/uploadButton'
 
 interface IProps {
 	match: {
@@ -248,12 +249,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</div>
 					<h2 className='mhn'>{t('Restore from Snapshot File')}</h2>
-					<label className='field'>
-						<div className='mdi'>
-							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
-							<span className='mdfx'></span>
-						</div>
-					</label>
+					<div className='mdi'>
+						<UploadButton accept='application/json,.json'
+							className='btn btn-secondary'
+							onChange={(e) => this.onUploadFile(e)}
+							key={this.state.uploadFileKey}> 
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload snapshot')}</span>
+						</UploadButton>
+					</div>
 					<h2 className='mhn'>{t('Restore from Stored Snapshots')}</h2>
 					<div>
 						<table className='table'>

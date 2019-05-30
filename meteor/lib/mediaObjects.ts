@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
-import { Piece } from './collections/Pieces'
 import {
 	VTContent,
 	SourceLayerType,
 	IConfigItem,
-	ISourceLayer
+	ISourceLayer,
+	IBlueprintPieceGeneric
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
@@ -97,7 +97,7 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 		}))
 }
 
-export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
