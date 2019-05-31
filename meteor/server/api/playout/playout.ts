@@ -104,7 +104,7 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundown, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function resetAndActivateRundown (rundownId: string) {
+	export function resetAndActivateRundown (rundownId: string, rehearsal?: boolean) {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -112,7 +112,7 @@ export namespace ServerPlayoutAPI {
 
 			libResetRundown(rundown)
 
-			return libActivateRundown(rundown, false) // Activate rundown
+			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
 		})
 	}
 	/**
