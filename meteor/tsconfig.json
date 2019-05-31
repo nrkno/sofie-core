@@ -7,9 +7,11 @@
 		"sourceMap": true,
 		"allowJs": true,
 		"jsx": "react",
-		"types": [
-			"node",
-			"jest"
+		"types": ["node", "jest"],
+		"plugins": [
+			{
+				"name": "typescript-tslint-plugin"
+			}
 		]
 	},
 	"exclude": [

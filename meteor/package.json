@@ -110,11 +110,11 @@
     "@types/react-i18next": "^7.8.3",
     "@types/react-router-dom": "^4.2.6",
     "@types/winston": "^2.3.9",
+    "fibers": "^3.1.1",
     "i18next-conv": "^8.0.1",
     "i18next-extract-gettext": "^3.2.0",
     "jest": "^24.1.0",
     "jest-meteor-stubs": "1.5.1",
-    "fibers": "^3.1.1",
     "meteor-promise": "0.8.7",
     "node-license-validator": "^1.3.0",
     "opn-cli": "^4.1.0",
@@ -123,6 +123,7 @@
     "tslint": "^5.16.0",
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.8.0",
-    "typescript": "2.8.3"
+    "typescript": "2.8.3",
+    "typescript-tslint-plugin": "^0.4.0"
   }
 }
