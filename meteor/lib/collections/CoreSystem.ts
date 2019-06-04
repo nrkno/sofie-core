@@ -5,6 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import * as semver from 'semver'
+import { ServiceMessage } from '../typings/ServiceMessage';
 
 export const SYSTEM_ID = 'core'
 export interface ICoreSystem {
@@ -36,6 +37,9 @@ export interface ICoreSystem {
 
 	/** A user-defined name for the installation */
 	name?: string
+
+	/** Service messages currently valid for this instance */
+	serviceMessages: Map<ServiceMessage['id'], ServiceMessage>
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
