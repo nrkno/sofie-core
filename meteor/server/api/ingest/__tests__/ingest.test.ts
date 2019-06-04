@@ -7,7 +7,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { updateDynamicPartRanks } from '../../rundown'
+import { updatePartRanks } from '../../rundown'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -896,7 +896,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updateDynamicPartRanks(rundown._id)
+		updatePartRanks(rundown._id)
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
 		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
@@ -976,10 +976,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updateDynamicPartRanks(rundown._id)
+		updatePartRanks(rundown._id)
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
+		expect(dynamicPart._rank).toEqual(1.5)
 
 		// Update the segment owning the part and it should remain
 		const segmentData = rundownData.segments[0]
@@ -992,7 +992,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
 		dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(5.5) // TODO - this value is bad
+		expect(dynamicPart._rank).toEqual(2.5)
 
 		// Remove the part it is set to be after, and it should be removed
 		segmentData.parts[1].externalId = 'not-the-same'

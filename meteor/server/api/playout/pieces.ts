@@ -38,26 +38,34 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(i => itemMap[i._id] = i)
 
-	const objs: Array<TimelineObjRundown> = pieces.map(
-		piece => clone(createPieceGroup(piece))
-	)
-	objs.forEach((o: TimelineObjRundown) => {
-		if (o.enable.start === 0 || o.enable.start === 'now') {
-			o.enable.start = 100 // TODO: write a motivation for this
+	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
+		const obj = clone(createPieceGroup(piece))
+
+		if (obj.enable.start === 0 || obj.enable.start === 'now') {
+			if (piece.infiniteId && piece.infiniteId !== piece._id) {
+				// Infinite coninuation, needs to start earlier otherwise it will likely end up being unresolved
+				obj.enable.start = 0
+			} else {
+				obj.enable.start = 100 // TODO: write a motivation for this
+			}
 		}
+
+		return obj
 	})
+
 	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
 		time: 0
 	})
 
 	let resolvedPieces: Array<PieceResolved> = []
 	let unresolvedIds: string[] = []
+	let unresolvedCount = tlResolved.statistics.unresolvedCount
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
 		const pieceId = (obj.metadata || {}).pieceId
 		const piece = _.clone(itemMap[pieceId]) as PieceResolved
-		if (obj0.resolved.resolved) {
-			piece.resolvedStart = (obj0.resolved.instances[0] || {}).start || 0
+		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
+			piece.resolvedStart = obj0.resolved.instances[0].start || 0
 			piece.resolved = true
 			resolvedPieces.push(piece)
 		} else {
@@ -65,13 +73,18 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 			piece.resolved = false
 
 			resolvedPieces.push(piece)
-			unresolvedIds.push(obj.id)
+
+			if (piece.virtual) {
+				// Virtuals always are unresolved and should be ignored
+				unresolvedCount -= 1
+			} else {
+				unresolvedIds.push(obj.id)
+			}
 		}
 	})
 
-	if (tlResolved.statistics.unresolvedCount > 0) {
-		logger.error(`Got ${tlResolved.statistics.unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
-
+	if (unresolvedCount > 0) {
+		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
 	}
 	if (pieces.length !== resolvedPieces.length) {
 		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${part._id}`)

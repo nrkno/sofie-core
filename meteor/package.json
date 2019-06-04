@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "0.0.0-develop",
+  "version": "0.25.0-0",
   "private": true,
   "engines": {
     "node": "8.x"
@@ -118,7 +118,7 @@
     "meteor-promise": "0.8.7",
     "node-license-validator": "^1.3.0",
     "opn-cli": "^4.1.0",
-    "standard-version": "^5.0.2",
+    "standard-version": "^6.0.1",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "tslint-config-standard": "^8.0.1",

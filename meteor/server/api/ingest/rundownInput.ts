@@ -28,7 +28,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updateDynamicPartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -499,7 +499,7 @@ export function updateSegmentFromIngestData (
 function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
-	updateDynamicPartRanks(rundown._id)
+	updatePartRanks(rundown._id)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
