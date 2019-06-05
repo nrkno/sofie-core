@@ -29,6 +29,7 @@ import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
+import { UpdateNext } from './ingest/updateNext'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -150,21 +151,8 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (rundown && rundown.active) {
-		// If the replaced segment is next-to-be-played out,
-		// instead make the next-to-be-played-out part the one in it's place
-		const oldNextPart = _.find(removedParts, part => part._id === rundown.nextPartId)
-		if (oldNextPart) {
-			const partBefore = fetchBefore(Parts, {
-				rundownId: rundownId
-			}, oldNextPart._rank)
-
-			const newNextPart = fetchAfter(Parts, {
-				rundownId: rundownId,
-				_id: { $ne: oldNextPart._id }
-			}, partBefore ? partBefore._rank : null)
-
-			ServerPlayoutAPI.setNextPartInner(rundown, newNextPart ? newNextPart : null)
-		}
+		// Ensure the next-part is still valid
+		UpdateNext.ensureNextPartIsValid(rundown)
 	}
 }
 /**
