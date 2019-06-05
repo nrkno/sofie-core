@@ -214,6 +214,28 @@ export namespace ServerPeripheralDeviceAPI {
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
 		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceId, r.time)
 	}
+	export interface CommandErrorRef {
+		context: string
+		timelineObjId: string
+		rundownId?: string
+		partId?: string
+		pieceId?: string
+	}
+	export function reportCommandError (id: string, token: string, errorMessage: string, ref: CommandErrorRef) {
+		// This is called from the playout-gateway when an auto-next event occurs
+
+		check(ref.rundownId, Match.Optional(String))
+		check(ref.partId, Match.Optional(String))
+		check(ref.pieceId, Match.Optional(String))
+
+		console.log('reportCommandError', errorMessage, ref)
+
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+		// if (!peripheralDevice.studioId) throw new Meteor.Error(404, `peripheralDevice "${id}" is not in a studio!`)
+
+		ServerPlayoutAPI.onCommandError(errorMessage, ref.rundownId, ref.partId, ref.pieceId)
+	}
 	export function piecePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -226,6 +248,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
 		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceId, r.time)
 	}
+
 	export function pingWithCommand (id: string, token: string, message: string, cb?: Function) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
@@ -387,6 +410,9 @@ methods[PeripheralDeviceAPI.methods.piecePlaybackStopped] = (deviceId: string, d
 }
 methods[PeripheralDeviceAPI.methods.piecePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.piecePlaybackStarted(deviceId, deviceToken, r)
+}
+methods[PeripheralDeviceAPI.methods.reportCommandError] = (deviceId: string, deviceToken: string, errorMessage: string, ref: ServerPeripheralDeviceAPI.CommandErrorRef) => {
+	return ServerPeripheralDeviceAPI.reportCommandError(deviceId, deviceToken, errorMessage, ref)
 }
 methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string, cb?: Function) => {
 	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message, cb)

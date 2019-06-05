@@ -59,6 +59,7 @@ import { areThereActiveRundownsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
+import { NoteType } from '../../../lib/api/notes'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -849,6 +850,28 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(404, `Part "${partId}" in rundown "${rundownId}" not found!`)
 			}
 		})
+	}
+	/**
+	 * Triggered from Playout-gateway when a playout-command has failed
+	 */
+	export function onCommandError (errorMessage: string, rundownId?: string, partId?: string, pieceId?: string) {
+
+		logger.warn(`Command error: "${errorMessage}"`)
+
+		if (rundownId) {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown ${rundown} not found`)
+
+			rundown.appendNote({
+				type: NoteType.ERROR,
+				origin: {
+					name: 'Error in playout',
+					rundownId: rundown._id,
+				},
+				message: `Error in playout: ${errorMessage}`,
+				dismissable: true
+			})
+		}
 	}
 	/**
 	 * Make a copy of a piece and start playing it now
