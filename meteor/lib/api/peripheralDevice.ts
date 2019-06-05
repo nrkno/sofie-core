@@ -89,11 +89,11 @@ export enum methods {
 	'getTimeDiff'			= 'systemTime.getTimeDiff',
 	'getTime'				= 'systemTime.getTime',
 
-	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
+	'timelineTriggerTime'	= 'peripheralDevice.timeline.setTimelineTriggerTime',
 	'partPlaybackStarted' 	= 'peripheralDevice.rundown.partPlaybackStarted',
 	'partPlaybackStopped' 	= 'peripheralDevice.rundown.partPlaybackStopped',
-	'piecePlaybackStarted'= 'peripheralDevice.rundown.piecePlaybackStarted',
-	'piecePlaybackStopped'= 'peripheralDevice.rundown.piecePlaybackStopped',
+	'piecePlaybackStarted'	= 'peripheralDevice.rundown.piecePlaybackStarted',
+	'piecePlaybackStopped'	= 'peripheralDevice.rundown.piecePlaybackStopped',
 	'reportCommandError'	= 'peripheralDevice.playout.reportCommandError',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
@@ -127,18 +127,18 @@ export enum methods {
 	'dataPartCreate'	= 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate'	= 'peripheralDevice.rundown.partUpdate',
 
-	'resyncRundown'			= 'peripheralDevice.mos.roResync',
+	'resyncRundown'				= 'peripheralDevice.mos.roResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
 
-	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
-	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
+	'getMediaWorkFlowRevisions' 	= 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
+	'updateMediaWorkFlow' 			= 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
-	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
+	'updateMediaWorkFlowStep'		= 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
 
-	'requestUserAuthToken' 	= 'peripheralDevice.spreadsheet.requestUserAuthToken',
-	'storeAccessToken' 	= 'peripheralDevice.spreadsheet.storeAccessToken'
+	'requestUserAuthToken'	= 'peripheralDevice.spreadsheet.requestUserAuthToken',
+	'storeAccessToken'		= 'peripheralDevice.spreadsheet.storeAccessToken'
 
 }
 export function initialize (id: string, token: string, options: InitOptions): Promise<string> {
