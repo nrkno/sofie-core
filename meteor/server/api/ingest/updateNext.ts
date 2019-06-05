@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { fetchAfter } from '../../../lib/lib'
-import { DBPart } from '../../../lib/collections/Parts';
 
 function getRundownValidParts (rundown: Rundown) {
 	return rundown.getParts({

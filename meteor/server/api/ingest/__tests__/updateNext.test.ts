@@ -1,15 +1,15 @@
 import * as _ from 'underscore'
-import { runInFiber } from '../../../../../__mocks__/Fibers'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { Segments, DBSegment } from '../../../../../lib/collections/Segments'
-import { Parts, DBPart } from '../../../../../lib/collections/Parts'
-import { literal, saveIntoDb } from '../../../../../lib/lib'
+import { runInFiber } from '../../../../__mocks__/Fibers'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Segments, DBSegment } from '../../../../lib/collections/Segments'
+import { Parts, DBPart } from '../../../../lib/collections/Parts'
+import { literal, saveIntoDb } from '../../../../lib/lib'
 
 import { UpdateNext } from '../updateNext'
 
-import { ServerPlayoutAPI } from '../../../playout/playout'
-jest.mock('../../../playout/playout')
+import { ServerPlayoutAPI } from '../../playout/playout'
+jest.mock('../../playout/playout')
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -33,6 +33,7 @@ function createMockRO () {
 		currentPartId: null,
 		nextPartId: null,
 		previousPartId: null,
+		active: true,
 	})
 
 	saveIntoDb(Segments, {
