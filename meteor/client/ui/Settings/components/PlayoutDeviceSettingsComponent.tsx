@@ -371,6 +371,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 			<div>
 				<label className='field'>
+					{t('Activate playout error reporting')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.errorReporting'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute>
+				</label>
+			</div>
+			<div>
+				<label className='field'>
 					{t('Activate Multi-Threading')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.multiThreading'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>

@@ -14,6 +14,7 @@ export interface PlayoutDeviceSettings {
 		host: string
 		port: number
 	}
+	errorReporting?: boolean
 	multiThreading?: boolean
 	multiThreadedResolver?: boolean
 }
