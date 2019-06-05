@@ -290,6 +290,8 @@ export class Notification extends EventEmitter {
 	created: Time
 	rank: number
 
+	public onDropped?: () => void
+
 	constructor (
 		id: string | undefined,
 		status: NoticeLevel,
@@ -359,7 +361,8 @@ export class Notification extends EventEmitter {
 	 * @memberof Notification
 	 */
 	drop () {
-		if (this.id) {
+		if (this.onDropped) this.onDropped()
+		else if (this.id) {
 			NotificationCenter.drop(this.id)
 		}
 	}

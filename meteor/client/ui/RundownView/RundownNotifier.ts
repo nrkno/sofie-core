@@ -24,7 +24,7 @@ import { doUserAction } from '../../lib/userAction'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
-import { PeripheralDevicesAPI } from '../../lib/clientAPI';
+import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -192,26 +192,32 @@ class RundownViewNotifier extends WithManagedTracker {
 				}
 
 				let rundownNotesId = rundown._id + '_ronotes_'
-				if (rundown.notes) {
-					rundown.notes.forEach((note) => {
-						const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type
-						const newNotification = new Notification(
-							rundownNoteId,
-							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							note.message,
-							'Rundown',
-							getCurrentTime(),
-							true,
-							[],
-							-1
-						)
-						if (!Notification.isEqual(this._rundownStatus[rundownNoteId], newNotification)) {
-							this._rundownStatus[rundownNoteId] = newNotification
-							this._rundownStatusDep.changed()
-						}
-						newNoteIds.push(rundownNoteId)
-					})
-				}
+
+				rundown.getNotes().forEach((note) => {
+					const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type + '_' + note.id
+
+					const newNotification = new Notification(
+						rundownNoteId,
+						note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+						note.message,
+						'Rundown',
+						getCurrentTime(),
+						!note.dismissable,
+						[],
+						-1
+					)
+					if (note.dismissable && note.id) {
+						newNotification.onDropped = ((rundownId: string, noteId: string) => () => {
+							doUserAction(t, 'Dismiss Notification', UserActionAPI.methods.removeNote, [rundownId, noteId])
+						})(rundown._id, note.id)
+					}
+					if (!Notification.isEqual(this._rundownStatus[rundownNoteId], newNotification)) {
+						this._rundownStatus[rundownNoteId] = newNotification
+						this._rundownStatusDep.changed()
+					}
+					newNoteIds.push(rundownNoteId)
+				})
+
 			}
 
 			_.difference(oldNoteIds, newNoteIds).forEach((item) => {

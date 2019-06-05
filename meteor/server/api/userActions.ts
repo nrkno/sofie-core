@@ -380,6 +380,15 @@ export function resyncRundown (rundownId: string) {
 		ServerRundownAPI.resyncRundown(rundownId)
 	)
 }
+export function removeNote (rundownId: string, noteId: string) {
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	// if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you need to deactivate it before resyncing it.`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.removeNote(rundownId, noteId)
+	)
+}
 export function recordStop (studioId: string) {
 	check(studioId, String)
 	const record = RecordedFiles.findOne({
@@ -517,6 +526,9 @@ methods[UserActionAPI.methods.removeRundown] = function (rundownId: string) {
 }
 methods[UserActionAPI.methods.resyncRundown] = function (rundownId: string) {
 	return resyncRundown.call(this, rundownId)
+}
+methods[UserActionAPI.methods.removeNote] = function (rundownId: string, noteId: string) {
+	return removeNote.call(this, rundownId, noteId)
 }
 methods[UserActionAPI.methods.recordStop] = function (studioId: string) {
 	return recordStop.call(this, studioId)

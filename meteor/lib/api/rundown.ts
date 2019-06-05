@@ -22,7 +22,8 @@ export namespace RundownAPI {
 		'removeRundown' = 'rundown.removeRundown',
 		'resyncRundown' = 'rundown.resyncRundown',
 		'unsyncRundown' = 'rundown.unsyncRundown',
-		'rundownNeedsUpdating' = 'rundown.rundownNeedsUpdating'
+		'rundownNeedsUpdating' = 'rundown.rundownNeedsUpdating',
+		'removeNote' 	= 'rundown.removeNote'
 	}
 }
 

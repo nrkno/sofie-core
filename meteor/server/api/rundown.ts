@@ -266,6 +266,15 @@ export namespace ServerRundownAPI {
 			unsyncedTime: getCurrentTime()
 		}})
 	}
+	export function removeNote (rundownId: string, noteId: string) {
+		check(rundownId, String)
+		check(noteId, String)
+
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+		return rundown.removeNote(noteId)
+	}
 }
 export namespace ClientRundownAPI {
 	export function rundownNeedsUpdating (rundownId: string) {
@@ -307,6 +316,9 @@ methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
 }
 methods[RundownAPI.methods.unsyncRundown] = (rundownId: string) => {
 	return ServerRundownAPI.unsyncRundown(rundownId)
+}
+methods[RundownAPI.methods.removeNote] = (rundownId: string, noteId: string) => {
+	return ServerRundownAPI.removeNote(rundownId, noteId)
 }
 methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: string) => {
 	return ClientRundownAPI.rundownNeedsUpdating(rundownId)

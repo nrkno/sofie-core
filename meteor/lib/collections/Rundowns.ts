@@ -16,6 +16,7 @@ import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
+import { Random } from 'meteor/random'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -111,6 +112,7 @@ export class Rundown implements DBRundown {
 	public holdState?: RundownHoldState
 	public dataSource: string
 	public notes?: Array<RundownNote>
+	public dismissableNotes?: Array<RundownNote>
 	_: any
 
 	constructor (document: DBRundown) {
@@ -257,11 +259,32 @@ export class Rundown implements DBRundown {
 
 		return notes
 	}
-	appendNote (note: RundownNote): void {
-		Rundowns.update(this._id, {$push: {
-			notes: note
+	appendNote (note: RundownNote, id?: string): string {
+		note.id = id || Random.id()
+		const oldNote = _.find(this.notes || [], (n) => n.id === note.id)
+		if (!oldNote) {
+			Rundowns.update(this._id, {$push: {
+				notes: note
+			}})
+		} else {
+			oldNote.message		= note.message
+			oldNote.origin		= note.origin
+			oldNote.type		= note.type
+			oldNote.dismissable	= note.dismissable
+
+			Rundowns.update(this._id, {$set: {
+				notes: this.notes
+			}})
+		}
+
+		return note.id
+	}
+	removeNote (noteId: string): void {
+		Rundowns.update(this._id, {$pull: {
+			notes: { id: noteId }
 		}})
 	}
+
 }
 export interface RundownData {
 	rundown: Rundown
