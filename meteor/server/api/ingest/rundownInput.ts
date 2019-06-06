@@ -380,6 +380,8 @@ function updateRundownFromIngestData (
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
 }
 
