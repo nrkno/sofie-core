@@ -99,7 +99,6 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 function evaluateFunctions () {
 	const groups = _.groupBy(syncFunctionFcns, fcn => fcn.id)
 	_.each(groups, (group, id) => {
-		// console.log(`group ${id} has ${group.length}`)
 		const runningFcn = _.find(group, fcn => fcn.status === syncFunctionFcnStatus.RUNNING)
 		let startNext = false
 		if (runningFcn) {
@@ -138,6 +137,13 @@ function evaluateFunctions () {
 					nextFcn.status = syncFunctionFcnStatus.DONE
 					evaluateFunctions()
 				}, 0)
+				Meteor.setTimeout(() => {
+					if (nextFcn.status === syncFunctionFcnStatus.RUNNING) {
+						logger.error(`syncFunction "${nextFcn.name}" took too long to evaluate`)
+						nextFcn.status = syncFunctionFcnStatus.TIMEOUT
+						evaluateFunctions()
+					}
+				}, nextFcn.timeout)
 			}
 		}
 	})
