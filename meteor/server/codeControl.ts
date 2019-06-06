@@ -3,27 +3,55 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { waitForPromise, getHash } from '../lib/lib'
+import * as callerModule from 'caller-module'
 
 enum syncFunctionFcnStatus {
 	WAITING = 0,
 	RUNNING = 1,
-	DONE = 2
+	DONE = 2,
+	TIMEOUT = 3
 }
 export type Callback = (err: Error | null, res?: any) => void
 
 interface SyncFunctionFcn {
 	id: string
 	fcn: Function
+	name: string
 	args: Array<any>
 	cb: Callback
 	timeout: number
 	status: syncFunctionFcnStatus
 	priority: number
+	started?: number
 }
 /** Queue of syncFunctions */
 const syncFunctionFcns: Array<SyncFunctionFcn> = []
-/** Start time of running syncFunctions */
-const syncFunctionRunningFcns: {[id: string]: number} = {}
+
+function getFunctionName<T extends Function> (parent: Function, fcn: T): string {
+	if (fcn.name) {
+		return fcn.name
+	} else {
+		let name = 'Anonymous'
+		for (let i = 4; i < 10; i++) {
+			try {
+				const newName = callerModule.GetCallerModule(i).callSite.getFunctionName()
+				if (newName) {
+					if (newName !== 'args') {
+						name += `(${newName})`
+						break
+					}
+				} else {
+					name += `(Anonymous)`
+				}
+			} catch (e) {
+				// Probably reached the top?
+				break
+			}
+		}
+
+		return name
+	}
+}
 
 /**
  * Only allow one instane of the function (and its arguments) to run at the same time
@@ -52,11 +80,13 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 			getId(id0, args) :
 			getHash(id1 + JSON.stringify(args.join()))
 		)
-		logger.debug(`syncFunction: ${id} (${(fcn.name || 'Anonymous function')})`)
+		const name = getFunctionName(this, fcn)
+		logger.debug(`syncFunction: ${id} (${name})`)
 
 		syncFunctionFcns.push({
 			id: id,
 			fcn: fcn,
+			name: name,
 			args: args,
 			cb: cb,
 			timeout: timeout,
@@ -69,16 +99,18 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 function evaluateFunctions () {
 	const groups = _.groupBy(syncFunctionFcns, fcn => fcn.id)
 	_.each(groups, (group, id) => {
+		// console.log(`group ${id} has ${group.length}`)
 		const runningFcn = _.find(group, fcn => fcn.status === syncFunctionFcnStatus.RUNNING)
 		let startNext = false
 		if (runningFcn) {
-			let startTime = syncFunctionRunningFcns[id]
+			let startTime = runningFcn.started
 			if (!startTime) {
-				startTime = syncFunctionRunningFcns[id] = Date.now()
+				startTime = runningFcn.started = Date.now()
 			}
 			if (Date.now() - startTime > runningFcn.timeout) {
 				// The function has run too long
-				logger.error('syncFunction "' + (runningFcn.fcn.name) + '" took too long to evaluate')
+				logger.error(`syncFunction "${runningFcn.name}" took too long to evaluate`)
+				runningFcn.status = syncFunctionFcnStatus.TIMEOUT
 				startNext = true
 			} else {
 				// Do nothing, another is running
@@ -91,7 +123,7 @@ function evaluateFunctions () {
 			const nextFcn = _.max(_.filter(group, fcn => fcn.status === syncFunctionFcnStatus.WAITING), fcn => fcn.priority)
 			if (_.isObject(nextFcn)) {
 				nextFcn.status = syncFunctionFcnStatus.RUNNING
-				syncFunctionRunningFcns[id] = Date.now()
+				nextFcn.started = Date.now()
 				Meteor.setTimeout(() => {
 					try {
 						let result = nextFcn.fcn(...nextFcn.args)
@@ -99,7 +131,10 @@ function evaluateFunctions () {
 					} catch (e) {
 						nextFcn.cb(e)
 					}
-					delete syncFunctionRunningFcns[id]
+					if (nextFcn.status === syncFunctionFcnStatus.TIMEOUT) {
+						const duration = nextFcn.started ? Date.now() - nextFcn.started : 0
+						logger.error(`syncFunction ${nextFcn.id} "${nextFcn.name}" completed after timeout. took ${duration}ms`)
+					}
 					nextFcn.status = syncFunctionFcnStatus.DONE
 					evaluateFunctions()
 				}, 0)
@@ -137,7 +172,8 @@ export function syncFunctionIgnore<T extends Function> (fcn: T, id0?: string, ti
 		if (isFunctionQueued(id)) {
 			// If it's queued, its going to be run some time in the future
 			// Do nothing then...
-			logger.debug('Function ' + (fcn.name || 'Anonymous') + ' is already queued to execute, ignoring call.')
+			const name = getFunctionName(this, fcn)
+			logger.debug('Function ' + (name || 'Anonymous') + ' is already queued to execute, ignoring call.')
 		} else {
 			syncFcn(...args)
 		}
