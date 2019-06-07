@@ -25,7 +25,7 @@ import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions';
-import { getElementDocumentOffset } from '../../utils/positions';
+import { getElementDocumentOffset, Position } from '../../utils/positions';
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -56,8 +56,8 @@ export interface ISourceLayerItemProps {
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
-	elementPosition: { top: number, left: number }
-	cursorPosition: { top: number, left: number }
+	elementPosition: Position
+	cursorPosition: Position
 	scrollLeftOffset: number
 	cursorTimePosition: number
 	elementWidth: number
