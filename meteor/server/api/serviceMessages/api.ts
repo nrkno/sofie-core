@@ -57,15 +57,12 @@ function getHandler (
 ) {
 	const coreSystem = CoreSystem.findOne()
 	if (!coreSystem || !coreSystem.serviceMessages) {
-		logger.error('Unable to access CoreSystem.serviceMessages, database not migrated?')
-		res.statusCode = 500
-		res.end('Unable to access service messages')
 		return
 	}
 
 	const { serviceMessages } = coreSystem
 	logger.info(`serviceMessages: ${typeof serviceMessages}`, serviceMessages)
-	const valuesArray = Array.from(serviceMessages.values())
+	const valuesArray = Array.from(Object.entries(serviceMessages))
 	logger.info(`valuesArray: ${valuesArray.length}, ${typeof valuesArray}`)
 	res.end(JSON.stringify(valuesArray))
 }

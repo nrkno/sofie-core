@@ -24,7 +24,6 @@ import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
-import { ServiceMessage } from '../lib/typings/ServiceMessage';
 const PackageInfo = require('../package.json')
 
 export { PackageInfo }
@@ -42,7 +41,7 @@ function initializeCoreSystem () {
 			version: version,
 			previousVersion: null,
 			storePath: '', // to be filled in later
-			serviceMessages: new Map<ServiceMessage['id'], ServiceMessage>()
+			serviceMessages: {}
 		})
 
 		// Check what migration has to provide:

@@ -12,7 +12,8 @@
 			{
 				"name": "typescript-tslint-plugin"
 			}
-		]
+		],
+		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object"]
 	},
 	"exclude": [
 		"node_modules",
