@@ -21,6 +21,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
+import { getElementWidth } from '../../utils/dimensions';
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -343,7 +344,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}, this.props.isLiveSegment ? {
 			followLiveLine: false
 		} : {}))
-		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange(($(this.timelineDiv).width() || 1) / (computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1))
+		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange((getElementWidth(this.timelineDiv) || 1) / (computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1))
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 	updateSpeech () {
