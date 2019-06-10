@@ -48,6 +48,7 @@
     "@types/semver": "^6.0.0",
     "amqplib": "^0.5.3",
     "body-parser": "^1.18.3",
+    "caller-module": "^1.0.1",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",

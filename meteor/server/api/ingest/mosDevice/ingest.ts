@@ -32,7 +32,7 @@ import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments } from '../../../../lib/collections/Segments'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { removeSegments } from '../../rundown'
-import { UpdateNext } from './updateNext'
+import { UpdateNext } from '../updateNext'
 
 interface AnnotatedIngestPart {
 	externalId: string

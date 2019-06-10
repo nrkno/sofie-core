@@ -46,6 +46,7 @@ import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
+import { UpdateNext } from './updateNext'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -379,6 +380,8 @@ function updateRundownFromIngestData (
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
 }
 
@@ -501,6 +504,7 @@ function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updatePartRanks(rundown._id)
 	updateSourceLayerInfinitesAfterPart(rundown)
+	UpdateNext.ensureNextPartIsValid(rundown)
 	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
 
@@ -628,7 +632,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank, // TODO - is this correct
+			_rank: sourcePart.rank, // This gets updated to a rundown unique rank as a later step
 			notes: notes,
 		})
 		parts.push(part)
