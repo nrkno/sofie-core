@@ -175,11 +175,12 @@ export function getResolvedPieces (part: Part): Piece[] {
 		piece: Piece
 	}> = []
 
+	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
 		const id = (obj.metadata || {}).pieceId
 
-		if (obj0.resolved.resolved) {
+		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			const firstInstance = obj0.resolved.instances[0] || {}
 			events.push({
 				start: firstInstance.start || 0,
@@ -194,11 +195,12 @@ export function getResolvedPieces (part: Part): Piece[] {
 				id: id,
 				piece: itemMap[id]
 			})
+			unresolvedIds.push(id)
 		}
 	})
 
 	if (tlResolved.statistics.unresolvedCount > 0) {
-		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces for piece #${part._id}`)
+		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces for piece #${part._id} (${unresolvedIds.join(', ')})`)
 	}
 	if (pieces.length !== events.length) {
 		logger.warn(`Got ${events.length} ordered pieces. Expected ${pieces.length}. for piece #${part._id}`)
