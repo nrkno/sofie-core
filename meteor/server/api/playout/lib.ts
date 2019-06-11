@@ -10,7 +10,8 @@ import {
 	waitForPromiseAll,
 	asyncCollectionRemove,
 	Time,
-	pushOntoPath
+	pushOntoPath,
+	clone
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -18,7 +19,6 @@ import { updateSegmentFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
-let clone = require('fast-clone')
 
 /**
  * Reset the rundown:
@@ -75,13 +75,9 @@ export function resetRundown (rundown: Rundown) {
 	// Reset any pieces that were modified by inserted adlibs
 	Pieces.update({
 		rundownId: rundown._id,
-		$or: [
-			{ originalExpectedDuration: { $exists: true } },
-			{ originalInfiniteMode: { $exists: true } }
-		]
+		originalInfiniteMode: { $exists: true }
 	}, {
 		$rename: {
-			originalExpectedDuration: 'expectedDuration',
 			originalInfiniteMode: 'infiniteMode'
 		}
 	}, { multi: true })
@@ -90,9 +86,9 @@ export function resetRundown (rundown: Rundown) {
 		rundownId: rundown._id
 	}, {
 		$unset: {
-			duration: 1,
+			playoutDuration: 1,
 			startedPlayback: 1,
-			durationOverride: 1,
+			userDuration: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -145,8 +141,7 @@ function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
 	}, { sort: { _rank: -1 } })
 }
 export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
-	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbPart.segmentId)
-	// const ingestPart = loadCachedIngestPart(dbRundown._id, dbPart._id)
+	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbRundown.externalId, dbPart.segmentId, dbPart.segmentId)
 
 	const studio = Studios.findOne(dbRundown.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)
@@ -225,7 +220,7 @@ function resetPart (part: DBPart): Promise<void> {
 	}, {
 		$unset: {
 			startedPlayback: 1,
-			durationOverride: 1,
+			userDuration: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -250,13 +245,9 @@ function resetPart (part: DBPart): Promise<void> {
 	ps.push(asyncCollectionUpdate(Pieces, {
 		rundownId: part.rundownId,
 		partId: part._id,
-		$or: [
-			{ originalExpectedDuration: { $exists: true } },
-			{ originalInfiniteMode: { $exists: true } }
-		]
+		originalInfiniteMode: { $exists: true }
 	}, {
 		$rename: {
-			originalExpectedDuration: 'expectedDuration',
 			originalInfiniteMode: 'infiniteMode'
 		}
 	}, {
@@ -315,11 +306,10 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 
 		o.id = prefix + o.id
 
-		if (typeof o.duration === 'string') {
-			o.duration = replaceIds(o.duration)
-		}
-		if (typeof o.trigger.value === 'string') {
-			o.trigger.value = replaceIds(o.trigger.value)
+		for (const key of _.keys(o.enable)) {
+			if (typeof o.enable[key] === 'string') {
+				o.enable[key] = replaceIds(o.enable[key])
+			}
 		}
 
 		if (typeof o.inGroup === 'string') {

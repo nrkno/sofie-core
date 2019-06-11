@@ -14,6 +14,7 @@ import { translate } from 'react-i18next'
 interface IUserActionsListProps {
 	items: UserActionsLogItem[]
 	onItemClick?: (item: UserActionsLogItem) => void
+	renderButtons?: (item: UserActionsLogItem) => React.Component
 }
 
 export const UserActionsList = translate()(class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
@@ -46,6 +47,9 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 					<th className='c1 user-action-log__args'>
 						{t('Parameters')}
 					</th>
+					{
+						this.props.renderButtons ? <th className='c1 user-action-log__buttons'></th> : ''
+					}
 				</tr>
 			</thead>
 		)
@@ -73,6 +77,9 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 									''
 								}</td>
 								<td className='user-action-log__args'>{msg.args}</td>
+								{
+									this.props.renderButtons ? <td className='user-action-log__buttons'>{this.props.renderButtons(msg)}</td> : ''
+								}
 							</tr>
 						)
 					})}

@@ -8,7 +8,7 @@ import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Parts } from '../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../lib/lib'
@@ -24,6 +24,7 @@ import { doUserAction } from '../../lib/userAction'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
+import { PeripheralDevicesAPI } from '../../lib/clientAPI';
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -164,7 +165,9 @@ class RundownViewNotifier extends WithManagedTracker {
 								action: () => {
 									doModalDialog({
 										title: t('Re-sync Rundown'),
-										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output.)'),
+										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output)'),
+										yes: t('Re-sync'),
+										no: t('Cancel'),
 										onAccept: (event) => {
 											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId])
 										}
@@ -195,7 +198,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						const newNotification = new Notification(
 							rundownNoteId,
 							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							rundown.notes,
+							note.message,
 							'Rundown',
 							getCurrentTime(),
 							true,
@@ -221,6 +224,8 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePeripheralDeviceStatus (studioId: string | undefined) {
+		const t = i18nTranslator
+
 		let oldDevItemIds: Array<string> = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
 		if (studioId) {
@@ -235,8 +240,39 @@ class RundownViewNotifier extends WithManagedTracker {
 			devices.forEach((item) => {
 				let newNotification: Notification | undefined = undefined
 
+				const parent = devices.find(i => i._id === item.parentDeviceId)
+
 				if (item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD || !item.connected) {
-					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true, undefined, -1)
+					newNotification = new Notification(
+						item._id,
+						this.convertDeviceStatus(item),
+						this.makeDeviceMessage(item),
+						'Devices',
+						getCurrentTime(),
+						true,
+						parent && parent.connected ? [
+							{
+								label: t('Restart'),
+								type: 'primary',
+								action: () => {
+									doModalDialog({
+										title: t('Restart {{device}}', { device: parent.name }),
+										message: t('Fixing this problem requires a restart to the host device. Are you sure you want to restart {{device}}?\n(This might affect output)', { device: parent.name }),
+										yes: t('Restart'),
+										no: t('Cancel'),
+										onAccept: (e) => {
+											PeripheralDevicesAPI.restartDevice(parent, e)
+											.then(() => {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: parent.name }), 'RundownNotifier'))
+											}).catch((err) => {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: parent.name, errorMessage: err + '' }), 'RundownNotifier'))
+											})
+										}
+									})
+								}
+							}
+						] : undefined,
+						-1)
 				}
 				if (newNotification && !Notification.isEqual(this._deviceStatus[item._id], newNotification)) {
 					this._deviceStatus[item._id] = newNotification

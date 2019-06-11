@@ -25,6 +25,11 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { Random } from 'meteor/random';
+import { literal } from '../../../lib/lib';
+import { RundownAPI } from '../../../lib/api/rundown';
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -32,8 +37,12 @@ interface IListViewPropsHeader {
 	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
 	selectedPart: AdLibPieceUi | undefined
 	selectedSegment: SegmentUi | undefined
-	filter: string | undefined
+	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
+	noSegments: boolean
+	filter: RundownLayoutFilter | undefined
+	rundownAdLibs?: Array<AdLibPieceUi>
+	rundown: Rundown
 }
 
 interface IListViewStateHeader {
@@ -45,7 +54,9 @@ interface IListViewStateHeader {
 	}
 }
 
-const AdLibListView = translate()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
+const AdLibListView = translate()(class extends React.Component<
+	Translated<IListViewPropsHeader>, IListViewStateHeader
+> {
 	table: HTMLTableElement
 
 	constructor(props: Translated<IListViewPropsHeader>) {
@@ -85,7 +96,8 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 	componentDidUpdate(prevProps: IListViewPropsHeader) {
 		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
 			// scroll to selected segment
-			const segment: HTMLElement | null = document.querySelector('#adlib-panel__list-view__' + this.props.selectedSegment._id)
+			const segmentSelector = `#${this.table.id} .adlib-panel__list-view__item__${this.props.selectedSegment._id}`
+			const segment: HTMLElement | null = document.querySelector(segmentSelector)
 			if (segment) {
 				const targetPosition = segment.offsetTop + this.table.scrollTop
 				Velocity(this.table, {
@@ -95,54 +107,150 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		}
 	}
 
-	renderSegments() {
-		return this.props.uiSegments.map((seg) => {
-			return (
-				<tbody id={'adlib-panel__list-view__' + seg._id} key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
-					'live': seg.isLive,
-					'next': seg.isNext && !seg.isLive,
-					'past': seg.parts.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
-				})}>
-					<tr className='adlib-panel__list-view__list__seg-header'>
-						<td colSpan={9}>
-							{seg.name}
-						</td>
-					</tr>
-					{
-						seg.pieces && seg.pieces.
-							filter((item) => {
-								if (!this.props.filter) return true
-								if (item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) return true
-								return false
-							}).
-							map((item: AdLibPieceUi) => {
-								return (
-									<AdLibListItem
-										key={item._id}
-										item={item}
-										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-										layer={this.state.sourceLayers[item.sourceLayerId]}
-										outputLayer={this.state.outputLayers[item.outputLayerId]}
-										onToggleAdLib={this.props.onToggleAdLib}
-										onSelectAdLib={this.props.onSelectAdLib}
-									/>
-								)
+	matchFilter (item: AdLibPieceUi) {
+		if (!this.props.searchFilter && !this.props.filter) return true
+		const liveSegment = this.props.uiSegments.find(i => i.isLive === true)
+		const uppercaseLabel = item.name.toUpperCase()
+		if (this.props.filter) {
+			// Filter currentSegment only
+			if (
+				this.props.filter.currentSegment === true &&
+				(
+					(liveSegment && liveSegment.parts.find(i => item.partId === i._id) === undefined) ||
+					(!liveSegment)
+				)
+			) {
+				return false
+			}
+			// Filter out items that are not within outputLayerIds filter
+			if (
+				this.props.filter.outputLayerIds !== undefined &&
+				this.props.filter.outputLayerIds.indexOf(item.outputLayerId) < 0
+			) {
+				return false
+			}
+			// Source layers
+			if (
+				this.props.filter.sourceLayerIds !== undefined &&
+				this.props.filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
+			) {
+				return false
+			}
+			// Source layer types
+			const sourceLayerType = this.props.showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
+			if (
+				sourceLayerType &&
+				this.props.filter.sourceLayerTypes !== undefined &&
+				this.props.filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
+			) {
+				return false
+			}
+			// Item label needs at least one of the strings in the label array
+			if (
+				this.props.filter.label !== undefined &&
+				this.props.filter.label.reduce((p, v) => {
+					return p || uppercaseLabel.indexOf(v) >= 0
+				}, false) === false
+			) {
+				return false
+			}
+		}
+		if (this.props.searchFilter) {
+			return uppercaseLabel.indexOf(this.props.searchFilter.toUpperCase()) >= 0
+		} else {
+			return true
+		}
+	}
+
+	renderRundownAdLibs () {
+		const { t } = this.props
+
+		return <tbody className='adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline'>
+			{
+				this.props.rundownAdLibs && this.props.rundownAdLibs.
+					filter((item) => {
+						return this.matchFilter(item)
+					}).
+					map((item: AdLibPieceUi) => {
+						return (
+							<AdLibListItem
+								key={item._id}
+								item={item}
+								selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+								layer={this.state.sourceLayers[item.sourceLayerId]}
+								outputLayer={this.state.outputLayers[item.outputLayerId]}
+								onToggleAdLib={this.props.onToggleAdLib}
+								onSelectAdLib={this.props.onSelectAdLib}
+								rundown={this.props.rundown}
+							/>
+						)
+					})
+			}
+		</tbody>
+	}
+
+	renderSegments () {
+		return this.props.uiSegments
+			.filter(a => this.props.filter ?
+				this.props.filter.currentSegment ? a.isLive : true
+				: true)
+			.map((seg) => {
+				return (
+					<tbody key={seg._id}
+						className={ClassNames(
+							'adlib-panel__list-view__list__segment',
+							'adlib-panel__list-view__item__' + seg._id,
+							{
+								'live': seg.isLive,
+								'next': seg.isNext && !seg.isLive,
+								'past': seg.parts.reduce((memo, item) => {
+									return item.startedPlayback && item.duration ? memo : false
+								}, true) === true
 							})
-					}
-				</tbody>
-			)
-		})
+						}
+					>
+						<tr className='adlib-panel__list-view__list__seg-header'>
+							<td colSpan={4}>
+								{seg.name}
+							</td>
+						</tr>
+						{
+							seg.pieces && seg.pieces.
+								sort((a, b) => a._rank - b._rank).
+								filter((item) => this.matchFilter(item)).
+								map((item: AdLibPieceUi) => {
+									return (
+										<AdLibListItem
+											key={item._id}
+											item={item}
+											selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+											layer={this.state.sourceLayers[item.sourceLayerId]}
+											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											onToggleAdLib={this.props.onToggleAdLib}
+											onSelectAdLib={this.props.onSelectAdLib}
+											rundown={this.props.rundown}
+											/>
+									)
+								})
+						}
+					</tbody>
+				)
+			})
 	}
 
 	setTableRef = (el) => {
 		this.table = el
 	}
 
-	render() {
-
+	render () {
 		return (
-			<div className='adlib-panel__list-view__list'>
-				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
+			<div className={ClassNames('adlib-panel__list-view__list', {
+				'adlib-panel__list-view__list--no-segments': this.props.noSegments
+			})}>
+				<table id={'adlib-panel__list-view__table__' + Random.id()}
+					className='adlib-panel__list-view__list__table'
+					ref={this.setTableRef}>
+					{this.renderRundownAdLibs()}
 					{this.renderSegments()}
 				</table>
 			</div>
@@ -152,6 +260,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 
 interface IToolbarPropsHeader {
 	onFilterChange?: (newFilter: string | undefined) => void
+	noSegments?: boolean
 }
 
 interface IToolbarStateHader {
@@ -191,7 +300,9 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	render() {
 		const { t } = this.props
 		return (
-			<div className='adlib-panel__list-view__toolbar'>
+			<div className={ClassNames('adlib-panel__list-view__toolbar', {
+				'adlib-panel__list-view__toolbar--no-segments': this.props.noSegments
+			})}>
 				<div className='adlib-panel__list-view__toolbar__filter'>
 					<input className='adlib-panel__list-view__toolbar__filter__input' type='text'
 						ref={this.setSearchInputRef}
@@ -220,6 +331,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
 	isGlobal?: boolean
 	isHidden?: boolean
+	isSticky?: boolean
 }
 
 export interface SegmentUi extends Segment {
@@ -240,21 +352,25 @@ interface IProps {
 	rundown: Rundown
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
+	filter?: RundownLayoutFilter
+	includeGlobalAdLibs?: boolean
+	registerHotkeys?: boolean
 }
 
 interface IState {
 	selectedPart: AdLibPiece | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
-	filter: string | undefined
+	searchFilter: string | undefined
 }
 interface ITrackedProps {
 	uiSegments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
 	sourceLayerLookup: ISourceLayerLookup
+	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
-export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
+export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup = (
@@ -303,10 +419,69 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		return seg
 	}) : []
 
+	let rundownBaselineAdLibs: Array<AdLibPieceUi> = []
+	if (props.rundown && props.filter && props.includeGlobalAdLibs && (
+		props.filter.rundownBaseline === true || props.filter.rundownBaseline === 'only'
+	)) {
+		let rundownAdLibItems = RundownBaselineAdLibPieces.find({
+			rundownId: props.rundown._id
+		}, {
+			sort: { sourceLayerId: 1, _rank: 1 }
+		}).fetch()
+		rundownBaselineAdLibs = rundownAdLibItems.map((item) => {
+			// automatically assign hotkeys based on adLibItem index
+			const uiAdLib: AdLibPieceUi = _.clone(item)
+			uiAdLib.isGlobal = true
+
+			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+			if (sourceLayer &&
+				sourceLayer.activateKeyboardHotkeys &&
+				sourceLayer.assignHotkeysToGlobalAdlibs
+			) {
+				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
+				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
+					// add one to the usage hash table
+					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+				}
+			}
+
+			if (sourceLayer && sourceLayer.isHidden) {
+				uiAdLib.isHidden = true
+			}
+
+			// always add them to the list
+			return uiAdLib
+		}).
+		concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
+			map(layer => literal<AdLibPieceUi>({
+				_id: layer._id,
+				hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
+				name: props.t('Last ') + (layer.abbreviation || layer.name),
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				isSticky: true,
+				isGlobal: true,
+				expectedDuration: 0,
+				disabled: false,
+				externalId: layer._id,
+				rundownId: '',
+				sourceLayerId: layer._id,
+				outputLayerId: '',
+				_rank: 0
+			}))
+		)
+
+		if (props.filter.rundownBaseline === 'only') {
+			uiSegments.length = 0
+		}
+	}
+
 	return {
 		uiSegments,
 		liveSegment,
 		sourceLayerLookup,
+		rundownBaselineAdLibs
 	}
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -317,7 +492,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.state = {
 			selectedPart: undefined,
 			selectedSegment: undefined,
-			filter: undefined,
+			searchFilter: undefined,
 			followLive: true
 		}
 	}
@@ -335,10 +510,10 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe(PubSub.rundownBaselineAdLibPieces, {
 			rundownId: this.props.rundown._id
 		})
-		meteorSubscribe(PubSub.studios, {
+		this.subscribe(PubSub.studios, {
 			_id: this.props.rundown.studioId
 		})
-		meteorSubscribe(PubSub.showStyleBases, {
+		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.rundown.showStyleBaseId
 		})
 	}
@@ -376,6 +551,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
+		if (!this.props.registerHotkeys) return
 
 		let preventDefault = (e) => {
 			e.preventDefault()
@@ -408,7 +584,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	onFilterChange = (filter: string) => {
 		this.setState({
-			filter
+			searchFilter: filter
 		})
 	}
 
@@ -423,7 +599,11 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		const { t } = this.props
 
 		if (piece.invalid) {
-			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
+			NotificationCenter.push(new Notification(
+				t('Invalid AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
 			return
 		}
 
@@ -433,7 +613,19 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false])
+			if (!piece.isGlobal) {
+				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
+					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+				])
+			} else if (piece.isGlobal && !piece.isSticky) {
+				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
+					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+				])
+			} else if (piece.isSticky) {
+				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
+					this.props.rundown._id, piece.sourceLayerId
+				])
+			}
 		}
 	}
 
@@ -441,7 +633,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		// console.log(sourceLayer)
 		const { t } = this.props
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
+				this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id
+			])
 		}
 	}
 
@@ -459,7 +653,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 				<li className={ClassNames('adlib-panel__segments__segment', {
 					'live': item.isLive,
 					'next': item.isNext && !item.isLive,
-					'past': item.parts.reduce((memo, part) => { return part.startedPlayback && part.duration ? memo : false }, true) === true
+					'past': item.parts.reduce((memo, part) => {
+						return part.startedPlayback && part.duration ? memo : false
+					}, true) === true
 				})} onClick={(e) => this.onSelectSegment(item)} key={item._id} tabIndex={0}>
 					{item.name}
 				</li>
@@ -467,7 +663,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	renderListView() {
+	renderListView (withSegments?: boolean) {
 		// let a = new AdLibPanelToolbar({
 		// t: () => {},
 		// onFilterChange: () => { console.log('a') }
@@ -475,15 +671,20 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		return (
 			<React.Fragment>
 				<AdLibPanelToolbar
-					onFilterChange={this.onFilterChange} />
+					onFilterChange={this.onFilterChange}
+					noSegments={!withSegments} />
 				<AdLibListView
 					uiSegments={this.props.uiSegments}
+					rundownAdLibs={this.props.rundownBaselineAdLibs}
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
 					selectedPart={this.state.selectedPart}
 					selectedSegment={this.state.selectedSegment}
 					showStyleBase={this.props.showStyleBase}
-					filter={this.state.filter} />
+					searchFilter={this.state.searchFilter}
+					filter={this.props.filter}
+					rundown={this.props.rundown}
+					noSegments={!withSegments} />
 			</React.Fragment>
 		)
 	}
@@ -495,10 +696,10 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			} else {
 				return (
 					<div className='adlib-panel super-dark'>
-						<ul className='adlib-panel__segments'>
+						{(this.props.uiSegments.length > 30) && <ul className='adlib-panel__segments'>
 							{this.renderSegmentList()}
-						</ul>
-						{this.renderListView()}
+						</ul>}
+						{this.renderListView(this.props.uiSegments.length > 30)}
 					</div>
 				)
 			}

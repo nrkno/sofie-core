@@ -54,6 +54,10 @@ export class MultiSelect extends React.Component<IProps, IState> {
 			this.setState({
 				checkedValues
 			})
+		} else {
+			this.setState({
+				checkedValues: {}
+			})
 		}
 	}
 
@@ -81,7 +85,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 
 	generateSummary = () => {
 		return _.compact(_.values(_.mapObject(this.state.checkedValues, (value, key) => {
-			return value ? this.props.availableOptions[key] : null
+			return value ? (this.props.availableOptions[key] || key) : null
 		}))).join(', ')
 	}
 

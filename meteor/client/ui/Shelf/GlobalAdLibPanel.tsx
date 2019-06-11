@@ -34,9 +34,10 @@ interface IListViewPropsHeader {
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
 	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: any) => void
 	selectedPiece: AdLibPieceUi | undefined
-	filter: string | undefined
+	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
+	rundown: Rundown
 }
 
 interface IListViewStateHeader {
@@ -108,7 +109,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 					.map((item) => {
 						if (!item.isHidden) {
 							if (item.isSticky && item.layer &&
-								(!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)
+								(!this.props.searchFilter || item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
 							) {
 								return (
 									<AdLibListItem
@@ -118,10 +119,11 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
+										rundown={this.props.rundown}
 									/>
 								)
 							} else if (item.sourceLayerId && item.outputLayerId &&
-								(!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)
+								(!this.props.searchFilter || item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
 							) {
 								return (
 									<AdLibListItem
@@ -132,6 +134,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
+										rundown={this.props.rundown}
 									/>
 								)
 							} else {
@@ -152,7 +155,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 
 	render () {
 		return (
-			<div className='adlib-panel__list-view__list adlib-panel__list-view__list--global'>
+			<div className='adlib-panel__list-view__list adlib-panel__list-view__list--no-segments'>
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
 					{this.renderGlobalAdLibs()}
 				</table>
@@ -202,7 +205,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	render () {
 		const { t } = this.props
 		return (
-			<div className='adlib-panel__list-view__toolbar adlib-panel__list-view__toolbar--global'>
+			<div className='adlib-panel__list-view__toolbar adlib-panel__list-view__toolbar--no-segments'>
 				<div className='adlib-panel__list-view__toolbar__filter'>
 					<input className='adlib-panel__list-view__toolbar__filter__input' type='text'
 						   ref={this.setSearchInputRef}
@@ -477,7 +480,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					selectedPiece={this.state.selectedPiece}
 					showStyleBase={this.props.showStyleBase}
 					rundownAdLibs={this.props.rundownAdLibs}
-					filter={this.state.filter} />
+					searchFilter={this.state.filter}
+					rundown={this.props.rundown} />
 			</React.Fragment>
 		)
 	}

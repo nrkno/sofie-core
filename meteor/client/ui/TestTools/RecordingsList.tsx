@@ -14,6 +14,7 @@ import { faTrash } from '@fortawesome/fontawesome-free-solid'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
+import { StudioSelect } from './StudioSelect'
 
 interface IRecordingListProps {
 	match?: {
@@ -230,48 +231,10 @@ export class RecordedFilesListItem extends React.Component<IRecordedFilesListIte
 	}
 }
 
-interface IStudioSelectProps {
-}
-interface IStudioSelectState {
-}
-interface IStudioSelectTrackedProps {
-	studios: Studio[]
-}
-const RecordingsStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>((props: IStudioSelectProps) => {
-	return {
-		studios: Studios.find({}, {
-			sort: {
-				_id: 1
-			}
-		}).fetch()
-	}
-})(class StudioSelection extends MeteorReactComponent<Translated<IStudioSelectProps & IStudioSelectTrackedProps>, IStudioSelectState> {
+class RecordingsStudioSelect extends React.Component<{}, {}> {
 	render () {
-		const { t } = this.props
-
-		return (
-			<div className='mhl gutter recordings-studio-select'>
-				<header className='mbs'>
-					<h1>{t('Recordings')}</h1>
-				</header>
-				<div className='mod mvl'>
-					<strong>Studio</strong>
-					<ul>
-
-						{
-							_.map(this.props.studios, (studio) => {
-								return (
-									<li key={studio._id}>
-										<Link to={`recordings/${studio._id}`}>{studio.name}</Link>
-									</li>
-								)
-							})
-						}
-					</ul>
-				</div>
-			</div>
-		)
+		return <StudioSelect path='recordings' title='Recordings' />
 	}
-})
+}
 
 export { RecordingsList, RecordingsStudioSelect }

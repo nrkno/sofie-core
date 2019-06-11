@@ -8,12 +8,11 @@ import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integra
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { TriggerType } from 'timeline-state-resolver-types/dist/superfly-timeline'
 import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
-import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces';
+import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -87,11 +86,9 @@ describe('Expected Media Items', () => {
 		Pieces.insert(literal<Piece>({
 			_id: rdId + '_' + mockPiece0,
 			name: '',
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 0
+			enable: {
+				start: 0
 			},
-			expectedDuration: 0,
 			adlibPreroll: 0,
 			externalId: '',
 			metaData: {},
@@ -128,11 +125,9 @@ describe('Expected Media Items', () => {
 		Pieces.insert(literal<Piece>({
 			_id: rdId + '_' + mockPiece1,
 			name: '',
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 0
+			enable: {
+				start: 0,
 			},
-			expectedDuration: 0,
 			adlibPreroll: 0,
 			externalId: '',
 			metaData: {},
@@ -167,7 +162,7 @@ describe('Expected Media Items', () => {
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			trigger: undefined,
+			// trigger: undefined,
 			content: literal<VTContent>({
 				fileName: mockFileName1,
 				path: mockPath1,
@@ -186,7 +181,7 @@ describe('Expected Media Items', () => {
 	}))
 
 	describe('Based on a Rundown', () => {
-		testInFiber.only('Generates ExpectedMediaItems based on a Rundown', () => {
+		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
 			updateExpectedMediaItemsOnRundown(rdId0)
 
 			const items = ExpectedMediaItems.find({
@@ -195,7 +190,7 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(4)
 		})
-		testInFiber.only('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
+		testInFiber('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
 			const rd = Rundowns.findOne(rdId0)
 			if (!rd) {
 				fail()
@@ -214,7 +209,7 @@ describe('Expected Media Items', () => {
 	})
 
 	describe('Based on a Part', () => {
-		testInFiber.only('Generates ExpectedMediaItems based on a Part', () => {
+		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
 			expect(Rundowns.findOne(rdId1)).toBeTruthy()
 			expect(Parts.findOne(rdId1 + '_' + mockPart0)).toBeTruthy()
 			expect(Pieces.find({ partId: rdId1 + '_' + mockPart0 }).count()).toBe(1)
@@ -227,7 +222,7 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(2)
 		})
-		testInFiber.only('Removes all ExpectedMediaItems if a Part has been deleted', () => {
+		testInFiber('Removes all ExpectedMediaItems if a Part has been deleted', () => {
 			Parts.remove({
 				_id: rdId1 + '_' + mockPart0
 			})
@@ -240,7 +235,7 @@ describe('Expected Media Items', () => {
 			}).fetch()
 			expect(items).toHaveLength(0)
 		})
-		testInFiber.only('Removes all ExpectedMediaItems if a Rundown has been deleted', () => {
+		testInFiber('Removes all ExpectedMediaItems if a Rundown has been deleted', () => {
 			const rd = Rundowns.findOne(rdId1)
 			if (!rd) {
 				fail()

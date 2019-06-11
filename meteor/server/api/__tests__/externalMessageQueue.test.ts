@@ -30,8 +30,8 @@ describe('Test external message queue static methods', () => {
 
 	let studioEnv = setupDefaultStudioEnvironment()
 	let rundown: Rundown
-	beforeAll(() => {
-		runInFiber(() => {
+	beforeAll(async () => {
+		await runInFiber(() => {
 			let now = getCurrentTime()
 			Rundowns.insert({
 				_id: 'rundown_1',
@@ -160,8 +160,8 @@ describe('Test sending messages to mocked endpoints', () => {
 	jest.useFakeTimers()
 
 	let rundown: Rundown
-	beforeAll(() => {
-		runInFiber(() => {
+	beforeAll(async () => {
+		await runInFiber(() => {
 			MeteorMock.mockRunMeteorStartup()
 			rundown = Rundowns.findOne() as Rundown
 		})

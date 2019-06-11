@@ -1,14 +1,14 @@
+import { Meteor } from 'meteor/meteor'
+import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
-let clone = require('fast-clone')
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
+import { clone } from './lib'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
 export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
 
-	let transformObject = (obj: TimelineObjGeneric): TimelineContentObject => {
+	let transformObject = (obj: TimelineObjGeneric | TimelineObjGroup): TimelineContentObject => {
 		if (!obj.id) throw new Meteor.Error(500, `Timeline object missing id attribute (_id: "${obj._id}") `)
 		let transformedObj = clone(
 			_.omit(
@@ -46,8 +46,8 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 
 	let groupObjects: {[id: string]: TimelineContentObject} = {}
 	let transformedTimeline: Array<TimelineContentObject> = []
-	let doTransform = (objs: Array<TimelineObjGeneric>) => {
-		let objsLeft: Array<TimelineObjGeneric> = []
+	let doTransform = (objs: Array<TimelineObjGeneric | TimelineObjGroup>) => {
+		let objsLeft: Array<TimelineObjGeneric | TimelineObjGroup> = []
 		let changedSomething: boolean = false
 		_.each(objs, (obj: TimelineObjGeneric | TimelineObjGroup) => {
 
@@ -62,10 +62,11 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 				let groupObj = groupObjects[obj.inGroup]
 				if (groupObj) {
 					// Add object into group:
-					if (groupObj.content.objects) {
-						groupObj.content.objects.push(transformedObj)
-						changedSomething = true
-					}
+					if (!groupObj.children) groupObj.children = []
+
+					groupObj.children.push(transformedObj)
+					changedSomething = true
+
 				} else {
 					// referenced group not found, try again later:
 					objsLeft.push(obj)

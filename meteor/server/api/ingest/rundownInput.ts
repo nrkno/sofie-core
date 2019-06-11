@@ -28,7 +28,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updateDynamicPartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -45,6 +45,8 @@ import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
+import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
+import { UpdateNext } from './updateNext'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -145,7 +147,13 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 }
 export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
+	handleUpdatedRundownForStudio(studio, peripheralDevice, ingestRundown, dataSource)
+}
+export function handleUpdatedRundownForStudio (studio: Studio, peripheralDevice: PeripheralDevice | undefined, ingestRundown: IngestRundown, dataSource: string) {
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
+	if (peripheralDevice && peripheralDevice.studioId !== studio._id) {
+		throw new Meteor.Error(500, `PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio._id}"`)
+	}
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedRundownInner(studio, rundownId, ingestRundown, dataSource, peripheralDevice))
 }
@@ -180,8 +188,7 @@ function updateRundownFromIngestData (
 	const showStyle = selectShowStyleVariant(studio, ingestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
-		// what to do here? remove the rundown? insert default rundowm?
-		return false
+		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint
@@ -231,6 +238,8 @@ function updateRundownFromIngestData (
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
+	} else {
+		// TODO - this needs to set something..
 	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
@@ -269,11 +278,11 @@ function updateRundownFromIngestData (
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
 	const existingRundownParts = Parts.find({
-		rundownId: rundownId,
-		dynamicallyInserted: false
+		rundownId: dbRundown._id,
+		dynamicallyInserted: { $ne: true }
 	}).fetch()
 
-	const existingSegments = Segments.find({ rundown: dbRundown._id }).fetch()
+	const existingSegments = Segments.find({ rundownId: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
@@ -286,7 +295,10 @@ function updateRundownFromIngestData (
 		const existingSegment = _.find(existingSegments, s => s._id === segmentId)
 		const existingParts = existingRundownParts.filter(p => p.segmentId === segmentId)
 
+		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
+
 		const context = new SegmentContext(dbRundown, studio, existingParts)
+		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -366,10 +378,10 @@ function updateRundownFromIngestData (
 	)
 	const didChange = anythingChanged(changes)
 	if (didChange) {
-		updateExpectedMediaItemsOnRundown(dbRundown._id)
-		updateDynamicPartRanks(dbRundown._id)
-		triggerUpdateTimelineAfterIngestData(rundownId, _.map(segments, s => s._id))
+		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
 }
 
@@ -421,10 +433,14 @@ export function updateSegmentFromIngestData (
 	})
 	const existingParts = Parts.find({
 		rundownId: rundown._id,
-		segmentId: segmentId
+		segmentId: segmentId,
+		dynamicallyInserted: { $ne: true }
 	}).fetch()
 
+	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
+
 	const context = new SegmentContext(rundown, studio, existingParts)
+	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -479,11 +495,17 @@ export function updateSegmentFromIngestData (
 
 	const didChange = anythingChanged(changes)
 	if (didChange) {
-		updateExpectedMediaItemsOnRundown(rundown._id)
-		updateDynamicPartRanks(rundown._id)
-		triggerUpdateTimelineAfterIngestData(rundown._id, [segmentId])
+		afterIngestChangedData(rundown, [segmentId])
 	}
 	return didChange
+}
+function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+	// To be called after rundown has been changed
+	updateExpectedMediaItemsOnRundown(rundown._id)
+	updatePartRanks(rundown._id)
+	updateSourceLayerInfinitesAfterPart(rundown)
+	UpdateNext.ensureNextPartIsValid(rundown)
+	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
@@ -505,7 +527,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		if (!part) throw new Meteor.Error(404, 'Part not found')
 
 		// Blueprints will handle the deletion of the Part
-		const ingestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+		const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
@@ -516,17 +538,20 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedPartInner(studio, rundownId, rundownExternalId, segmentExternalId, ingestPart))
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+		const rundown = getRundown(rundownId, rundownExternalId)
+
+		handleUpdatedPartInner(studio, rundown, segmentExternalId, ingestPart)
+	})
 }
-export function handleUpdatedPartInner (studio: Studio, rundownId: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
-	const rundown = getRundown(rundownId, rundownExternalId)
+export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmentExternalId: string, ingestPart: IngestPart) {
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
 
 	if (!canBeUpdated(rundown, segmentId, partId)) return
 
 	// Blueprints will handle the creation of the Part
-	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, segmentId)
+	const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
 	ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
 	ingestSegment.parts.push(ingestPart)
 
@@ -607,7 +632,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank, // TODO - is this correct
+			_rank: sourcePart.rank, // This gets updated to a rundown unique rank as a later step
 			notes: notes,
 		})
 		parts.push(part)

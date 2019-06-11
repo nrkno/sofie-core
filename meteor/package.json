@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "0.0.0-develop",
+  "version": "0.25.0-0",
   "private": true,
   "engines": {
     "node": "8.x"
@@ -10,9 +10,12 @@
     "debug": "meteor run --inspect",
     "postinstall": "meteor npm run prepareForTest",
     "prepareForTest": "node ../scripts/fixTestFibers.js",
-    "test": "jest",
+    "unit": "jest",
+    "unitci": "jest --maxWorkers 2",
+    "test": "meteor npm run unit",
     "watch": "jest --watch",
-    "ci": "meteor npm run lint && meteor npm run cov",
+    "ci_tmp": "meteor npm run lint && meteor npm run cov",
+    "ci": "meteor npm run unitci",
     "cov": "jest --coverage && opn .coverage/lcov-report/index.html",
     "cov-open": "opn .coverage/lcov-report/index.html",
     "test-i": "npm run integration-test",
@@ -45,6 +48,7 @@
     "@types/semver": "^6.0.0",
     "amqplib": "^0.5.3",
     "body-parser": "^1.18.3",
+    "caller-module": "^1.0.1",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",
@@ -80,10 +84,10 @@
     "safer-eval": "^1.2.3",
     "semver": "^6.0.0",
     "soap": "^0.24.0",
-    "superfly-timeline": "^6.0.3",
+    "superfly-timeline": "^7.1.2",
     "timecode": "0.0.4",
-    "timeline-state-resolver-types": "^2.1.0",
-    "tv-automation-sofie-blueprints-integration": "^0.21.0",
+    "timeline-state-resolver-types": "^3.0.1",
+    "tv-automation-sofie-blueprints-integration": "^0.23.0",
     "underscore": "^1.8.3",
     "velocity-animate": "^1.5.1",
     "velocity-react": "^1.3.3",
@@ -115,11 +119,11 @@
     "node-license-validator": "^1.3.0",
     "opn-cli": "^4.1.0",
     "sinon": "^7.3.2",
-    "standard-version": "^5.0.2",
+    "standard-version": "^6.0.1",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.8.0",
-    "typescript": "^3.3.3333"
+    "typescript": "2.8.3"
   }
 }

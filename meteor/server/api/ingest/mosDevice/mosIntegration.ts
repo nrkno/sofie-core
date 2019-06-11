@@ -92,61 +92,6 @@ export namespace MosIntegration {
 		logger.warn('mosRoStoryMove ' + Action.StoryID)
 
 		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
-
-		// TODO - update next etc
-
-		// // Move Stories (aka Part ## TODO ##Lines) to before a story
-
-		// let currentPart: Part | undefined = undefined
-		// let onAirNextWindowWidth: number | undefined = undefined
-		// let nextPosition: number | undefined = undefined
-		// if (rundown.currentPartId) {
-		// 	let nextPart: Part | undefined = undefined
-		// 	currentPart = Parts.findOne(rundown.currentPartId)
-		// 	if (rundown.nextPartId) nextPart = Parts.findOne(rundown.nextPartId)
-		// 	if (currentPart) {
-		// 		const parts = rundown.getParts({
-		// 			_rank: _.extend({
-		// 				$gte: currentPart._rank
-		// 			}, nextPart ? {
-		// 				$lte: nextPart._rank
-		// 			} : {})
-		// 		})
-		// 		onAirNextWindowWidth = parts.length
-		// 	}
-		// } else if (rundown.nextPartId) {
-		// 	let nextPart: Part | undefined = undefined
-		// 	nextPart = Parts.findOne(rundown.nextPartId)
-		// 	if (nextPart) {
-		// 		const parts = rundown.getParts({
-		// 			_rank: {
-		// 				$lte: nextPart._rank
-		// 			}
-		// 		})
-		// 		nextPosition = parts.length
-		// 	}
-		// }
-
-		// let partAfter = (Action.StoryID ? getPart(studio, Action.RunningOrderID, Action.StoryID) : null)
-		// let partBefore = fetchBefore(Parts, { rundownId: rundown._id }, (partAfter ? partAfter._rank : null))
-
-		// // console.log('Inserting between: ' + (partBefore ? partBefore._rank : 'X') + ' - ' + partAfter._rank)
-
-		// let affectedPartIds: Array<string> = []
-		// if (partAfter) affectedPartIds.push(partAfter._id)
-		// if (partBefore) affectedPartIds.push(partBefore._id)
-		// _.each(Stories, (storyId: MOS.MosString128, i: number) => {
-		// 	let rank = getRank(partBefore, partAfter, i, Stories.length)
-		// 	Parts.update(getMosPartId(rundown._id, storyId), {$set: {
-		// 		_rank: rank
-		// 	}})
-		// })
-
-		// updateSegments(rundown._id)
-		// updateAffectedParts(rundown, affectedPartIds)
-
-		// // Meteor.call('playout_storiesMoved', rundown._id, onAirNextWindowWidth, nextPosition)
-		// ServerPlayoutAPI.rundownStoriesMoved(rundown._id, onAirNextWindowWidth, nextPosition)
 	}
 	export function mosRoStoryDelete (id: string, token: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -158,7 +103,6 @@ export namespace MosIntegration {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
 
-		// TODO - test
 		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 	}
 	export function mosRoReadyToAir (id: string, token: string, Action: MOS.IMOSROReadyToAir) {

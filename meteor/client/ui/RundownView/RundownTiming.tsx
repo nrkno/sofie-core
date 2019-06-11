@@ -18,7 +18,9 @@ export namespace RundownTiming {
 	export enum Events {
 		/** Event is emitted every now-and-then, generally to be used for simple displays */
 		'timeupdate'		= 'sofie:rundownTimeUpdate',
-		/** event is emmited with a very high frequency (60 Hz), to be used sparingly as hooking up Components to it will cause a lot of renders */
+		/** event is emitted with a very high frequency (60 Hz), to be used sparingly as
+		 * hooking up Components to it will cause a lot of renders
+		 */
 		'timeupdateHR'		= 'sofie:rundownTimeUpdateHR'
 	}
 
@@ -46,19 +48,27 @@ export namespace RundownTiming {
 		partStartsAt?: {
 			[key: string]: number
 		}
-		/** Same as partStartsAt, but will include display duration overrides (such as minimal display width for an Part, etc.). */
+		/** Same as partStartsAt, but will include display duration overrides
+		 *  (such as minimal display width for an Part, etc.).
+		 */
 		partDisplayStartsAt?: {
 			[key: string]: number
 		}
-		/** Same as partDurations, but will include display duration overrides (such as minimal display width for an Part, etc.). */
+		/** Same as partDurations, but will include display duration overrides
+		 * (such as minimal display width for an Part, etc.).
+		 */
 		partDisplayDurations?: {
 			[key: string]: number
 		}
-		/** As-played durations of each part. Will be 0, if not yet played. Will be counted from start to now if currently playing. */
+		/** As-played durations of each part. Will be 0, if not yet played.
+		 * Will be counted from start to now if currently playing.
+		 */
 		partPlayed?: {
 			[key: string]: number
 		}
-		/** Expected durations of each of the parts or the as-played duration, if the Part does not have an expected duration. */
+		/** Expected durations of each of the parts or the as-played duration,
+		 * if the Part does not have an expected duration.
+		 */
 		partExpectedDurations?: {
 			[key: string]: number
 		}
@@ -75,7 +85,8 @@ export namespace RundownTiming {
 }
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
-const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
+const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
+										   // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
 
 /**
  * RundownTimingProvider properties.
@@ -84,7 +95,9 @@ const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be 
 interface IRundownTimingProviderProps {
 	/** Rundown that is to be used for generating the timing information. */
 	rundown?: Rundown
-	/** Interval for high-resolution timing events. If undefined, it will fall back onto TIMING_DEFAULT_REFRESH_INTERVAL. */
+	/** Interval for high-resolution timing events. If undefined, it will fall back
+	 * onto TIMING_DEFAULT_REFRESH_INTERVAL.
+	 */
 	refreshInterval?: number
 	/** Fallback duration for Parts that have no as-played duration of their own. */
 	defaultDuration?: number
@@ -99,11 +112,13 @@ interface IRundownTimingProviderTrackedProps {
 }
 
 /**
- * RundownTimingProvider is a container component that provides a timing context to all child elements. It allows calculating a single
+ * RundownTimingProvider is a container component that provides a timing context to all child elements.
+ * It allows calculating a single
  * @class RundownTimingProvider
  * @extends React.Component<IRundownTimingProviderProps>
  */
-export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
+export const RundownTimingProvider =
+withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
 	let parts: Array<Part> = []
 	if (props.rundown) {
@@ -118,7 +133,9 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 	return {
 		parts
 	}
-})(class RundownTimingProvider extends MeteorReactComponent<IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState> implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
+})(class RundownTimingProvider extends MeteorReactComponent<
+	IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState
+> implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
 	static childContextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -128,24 +145,24 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 	refreshTimerInterval: number
 	refreshDecimator: number
 
-	private linearSegLines: Array<[string, number | null]> = []
+	private linearParts: Array<[string, number | null]> = []
 	// look at the comments on RundownTimingContext to understand what these do
-	private segLineDurations: {
+	private partDurations: {
 		[key: string]: number
 	} = {}
-	private segLineExpectedDurations: {
+	private partExpectedDurations: {
 		[key: string]: number
 	} = {}
-	private segLinePlayed: {
+	private partPlayed: {
 		[key: string]: number
 	} = {}
-	private segLineStartsAt: {
+	private partStartsAt: {
 		[key: string]: number
 	} = {}
-	private segLineDisplayStartsAt: {
+	private partDisplayStartsAt: {
 		[key: string]: number
 	} = {}
-	private segLineDisplayDurations: {
+	private partDisplayDurations: {
 		[key: string]: number
 	} = {}
 	private displayDurationGroups: _.Dictionary<number> = {}
@@ -214,7 +231,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 		let displayStartsAtAccumulator = 0
 
 		_.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
-		this.linearSegLines.length = 0
+		this.linearParts.length = 0
 
 		let debugConsole = ''
 
@@ -228,7 +245,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 		if (rundown && parts) {
 			parts.forEach((part, itIndex) => {
 				// add piece to accumulator
-				const aIndex = this.linearSegLines.push([part._id, waitAccumulator]) - 1
+				const aIndex = this.linearParts.push([part._id, waitAccumulator]) - 1
 
 				// if this is next segementLine, clear previous countdowns and clear accumulator
 				if (rundown.nextPartId === part._id) {
@@ -241,64 +258,80 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 				totalRundownDuration += part.expectedDuration || 0
 
 				const lastStartedPlayback = part.getLastStartedPlayback()
+				const playOffset = part.timings && part.timings.playOffset && _.last(part.timings.playOffset) || 0
 
 				// asPlayed is the actual duration so far and expected durations in unplayed lines
 				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
-				if (part.startedPlayback && lastStartedPlayback && !part.duration && lastStartedPlayback + (part.expectedDuration || 0) < now) {
-					asPlayedRundownDuration += (now - lastStartedPlayback)
+				if (
+					part.startedPlayback &&
+					lastStartedPlayback &&
+					!part.duration &&
+					lastStartedPlayback + (part.expectedDuration || 0) < now
+				) {
+					asPlayedRundownDuration += (now - lastStartedPlayback) - playOffset
 				} else {
-					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0)
+					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0) - playOffset
 				}
 
-				let segLineDuration = 0
-				let segLineDisplayDuration = 0
-				let displayDuration = 0
+				let partDuration = 0
+				let partDisplayDuration = 0
+				let displayDurationFromGroup = 0
 
-				const playOffset = part.timings && part.timings.playOffset && _.last(part.timings.playOffset) || 0
 
-				// Display Duration groups are groups of two or more Parts, where some of them have an expectedDuration and some have 0.
+				// Display Duration groups are groups of two or more Parts, where some of them have an
+				// expectedDuration and some have 0.
 				// Then, some of them will have a displayDuration. The expectedDurations are pooled together, the parts with
 				// display durations will take up that much time in the Rundown. The left-over time from the display duration group
 				// will be used by Parts without expectedDurations.
-				let memberOfDisplayDurationGroup = false // using a separate displayDurationGroup processing flag simplifies implementation
+				let memberOfDisplayDurationGroup = false
+					// using a separate displayDurationGroup processing flag simplifies implementation
 				if (part.displayDurationGroup && (
 					// either this is not the first element of the displayDurationGroup
 					(this.displayDurationGroups[part.displayDurationGroup]) ||
 					// or there is a following member of this displayDurationGroup
 					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
 				)) {
-					this.displayDurationGroups[part.displayDurationGroup] = (this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
-					displayDuration = Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) || this.displayDurationGroups[part.displayDurationGroup] || this.props.defaultDuration || 3000
+					this.displayDurationGroups[part.displayDurationGroup] =
+						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
+					displayDurationFromGroup = Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0)
+						|| this.displayDurationGroups[part.displayDurationGroup] || this.props.defaultDuration || 3000
 					memberOfDisplayDurationGroup = true
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
-					currentRemaining = Math.max(0, (part.duration || displayDuration || part.expectedDuration || 0) - (now - lastStartedPlayback))
-					segLineDuration = Math.max((part.duration || part.expectedDuration || 0), (now - lastStartedPlayback))
-					segLineDisplayDuration = Math.max((part.duration || displayDuration || part.expectedDuration || 0), (now - lastStartedPlayback))
-					this.segLinePlayed[part._id] = (now - lastStartedPlayback)
+					currentRemaining = Math.max(0, (part.duration || displayDurationFromGroup || part.expectedDuration || 0)
+						- (now - lastStartedPlayback)) + playOffset
+					partDuration = Math.max((part.duration || part.expectedDuration || 0),
+						(now - lastStartedPlayback))
+					partDisplayDuration = Math.max((part.duration || displayDurationFromGroup || part.expectedDuration || 0),
+						(now - lastStartedPlayback)) + playOffset
+					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
 				} else {
-					segLineDuration = part.duration || part.expectedDuration || 0
-					segLineDisplayDuration = Math.max(0, part.duration || displayDuration || part.expectedDuration || 0)
-					this.segLinePlayed[part._id] = part.duration || 0
+					partDuration = part.duration || part.expectedDuration || 0
+					partDisplayDuration = Math.max(0, part.duration && part.duration + playOffset
+						|| displayDurationFromGroup
+						|| part.expectedDuration
+						|| 0)
+					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
-					this.displayDurationGroups[part.displayDurationGroup] = Math.max(0, this.displayDurationGroups[part.displayDurationGroup] - segLineDisplayDuration)
+					this.displayDurationGroups[part.displayDurationGroup] = Math.max(0,
+						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration)
 				}
 				/* if (item.displayDurationGroup && item.slug.startsWith('Julian')) {
 					console.log(item.displayDurationGroup + ', ' + item.slug + ': ' + (segLineDisplayDuration / 1000))
 				} */
-				this.segLineExpectedDurations[part._id] = part.expectedDuration || part.duration || 0
-				this.segLineStartsAt[part._id] = startsAtAccumulator
-				this.segLineDisplayStartsAt[part._id] = displayStartsAtAccumulator
-				this.segLineDurations[part._id] = segLineDuration
-				this.segLineDisplayDurations[part._id] = segLineDisplayDuration
-				startsAtAccumulator += this.segLineDurations[part._id]
-				displayStartsAtAccumulator += segLineDisplayDuration || this.props.defaultDuration || 3000
+				this.partExpectedDurations[part._id] = part.expectedDuration || part.duration || 0
+				this.partStartsAt[part._id] = startsAtAccumulator
+				this.partDisplayStartsAt[part._id] = displayStartsAtAccumulator
+				this.partDurations[part._id] = partDuration
+				this.partDisplayDurations[part._id] = partDisplayDuration
+				startsAtAccumulator += this.partDurations[part._id]
+				displayStartsAtAccumulator += partDisplayDuration || this.props.defaultDuration || 3000
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
 				if (memberOfDisplayDurationGroup) {
-					waitAccumulator += (part.duration || segLineDisplayDuration || part.expectedDuration || 0)
+					waitAccumulator += (part.duration || partDisplayDuration || part.expectedDuration || 0)
 				} else {
 					waitAccumulator += (part.duration || part.expectedDuration || 0)
 				}
@@ -307,7 +340,13 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 				if (!part.startedPlayback) {
 					remainingRundownDuration += part.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
-				} else if (part.startedPlayback && lastStartedPlayback && !part.duration && rundown.currentPartId === part._id && lastStartedPlayback + (part.expectedDuration || 0) > now) {
+				} else if (
+					part.startedPlayback &&
+					lastStartedPlayback &&
+					!part.duration &&
+					rundown.currentPartId === part._id &&
+					lastStartedPlayback + (part.expectedDuration || 0) > now
+				) {
 					// console.log((now - item.startedPlayback))
 					remainingRundownDuration += (part.expectedDuration || 0) - (now - lastStartedPlayback)
 				}
@@ -315,19 +354,20 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 
 			// This is where the waitAccumulator-generated data in the linearSegLines is used to calculate the countdowns.
 			let localAccum = 0
-			for (let i = 0; i < this.linearSegLines.length; i++) {
+			for (let i = 0; i < this.linearParts.length; i++) {
 				if (i < nextAIndex) { // this is a line before next line
-					localAccum = this.linearSegLines[i][1] || 0
-					this.linearSegLines[i][1] = null // we use null to express 'will not probably be played out, if played in order'
-				} else if (i === nextAIndex) { // this is a calculation for the next line, which is basically how much there is left of the current line
-					localAccum = this.linearSegLines[i][1] || 0 // if there is no current line, rebase following lines to the next line
-					this.linearSegLines[i][1] = currentRemaining
+					localAccum = this.linearParts[i][1] || 0
+					this.linearParts[i][1] = null // we use null to express 'will not probably be played out, if played in order'
+				} else if (i === nextAIndex) {
+					// this is a calculation for the next line, which is basically how much there is left of the current line
+					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
+					this.linearParts[i][1] = currentRemaining
 				} else { // these are lines after next line
 					// we take whatever value this line has, subtract the value as set on the Next Part
 					// (note that the Next Part value will be using currentRemaining as the countdown)
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
-					this.linearSegLines[i][1] = (this.linearSegLines[i][1] || 0) - localAccum + currentRemaining
+					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
 				}
 			}
 
@@ -343,13 +383,13 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 			totalRundownDuration,
 			remainingRundownDuration,
 			asPlayedRundownDuration,
-			partCountdown: _.object(this.linearSegLines),
-			partDurations: this.segLineDurations,
-			partPlayed: this.segLinePlayed,
-			partStartsAt: this.segLineStartsAt,
-			partDisplayStartsAt: this.segLineDisplayStartsAt,
-			partExpectedDurations: this.segLineExpectedDurations,
-			partDisplayDurations: this.segLineDisplayDurations
+			partCountdown: _.object(this.linearParts),
+			partDurations: this.partDurations,
+			partPlayed: this.partPlayed,
+			partStartsAt: this.partStartsAt,
+			partDisplayStartsAt: this.partDisplayStartsAt,
+			partExpectedDurations: this.partExpectedDurations,
+			partDisplayDurations: this.partDisplayDurations
 		})
 	}
 
@@ -363,7 +403,8 @@ export interface WithTimingOptions {
 	filter?: string | any[]
 }
 export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & { children?: React.ReactNode }
-type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
+type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState)
+	=> React.Component<WithTiming<IProps>, IState>
 
 /**
  * Wrap a component in a HOC that will inject a the timing context as a prop. Takes an optional options object that
@@ -476,7 +517,8 @@ interface ISegmentDurationState {
 }
 
 /**
- * A presentational component that will render a counter that will show how much content is left in a segment consisting of given parts
+ * A presentational component that will render a counter that will show how much content
+ * is left in a segment consisting of given parts
  * @class SegmentDuration
  * @extends React.Component<WithTiming<ISegmentDurationProps>>
  */
@@ -513,7 +555,9 @@ class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>,
  * @param  {Array<string>} partIds The IDs of parts that are members of the segment
  * @return number
  */
-export function computeSegmentDuration (timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>): number {
+export function computeSegmentDuration (
+	timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>
+): number {
 	let partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0

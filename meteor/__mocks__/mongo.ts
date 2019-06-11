@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath, mongoWhere, literal } from '../lib/lib'
+import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
@@ -111,13 +111,17 @@ export namespace MongoMock {
 							_.each(value, (value: any, key: string) => {
 								setOntoPath(doc, key, value)
 							})
+						} else if (key === '$unset') {
+							_.each(value, (value: any, key: string) => {
+								unsetPath(doc, key)
+							})
 						} else if (key === '$push') {
 							_.each(value, (value: any, key: string) => {
 								pushOntoPath(doc, key, value)
 							})
 						} else {
 							if (key[0] === '$') {
-								throw Error('Update method not implemented yet')
+								throw Error(`Update method "${key}" not implemented yet`)
 							} else {
 								replace = true
 							}
@@ -130,6 +134,14 @@ export namespace MongoMock {
 						if (!modifier._id) modifier._id = doc._id
 						this.insert(modifier)
 					}
+
+					_.each(_.clone(this.observers), obs => {
+						if (mongoWhere(doc, obs.query)) {
+							if (obs.callbacks.changed) {
+								obs.callbacks.changed(doc._id, {}) // TODO - figure out what changed
+							}
+						}
+					})
 				})
 
 				if (cb) cb(undefined, docs.length)
@@ -150,7 +162,7 @@ export namespace MongoMock {
 
 				this.documents[d._id] = d
 
-				_.each(this.observers, obs => {
+				_.each(_.clone(this.observers), obs => {
 					if (mongoWhere(d, obs.query)) {
 						const fields = _.keys(_.omit(d, '_id'))
 						if (obs.callbacks.addedBefore) {

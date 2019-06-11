@@ -140,6 +140,8 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, `peripheralDevice "${id}" not found!`)
 		if (!peripheralDevice.studioId) throw new Meteor.Error(401, `peripheralDevice "${id}" not attached to a studio`)
 
+		const studioId = peripheralDevice.studioId
+
 		// check(r.time, Number)
 		check(results, Array)
 		_.each(results, (o) => {
@@ -147,39 +149,34 @@ export namespace ServerPeripheralDeviceAPI {
 			check(o.time, Number)
 		})
 
-		let studioIds: {[studioId: string]: true} = {}
-
 		_.each(results, (o) => {
 			check(o.id, String)
 
 			// check(o.time, Number)
 			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
-			let obj = Timeline.findOne(o.id)
-
+			const id = getTimelineId(studioId, o.id)
+			const obj = Timeline.findOne(id)
 			if (obj) {
-				studioIds[obj.studioId] = true
-
 				Timeline.update({
-					_id: getTimelineId(obj.studioId, o.id)
+					_id: id
 				}, {$set: {
-					'trigger.value': o.time,
-					'trigger.setFromNow': true
-				}},{
-					multi: true
-				})
+					'enable.start': o.time,
+					'enable.setFromNow': true
+				}})
 
-				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj._id, o.time)
+				obj.enable.start = o.time
+				obj.enable.setFromNow = true
+
+				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj, o.time)
 			}
 		})
 
 		// After we've updated the timeline, we must call afterUpdateTimeline!
-		_.each(studioIds, (_val, studioId) => {
-			let studio = Studios.findOne(studioId)
-			if (studio) {
-				afterUpdateTimeline(studio)
-			}
-		})
+		const studio = Studios.findOne(studioId)
+		if (studio) {
+			afterUpdateTimeline(studio)
+		}
 	}, 'timelineTriggerTime$0,$1')
 	export function partPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
 		// This is called from the playout-gateway when a part starts playing.
@@ -229,7 +226,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
 		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceId, r.time)
 	}
-	export function pingWithCommand (id: string, token: string, message: string) {
+	export function pingWithCommand (id: string, token: string, message: string, cb?: Function) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
@@ -237,6 +234,8 @@ export namespace ServerPeripheralDeviceAPI {
 			if (err) {
 				logger.warn(err)
 			}
+
+			if (cb) cb(err, res)
 		}, 'pingResponse', message)
 
 		ping(id, token)
@@ -389,8 +388,8 @@ methods[PeripheralDeviceAPI.methods.piecePlaybackStopped] = (deviceId: string, d
 methods[PeripheralDeviceAPI.methods.piecePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.piecePlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string) => {
-	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
+methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string, cb?: Function) => {
+	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message, cb)
 }
 methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId: string, deviceToken: string, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)

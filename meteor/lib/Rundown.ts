@@ -7,11 +7,12 @@ import {
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, extendMandadory } from './lib'
+import { normalizeArray, extendMandadory, literal } from './lib'
 import { Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { ShowStyleBase } from './collections/ShowStyleBases'
+import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -196,7 +197,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		let previousPart: PartExtended
 		// fetch all the pieces for the parts
 		partsE = _.map(parts, (part, itIndex) => {
-			let partTimeline: SuperTimeline.UnresolvedTimeline = []
+			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
 			let partE: PartExtended = extendMandadory(part, {
@@ -242,9 +243,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
 					id: getPieceGroupId(piece),
-					trigger: offsetTrigger(piece.trigger, TIMELINE_TEMP_OFFSET),
-					duration: piece.durationOverride || piece.duration || piece.expectedDuration || 0,
-					LLayer: piece.outputLayerId,
+					enable: calculatePieceTimelineEnable(piece, TIMELINE_TEMP_OFFSET),
+					layer: piece.outputLayerId,
 					content: {
 						id: piece._id
 					}
@@ -299,20 +299,30 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			})
 
 			// Use the SuperTimeline library to resolve all the items within the Part
-			let partRTimeline = SuperTimeline.Resolver.getTimelineInWindow(partTimeline)
+			let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 			// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 			let furthestDuration = 0
-			partRTimeline.resolved.forEach((tlItem) => {
-				// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
-				let piece = piecesLookup[tlItem.content.id]
-				piece.renderedDuration = tlItem.resolved.outerDuration || null
+			_.each(tlResolved.objects, (obj) => {
+				if (obj.resolved.resolved) {
+					// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
+					let piece = piecesLookup[obj.content.id]
+					const instance = obj.resolved.instances[0]
+					if (instance) {
+						piece.renderedDuration = instance.end ? (instance.end - instance.start) : null
 
-				// if there is no renderedInPoint, use 0 as the starting time for the item
-				piece.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
+						// if there is no renderedInPoint, use 0 as the starting time for the item
+						piece.renderedInPoint = instance.start ? instance.start - TIMELINE_TEMP_OFFSET : 0
 
-				// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
-				if (Number.isFinite(piece.renderedDuration || 0) && ((piece.renderedInPoint || 0) + (piece.renderedDuration || 0) > furthestDuration)) {
-					furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
+						// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
+						if (
+							Number.isFinite(piece.renderedDuration || 0) &&
+							(piece.renderedInPoint || 0) + (piece.renderedDuration || 0) > furthestDuration
+						) {
+							furthestDuration = (piece.renderedInPoint || 0) + (piece.renderedDuration || 0)
+						}
+					} else {
+						// TODO - should this piece be removed?
+					}
 				}
 			})
 
@@ -346,8 +356,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 		// resolve the duration of a Piece to be used for display
 		const resolveDuration = (item: PieceExtended): number => {
-			const expectedDurationNumber = (typeof item.expectedDuration === 'number' ? item.expectedDuration || 0 : 0)
-			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber)
+			const expectedDurationNumber = (typeof item.enable.duration === 'number' ? item.enable.duration || 0 : 0)
+			const userDurationNumber = (item.userDuration && typeof item.userDuration.duration === 'number' ? item.userDuration.duration || 0 : 0)
+			return (item.playoutDuration || userDurationNumber || item.renderedDuration || expectedDurationNumber)
 		}
 
 		_.each<PartExtended>(partsE, (part) => {
@@ -454,25 +465,73 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 }
 
-function offsetTrigger (
-	trigger: {
-		type: SuperTimeline.TriggerType,
-		value: string | number | null
-	},
-	offset
-) {
-	if (trigger.type !== SuperTimeline.TriggerType.TIME_ABSOLUTE) {
-		return trigger
+export function offsetTimelineEnableExpression (val: SuperTimeline.Expression | undefined, offset: string | number | undefined) {
+	if (offset === undefined) {
+		return val
 	} else {
-		if (trigger.type === SuperTimeline.TriggerType.TIME_ABSOLUTE && trigger.value === 'now') {
-			return _.extend({}, trigger, {
-				// value: part.startedPlayback ? getCurrentTime() - part.startedPlayback : offset
-				value: offset
+		// return literal<SuperTimeline.ExpressionObj>({
+		// 	l: interpretExpression(val || null) || 0,
+		// 	o: '+',
+		// 	r: offset
+		// })
+		if (_.isString(val) || _.isNumber(val)) {
+			return `${val} + ${offset}`
+		} else if (_.isObject(val)) {
+			return literal<SuperTimeline.ExpressionObj>({
+				l: val || 0,
+				o: '+',
+				r: offset
 			})
+		} else if (val === undefined) {
+			return offset
+		} else { // Unreachable fallback case
+			return val
+		}
+	}
+}
+
+export function calculatePieceTimelineEnable (piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
+	let duration: SuperTimeline.Expression | undefined = undefined
+	let end: SuperTimeline.Expression | undefined = undefined
+	if (piece.playoutDuration !== undefined) {
+		duration = piece.playoutDuration
+	} else if (piece.userDuration !== undefined) {
+		duration = piece.userDuration.duration
+		end = piece.userDuration.end
+	} else {
+		duration = piece.enable.duration
+		end = piece.enable.end
+	}
+
+	// If we have an end and not a start, then use that with a duration
+	if ((end !== undefined || piece.enable.end !== undefined) && piece.enable.start === undefined) {
+		return {
+			end: end !== undefined ? end : offsetTimelineEnableExpression(piece.enable.end, offset),
+			duration: duration
+		}
+	// Otherwise, if we have a start, then use that with either the end or duration
+	} else if (piece.enable.start !== undefined) {
+		let enable = literal<SuperTimeline.TimelineEnable>({})
+
+		if (piece.enable.start === 'now') {
+			enable.start = 'now'
 		} else {
-			return _.extend({}, trigger, {
-				value: trigger.value + offset
-			})
+			enable.start = offsetTimelineEnableExpression(piece.enable.start, offset)
+		}
+
+		if (duration !== undefined) {
+			enable.duration = duration
+		} else if (end !== undefined) {
+			enable.end = end
+		} else if (piece.enable.end !== undefined) {
+			enable.end = offsetTimelineEnableExpression(piece.enable.end, offset)
+		}
+		return enable
+	} else {
+		return {
+			start: 0,
+			duration: duration,
+			end: end,
 		}
 	}
 }

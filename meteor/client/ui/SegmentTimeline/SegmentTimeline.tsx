@@ -10,7 +10,7 @@ import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
-import { SegmentTimelineLine } from './SegmentTimelineLine'
+import { SegmentTimelinePart } from './SegmentTimelinePart'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import {
 	SegmentDuration,
@@ -146,7 +146,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	renderZoomTimeline() {
 		return this.props.parts.map((part, index, array) => {
 			return (
-				<SegmentTimelineLine key={part._id}
+				<SegmentTimelinePart key={part._id}
 					segment={this.props.segment}
 					rundown={this.props.rundown}
 					studio={this.props.studio}
@@ -439,10 +439,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
 				return (
-					<SegmentTimelineLine key={part._id}
+					<SegmentTimelinePart key={part._id}
 						{...this.props}
-						onItemClick={this.props.onItemClick}
-						onItemDoubleClick={this.props.onItemDoubleClick}
+						onPieceClick={this.props.onItemClick}
+						onPieceDoubleClick={this.props.onItemDoubleClick}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
 						firstPartInSegment={this.props.parts[0]}
 						isLastSegment={this.props.isLastSegment}

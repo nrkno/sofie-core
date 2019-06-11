@@ -49,6 +49,7 @@ import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
+import { ingestMOSRundown } from './ingest/http'
 interface RundownSnapshot {
 	version: string
 	rundownId: string
@@ -289,7 +290,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 	try {
 		let s: any = snapshotFcn()
 		response.setHeader('Content-Type', 'application/json')
-		response.setHeader('Content-Disposition', `attachment; filename="${s.snapshot.name}.json"`)
+		response.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(s.snapshot.name)}.json`)
 
 		let content = (
 			_.isString(s) ?
@@ -355,11 +356,23 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	// Determine what kind of snapshot
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
+	// First, some special (debugging) cases:
+	// @ts-ignore is's not really a snapshot here:
+	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') { // Special: Not a snapshot, but a datadump of a MOS rundown
+		const studio = Studios.findOne() // just pick one.. this probably need to be refactored at some point..
+		if (studio) {
+			ingestMOSRundown(studio._id, snapshot)
+			return
+		} throw new Meteor.Error(500, `No Studio found`)
+	}
+
+	// Then, continue as if it's a normal snapshot:
+
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
 
-	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) {
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown
 		return restoreFromRundownSnapshot(snapshot as RundownSnapshot)
-	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
+	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) { // A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)

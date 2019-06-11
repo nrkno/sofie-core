@@ -25,6 +25,7 @@ import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArguments
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
+import RundownLayoutEditor from './RundownLayoutEditor'
 
 interface IProps {
 	match: {
@@ -133,7 +134,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<p className='mod mhn mvs'>{t('Compatible Studios:')}</p>
 					<p className='mod mhn mvs'>
 						{this.props.compatibleStudios.length > 0 ?
-							this.props.compatibleStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
+							this.props.compatibleStudios.map(i =>
+								<span key={i._id} className='pill'>
+									<Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link>
+								</span>) :
 							t('This Show Style is not compatible with any Studio')}
 					</p>
 				</div>
@@ -153,6 +157,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<StudioRuntimeArgumentsSettings showStyleBase={showStyleBase} />
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<RundownLayoutEditor showStyleBase={showStyleBase} />
 					</div>
 				</div>
 				<div className='row'>
@@ -328,7 +337,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -753,7 +762,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -956,7 +965,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1106,7 +1115,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1229,12 +1238,16 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 									</div>
 								</div>
 								<div className='row'>
-									<div className='col c12 r1-c12'>
-										<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(showStyleVariant)} object={showStyleVariant} />
+									<div className='col c12 r1-c12 phs'>
+										<ConfigManifestSettings
+											t={this.props.t}
+											manifest={collectConfigs(showStyleVariant)}
+											object={showStyleVariant}
+											subPanel={true} />
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(showStyleVariant._id)}>
+									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(showStyleVariant._id)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1251,7 +1264,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		return (
 			<div>
 				<h2 className='mhn'>{t('Variants')}</h2>
-				<table className='expando settings-studio-showStyleVariants-table'>
+				<table className='table expando settings-studio-showStyleVariants-table'>
 					<tbody>
 						{this.renderShowStyleVariants()}
 					</tbody>

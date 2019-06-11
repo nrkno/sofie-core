@@ -99,19 +99,30 @@ export namespace RundownUtils {
 		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZerundown(hours) + ':' : '') + padZerundown(minutes) + ':' + padZerundown(secondsRest)
 	}
 
-	export function isInsideViewport (scrollLeft: number, scrollWidth: number, part: PartUi, partStartsAt: number | undefined, partDuration: number | undefined, piece?: PieceUi) {
-		if (scrollLeft + scrollWidth < (partStartsAt || part.startsAt || 0) + (piece !== undefined ? (piece.renderedInPoint || 0) : 0)) {
+	export function isInsideViewport (
+		scrollLeft: number,
+		scrollWidth: number,
+		part: PartUi,
+		partStartsAt:
+		number | undefined,
+		partDuration: number | undefined,
+		piece?: PieceUi
+	) {
+		if (scrollLeft + scrollWidth <
+			(partStartsAt || part.startsAt || 0) +
+			(piece !== undefined ? (piece.renderedInPoint || 0) : 0)) {
 			return false
 		} else if (scrollLeft > (partStartsAt || part.startsAt || 0) +
 					(piece !== undefined ?
 						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
 							(part.duration !== undefined ?
-								part.duration :
-								(partDuration || part.renderedDuration || part.expectedDuration || 0) - (piece.renderedInPoint || 0))
+								(part.duration + (part.getLastPlayOffset() || 0)) :
+								(partDuration || part.renderedDuration || part.expectedDuration || 0)
+									- (piece.renderedInPoint || 0))
 							)
 						) :
 						(part.duration !== undefined ?
-							part.duration :
+							(part.duration + (part.getLastPlayOffset() || 0)) :
 							(partDuration || part.renderedDuration || 0)
 						)
 					)

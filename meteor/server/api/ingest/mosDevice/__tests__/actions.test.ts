@@ -2,25 +2,18 @@ import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
-import {
-	setupDefaultStudioEnvironment
-} from '../../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { setLoggerLevel } from '../../../logger'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { Segments, DBSegment } from '../../../../../lib/collections/Segments'
-import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
+import { Parts } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
-import { literal, partialExceptId } from '../../../../../lib/lib'
 import { MOSDeviceActions } from '../actions'
-import { PubSub } from '../../../../../lib/api/pubsub'
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../../../../lib/collections/PeripheralDeviceCommands'
-import { waitTime } from '../../../../codeControl'
+import {
+	PeripheralDeviceCommands, PeripheralDeviceCommand
+} from '../../../../../lib/collections/PeripheralDeviceCommands'
+import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 
 import { mockRO } from './mock-mos-data'
-import { IngestDataCache, IngestCacheType, IngestDataCacheObj } from '../../../../../lib/collections/IngestDataCache';
-import { ExpectedMediaItems } from '../../../../../lib/collections/ExpectedMediaItems';
-import { getPartId } from '../../lib';
 
 require('../api.ts') // include in order to create the Meteor methods needed
 

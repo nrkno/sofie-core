@@ -28,6 +28,7 @@ interface IConfigManifestSettingsProps {
 	manifest: ConfigManifestEntry[]
 
 	object: ObjectWithConfig
+	subPanel?: boolean
 }
 interface IConfigManifestSettingsState {
 	showAddItem: boolean
@@ -37,7 +38,9 @@ interface IConfigManifestSettingsState {
 	editedItems: Array<string>
 }
 
-export class ConfigManifestSettings extends React.Component<Translated<IConfigManifestSettingsProps>, IConfigManifestSettingsState> {
+export class ConfigManifestSettings
+	extends React.Component<Translated<IConfigManifestSettingsProps>, IConfigManifestSettingsState> {
+
 	constructor (props: Translated<IConfigManifestSettingsProps>) {
 		super(props)
 
@@ -216,7 +219,9 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 										</button>
 									}
 								</React.Fragment> :
-								<button className='btn btn-primary' onClick={(e) => this.createItem(item)}>
+								<button className={ClassNames('btn btn-primary', {
+									'btn-tight': this.props.subPanel
+								})} onClick={(e) => this.createItem(item)}>
 									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 								</button>
 
@@ -303,7 +308,10 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		const { t } = this.props
 		return (
 			<div>
-				<ModalDialog title={t('Add config item')} acceptText={t('Add')} secondaryText={t('Cancel')} show={this.state.showAddItem} onAccept={(e) => this.handleConfirmAddItemAccept(e)} onSecondary={(e) => this.handleConfirmAddItemCancel(e)}>
+				<ModalDialog title={t('Add config item')} acceptText={t('Add')}
+					secondaryText={t('Cancel')} show={this.state.showAddItem}
+					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
+					onSecondary={(e) => this.handleConfirmAddItemCancel(e)}>
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Item')}
@@ -319,18 +327,26 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 						</label>
 					</div>
 				</ModalDialog>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) })}</p>
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
+					secondaryText={t('Cancel')} show={this.state.showDeleteConfirm}
+					onAccept={(e) => this.handleConfirmDeleteAccept(e)}
+					onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					<p>{t('Are you sure you want to delete this config item "{{configId}}"?',
+						{ configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h2 className='mhn'>{t('Blueprint Configuration')}</h2>
-				<table className='expando settings-studio-custom-config-table'>
+				{this.props.subPanel ?
+					<h3 className='mhn'>{t('Blueprint Configuration')}</h3>
+					: <h2 className='mhn'>{t('Blueprint Configuration')}</h2> }
+				<table className='table expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
 					</tbody>
 				</table>
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.addConfigItem}>
+					<button className={ClassNames('btn btn-primary', {
+						'btn-tight': this.props.subPanel
+					})} onClick={this.addConfigItem}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>

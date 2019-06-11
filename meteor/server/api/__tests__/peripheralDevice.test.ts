@@ -16,10 +16,6 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
 
-const mod = { // standard modifier
-	sort: { _rank: 1 }
-}
-
 describe('test peripheralDevice general API methods', () => {
 
 	let device: PeripheralDevice
@@ -141,11 +137,24 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('pingWithCommand and functionReply', () => {
 		setLoggerLevel('debug')
+
+		let resultErr = undefined
+		let resultMessage = undefined
+		let pingCompleted = (err, msg) => {
+			resultErr = err
+			resultMessage = msg
+		}
+
 		// This is very odd. Ping command is sent and lastSeen updated before response
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		let device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		expect(device2).toBeTruthy()
+		// Decrease lastSeen to ensure that the call below updates it
+		let lastSeen = device2.lastSeen - 100
+		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
+
 		let message = 'Waving!'
-		Meteor.call(PeripheralDeviceAPI.methods.pingWithCommand, device._id, device.token, message)
+		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
+		Meteor.call(PeripheralDeviceAPI.methods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
 		expect(command).toBeTruthy()
@@ -153,16 +162,20 @@ describe('test peripheralDevice general API methods', () => {
 		expect(command.functionName).toBe('pingResponse')
 		expect(command.args).toEqual([ message ])
 
-		Meteor.call(PeripheralDeviceAPI.methods.functionReply, device._id, device.token, command._id, undefined, 'Waving back!')
-		command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
-		expect(command.hasReply).toBeTruthy()
-		expect(command.reply).toBe('Waving back!')
+		expect(resultErr).toBeUndefined()
+		expect(resultMessage).toBeUndefined()
 
-		PeripheralDeviceCommands.remove(command._id)
+		let replyMessage = 'Waving back!'
+		Meteor.call(PeripheralDeviceAPI.methods.functionReply, device._id, device.token, command._id, undefined, replyMessage)
 		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
+
+		expect(resultErr).toBeNull()
+		expect(resultMessage).toEqual(replyMessage)
+
 	})
 
-	/* testInFiber('partPlaybackStarted', () => {
+	/*
+	testInFiber('partPlaybackStarted', () => {
 		setLoggerLevel('debug')
 		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownId: 'rundown0',
@@ -204,7 +217,8 @@ describe('test peripheralDevice general API methods', () => {
 		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
 		Meteor.call(PeripheralDeviceAPI.methods.piecePlaybackStopped, device._id, device.token, piecePlaybackStoppedResult)
 		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
-	}) */
+	})
+	*/
 
 	testInFiber('killProcess with a rundown present', () => { // test this does not shutdown because Rundown stored
 		setLoggerLevel('debug')
@@ -234,12 +248,14 @@ describe('test peripheralDevice general API methods', () => {
 		}
 	})
 
-	/* testInFiber('timelineTriggerTime', () => {
+	/*
+	testInFiber('timelineTriggerTime', () => {
 		setLoggerLevel('debug')
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = [
 			{ id: 'wibble', time: getCurrentTime() }, { id: 'wobble', time: getCurrentTime() - 100 }]
 		Meteor.call(PeripheralDeviceAPI.methods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
-	}) */
+	})
+	*/
 
 	testInFiber('requestUserAuthToken', () => {
 		setLoggerLevel('debug')
@@ -421,7 +437,7 @@ describe('test peripheralDevice general API methods', () => {
 
 // Note: The data below is copied straight from the test data in mos-connection
 let xmlApiData = {
-	'rundownCreate':  literal<MOS.IMOSRunningOrder>({
+	'rundownCreate': literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: MOS.MosString128,
@@ -485,7 +501,7 @@ let xmlApiData = {
 			})
 		]
 	}),
-	'rundownReplace':  literal<MOS.IMOSRunningOrder>({
+	'rundownReplace': literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: MOS.MosString128,
@@ -549,8 +565,8 @@ let xmlApiData = {
 			})
 		]
 	}),
-	'rundownDelete':  49478285,
-	'rundownList':  literal<MOS.IMOSObject>({
+	'rundownDelete': 49478285,
+	'rundownList': literal<MOS.IMOSObject>({
 		ID: new MOS.MosString128('M000123'),
 		Slug: new MOS.MosString128('Hotel Fire'),
 		// MosAbstract: string,
@@ -573,7 +589,7 @@ let xmlApiData = {
 		// Description: string
 		// mosExternalMetaData?: Array<IMOSExternalMetaData>
 	}),
-	'rundownMetadataReplace':  literal<MOS.IMOSRunningOrderBase>({
+	'rundownMetadataReplace': literal<MOS.IMOSRunningOrderBase>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: new MOS.MosString128(''),
@@ -584,18 +600,18 @@ let xmlApiData = {
 		// MacrundownOut?: new MOS.MosString128(''),
 		// MosExternalMetaData?: Array<IMOSExternalMetaData>
 	}),
-	'rundownElementStat_rundown':  literal<MOS.IMOSRunningOrderStatus>({
+	'rundownElementStat_rundown': literal<MOS.IMOSRunningOrderStatus>({
 		ID: new MOS.MosString128('5PM'),
 		Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
 		Time: new MOS.MosTime('2009-04-11T14:13:53')
 	}),
-	'rundownElementStat_story':  literal<MOS.IMOSStoryStatus>({
+	'rundownElementStat_story': literal<MOS.IMOSStoryStatus>({
 		RunningOrderId: new MOS.MosString128('5PM'),
 		ID: new MOS.MosString128('HOTEL FIRE'),
 		Status: MOS.IMOSObjectStatus.PLAY,
 		Time: new MOS.MosTime('1999-04-11T14:13:53')
 	}),
-	'rundownElementStat_item':  literal<MOS.IMOSItemStatus>({
+	'rundownElementStat_item': literal<MOS.IMOSItemStatus>({
 		RunningOrderId: new MOS.MosString128('5PM'),
 		StoryId: new MOS.MosString128('HOTEL FIRE '),
 		ID: new MOS.MosString128('0'),
@@ -604,15 +620,15 @@ let xmlApiData = {
 		Status: MOS.IMOSObjectStatus.PLAY,
 		Time: new MOS.MosTime('2009-04-11T14:13:53')
 	}),
-	'rundownReadyToAir':  literal<MOS.IMOSROReadyToAir>({
+	'rundownReadyToAir': literal<MOS.IMOSROReadyToAir>({
 		ID: new MOS.MosString128('5PM'),
 		Status: MOS.IMOSObjectAirStatus.READY
 	}),
-	'rundownElementAction_insert_story_Action':  literal<MOS.IMOSStoryAction>({
+	'rundownElementAction_insert_story_Action': literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_insert_story_Stories':  [
+	'rundownElementAction_insert_story_Stories': [
 		literal<MOS.IMOSROStory>({
 			ID: new MOS.MosString128('17'),
 			Slug: new MOS.MosString128('Barcelona Football'),
@@ -645,12 +661,12 @@ let xmlApiData = {
 			]
 		})
 	],
-	'rundownElementAction_insert_item_Action':  literal<MOS.IMOSItemAction>({
+	'rundownElementAction_insert_item_Action': literal<MOS.IMOSItemAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2'),
 		ItemID: new MOS.MosString128('23')
 	}),
-	'rundownElementAction_insert_item_Items':  [
+	'rundownElementAction_insert_item_Items': [
 		literal<MOS.IMOSItem>({
 			ID: new MOS.MosString128('27'),
 			Slug: new MOS.MosString128('NHL PKG'),
@@ -666,11 +682,11 @@ let xmlApiData = {
 			UserTimingDuration: 690
 		})
 	],
-	'rundownElementAction_replace_story_Action':  literal<MOS.IMOSStoryAction>({
+	'rundownElementAction_replace_story_Action': literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_replace_story_Stories':  [
+	'rundownElementAction_replace_story_Stories': [
 		literal<MOS.IMOSROStory>({
 			ID: new MOS.MosString128('17'),
 			Slug: new MOS.MosString128('Porto Football'),
@@ -703,12 +719,12 @@ let xmlApiData = {
 			]
 		})
 	],
-	'rundownElementAction_replace_item_Action':  literal<MOS.IMOSItemAction>({
+	'rundownElementAction_replace_item_Action': literal<MOS.IMOSItemAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2'),
 		ItemID: new MOS.MosString128('23')
 	}),
-	'rundownElementAction_replace_item_Items':  [
+	'rundownElementAction_replace_item_Items': [
 		literal<MOS.IMOSItem>({
 			ID: new MOS.MosString128('27'),
 			Slug: new MOS.MosString128('NHL PKG'),
@@ -724,55 +740,55 @@ let xmlApiData = {
 			UserTimingDuration: 690
 		})
 	],
-	'rundownElementAction_move_story_Action':  literal<MOS.IMOSStoryAction>({
+	'rundownElementAction_move_story_Action': literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_move_story_Stories':  [
+	'rundownElementAction_move_story_Stories': [
 		new MOS.MosString128('7')
 	],
-	'rundownElementAction_move_stories_Action':  literal<MOS.IMOSStoryAction>({
+	'rundownElementAction_move_stories_Action': literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_move_stories_Stories':  [
+	'rundownElementAction_move_stories_Stories': [
 		new MOS.MosString128('7'),
 		new MOS.MosString128('12')
 	],
-	'rundownElementAction_move_items_Action':  literal<MOS.IMOSItemAction>({
+	'rundownElementAction_move_items_Action': literal<MOS.IMOSItemAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2'),
 		ItemID: new MOS.MosString128('12')
 	}),
-	'rundownElementAction_move_items_Items':  [
+	'rundownElementAction_move_items_Items': [
 		new MOS.MosString128('23'),
 		new MOS.MosString128('24')
 	],
-	'rundownElementAction_delete_story_Action':  literal<MOS.IMOSROAction>({
+	'rundownElementAction_delete_story_Action': literal<MOS.IMOSROAction>({
 		RunningOrderID: new MOS.MosString128('5PM')
 	}),
-	'rundownElementAction_delete_story_Stories':  [
+	'rundownElementAction_delete_story_Stories': [
 		new MOS.MosString128('3')
 	],
-	'rundownElementAction_delete_items_Action':  literal<MOS.IMOSStoryAction>({
+	'rundownElementAction_delete_items_Action': literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_delete_items_Items':  [
+	'rundownElementAction_delete_items_Items': [
 		new MOS.MosString128('23'),
 		new MOS.MosString128('24')
 	],
-	'rundownElementAction_swap_stories_Action':  literal<MOS.IMOSROAction>({
+	'rundownElementAction_swap_stories_Action': literal<MOS.IMOSROAction>({
 		RunningOrderID: new MOS.MosString128('5PM')
 	}),
-	'rundownElementAction_swap_stories_StoryId0':  new MOS.MosString128('3'),
-	'rundownElementAction_swap_stories_StoryId1':  new MOS.MosString128('5'),
-	'rundownElementAction_swap_items_Action':  literal<MOS.IMOSStoryAction>({
+	'rundownElementAction_swap_stories_StoryId0': new MOS.MosString128('3'),
+	'rundownElementAction_swap_stories_StoryId1': new MOS.MosString128('5'),
+	'rundownElementAction_swap_items_Action': literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_swap_items_ItemId0':  new MOS.MosString128('23'),
-	'rundownElementAction_swap_items_ItemId1':  new MOS.MosString128('24')
+	'rundownElementAction_swap_items_ItemId0': new MOS.MosString128('23'),
+	'rundownElementAction_swap_items_ItemId1': new MOS.MosString128('24')
 }
 
 describe('peripheralDevice: MOS Basic functions', function () {
