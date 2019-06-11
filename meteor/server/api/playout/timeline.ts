@@ -205,7 +205,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundown.currentPartId) {
 					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
 					const context = new PartEventContext(activeRundown, studio, currentPart)
-					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), (object: TSRTimelineObjBase) => {
+					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, currentPart.previousPartEndState)), (object: TSRTimelineObjBase) => {
 						return literal<TimelineObjGeneric>({
 							...object,
 							_id: '', // set later
