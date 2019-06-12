@@ -141,8 +141,8 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	}
 
 	UNSAFE_componentWillUpdate() {
-		document.querySelectorAll('.notification-pop-up.is-highlighted').forEach((item: HTMLElement) => {
-			item.style.animationName = ''
+		Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element:HTMLElement) => {
+			element.style.animationName = ''
 		})
 	}
 
@@ -168,13 +168,13 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 						})
 				}
 
-				items.forEach(item => {
+				Array.from(items).forEach(item => {
 					item.style.animationName = 'none'
 				})
 
 				if (currentAnimationName !== 'none') {
 					window.requestAnimationFrame(function () {
-						items.forEach(item => {
+						Array.from(items).forEach(item => {
 							item.style.animationName = currentAnimationName
 						})
 					})
