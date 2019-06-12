@@ -1,7 +1,8 @@
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
-import * as $ from 'jquery'
+import { getElementWidth } from '../../utils/dimensions'
+import { getElementDocumentOffset } from '../../utils/positions';
 
 interface IPropsHeader {
 	scrollLeft: number
@@ -33,7 +34,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	SMALL_WIDTH_BREAKPOINT = 25
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.state = {
@@ -46,8 +47,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	checkSmallMode = () => {
-		let selAreaElementWidth = $(this.selAreaElement).width()
-		// console.log(selAreaElementWidth)
+		const selAreaElementWidth = getElementWidth(this.selAreaElement)
+
 		if (selAreaElementWidth && selAreaElementWidth < this.SMALL_WIDTH_BREAKPOINT) {
 			this.setState({
 				smallMode: true
@@ -59,8 +60,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	outsideZoomAreaClick = (e: JQuery.Event & any) => {
-		let offset = $(this.parentElement).offset()
+	outsideZoomAreaClick = (e: Event & any) => {
+		let offset = getElementDocumentOffset(this.parentElement)
 		if (offset) {
 			this.offsetX = offset.left
 			this.offsetY = offset.top
@@ -78,12 +79,12 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	onElementResize = () => {
 		this.setState({
-			width: $(this.parentElement).width() || 1
+			width: getElementWidth(this.parentElement) || 1
 		})
 		this.checkSmallMode()
 	}
 
-	zoomAreaMove = (e: JQuery.Event | TouchEvent & any) => {
+	zoomAreaMove = (e: Event | TouchEvent & any) => {
 		let percent = 0
 
 		if (this._isTouch) {
@@ -103,11 +104,11 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaEndMove (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+	zoomAreaEndMove(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
 		if (!this._isTouch) {
-			$(document).off('mousemove', '', this.zoomAreaMove)
+			document.removeEventListener('mousemove', this.zoomAreaMove)
 		} else {
-			$(document).off('touchmove', '', this.zoomAreaMove)
+			document.removeEventListener('touchmove', this.zoomAreaMove)
 		}
 
 		this.setState({
@@ -116,24 +117,24 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaBeginMove (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isTouch?: boolean) {
+	zoomAreaBeginMove(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isTouch?: boolean) {
 		this._isTouch = !!isTouch
 		let clientX = 0
 		let clientY = 0
 
 		if (!this._isTouch) {
-			$(document).on('mousemove', this.zoomAreaMove)
-			$(document).one('mouseup', () => {
+			document.addEventListener('mousemove', this.zoomAreaMove)
+			document.addEventListener('mouseup', () => {
 				this.zoomAreaEndMove(e)
-			})
+			}, { once: true })
 
 			clientX = (e as React.MouseEvent<HTMLDivElement>).clientX
 			clientY = (e as React.MouseEvent<HTMLDivElement>).clientY
 		} else {
 			const et = e as React.TouchEvent<HTMLDivElement>
 			if (et.touches.length === 1) {
-				$(document).on('touchmove', this.zoomAreaMove)
-				$(document).on('touchend', () => {
+				document.addEventListener('touchmove', this.zoomAreaMove)
+				document.addEventListener('touchend', () => {
 					this.zoomAreaEndMove(e)
 				})
 
@@ -144,8 +145,9 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 			}
 		}
 
-		let offset = $(this.parentElement).offset()
-		let selAreaOffset = $(this.selAreaElement).offset()
+		const offset = getElementDocumentOffset(this.parentElement)
+		const selAreaOffset = getElementDocumentOffset(this.selAreaElement)
+
 		if (offset && selAreaOffset) {
 			this.offsetX = offset.left
 			this.offsetY = offset.top
@@ -157,7 +159,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		})
 	}
 
-	zoomAreaLeftMove = (e: JQuery.Event & any) => {
+	zoomAreaLeftMove = (e: Event & any) => {
 		let begin = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
 		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
@@ -168,24 +170,25 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaEndLeftMove (e: React.SyntheticEvent<HTMLDivElement>) {
-		$(document).off('mousemove', '', this.zoomAreaLeftMove)
+	zoomAreaEndLeftMove(e: React.SyntheticEvent<HTMLDivElement>) {
+		document.removeEventListener('mousemove', this.zoomAreaLeftMove)
 		this.setState({
 			zoomAreaResizeBegin: false
 		})
 		this.checkSmallMode()
 	}
 
-	zoomAreaLeftBeginMove (e: JQuery.Event & any) {
+	zoomAreaLeftBeginMove(e: Event & any) {
 		// console.log('Left handle')
 		e.preventDefault()
 		e.stopPropagation()
 
-		$(document).on('mousemove', this.zoomAreaLeftMove)
-		$(document).one('mouseup', () => {
+		document.addEventListener('mousemove', this.zoomAreaLeftMove)
+		document.addEventListener('mouseup', () => {
 			this.zoomAreaEndLeftMove(e)
-		})
-		let offset = $(this.parentElement).offset()
+		}, { once: true })
+
+		let offset = getElementDocumentOffset(this.parentElement)
 		if (offset) {
 			this.offsetX = offset.left
 			this.offsetY = offset.top
@@ -195,15 +198,15 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		})
 	}
 
-	zoomAreaEndRightMove (e: React.SyntheticEvent<HTMLDivElement>) {
-		$(document).off('mousemove', '', this.zoomAreaRightMove)
+	zoomAreaEndRightMove(e: React.SyntheticEvent<HTMLDivElement>) {
+		document.removeEventListener('mousemove', this.zoomAreaRightMove)
 		this.setState({
 			zoomAreaResizeEnd: false
 		})
 		this.checkSmallMode()
 	}
 
-	zoomAreaRightMove = (e: JQuery.Event & any) => {
+	zoomAreaRightMove = (e: Event & any) => {
 		let end = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let begin = this.props.scrollLeft / this.props.segmentDuration
 		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
@@ -213,16 +216,17 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaRightBeginMove (e: JQuery.Event & any) {
+	zoomAreaRightBeginMove(e: Event & any) {
 		// console.log('Right handle')
 		e.preventDefault()
 		e.stopPropagation()
 
-		$(document).on('mousemove', this.zoomAreaRightMove)
-		$(document).one('mouseup', () => {
+		document.addEventListener('mousemove', this.zoomAreaRightMove)
+		document.addEventListener('mousemove', () => {
 			this.zoomAreaEndRightMove(e)
-		})
-		let offset = $(this.parentElement).offset()
+		}, { once: true })
+
+		let offset = getElementDocumentOffset(this.parentElement)
 		if (offset) {
 			this.offsetX = offset.left
 			this.offsetY = offset.top
@@ -240,18 +244,18 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.selAreaElement = element
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		elementResizeEvent(this.parentElement, this.onElementResize)
 		this.setState({
-			width: $(this.parentElement).width() || 1
+			width: getElementWidth(this.parentElement) || 1
 		})
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		elementResizeEvent.unbind(this.parentElement, this.onElementResize)
 	}
 
-	render () {
+	render() {
 		return (
 			<div className='segment-timeline__zoom-area__controls' ref={this.setParentRef}>
 				<div className='segment-timeline__zoom-area__controls__left-mask'
@@ -267,11 +271,11 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 					onDoubleClick={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
 				<div className={
-						ClassNames('segment-timeline__zoom-area__controls__selected-area',
-							{
-								'small-mode': this.state.smallMode
-							})
-						}
+					ClassNames('segment-timeline__zoom-area__controls__selected-area',
+						{
+							'small-mode': this.state.smallMode
+						})
+				}
 					style={{
 						left: (Math.max(this.props.scrollLeft / this.props.segmentDuration * 100, 0)).toString() + '%',
 						width: (Math.min(this.props.scrollWidth / this.props.segmentDuration * 100, 100)).toString() + '%'

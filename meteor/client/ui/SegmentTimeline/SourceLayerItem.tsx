@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
@@ -25,6 +24,8 @@ import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialo
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { getElementWidth } from '../../utils/dimensions';
+import { getElementDocumentOffset, Position } from '../../utils/positions';
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -55,8 +56,8 @@ export interface ISourceLayerItemProps {
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
-	elementPosition: JQueryCoordinates
-	cursorPosition: JQueryCoordinates
+	elementPosition: Position
+	cursorPosition: Position
 	scrollLeftOffset: number
 	cursorTimePosition: number
 	elementWidth: number
@@ -68,7 +69,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
 			showMiniInspector: false,
@@ -225,7 +226,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		return itemDuration
 	}
 
-	getItemStyle (): { [key: string]: string } {
+	getItemStyle(): { [key: string]: string } {
 		let piece = this.props.piece
 
 		let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
@@ -256,7 +257,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	checkElementWidth = () => {
 		if (this.state.itemElement && this._forceSizingRecheck) {
 			this._forceSizingRecheck = false
-			const width = $(this.state.itemElement).width() || 0
+			const width = getElementWidth(this.state.itemElement) || 0
 			if (this.state.elementWidth !== width) {
 				this.setState({
 					elementWidth: width
@@ -265,11 +266,11 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.checkElementWidth()
 	}
 
-	componentDidUpdate (prevProps: ISourceLayerItemProps) {
+	componentDidUpdate(prevProps: ISourceLayerItemProps) {
 		this._forceSizingRecheck = true
 
 		if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
@@ -347,7 +348,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			showMiniInspector: v
 		})
 		// console.log($(this.itemElement).offset())
-		const elementPos = this.state.itemElement && $(this.state.itemElement).offset() || {
+		const elementPos = getElementDocumentOffset(this.state.itemElement) || {
 			top: 0,
 			left: 0
 		}
@@ -387,71 +388,71 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		})
 	}
 
-	renderInsideItem (typeClass: string) {
+	renderInsideItem(typeClass: string) {
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
-			// case SourceLayerType.MIC:
+				// case SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.VT:
 				return <VTSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.GRAPHICS:
 			case SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
 				return <STKSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 
 			case SourceLayerType.TRANSITION:
 				return <TransitionSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			default:
 				return <DefaultLayerItemRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 		}
 	}
 
-	isInsideViewport () {
+	isInsideViewport() {
 		if (this.props.relative) {
 			return true
 		} else {
@@ -459,7 +460,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		}
 	}
 
-	render () {
+	render() {
 		if (this.isInsideViewport()) {
 
 			this._placeHolderElement = false
