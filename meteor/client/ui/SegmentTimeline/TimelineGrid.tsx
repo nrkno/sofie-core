@@ -1,18 +1,18 @@
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 
 import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
+import { getElementWidth, getElementHeight } from '../../utils/dimensions';
 
 // We're cheating a little: Fontface
 declare class FontFace {
 	loaded: Promise<FontFace>
-	constructor (font: string, url: string, options: object)
+	constructor(font: string, url: string, options: object)
 
-	load (): void
+	load(): void
 }
 
 const GRID_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
@@ -48,15 +48,15 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.pixelRatio = devicePixelRatio / backingStoreRatio
 
-			this.width = ($(this.canvasElement).innerWidth() || 0) * this.pixelRatio
-			this.height = ($(this.canvasElement).innerHeight() || 0) * this.pixelRatio
+			this.width = (this.canvasElement.scrollWidth || 0) * this.pixelRatio
+			this.height = (this.canvasElement.scrollHeight || 0) * this.pixelRatio
 			this.canvasElement.width = this.width
 			this.canvasElement.height = this.height
 
 			this.repaint()
 		}
 		if (this.props.onResize) {
-			this.props.onResize([$(this.parentElement).width() || 1, $(this.parentElement).height() || 1])
+			this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
 		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
@@ -68,11 +68,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.canvasElement = element
 	}
 
-	onCanvasResize = (event: JQuery.Event) => {
+	onCanvasResize = (event: Event) => {
 		this.contextResize()
 	}
 
-	ring (value, ringMax) {
+	ring(value, ringMax) {
 		return (value < 0) ? (ringMax + (value % ringMax)) : value % ringMax
 	}
 
@@ -183,7 +183,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	render () {
+	render() {
 		return (
 			<div className='segment-timeline__timeline-grid' ref={this.setParentRef}>
 				<canvas className='segment-timeline__timeline-grid__canvas' ref={this.setCanvasRef}></canvas>
@@ -191,7 +191,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		)
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		// console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
 		this.ctx = this.canvasElement.getContext('2d', {
 			// alpha: false
@@ -217,28 +217,28 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				}, (fontFace) => {
 					// console.log('Grid font failed to load: ' + fontFace.status)
 				})
-				.catch(err => console.log(err))
+					.catch(err => console.log(err))
 				document['fonts'].add(gridFont)
 			}
 
 			if (this.props.onResize) {
-				this.props.onResize([$(this.parentElement).width() || 1, $(this.parentElement).height() || 1])
+				this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
 			}
 		}
 	}
 
-	shouldComponentUpdate (nextProps, nextState) {
+	shouldComponentUpdate(nextProps, nextState) {
 		if ((nextProps.timeScale !== this.props.timeScale) || (nextProps.scrollLeft !== this.props.scrollLeft)) {
 			return true
 		}
 		return false
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		this.requestRepaint()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)

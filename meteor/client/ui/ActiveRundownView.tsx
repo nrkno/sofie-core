@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 import {
 	Route
@@ -39,8 +38,8 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
-		studioId: studioId
-	}))
+			studioId: studioId
+		}))
 
 	return {
 		rundown,
@@ -49,14 +48,14 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 })(class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
 			subsReady: false
 		}
 	}
 
-	componentWillMount () {
+	componentWillMount() {
 		this.subscribe('rundowns', _.extend({
 			active: true
 		}, this.props.studioId ? {
@@ -77,20 +76,20 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		})
 	}
 
-	componentDidMount () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+	componentDidMount() {
+		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		super.componentWillUnmount()
-		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
+		document.body.classList.remove('dark', 'vertical-overflow-only')
 	}
 
-	componentDidUpdate () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+	componentDidUpdate() {
+		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
-	renderMessage (message: string) {
+	renderMessage(message: string) {
 		const { t } = this.props
 
 		return (
@@ -111,7 +110,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		if (!this.state.subsReady) {
 			return (

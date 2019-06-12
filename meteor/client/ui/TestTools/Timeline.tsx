@@ -2,8 +2,6 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
@@ -12,6 +10,7 @@ import { TimelineState, Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../../lib/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
+import { StudioSelect } from './StudioSelect'
 
 interface ITimelineViewProps {
 	match?: {
@@ -207,54 +206,9 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 	}
 })
 
-interface IStudioSelectProps {
-}
-interface IStudioSelectState {
-}
-interface IStudioSelectTrackedProps {
-	studios: Studio[]
-}
-const TimelineStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>((props: IStudioSelectProps) => {
-	return {
-		studios: Studios.find({}, {
-			sort: {
-				_id: 1
-			}
-		}).fetch()
-	}
-})(class StudioSelection extends MeteorReactComponent<Translated<IStudioSelectProps & IStudioSelectTrackedProps>, IStudioSelectState> {
-	render () {
-		const { t } = this.props
-
-		return (
-			<div className='mhl gutter recordings-studio-select'>
-				<header className='mbs'>
-					<h1>{t('Timeline')}</h1>
-				</header>
-				<div className='mod mvl'>
-					<strong>Studio</strong>
-					<ul>
-
-						{
-							_.map(this.props.studios, (studio) => {
-								return (
-									<li key={studio._id}>
-										<Link to={`timeline/${studio._id}`}>{studio.name}</Link>
-									</li>
-								)
-							})
-						}
-					</ul>
-				</div>
-			</div>
-		)
-	}
-})
-
 interface ITimelineSimulateProps {
 	studioId: string
 }
-
 interface ITimelineSimulateState {
 	errorMsg?: string
 	state?: TimelineState
@@ -334,5 +288,11 @@ class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateSta
 		)
 	}
 })
+
+class TimelineStudioSelect extends React.Component<{}, {}> {
+	render () {
+		return <StudioSelect path='timeline' title='Timeline' />
+	}
+}
 
 export { TimelineView, TimelineStudioSelect }

@@ -7,7 +7,6 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 // import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
 // import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
 // import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as $ from 'jquery'
 import * as classNames from 'classnames'
 
 export interface IProps {
@@ -28,7 +27,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	private internalTime: number = 0
 	private lastPosition: number
 
-	constructor (props: Translated<IProps>) {
+	constructor(props: Translated<IProps>) {
 		super(props)
 
 		this.internalTime = props.currentTime || 0
@@ -59,8 +58,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	}
 
 	videoMouseMove = (e: MouseEvent) => {
-		const pos = $(this.videoEl).offset()
-		if (this.state.isMouseDown && pos) {
+		if (this.state.isMouseDown && this.videoEl) {
 			e.preventDefault()
 
 			if (this.videoEl.readyState <= 2) { // we are moving around the video, but the player is stuck
@@ -119,11 +117,11 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 		// TODO
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.cleanUpListeners()
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		if (this.videoEl) {
 			if (this.videoEl.src !== this.props.src) {
 				this.videoEl.src = this.props.src || ''
@@ -133,7 +131,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 		}
 	}
 
-	render () {
+	render() {
 		return (
 			<div className='video-edit-monitor'>
 				<div className={classNames('video-edit-monitor__monitor', {

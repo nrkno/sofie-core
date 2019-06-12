@@ -28,7 +28,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updateDynamicPartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -46,6 +46,7 @@ import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
+import { UpdateNext } from './updateNext'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -379,6 +380,8 @@ function updateRundownFromIngestData (
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
 }
 
@@ -499,8 +502,9 @@ export function updateSegmentFromIngestData (
 function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
-	updateDynamicPartRanks(rundown._id)
+	updatePartRanks(rundown._id)
 	updateSourceLayerInfinitesAfterPart(rundown)
+	UpdateNext.ensureNextPartIsValid(rundown)
 	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
 
@@ -628,7 +632,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank, // TODO - is this correct
+			_rank: sourcePart.rank, // This gets updated to a rundown unique rank as a later step
 			notes: notes,
 		})
 		parts.push(part)

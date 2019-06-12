@@ -104,7 +104,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 				_.each(device.expectedVersions, (expectedVersionStr, libraryName: string) => {
 					let versionStr = deviceVersions[libraryName]
 
-					let version = parseVersion(versionStr)
+					let version = parseVersion(versionStr || '0.0.0')
 					let expectedVersion = parseRange(expectedVersionStr)
 
 					let statusCode = StatusCode.GOOD

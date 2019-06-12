@@ -15,7 +15,7 @@ import { prefixAllObjectIds } from './lib'
 import { convertAdLibToPiece, getResolvedPieces } from './pieces'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
-import { updateDynamicPartRanks } from '../rundown'
+import { updatePartRanks } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
@@ -184,7 +184,7 @@ export namespace ServerPlayoutAdLibAPI {
 			typeVariant: 'adlib'
 		})
 
-		updateDynamicPartRanks(rundown._id) // place in order
+		updatePartRanks(rundown._id) // place in order
 
 		return newPartId
 	}

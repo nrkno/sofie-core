@@ -11,7 +11,9 @@ import {
 	fetchBefore,
 	getRank,
 	fetchAfter,
-	getCurrentTime
+	getCurrentTime,
+	asyncCollectionUpdate,
+	waitForPromiseAll
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -27,6 +29,7 @@ import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
+import { UpdateNext } from './ingest/updateNext'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -148,28 +151,18 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (rundown && rundown.active) {
-		// If the replaced segment is next-to-be-played out,
-		// instead make the next-to-be-played-out part the one in it's place
-		const oldNextPart = _.find(removedParts, part => part._id === rundown.nextPartId)
-		if (oldNextPart) {
-			const partBefore = fetchBefore(Parts, {
-				rundownId: rundownId
-			}, oldNextPart._rank)
-
-			const newNextPart = fetchAfter(Parts, {
-				rundownId: rundownId,
-				_id: { $ne: oldNextPart._id }
-			}, partBefore ? partBefore._rank : null)
-
-			ServerPlayoutAPI.setNextPartInner(rundown, newNextPart ? newNextPart : null)
-		}
+		// Ensure the next-part is still valid
+		UpdateNext.ensureNextPartIsValid(rundown)
 	}
 }
 /**
- * Update the ordering of Adlibbed parts (queued adlibs)
+ * Update the ranks of all parts.
+ * Uses the ranks to determine order within segments, and then updates part ranks based on segment ranks.
+ * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  * @param rundownId
  */
-export function updateDynamicPartRanks (rundownId: string): Array<Part> {
+export function updatePartRanks (rundownId: string): Array<Part> {
+	const allSegments = Segments.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
 	const rankedParts: Array<Part> = []
@@ -181,6 +174,38 @@ export function updateDynamicPartRanks (rundownId: string): Array<Part> {
 			partsToPutAfter[part.afterPart].push(part)
 		} else {
 			rankedParts.push(part)
+		}
+	})
+
+	// Sort the parts by segment, then rank
+	const segmentIds = _.map(allSegments, seg => seg._id)
+	rankedParts.sort((a, b) => {
+		let compareRanks = (ar: number, br: number) => {
+			if (ar === br) {
+				return 0
+			} else if (ar < br) {
+				return -1
+			} else {
+				return 1
+			}
+		}
+
+		if (a.segmentId === b.segmentId) {
+			return compareRanks(a._rank, b._rank)
+		} else {
+			const aRank = segmentIds.indexOf(a.segmentId)
+			const bRank = segmentIds.indexOf(b.segmentId)
+			return compareRanks(aRank, bRank)
+		}
+	})
+
+	let ps: Array<Promise<any>> = []
+	// Ensure that the parts are all correctly rannnnked
+	_.each(rankedParts, (part, newRank) => {
+		if (part._rank !== newRank) {
+			ps.push(asyncCollectionUpdate(Parts, part._id, { $set: { _rank: newRank } }))
+			// Update in place, for the upcoming algorithm
+			part._rank = newRank
 		}
 	})
 
@@ -212,7 +237,7 @@ export function updateDynamicPartRanks (rundownId: string): Array<Part> {
 
 						if (dynamicPart._rank !== newRank) {
 							dynamicPart._rank = newRank
-							Parts.update(dynamicPart._id, { $set: { _rank: dynamicPart._rank } })
+							ps.push(asyncCollectionUpdate(Parts, dynamicPart._id, { $set: { _rank: dynamicPart._rank } }))
 						}
 
 						rankedParts.splice(insertI, 0, dynamicPart)
@@ -224,6 +249,8 @@ export function updateDynamicPartRanks (rundownId: string): Array<Part> {
 			}
 		})
 	}
+
+	waitForPromiseAll(ps)
 
 	return rankedParts
 }

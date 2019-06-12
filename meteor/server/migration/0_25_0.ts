@@ -1,6 +1,6 @@
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import * as _ from 'underscore'
-import { renamePropertiesInCollection } from './lib'
+import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
@@ -26,6 +26,7 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
 import { logger } from '../../lib/logging'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
@@ -292,5 +293,7 @@ addMigrationSteps('0.25.0', [
 			})
 		}
 	},
-
+	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^0.20.0'),
+	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^0.8.0'),
+	setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^0.2.0'),
 ])
