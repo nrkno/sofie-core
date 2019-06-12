@@ -50,7 +50,7 @@ export class KeyboardController extends ControllerAbstract {
 
 		if (this._mode === Mode.NORMAL) {
 			const scrollBy = Math.round(window.innerHeight * 0.66)
-			const scrollPosition = this._prompterView.getScrollPosition()
+			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
 				if (
 					e.code === 'ArrowLeft' ||
@@ -82,7 +82,7 @@ export class KeyboardController extends ControllerAbstract {
 		const timeSincePress = Date.now() - this._keyDown[e.code]
 
 		if (this._mode === Mode.NORMAL) {
-			const scrollPosition = this._prompterView.getScrollPosition()
+			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
 				if (
 					e.code === 'ArrowLeft' || // left
@@ -150,7 +150,7 @@ export class KeyboardController extends ControllerAbstract {
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
 
-		const scrollPosition = this._prompterView.getScrollPosition()
+		const scrollPosition = window.scrollY
 		if (scrollPosition !== undefined) {
 			this._currentPosition = scrollPosition
 			let dp = (
@@ -197,7 +197,7 @@ export class KeyboardController extends ControllerAbstract {
 					window.scrollBy(0, speed)
 				}
 
-				const scrollPosition = this._prompterView.getScrollPosition()
+				const scrollPosition = window.scrollY
 
 				if (scrollPosition !== undefined) {
 					// Reached end-of-scroll:

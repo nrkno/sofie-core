@@ -216,7 +216,7 @@ export class MouseIshController extends ControllerAbstract {
 	}
 	private triggerStartSpeedScrolling () {
 		if (this._scrollingDown) {
-			const scrollPosition = this._prompterView.getScrollPosition()
+			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
 				this._nextPausePosition = this._prompterView.findAnchorPosition(scrollPosition + 50, -1, 1)
 			}
@@ -265,7 +265,7 @@ export class MouseIshController extends ControllerAbstract {
 			this._mode !== Mode.SMOOTHSCROLL
 		) return
 
-		let scrollPosition = this._prompterView.getScrollPosition()
+		let scrollPosition = window.scrollY
 
 		if (
 			scrollPosition !== undefined &&
@@ -317,7 +317,7 @@ export class MouseIshController extends ControllerAbstract {
 
 		window.scrollBy(0, speed)
 
-		scrollPosition = this._prompterView.getScrollPosition()
+		scrollPosition = window.scrollY
 
 		if (scrollPosition !== undefined) {
 			// Reached end-of-scroll:
