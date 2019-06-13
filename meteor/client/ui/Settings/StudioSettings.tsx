@@ -581,6 +581,58 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			</React.Fragment>
 		)
 	}
+	renderQuantelMappingSettings (layerId: string) {
+		const { t } = this.props
+		// tmp! comes trom TSR types
+		enum QuantelControlMode {
+			/** Try to avoid freeze-frames when playing */
+			QUALITY = 'quality',
+			/** Try to play as fast as possible */
+			SPEED = 'speed'
+		}
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Port ID')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.portId'}
+							obj={this.props.studio}
+							type='text'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Channel ID')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.channelId'}
+							obj={this.props.studio}
+							type='int'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Mode')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mode'}
+							obj={this.props.studio}
+							type='dropdown'
+							options={QuantelControlMode}
+							optionsAreNumbers={false}
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
 
 	renderMappings () {
 		const { t } = this.props
@@ -646,6 +698,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							(
 								mapping.device === PlayoutDeviceType.OSC && (
 								<span>-</span>
+							)) ||
+							(
+								mapping.device === 11 && (
+								// mapping.device === PlayoutDeviceType.QUANTEL && (
+								<span></span> // todo: fill in
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
@@ -744,6 +801,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 										(
 										mapping.device === PlayoutDeviceType.PHAROS && (
 											this.renderPharosMappingSettings(layerId)
+										)) ||
+										(
+										mapping.device === 11 && (
+										// mapping.device === PlayoutDeviceType.QUANTEL && (
+											this.renderQuantelMappingSettings(layerId)
 										))
 									}
 								</div>

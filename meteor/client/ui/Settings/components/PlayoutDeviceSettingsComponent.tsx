@@ -291,6 +291,34 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 						</div>
 					</React.Fragment>)
 					break
+				case 11: //PlayoutDeviceType.QUANTEL:
+					renderObject = (<React.Fragment>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Gateway URL')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.gatewayUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('ISA URL')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.ISAUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Zone ID')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.zoneId'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Quantel Server ID')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+					</React.Fragment>)
+					break
 				default:
 					break
 			}
