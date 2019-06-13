@@ -50,6 +50,9 @@ import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { ingestMOSRundown } from './ingest/http'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+
 interface RundownSnapshot {
 	version: string
 	rundownId: string
@@ -57,6 +60,8 @@ interface RundownSnapshot {
 	rundown: Rundown
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
+	baselineObjs: Array<RundownBaselineObj>
+	baselineAdlibs: Array<RundownBaselineAdLibItem>
 	segments: Array<Segment>
 	parts: Array<Part>
 	pieces: Array<Piece>
@@ -117,6 +122,8 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()
+	const baselineObjs = RundownBaselineObjs.find({ rundownId: rundownId }).fetch()
+	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: rundownId }).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -132,8 +139,10 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 			version: CURRENT_SYSTEM_VERSION
 		},
 		rundown,
-		ingestData: ingestData,
+		ingestData,
 		userActions,
+		baselineObjs,
+		baselineAdlibs,
 		segments,
 		parts,
 		pieces,
@@ -415,6 +424,8 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	saveIntoDb(Rundowns, { _id: rundownId }, [snapshot.rundown])
 	saveIntoDb(IngestDataCache, { rundownId: rundownId }, snapshot.ingestData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
+	saveIntoDb(RundownBaselineObjs, { rundownId: rundownId }, snapshot.baselineObjs)
+	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, snapshot.baselineAdlibs)
 	saveIntoDb(Segments, { rundownId: rundownId }, snapshot.segments)
 	saveIntoDb(Parts, { rundownId: rundownId }, snapshot.parts)
 	saveIntoDb(Pieces, { rundownId: rundownId }, snapshot.pieces)
