@@ -1058,9 +1058,7 @@ export namespace ServerPlayoutAPI {
 				_id: timelineObj.metadata.pieceId
 			}, {
 				$set: {
-					enable: {
-						start: time
-					}
+					'enable.start': time
 				}
 			})
 		}
