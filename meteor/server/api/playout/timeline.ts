@@ -58,7 +58,7 @@ import { generateRecordingTimelineObjs } from '../testTools'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { prefixAllObjectIds } from './lib'
-import { createPieceGroup, createPieceGroupFirstObject } from './pieces'
+import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 
@@ -205,7 +205,8 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundown.currentPartId) {
 					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
 					const context = new PartEventContext(activeRundown, studio, currentPart)
-					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, currentPart.previousPartEndState)), (object: TSRTimelineObjBase) => {
+					const resolvedPieces = getResolvedPieces(currentPart)
+					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, currentPart.previousPartEndState, resolvedPieces)), (object: TSRTimelineObjBase) => {
 						return literal<TimelineObjGeneric>({
 							...object,
 							_id: '', // set later

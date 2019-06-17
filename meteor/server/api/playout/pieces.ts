@@ -161,7 +161,10 @@ export function getResolvedPieces (part: Part): Piece[] {
 
 	const objs = pieces.map(piece => clone(createPieceGroup(piece)))
 	objs.forEach(o => {
-		if (o.enable.start === 0 || o.enable.start === 'now') {
+		if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
+			// Emulate playout starting now. TODO - ensure didnt break other uses
+			o.enable.start = getCurrentTime() - (part.getLastStartedPlayback() || 0)
+		} else if (o.enable.start === 0 || o.enable.start === 'now') {
 			o.enable.start = 1
 		}
 	})

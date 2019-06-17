@@ -47,7 +47,7 @@ Meteor.startup(() => {
 		const pubValue = PubSub[pubName]
 		const signature = MeteorPublicationSignatures[pubValue]
 
-		console.log(pubValue, signature)
+		// console.log(pubValue, signature)
 
 		const f = MeteorPublications[pubValue]
 
