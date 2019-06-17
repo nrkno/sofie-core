@@ -5,7 +5,9 @@ import {
 	getPartFirstObjectId,
 	TimelineObjectCoreExt,
 	getPieceGroupId,
-	TimelineObjHoldMode
+	TimelineObjHoldMode,
+	OnGenerateTimelineObj,
+	PlayoutTimelinePrefixes
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import {
@@ -39,7 +41,8 @@ import {
 	asyncCollectionUpsert,
 	extendMandadory,
 	literal,
-	clone
+	clone,
+	omit
 } from '../../../lib/lib'
 import { Rundowns, RundownData, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
@@ -206,9 +209,19 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
 					const context = new PartEventContext(activeRundown, studio, currentPart)
 					const resolvedPieces = getResolvedPieces(currentPart)
-					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, currentPart.previousPartEndState, resolvedPieces)), (object: TSRTimelineObjBase) => {
+					const timelineObjs2 = _.map(timelineObjs, obj => {
+						let pieceId: string | undefined = undefined
+						if (obj.inGroup && obj.inGroup.indexOf(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX) === 0) {
+							pieceId = obj.inGroup.substring(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX.length)
+						}
+						return literal<OnGenerateTimelineObj>({
+							...obj,
+							pieceId
+						})
+					})
+					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs2, currentPart.previousPartEndState, resolvedPieces)), (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric>({
-							...object,
+							...omit(object, 'pieceId'),
 							_id: '', // set later
 							objectType: TimelineObjType.RUNDOWN,
 							studioId: studio._id

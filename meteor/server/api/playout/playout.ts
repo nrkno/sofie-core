@@ -25,7 +25,7 @@ import {
 	PieceLifespan,
 	PartHoldMode,
 	VTContent,
-	EndState
+	PartEndState
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios } from '../../../lib/collections/Studios'
 import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
@@ -264,7 +264,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			// TODO - the state could change after this sampling point. This should be handled properly
-			let previousPartEndState: EndState | undefined = undefined
+			let previousPartEndState: PartEndState | undefined = undefined
 			if (blueprint.getEndStateForPart && previousPart) {
 				const time = getCurrentTime()
 				const activePieces = resolveActivePieces(previousPart, time)
