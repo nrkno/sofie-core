@@ -214,7 +214,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 						if (obj.inGroup && obj.inGroup.indexOf(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX) === 0) {
 							pieceId = obj.inGroup.substring(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX.length)
 						}
-						return literal<OnGenerateTimelineObj>({
+						return literal<OnGenerateTimelineObj & TimelineObjGeneric>({
 							...obj,
 							pieceId
 						})
