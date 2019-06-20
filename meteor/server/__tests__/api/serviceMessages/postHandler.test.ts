@@ -65,7 +65,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			postHandler({}, mockRequest, mockResponse)
 
 			expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-			expect(mockResponseEnd.mock.calls.length).toEqual(1)
+			expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 		})
 
 		describe('id field', () => {
@@ -78,7 +78,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject empty string', () => {
@@ -89,7 +89,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject blank string', () => {
@@ -100,7 +100,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 		})
 
@@ -114,7 +114,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject non numeric value', () => {
@@ -125,7 +125,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject negative number', () => {
@@ -136,7 +136,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject non-criticality positive number', () => {
@@ -150,7 +150,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 		})
 
@@ -164,7 +164,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject empty string', () => {
@@ -175,7 +175,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject blank string', () => {
@@ -186,7 +186,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 		})
@@ -201,7 +201,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should accept empty value', () => {
@@ -212,7 +212,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 		})
 
@@ -226,7 +226,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 
 			it('should reject non date value', () => {
@@ -237,7 +237,7 @@ describe('ServiceMessages API POST endpoint', () => {
 				postHandler({}, mockRequest, mockResponse)
 
 				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd.mock.calls.length).toEqual(1)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
 		})
 	})
@@ -315,7 +315,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			 * implementing unit to write the body with response#write.
 			 * But, I'm not implementing a full mock of ServerResponse at this stage :S
 			 */
-			expect(mockResponseEnd.mock.calls[0][0]).toEqual(expected)
+			expect(mockResponseEnd).toHaveBeenCalledWith(expected)
 			spy.mockRestore()
 		})
 
@@ -344,7 +344,8 @@ describe('ServiceMessages API POST endpoint', () => {
 			 * implementing unit to write the body with response#write.
 			 * But, I'm not implementing a full mock of ServerResponse at this stage :S
 			 */
-			expect(mockResponseEnd.mock.calls[0][0]).toEqual(expected)
+			// expect(mockResponseEnd.mock.calls[0][0]).toEqual(expected)
+			expect(mockResponseEnd).toHaveBeenCalledWith(expected)
 			spy.mockRestore()
 		})
 
