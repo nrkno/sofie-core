@@ -1,50 +1,22 @@
+import { CoreSystem } from '../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
-import { CoreSystem } from '../../../lib/collections/CoreSystem'
-import { logger } from '../../logging';
+import { postHandler } from './postHandler'
+import { logger } from '../../logging'
+import * as bodyParser from 'body-parser'
+import { readAllMessages } from './serviceMessagesApi'
 
-Picker.route('/serviceMessages', (params, req, res, next) => {
-	const { method } = req
+const postRoute = Picker.filter((req, res) => req.method === 'POST')
+postRoute.middleware(bodyParser.json())
+postRoute.route('/serviceMessages', postHandler)
 
-	if (method === 'POST') {
-		return postHandler(params, req, res, next)
-	}
-	if (method == 'GET') {
-		return getHandler(params, req, res, next)
-	}
+const getRoute = Picker.filter((req, res) => req.method === 'GET')
+getRoute.route('/serviceMessages', getHandler)
+getRoute.route('/serviceMessages/:id', getMessageHandler)
 
-	res.statusCode = 405
-	res.end()
-})
+const deleteRoute = Picker.filter((req, res) => req.method === 'DELETE')
+deleteRoute.route('/serviceMessages/:id', deleteHandler)
 
-Picker.route('/serviceMessages/:id', (params, req, res, next) => {
-	const { method } = req
-
-	if (method === 'DELETE') {
-		return deleteHandler(params, req, res, next)
-	}
-	if (method == 'GET') {
-		return getMessageHandler(params, req, res, next)
-	}
-
-	res.statusCode = 405
-	res.end()
-})
-
-/**
- * Create new or update existing message
- */
-function postHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
-	// validate !? => 400
-	// exists? update exisiting => 200/204
-	// create => 201
-	// fuckup? => 500
-}
 
 /**
  * List all current messages stored on this instance
@@ -55,16 +27,15 @@ function getHandler (
 	res: ServerResponse,
 	next: () => void
 ) {
-	const coreSystem = CoreSystem.findOne()
-	if (!coreSystem || !coreSystem.serviceMessages) {
+	try {
+		const valuesArray = readAllMessages()
+		res.setHeader('Content-Type', 'application/json; charset-utf8')
+		res.end(JSON.stringify(valuesArray), 'utf-8')
+	} catch (error) {
+		res.statusCode = 500
+		res.end('Unable to list service messages')
 		return
 	}
-
-	const { serviceMessages } = coreSystem
-	logger.info(`serviceMessages: ${typeof serviceMessages}`, serviceMessages)
-	const valuesArray = Array.from(Object.entries(serviceMessages))
-	logger.info(`valuesArray: ${valuesArray.length}, ${typeof valuesArray}`)
-	res.end(JSON.stringify(valuesArray))
 }
 
 /**

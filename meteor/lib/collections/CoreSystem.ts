@@ -63,7 +63,7 @@ export interface ICoreSystem {
 
 	/** Service messages currently valid for this instance */
 	serviceMessages: {
-		[index:string] : ServiceMessage
+		[index: string]: ServiceMessage
 	}
 }
 
