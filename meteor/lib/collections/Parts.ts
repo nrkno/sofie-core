@@ -14,6 +14,7 @@ import {
 	PartHoldMode,
 	BlueprintRuntimeArguments,
 	IBlueprintPartDBTimings,
+	PartEndState,
 } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
 
@@ -41,6 +42,8 @@ export interface DBPart extends IBlueprintPartDB {
 	 * This is set when Take:ing the next part
 	 */
 	duration?: number
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
@@ -87,6 +90,7 @@ export class Part implements DBPart {
 	public startedPlayback?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
+	public previousPartEndState?: PartEndState
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
 	public timings?: PartTimings

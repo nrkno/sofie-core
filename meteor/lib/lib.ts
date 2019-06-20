@@ -292,8 +292,8 @@ export interface ObjId {
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 
-export function omit<T, P extends keyof T> (obj: T, prop: P): Omit<T, P> {
-	return _.omit(obj)
+export function omit<T, P extends keyof T> (obj: T, ...props: P[]): Omit<T, P> {
+	return _.omit(obj, ...(props as string[]))
 }
 
 export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
