@@ -350,9 +350,9 @@ describe('ServiceMessages API POST endpoint', () => {
 		})
 
 		it('should reply 500 when message cant be stored', () => {
-			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(() => ({
-				systemError: true
-			}))
+			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(() => {
+				throw new Error('lol')
+			})
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
 			postHandler({}, mockRequest, mockResponse)

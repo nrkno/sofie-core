@@ -17,13 +17,14 @@ const INPUT_MISSING_PARTIAL = 'Missing data in input: '
 const validCriticalities = Object.values(Criticality).filter((value) => !isNaN(value))
 
 /**
- * Create new or update existing message
+ * Create new or update existing service message.
+ *
+ * Picker route handler, see Picker documentation for interface details.
  */
 function postHandler (
 	params,
 	req: BodyParsingIncomingMessage,
 	res: ServerResponse,
-	next?: () => void
 ) {
 	const { body } = req
 	if (!body) {
@@ -66,16 +67,14 @@ function postHandler (
 		timestamp: new Date(timestamp)
 	} as ServiceMessage
 
-	const status = writeMessage(serviceMessage)
-
-	if (status.systemError === true) {
+	try {
+		const status = writeMessage(serviceMessage)
+		res.statusCode = status.isUpdate === true ? 200 : 201
+		res.setHeader('Content-Type', 'application/json; charset-utf8')
+		res.end(JSON.stringify(serviceMessage))
+	} catch (error) {
 		res.statusCode = 500
 		res.end('System error, unable to store message')
-		return
 	}
-
-	res.statusCode = status.isUpdate === true ? 200 : 201
-	res.setHeader('Content-Type', 'application/json; charset-utf8')
-	res.end(JSON.stringify(serviceMessage))
 }
 

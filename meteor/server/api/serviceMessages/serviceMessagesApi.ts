@@ -4,10 +4,16 @@ import { logger } from '../../logging'
 export { readAllMessages, writeMessage, WriteStatus }
 
 interface WriteStatus {
-	systemError?: boolean,
 	isUpdate?: boolean
 }
 
+/**
+ * Get all service messages in the system currently
+ *
+ * @returns all service messages currently stored in the system
+ *
+ * @throws if messages cant be read due to a technical problem
+ */
 function readAllMessages (): Array<ServiceMessage> {
 	const coreSystem = getCoreSystem()
 	if (!coreSystem || !coreSystem.serviceMessages) {
@@ -20,30 +26,30 @@ function readAllMessages (): Array<ServiceMessage> {
 	return messages
 }
 
+/**
+ * Store a service message in the system
+ *
+ * @param message - the message to be stored
+ *
+ * @returns status for the write operation
+ *
+ * @throws when a message can't be written
+ */
 function writeMessage (message: ServiceMessage): WriteStatus {
 	const coreSystem = getCoreSystem()
 	if (!coreSystem || !coreSystem.serviceMessages) {
-		logger.error('coreSystem.serviceMessages is not available. Database not migrated?')
-		return {
-			systemError: true
-		}
+		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
 	}
-
-	const status: WriteStatus = { systemError: false }
 
 	const { serviceMessages } = coreSystem
-	if (serviceMessages[message.id]) {
-		status.isUpdate = true
-	}
+	const isUpdate = serviceMessages[message.id] ? true : false
 
-	serviceMessages[message.id] = message
 	try {
+		serviceMessages[message.id] = message
 		CoreSystem.update(coreSystem._id, { $set: { serviceMessages } })
-		return status
+		return { isUpdate }
 	} catch (error) {
 		logger.error(error.message)
-		return {
-			systemError: true
-		}
+		throw new Error(`Unable to store service message: ${error.message}`)
 	}
 }
