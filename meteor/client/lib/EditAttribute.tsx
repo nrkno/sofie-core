@@ -406,7 +406,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 
 		let value = option ? option.value : event.target.value
 
-		this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(value, 10) : value)
+		this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 	}
 	getOptions (addOptionForCurrentValue?: boolean) {
 		let options: Array<{ value: any, name: string, i?: number }> = []
