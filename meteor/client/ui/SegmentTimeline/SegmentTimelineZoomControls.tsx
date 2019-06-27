@@ -199,7 +199,6 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	zoomAreaEndRightMove(e: React.SyntheticEvent<HTMLDivElement>) {
-		console.log('Finished')
 		document.removeEventListener('mousemove', this.zoomAreaRightMove)
 		this.setState({
 			zoomAreaResizeEnd: false
@@ -208,7 +207,6 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	zoomAreaRightMove = (e: Event & any) => {
-		console.log('Moving')
 		let end = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let begin = this.props.scrollLeft / this.props.segmentDuration
 		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
@@ -219,7 +217,6 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	zoomAreaRightBeginMove(e: Event & any) {
-		console.log('Right handle')
 		e.preventDefault()
 		e.stopPropagation()
 
