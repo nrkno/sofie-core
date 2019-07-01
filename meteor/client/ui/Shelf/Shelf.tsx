@@ -270,8 +270,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 
 		const handlePosition = getElementDocumentOffset(e.currentTarget)
 		if (handlePosition) {
-			this._mouseOffset.x = (handlePosition.left - document.body.scrollLeft) - this._mouseStart.x
-			this._mouseOffset.y = (handlePosition.top - document.body.scrollTop) - this._mouseStart.y
+			this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseStart.x
+			this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseStart.y
 		}
 
 		this._mouseDown = Date.now()
