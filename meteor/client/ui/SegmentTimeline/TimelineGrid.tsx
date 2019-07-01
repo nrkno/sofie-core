@@ -26,6 +26,9 @@ interface ITimelineGridProps {
 	onResize: (size: number[]) => void
 }
 
+let gridFont: any | undefined = undefined;
+let gridFontAvailable: boolean = false;
+
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	canvasElement: HTMLCanvasElement
 	parentElement: HTMLDivElement
@@ -202,23 +205,27 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// $(window).on('resize', this.onCanvasResize)
 			elementResizeEvent(this.parentElement, this.onCanvasResize)
 
-			if (typeof FontFace !== 'undefined') {
+			if (!gridFont && typeof FontFace !== 'undefined') {
 
-				let gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
+				gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
 					style: 'normal',
 					weight: 100
 				})
 				gridFont.load()
 				gridFont.loaded.then((fontFace) => {
 					// console.log('Grid font loaded: ' + fontFace.status)
+					gridFontAvailable = true
 					window.requestAnimationFrame(() => {
 						this.repaint()
 					})
-				}, (fontFace) => {
-					// console.log('Grid font failed to load: ' + fontFace.status)
-				})
-					.catch(err => console.log(err))
+				}).catch(err => console.log(err))
 				document['fonts'].add(gridFont)
+			} else if (gridFont && !gridFontAvailable) {
+				gridFont.loaded.then((fontFace) => {
+					window.requestAnimationFrame(() => {
+						this.repaint()
+					})
+				})
 			}
 
 			if (this.props.onResize) {
