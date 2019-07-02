@@ -53,7 +53,7 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { VirtualElement } from '../lib/VirtualElement';
+import { VirtualElement } from '../lib/VirtualElement'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
