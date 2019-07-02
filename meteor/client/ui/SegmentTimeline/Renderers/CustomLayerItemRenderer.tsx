@@ -28,8 +28,8 @@ export interface ICustomLayerItemProps {
 	livePosition: number | null
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	elementPosition: JQueryCoordinates
-	cursorPosition: JQueryCoordinates
+	elementPosition: JQuery.Coordinates
+	cursorPosition: JQuery.Coordinates
 	cursorTimePosition: number
 	getItemLabelOffsetLeft?: () => {[key: string]: string}
 	getItemLabelOffsetRight?: () => { [key: string]: string }

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
+import * as $ from 'jquery'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -344,7 +345,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}, this.props.isLiveSegment ? {
 			followLiveLine: false
 		} : {}))
-		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange(($(this.timelineDiv).width() || 1) / (computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1))
+		if (typeof this.props.onTimeScaleChange === 'function') {
+			this.props.onTimeScaleChange(
+				(
+					$(this.timelineDiv).width() || 1
+				) /
+				(
+					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1
+				)
+			)
+		}
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 	updateSpeech () {
