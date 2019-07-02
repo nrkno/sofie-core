@@ -9,6 +9,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+import { VTSourceRendererBase } from './VTSourceRenderer'
 import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
 
 import Lottie from 'react-lottie'
@@ -16,188 +17,10 @@ import Lottie from 'react-lottie'
 import * as loopAnimation from './icon-loop.json'
 import { InjectedTranslateProps, translate } from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
-interface IProps extends ICustomLayerItemProps {
-}
-interface IState {
-}
-export const STKSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
-	vPreview: HTMLVideoElement
-	leftLabel: HTMLSpanElement
-	rightLabel: HTMLSpanElement
-	begin: string
-	end: string
-	scenes?: Array<number>
-	freezes?: Array<Anomaly>
-	blacks?: Array<Anomaly>
 
-	setVideoRef = (e: HTMLVideoElement) => {
-		this.vPreview = e
-	}
-
-	setLeftLabelRef = (e: HTMLSpanElement) => {
-		this.leftLabel = e
-	}
-
-	setRightLabelRef = (e: HTMLSpanElement) => {
-		this.rightLabel = e
-	}
-
-	updateTime = () => {
-		if (this.vPreview) {
-			const piece = this.props.piece
-			const itemDuration = ((piece.content ? piece.content.sourceDuration as number : undefined) || piece.playoutDuration || piece.renderedDuration || 0)
-			let targetTime = this.props.cursorTimePosition
-			let seek = ((piece.content ? piece.content.seek as number : undefined) || 0)
-			if (piece.content && piece.content.loop && this.vPreview.duration > 0) {
-				targetTime = targetTime % (Math.min(this.vPreview.duration, itemDuration) * 1000)
-			} else if (itemDuration === 0 && piece.infiniteMode) {
-				// noop
-			} else {
-				targetTime = Math.min(targetTime, itemDuration)
-			}
-			targetTime += seek
-			this.vPreview.currentTime = targetTime / 1000
-		}
-	}
-
-	componentDidMount() {
-		this.updateAnchoredElsWidths()
-
-		this.scenes = this.getScenes()
-	}
-
-	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
-
-		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
-	}
-
-	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
-		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
-			super.componentDidUpdate(prevProps, prevState)
-		}
-		this.updateTime()
-
-		if (this.props.piece.name !== prevProps.piece.name) {
-			this.updateAnchoredElsWidths()
-		}
-
-		this.scenes = this.getScenes()
-		this.freezes = this.getFreezes()
-		this.blacks = this.getBlacks()
-	}
-
-	getPreviewUrl = (): string | undefined => {
-		if (this.props.piece) {
-			const item = this.props.piece
-			const metadata = item.contentMetaData as MediaObject
-			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
-			}
-		}
-		return undefined
-	}
-
-	getScenes = (): Array<number> | undefined => {
-		if (this.props.piece) {
-			const itemDuration = this.getItemDuration()
-			const item = this.props.piece
-			const metadata = item.contentMetaData as MediaObject
-			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
-				return _.compact(metadata.mediainfo.scenes.map((i) => {
-					if (i < itemDuration) {
-						return i * 1000
-					}
-					return undefined
-				})) // convert into milliseconds
-			}
-		}
-	}
-
-	getFreezes = (): Array<Anomaly> | undefined => {
-		if (this.props.piece) {
-			const itemDuration = this.getItemDuration()
-			const item = this.props.piece
-			const metadata = item.contentMetaData as MediaObject
-			let items: Array<Anomaly> = []
-			// add freezes
-			if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
-				items = metadata.mediainfo.freezes
-					.filter((i) => i.start < itemDuration)
-					.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
-			}
-			return items
-		}
-	}
-
-	getBlacks = (): Array<Anomaly> | undefined => {
-		if (this.props.piece) {
-			const itemDuration = this.getItemDuration()
-			const item = this.props.piece
-			const metadata = item.contentMetaData as MediaObject
-			let items: Array<Anomaly> = []
-			// add blacks
-			if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
-				items = [
-					...items,
-					...metadata.mediainfo.blacks
-						.filter((i) => i.start < itemDuration)
-						.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
-				]
-			}
-			return items
-		}
-	}
-
-	getInspectorWarnings = (time: number): JSX.Element | undefined => {
-		let show = false
-		let msgBlacks = ''
-		let msgFreezes = ''
-		const item = this.props.piece
-		const metadata = item.contentMetaData as MediaObject
-		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
-		if (this.blacks) {
-			let tot = 0
-			for (const b of this.blacks) {
-				tot += b.duration
-				let s = b.start
-				let e = b.end
-				if (b.duration < 5000) {
-					s = b.start + b.duration * 0.5 - 2500
-					e = b.end - b.duration * 0.5 + 2500
-				}
-				if (s < time && e > time) {
-					show = true
-				}
-			}
-			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${Math.round(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
-		}
-		if (this.freezes) {
-			let tot = 0
-			for (const b of this.freezes) {
-				tot += b.duration
-				let s = b.start
-				let e = b.end
-				if (b.duration < 5000) {
-					s = b.start + b.duration * 0.5 - 2500
-					e = b.end - b.duration * 0.5 + 2500
-				}
-				if (s < time && e > time) {
-					show = true
-				}
-			}
-			// @todo: hardcoded 25fps
-			if (tot > 0) msgFreezes += `${Math.round(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
-		}
-		if (show) {
-			return <React.Fragment>
-				<div className='segment-timeline__mini-inspector__warnings'>{msgBlacks}{msgFreezes && <br />}{msgFreezes}</div>
-			</React.Fragment>
-		} else {
-			return undefined
-		}
+export const STKSourceRenderer = translate()(class extends VTSourceRendererBase {
+	constructor(props) {
+		super(props)
 	}
 
 	render() {
@@ -226,16 +49,16 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 
 		return <React.Fragment>
 			{this.renderInfiniteItemContentEnded()}
-			{this.scenes &&
-				this.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
+			{this.state.scenes &&
+				this.state.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
 					<span className='segment-timeline__piece__scene-marker' key={i}
 						style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
-			{this.freezes &&
-				this.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+			{this.state.freezes &&
+				this.state.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker' key={i.start}
 						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
-			{this.blacks &&
-				this.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+			{this.state.blacks &&
+				this.state.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
 						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
