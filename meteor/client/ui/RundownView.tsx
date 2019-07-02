@@ -53,6 +53,7 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import * as i18next from 'i18next'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -765,10 +766,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	reloadRundown = (e: any, changeRehearsal?: boolean) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err) => {
-				if (!err) {
-					if (this.props.rundown && this.props.rundown.nextPartId) {
-						scrollToPart(this.props.rundown.nextPartId)
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err, response) => {
+				console.log('aaa', err, response)
+				if (!err && response) {
+					if (!handleRundownReloadResponse(t, this.props.rundown, response.result)) {
+						if (this.props.rundown && this.props.rundown.nextPartId) {
+							scrollToPart(this.props.rundown.nextPartId)
+						}
 					}
 				}
 			})
@@ -1747,3 +1751,49 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 }
 )
+
+export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
+	let hasDoneSomething = false
+	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
+		hasDoneSomething = true
+		const notification = NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL,
+			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundown.name }),
+			'userAction',
+			undefined,
+			true, [
+				// actions:
+				{
+					label: t('Mark rundown as unsynced'),
+					type: 'default',
+					action: () => {
+						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ rundown._id ], (err) => {
+							if (!err) {
+								notification.stop()
+							}
+						})
+					}
+				},
+				{
+					label: t('Remove rundown'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: rundown.name,
+							message: t('Do you really want to remove the rundown "{{rundownName}}"? This cannot be undone!', { rundownName: rundown.name }),
+							onAccept: () => {
+								// nothing
+								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ rundown._id], (err) => {
+									if (!err) {
+										notification.stop()
+										window.location.assign(`/`)
+									}
+								})
+							},
+						})
+					}
+				}
+			]
+		))
+	}
+	return hasDoneSomething
+}

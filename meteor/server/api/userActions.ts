@@ -188,6 +188,11 @@ export function reloadData (rundownId: string) {
 		ServerPlayoutAPI.reloadData(rundownId)
 	)
 }
+export function unsyncRundown (rundownId: string) {
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.unsyncRundown(rundownId)
+	)
+}
 export function disableNextPiece (rundownId: string, undo?: boolean) {
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.disableNextPiece(rundownId, undo)
@@ -475,6 +480,9 @@ methods[UserActionAPI.methods.deactivate] = function (rundownId: string): Client
 }
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)
+}
+methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): ClientAPI.ClientResponse {
+	return unsyncRundown.call(this, rundownId)
 }
 methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
 	return disableNextPiece.call(this, rundownId, undo)

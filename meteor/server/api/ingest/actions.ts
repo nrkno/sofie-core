@@ -11,7 +11,8 @@ import { resetRundown } from '../playout/lib'
 import { handleUpdatedRundown, handleUpdatedRundownForStudio } from './rundownInput'
 import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
-import { Studio, Studios } from '../../../lib/collections/Studios';
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -20,12 +21,12 @@ export namespace IngestActions {
 	/**
 	 * Trigger a reload of a rundown
 	 */
-	export function reloadRundown (rundown: Rundown) {
+	export function reloadRundown (rundown: Rundown): UserActionAPI.ReloadRundownResponse {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-			MOSDeviceActions.reloadRundown(device, rundown)
+			return MOSDeviceActions.reloadRundown(device, rundown)
 		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
 			// TODO
 		} else {

@@ -24,7 +24,8 @@ import { doUserAction } from '../../lib/userAction'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
-import { PeripheralDevicesAPI } from '../../lib/clientAPI';
+import { PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { handleRundownReloadResponse } from '../RundownView'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -169,7 +170,11 @@ class RundownViewNotifier extends WithManagedTracker {
 										yes: t('Re-sync'),
 										no: t('Cancel'),
 										onAccept: (event) => {
-											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId])
+											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId], (err, response) => {
+												if (!err && response) {
+													handleRundownReloadResponse(t, rundown, response.result)
+												}
+											})
 										}
 									})
 								}
