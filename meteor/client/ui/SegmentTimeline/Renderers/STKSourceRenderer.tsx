@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as $ from 'jquery'
+import { getElementWidth } from '../../../utils/dimensions'
 import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'
 
@@ -60,20 +60,20 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.updateAnchoredElsWidths()
 
 		this.scenes = this.getScenes()
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -124,8 +124,8 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 			// add freezes
 			if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
 				items = metadata.mediainfo.freezes
-						.filter((i) => i.start < itemDuration)
-						.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
+					.filter((i) => i.start < itemDuration)
+					.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
 			}
 			return items
 		}
@@ -200,7 +200,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		}
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
 		let labelItems = this.props.piece.name.split('||')
@@ -225,59 +225,59 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		const vtContent = this.props.piece.content as VTContent
 
 		return <React.Fragment>
-					{this.renderInfiniteItemContentEnded()}
-					{this.scenes &&
-						this.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
-							<span className='segment-timeline__piece__scene-marker' key={i}
-								style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.freezes &&
-						this.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
-							<span className='segment-timeline__piece__anomaly-marker' key={i.start}
-								style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.blacks &&
-						this.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
-							<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
-								style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
-					<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						<span className={ClassNames('segment-timeline__piece__label', {
-							'overflow-label': this.end !== ''
-						})} key={this.props.piece._id + '-start'}>
-							{this.begin}
-						</span>
-						{(this.begin && this.end === '' && this.props.piece.content && this.props.piece.content.loop) &&
-							(<div className='segment-timeline__piece__label label-icon'>
-								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
-							</div>)
-						}
-						{this.renderContentTrimmed()}
-					</span>
-					<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
-							(<div className='segment-timeline__piece__label label-icon'>
-								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
-							</div>)
-						}
-						{this.renderInfiniteIcon()}
-						{this.renderOverflowTimeLabel()}
-						<span className='segment-timeline__piece__label last-words'>
-							{this.end}
-						</span>
-					</span>
-					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-						{this.getPreviewUrl() ?
-							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
-								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true} />
-								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(realCursorTimePosition, false, false, false, false, true, undefined, true)}</span>
-								{this.getInspectorWarnings(realCursorTimePosition)}
-							</div> :
-							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
-								<div>
-									<span className='mini-inspector__label'>{t('File Name')}</span>
-									<span className='mini-inspector__value'>{this.props.piece.content && this.props.piece.content.fileName}</span>
-								</div>
-							</div>
-						}
-					</FloatingInspector>
-				</React.Fragment>
+			{this.renderInfiniteItemContentEnded()}
+			{this.scenes &&
+				this.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
+					<span className='segment-timeline__piece__scene-marker' key={i}
+						style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
+			{this.freezes &&
+				this.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+					<span className='segment-timeline__piece__anomaly-marker' key={i.start}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+			{this.blacks &&
+				this.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+					<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+				<span className={ClassNames('segment-timeline__piece__label', {
+					'overflow-label': this.end !== ''
+				})} key={this.props.piece._id + '-start'}>
+					{this.begin}
+				</span>
+				{(this.begin && this.end === '' && this.props.piece.content && this.props.piece.content.loop) &&
+					(<div className='segment-timeline__piece__label label-icon'>
+						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					</div>)
+				}
+				{this.renderContentTrimmed()}
+			</span>
+			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+				{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
+					(<div className='segment-timeline__piece__label label-icon'>
+						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					</div>)
+				}
+				{this.renderInfiniteIcon()}
+				{this.renderOverflowTimeLabel()}
+				<span className='segment-timeline__piece__label last-words'>
+					{this.end}
+				</span>
+			</span>
+			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+				{this.getPreviewUrl() ?
+					<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
+						<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true} />
+						<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(realCursorTimePosition, false, false, false, false, true, undefined, true)}</span>
+						{this.getInspectorWarnings(realCursorTimePosition)}
+					</div> :
+					<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
+						<div>
+							<span className='mini-inspector__label'>{t('File Name')}</span>
+							<span className='mini-inspector__value'>{this.props.piece.content && this.props.piece.content.fileName}</span>
+						</div>
+					</div>
+				}
+			</FloatingInspector>
+		</React.Fragment>
 	}
 })

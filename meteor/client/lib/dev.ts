@@ -4,7 +4,6 @@ import { Session } from 'meteor/session'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 
 // Note: These things are convenience functions to be used during development:
 
@@ -14,7 +13,6 @@ Meteor.startup(() => {
 	})
 })
 
-window['$'] = $
 window['Collections'] = Collections
 window['executeFunction'] = PeripheralDeviceAPI.executeFunction
 window['getCurrentTime'] = getCurrentTime
@@ -48,5 +46,4 @@ export function expectToRunWithin (name, time: number = 1000) {
 		console.error('Expected to run within ' + time + 'ms: ' + name)
 	}, time)
 	expectToRunWithinCache[name] = timeout
-
 }

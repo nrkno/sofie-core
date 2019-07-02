@@ -292,8 +292,8 @@ export interface ObjId {
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 
-export function omit<T, P extends keyof T> (obj: T, prop: P): Omit<T, P> {
-	return _.omit(obj)
+export function omit<T, P extends keyof T> (obj: T, ...props: P[]): Omit<T, P> {
+	return _.omit(obj, ...(props as string[]))
 }
 
 export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
@@ -928,3 +928,5 @@ export function trimIfString<T extends any> (value: T): T {
 }
 export const firstIfArray: ((<T>(value: T | T[] | null | undefined) => T | null | undefined) | (<T>(value: T | T[]) => T) | (<T>(value: T | T[] | undefined) => T | undefined))
 	= (value) => _.isArray(value) ? _.first(value) : value
+
+export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)

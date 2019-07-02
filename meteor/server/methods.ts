@@ -1,10 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
+import { extractFunctionSignature } from './lib'
 
 export interface Methods {
 	[method: string]: Function
 }
+export const MeteorMethodSignatures: {[key: string]: string[]} = {}
 
 let runningMethods: {[methodId: string]: {
 	method: string,
@@ -14,12 +16,13 @@ let runningMethods: {[methodId: string]: {
 let runningMethodstudio: number = 0
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
- * @param orgMethods
+ * @param orgMethods The methods to add
+ * @param secret Set to true to not expose methods to API
  */
-export function setMeteorMethods (orgMethods: Methods): void {
+export function setMeteorMethods (orgMethods: Methods, secret?: boolean): void {
 
 	// Wrap methods
-	let methods: any = {}
+	let methods: Methods = {}
 	_.each(orgMethods, (method: Function, methodName: string) => {
 
 		if (method) {
@@ -52,6 +55,10 @@ export function setMeteorMethods (orgMethods: Methods): void {
 					delete runningMethods[methodId]
 					throw err
 				}
+			}
+			if (!secret) {
+				const signature = extractFunctionSignature(method)
+				if (signature) MeteorMethodSignatures[methodName] = signature
 			}
 		}
 	})

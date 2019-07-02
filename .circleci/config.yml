@@ -15,7 +15,7 @@ jobs:
           no_output_timeout: 60m
       - run:
           name: Meteor Build
-          command: cd meteor && meteor build --allow-superuser --directory .
+          command: cd meteor && NODE_OPTIONS="--max-old-space-size=8192" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
           no_output_timeout: 60m
       - run:
           name: Meteor Bundle NPM Build
@@ -83,14 +83,24 @@ workflows:
   version: 2
   build-test-publish:
     jobs:
-      - build
-      - tests
+      - build:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+      - tests:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
       - publish-tag:
           requires:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /v.*/
             branches:
               ignore: /.*/
       - publish-branch:
@@ -104,3 +114,4 @@ workflows:
                 - master
                 - develop
                 - stage
+                - /release\d+/

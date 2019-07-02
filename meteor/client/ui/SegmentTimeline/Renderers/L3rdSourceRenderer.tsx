@@ -1,6 +1,6 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
+import { getElementWidth } from '../../../utils/dimensions'
 import { Time } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import Moment from 'react-moment'
@@ -22,8 +22,8 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 	rightLabel: HTMLElement
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -36,11 +36,11 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		this.rightLabel = e
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -50,7 +50,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		}
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
 		const noraContent = this.props.piece.content as NoraContent

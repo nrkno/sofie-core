@@ -31,6 +31,9 @@ export namespace ClientAPI {
 		result?: any
 	}
 	export function responseSuccess (result?: any): ClientResponseSuccess {
+		if (isClientResponseSuccess(result)) result = result.result
+		else if (isClientResponseError(result)) throw result.error
+
 		return {
 			success: 200,
 			result

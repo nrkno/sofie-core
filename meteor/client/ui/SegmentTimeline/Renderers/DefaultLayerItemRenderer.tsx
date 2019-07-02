@@ -1,16 +1,17 @@
 import * as React from 'react'
-import * as $ from 'jquery'
+import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 }
+
 export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 	}
 
@@ -22,18 +23,18 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 		this.rightLabel = e
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.updateAnchoredElsWidths()
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -43,7 +44,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 		}
 	}
 
-	render () {
+	render() {
 		return <React.Fragment>
 			<span className='segment-timeline__piece__label'
 				ref={this.setLeftLabelRef}
