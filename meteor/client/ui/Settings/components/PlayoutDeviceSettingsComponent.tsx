@@ -291,7 +291,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 						</div>
 					</React.Fragment>)
 					break
-				case 11: //PlayoutDeviceType.QUANTEL:
+				case 11: // PlayoutDeviceType.QUANTEL:
 					renderObject = (<React.Fragment>
 						<div className='mod mvs mhs'>
 							<label className='field'>

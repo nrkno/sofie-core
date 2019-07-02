@@ -16,7 +16,8 @@ import {
 	MappingCasparCG,
 	TimelineObjCCGMedia,
 	TimelineContentTypeCasparCg,
-	DeviceType
+	DeviceType,
+	TSRTimelineObjBase
 } from 'timeline-state-resolver-types'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import {
@@ -105,10 +106,13 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
 	}
-	getCasparLayers (studio: Studio) {
+	getManualLayers (studio: Studio) {
 		let mappings: {[layer: string]: MappingCasparCG} = {}
 		_.each(studio.mappings, (mapping, layerId) => {
-			if (mapping.device === PlayoutDeviceType.CASPARCG) {
+			if (
+				mapping.device === PlayoutDeviceType.CASPARCG ||
+				mapping.device === 11 // TODO: quantel
+			) {
 				mappings[layerId] = mapping as MappingCasparCG
 
 			}
@@ -137,6 +141,37 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 	}
 	casparcgClear (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
 		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'caspar_' + mappingLayerId)
+	}
+	quantelPlay (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
+
+		let input = this.state.inputValues[mappingLayerId]
+
+		let o: TSRTimelineObjBase = { // TODO quantel
+
+			id: 'quantel_' + mappingLayerId ,
+
+			classes: [],
+			content: {
+				deviceType: 11,
+				// @ts-ignore
+				title: input + ''
+			},
+			enable: {
+				start: 'now',
+				duration: null
+			},
+			layer: mappingLayerId,
+			// objectType: 'rundown',
+			// priority: 0,
+			// rundownId: '',
+			// studioId: 'studio0'
+
+		}
+
+		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
+	}
+	quantelClear (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
+		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'quantel_' + mappingLayerId)
 	}
 	onInputChange (id: string, value: any) {
 
@@ -181,25 +216,47 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 							<table>
 								<tbody>
 								{
-									_.map(this.getCasparLayers(studio), (mapping, mappingLayerId) => {
-										return <tr key={mappingLayerId}>
-											<th>{mappingLayerId}</th>
-											<td>
-												<button className='btn btn-primary' onClick={(e) => this.casparcgPlay(e, studio, mappingLayerId)}>
-													Play
-												</button>
-												<button className='btn btn-primary' onClick={(e) => this.casparcgClear(e, studio, mappingLayerId)}>
-													Clear
-												</button>
-											</td>
-											<td>
-												<EditAttribute
-													updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, value)}
-													type='text'
-													overrideDisplayValue={this.state.inputValues[mappingLayerId]}
-												/>
-											</td>
-										</tr>
+									_.map(this.getManualLayers(studio), (mapping, mappingLayerId) => {
+										if (mapping.device === PlayoutDeviceType.CASPARCG) {
+											return <tr key={mappingLayerId}>
+												<th>{mappingLayerId}</th>
+												<td>
+													<button className='btn btn-primary' onClick={(e) => this.casparcgPlay(e, studio, mappingLayerId)}>
+														Caspar Play
+													</button>
+													<button className='btn btn-primary' onClick={(e) => this.casparcgClear(e, studio, mappingLayerId)}>
+														Clear
+													</button>
+												</td>
+												<td>
+													<EditAttribute
+														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, value)}
+														type='text'
+														overrideDisplayValue={this.state.inputValues[mappingLayerId]}
+													/>
+												</td>
+											</tr>
+										} else if (mapping.device === 11) { // TODO: quantel
+											return <tr key={mappingLayerId}>
+												<th>{mappingLayerId}</th>
+												<td>
+													<button className='btn btn-primary' onClick={(e) => this.quantelPlay(e, studio, mappingLayerId)}>
+														Quantel Play
+													</button>
+													<button className='btn btn-primary' onClick={(e) => this.quantelClear(e, studio, mappingLayerId)}>
+														Clear
+													</button>
+												</td>
+												<td>
+													<EditAttribute
+														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, value)}
+														type='text'
+														overrideDisplayValue={this.state.inputValues[mappingLayerId]}
+													/>
+												</td>
+											</tr>
+										}
+										return null
 									})
 								}
 								</tbody>
