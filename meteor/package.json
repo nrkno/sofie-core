@@ -77,6 +77,7 @@
     "react-escape": "0.0.8",
     "react-hotkeys": "^0.10.0",
     "react-i18next": "^7.13.0",
+    "react-intersection-observer": "^8.23.0",
     "react-lottie": "^1.1.0",
     "react-moment": "^0.7.0",
     "react-router-dom": "^4.2.2",

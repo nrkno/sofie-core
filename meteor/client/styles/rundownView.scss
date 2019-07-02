@@ -59,6 +59,34 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
+.placeholder-shimmer-element {
+	background: rgba(255, 255, 255, 0.1);
+	background-image: linear-gradient(
+		to right,
+		rgba(255, 255, 255, 0.0) 0%,
+		rgba(255, 255, 255, 0.25) 20%,
+		rgba(255, 255, 255, 0.0) 40%,
+		rgba(255, 255, 255, 0.0) 100%);
+	background-repeat: repeat-y;
+	background-size: 800px 1px; 
+
+	-webkit-animation-duration: 1s;
+	-webkit-animation-fill-mode: forwards; 
+	-webkit-animation-iteration-count: infinite;
+	-webkit-animation-name: placeholder-shimmer;
+	-webkit-animation-timing-function: linear;
+}
+
+@-webkit-keyframes placeholder-shimmer {
+	0% {
+		background-position: -800px 0;
+	}
+
+	100% {
+		background-position: 100vw 0; 
+	}
+}
+
 .rundown-view {
 	padding-top: 125px;
 	padding-bottom: 50vh;

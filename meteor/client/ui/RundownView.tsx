@@ -53,6 +53,7 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { VirtualElement } from '../lib/VirtualElement';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1431,22 +1432,24 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					this.props.showStyleBase
 				) {
 					return <ErrorBoundary key={segment._id}>
-							<SegmentTimelineContainer
-								studio={this.props.studio}
-								showStyleBase={this.props.showStyleBase}
-								followLiveSegments={this.state.followLiveSegments}
-								segmentId={segment._id}
-								rundown={this.props.rundown}
-								liveLineHistorySize={100}
-								timeScale={this.state.timeScale}
-								onTimeScaleChange={this.onTimeScaleChange}
-								onContextMenu={this.onContextMenu}
-								onSegmentScroll={this.onSegmentScroll}
-								isLastSegment={index === array.length - 1}
-								onPieceClick={this.onSelectPiece}
-								onPieceDoubleClick={this.onPieceDoubleClick}
-								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
-							/>
+							<VirtualElement noFirstRender={index > 3} placeholderHeight={260} debug={index === 0}>
+								<SegmentTimelineContainer
+									studio={this.props.studio}
+									showStyleBase={this.props.showStyleBase}
+									followLiveSegments={this.state.followLiveSegments}
+									segmentId={segment._id}
+									rundown={this.props.rundown}
+									liveLineHistorySize={100}
+									timeScale={this.state.timeScale}
+									onTimeScaleChange={this.onTimeScaleChange}
+									onContextMenu={this.onContextMenu}
+									onSegmentScroll={this.onSegmentScroll}
+									isLastSegment={index === array.length - 1}
+									onPieceClick={this.onSelectPiece}
+									onPieceDoubleClick={this.onPieceDoubleClick}
+									onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+								/>
+							</VirtualElement>
 						</ErrorBoundary>
 				}
 			})
