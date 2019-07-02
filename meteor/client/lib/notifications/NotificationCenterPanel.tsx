@@ -34,7 +34,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		}
 	}
 
-	render() {
+	render () {
 		const { item } = this.props
 
 		const defaultActions: NotificationAction[] = _.filter(item.actions || [], i => i.type === 'default')
@@ -126,7 +126,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		highlightedLevel: NotificationCenter.getHighlightedLevel()
 	}
 })(class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	dismissNotification(item: Notification) {
+	dismissNotification (item: Notification) {
 		if (item.persistent) {
 			item.snooze()
 		} else {
@@ -134,19 +134,19 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 	}
 
-	dismissAll() {
+	dismissAll () {
 		for (const notification of this.props.notifications) {
 			this.dismissNotification(notification)
 		}
 	}
 
-	UNSAFE_componentWillUpdate() {
-		Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element:HTMLElement) => {
+	UNSAFE_componentWillUpdate () {
+		Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element: HTMLElement) => {
 			element.style.animationName = ''
 		})
 	}
 
-	componentDidUpdate(prevProps, prevState, snapshot) {
+	componentDidUpdate (prevProps, prevState, snapshot) {
 		if (super.componentDidUpdate) super.componentDidUpdate(prevProps, prevState, snapshot)
 
 		if (this.props.highlightedSource && this.props.highlightedLevel) {
@@ -163,9 +163,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					Velocity(container, {
 						scrollTop: containerScrollTop + offsetTop - 10
 					}, {
-							queue: false,
-							duration: 1000
-						})
+						queue: false,
+						duration: 1000
+					})
 				}
 
 				Array.from(items).forEach(item => {
@@ -183,7 +183,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 	}
 
-	render() {
+	render () {
 		const { t, highlightedSource, highlightedLevel } = this.props
 		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => Notification.compare(a, b)).map(item => (
 			<NotificationPopUp key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
@@ -221,7 +221,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
  * @extends React.Component
  */
 export class NotificationCenterPanel extends React.Component {
-	render() {
+	render () {
 		return (
 			<div className='notification-center-panel'>
 				<NotificationCenterPopUps showEmptyListLabel={true} showSnoozed={true} />
@@ -256,7 +256,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 		count: NotificationCenter.count()
 	}
 })(class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
-	render() {
+	render () {
 		return (
 			<button className={ClassNames('status-bar__controls__button', 'notifications__toggle-button', {
 				'status-bar__controls__button--open': this.props.isOpen,
