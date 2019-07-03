@@ -2,21 +2,33 @@ import * as React from 'react'
 import InView, { useInView } from 'react-intersection-observer'
 
 export interface IProps {
-	noFirstRender?: boolean
+	initialShow?: boolean
 	placeholderHeight?: number
+	debug?: boolean
+	placeholderClassName?: string
+	width?: string | number
+	margin?: string
+}
+
+declare global {
+	interface Window {
+		requestIdleCallback(callback: Function, options?: {
+			timeout: number
+		}): number
+		cancelIdleCallback(callback: number)
+	}
 }
 
 interface IState {
 	inView: boolean
 	isMeasured: boolean
 
-	
 	width: string | number
 	clientHeight: number
-	marginLeft: string | number
-	marginRight: string | number
-	marginTop: string | number
-	marginBottom: string | number
+	marginLeft: string | number | undefined
+	marginRight: string | number | undefined
+	marginTop: string | number | undefined
+	marginBottom: string | number | undefined
 }
 
 const OPTIMIZE_PERIOD = 5000
@@ -27,22 +39,24 @@ export class VirtualElement extends React.Component<IProps, IState> {
 	private instance: HTMLElement | null = null
 	private optimizeTimeout: NodeJS.Timer | null = null
 	private changeRequestIdle: number | null = null
+	private refreshSizingTimeout: NodeJS.Timer | null = null
 
 	constructor (props: IProps) {
 		super(props)
 		this.state = {
-			inView: true,
+			inView: props.initialShow || false,
 			isMeasured: false,
 			clientHeight: 0,
 			width: 'auto',
-			marginBottom: 0,
-			marginTop: 0,
-			marginLeft: 0,
-			marginRight: 0
+			marginBottom: undefined,
+			marginTop: undefined,
+			marginLeft: undefined,
+			marginRight: undefined
 		}
 	}
 
 	visibleChanged = (inView: boolean) => {
+		this.props.debug && console.log('Changed', inView)
 		if (inView && !this.state.inView) {
 			if (this.optimizeTimeout) {
 				clearTimeout(this.optimizeTimeout)
@@ -79,16 +93,17 @@ export class VirtualElement extends React.Component<IProps, IState> {
 	}
 
 	refreshSizing = () => {
+		this.refreshSizingTimeout = null;
 		if (this.el) {
 			const style = window.getComputedStyle(this.el)
 			this.setState({
 				isMeasured: true,
 				width: style.width || 'auto',
 				clientHeight: this.el.clientHeight,
-				marginTop: style.marginTop || '0px',
-				marginBottom: style.marginBottom || '0px',
-				marginLeft: style.marginLeft || '0px',
-				marginRight: style.marginRight || '0px'
+				marginTop: style.marginTop || undefined,
+				marginBottom: style.marginBottom || undefined,
+				marginLeft: style.marginLeft || undefined,
+				marginRight: style.marginRight || undefined
 			})
 		}
 	}
@@ -98,7 +113,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 			const el = this.instance ? this.instance.firstElementChild as HTMLElement : null
 			if (el && !el.classList.contains('virtual-element-placeholder')) {
 				this.el = el
-				setTimeout(this.refreshSizing, 250)
+				this.refreshSizingTimeout = setTimeout(this.refreshSizing, 250)
 			}
 		}
 	}
@@ -108,13 +123,26 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		this.findChildElement()
 	}
 
+	componentDidUpdate (prevProps, prevState: IState) {
+		if (this.state.inView && prevState.inView !== this.state.inView && this.state.isMeasured) {
+			this.findChildElement()
+		}
+	}
+
+	componentWillUnmount () {
+		if (this.changeRequestIdle) window.cancelIdleCallback(this.changeRequestIdle)
+		if (this.optimizeTimeout) clearTimeout(this.optimizeTimeout)
+		if (this.refreshSizingTimeout) clearTimeout(this.refreshSizingTimeout)
+	}
+
 	render () {
+		this.props.debug && console.log(this.state.inView, this.props.initialShow, this.state.isMeasured, (!this.state.inView && (!this.props.initialShow || this.state.isMeasured)))
 		return (
-			<InView threshold={0} rootMargin='100% 0px 100% 0px' onChange={this.visibleChanged}>
+			<InView threshold={0} rootMargin={this.props.margin || '50% 0px 50% 0px'} onChange={this.visibleChanged}>
 				<div ref={this.setRef}>
-					{(!this.state.inView && (this.state.isMeasured || this.props.noFirstRender)) ?
-						<div className='virtual-element-placeholder placeholder-shimmer-element' style={{
-							width: this.state.width,
+					{(!this.state.inView && (!this.props.initialShow || this.state.isMeasured)) ?
+						<div className={'virtual-element-placeholder ' + (this.props.placeholderClassName || '')} style={{
+							width: this.props.width || this.state.width,
 							height: (this.state.clientHeight || this.props.placeholderHeight || '0') + 'px',
 							marginTop: this.state.marginTop,
 							marginLeft: this.state.marginLeft,

@@ -354,6 +354,11 @@ body.vertical-overflow-only {
 	background-color: #660
 }
 
+.segment-timeline-placeholder {
+	margin: 1.5em;
+	width: auto;
+}
+
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;

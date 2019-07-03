@@ -1432,7 +1432,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					this.props.showStyleBase
 				) {
 					return <ErrorBoundary key={segment._id}>
-							<VirtualElement noFirstRender={index > 3} placeholderHeight={260} debug={index === 0}>
+							<VirtualElement
+								margin={'100% 0px 100% 0px'}
+								initialShow={index < (window.innerHeight / 260)}
+								placeholderHeight={260}
+								placeholderClassName='placeholder-shimmer-element segment-timeline-placeholder'
+								width='auto'>
 								<SegmentTimelineContainer
 									studio={this.props.studio}
 									showStyleBase={this.props.showStyleBase}
