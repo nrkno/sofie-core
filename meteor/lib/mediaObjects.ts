@@ -97,6 +97,18 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 		}))
 }
 
+export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+	switch (sourceLayer.type) {
+		case SourceLayerType.VT:
+		case SourceLayerType.LIVE_SPEAK:
+			if (piece.content && piece.content.fileName) {
+				return (piece.content as VTContent).fileName
+			}
+			return undefined
+	}
+	return undefined
+}
+
 export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
@@ -106,24 +118,24 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			if (piece.content && piece.content.fileName) {
-				const content = piece.content as VTContent
+			const fileName = getMediaObjectMediaId(piece, sourceLayer)
+			if (fileName) {
 				// If the fileName is not set...
-				if (!content.fileName) {
+				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
 					message = t('Source is not set')
 				} else {
 					const mediaObject = MediaObjects.findOne({
-						mediaId: content.fileName.toUpperCase()
+						mediaId: fileName.toUpperCase()
 					})
 					// If media object not found, then...
-					if (!mediaObject && content.fileName) {
+					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-						message = t('Source is missing: {{fileName}}', { fileName: content.fileName })
+						message = t('Source is missing: {{fileName}}', { fileName: fileName })
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: content.fileName })
+						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: fileName })
 					}
 					if (mediaObject) {
 						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
@@ -190,7 +202,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 							}
 						} else {
-							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: content.fileName }))
+							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: fileName }))
 						}
 
 						if (messages.length) {
