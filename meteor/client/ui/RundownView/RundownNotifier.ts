@@ -356,7 +356,6 @@ class RundownViewNotifier extends WithManagedTracker {
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
 						if (mediaId) {
-							console.log(mediaId)
 							this.subscribe(PubSub.mediaObjects, studio._id, {
 								mediaId: mediaId.toUpperCase()
 							})

@@ -105,6 +105,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				marginLeft: style.marginLeft || undefined,
 				marginRight: style.marginRight || undefined
 			})
+			// console.log('Re-measuring child')
 		}
 	}
 
@@ -124,7 +125,8 @@ export class VirtualElement extends React.Component<IProps, IState> {
 	}
 
 	componentDidUpdate (prevProps, prevState: IState) {
-		if (this.state.inView && prevState.inView !== this.state.inView && this.state.isMeasured) {
+		if (this.state.inView && prevState.inView !== this.state.inView && !this.state.isMeasured) {
+			// console.log('Find actual child')
 			this.findChildElement()
 		}
 	}
