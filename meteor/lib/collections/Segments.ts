@@ -1,69 +1,65 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
-import { SegmentLines } from './SegmentLines'
-import { MOS } from 'tv-automation-sofie-blueprints-integration'
-import { RunningOrders } from './RunningOrders'
+import { Parts } from './Parts'
+import { Rundowns } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
-import { SegmentLineNote } from '../api/notes'
+import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
+import { PartNote } from '../api/notes'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
-export interface DBSegment {
-	_id: string
-	/** Position inside running order */
+export interface DBSegment extends IBlueprintSegmentDB {
+	/** Position inside rundown */
 	_rank: number
-	/** ID of the source object in MOS */
-	mosId: string
-	/** The running order this segment belongs to */
-	runningOrderId: string
-	/** User-presentable name (Slug) for the Title */
-	name: string
+	/** ID of the source object in the gateway */
+	externalId: string
+	/** The rundown this segment belongs to */
+	rundownId: string
 
-	metaData?: Array<MOS.IMOSExternalMetaData>
-	status?: MOS.IMOSObjectStatus
+	status?: string
 	expanded?: boolean
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<SegmentLineNote>
+	notes?: Array<PartNote>
 }
 export class Segment implements DBSegment {
 	public _id: string
 	public _rank: number
-	public mosId: string
-	public runningOrderId: string
+	public externalId: string
+	public rundownId: string
 	public name: string
-	public metaData?: Array<MOS.IMOSExternalMetaData>
-	public status?: MOS.IMOSObjectStatus
+	public metaData?: { [key: string]: any }
+	public status?: string
 	public expanded?: boolean
-	public notes?: Array<SegmentLineNote>
+	public notes?: Array<PartNote>
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
-	getRunningOrder () {
-		return RunningOrders.findOne(this.runningOrderId)
+	getRundown () {
+		return Rundowns.findOne(this.rundownId)
 	}
-	getSegmentLines (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
-		return SegmentLines.find(
+		return Parts.find(
 			_.extend({
-				runningOrderId: this.runningOrderId,
+				rundownId: this.rundownId,
 				segmentId: this._id
 			}, selector),
 			_.extend({
-				sort: {_rank: 1}
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}
-	getNotes (includeSegmentLines?: boolean, runtimeNotes?: boolean) {
-		let notes: Array<SegmentLineNote> = []
+	getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
+		let notes: Array<PartNote> = []
 
-		if (includeSegmentLines) {
-			const lines = this.getSegmentLines()
+		if (includeParts) {
+			const lines = this.getParts()
 			_.each(lines, l => {
 				notes = notes.concat(l.getNotes(runtimeNotes))
 			})
@@ -76,12 +72,12 @@ export class Segment implements DBSegment {
 
 // export const Segments = new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
 export const Segments: TransformedCollection<Segment, DBSegment>
-	= new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
+	= new Mongo.Collection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
 registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
-			runningOrderId: 1,
+			rundownId: 1,
 			_rank: 1
 		})
 	}

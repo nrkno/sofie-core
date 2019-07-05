@@ -262,6 +262,9 @@
 				flex-wrap: wrap;	
 				flex: 0 0;
 				margin-left: 0.5em;
+				min-width: 3em;
+				align-items: flex-start;
+				justify-content: space-around;
 			}
 
 			.workflow__header__expand {
@@ -281,6 +284,15 @@
 
 			.workflow__header__name, .workflow__header__status {
 				flex: 1 1;
+			}
+
+			.workflow__header__name {
+				.workflow__header__name__name, .workflow__header__name__comment {
+					display: block;
+				}
+				.workflow__header__name__comment {
+					font-size: 0.7em;
+				}
 			}
 
 			.workflow__header__status {

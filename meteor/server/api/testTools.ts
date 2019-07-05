@@ -2,102 +2,95 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
-import { StudioInstallations, StudioInstallation, ITestToolsConfig, MappingExt } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio, ITestToolsConfig, MappingExt } from '../../lib/collections/Studios'
 import { getCurrentTime, literal, waitForPromise, getHash } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
-import { updateTimeline } from './playout'
 import * as moment from 'moment'
-import { TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
+import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'
 import {
 	ChannelFormat,
 	MappingCasparCG,
 	TimelineObjCCGRecord, TimelineContentTypeCasparCg, TimelineObjCCGInput,
-	DeviceType as PlayoutDeviceType
+	DeviceType as PlayoutDeviceType,
+	DeviceType
 } from 'timeline-state-resolver-types'
 import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 import { check } from 'meteor/check'
+import { updateTimeline } from './playout/timeline'
 
 const deleteRequest = promisify(request.delete)
 
 // TODO: Allow arbitrary layers:
-const LLayerRecord = '_internal_ccg_record_consumer'
-const LLayerInput = '_internal_ccg_record_input'
+const layerRecord = '_internal_ccg_record_consumer'
+const layerInput = '_internal_ccg_record_input'
 
 const defaultConfig = {
 	channelFormat: ChannelFormat.HD_1080I5000,
 	prefix: ''
 }
-export function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
+export function getStudioConfig (studio: Studio): ITestToolsConfig {
 	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
 	if (!config.recordings) config.recordings = defaultConfig
 	return config
 }
 
-export function generateRecordingTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObjRecording[] {
+export function generateRecordingTimelineObjs (studio: Studio, recording: RecordedFile): TimelineObjRecording[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 
 	const config = getStudioConfig(studio)
 	if (!config.recordings.decklinkDevice) throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
 
-	if (!studio.mappings[LLayerInput] || !studio.mappings[LLayerRecord]) {
+	if (!studio.mappings[layerInput] || !studio.mappings[layerRecord]) {
 		throw new Meteor.Error(500, `Recording layer mappings in Studio "${studio._id}" not defined!`)
 	}
 
 	const IDs = {
-		record: getHash(recording._id + LLayerRecord),
-		input: getHash(recording._id + LLayerInput)
+		record: getHash(recording._id + layerRecord),
+		input: getHash(recording._id + layerInput)
 	}
 
-	return [
+	return setTimelineId([
 		literal<TimelineObjCCGRecord & TimelineObjRecording>({
-			_id: IDs.record,
-			id: '',
-			siId: studio._id,
+			id: IDs.record,
+			_id: '',
+			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: recording.startedAt
+			enable: {
+				start: recording.startedAt,
+				duration: 3600 * 1000, // 1hr
 			},
-			duration: 3600 * 1000, // 1hr
 			priority: 0,
-			LLayer: LLayerRecord,
+			layer: layerRecord,
 			content: {
+				deviceType: DeviceType.CASPARCG,
 				type: TimelineContentTypeCasparCg.RECORD,
-				attributes: {
-					file: recording.path,
-					encoderOptions: '-f mp4 -vcodec libx264 -preset ultrafast -tune fastdecode -crf 25 -acodec aac -b:a 192k'
-					// This looks fine, but may need refinement
-				}
+				file: recording.path,
+				encoderOptions: '-f mp4 -vcodec libx264 -preset ultrafast -tune fastdecode -crf 25 -acodec aac -b:a 192k'
+				// This looks fine, but may need refinement
 			}
 		}),
 		literal<TimelineObjCCGInput & TimelineObjRecording>({
-			_id: IDs.input,
-			id: '',
-			siId: studio._id,
+			id: IDs.input,
+			_id: '', // set later,
+			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
-			trigger: {
-				type: TriggerType.LOGICAL,
-				value: '1'
-			},
-			duration: 0,
+			enable: { while: 1 },
 			priority: 0,
-			LLayer: LLayerInput,
+			layer: layerInput,
 			content: {
+				deviceType: DeviceType.CASPARCG,
 				type: TimelineContentTypeCasparCg.INPUT,
-				attributes: {
-					type: 'decklink',
-					device: config.recordings.decklinkDevice,
-					deviceFormat: config.recordings.channelFormat
-				}
+				inputType: 'decklink',
+				device: config.recordings.decklinkDevice,
+				deviceFormat: config.recordings.channelFormat
 			}
 		})
-	]
+	])
 }
 
 export namespace ServerTestToolsAPI {
@@ -108,7 +101,7 @@ export namespace ServerTestToolsAPI {
 		check(studioId, String)
 		const updated = RecordedFiles.update({
 			studioId: studioId,
-			stoppedAt: {$exists: false}
+			stoppedAt: { $exists: false }
 		}, {
 			$set: {
 				stoppedAt: getCurrentTime()
@@ -125,12 +118,12 @@ export namespace ServerTestToolsAPI {
 	export function recordStart (studioId: string, name: string) {
 		check(studioId, String)
 		check(name, String)
-		const studio = StudioInstallations.findOne(studioId)
+		const studio = Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
 		const active = RecordedFiles.findOne({
 			studioId: studioId,
-			stoppedAt: {$exists: false}
+			stoppedAt: { $exists: false }
 		})
 		if (active) throw new Meteor.Error(404, `An active recording for "${studioId}" was found!`)
 
@@ -144,7 +137,7 @@ export namespace ServerTestToolsAPI {
 
 		// Ensure the layer mappings in the db are correct
 		const setter: any = {}
-		setter['mappings.' + LLayerInput] = literal<MappingCasparCG & MappingExt>({
+		setter['mappings.' + layerInput] = literal<MappingCasparCG & MappingExt>({
 			device: PlayoutDeviceType.CASPARCG,
 			deviceId: config.recordings.deviceId,
 			channel: config.recordings.channelIndex,
@@ -152,7 +145,7 @@ export namespace ServerTestToolsAPI {
 			lookahead: LookaheadMode.NONE,
 			internal: true
 		})
-		setter['mappings.' + LLayerRecord] = literal<MappingCasparCG & MappingExt>({
+		setter['mappings.' + layerRecord] = literal<MappingCasparCG & MappingExt>({
 			device: PlayoutDeviceType.CASPARCG,
 			deviceId: config.recordings.deviceId,
 			channel: config.recordings.channelIndex,
@@ -160,7 +153,7 @@ export namespace ServerTestToolsAPI {
 			lookahead: LookaheadMode.NONE,
 			internal: true
 		})
-		StudioInstallations.update(studio._id, { $set: setter })
+		Studios.update(studio._id, { $set: setter })
 
 		const id = Random.id(7)
 		const path = (config.recordings.filePrefix || defaultConfig.prefix) + id + '.mp4'
@@ -184,7 +177,7 @@ export namespace ServerTestToolsAPI {
 		const file = RecordedFiles.findOne(id)
 		if (!file) throw new Meteor.Error(404, `Recording "${id}" was not found!`)
 
-		const studio = StudioInstallations.findOne(file.studioId)
+		const studio = Studios.findOne(file.studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`)
 
 		const config = getStudioConfig(studio)

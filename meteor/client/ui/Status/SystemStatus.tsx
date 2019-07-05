@@ -7,7 +7,6 @@ import {
 import * as i18next from 'react-i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
-import { translate } from 'react-i18next'
 import { getCurrentTime } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -16,6 +15,8 @@ import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -45,7 +46,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-export const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = i18next.translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -69,13 +70,12 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 		let t = this.props.t
 
 		switch (this.props.device.type) {
-			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+			case PeripheralDeviceAPI.DeviceType.MOS:
 				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Play-out Gateway')
 			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 				return t('Media Manager')
-			case PeripheralDeviceAPI.DeviceType.OTHER:
 			default:
 				return t('Unknown Device')
 		}
@@ -116,11 +116,15 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 		})
 	}
 	handleConfirmKillAccept = (e) => {
+		const { t } = this.props
 		if (this.state.showKillDeviceConfirm) {
-			PeripheralDevicesAPI.restartDevice(this.state.showKillDeviceConfirm, e).then((res) => {
-				console.log(res)
+			const device = this.state.showKillDeviceConfirm
+			PeripheralDevicesAPI.restartDevice(device, e).then((res) => {
+				// console.log(res)
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
 			}).catch((err) => {
-				console.error(err)
+				// console.error(err)
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 			})
 		}
 		// ShowStyles.remove(this.state.KillConfirmItem._id)
@@ -145,10 +149,11 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 
 				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
 					if (err) {
-						console.error(err)
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 					} else {
-						console.log(result)
-						// resolve(result)
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
 					}
 				})
 			},
@@ -174,15 +179,15 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 					|| !this.props.device.connected
 				) ?
 					'device-item__device-status--unknown' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
 					'device-item__device-status--good' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
 					'device-item__device-status--minor-warning' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
 					'device-item__device-status--warning' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
 					'device-item__device-status--bad' :
-				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL ) ?
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
 					'device-item__device-status--fatal' :
 				''
 			)
@@ -223,8 +228,8 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 				<div className='actions-container'>
 					<div className='device-item__actions'>
 						{(
-							// TODO: implement better way to determine what device it is
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.OTHER && this.props.device.name.match(/CasparCG/i) ? <React.Fragment>
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.subType === TSR_DeviceType.CASPARCG ? <React.Fragment>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
 										e.preventDefault()
@@ -254,7 +259,8 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 							<FontAwesomeIcon icon={faTrash} />
 						</button>}
 						{(
-							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
+							this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+							? <React.Fragment>
 								<ModalDialog title={t('Restart this device?')} acceptText={t('Restart')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}

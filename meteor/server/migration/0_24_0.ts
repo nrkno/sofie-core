@@ -5,7 +5,7 @@ import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integratio
 import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
-// 0.24.0, Release 9
+// 0.24.0 (Release 9)
 addMigrationSteps('0.24.0', [
 	{ // Ensure blueprints have type set
 		id: 'blueprints have blueprintType',
@@ -38,7 +38,7 @@ addMigrationSteps('0.24.0', [
 		}
 	},
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^0.19.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '^0.7.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^0.7.0'),
 
 	// add steps here:
 	// {

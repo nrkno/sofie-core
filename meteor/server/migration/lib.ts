@@ -6,11 +6,11 @@ import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import * as semver from 'semver'
 
 /**
- * Convenience function to generate basic test
+ * Returns a migration step that ensures the provided property is set in the collection
  * @param collectionName
  * @param selector
  * @param property
@@ -78,7 +78,7 @@ export function ensureCollectionProperty<T = any> (
 						let m = {}
 						m[property] = value
 						logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
-						collection.update(obj._id,{$set: m })
+						collection.update(obj._id,{ $set: m })
 					}
 				})
 			} else {
@@ -89,7 +89,7 @@ export function ensureCollectionProperty<T = any> (
 							let m = {}
 							m[property] = value
 							logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
-							collection.update(objectId,{$set: m })
+							collection.update(objectId,{ $set: m })
 						}
 					}
 				})
@@ -113,9 +113,9 @@ export function ensureStudioConfig (
 		canBeRunAutomatically: (_.isNull(value) ? false : true),
 		dependOnResultFrom: dependOnResultFrom,
 		validate: () => {
-			let studios = StudioInstallations.find().fetch()
+			let studios = Studios.find().fetch()
 			let configMissing: string | boolean = false
-			_.each(studios, (studio: StudioInstallation) => {
+			_.each(studios, (studio: Studio) => {
 				let config = _.find(studio.config, (c) => {
 					return c._id === configName
 				})
@@ -127,10 +127,10 @@ export function ensureStudioConfig (
 			return configMissing
 		},
 		input: () => {
-			let studios = StudioInstallations.find().fetch()
+			let studios = Studios.find().fetch()
 
 			let inputs: Array<MigrationStepInput> = []
-			_.each(studios, (studio: StudioInstallation) => {
+			_.each(studios, (studio: Studio) => {
 				let config = _.find(studio.config, (c) => {
 					return c._id === configName
 				})
@@ -151,8 +151,8 @@ export function ensureStudioConfig (
 		},
 		migrate: (input: MigrationStepInputFilteredResult) => {
 
-			let studios = StudioInstallations.find().fetch()
-			_.each(studios, (studio: StudioInstallation) => {
+			let studios = Studios.find().fetch()
+			_.each(studios, (studio: Studio) => {
 				let value2: any = undefined
 				if (!_.isNull(value)) {
 					value2 = value
@@ -178,7 +178,7 @@ export function ensureStudioConfig (
 					}
 					if (doUpdate) {
 						logger.info(`Migration: Setting Studio config "${configName}" to ${value2}`)
-						StudioInstallations.update(studio._id,{$set: {
+						Studios.update(studio._id,{$set: {
 							config: studio.config
 						}})
 					}
@@ -188,22 +188,25 @@ export function ensureStudioConfig (
 	}
 }
 
-export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
+export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string): MigrationStepBase {
 	return {
 		id: id,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let devices = PeripheralDevices.find({type: deviceType}).fetch()
+			let devices = PeripheralDevices.find({
+				type: deviceType,
+				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
+			}).fetch()
 
 			for (let i in devices) {
 				let device = devices[i]
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
 
 				if (expectedVersion) {
 					try {
-						if ( semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0') ) {
+						if (semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
 							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
 						}
 					} catch (e) {
@@ -214,20 +217,108 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 			return false
 		},
 		migrate: () => {
-			let devices = PeripheralDevices.find({type: deviceType}).fetch()
+			let devices = PeripheralDevices.find({ type: deviceType }).fetch()
 
 			_.each(devices, (device) => {
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
 				if (!expectedVersion || semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr
 					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`)
-					PeripheralDevices.update(device._id, {$set: m})
+					PeripheralDevices.update(device._id, { $set: m })
 				}
 			})
 		},
 		overrideSteps: [id]
+	}
+}
+
+interface RenameContent {
+	content: { [newValue: string]: string }
+}
+export function renamePropertiesInCollection<T extends any > (
+	id: string,
+	collection: Mongo.Collection<T>,
+	collectionName: string,
+	renames: Partial<{[newAttr in keyof T]: string | RenameContent}>,
+	dependOnResultFrom?: string
+) {
+	const m: any = {
+		$or: []
+	}
+	const oldNames: {[oldAttr: string]: string} = {}
+	_.each(_.keys(renames), (newAttr) => {
+		const oldAttr = renames[newAttr]
+		if (_.isString(oldAttr)) {
+			oldNames[oldAttr] = newAttr
+		}
+	})
+
+	_.each(_.keys(renames), (newAttr) => {
+		const oldAttr: string | RenameContent | undefined = renames[newAttr]
+		if (oldAttr) {
+			if (_.isString(oldAttr)) {
+				const o = {}
+				o[oldAttr] = { $exists: true }
+				m.$or.push(o)
+			} else {
+				const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
+
+				const oldAttrActual = oldNames[newAttr] || newAttr // If the attribute has been renamed, rename it here as well
+
+				// Select where a value is of the old, to-be-replaced value:
+				const o = {}
+				o[oldAttrActual] = { $in: _.values(oldAttrRenameContent.content) }
+				m.$or.push(o)
+			}
+		}
+	})
+	return {
+		id: id,
+		canBeRunAutomatically: true,
+		dependOnResultFrom: dependOnResultFrom,
+		validate: () => {
+			const objCount = collection.find(m).count()
+			if (objCount > 0) return `${objCount} documents in ${collectionName} needs to be updated`
+			return false
+		},
+		migrate: () => {
+			collection.find(m).forEach((doc) => {
+				// Rename properties:
+				_.each(_.keys(renames), (newAttr) => {
+					const oldAttr: string | RenameContent | undefined = renames[newAttr]
+					if (newAttr && oldAttr && newAttr !== oldAttr) {
+						if (_.isString(oldAttr)) {
+
+							if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
+								doc[newAttr] = doc[oldAttr]
+							}
+							delete doc[oldAttr]
+						}
+					}
+				})
+				// Translate property contents:
+				_.each(_.keys(renames), (newAttr) => {
+					const oldAttr: string | RenameContent | undefined = renames[newAttr]
+					if (newAttr && oldAttr && newAttr !== oldAttr) {
+						if (!_.isString(oldAttr)) {
+							const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
+
+							_.each(oldAttrRenameContent.content, (oldValue, newValue) => {
+
+								if (doc[newAttr] === oldValue) {
+									doc[newAttr] = newValue
+								}
+
+							})
+						}
+					}
+				})
+				collection.update(doc._id, doc)
+			})
+			//
+		}
 	}
 }

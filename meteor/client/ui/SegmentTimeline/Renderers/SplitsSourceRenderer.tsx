@@ -67,7 +67,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+		if (this.props.piece.name !== prevProps.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -86,8 +86,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			}
 		]
 
-		if (this.props.segmentLineItem.content) {
-			const splitContent = this.props.segmentLineItem.content as SplitsContent
+		if (this.props.piece.content) {
+			const splitContent = this.props.piece.content as SplitsContent
 			return _.map(splitContent.boxSourceConfiguration, (item, index) => {
 				return literal<SplitSubItem>({
 					_id: item.studioLabel + '_' + index,
@@ -107,7 +107,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			return (
 				<div key={'item-' + item._id}
 					className={ClassNames(
-						'segment-timeline__layer-item__preview__item',
+						'segment-timeline__piece__preview__item',
 						RundownUtils.getSourceLayerClassName(item.type),
 						{
 							'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
@@ -153,19 +153,19 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	render () {
-		let labelItems = this.props.segmentLineItem.name.split('||')
+		let labelItems = this.props.piece.name.split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
 		return <React.Fragment>
-			<div className='segment-timeline__layer-item__preview'>
+			<div className='segment-timeline__piece__preview'>
 				{this.renderSubItems()}
 			</div>
-			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+			<span className='segment-timeline__piece__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{begin}
 			</span>
-			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				<span className='segment-timeline__layer-item__label last-words'>{end}</span>
+			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+				<span className='segment-timeline__piece__label last-words'>{end}</span>
 				{this.renderInfiniteIcon()}
 				{this.renderOverflowTimeLabel()}
 			</span>

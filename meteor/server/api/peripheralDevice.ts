@@ -3,16 +3,21 @@ import { check, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline } from '../../lib/collections/Timeline'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
+import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
+import { Studios } from '../../lib/collections/Studios'
+import { ServerPlayoutAPI } from './playout/playout'
+import { setMeteorMethods, Methods } from '../methods'
+import { Picker } from 'meteor/meteorhacks:picker'
+import { IncomingMessage, ServerResponse } from 'http'
+import * as bodyParser from 'body-parser'
+import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
-import { setMeteorMethods, wrapMethods, Methods } from '../methods'
+import { afterUpdateTimeline } from './playout/timeline'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -21,7 +26,9 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(options, Object)
 		check(options.name, String)
-		check(options.type, Number)
+		check(options.category, String)
+		check(options.type, String)
+		check(options.subType, Match.OneOf(Number, String))
 		check(options.parentDeviceId, Match.Optional(String))
 		check(options.versions, Match.Optional(Object))
 
@@ -37,7 +44,11 @@ export namespace ServerPeripheralDeviceAPI {
 					lastConnected: getCurrentTime(),
 					connected: true,
 					connectionId: options.connectionId,
+
+					category: options.category,
 					type: options.type,
+					subType: options.subType,
+
 					name: peripheralDevice.name || options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
@@ -51,13 +62,17 @@ export namespace ServerPeripheralDeviceAPI {
 					status: {
 						statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
 					},
-					studioInstallationId: '',
+					studioId: '',
 					connected: true,
 					connectionId: options.connectionId,
 					lastSeen: getCurrentTime(),
 					lastConnected: getCurrentTime(),
 					token: token,
+
+					category: options.category,
 					type: options.type,
+					subType: options.subType,
+
 					name: options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
@@ -84,6 +99,10 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
+		if (status.statusCode < PeripheralDeviceAPI.StatusCode.UNKNOWN ||
+			status.statusCode > PeripheralDeviceAPI.StatusCode.FATAL) {
+			throw new Meteor.Error(400, 'device status code is not known')
+		}
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
@@ -99,7 +118,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return status
 	}
-	export function ping (id: string, token: string ): void {
+	export function ping (id: string, token: string): void {
 		check(id, String)
 		check(token, String)
 
@@ -118,7 +137,10 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 	export const timelineTriggerTime = syncFunction(function timelineTriggerTime (id: string, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+		if (!peripheralDevice) throw new Meteor.Error(404, `peripheralDevice "${id}" not found!`)
+		if (!peripheralDevice.studioId) throw new Meteor.Error(401, `peripheralDevice "${id}" not attached to a studio`)
+
+		const studioId = peripheralDevice.studioId
 
 		// check(r.time, Number)
 		check(results, Array)
@@ -127,90 +149,84 @@ export namespace ServerPeripheralDeviceAPI {
 			check(o.time, Number)
 		})
 
-		let studioIds: {[studioId: string]: true} = {}
-
 		_.each(results, (o) => {
 			check(o.id, String)
 
 			// check(o.time, Number)
 			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
-			let obj = Timeline.findOne(o.id)
-
+			const id = getTimelineId(studioId, o.id)
+			const obj = Timeline.findOne(id)
 			if (obj) {
-				studioIds[obj.siId] = true
-
 				Timeline.update({
-					_id: o.id
+					_id: id
 				}, {$set: {
-					'trigger.value': o.time,
-					'trigger.setFromNow': true
-				}},{
-					multi: true
-				})
-			}
+					'enable.start': o.time,
+					'enable.setFromNow': true
+				}})
 
-			// Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
-			ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(o.id, o.time)
+				obj.enable.start = o.time
+				obj.enable.setFromNow = true
+
+				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj, o.time)
+			}
 		})
 
 		// After we've updated the timeline, we must call afterUpdateTimeline!
-		_.each(studioIds, (_val, studioId) => {
-			let studio = StudioInstallations.findOne(studioId)
-			if (studio) {
-				afterUpdateTimeline(studio)
-			}
-		})
+		const studio = Studios.findOne(studioId)
+		if (studio) {
+			afterUpdateTimeline(studio)
+		}
 	}, 'timelineTriggerTime$0,$1')
-	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
-		// This is called from the playout-gateway when a segmentLine starts playing.
-		// Note that this function can / might be called several times from playout-gateway for the same segmentLine
+	export function partPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
+		// This is called from the playout-gateway when a part starts playing.
+		// Note that this function can / might be called several times from playout-gateway for the same part
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
-		check(r.slId, String)
+		check(r.rundownId, String)
+		check(r.partId, String)
 
-		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
-		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
+		// Meteor.call('playout_partPlaybackStart', r.rundownId, r.partId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownId, r.partId, r.time)
 	}
-	export function segmentLinePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStoppedResult) {
+	export function partPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStoppedResult) {
 		// This is called from the playout-gateway when an
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
-		check(r.slId, String)
+		check(r.rundownId, String)
+		check(r.partId, String)
 
-		ServerPlayoutAPI.slPlaybackStoppedCallback(r.roId, r.slId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownId, r.partId, r.time)
 	}
-	export function segmentLineItemPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
+	export function piecePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
-		check(r.sliId, String)
+		check(r.rundownId, String)
+		check(r.pieceId, String)
 
-		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
-		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
+		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceId, r.time)
 	}
-	export function segmentLineItemPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
+	export function piecePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
-		check(r.roId, String)
-		check(r.sliId, String)
+		check(r.rundownId, String)
+		check(r.pieceId, String)
 
-		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
-		ServerPlayoutAPI.sliPlaybackStoppedCallback(r.roId, r.sliId, r.time)
+		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceId, r.time)
 	}
-	export function pingWithCommand (id: string, token: string, message: string) {
+	export function pingWithCommand (id: string, token: string, message: string, cb?: Function) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
@@ -218,9 +234,11 @@ export namespace ServerPeripheralDeviceAPI {
 			if (err) {
 				logger.warn(err)
 			}
+
+			if (cb) cb(err, res)
 		}, 'pingResponse', message)
 
-		ServerPeripheralDeviceAPI.ping(id, token)
+		ping(id, token)
 	}
 	export function killProcess (id: string, token: string, really: boolean) {
 		// This is used in integration tests only
@@ -228,7 +246,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		// Make sure this never runs if this server isn't empty:
-		if (RunningOrders.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: RunningOrders not empty!')
+		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
 
 		if (really) {
 			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
@@ -261,54 +279,86 @@ export namespace ServerPeripheralDeviceAPI {
 		let cb = args.slice(-1)[0] // the last argument in ...args
 		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
 	})
+
+	export function requestUserAuthToken (id: string, token: string, authUrl: string) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			throw new Meteor.Error(400, 'can only request user auth token for peripheral device of spreadsheet type')
+		}
+		check(authUrl, String)
+
+		PeripheralDevices.update(peripheralDevice._id, {$set: {
+			accessTokenUrl: authUrl
+		}})
+	}
+	export function storeAccessToken (id: string, token: string, accessToken: any) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			throw new Meteor.Error(400, 'can only store access token for peripheral device of spreadsheet type')
+		}
+
+		PeripheralDevices.update(peripheralDevice._id, {$set: {
+			accessTokenUrl: '',
+			'secretSettings.accessToken': accessToken,
+			'settings.secretAccessToken' : true
+		}})
+	}
 }
 
-/**
- * Insert a Story (aka a Segment) into the database
- * @param story The story to be inserted
- * @param runningOrderId The Running order id to insert into
- * @param rank The rank (position) to insert at
- */
-// export function insertSegment (story: IMOSROStory, runningOrderId: string, rank: number) {
-// 	let segment = convertToSegment(story, rank)
-// 	Segments.upsert(segment._id, {$set: _.omit(segment,['_id']) })
-// 	afterInsertUpdateSegment(story, runningOrderId)
-// }
-/**
- * After a Story (aka a Segment) has been inserted / updated, handle its contents
- * @param story The Story that was inserted / updated
- * @param runningOrderId Id of the Running Order that contains the story
- */
-// export function afterInsertUpdateSegment (story: IMOSROStory, runningOrderId: string) {
-	// Save Items (#####) into database:
+const postRoute = Picker.filter((req, res) => req.method === 'POST')
+postRoute.middleware(bodyParser.text({
+	type: 'text/javascript',
+	limit: '1mb'
+}))
+postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
 
-	/*
-	let segment = convertToSegment(story, runningOrderId, 0)
-	let rank = 0
-	saveIntoDb(SegmentLines, {
-		runningOrderId: runningOrderId,
-		segmentId: segment._id
-	}, _.map(story.Items, (item: IMOSItem) => {
-		return convertToSegmentLine(item, runningOrderId, segment._id, rank++)
-	}), {
-		afterInsert (o) {
-			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
-			if (item) {
-				afterInsertUpdateSegmentLine(item, runningOrderId, segment._id)
-			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
-		},
-		afterUpdate (o) {
-			let item: IMOSItem | undefined = _.find(story.Items, (s) => { return s.ID.toString() === o.mosId } )
-			if (item) {
-				afterInsertUpdateSegmentLine(item, runningOrderId, segment._id)
-			} else throw new Meteor.Error(500, 'Item not found (it should have been)')
-		},
-		afterRemove (o) {
-			afterRemoveSegmentLine(o._id)
-		}
-	})
-	*/
-// }
+	let deviceId = decodeURIComponent(params.deviceId)
+
+	let url = parseUrl(req.url || '', true)
+
+	let fileNames = url.query['name'] || undefined
+	let fileName: string = (
+		_.isArray(fileNames) ?
+		fileNames[0] :
+		fileNames
+	) || ''
+
+	check(deviceId, String)
+	check(fileName, String)
+
+	// console.log('Upload of file', fileName, deviceId)
+
+	let content = ''
+	try {
+		const peripheralDevice = PeripheralDevices.findOne(deviceId) // TODO: a better security model is needed here. Token is a no-go, but something else to verify the user?
+		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice ${deviceId} not found`)
+
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
+
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Upload credentials: Invalid request body')
+
+		logger.info('Upload credentails, ' + body.length + ' bytes')
+
+		const credentials = JSON.parse(body)
+
+		PeripheralDevices.update(peripheralDevice._id, {$set: {
+			'secretSettings.credentials' : credentials,
+			'settings.secretCredentials' : true
+		}})
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Upload credentials failed: ' + e)
+	}
+
+	res.end(content)
+})
 
 let methods: Methods = {}
 methods[PeripheralDeviceAPI.methods.initialize] = (deviceId: string, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) => {
@@ -326,29 +376,36 @@ methods[PeripheralDeviceAPI.methods.ping] = (deviceId: string, deviceToken: stri
 methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.partPlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.partPlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLinePlaybackStopped(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.partPlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.partPlaybackStopped(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStopped(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.piecePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.piecePlaybackStopped(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStarted(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.piecePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.piecePlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string) => {
-	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
+methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string, cb?: Function) => {
+	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message, cb)
 }
 methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId: string, deviceToken: string, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
 }
-methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken: string, returnValue: string, throwError?: boolean ) => {
+methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken: string, returnValue: string, throwError?: boolean) => {
 	return ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError)
 }
 methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
 	return ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r)
+}
+
+methods[PeripheralDeviceAPI.methods.requestUserAuthToken] = (deviceId: string, deviceToken: string, authUrl: string) => {
+	return ServerPeripheralDeviceAPI.requestUserAuthToken(deviceId, deviceToken, authUrl)
+}
+methods[PeripheralDeviceAPI.methods.storeAccessToken] = (deviceId: string, deviceToken: string, authToken: any) => {
+	return ServerPeripheralDeviceAPI.storeAccessToken(deviceId, deviceToken, authToken)
 }
 
 // --------------------
@@ -365,7 +422,7 @@ methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId: string, deviceTo
 }
 
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)
 
 // temporary functions:
 setMeteorMethods({

@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
-import { RunningOrders } from '../collections/RunningOrders'
-import { SegmentLine } from '../collections/SegmentLines'
+import { Rundowns } from '../collections/Rundowns'
+import { Part } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
 export enum PrompterMethods {
@@ -12,7 +12,7 @@ export enum PrompterMethods {
 export interface PrompterDataLine {
 	text: string
 	segmentId: string
-	segmentLineId: string
+	partId: string
 }
 export interface PrompterData {
 	lines: Array<PrompterDataLine>
@@ -20,34 +20,34 @@ export interface PrompterData {
 
 export namespace PrompterAPI {
 
-	export function getPrompterData (roId: string): PrompterData {
+	export function getPrompterData (rundownId: string): PrompterData {
 
-		check(roId, String)
+		check(rundownId, String)
 
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		let segmentLines = runningOrder.getSegmentLines()
+		let parts = rundown.getParts()
 
 		let data: PrompterData = {
 			lines: []
 		}
 
-		_.each(segmentLines, (sl: SegmentLine) => {
+		_.each(parts, (part: Part) => {
 			let hasSentInThisLine = false
 
-			_.each(sl.getAllSegmentLineItems(), (sli) => {
+			_.each(part.getAllPieces(), (piece) => {
 
 				if (
-					sli.content &&
-					sli.content.fullScript
+					piece.content &&
+					piece.content.fullScript
 				) {
-					const content = sli.content as ScriptContent
+					const content = piece.content as ScriptContent
 					if (content.fullScript) {
 						data.lines.push({
 							text: content.fullScript,
-							segmentId: sl.segmentId,
-							segmentLineId: sl._id
+							segmentId: part.segmentId,
+							partId: part._id
 						})
 						hasSentInThisLine = true
 					}
@@ -58,8 +58,8 @@ export namespace PrompterAPI {
 				// insert an empty line
 				data.lines.push({
 					text: '',
-					segmentId: sl.segmentId,
-					segmentLineId: sl._id
+					segmentId: part.segmentId,
+					partId: part._id
 				})
 			}
 		})

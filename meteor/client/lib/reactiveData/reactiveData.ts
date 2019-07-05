@@ -1,19 +1,21 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { RunningOrders } from '../../../lib/collections/RunningOrders'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { getCurrentTime } from '../../../lib/lib'
 
 export namespace reactiveData {
-	export function getRRunningOrderId (roId: string): ReactiveVar<string | undefined> {
+	export function getRRundownId (rundownId: string): ReactiveVar<string | undefined> {
 		const rVar = new ReactiveVar<string | undefined>(undefined)
 		Tracker.autorun(() => {
-			const rObj = RunningOrders.findOne(roId)
+			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
 				rVar.set(rObj._id)
 			} else {
@@ -24,12 +26,12 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRRunningOrderStudioId (roId: string): ReactiveVar<string | undefined> {
+	export function getRRundownStudioId (rundownId: string): ReactiveVar<string | undefined> {
 		const rVar = new ReactiveVar<string | undefined>(undefined)
 		Tracker.autorun(() => {
-			const rObj = RunningOrders.findOne(roId)
+			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
-				rVar.set(rObj.studioInstallationId)
+				rVar.set(rObj.studioId)
 			} else {
 				rVar.set(undefined)
 			}
@@ -38,10 +40,10 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRRunningOrderShowStyleBaseId (roId: string): ReactiveVar<string | undefined> {
+	export function getRRundownShowStyleBaseId (rundownId: string): ReactiveVar<string | undefined> {
 		const rVar = new ReactiveVar<string | undefined>(undefined)
 		Tracker.autorun(() => {
-			const rObj = RunningOrders.findOne(roId)
+			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
 				rVar.set(rObj.showStyleBaseId)
 			} else {
@@ -52,22 +54,22 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRStudioInstallation (siId: string): ReactiveVar<StudioInstallation | undefined> {
-		const rVar = new ReactiveVar<StudioInstallation | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
+	export function getRStudio (studioId: string): ReactiveVar<Studio | undefined> {
+		const rVar = new ReactiveVar<Studio | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
 		Tracker.autorun(() => {
-			const si = StudioInstallations.findOne(siId)
-			rVar.set(si)
+			const studio = Studios.findOne(studioId)
+			rVar.set(studio)
 		})
 
 		return rVar
 	}
 
-	export function getRSegmentLineItems (roId: string): ReactiveVar<SegmentLineItem[]> {
-		const rVar = new ReactiveVar<SegmentLineItem[]>([])
+	export function getRPieces (rundownId: string): ReactiveVar<Piece[]> {
+		const rVar = new ReactiveVar<Piece[]>([])
 
 		Tracker.autorun(() => {
-			const slis = SegmentLineItems.find({
-				runningOrderId: roId
+			const slis = Pieces.find({
+				rundownId: rundownId
 			}).fetch()
 			rVar.set(slis)
 		})
@@ -77,13 +79,8 @@ export namespace reactiveData {
 	export function getRSourceLayer (showStyleBase: ShowStyleBase, sourceLayerId: string): ReactiveVar<ISourceLayer | undefined> {
 		const rVar = new ReactiveVar<ISourceLayer | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
 		Tracker.autorun(() => {
-			// const showStyleBase = ShowStyleBases.findOne(studioId)
-			if (showStyleBase) {
-				const sourceLayer = showStyleBase.sourceLayers.find((item) => item._id === sourceLayerId)
-				rVar.set(sourceLayer)
-			} else {
-				rVar.set(undefined)
-			}
+			const sourceLayer = showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)
+			rVar.set(sourceLayer)
 		})
 		return rVar
 	}
@@ -104,7 +101,7 @@ export namespace reactiveData {
 		Tracker.autorun(() => {
 			const allDevices: PeripheralDevice[] = []
 			const peripheralDevices = PeripheralDevices.find({
-				studioInstallationId: studioId
+				studioId: studioId
 			}).fetch()
 			allDevices.splice(allDevices.length, 0, ...peripheralDevices)
 			peripheralDevices.forEach((i) => {
@@ -112,6 +109,26 @@ export namespace reactiveData {
 				allDevices.splice(allDevices.length, 0, ...subDevices)
 			})
 			rVar.set(allDevices)
+		})
+
+		return rVar
+	}
+
+	export function getUnsentExternalMessageCount (studioId: string, rundownId: string): ReactiveVar<number> {
+		const rVar = new ReactiveVar<number>(0)
+
+		Tracker.autorun(() => {
+			let now = getCurrentTime()
+			const unsentMessages = ExternalMessageQueue.find({
+				expires: { $gt: now },
+				studioId: { $eq: studioId },
+				rundownId: { $eq: rundownId },
+				sent: { $not: { $gt: 0 } },
+				tryCount: { $not: { $lt: 1 } }
+			}, {
+				limit: 10
+			}).fetch()
+			rVar.set(unsentMessages.length)
 		})
 
 		return rVar

@@ -7,7 +7,8 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
-import { PeripheralDevices, PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { DeviceType as PlayoutDeviceType, DeviceOptions as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
@@ -269,7 +270,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 						<div className='mod mvs mhs'>
 							<label className='field'>
 								{t('Enable SSL')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.ssl'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
 					</React.Fragment>)

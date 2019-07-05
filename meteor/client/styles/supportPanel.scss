@@ -1,36 +1,21 @@
 @import '_colorScheme';
 @import '_variables';
 
-.support__toggle-button {
+.status-bar__controls__button.support__toggle-button {
 	position: fixed;
-    display: block;
-    border: none;
     right: 5px;
     bottom: 5px;
-    background: transparentize(#4B4B4B, 0.45);
-    width: $fullscreen-controls__button--radius;
-    height: $fullscreen-controls__button--radius;
-    border-radius: 100%;
-    transition: 0.3s background-color;
-    margin-bottom: 0.5rem;
-    font-size: 1em;
     z-index: 310;
     text-align: left;
-    cursor: pointer;
-
-    &:active, &.active {
-        background: $ui-button-primary;
-        transition: 0s background-color;
-    }
 
     > svg {
-        position: absolute;
-        width: 50%;
-        height: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -53%);
-        transition: 0.5s all ease-in-out;
+        position: absolute !important;
+        width: #{$fullscreen-controls__button--radius / 2} !important;
+        height: #{$fullscreen-controls__button--radius / 2.86} !important;
+        right: 0 !important;
+        left: auto !important;
+        transform: translate(-50%, -53%) !important;
+        transition: 0.5s all ease-in-out !important;
 
         > path {
             fill: rgb(255, 255, 255);
@@ -41,7 +26,7 @@
 
 .support-pop-up-panel {
 	position: fixed;
-    bottom: 14px;
+    bottom: 13px;
     right: 0;
     left: auto;
     margin-right: 60px;
@@ -63,7 +48,7 @@
     }
 }
 
-.running-order-view {
+.rundown-view {
     .support-pop-up-panel {
         color: #000;
         background: #eee;

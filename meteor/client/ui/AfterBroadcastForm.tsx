@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { translate } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -9,7 +9,7 @@ import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 
 interface IProps {
-	runningOrder: RunningOrder
+	rundown: Rundown
 }
 interface IState {
 	q0: string
@@ -33,15 +33,15 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 		const saveEvaluation = (snapshotId?: string) => {
 			let evaluation: EvaluationBase = {
-				studioId: this.props.runningOrder.studioInstallationId,
-				runningOrderId: this.props.runningOrder._id,
+				studioId: this.props.rundown.studioId,
+				rundownId: this.props.rundown._id,
 				answers: answers
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
 			doUserAction(t, e, UserActionAPI.methods.saveEvaluation, [evaluation])
 
-			doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
+			doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 
 			this.setState({
 				q0: '',
@@ -51,7 +51,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 
 		if (answers.q0 !== 'nothing') {
-			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Evaluation form'], (err, response) => {
+			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'Evaluation form'], (err, response) => {
 				if (!err && response) {
 					saveEvaluation(response.result)
 				} else {
@@ -62,7 +62,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			saveEvaluation()
 		}
 	}
-	onUpdateValue = (edit: any, newValue: any ) => {
+	onUpdateValue = (edit: any, newValue: any) => {
 		let attr = edit.props.attribute
 
 		if (attr) {
@@ -131,8 +131,8 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 })
 export function getQuestionOptions (t) {
 	return [
-		{value: 'nothing', name: t('No problems')},
-		{value: 'minor', name: t('Something went wrong, but it didn\'t affect the output')},
-		{value: 'major', name: t('Something went wrong, and it affected the output')},
+		{ value: 'nothing', name: t('No problems') },
+		{ value: 'minor', name: t('Something went wrong, but it didn\'t affect the output') },
+		{ value: 'major', name: t('Something went wrong, and it affected the output') },
 	]
 }

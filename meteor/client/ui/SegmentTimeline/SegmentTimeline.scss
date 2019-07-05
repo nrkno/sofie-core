@@ -34,7 +34,7 @@ $timeline-layer-height: 1em;
 }
 .segment-timeline__zoom-area {
     .segment-timeline__timeline {
-        .segment-timeline__segment-line {
+        .segment-timeline__part {
             display: inline-block;
         }
     }
@@ -50,11 +50,11 @@ $timeline-layer-height: 1em;
         height: 100%;
     }
 }
-.segment-timeline__segment-line {
+.segment-timeline__part {
     flex: 0 0;
     pointer-events: none;
 
-    &.segment-timeline__segment-line--end-of-segment {
+    &.segment-timeline__part--end-of-segment {
         // this is end of segment
     }
 
@@ -75,7 +75,7 @@ $timeline-layer-height: 1em;
                 pointer-events: none;
             }
 
-            > .segment-timeline__layer-item {
+            > .segment-timeline__piece {
                 position: absolute;
                 top: 0;
                 bottom: 0;
@@ -88,14 +88,14 @@ $timeline-layer-height: 1em;
         }
     }
 
-    .segment-timeline__layer-item-appendage {
+    .segment-timeline__piece-appendage {
         position: absolute;
         top: 0;
         bottom: 0;
         display: block;
     }
 
-    .segment-timeline__segment-line__difference {
+    .segment-timeline__part__difference {
         position: absolute;
         top: 0;
         right: 0;

@@ -33,3 +33,4 @@ peerlibrary:computed-field
 meteorhacks:picker
 ostrio:meteor-root
 underscore
+mdg:validated-method

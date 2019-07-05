@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 export namespace ClientAPI {
 	export enum methods {
 		'execMethod' = 'client.execMethod',
+		'clientErrorReport' = 'client.clientErrorReport',
 		'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
 	}
 
@@ -47,7 +48,7 @@ export namespace ClientAPI {
 		return (
 			_.isObject(res) &&
 			!_.isArray(res) &&
-			res.error !== undefined
+			res.error === undefined
 		)
 	}
 }

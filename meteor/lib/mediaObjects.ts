@@ -1,12 +1,12 @@
 import * as _ from 'underscore'
-import { SegmentLineItem } from './collections/SegmentLineItems'
 import {
 	VTContent,
 	SourceLayerType,
 	IConfigItem,
-	ISourceLayer
+	ISourceLayer,
+	IBlueprintPieceGeneric
 } from 'tv-automation-sofie-blueprints-integration'
-import { RunningOrderAPI } from './api/runningOrder'
+import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 
@@ -97,20 +97,20 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 		}))
 }
 
-export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
-	let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
+	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			if (sli.content && sli.content.fileName) {
-				const content = sli.content as VTContent
+			if (piece.content && piece.content.fileName) {
+				const content = piece.content as VTContent
 				// If the fileName is not set...
 				if (!content.fileName) {
-					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET
+					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
 					message = t('Source is not set')
 				} else {
 					const mediaObject = MediaObjects.findOne({
@@ -118,15 +118,15 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 					})
 					// If media object not found, then...
 					if (!mediaObject && content.fileName) {
-						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
-						message = t('Source is missing: {{fileName}}', {fileName: content.fileName})
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+						message = t('Source is missing: {{fileName}}', { fileName: content.fileName })
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
-						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-						message = t('Source doesn\'t have audio & video: {{fileName}}', {fileName: content.fileName})
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: content.fileName })
 					}
 					if (mediaObject) {
-						if (!newStatus) newStatus = RunningOrderAPI.LineItemStatusCode.OK
+						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
 						const messages: Array<String> = []
 
 						// Do a format check:
@@ -160,7 +160,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 							}
 
 							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
-								messages.push(t('Source has {{audioStreams}} audio streams', {audioStreams}))
+								messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
 							}
 
 							// check for black/freeze frames
@@ -168,7 +168,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 								if (arr.length === 1) {
 									const frames = Math.round(arr[0].duration * 1000 / timebase)
 									if (arr[0].start === 0) {
-										messages.push(t('Clip starts with {{frames}} {{type}} frame', {frames, type, count: frames}))
+										messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
 									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
 										messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
 									} else {
@@ -194,8 +194,8 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 						}
 
 						if (messages.length) {
-							if (newStatus === RunningOrderAPI.LineItemStatusCode.OK) {
-								newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
+							if (newStatus === RundownAPI.PieceStatusCode.OK) {
+								newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 								message = messages.join(', ')
 							} else {
 								message += ', ' + messages.join(', ')

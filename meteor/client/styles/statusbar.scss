@@ -1,3 +1,4 @@
+@import "_colorScheme";
 @import "_variables";
 
 .status-bar {
@@ -8,17 +9,131 @@
 	bottom: 0;
 	border-left: 1px solid rgba(0, 0, 0, 0.3);
 	z-index: 300;
+	padding-top: 70px;
 	background: #fff;
 
-	transition: 0.3s background;
+	transition: 0.3s background-color;
 
 	&.super-dark {
 		background: #000 !important;
 	}
+
+	.notifications__toggle-button {
+		position: relative;
+		top: auto;
+		right: auto;
+	}
+
+	.status-bar__controls__button {
+		margin-left: 5px;
+		position: relative;
+		display: block;
+		border: none;
+		background: transparentize(#fff, 1);
+		width: $fullscreen-controls__button--radius;
+		height: $fullscreen-controls__button--radius;
+		border-radius: 100%;
+		transition: 0.3s background-color, 0.3s border-radius, 0.3s color, 0.3s margin-left, 0.3s right, 0.3s width;
+		margin-bottom: 0.5rem;
+		font-size: 1em;
+		box-sizing: border-box;
+		padding: 0;
+		cursor: pointer;
+
+		&::after {
+			content: ' ';
+			position: absolute;
+			display: block;
+			z-index: -1;
+			border-radius: 100%;
+			top: 0;
+			right: 0;
+			width: $fullscreen-controls__button--radius;
+			height: $fullscreen-controls__button--radius;
+			background: transparentize(#4B4B4B, 0.45);
+			transition: 0.3s background-color;
+		}
+
+
+		&.status-bar__controls__button--inactive {
+			cursor: default;
+		}
+
+		&:not(.status-bar__controls__button--inactive) {
+			&:active, &.active {
+				&::after {
+					background: $ui-button-primary;
+					transition: 0s background-color;
+				}
+			}
+		}
+
+		&.status-bar__controls__button--open {
+			width: #{$fullscreen-controls__button--radius + 5px};
+			border-radius: 0 100% 100% 0;
+			background-color: #fff;
+			margin-left: 0;
+			border-top: 1px solid rgba(0, 0, 0, 0.3);
+			border-right: 1px solid rgba(0, 0, 0, 0.3);
+			border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+			border-left: 1px solid #fff;
+			margin-left: -1px;
+		}
+
+		&.status-bar__controls__button--take {
+			text-transform: uppercase;
+			font-weight: 700;
+			display: none !important;
+
+			@media (pointer: coarse) {
+				display: inline !important;
+			}
+		}
+
+		> div[aria-label="animation"] {
+
+		}
+	}
+
+	.status-bar__controls__label {
+		font-size: 0.6rem;
+		text-align: center;
+		user-select: none;
+		margin-top: 2em;
+		margin-left: 5px;
+		margin-bottom: 3em;
+
+		.keyboard_key {
+			display: inline-block;
+			border: 1px solid #fff;
+			border-radius: 4px;
+			font-size: 0.8rem;
+			padding: 0 3px;
+			margin-bottom: 0.2rem;
+			font-size: 0.9em;
+		}
+	}
 }
 
-.running-order-view {
-	.status-bar {
-		top: 64px;
+.rundown-view .status-bar {
+	position: fixed;
+    padding-right: 5px;
+    top: 64px;
+    padding-top: 15px;
+    bottom: 0;
+    right: 0;
+	width: #{$fullscreen-controls__button--radius + 10px};
+	z-index: 2000;
+	background: $ui-dark-color;
+	border-left: none;
+
+	.status-bar__controls__button {
+		border: none;
+
+		&.status-bar__controls__button--open {
+			border: none !important;
+			margin-left: 0 !important;
+			background-color: #eee;
+		}
 	}
 }

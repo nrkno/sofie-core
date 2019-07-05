@@ -38,11 +38,21 @@ a:visited {
 
 	.checkbox {
 		vertical-align: bottom;
+
+		&.mod {
+			vertical-align: middle;
+		}
 	}
 
 	.btn, .btn-tight {
 		font-weight: 300;
 	}
+
+	input {
+		&::-webkit-input-placeholder, &::placeholder {
+			color: #bbb;
+		}
+	} 
 }
 
 .origo-pulse {
@@ -60,4 +70,8 @@ a.selectable {
 	&:hover, &:active {
 		text-decoration: inherit;
 	}
+}
+
+.btn > svg.svg-inline--fa + span {
+	margin-left: 0.5em;
 }

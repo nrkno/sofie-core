@@ -36,7 +36,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		}
 	}
 
-	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (!this.state.showNotifications === true) {
 			NotificationCenter.snoozeAll()
 		}
@@ -46,7 +46,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLDivElement>) => {
+	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			showSupportPanel: !this.state.showSupportPanel
 		})
@@ -100,8 +100,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 						<div className='frow ha-right'>
 							<nav className='links mod'>
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
-								<NavLink to='/' activeClassName='active'>{t('Running Orders')}</NavLink>
-								{ this.props.developerMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
+								<NavLink to='/' activeClassName='active'>{t('Rundowns')}</NavLink>
 								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 								{ this.props.adminMode && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }

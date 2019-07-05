@@ -1,0 +1,9 @@
+.rundown-list-item {
+	.rundown-list-item__actions {
+		min-width: 4em;
+
+		> .action-btn {
+			width: 1.5em;
+		}
+	}
+}

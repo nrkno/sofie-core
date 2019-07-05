@@ -18,15 +18,16 @@ import {
 	getHash
 } from '../../lib/lib'
 import {
-	RunningOrder,
-	RunningOrders
-} from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+	Rundown,
+	Rundowns
+} from '../../lib/collections/Rundowns'
+import { Part, Parts } from '../../lib/collections/Parts'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { logger } from '../../lib/logging'
-import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
 import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
+import { getBlueprintOfRundown } from './blueprints/cache'
+import { AsRunEventContext } from './blueprints/context'
 
 const EVENT_WAIT_TIME = 500
 
@@ -61,20 +62,20 @@ function handleEvent (event: AsRunLogEvent): void {
 	// might havent been reported yet
 	Meteor.setTimeout(() => {
 		try {
-			if (event.runningOrderId) {
+			if (event.rundownId) {
 
-				let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
-				if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${event.runningOrderId}" not found!`)
+				const rundown = Rundowns.findOne(event.rundownId) as Rundown
+				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
-				let bp = getBlueprintOfRunningOrder(runningOrder)
+				const { blueprint } = getBlueprintOfRundown(rundown)
 
-				if (bp.onAsRunEvent) {
-					const context = new AsRunEventContext(runningOrder, event)
+				if (blueprint.onAsRunEvent) {
+					const context = new AsRunEventContext(rundown, undefined, event)
 
-					Promise.resolve(bp.onAsRunEvent(context))
+					Promise.resolve(blueprint.onAsRunEvent(context))
 					.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
 
-						queueExternalMessages(runningOrder, messages)
+						queueExternalMessages(rundown, messages)
 					})
 					.catch(error => logger.error(error))
 				}
@@ -88,46 +89,46 @@ function handleEvent (event: AsRunLogEvent): void {
 
 // Convenience functions:
 
-export function reportRunningOrderHasStarted (runningOrderOrId: RunningOrder | string, timestamp?: Time) {
-	// Called when the first item in runningOrder starts playing
+export function reportRundownHasStarted (rundownOrId: Rundown | string, timestamp?: Time) {
+	// Called when the first part in rundown starts playing
 
-	let runningOrder = (
-		_.isString(runningOrderOrId) ?
-		RunningOrders.findOne(runningOrderOrId) :
-		runningOrderOrId
+	let rundown = (
+		_.isString(rundownOrId) ?
+		Rundowns.findOne(rundownOrId) :
+		rundownOrId
 	)
-	if (runningOrder) {
-		RunningOrders.update(runningOrder._id, {
+	if (rundown) {
+		Rundowns.update(rundown._id, {
 			$set: {
 				startedPlayback: timestamp
 			}
 		})
 		// also update local object:
-		runningOrder.startedPlayback = timestamp
+		rundown.startedPlayback = timestamp
 
 		let event = pushAsRunLog({
-			studioId: runningOrder.studioInstallationId,
-			runningOrderId: runningOrder._id,
+			studioId: rundown.studioId,
+			rundownId: rundown._id,
 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-			content2: 'runningOrder'
-		}, !!runningOrder.rehearsal, timestamp)
+			content2: 'rundown'
+		}, !!rundown.rehearsal, timestamp)
 		if (event) handleEvent(event)
-	} else logger.error(`runningOrder not found in reportRunningOrderHasStarted "${runningOrderOrId}"`)
+	} else logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
-export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | string , timestamp: Time) {
+export function reportPartHasStarted (partOrId: Part | string , timestamp: Time) {
 
-	let segmentLine = (
-		_.isString(segmentLineOrId) ?
-		SegmentLines.findOne(segmentLineOrId) :
-		segmentLineOrId
+	let part = (
+		_.isString(partOrId) ?
+		Parts.findOne(partOrId) :
+		partOrId
 	)
-	if (segmentLine) {
-		let runningOrder: RunningOrder
+	if (part) {
+		let rundown: Rundown
 
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(SegmentLines, segmentLine._id, {
+			asyncCollectionUpdate(Parts, part._id, {
 				$set: {
 					startedPlayback: true,
 					stoppedPlayback: false,
@@ -136,39 +137,39 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 					'timings.startedPlayback': timestamp
 				}
 			}),
-			asyncCollectionFindOne(RunningOrders, segmentLine.runningOrderId)
+			asyncCollectionFindOne(Rundowns, part.rundownId)
 		])
-		runningOrder = r[1]
+		rundown = r[1]
 		// also update local object:
-		segmentLine.startedPlayback = true
-		segmentLine.stoppedPlayback = false
-		pushOntoPath(segmentLine, 'timings.startedPlayback', timestamp)
+		part.startedPlayback = true
+		part.stoppedPlayback = false
+		pushOntoPath(part, 'timings.startedPlayback', timestamp)
 
-		if (runningOrder) {
+		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			runningOrder.studioInstallationId,
-				runningOrderId:		runningOrder._id,
-				segmentId:			segmentLine.segmentId,
-				segmentLineId:		segmentLine._id,
+				studioId:			rundown.studioId,
+				rundownId:		rundown._id,
+				segmentId:			part.segmentId,
+				partId:		part._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				content2: 			'segmentLine'
-			}, !!runningOrder.rehearsal, timestamp)
+				content2: 			'part'
+			}, !!rundown.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStarted "${segmentLine._id}"`)
-	} else logger.error(`segmentLine not found in reportSegmentLineHasStarted "${segmentLineOrId}"`)
+		} else logger.error(`rundown "${part.rundownId}" not found in reportPartHasStarted "${part._id}"`)
+	} else logger.error(`part not found in reportPartHasStarted "${partOrId}"`)
 }
-export function reportSegmentLineHasStopped (segmentLineOrId: SegmentLine | string , timestamp: Time) {
+export function reportPartHasStopped (partOrId: Part | string , timestamp: Time) {
 
-	let segmentLine = (
-		_.isString(segmentLineOrId) ?
-		SegmentLines.findOne(segmentLineOrId) :
-		segmentLineOrId
+	let part = (
+		_.isString(partOrId) ?
+		Parts.findOne(partOrId) :
+		partOrId
 	)
-	if (segmentLine) {
-		let runningOrder: RunningOrder
+	if (part) {
+		let rundown: Rundown
 
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(SegmentLines, segmentLine._id, {
+			asyncCollectionUpdate(Parts, part._id, {
 				$set: {
 					stoppedPlayback: true,
 				},
@@ -176,41 +177,41 @@ export function reportSegmentLineHasStopped (segmentLineOrId: SegmentLine | stri
 					'timings.stoppedPlayback': timestamp
 				}
 			}),
-			asyncCollectionFindOne(RunningOrders, segmentLine.runningOrderId)
+			asyncCollectionFindOne(Rundowns, part.rundownId)
 		])
-		runningOrder = r[1]
+		rundown = r[1]
 		// also update local object:
-		segmentLine.stoppedPlayback = true
-		pushOntoPath(segmentLine, 'timings.stoppedPlayback', timestamp)
+		part.stoppedPlayback = true
+		pushOntoPath(part, 'timings.stoppedPlayback', timestamp)
 
-		if (runningOrder) {
+		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			runningOrder.studioInstallationId,
-				runningOrderId:		runningOrder._id,
-				segmentId:			segmentLine.segmentId,
-				segmentLineId:		segmentLine._id,
+				studioId:			rundown.studioId,
+				rundownId:		rundown._id,
+				segmentId:			part.segmentId,
+				partId:		part._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-				content2: 			'segmentLine'
-			}, !!runningOrder.rehearsal, timestamp)
+				content2: 			'part'
+			}, !!rundown.rehearsal, timestamp)
 			if (event) handleEvent(event)
 			return event
-		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStopped "${segmentLine._id}"`)
-	} else logger.error(`segmentLine not found in reportSegmentLineHasStopped "${segmentLineOrId}"`)
+		} else logger.error(`rundown "${part.rundownId}" not found in reportPartHasStopped "${part._id}"`)
+	} else logger.error(`part not found in reportPartHasStopped "${partOrId}"`)
 }
 
-export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLineItem | string, timestamp: Time) {
+export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Time) {
 
-	let segmentLineItem = (
-		_.isString(segmentLineItemOrId) ?
-		SegmentLineItems.findOne(segmentLineItemOrId) :
-		segmentLineItemOrId
+	let piece = (
+		_.isString(pieceOrId) ?
+		Pieces.findOne(pieceOrId) :
+		pieceOrId
 	)
-	if (segmentLineItem) {
+	if (piece) {
 
-		let runningOrder: RunningOrder
-		let segmentLine: SegmentLine
+		let rundown: Rundown
+		let part: Part
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, {
+			asyncCollectionUpdate(Pieces, piece._id, {
 				$set: {
 					startedPlayback: timestamp,
 					stoppedPlayback: 0
@@ -219,44 +220,44 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 					'timings.startedPlayback': timestamp
 				}
 			}),
-			asyncCollectionFindOne(RunningOrders, segmentLineItem.runningOrderId),
-			asyncCollectionFindOne(SegmentLines, segmentLineItem.segmentLineId)
+			asyncCollectionFindOne(Rundowns, piece.rundownId),
+			asyncCollectionFindOne(Parts, piece.partId)
 		])
-		runningOrder = r[1]
-		segmentLine = r[2]
+		rundown = r[1]
+		part = r[2]
 		// also update local object:
-		segmentLineItem.startedPlayback = timestamp
-		segmentLineItem.stoppedPlayback = 0
-		pushOntoPath(segmentLineItem, 'timings.startedPlayback', timestamp)
+		piece.startedPlayback = timestamp
+		piece.stoppedPlayback = 0
+		pushOntoPath(piece, 'timings.startedPlayback', timestamp)
 
-		if (runningOrder) {
+		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			runningOrder.studioInstallationId,
-				runningOrderId:		runningOrder._id,
-				segmentId:			segmentLine.segmentId,
-				segmentLineId:		segmentLineItem.segmentLineId,
-				segmentLineItemId:	segmentLineItem._id,
+				studioId:			rundown.studioId,
+				rundownId:		rundown._id,
+				segmentId:			part.segmentId,
+				partId:		piece.partId,
+				pieceId:	piece._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				content2: 			'segmentLineItem'
-			}, !!runningOrder.rehearsal, timestamp)
+				content2: 			'piece'
+			}, !!rundown.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineItemHasStarted "${segmentLine._id}"`)
+		} else logger.error(`rundown "${part.rundownId}" not found in reportPieceHasStarted "${part._id}"`)
 
-	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStarted "${segmentLineItemOrId}"`)
+	} else logger.error(`piece not found in reportPieceHasStarted "${pieceOrId}"`)
 }
-export function reportSegmentLineItemHasStopped (segmentLineItemOrId: SegmentLineItem | string, timestamp: Time) {
+export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Time) {
 
-	let segmentLineItem = (
-		_.isString(segmentLineItemOrId) ?
-		SegmentLineItems.findOne(segmentLineItemOrId) :
-		segmentLineItemOrId
+	let piece = (
+		_.isString(pieceOrId) ?
+		Pieces.findOne(pieceOrId) :
+		pieceOrId
 	)
-	if (segmentLineItem) {
+	if (piece) {
 
-		let runningOrder: RunningOrder
-		let segmentLine: SegmentLine
+		let rundown: Rundown
+		let part: Part
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, {
+			asyncCollectionUpdate(Pieces, piece._id, {
 				$set: {
 					stoppedPlayback: timestamp
 				},
@@ -264,27 +265,27 @@ export function reportSegmentLineItemHasStopped (segmentLineItemOrId: SegmentLin
 					'timings.stoppedPlayback': timestamp
 				}
 			}),
-			asyncCollectionFindOne(RunningOrders, segmentLineItem.runningOrderId),
-			asyncCollectionFindOne(SegmentLines, segmentLineItem.segmentLineId)
+			asyncCollectionFindOne(Rundowns, piece.rundownId),
+			asyncCollectionFindOne(Parts, piece.partId)
 		])
-		runningOrder = r[1]
-		segmentLine = r[2]
+		rundown = r[1]
+		part = r[2]
 		// also update local object:
-		segmentLineItem.stoppedPlayback = timestamp
-		pushOntoPath(segmentLineItem, 'timings.stoppedPlayback', timestamp)
+		piece.stoppedPlayback = timestamp
+		pushOntoPath(piece, 'timings.stoppedPlayback', timestamp)
 
-		if (runningOrder) {
+		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			runningOrder.studioInstallationId,
-				runningOrderId:		runningOrder._id,
-				segmentId:			segmentLine.segmentId,
-				segmentLineId:		segmentLineItem.segmentLineId,
-				segmentLineItemId:	segmentLineItem._id,
+				studioId:			rundown.studioId,
+				rundownId:		rundown._id,
+				segmentId:			part.segmentId,
+				partId:		piece.partId,
+				pieceId:	piece._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-				content2: 			'segmentLineItem'
-			}, !!runningOrder.rehearsal, timestamp)
+				content2: 			'piece'
+			}, !!rundown.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineItemHasStopped "${segmentLine._id}"`)
+		} else logger.error(`rundown "${part.rundownId}" not found in reportPieceHasStopped "${part._id}"`)
 
-	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStopped "${segmentLineItemOrId}"`)
+	} else logger.error(`piece not found in reportPieceHasStopped "${pieceOrId}"`)
 }

@@ -9,10 +9,10 @@ import {
 
 export interface AsRunLogEventBase {
 	studioId: string,
-	runningOrderId: string,
+	rundownId: string,
 	segmentId?: string,
-	segmentLineId?: string,
-	segmentLineItemId?: string,
+	partId?: string,
+	pieceId?: string,
 	timelineObjectId?: string
 
 	/** Name/id of the content */
@@ -38,7 +38,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AsRunLog._ensureIndex({
 			studioId: 1,
-			runningOrderId: 1
+			rundownId: 1
 		})
 	}
 })

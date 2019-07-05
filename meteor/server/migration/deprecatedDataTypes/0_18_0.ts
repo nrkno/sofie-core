@@ -10,13 +10,13 @@ export interface ShowStyle {
 	name: string
 	/** Map a template name to a runtime function? */
 	templateMappings: TemplateMappings | never[]
-	/** The name of the template to be run for the baseline state when the running order is activated */
+	/** The name of the template to be run for the baseline state when the rundown is activated */
 	baselineTemplate: string
 	/** The name of the template to be run to generate external messages upon TAKEs */
 	messageTemplate: string
-	/** The name of the blueprint which is used to determine which other blueprint is used to create the sl&sli for a story */
+	/** The name of the blueprint which is used to determine which other blueprint is used to create the part&piece for a story */
 	routerBlueprint: string
-	/** The name of the blueprint which is the post-process step to run on a segment after any sl has changed */
+	/** The name of the blueprint which is the post-process step to run on a segment after any part has changed */
 	postProcessBlueprint: string
 }
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>

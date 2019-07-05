@@ -2,6 +2,7 @@ export namespace ExternalMessageQueueAPI {
 	export enum methods {
 		'remove' 				= 'externalMessages.remove',
 		'toggleHold' 			= 'externalMessages.toggleHold',
-		'setRunMessageQueue' 	= 'externalMessages.setRunMessageQueue'
+		'retry' = 'externalMessages.retry',
+		'setRunMessageQueue' 	= 'externalMessages.setRunMessageQueue',
 	}
 }

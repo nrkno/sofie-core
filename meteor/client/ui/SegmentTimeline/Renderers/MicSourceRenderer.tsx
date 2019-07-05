@@ -8,6 +8,7 @@ import Moment from 'react-moment'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import * as _ from 'underscore'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
@@ -20,8 +21,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	itemPosition: number
 	itemWidth: number
-	itemElement: HTMLDivElement | null
-	lineItem: JQuery<HTMLDivElement>
+	itemElement: HTMLElement | null
+	lineItem: JQuery<HTMLElement>
 	linePosition: number
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -41,7 +42,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	refreshLine = () => {
 		if (this.itemElement) {
 			this.itemPosition = $(this.itemElement).position().left || 0
-			const content = this.props.segmentLineItem.content as ScriptContent
+			const content = this.props.piece.content as ScriptContent
 			let scriptReadTime = 0
 			if (content && content.sourceDuration) {
 				scriptReadTime = content.sourceDuration * this.props.timeScale
@@ -51,7 +52,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 
 			if (this.itemPosition + scriptReadTime !== this.linePosition) {
-				this.linePosition = Math.min(this.itemPosition + scriptReadTime, this.props.segmentLineDuration * this.props.timeScale)
+				this.linePosition = Math.min(this.itemPosition + scriptReadTime, this.props.partDuration * this.props.timeScale)
 				this.repositionLine()
 			}
 		}
@@ -65,24 +66,9 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		this.rightLabel = e
 	}
 
-	componentWillReceiveProps (nextProps: IProps & InjectedTranslateProps, nextContext: any) {
-		if (super.componentWillReceiveProps && typeof super.componentWillReceiveProps === 'function') {
-			super.componentWillReceiveProps(nextProps, nextContext)
-		}
-
-		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
-			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
-			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
-			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
-			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
-			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger)) {
-			this._forceSizingRecheck = true
-		}
-	}
-
 	componentDidMount () {
 		// Create line element
-		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>') as JQuery<HTMLDivElement>
+		this.lineItem = $('<div class="segment-timeline__piece-appendage script-line"></div>')
 		this.updateAnchoredElsWidths()
 		if (this.props.itemElement) {
 			this.itemElement = this.props.itemElement
@@ -99,8 +85,20 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	}
 
 	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+		let _forceSizingRecheck = false
+
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
+		}
+
+		if ((prevProps.partDuration !== this.props.partDuration) ||
+			(prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
+			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
+			(prevProps.piece.playoutDuration !== this.props.piece.playoutDuration) ||
+			!_.isEqual(prevProps.piece.userDuration, this.props.piece.userDuration) ||
+			!_.isEqual(prevProps.piece.enable, this.props.piece.enable)
+		) {
+			_forceSizingRecheck = true
 		}
 
 		// Move the line element
@@ -115,18 +113,16 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 		}
 
-		const content = this.props.segmentLineItem.content as ScriptContent
+		const content = this.props.piece.content as ScriptContent
 		if (content.sourceDuration && content.sourceDuration !== this.readTime) {
-			this._forceSizingRecheck = true
+			_forceSizingRecheck = true
 		}
-		if (this._forceSizingRecheck) {
-			// Update sizing information
-			this._forceSizingRecheck = false
 
+		if (_forceSizingRecheck) {
 			this.refreshLine()
 		}
 
-		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+		if (this.props.piece.name !== prevProps.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -138,7 +134,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	render () {
 		const { t } = this.props
-		let labelItems = (this.props.segmentLineItem.name || '').split('||')
+		let labelItems = (this.props.piece.name || '').split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
@@ -147,7 +143,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
 		// }
 
-		const content = this.props.segmentLineItem.content as ScriptContent
+		const content = this.props.piece.content as ScriptContent
 		let startOfScript = content.fullScript || ''
 		let cutLength = startOfScript.length
 		if (startOfScript.length > SCRIPT_PART_LENGTH) {
@@ -162,11 +158,11 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
 
 		return <React.Fragment>
-			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+			<span className='segment-timeline__piece__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{begin}
 			</span>
-			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				<span className='segment-timeline__layer-item__label last-words'>{end}</span>
+			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+				<span className='segment-timeline__piece__label last-words'>{end}</span>
 				{this.renderInfiniteIcon()}
 				{this.renderOverflowTimeLabel()}
 			</span>

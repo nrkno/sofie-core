@@ -59,7 +59,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	outsideZoomAreaClick = (e: JQueryMouseEventObject & any) => {
+	outsideZoomAreaClick = (e: JQuery.Event & any) => {
 		let offset = $(this.parentElement).offset()
 		if (offset) {
 			this.offsetX = offset.left
@@ -83,7 +83,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaMove = (e: JQueryMouseEventObject | TouchEvent & any) => {
+	zoomAreaMove = (e: JQuery.Event | TouchEvent & any) => {
 		let percent = 0
 
 		if (this._isTouch) {
@@ -157,7 +157,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		})
 	}
 
-	zoomAreaLeftMove = (e: JQueryMouseEventObject & any) => {
+	zoomAreaLeftMove = (e: JQuery.Event & any) => {
 		let begin = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
 		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
@@ -176,7 +176,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaLeftBeginMove (e: JQueryMouseEventObject & any) {
+	zoomAreaLeftBeginMove (e: JQuery.Event & any) {
 		// console.log('Left handle')
 		e.preventDefault()
 		e.stopPropagation()
@@ -203,7 +203,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaRightMove = (e: JQueryMouseEventObject & any) => {
+	zoomAreaRightMove = (e: JQuery.Event & any) => {
 		let end = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let begin = this.props.scrollLeft / this.props.segmentDuration
 		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
@@ -213,7 +213,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaRightBeginMove (e: JQueryMouseEventObject & any) {
+	zoomAreaRightBeginMove (e: JQuery.Event & any) {
 		// console.log('Right handle')
 		e.preventDefault()
 		e.stopPropagation()

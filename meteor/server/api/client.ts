@@ -3,7 +3,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime } from '../../lib/lib'
+import { literal, getCurrentTime, Time } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
@@ -12,6 +12,14 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from '../methods'
 
 export namespace ServerClientAPI {
+	export function clientErrorReport (timestamp: Time, errorObject: any, location: string) {
+		check(timestamp, Number)
+
+		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${this.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
+
+		return ClientAPI.responseSuccess()
+	}
+
 	export function execMethod (context: string, methodName: string, ...args: any[]) {
 		check(methodName, String)
 		check(context, String)
@@ -55,8 +63,9 @@ export namespace ServerClientAPI {
 		} catch (e) {
 			// console.log('eeeeeeeeeeeeeee')
 			// allow the exception to be handled by the Client code
+			logger.error(`Error in ${methodName}`)
 			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-			logger.error(errMsg)
+			logger.error(errMsg + '\n' + (e.stack || ''))
 			UserActionsLog.update(actionId, {$set: {
 				success: false,
 				doneTime: getCurrentTime(),
@@ -136,6 +145,9 @@ export namespace ServerClientAPI {
 let methods: Methods = {}
 methods[ClientAPI.methods.execMethod] = function (...args: any[]) {
 	return ServerClientAPI.execMethod.apply(this, args)
+}
+methods[ClientAPI.methods.clientErrorReport] = function (...args: any[]) {
+	return ServerClientAPI.clientErrorReport.apply(this, args)
 }
 methods[ClientAPI.methods.callPeripheralDeviceFunction] = function (...args: any[]) {
 	return ServerClientAPI.callPeripheralDeviceFunction.apply(this, args)

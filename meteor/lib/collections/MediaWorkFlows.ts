@@ -15,10 +15,12 @@ export interface MediaWorkFlow {
 	_rev: string
 
 	name?: string
+	/** A secondary name, some kind of a comment about the workFlow */
+	comment?: string
 
 	/** Which device this workflow originated from */
 	deviceId: string
-	studioInstallationId: string
+	studioId: string
 
 	source: WorkFlowSource
 	/** Id of the expectedMedia Item */

@@ -13,6 +13,8 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
+import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -38,9 +40,12 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 })(
 class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
 	renderSpecifics () {
-		if (this.props.device) {
+		if (
+			this.props.device &&
+			this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+		) {
 			switch (this.props.device.type) {
-				case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+				case PeripheralDeviceAPI.DeviceType.MOS:
 					return <MosDeviceSettingsComponent
 						device={this.props.device}
 						subDevices={this.props.subDevices}
@@ -52,6 +57,10 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					/>
 				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 					return <MediaManagerSettingsComponent
+						device={this.props.device}
+					/>
+				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
+					return <SpreadsheetSettingsComponent
 						device={this.props.device}
 					/>
 			}
@@ -68,9 +77,11 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 			no: t('Cancel'),
 			onAccept: (e: any) => {
 				PeripheralDevicesAPI.restartDevice(device, e).then((res) => {
-					console.log(res)
+					// console.log(res)
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: device.name }), 'DeviceSettings'))
 				}).catch((err) => {
-					console.error(err)
+					// console.error(err)
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'DeviceSettings'))
 				})
 			}
 		})

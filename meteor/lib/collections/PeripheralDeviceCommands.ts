@@ -19,6 +19,8 @@ export interface PeripheralDeviceCommand {
 }
 export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>
 	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
+
 // Monitor and remove old, lingering commands:
 let removeOldCommands = () => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
@@ -30,7 +32,6 @@ let removeOldCommands = () => {
 	})
 }
 Meteor.startup(() => {
-	registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 	Meteor.setInterval(() => {
 		removeOldCommands()
 	}, 5 * 60 * 1000)

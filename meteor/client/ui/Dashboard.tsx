@@ -4,6 +4,7 @@ import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 
 import { statusCodeToString } from './Status/SystemStatus'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 
 const PackageInfo = require('../../package.json')
 
@@ -21,9 +22,12 @@ export default translate()(class Dashboard extends React.Component<Translated<IP
 	}
 
 	componentDidMount () {
+		const { t } = this.props
+
 		Meteor.call('systemStatus.getSystemStatus', (err: any, res: any) => {
 			if (err) {
-				console.error(err)
+				// console.error(err)
+				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'Dashboard'))
 				return
 			}
 

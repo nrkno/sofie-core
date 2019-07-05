@@ -8,8 +8,8 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	_id: string
 	/** Id of the studio this message originates from */
 	studioId: string
-	/** (Optional) id of the running order this message originates from */
-	roId?: string
+	/** (Optional) id of the rundown this message originates from */
+	rundownId?: string
 	/** At this time the message will be removed */
 	expires: Time
 	/** Time of message creation */
@@ -26,7 +26,7 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	sent?: Time
 	/** Reply from receiver */
 	sentReply?: any
-	/** If true, wont retry no more */
+	/** If true, wont retry any more */
 	errorFatal?: boolean
 	/** If true, wont retry (can be set from UI) */
 	hold?: boolean
@@ -37,6 +37,10 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	receiver: any
 	/** Messate details */
 	message: any
+	/** Retry sending messages until this time */
+	retryUntil?: Time
+	/** Manual retry override (UI retry button) - retry once more */
+	manualRetry?: boolean
 }
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>
@@ -51,6 +55,10 @@ Meteor.startup(() => {
 		ExternalMessageQueue._ensureIndex({
 			sent: 1,
 			lastTry: 1
+		})
+		ExternalMessageQueue._ensureIndex({
+			studioId: 1,
+			rundownId: 1
 		})
 	}
 })

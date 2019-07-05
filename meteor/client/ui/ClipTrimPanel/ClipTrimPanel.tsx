@@ -1,20 +1,20 @@
 import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { SegmentLineItems, SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
+import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
 
 export interface IProps {
-	segmentLineItemId: string
-	runningOrderId: string
-	segmentLineId: string
-	studioInstallationId: string
+	pieceId: string
+	rundownId: string
+	partId: string
+	studioId: string
 
 	inPoint: number
 	duration: number
@@ -22,9 +22,9 @@ export interface IProps {
 }
 
 interface ITrackedProps {
-	segmentLineItem: SegmentLineItem | undefined
+	piece: Piece | undefined
 	mediaObject: MediaObject | undefined
-	studioInstallation: StudioInstallation | undefined
+	studio: Studio | undefined
 	maxDuration: number
 }
 
@@ -36,15 +36,15 @@ interface IState {
 }
 
 export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	const sli = SegmentLineItems.findOne(props.segmentLineItemId)
-	const si = StudioInstallations.findOne(props.studioInstallationId)
+	const piece = Pieces.findOne(props.pieceId)
+	const studio = Studios.findOne(props.studioId)
 	return {
-		segmentLineItem: sli,
-		mediaObject: sli ? MediaObjects.findOne({
-			mediaId: (sli.content as VTContent).fileName.toUpperCase()
+		piece: piece,
+		mediaObject: piece ? MediaObjects.findOne({
+			mediaId: (piece.content as VTContent).fileName.toUpperCase()
 		}) : undefined,
-		studioInstallation: si,
-		maxDuration: sli ? (sli.content as VTContent).sourceDuration : 0
+		studio: studio,
+		maxDuration: piece ? (piece.content as VTContent).sourceDuration : 0
 	}
 })(class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 	private fps = Settings['frameRate']
@@ -70,16 +70,16 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 	}
 
 	componentDidMount () {
-		this.subscribe(PubSub.segmentLineItems, { _id: this.props.segmentLineItemId })
+		this.subscribe(PubSub.pieces, { _id: this.props.pieceId })
 		this.autorun(() => {
-			if (this.props.segmentLineItem && this.props.segmentLineItem.content && this.props.segmentLineItem.content.fileName) {
-				const sli = this.props.segmentLineItem
+			if (this.props.piece && this.props.piece.content && this.props.piece.content.fileName) {
+				const piece = this.props.piece
 				let objId: string | undefined = undefined
-				objId = (sli.content as VTContent).fileName.toUpperCase()
+				objId = (piece.content as VTContent).fileName.toUpperCase()
 
 				if (objId) {
 					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-					this.subscribe(PubSub.mediaObjects, this.props.studioInstallationId, {
+					this.subscribe(PubSub.mediaObjects, this.props.studioId, {
 						mediaId: objId
 					})
 				}
@@ -139,8 +139,8 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 	render () {
 		const { t } = this.props
 		let previewUrl: string | undefined = undefined
-		if (this.props.mediaObject && this.props.studioInstallation) {
-			const mediaPreviewUrl = this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl + '' || '') || ''
+		if (this.props.mediaObject && this.props.studio) {
+			const mediaPreviewUrl = this.ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 			previewUrl = mediaPreviewUrl + 'media/preview/' + encodeURIComponent(this.props.mediaObject.mediaId)
 		}
 

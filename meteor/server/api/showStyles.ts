@@ -1,11 +1,12 @@
 import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
-import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../methods'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { literal } from '../../lib/lib'
+import { RundownLayouts } from '../../lib/collections/RundownLayouts';
 
 export function insertShowStyleBase (): string {
 	let id = ShowStyleBases.insert(literal<ShowStyleBase>({
@@ -16,7 +17,7 @@ export function insertShowStyleBase (): string {
 		sourceLayers: [],
 		config: [],
 		runtimeArguments: [],
-		_runningOrderVersionHash: '',
+		_rundownVersionHash: '',
 	}))
 	insertShowStyleVariant(id, 'Default')
 	return id
@@ -32,7 +33,7 @@ export function insertShowStyleVariant (showStyleBaseId: string, name?: string):
 		showStyleBaseId: showStyleBase._id,
 		name: name || 'Variant',
 		config: [],
-		_runningOrderVersionHash: '',
+		_rundownVersionHash: '',
 	})
 }
 export function removeShowStyleBase (showStyleBaseId: string) {
@@ -41,6 +42,10 @@ export function removeShowStyleBase (showStyleBaseId: string) {
 	ShowStyleBases.remove(showStyleBaseId)
 
 	ShowStyleVariants.remove({
+		showStyleBaseId: showStyleBaseId
+	})
+
+	RundownLayouts.remove({
 		showStyleBaseId: showStyleBaseId
 	})
 }
@@ -65,4 +70,4 @@ methods[ShowStylesAPI.methods.removeShowStyleVariant] = (showStyleVariantId: str
 }
 
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

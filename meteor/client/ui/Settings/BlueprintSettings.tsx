@@ -8,12 +8,17 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { fetchFrom } from '../../lib/lib'
+import { UploadButton } from '../../lib/uploadButton'
+import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IProps {
 	match: {
@@ -27,7 +32,7 @@ interface IState {
 }
 interface ITrackedProps {
 	blueprint?: Blueprint
-	assignedStudios: StudioInstallation[]
+	assignedStudios: Studio[]
 	assignedShowStyles: ShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
@@ -36,11 +41,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	return {
 		blueprint: Blueprints.findOne(id),
-		assignedStudios: StudioInstallations.find({ blueprintId: id }).fetch(),
+		assignedStudios: Studios.find({ blueprintId: id }).fetch(),
 		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
 		assignedSystem: CoreSystem.findOne({ blueprintId: id })
 	}
-})( class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -71,22 +76,25 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				title: t('Update Blueprints?'),
 				yes: t('Update'),
 				no: t('Cancel'),
-				message: [
+				message: <React.Fragment>
 					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
 					<p>{t('Please note: This action is irreversible!')}</p>
-				],
+				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents && blueprint) {
-						fetch('/blueprints/restore/' + blueprint._id, {
+						fetchFrom('/blueprints/restore/' + blueprint._id, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
 								'content-type': 'text/javascript'
 							},
-						}).then(res => {
-							console.log('Blueprint restore success')
+						})
+						.then(response => {
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
+							// console.log('Blueprint restore success')
 						}).catch(err => {
-							console.error('Blueprint restore failure: ', err)
+							// console.error('Blueprint restore failure: ', err)
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
 						})
 					}
 				},
@@ -115,7 +123,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>
 							{this.props.assignedShowStyles.length > 0 ?
 								this.props.assignedShowStyles.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${i._id}`}>{i.name}</Link></span>) :
-								t('No show styles are using this blueprint')}
+								t('This Blueprint is not being used by any Show Style')}
 						</p>
 					</div>
 				)
@@ -126,14 +134,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>
 							{this.props.assignedStudios.length > 0 ?
 								this.props.assignedStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
-								t('No studios are compatible with this blueprint')}
+								t('This Blueprint is not compatible with any Studio')}
 						</p>
 					</div>
 				)
 			case BlueprintManifestType.SYSTEM:
 				return (
 					<div>
-						<p>
+						<p className='mod mhn mvs'>
 							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
 								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
 							</button>
@@ -152,7 +160,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<div className='mod mvs mhn'>
-						{t('Blueprint ID')} <i>{blueprint._id}</i>
+						{t('Blueprint ID')}: <i>{blueprint._id}</i>
 					</div>
 					<label className='field'>
 						{t('Blueprint Name')}
@@ -168,7 +176,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</label>
 					<div className='mod mvs mhn'>
-						{t('Blueprint Type')} <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
+						{t('Blueprint Type')}: <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
 					</div>
 					{ this.renderAssignment(blueprint) }
 					<div className='mod mvs mhn'>
@@ -182,13 +190,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}
 
 					<div className='mod mvs mhn'>
-					<label className='field'>
-						{t('Upload Blueprints')}
-						<div className='mdi'>
-							<input type='file' accept='.js' onChange={e => this.onUploadFile(e)} key={this.state.uploadFileKey} />
-							<span className='mdfx'></span>
-						</div>
-					</label>
+						<UploadButton className='btn btn-primary' accept='text/javascript,.js' onChange={e => this.onUploadFile(e)} key={this.state.uploadFileKey}>
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload Blueprints')}</span>
+						</UploadButton>
 					</div>
 				</div>
 			</div>

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
-import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
+import { Pieces } from '../../lib/collections/Pieces'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
@@ -8,13 +8,9 @@ import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
-import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
-import { updateStory, getSegmentLine } from '../api/integration/mos'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { MosString128 } from 'tv-automation-sofie-blueprints-integration/dist/copy/mos-connection'
-import { updateSourceLayerInfinitesAfterLine } from '../api/playout'
+import { Parts } from '../../lib/collections/Parts'
+import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
+import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -22,10 +18,10 @@ import { updateSourceLayerInfinitesAfterLine } from '../api/playout'
 setMeteorMethods({
 
 	'debug_scrambleDurations' () {
-		let segmentLineItems = SegmentLineItems.find().fetch()
-		_.each(segmentLineItems, (segmentLineItem) => {
-			SegmentLineItems.update(
-				{ _id: segmentLineItem._id },
+		let pieces = Pieces.find().fetch()
+		_.each(pieces, (piece) => {
+			Pieces.update(
+				{ _id: piece._id },
 				{$inc: {
 					expectedDuration: ((Random.fraction() * 500) - 250)
 				}}
@@ -37,140 +33,50 @@ setMeteorMethods({
 		MediaObjects.remove({})
 	},
 
-	'debug_roSetStarttimeSoon' () {
-		let ro = RunningOrders.findOne({
+	'debug_rundownSetStarttimeSoon' () {
+		let rundown = Rundowns.findOne({
 			active: true
 		})
-		if (ro) {
-			RunningOrders.update(ro._id, {$set: {
+		if (rundown) {
+			Rundowns.update(rundown._id, {$set: {
 				expectedStart: getCurrentTime() + 70 * 1000
 			}})
 		}
 	},
 
-	'debug_removeRo' (id: string) {
-		logger.debug('Remove ro "' + id + '"')
+	'debug_removeRundown' (id: string) {
+		logger.debug('Remove rundown "' + id + '"')
 
-		const ro = RunningOrders.findOne(id)
-		if (ro) ro.remove()
+		const rundown = Rundowns.findOne(id)
+		if (rundown) rundown.remove()
 	},
 
 	'debug_removeAllRos' () {
-		logger.debug('Remove all runningOrders')
+		logger.debug('Remove all rundowns')
 
-		RunningOrders.find({}).forEach((ro) => {
-			ro.remove()
+		Rundowns.find({}).forEach((rundown) => {
+			rundown.remove()
 		})
 	},
 
-	'debug_roRunBlueprints' (roId: string) {
-		check(roId, String)
-
-		const ro = RunningOrders.findOne(roId)
-		if (!ro) throw new Meteor.Error(404, 'Running order not found')
-
-		const unsynced = ro.unsynced
-
-		const segmentLines = SegmentLines.find({ runningOrderId: ro._id }).fetch()
-		segmentLines.forEach((sl: SegmentLine) => {
-			if (!sl.mosId || sl.mosId === '' || sl.mosId === '-') {
-				logger.warn('debug_roRunBlueprints: skipping sl ' + sl._id + ' due to missing mosId')
-				return
-			}
-
-			let story = RunningOrderDataCache.findOne({
-				roId: ro._id,
-				'data.ID' : sl.mosId
-			})
-			if (!story) {
-				logger.warn('debug_roRunBlueprints: skipping sl ' + sl._id + ' due to missing data cache')
-				return
-			}
-
-			try {
-				updateStory(ro, sl, story.data)
-
-			} catch (e) {
-				//
-				logger.warn('debug_roRunBlueprints: sl ' + sl._id + ' failed: ' + e)
-			}
-		})
-
-		logger.info('debug_roRunBlueprints: infinites')
-		updateSourceLayerInfinitesAfterLine(ro)
-
-		if (unsynced) RunningOrders.update(ro._id, { $set: { unsynced }})
-
-		logger.info('debug_roRunBlueprints: done')
-	},
-
-	'debug_roRunMosData' (roId: string) {
-		check(roId, String)
-
-		const ro = RunningOrders.findOne(roId)
-		if (!ro) throw new Meteor.Error(404, 'Running order not found')
-
-		const unsynced = ro.unsynced
-
-		const mosData = RunningOrderDataCache.find({ roId: ro._id }).fetch()
-
-		const roCreates = mosData.filter(d => d._id.indexOf('roCreate') !== -1)
-		if (roCreates.length !== 1) {
-			throw new Meteor.Error(500, 'bad number of roCreate entries')
-		}
-
-		// TODO - this should choose one in a better way
-		let pd = PeripheralDevices.findOne({
-			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
-		}) as PeripheralDevice
-		if (!pd) {
-			throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
-		}
-		let id = pd._id
-		let token = pd.token
-
-		// Delete the existing copy, to ensure this is a clean import
-		try {
-			Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MosString128(roCreates[0].data.ID))
-		} catch (e) {
-			// Ignore. likely doesnt exist
-		}
-
-		// Create the RO
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token, roCreates[0].data)
-
-		const stories = mosData.filter(d => d._id.indexOf('fullStory') !== -1)
-		stories.forEach((s: RunningOrderDataCacheObj) => {
-			try {
-				const sl = getSegmentLine(new MosString128(ro.mosId), new MosString128(s.data.ID))
-				updateStory(ro, sl, s.data)
-
-			} catch (e) {
-				//
-				logger.warn('debug_roRunMosData: chunk ' + s._id + ' failed: ' + e)
-			}
-		})
-
-		logger.info('debug_roRunMosData: infinites')
-		updateSourceLayerInfinitesAfterLine(ro)
-
-		if (unsynced) RunningOrders.update(ro._id, { $set: { unsynced }})
-
-		logger.info('debug_roRunMosData: done')
-	},
-
-	'debug_updateSourceLayerInfinitesAfterLine' (roId: string, previousSlId?: string, runToEnd?: boolean) {
-		check(roId, String)
-		if (previousSlId) check(previousSlId, String)
+	'debug_updateSourceLayerInfinitesAfterPart' (rundownId: string, previousPartId?: string, runToEnd?: boolean) {
+		check(rundownId, String)
+		if (previousPartId) check(previousPartId, String)
 		if (runToEnd !== undefined) check(runToEnd, Boolean)
 
-		const ro = RunningOrders.findOne(roId)
-		if (!ro) throw new Meteor.Error(404, 'Running order not found')
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-		const prevSl = previousSlId ? SegmentLines.findOne(previousSlId) : undefined
+		const prevPart = previousPartId ? Parts.findOne(previousPartId) : undefined
 
-		updateSourceLayerInfinitesAfterLine(ro, prevSl, runToEnd)
+		updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd)
 
-		logger.info('debug_updateSourceLayerInfinitesAfterLine: done')
+		logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
+	},
+
+	'debug_recreateExpectedMediaItems' () {
+		const rundowns = Rundowns.find().fetch()
+
+		rundowns.map((i) => updateExpectedMediaItemsOnRundown(i._id))
 	}
 })

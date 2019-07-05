@@ -63,7 +63,7 @@ interface IEditAttributeBaseProps {
 	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
-	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
+	updateFunction?: (edit: EditAttributeBase, newValue: any) => void
 	overrideDisplayValue?: any
 	label?: string
 	mutateDisplayValue?: (v: any) => any
@@ -219,6 +219,7 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 		return (
 			<input type='text'
 				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}
@@ -351,9 +352,9 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 	render () {
 		return (
 			<label>
-				<span className='checkbox'>
+				<span className={'checkbox' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}>
 					<input type='checkbox'
-						className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+						className='form-control'
 
 						checked={this.isChecked()}
 						onChange={this.handleChange}
@@ -405,7 +406,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 
 		let value = option ? option.value : event.target.value
 
-		this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(value, 10) : value)
+		this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 	}
 	getOptions (addOptionForCurrentValue?: boolean) {
 		let options: Array<{ value: any, name: string, i?: number }> = []
@@ -434,7 +435,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 			if ((this.props.options[first] + '') === (keys[0] + '')) {
 				// is an enum, only pick
 				for (let key in this.props.options) {
-					if ( !_.isNaN(parseInt(key, 10)) ) { // key is a number (the key)
+					if (!_.isNaN(parseInt(key, 10))) { // key is a number (the key)
 						let enumValue = this.props.options[key]
 						let enumKey = this.props.options[enumValue]
 						options.push({
@@ -524,7 +525,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(class extends EditAttributeBa
 					if (!_.isNaN(parseInt(key, 10))) { // key is a number (the key)
 						let enumValue = this.props.options[key]
 						let enumKey = this.props.options[enumValue]
-						options[enumValue] = enumKey
+						options[enumKey] = enumValue
 					}
 				}
 			} else {

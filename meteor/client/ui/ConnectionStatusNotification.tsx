@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { MomentFromNow } from '../lib/Moment'
 
-import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierObject } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierHandle } from '../lib/notifications/notifications'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { TranslationFunction, translate } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
@@ -15,15 +15,15 @@ import { CoreSystem } from '../../lib/collections/CoreSystem'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
-	private _notifier: NotifierObject
-	private _translater: TranslationFunction
+	private _notifier: NotifierHandle
+	private _translator: TranslationFunction
 
 	constructor (t: TranslationFunction) {
 		super()
 
 		this.subscribe(PubSub.coreSystem, null)
 
-		this._translater = t
+		this._translator = t
 
 		this._notificationList = new NotificationList([])
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
@@ -52,18 +52,34 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			const cs = CoreSystem.findOne()
 			let systemNotification: Notification | undefined = undefined
 			if (cs && cs.systemInfo && cs.systemInfo.enabled) {
-				systemNotification = new Notification(Random.id(), NoticeLevel.CRITICAL, cs.systemInfo.message, 'SystemMessage', undefined, true, undefined, 1000)
+				systemNotification = new Notification(
+					Random.id(),
+					NoticeLevel.CRITICAL,
+					cs.systemInfo.message,
+					'SystemMessage',
+					undefined,
+					true,
+					undefined,
+					1000)
 			}
 
 			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
 
-			let newNotification: Notification | undefined = undefined
-			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected, (status === 'failed' || status === 'waiting' || status === 'offline') ? [
-				{
-					label: 'Show issue',
-					type: 'default'
-				}
-			] : undefined, -100)
+			let newNotification = new Notification(
+				Random.id(),
+				this.getNoticeLevel(status),
+				this.getStatusText(status, reason, retryTime),
+				t('Sofie Automation Server'),
+				Date.now(),
+				!connected,
+				(status === 'failed' || status === 'waiting' || status === 'offline')
+				? [
+					{
+						label: 'Show issue',
+						type: 'default'
+					}
+				] : undefined,
+				-100)
 			newNotification.on('action', (notification, type, e) => {
 				switch (type) {
 					case 'default':
@@ -102,8 +118,12 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 	}
 
-	private getStatusText (status: string, reason: string | undefined, retryTime: number | undefined): string | React.ReactChild | null {
-		const t = this._translater
+	private getStatusText (
+		status: string,
+		reason: string | undefined,
+		retryTime: number | undefined
+	): string | React.ReactElement<HTMLElement> | null {
+		const t = this._translator
 		switch (status) {
 			case 'connecting':
 				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>

@@ -3,8 +3,11 @@ import { Random } from 'meteor/random'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
-namespace PeripheralDeviceAPI {
+// Note: When making changes to this file, remember to also update the copy in core-integration library
+
+export namespace PeripheralDeviceAPI {
 
 export enum StatusCode {
 
@@ -20,15 +23,34 @@ export interface StatusObject {
 	statusCode: StatusCode,
 	messages?: Array<string>
 }
-
-export enum DeviceType {
-	MOSDEVICE = 0,
-	PLAYOUT = 1,
-	OTHER = 2, // i.e. sub-devices
-	MEDIA_MANAGER = 3,
+// Note The actual type of a device is determined by the Category, Type and SubType
+export enum DeviceCategory {
+	INGEST = 'ingest',
+	PLAYOUT = 'playout',
+	MEDIA_MANAGER = 'media_manager'
 }
+export enum DeviceType {
+	// Ingest devices:
+	MOS 			= 'mos',
+	SPREADSHEET 	= 'spreadsheet',
+	// Playout devices:
+	PLAYOUT 		= 'playout',
+	// Media-manager devices:
+	MEDIA_MANAGER 	= 'media_manager'
+}
+export type DeviceSubType = SUBTYPE_PROCESS | TSR_DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
+
+/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
+export type SUBTYPE_PROCESS = '_process'
+export const SUBTYPE_PROCESS: SUBTYPE_PROCESS = '_process'
+export type MOS_DeviceType = 'mos_connection'
+export type Spreadsheet_DeviceType = 'spreadsheet_connection'
+
 export interface InitOptions {
+	category: DeviceCategory
 	type: DeviceType
+	subType: DeviceSubType
+
 	name: string
 	connectionId: string
 	parentDeviceId?: string
@@ -38,18 +60,18 @@ export interface InitOptions {
 }
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 
-export interface SegmentLinePlaybackStartedResult {
-	roId: string,
-	slId: string,
+export interface PartPlaybackStartedResult {
+	rundownId: string,
+	partId: string,
 	time: number
 }
-export type SegmentLinePlaybackStoppedResult = SegmentLinePlaybackStartedResult
-export interface SegmentLineItemPlaybackStartedResult {
-	roId: string,
-	sliId: string,
+export type PartPlaybackStoppedResult = PartPlaybackStartedResult
+export interface PiecePlaybackStartedResult {
+	rundownId: string,
+	pieceId: string,
 	time: number
 }
-export type SegmentLineItemPlaybackStoppedResult = SegmentLineItemPlaybackStartedResult
+export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -68,10 +90,10 @@ export enum methods {
 	'getTime'				= 'systemTime.getTime',
 
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
-	'segmentLinePlaybackStarted' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStarted',
-	'segmentLinePlaybackStopped' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStopped',
-	'segmentLineItemPlaybackStarted'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStarted',
-	'segmentLineItemPlaybackStopped'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStopped',
+	'partPlaybackStarted' 	= 'peripheralDevice.rundown.partPlaybackStarted',
+	'partPlaybackStopped' 	= 'peripheralDevice.rundown.partPlaybackStopped',
+	'piecePlaybackStarted'= 'peripheralDevice.rundown.piecePlaybackStarted',
+	'piecePlaybackStopped'= 'peripheralDevice.rundown.piecePlaybackStopped',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',
@@ -89,12 +111,22 @@ export enum methods {
 	'mosRoItemInsert' 	= 'peripheralDevice.mos.roItemInsert',
 	'mosRoItemReplace' 	= 'peripheralDevice.mos.roItemReplace',
 	'mosRoItemMove' 	= 'peripheralDevice.mos.roItemMove',
-	'mosRoItemDelete' 	= 'peripheralDevice.mos.RoItemDelete',
-	'mosRoItemSwap' 	= 'peripheralDevice.mos.RoItemSwap',
-	'mosRoReadyToAir' 	= 'peripheralDevice.mos.RoReadyToAir',
-	'mosRoFullStory' 	= 'peripheralDevice.mos.RoFullStory',
+	'mosRoItemDelete' 	= 'peripheralDevice.mos.roItemDelete',
+	'mosRoItemSwap' 	= 'peripheralDevice.mos.roItemSwap',
+	'mosRoReadyToAir' 	= 'peripheralDevice.mos.roReadyToAir',
+	'mosRoFullStory' 	= 'peripheralDevice.mos.roFullStory',
 
-	'resyncRo'			= 'peripheralDevice.mos.roResync',
+	'dataRundownDelete'	= 'peripheralDevice.rundown.rundownDelete',
+	'dataRundownCreate'	= 'peripheralDevice.rundown.rundownCreate',
+	'dataRundownUpdate'	= 'peripheralDevice.rundown.rundownUpdate',
+	'dataSegmentDelete'	= 'peripheralDevice.rundown.segmentDelete',
+	'dataSegmentCreate'	= 'peripheralDevice.rundown.segmentCreate',
+	'dataSegmentUpdate'	= 'peripheralDevice.rundown.segmentUpdate',
+	'dataPartDelete'	= 'peripheralDevice.rundown.partDelete',
+	'dataPartCreate'	= 'peripheralDevice.rundown.partCreate',
+	'dataPartUpdate'	= 'peripheralDevice.rundown.partUpdate',
+
+	'resyncRundown'			= 'peripheralDevice.mos.roResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
@@ -102,7 +134,11 @@ export enum methods {
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
-	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep'
+	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
+
+	'requestUserAuthToken' 	= 'peripheralDevice.spreadsheet.requestUserAuthToken',
+	'storeAccessToken' 	= 'peripheralDevice.spreadsheet.storeAccessToken'
+
 }
 export function initialize (id: string, token: string, options: InitOptions): Promise<string> {
 	return MeteorPromiseCall(methods.initialize, id, token, options)
@@ -127,7 +163,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	})
 	let subscription: Meteor.SubscriptionHandle | null = null
 	if (Meteor.isClient) {
-		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId )
+		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 	}
 	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)
@@ -146,17 +182,20 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				// We've got a reply!
 				// logger.debug('got reply ' + commandId)
 
-				if (cmd.replyError) {
-					cb(cmd.replyError, null)
-				} else {
-					cb(null, cmd.reply)
-				}
+				// Cleanup before the callback to ensure it doesnt get a timeout during the callback
 				observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 				if (timeoutCheck) {
 					Meteor.clearTimeout(timeoutCheck)
 					timeoutCheck = 0
+				}
+
+				// Handle result
+				if (cmd.replyError) {
+					cb(cmd.replyError, null)
+				} else {
+					cb(null, cmd.reply)
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)
@@ -177,5 +216,3 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 }
 
 }
-
-export { PeripheralDeviceAPI }

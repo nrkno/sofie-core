@@ -227,7 +227,13 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 				</VelocityReact.VelocityComponent>
 			</div>
 			<div className='workflow__header__summary'>
-				<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
+				{(i.comment && i.name !== i.comment) ?
+					<div className='workflow__header__name'>
+						<span className='workflow__header__name__name'>{i.name || 'Unnamed Workflow'}</span>
+						<span className='workflow__header__name__comment'>{i.comment}</span>
+					</div>
+					: <div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
+				}
 				<div className='workflow__header__created'><MomentFromNow>{i.created}</MomentFromNow></div>
 				<div className='workflow__header__expand' onClick={() => props.toggleExpanded(i._id)}>
 					{expanded ? t('Collapse') : t('Details')}

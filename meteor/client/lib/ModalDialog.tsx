@@ -32,7 +32,7 @@ interface ModalInput {
 	defaultValue?: any
 }
 export type ModalInputResult = {[attribute: string]: any}
-export type SomeEvent = Event | React.MouseEvent<HTMLElement>
+export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	boundKeys: Array<string> = []
 
@@ -81,9 +81,9 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
-			if (e.keyCode === 13) { // Enter
+			if (e.code === 'Enter') {
 				this.handleAccept(e)
-			} else if (e.keyCode === 27) { // Escape
+			} else if (e.code === 'Escape') {
 				if (this.props.secondaryText) {
 					this.handleSecondary(e)
 				} else {
@@ -112,7 +112,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 			this.handleSecondary(e)
 		}
 	}
-	updatedInput = (edit: EditAttributeBase, newValue: any ) => {
+	updatedInput = (edit: EditAttributeBase, newValue: any) => {
 		this.inputResult[edit.props.attribute || ''] = newValue
 	}
 	render () {
@@ -213,7 +213,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 	constructor (props: Translated<IModalDialogGlobalContainerProps>) {
 		super(props)
 		if (modalDialogGlobalContainerSingleton) {
-			logger.warning('modalDialogGlobalContainerSingleton called more than once!')
+			logger.warn('modalDialogGlobalContainerSingleton called more than once!')
 		}
 		modalDialogGlobalContainerSingleton = this
 		this.state = {
@@ -234,7 +234,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
-			this.setState({queue})
+			this.setState({ queue })
 			onQueue.onAccept(e, inputResult)
 		}
 	}
@@ -242,7 +242,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
-			this.setState({queue})
+			this.setState({ queue })
 			if (onQueue.onDiscard) {
 				onQueue.onDiscard(e, inputResult)
 			}
@@ -253,7 +253,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
-			this.setState({queue})
+			this.setState({ queue })
 			if (onQueue.onSecondary) {
 				onQueue.onSecondary(e, inputResult)
 			}

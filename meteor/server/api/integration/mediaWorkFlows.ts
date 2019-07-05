@@ -5,7 +5,7 @@ import { logger } from '../../logging'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
-import { setMeteorMethods, Methods, wrapMethods } from '../../methods'
+import { setMeteorMethods, Methods } from '../../methods'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 export namespace MediaManagerIntegration {
@@ -14,9 +14,9 @@ export namespace MediaManagerIntegration {
 		logger.debug('getMediaWorkFlowStepRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
-		if (peripheralDevice.studioInstallationId) {
+		if (peripheralDevice.studioId) {
 			return _.map(MediaWorkFlowSteps.find({
-				studioInstallationId: peripheralDevice.studioInstallationId
+				studioId: peripheralDevice.studioId
 			}).fetch(), (ws: MediaWorkFlowStep) => {
 				return {
 					_id: ws._id,
@@ -24,7 +24,7 @@ export namespace MediaManagerIntegration {
 				}
 			})
 		} else {
-			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
+			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
 
@@ -32,9 +32,9 @@ export namespace MediaManagerIntegration {
 		logger.debug('getMediaWorkFlowRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
-		if (peripheralDevice.studioInstallationId) {
+		if (peripheralDevice.studioId) {
 			return _.map(MediaWorkFlows.find({
-				studioInstallationId: peripheralDevice.studioInstallationId
+				studioId: peripheralDevice.studioId
 			}).fetch(), (wf: MediaWorkFlow) => {
 				return {
 					_id: wf._id,
@@ -42,14 +42,14 @@ export namespace MediaManagerIntegration {
 				}
 			})
 		} else {
-			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
+			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
 
 	export function updateMediaWorkFlow (id: string, token: string, docId: string, obj: MediaWorkFlow | null) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER ) throw new Meteor.Error(400, `Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `)
-		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) throw new Meteor.Error(400, `Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `)
+		if (!peripheralDevice.studioId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
 		check(docId, String)
 		check(obj, Match.Maybe(Object))
@@ -57,7 +57,7 @@ export namespace MediaManagerIntegration {
 		if (obj) {
 			check(obj._id, String)
 			obj.deviceId = peripheralDevice._id
-			obj.studioInstallationId = peripheralDevice.studioInstallationId
+			obj.studioId = peripheralDevice.studioId
 
 			MediaWorkFlows.upsert(docId, obj)
 
@@ -77,8 +77,8 @@ export namespace MediaManagerIntegration {
 
 	export function updateMediaWorkFlowStep (id: string, token: string, docId: string, obj: MediaWorkFlowStep | null) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER ) throw new Meteor.Error(400, `Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `)
-		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) throw new Meteor.Error(400, `Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `)
+		if (!peripheralDevice.studioId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
 		check(docId, String)
 		check(obj, Match.Maybe(Object))
@@ -93,7 +93,7 @@ export namespace MediaManagerIntegration {
 
 			obj.workFlowId = workflow._id
 			obj.deviceId = peripheralDevice._id
-			obj.studioInstallationId = peripheralDevice.studioInstallationId
+			obj.studioId = peripheralDevice.studioId
 
 			MediaWorkFlowSteps.upsert(docId, obj)
 		} else {
@@ -116,4 +116,4 @@ methods[PeripheralDeviceAPI.methods.updateMediaWorkFlowStep] = (deviceId: string
 	return MediaManagerIntegration.updateMediaWorkFlowStep(deviceId, deviceToken, docId, obj)
 }
 // Apply methods:
-setMeteorMethods(wrapMethods(methods))
+setMeteorMethods(methods)

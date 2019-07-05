@@ -13,11 +13,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  */
 
 // 0.16.0: Release 3
-addMigrationSteps( '0.16.0', [
-	// Todo: Mos-gateway version
-	// Todo: Playout-gateway version
-	// Todo: Blueprints version
-
+addMigrationSteps('0.16.0', [
 	ensureStudioConfig('slack_evaluation', null, 'text', 'Studio $id config: slack_evaluation',
 		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"', undefined, 'studio exists'),
 
@@ -43,5 +39,5 @@ addMigrationSteps( '0.16.0', [
 		}]
 	},
 
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1')
 ])

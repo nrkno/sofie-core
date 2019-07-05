@@ -9,7 +9,7 @@ export interface Evaluation extends EvaluationBase {
 }
 export interface EvaluationBase {
 	studioId: string,
-	runningOrderId: string,
+	rundownId: string,
 	answers: {
 		[key: string]: string
 	},

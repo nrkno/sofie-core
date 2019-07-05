@@ -1,25 +1,21 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { TriggerType } from 'superfly-timeline'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { SourceLayerType, VTContent, LiveSpeakContent, getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
 import { Meteor } from 'meteor/meteor'
-import { checkSLIContentStatus } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
 	SegmentUi,
-	SegmentLineUi,
-	SegmentLineItemUi
+	PartUi,
+	PieceUi
 } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
 
@@ -28,21 +24,21 @@ interface IPropsHeader {
 	outputLayer: IOutputLayerUi
 	mediaPreviewUrl: string
 	// segment: SegmentUi
-	segmentLine: SegmentLineUi
-	segmentLineStartsAt: number
-	segmentLineDuration: number
-	segmentLineItem: SegmentLineItemUi
-	runningOrder: RunningOrder
+	part: PartUi
+	partStartsAt: number
+	partDuration: number
+	piece: PieceUi
+	rundown: Rundown
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	outputGroupCollapsed: boolean
 	followLiveLine: boolean
-	autoNextSegmentLine: boolean
+	autoNextPart: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
@@ -57,33 +53,33 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	private overrides: any
 
 	updateMediaObjectSubscription () {
-		if (this.props.segmentLineItem && this.props.segmentLineItem.sourceLayer) {
-			const sli = this.props.segmentLineItem
+		if (this.props.piece && this.props.piece.sourceLayer) {
+			const piece = this.props.piece
 			let objId: string | undefined = undefined
 
-			switch (this.props.segmentLineItem.sourceLayer.type) {
+			switch (this.props.piece.sourceLayer.type) {
 				case SourceLayerType.VT:
-					objId = (sli.content as VTContent).fileName.toUpperCase()
+					objId = (piece.content as VTContent).fileName.toUpperCase()
 					break
 				case SourceLayerType.LIVE_SPEAK:
-					objId = (sli.content as LiveSpeakContent).fileName.toUpperCase()
+					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
 					break
 			}
 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
+				this.subscribe('mediaObjects', this.props.rundown.studioId, {
 					mediaId: this.objId
 				})
 			}
 		} else {
-			console.error('One of the SegmentLineItem\'s is invalid:', this.props.segmentLineItem)
+			console.error('One of the Piece\'s is invalid:', this.props.piece)
 		}
 	}
 
 	shouldDataTrackerUpdate (prevProps: IPropsHeader): boolean {
-		if (this.props.segmentLineItem !== prevProps.segmentLineItem) return true
+		if (this.props.piece !== prevProps.piece) return true
 		if (this.props.isLiveLine !== prevProps.isLiveLine) return true
 		return false
 	}
@@ -94,57 +90,56 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			this.overrides = {}
 			const overrides = this.overrides
 
-			// console.log(`${this.props.segmentLineItem._id}: running data tracker`)
+			// console.log(`${this.props.piece._id}: running data tracker`)
 
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
-				let timelineObj = Timeline.findOne({ _id: getSliGroupId(props.segmentLineItem) })
+				// TODO - this query appears to be unable to load any data
+				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
 
 				if (timelineObj) {
-					let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
+					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
-					if (timelineObj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-						segmentCopy.trigger = timelineObj.trigger
-						if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
-							segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
-						} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
-							if (props.segmentLine && props.segmentLine.startedPlayback && props.segmentLine.getLastStartedPlayback()) {
-								segmentCopy.renderedInPoint = getCurrentTime() - (props.segmentLine.getLastStartedPlayback() || 0)
-							} else {
-								segmentCopy.renderedInPoint = 0
-							}
+					segmentCopy.enable = timelineObj.enable
+					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
+						segmentCopy.renderedInPoint = timelineObj.enable.start
+					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
+						if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
+							segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
 						} else {
 							segmentCopy.renderedInPoint = 0
 						}
+					} else {
+						segmentCopy.renderedInPoint = 0
 					}
 
-					if (typeof timelineObj.duration !== 'string' && !segmentCopy.cropped) {
+					if (typeof timelineObj.enable.duration === 'number' && !segmentCopy.cropped) {
 						segmentCopy.renderedDuration = (
-							timelineObj.duration !== 0 ?
-							timelineObj.duration :
-							(props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+							timelineObj.enable.duration !== 0 ?
+							timelineObj.enable.duration :
+							(props.partDuration - (segmentCopy.renderedInPoint || 0))
 						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)
 
-					overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
+					overrides.piece = _.extend(overrides.piece || {}, segmentCopy)
 				}
 			}
 
 			// Check item status
-			if (props.segmentLineItem.sourceLayer) {
+			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.runningOrder.getStudioInstallation().config)
-				if (status !== props.segmentLineItem.status || metadata) {
-					let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
+				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().config)
+				if (status !== props.piece.status || metadata) {
+					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
-					segmentCopy.status = status
-					segmentCopy.metadata = metadata
+					pieceCopy.status = status
+					pieceCopy.contentMetaData = metadata
 
-					overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
+					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
 				}
 			} else {
-				console.error(`SegmentLineItem "${props.segmentLineItem._id}" has no sourceLayer:`, props.segmentLineItem)
+				console.error(`Piece "${props.piece._id}" has no sourceLayer:`, props.piece)
 			}
 
 			this.forceUpdate()

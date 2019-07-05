@@ -11,7 +11,7 @@ let runningMethods: {[methodId: string]: {
 	startTime: number,
 	i: number
 }} = {}
-let runningMethodsI: number = 0
+let runningMethodstudio: number = 0
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods
@@ -25,7 +25,7 @@ export function setMeteorMethods (orgMethods: Methods): void {
 		if (method) {
 
 			methods[methodName] = function (...args: any[]) {
-				let i = runningMethodsI++
+				let i = runningMethodstudio++
 				let methodId = 'm' + i
 
 				runningMethods[methodId] = {
@@ -48,6 +48,7 @@ export function setMeteorMethods (orgMethods: Methods): void {
 					}
 
 				} catch (err) {
+					logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
 					delete runningMethods[methodId]
 					throw err
 				}
@@ -55,28 +56,6 @@ export function setMeteorMethods (orgMethods: Methods): void {
 		}
 	})
 	Meteor.methods(methods)
-}
-/**
- * Wraps the methods so the thrown errors are formatted nicely
- * @param methods
- */
-export function wrapMethods (methods: Methods): Methods {
-	let methodsOut: Methods = {}
-	_.each(methods, (fcn: Function, key) => {
-		methodsOut[key] = (...args: any[]) => {
-			// logger.info('------- Method call -------')
-			// logger.info(key)
-			// logger.info(args)
-			// logger.info('---------------------------')
-			try {
-				return fcn.apply(null, args)
-			} catch (e) {
-				logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
-				throw e
-			}
-		}
-	})
-	return methodsOut
 }
 export function getRunningMethods () {
 	return runningMethods

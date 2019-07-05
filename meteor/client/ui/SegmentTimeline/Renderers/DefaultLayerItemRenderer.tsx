@@ -38,22 +38,22 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+		if (this.props.piece.name !== prevProps.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
 
 	render () {
 		return <React.Fragment>
-			<span className='segment-timeline__layer-item__label'
+			<span className='segment-timeline__piece__label'
 				ref={this.setLeftLabelRef}
 				style={this.getItemLabelOffsetLeft()}
 			>
-				<span className='segment-timeline__layer-item__label'>
-					{this.props.segmentLineItem.name}
+				<span className='segment-timeline__piece__label'>
+					{this.props.piece.name}
 				</span>
 			</span>
-			<span className='segment-timeline__layer-item__label right-side'
+			<span className='segment-timeline__piece__label right-side'
 				ref={this.setRightLabelRef}
 				style={this.getItemLabelOffsetRight()}
 			>

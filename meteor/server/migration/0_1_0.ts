@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, ensureStudioConfig } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -12,18 +12,18 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  */
 
 // 0.1.0: These are the "default" migration steps
-addMigrationSteps( '0.1.0', [
+addMigrationSteps('0.1.0', [
 	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,
 		validate: () => {
-			if (!StudioInstallations.findOne()) return 'No StudioInstallation found'
+			if (!Studios.findOne()) return 'No Studio found'
 			return false
 		},
 		migrate: () => {
 			// create default studio
 			logger.info(`Migration: Add default studio`)
-			StudioInstallations.insert({
+			Studios.insert({
 				_id: 'studio0',
 				name: 'Default studio',
 				supportedShowStyleBase: [],
@@ -33,31 +33,26 @@ addMigrationSteps( '0.1.0', [
 				},
 				mappings: {},
 				config: [],
-				_runningOrderVersionHash: '',
+				_rundownVersionHash: '',
 			})
 		}
 	},
-	ensureCollectionProperty('StudioInstallations', {}, 'name', null, 'text', 'Studio $id: Name',
+	ensureCollectionProperty('Studios', {}, 'name', null, 'text', 'Studio $id: Name',
 		'Enter the Name of the Studio "$id"'),
-	ensureCollectionProperty('StudioInstallations', {}, 'mappings', {}),
-	ensureCollectionProperty('StudioInstallations', {}, 'config', []),
-
-	ensureStudioConfig('atemSSrcBackground', null, 'text', 'Studio $id config: atemSSrcBackground',
-		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"', undefined, 'studio exists'),
-	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
-		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"', undefined, 'studio exists'),
+	ensureCollectionProperty('Studios', {}, 'mappings', {}),
+	ensureCollectionProperty('Studios', {}, 'config', []),
 
 	{
 		id: 'Playout-gateway exists',
 		canBeRunAutomatically: false,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
-			let studios = StudioInstallations.find().fetch()
+			let studios = Studios.find().fetch()
 			let missing: string | boolean = false
-			_.each(studios, (studio: StudioInstallation) => {
+			_.each(studios, (studio: Studio) => {
 				const dev = PeripheralDevices.findOne({
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					studioInstallationId: studio._id
+					studioId: studio._id
 				})
 				if (!dev) {
 					missing = `Playout-device is missing on ${studio._id}`
@@ -79,12 +74,12 @@ addMigrationSteps( '0.1.0', [
 		canBeRunAutomatically: false,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
-			let studios = StudioInstallations.find().fetch()
+			let studios = Studios.find().fetch()
 			let missing: string | boolean = false
-			_.each(studios, (studio: StudioInstallation) => {
+			_.each(studios, (studio: Studio) => {
 				const dev = PeripheralDevices.findOne({
-					type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
-					studioInstallationId: studio._id
+					type: PeripheralDeviceAPI.DeviceType.MOS,
+					studioId: studio._id
 				})
 				if (!dev) {
 					missing = `Mos-device is missing on ${studio._id}`

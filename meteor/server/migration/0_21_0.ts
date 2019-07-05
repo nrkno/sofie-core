@@ -6,7 +6,7 @@ import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.21.0 ( Release 6 )
-addMigrationSteps( '0.21.0', [
+addMigrationSteps('0.21.0', [
 	{
 		id: 'showStyleBase runtimeArguments _id',
 		canBeRunAutomatically: true,
@@ -29,12 +29,12 @@ addMigrationSteps( '0.21.0', [
 
 						ShowStyleBases.update({
 							_id: ss._id,
-						}, {$set: upd})
+						}, { $set: upd })
 					}
 				})
 			})
 		}
 	},
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.16.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.5.1'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.5.1'),
 ])

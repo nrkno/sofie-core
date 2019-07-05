@@ -9,11 +9,12 @@ import { Meteor } from 'meteor/meteor'
 import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
+import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
-import { multilineText } from '../../lib/lib'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { UploadButton } from '../../lib/uploadButton'
 
 interface IProps {
 	match: {
@@ -29,7 +30,7 @@ interface IState {
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
-	studios: Array<StudioInstallation>
+	studios: Array<Studio>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 
@@ -39,9 +40,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				created: -1
 			}
 		}).fetch(),
-		studios: StudioInstallations.find({}, {}).fetch()
+		studios: Studios.find({}, {}).fetch()
 	}
-})( class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})(class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
@@ -56,7 +57,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				$gt: getCurrentTime() - 30 * 24 * 3600 * 1000 // last 30 days
 			}
 		})
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 	}
 
 	onUploadFile (e) {
@@ -78,7 +79,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				title: t('Restore from this Snapshot file?'),
 				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
 				onAccept: () => {
-					fetch('/backup/restore', {
+					fetchFrom('/snapshot/restore', {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {
@@ -87,7 +88,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}).then(res => {
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Successfully restored snapshot'), 'RestoreSnapshot'))
 					}).catch(err => {
-						console.error('Snapshot restore failure: ', err)
+						// console.error('Snapshot restore failure: ', err)
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Snapshot restore failed: {{errorMessage}}', { errorMessage: (err + '') }), 'RestoreSnapshot'))
 					})
 				},
@@ -239,7 +240,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									{
 										_.map(this.props.studios, (studio) => {
 											return <div key={studio._id}>
-												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', {studioName: studio.name})}</button>
+												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}</button>
 											</div>
 										})
 									}
@@ -248,12 +249,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</div>
 					<h2 className='mhn'>{t('Restore from Snapshot File')}</h2>
-					<label className='field'>
-						<div className='mdi'>
-							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
-							<span className='mdfx'></span>
-						</div>
-					</label>
+					<div className='mdi'>
+						<UploadButton accept='application/json,.json'
+							className='btn btn-secondary'
+							onChange={(e) => this.onUploadFile(e)}
+							key={this.state.uploadFileKey}> 
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload snapshot')}</span>
+						</UploadButton>
+					</div>
 					<h2 className='mhn'>{t('Restore from Stored Snapshots')}</h2>
 					<div>
 						<table className='table'>
