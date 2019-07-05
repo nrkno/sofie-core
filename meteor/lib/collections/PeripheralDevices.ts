@@ -86,3 +86,17 @@ Meteor.startup(() => {
 		})
 	}
 })
+
+export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
+	if (peripheralDevice.studioId) {
+		return peripheralDevice.studioId
+	}
+	if (peripheralDevice.parentDeviceId) {
+		// Also check the parent device:
+		const parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
+		if (parentDevice) {
+			return parentDevice.studioId
+		}
+	}
+	return undefined
+}

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, getStudioIdFromDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -22,19 +22,7 @@ export function getPartId (rundownId: string, partExternalId: string) {
 	return getHash(`${rundownId}_part_${partExternalId}`)
 }
 
-function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
-	if (peripheralDevice.studioId) {
-		return peripheralDevice.studioId
-	}
-	if (peripheralDevice.parentDeviceId) {
-		// Also check the parent device:
-		const parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
-		if (parentDevice) {
-			return parentDevice.studioId
-		}
-	}
-	return undefined
-}
+
 export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio {
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')

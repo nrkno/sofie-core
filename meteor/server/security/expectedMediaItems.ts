@@ -2,15 +2,17 @@ import { check } from 'meteor/check'
 
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
 
 import { Mongo } from 'meteor/mongo'
 
 export namespace ExpectedMediaItemsSecurity {
 	export function allowReadAccess (selector: Mongo.Query<ExpectedMediaItem> | any, token: string, context: any) {
 		check(selector, Object)
-		check(selector.mediaFlowId, Object)
-		check(selector.mediaFlowId.$in, Array)
+		if (selector.mediaFlowId) {
+			check(selector.mediaFlowId, Object)
+			check(selector.mediaFlowId.$in, Array)
+		}
 
 		// let mediaFlowIds: string[] = selector.mediaFlowId.$in
 
@@ -20,6 +22,8 @@ export namespace ExpectedMediaItemsSecurity {
 		})
 
 		if (!mediaManagerDevice) return false
+
+		mediaManagerDevice.studioId = getStudioIdFromDevice(mediaManagerDevice)
 
 		if (mediaManagerDevice && token) {
 
