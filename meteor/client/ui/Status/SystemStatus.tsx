@@ -54,18 +54,6 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			showKillDeviceConfirm: null
 		}
 	}
-	statusCodeString () {
-		let t = this.props.t
-		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not Connected')
-	}
-	statusMessages () {
-		let messages = ((this.props.device || {}).status || {}).messages || []
-		return (
-			messages.length ?
-			'"' + messages.join(', ') + '"' :
-			''
-		)
-	}
 	deviceTypeString () {
 		let t = this.props.t
 
@@ -162,48 +150,12 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 
 	render () {
 		const { t } = this.props
-		// let statusClassNames = ClassNames({
-		// 	'device-item__device-status': true,
-		// 	'device-item__device-status--unknown': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN,
-		// 	'device-item__device-status--good': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD,
-		// 	'device-item__device-status--minor-warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-		// 	'device-item__device-status--warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-		// 	'device-item__device-status--bad': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD,
-		// 	'device-item__device-status--fatal': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL
-		// })
-		let statusClassNames = [
-			'device-item__device-status',
-			(
-				(
-					this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
-					|| !this.props.device.connected
-				) ?
-					'device-item__device-status--unknown' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
-					'device-item__device-status--good' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
-					'device-item__device-status--minor-warning' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
-					'device-item__device-status--warning' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
-					'device-item__device-status--bad' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
-					'device-item__device-status--fatal' :
-				''
-			)
-		].join(' ')
 
 		return (
 			<div key={this.props.device._id} className='device-item'>
 				<div className='status-container'>
-					<div className={statusClassNames}>
-						<div className='value'>
-							<span className='pill device-item__device-status__label'>
-								{this.statusCodeString()}
-							</span>
-						</div>
-						<div><i>{this.statusMessages()}</i></div>
-					</div>
+					<PeripheralDeviceStatus device={this.props.device} />
+
 					<div className='device-item__last-seen'>
 						<label>{t('Last seen')}: </label>
 						<div className='value'>
@@ -378,6 +330,66 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				<div className='mod mvl'>
 					{this.renderPeripheralDevices()}
 				</div>
+			</div>
+		)
+	}
+})
+
+interface PeripheralDeviceStatusProps {
+	device: PeripheralDevice
+}
+interface PeripheralDeviceStatusState {
+
+}
+export const PeripheralDeviceStatus = i18next.translate()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & i18next.InjectedTranslateProps, PeripheralDeviceStatusState> {
+	constructor (props: PeripheralDeviceStatusProps & i18next.InjectedTranslateProps) {
+		super(props)
+
+	}
+	statusCodeString () {
+		const { t } = this.props
+
+		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not Connected')
+	}
+	statusMessages () {
+		let messages = ((this.props.device || {}).status || {}).messages || []
+		return (
+			messages.length ?
+			'"' + messages.join(', ') + '"' :
+			''
+		)
+	}
+	render () {
+
+		const statusClassNames = [
+			'device-status',
+			(
+				(
+					this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
+					|| !this.props.device.connected
+				) ?
+					'device-status--unknown' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
+					'device-status--good' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
+					'device-status--minor-warning' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
+					'device-status--warning' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
+					'device-status--bad' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
+					'device-status--fatal' :
+				''
+			)
+		].join(' ')
+		return (
+			<div className={statusClassNames}>
+				<div className='value'>
+					<span className='pill device-status__label'>
+						{this.statusCodeString()}
+					</span>
+				</div>
+				<div><i>{this.statusMessages()}</i></div>
 			</div>
 		)
 	}
