@@ -193,14 +193,23 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 }
 
 export interface ModalDialogQueueItem {
+	/** The title of the dialog box  */
 	title: string
+	/** The message / body of the dialog box */
 	message: string | JSX.Element | Array<JSX.Element >
+	/** Label of the Yes/Accept button */
 	yes?: string
+	/** Label of the NO/Cancel button */
 	no?: string
+	/** Set to true if there's only one option/button */
 	acceptOnly?: boolean
+	/** Callback when user clicks Yes/Accept */
 	onAccept: (e: SomeEvent, inputResult: ModalInputResult) => void
+	/** Callback when user clicks No/Cancel */
 	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	/** Callback when user does secondary action (for example hits escape) */
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	/** Customomize input fields */
 	inputs?: {[attribute: string]: ModalInput}
 }
 interface IModalDialogGlobalContainerProps {

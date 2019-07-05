@@ -40,12 +40,12 @@ import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
@@ -54,6 +54,7 @@ import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import * as i18next from 'i18next'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -976,6 +977,7 @@ interface ITrackedProps {
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
+	casparCGPlayoutDevices?: PeripheralDevice[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -1001,7 +1003,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		studio: studio,
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 		rundownLayouts: rundown && RundownLayouts.find({
-			showStyleBaseId: rundown.showStyleBaseId }).fetch()
+			showStyleBaseId: rundown.showStyleBaseId }).fetch(),
+		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
+			parentDeviceId: {
+				$in: PeripheralDevices.find({
+					studioId: studio._id
+				}).fetch().map(i => i._id)
+			},
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			subType: TSR_DeviceType.CASPARCG
+		}).fetch()) || undefined
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1550,6 +1561,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onRestartCasparCG = (device: PeripheralDevice) => {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Restart CasparCG Server'),
+			message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
+			onAccept: (event: any) => {
+
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
+					if (err) {
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
+					} else {
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
+					}
+				})
+			},
+		})
+	}
+
 	onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const { t } = this.props
 		if (this.props.rundown) {
@@ -1640,6 +1672,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 											<button className='btn btn-primary' onClick={this.onTakeRundownSnapshot}>{t('Take a Snapshot')}</button>
 											{this.state.studioMode &&
 												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+											}
+											{this.state.studioMode && this.props.casparCGPlayoutDevices &&
+												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', {device: i.name})}</button>)
 											}
 										</SupportPopUp>
 									}
