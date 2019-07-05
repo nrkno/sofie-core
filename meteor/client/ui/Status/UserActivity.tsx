@@ -48,7 +48,7 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 						{t('Parameters')}
 					</th>
 					{
-						this.props.renderButtons ? <th className='c1 user-action-log__buttons'></th> : ''
+						this.props.renderButtons ? <th className='c1 user-action-log__buttons'></th> : null
 					}
 				</tr>
 			</thead>
