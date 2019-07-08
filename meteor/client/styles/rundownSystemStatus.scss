@@ -49,6 +49,7 @@
 			&.minor {
 				background: $color-status-minor-warning;
 				box-shadow: 0 0 15px 1px $color-status-minor-warning;
+				color: $color-status-minor-warning-text;
 			}
 
 			&.major {
