@@ -314,6 +314,9 @@ function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): str
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
+	// Override the default value of 'undefined'.
+	system.storePath = process.env.STOREPATH
+	
 	let fileName = fixValidPath(snapshot.snapshot.name) + '.json'
 	let filePath = Path.join(system.storePath, fileName)
 
