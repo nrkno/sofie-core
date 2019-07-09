@@ -248,12 +248,13 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						}
 					}
 					return (<div key={rank++}>
-						<h3 className='mhn'>{manualInput.label}</h3>
+						<h3 className='mhn mbsx mtl'>&gt; {manualInput.label} &lt;</h3>
 						<div>{manualInput.description}</div>
 						<div>{
 							manualInput.inputType && manualInput.attribute ?
 							<EditAttribute
 								type={manualInput.inputType}
+								className='input-full mtxs'
 								options={manualInput.dropdownOptions}
 								overrideDisplayValue={value}
 								updateFunction={(edit: EditAttributeBase, newValue: any) => {
@@ -396,7 +397,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								<div>
 									{this.renderManualSteps()}
 								</div>
-								<button className='btn btn-primary' onClick={() => {
+								<button className='btn btn-primary mtm' onClick={() => {
 									doModalDialog({
 										title: t('Double-check Values'),
 										message: t('Are you sure the values you have entered are correct?'),
@@ -416,7 +417,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 									<h2 className='mhn'>{t('Warnings During Migration')}</h2>
 									<ul>
 										{_.map(this.state.warnings, (warning, key) => {
-											return (<li key={key}>
+											return (<li className='mbm' key={key}>
 												{warning}
 											</li>)
 										})}
@@ -430,7 +431,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										<div>
 											{t('Please check the database related to the warnings above. If neccessary, you can')}
 										</div>
-										<button className='btn btn-secondary' onClick={() => {
+										<button className='btn btn-secondary mtm' onClick={() => {
 											doModalDialog({
 												title: t('Force Migration'),
 												message: t('Are you sure you want to force the migration? This will bypass the migration checks, so be sure to verify that the values in the settings are correct!'),
