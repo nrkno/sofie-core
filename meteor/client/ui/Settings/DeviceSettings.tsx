@@ -59,6 +59,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 					return <MediaManagerSettingsComponent
 						device={this.props.device}
+						subDevices={this.props.subDevices}
 					/>
 				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
 					return <SpreadsheetSettingsComponent
@@ -119,7 +120,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 									{t('Restart Device')}
 								</button>
 							</div>
-							<div>
+							<div className='mbs'>
 								<PeripheralDeviceStatus device={device}/>
 							</div>
 						</div>

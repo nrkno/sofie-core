@@ -426,6 +426,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
 				return <STKSourceRenderer key={this.props.piece._id}
+					// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}

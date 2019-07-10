@@ -13,6 +13,7 @@ import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog, doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
+import { DeviceItem } from '../../Status/SystemStatus'
 interface IMediaManagerSettingsComponentState {
 	deleteConfirmStorageId: string | undefined
 	showDeleteStorageConfirm: boolean
@@ -24,6 +25,7 @@ interface IMediaManagerSettingsComponentState {
 }
 interface IMediaManagerSettingsComponentProps {
 	device: PeripheralDevice
+	subDevices?: PeripheralDevice[]
 }
 export const MediaManagerSettingsComponent = translate()(class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
 	constructor (props: Translated<IMediaManagerSettingsComponentProps>) {
@@ -545,26 +547,6 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 									</React.Fragment> :
 									null
 								}
-
-								{/* <div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Media Flow Type')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.mediaFlows.' + monitorId + '.mediaFlowType'} obj={this.props.device} type='dropdown' options={MediaFlowType} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Source Storage')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.mediaFlows.' + monitorId + '.sourceId'} obj={this.props.device} type='dropdown' options={settings.storages.map(i => i.id)} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								{(flow.mediaFlowType === MediaFlowType.EXPECTED_ITEMS || flow.mediaFlowType === MediaFlowType.WATCH_FOLDER) &&
-									(<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Target Storage')}
-											<EditAttribute modifiedClassName='bghl' attribute={'settings.mediaFlows.' + monitorId + '.destinationId'} obj={this.props.device} type='dropdown' options={settings.storages.map(i => i.id)} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>)} */}
 							</div>
 							<div className='mod alright'>
 								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditMonitorItem(monitorId)}>
@@ -576,21 +558,9 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			</React.Fragment>
 		})
 	}
-	// componentDidMount() {
-	// 	// const script = document.createElement('script')
-	// 	// script.type = 'text/javascript'
-	// 	// script.async = true
-	// 	// script.innerHTML = "document.write('This is output by document.write()!')"
-	// 	// // this.instance.appendChild(s)
-	// 	// document.body.appendChild(script)
-	// 	loadScript('/scripts/statusChecker.js', err => {
-	// 		if(err) {
-	// 			console.error(err)
-	// 		}
-	// 	})
-	// }
+	
 	render () {
-		const { t } = this.props
+		const { t, subDevices } = this.props
 		let settings = this.props.device.settings as MediaManagerDeviceSettings
 		return (
 		<div>
@@ -672,7 +642,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			</div>
 
 			<h2 className='mhn'>{t('Monitors')}</h2>
-			{settings && settings.mediaFlows &&
+			{settings && settings.monitors &&
 				(<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderMonitors()}
@@ -683,6 +653,12 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 			</div>
+
+			{subDevices &&
+				(<React.Fragment>
+					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
+					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
+				</React.Fragment>)}
 
 		</div>)
 	}
