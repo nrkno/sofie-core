@@ -378,8 +378,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 		let iter = 0
 		let newMonitorId: string = ''
 		do {
-			iter++
 			newMonitorId = 'monitor' + iter
+			iter++
 		} while (_.find(_.keys(settings.monitors || {}), monitorId => monitorId === newMonitorId))
 
 		const newMonitor: MonitorSettings = {
