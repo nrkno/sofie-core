@@ -91,6 +91,14 @@
 			margin-right: 0;
 		}
 	}
+	
+	&.device-item__device-status--minor-warning {
+		.pill {
+			background: $color-status-minor-warning;
+			border: $color-status-minor-warning;
+			color: $color-status-minor-warning-text;
+		}
+	}
 
 	&.device-status--good {
 		.pill {
@@ -265,9 +273,13 @@
 				flex-wrap: wrap;	
 				flex: 0 0;
 				margin-left: 0.5em;
-				min-width: 3em;
+				min-width: 4em;
 				align-items: flex-start;
 				justify-content: space-around;
+
+				> .action-btn.prioritized {
+					color: #dc143c;
+				}
 			}
 
 			.workflow__header__expand {

@@ -434,6 +434,21 @@ export function mediaAbortWorkflow (workflowId: string) {
 		MediaManagerAPI.abortWorkflow(workflowId)
 	)
 }
+export function mediaPrioritizeWorkflow (workflowId: string) {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.prioritizeWorkflow(workflowId)
+	)
+}
+export function mediaRestartAllWorkflows () {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.restartAllWorkflows()
+	)
+}
+export function mediaAbortAllWorkflows () {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.abortAllWorkflows()
+	)
+}
 export function regenerateRundown (rundownId: string) {
 	check(rundownId, String)
 
@@ -540,6 +555,15 @@ methods[UserActionAPI.methods.mediaRestartWorkflow] = function (workflowId: stri
 }
 methods[UserActionAPI.methods.mediaAbortWorkflow] = function (workflowId: string) {
 	return mediaAbortWorkflow.call(this, workflowId)
+}
+methods[UserActionAPI.methods.mediaPrioritizeWorkflow] = function (workflowId: string) {
+	return mediaPrioritizeWorkflow.call(this, workflowId)
+}
+methods[UserActionAPI.methods.mediaRestartAllWorkflows] = function () {
+	return mediaRestartAllWorkflows.call(this)
+}
+methods[UserActionAPI.methods.mediaAbortAllWorkflows] = function () {
+	return mediaAbortAllWorkflows.call(this)
 }
 methods[UserActionAPI.methods.regenerateRundown] = function (rundownId: string) {
 	return regenerateRundown.call(this, rundownId)
