@@ -53,6 +53,7 @@ import {
 } from '../../../lib/api/studios'
 import { callMethod } from '../../lib/clientAPI'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
+import { ShowStylesAPI } from '../../../lib/api/showStyles'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -965,6 +966,16 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		}, 1000)
 	}
 
+	onShowStyleAdd () {
+		let before = ShowStyleBases.find({}).fetch()
+		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
+		setTimeout(() => {
+			let after = ShowStyleBases.find({}).fetch()
+			let newShowStyle = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
+			this.redirectUser('/settings/showStyleBase/' + newShowStyle)
+		}, 1000)
+	}
+
 	redirectUser (url: string) {
 		this.setState({
 			redirect: true,
@@ -1054,7 +1065,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								{
 									this.renderShowStyleEditButtons()
 								}
-								<button className='btn btn-primary btn-add-new'>
+								<button className='btn btn-primary btn-add-new' onClick={(e) => {this.onShowStyleAdd()}}>
 									{t('New Show Style')} +
 								</button>
 						</div>
