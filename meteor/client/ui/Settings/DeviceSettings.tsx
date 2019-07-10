@@ -114,7 +114,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 							</label>
 						</div>
 						<div className='col c12 rl-c6 alright'>
-							<div>
+							<div className='mbs'>
 								<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
 									{t('Restart Device')}
 								</button>
