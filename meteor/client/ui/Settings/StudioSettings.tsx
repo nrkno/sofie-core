@@ -51,6 +51,8 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend
 } from '../../../lib/api/studios'
+import { callMethod } from '../../lib/clientAPI'
+import { BlueprintAPI } from '../../../lib/api/blueprint'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -953,6 +955,23 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		return options
 	}
 
+	onBlueprintAdd () {
+		let before = Blueprints.find({}).fetch()
+		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
+		setTimeout(() => {
+			let after = Blueprints.find({}).fetch()
+			let newBlueprint = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
+			this.redirectUser('/settings/blueprint/' + newBlueprint)
+		}, 1000)
+	}
+
+	redirectUser (url: string) {
+		this.setState({
+			redirect: true,
+			redirectRoute: url
+		})
+	}
+
 	renderShowStyleEditButtons () {
 		let buttons: JSX.Element[] = []
 		if (this.props.studio)
@@ -962,7 +981,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				buttons.push(
 					<button key={'button-navigate-' + base.showStyleBase.name}
 						className='btn btn-primary btn-add-new'
-						onClick={(e) => {this.setState({redirect: true, redirectRoute: '/settings/showStyleBase/' + (base ? base.showStyleBase._id : '')})}}>
+						onClick={(e) => {this.redirectUser('/settings/showStyleBase/' + (base ? base.showStyleBase._id : ''))}}>
 						Edit {base.showStyleBase.name}
 					</button>
 				)
@@ -1012,10 +1031,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								{
 									this.props.studio.blueprintId ?
 									<button className='btn btn-primary btn-add-new'
-										onClick={(e) => {this.setState({redirect: true, redirectRoute: '/settings/blueprint/' + (this.props.studio ? this.props.studio.blueprintId : '')})}}>
+										onClick={(e) => {this.redirectUser('/settings/blueprint/' + (this.props.studio ? this.props.studio.blueprintId : ''))}}>
 										{t('Edit Blueprint')}
 									</button> :
-									<button className='btn btn-primary btn-add-new'>
+									<button className='btn btn-primary btn-add-new' onClick={(e) => {this.onBlueprintAdd()}}>
 										{t('New Blueprint')} +
 									</button>
 								}
