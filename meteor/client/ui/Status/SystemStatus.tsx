@@ -17,6 +17,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { getAdminMode } from '../../lib/localStorage'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -212,7 +213,10 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div>
+					{getAdminMode() ? 
+						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
+						<div className='value'>{this.props.device.name}</div>
+					}
 				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
