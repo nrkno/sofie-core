@@ -124,7 +124,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		})
 	}
 
-	playoutConnected () {
+	isPlayoutConnected () {
 		let connected = false;
 		this.props.studioDevices.map(device => {
 			if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) connected = true
@@ -145,7 +145,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 					null
 				}
 				{
-					!this.playoutConnected() ?
+					!this.isPlayoutConnected() ?
 					<div className='error-notice'>
 						<FontAwesomeIcon icon={faExclamationTriangle} /> Playout gateway not connected
 					</div> :

@@ -23,6 +23,12 @@
 			margin-top: 0.6em;
 		}
 	}
+
+	.error-notice {
+		.svg-inline--fa {
+			color: $color-status-warning;
+		}
+	}
 }
 
 .settings-dialog {
