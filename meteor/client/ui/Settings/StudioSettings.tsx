@@ -984,6 +984,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 
 	renderShowStyleEditButtons () {
+		const { t } = this.props
 		let buttons: JSX.Element[] = []
 		if (this.props.studio)
 		this.props.studio.supportedShowStyleBase.map(style => {
@@ -993,7 +994,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<button key={'button-navigate-' + base.showStyleBase.name}
 						className='btn btn-primary btn-add-new'
 						onClick={(e) => {this.redirectUser('/settings/showStyleBase/' + (base ? base.showStyleBase._id : ''))}}>
-						Edit {base.showStyleBase.name}
+						{t('Edit')} {base.showStyleBase.name}
 					</button>
 				)
 			}
