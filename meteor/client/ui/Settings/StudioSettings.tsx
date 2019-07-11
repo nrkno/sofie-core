@@ -987,6 +987,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<h2 className='mhn mtn'>{t('Generic Properties')}</h2>
 					<label className='field'>
 						{t('Studio Name')}
+						{
+							!this.props.studio.name ?
+							<div className='error-notice inline'>
+								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'

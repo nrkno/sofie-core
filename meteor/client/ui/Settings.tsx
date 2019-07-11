@@ -101,6 +101,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 
 	studioHasError (studio: Studio) {
+		if(!studio.name) return true
 		if (!studio.supportedShowStyleBase.length) return true
 		if (!studio.blueprintId) return true
 		const peripherals = this.props.peripheralDevices
@@ -120,6 +121,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	blueprintHasError (blueprint: Blueprint) {
 		if (!blueprint.name) return true
 		if (!blueprint.blueprintType) return true
+		return false
+	}
+
+	peripheralDeviceHasError (device: PeripheralDevice) {
+		if (!device.name) return true
 		return false
 	}
 
@@ -332,6 +338,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(item) }}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
+								{
+									this.peripheralDeviceHasError(item) ?
+									<button className='action-btn right error-notice'>
+										<FontAwesomeIcon icon={faExclamationTriangle} />
+									</button> :
+									null
+								}
 								<h3>{item.name}</h3>
 								<p>
 									{item.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(item.status.statusCode)}
