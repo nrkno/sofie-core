@@ -26,6 +26,7 @@ import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 
 interface IProps {
 	match: {
@@ -104,6 +105,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div>
 					<label className='field'>
 						{t('Show Style Base Name')}
+						{
+							!(this.props.showStyleBase && this.props.showStyleBase.name) ?
+							<div className='error-notice inline'>
+								<FontAwesomeIcon icon={faExclamationTriangle} /> No name set
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -117,6 +125,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 					<label className='field'>
 						{t('Blueprint')}
+						{
+							!(this.props.showStyleBase && this.props.showStyleBase.blueprintId) ?
+							<div className='error-notice inline'>
+								Blueprint not set <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -789,6 +804,13 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		return (
 			<div>
 				<h2 className='mhn'>{t('Source Layers')}</h2>
+				{
+					!this.props.showStyleBase.sourceLayers.length ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> No source layers set
+					</div> :
+					null
+				}
 				<table className='expando settings-studio-source-table'>
 					<tbody>
 						{this.renderInputSources()}
@@ -818,6 +840,10 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		this.state = {
 			editedOutputs: []
 		}
+	}
+
+	isPGMChannelSet() {
+		return this.props.showStyleBase.outputLayers.filter(layer => layer.isPGM).length > 0
 	}
 
 	isItemEdited = (item: IOutputLayer) => {
@@ -995,6 +1021,20 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		return (
 			<div>
 				<h2 className='mhn'>{t('Output channels')}</h2>
+				{
+					!this.props.showStyleBase.outputLayers.length ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> No output channels set
+					</div> :
+					null
+				}
+				{
+					!this.isPGMChannelSet() ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> No PGM output
+					</div> :
+					null
+				}
 				<table className='expando settings-studio-output-table'>
 					<tbody>
 						{this.renderOutputs()}

@@ -110,6 +110,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		return false
 	}
 
+	showStyleHasError (showstyle: ShowStyleBase) {
+		if (!showstyle.sourceLayers.length) return true
+		if (!showstyle.outputLayers.length) return true
+		if (!showstyle.outputLayers.filter(l => l.isPGM).length) return true
+		return false
+	}
+
 	connectedString (connected: boolean) {
 		let t = this.props.t
 
@@ -256,6 +263,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
+									{
+										this.showStyleHasError(showStyleBase) ?
+										<button className='action-btn right error-notice'>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
+										</button> :
+										null
+									}
 									<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
 									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
 										<p>
