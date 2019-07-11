@@ -117,6 +117,12 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		return false
 	}
 
+	blueprintHasError (blueprint: Blueprint) {
+		if (!blueprint.name) return true
+		if (!blueprint.blueprintType) return true
+		return false
+	}
+
 	connectedString (connected: boolean) {
 		let t = this.props.t
 
@@ -297,6 +303,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
+									{
+										this.blueprintHasError(blueprint) ?
+										<button className='action-btn right error-notice'>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
+										</button> :
+										null
+									}
 									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
 									<p>{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}</p>
 									<p>{t('Version')} {blueprint.blueprintVersion}</p>
