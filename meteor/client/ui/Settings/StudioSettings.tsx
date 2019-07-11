@@ -140,14 +140,14 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 				{
 					!this.props.studioDevices.length ?
 					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> No devices connected
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No devices connected')}
 					</div> :
 					null
 				}
 				{
 					!this.isPlayoutConnected() ?
 					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> Playout gateway not connected
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('Playout gateway not connected')}
 					</div> :
 					null
 				}
@@ -906,7 +906,7 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 				{
 					needsUpdate ?
 					<span className='error-notice inline'>
-						Reload Baseline <FontAwesomeIcon icon={faExclamationTriangle} />
+						{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
 					</span> :
 					null
 				}
@@ -1003,7 +1003,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						{
 							!this.props.studio.blueprintId ?
 							<div className='error-notice inline'>
-								Blueprint not set <FontAwesomeIcon icon={faExclamationTriangle} />
+								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div> :
 							null
 						}
@@ -1026,7 +1026,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						{
 							!this.props.studio.supportedShowStyleBase.length ?
 							<div className='error-notice inline'>
-								Show style not set <FontAwesomeIcon icon={faExclamationTriangle} />
+								{t('Show style not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div> :
 							null
 						}

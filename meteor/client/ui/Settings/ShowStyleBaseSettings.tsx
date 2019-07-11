@@ -108,7 +108,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						{
 							!(this.props.showStyleBase && this.props.showStyleBase.name) ?
 							<div className='error-notice inline'>
-								<FontAwesomeIcon icon={faExclamationTriangle} /> No name set
+								<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No name set')}
 							</div> :
 							null
 						}
@@ -128,7 +128,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						{
 							!(this.props.showStyleBase && this.props.showStyleBase.blueprintId) ?
 							<div className='error-notice inline'>
-								Blueprint not set <FontAwesomeIcon icon={faExclamationTriangle} />
+								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div> :
 							null
 						}
@@ -807,7 +807,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 				{
 					!this.props.showStyleBase.sourceLayers.length ?
 					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> No source layers set
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
 					</div> :
 					null
 				}
@@ -1024,14 +1024,14 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 				{
 					!this.props.showStyleBase.outputLayers.length ?
 					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> No output channels set
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
 					</div> :
 					null
 				}
 				{
 					!this.isPGMChannelSet() ?
 					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> No PGM output
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No PGM output')}
 					</div> :
 					null
 				}
