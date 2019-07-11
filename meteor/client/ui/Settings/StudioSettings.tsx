@@ -51,6 +51,8 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend
 } from '../../../lib/api/studios'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -122,11 +124,33 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		})
 	}
 
+	playoutConnected () {
+		let connected = false;
+		this.props.studioDevices.map(device => {
+			if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) connected = true
+		})
+		return connected
+	}
+
 	render () {
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Attached Devices')}</h2>
+				<h2 className='mhn'>{t('Attached Devices')}</h2>&nbsp;
+				{
+					!this.props.studioDevices.length ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> No devices connected
+					</div> :
+					null
+				}
+				{
+					!this.playoutConnected() ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> Playout gateway not connected
+					</div> :
+					null
+				}
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
@@ -876,7 +900,17 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		const { needsUpdate } = this.state
 
 		return <div>
-			<p className='mhn'>{t('Studio Baseline needs update: ')} {needsUpdate ? t('Yes') : t('No')}</p>
+			<p className='mhn'>
+				{t('Studio Baseline needs update: ')}&nbsp;
+				{needsUpdate ? t('Yes') : t('No')}
+				{
+					needsUpdate ?
+					<span className='error-notice inline'>
+						Reload Baseline <FontAwesomeIcon icon={faExclamationTriangle} />
+					</span> :
+					null
+				}
+			</p>
 			<p className='mhn'><button className='btn btn-primary' onClick={(e) => this.reloadBaseline()}>{t('Reload Baseline')}</button></p>
 		</div>
 	}
@@ -966,6 +1000,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					</label>
 					<label className='field'>
 						{t('Blueprint')}
+						{
+							!this.props.studio.blueprintId ?
+							<div className='error-notice inline'>
+								Blueprint not set <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -982,6 +1023,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					</label>
 					<div className='field'>
 						{t('Select Compatible Show Styles')}
+						{
+							!this.props.studio.supportedShowStyleBase.length ?
+							<div className='error-notice inline'>
+								Show style not set <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								attribute='supportedShowStyleBase'
