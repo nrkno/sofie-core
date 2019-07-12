@@ -24,9 +24,9 @@ import { ShowStylesAPI } from '../../../lib/api/showStyles'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
-import { Link, Redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { BlueprintAPI } from '../../../lib/api/blueprint'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
 
 interface IProps {
 	match: {
@@ -40,8 +40,6 @@ interface IState {
 	showUploadConfirm: boolean
 	uploadFileName?: string
 	uploadFileContents?: string
-	redirect: boolean
-	redirectRoute: string
 }
 interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
@@ -67,9 +65,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		super(props)
 		this.state = {
 			uploadFileKey: Date.now(),
-			showUploadConfirm: false,
-			redirect: false,
-			redirectRoute: ''
+			showUploadConfirm: false
 		}
 	}
 
@@ -98,23 +94,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
 				value: blueprint._id
 			}
-		})
-	}
-
-	onBlueprintAdd () {
-		let before = Blueprints.find({}).fetch()
-		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
-		setTimeout(() => {
-			let after = Blueprints.find({}).fetch()
-			let newBlueprint = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/blueprint/' + newBlueprint)
-		}, 1000)
-	}
-
-	redirectUser (url: string) {
-		this.setState({
-			redirect: true,
-			redirectRoute: url
 		})
 	}
 
@@ -148,16 +127,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={this.getOptionBlueprints()}
 								collection={ShowStyleBases}
 								className='mdinput'></EditAttribute>
-							{
-								this.props.showStyleBase && this.props.showStyleBase.blueprintId ?
-								<button className='btn btn-primary btn-add-new'
-									onClick={(e) => {this.redirectUser('/settings/blueprint/' + (this.props.showStyleBase ? this.props.showStyleBase.blueprintId : ''))}}>
-									{t('Edit Blueprint')}
-								</button> :
-								<button className='btn btn-primary btn-add-new' onClick={(e) => {this.onBlueprintAdd()}}>
-									{t('New Blueprint')} +
-								</button>
-							}
+							<SettingsNavigation
+								attribute='blueprintId'
+								obj={this.props.showStyleBase}
+								type='blueprint'></SettingsNavigation>
 							<span className='mdfx'></span>
 						</div>
 					</label>
@@ -220,10 +193,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	render () {
-
-		if (this.state.redirect === true) {
-			return <Redirect to={this.state.redirectRoute} />
-		}
 
 		if (this.props.showStyleBase) {
 			return this.renderEditForm(this.props.showStyleBase)

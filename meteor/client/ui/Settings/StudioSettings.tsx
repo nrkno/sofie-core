@@ -27,7 +27,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
-import { Link, Redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -52,8 +52,8 @@ import {
 	mappingIsTCPSend
 } from '../../../lib/api/studios'
 import { callMethod } from '../../lib/clientAPI'
-import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -793,8 +793,6 @@ interface IStudioSettingsProps {
 	}
 }
 interface IStudioSettingsState {
-	redirect: boolean
-	redirectRoute: string
 }
 interface IStudioSettingsTrackedProps {
 	studio?: Studio
@@ -929,15 +927,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		}).fetch()
 	}
 })(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
-	constructor(props) {
-		super (props)
-
-		this.state = {
-			redirect: false,
-			redirectRoute: ''
-		}
-	}
-
 	getBlueprintOptions () {
 		const { t } = this.props
 
@@ -956,33 +945,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		return options
 	}
 
-	onBlueprintAdd () {
-		let before = Blueprints.find({}).fetch()
-		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
-		setTimeout(() => {
-			let after = Blueprints.find({}).fetch()
-			let newBlueprint = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/blueprint/' + newBlueprint)
-		}, 1000)
-	}
-
-	onShowStyleAdd () {
-		let before = ShowStyleBases.find({}).fetch()
-		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
-		setTimeout(() => {
-			let after = ShowStyleBases.find({}).fetch()
-			let newShowStyle = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/showStyleBase/' + newShowStyle)
-		}, 1000)
-	}
-
-	redirectUser (url: string) {
-		this.setState({
-			redirect: true,
-			redirectRoute: url
-		})
-	}
-
 	renderShowStyleEditButtons () {
 		const { t } = this.props
 		let buttons: JSX.Element[] = []
@@ -991,11 +953,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			let base = this.props.availableShowStyleBases.find(base => base.showStyleBase._id === style)
 			if (base) {
 				buttons.push(
-					<button key={'button-navigate-' + base.showStyleBase.name}
-						className='btn btn-primary btn-add-new'
-						onClick={(e) => {this.redirectUser('/settings/showStyleBase/' + (base ? base.showStyleBase._id : ''))}}>
-						{t('Edit')} {base.showStyleBase.name}
-					</button>
+					<SettingsNavigation
+						key={'settings-nevigation-' + base.showStyleBase.name}
+						attribute='name'
+						obj={base.showStyleBase}
+						type='showstyle'></SettingsNavigation>
 				)
 			}
 		})
@@ -1004,10 +966,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 
 	renderEditForm () {
 		const { t } = this.props
-
-		if (this.state.redirect === true) {
-			return <Redirect to={this.state.redirectRoute} />
-		}
 
 		return (
 			this.props.studio ?
@@ -1040,16 +998,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								mutateUpdateValue={v => v === '' ? undefined : v}
 								collection={Studios}
 								className='mdinput'></EditAttribute>
-								{
-									this.props.studio.blueprintId ?
-									<button className='btn btn-primary btn-add-new'
-										onClick={(e) => {this.redirectUser('/settings/blueprint/' + (this.props.studio ? this.props.studio.blueprintId : ''))}}>
-										{t('Edit Blueprint')}
-									</button> :
-									<button className='btn btn-primary btn-add-new' onClick={(e) => {this.onBlueprintAdd()}}>
-										{t('New Blueprint')} +
-									</button>
-								}
+								<SettingsNavigation
+									attribute='blueprintId'
+									obj={this.props.studio}
+									type='blueprint'></SettingsNavigation>
 							<span className='mdfx'></span>
 						</div>
 					</label>
@@ -1066,9 +1018,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								{
 									this.renderShowStyleEditButtons()
 								}
-								<button className='btn btn-primary btn-add-new' onClick={(e) => {this.onShowStyleAdd()}}>
-									{t('New Show Style')} +
-								</button>
+								<SettingsNavigation type='newshowstyle' />
 						</div>
 					</div>
 					<label className='field'>
