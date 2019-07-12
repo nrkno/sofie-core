@@ -112,6 +112,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 
 	showStyleHasError (showstyle: ShowStyleBase) {
+		if (!showstyle.sourceLayers) return true
+		if (!showstyle.outputLayers) return true
 		if (!showstyle.sourceLayers.length) return true
 		if (!showstyle.outputLayers.length) return true
 		if (!showstyle.outputLayers.filter(l => l.isPGM).length) return true
