@@ -805,7 +805,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			<div>
 				<h2 className='mhn'>{t('Source Layers')}</h2>
 				{
-					(!this.props.showStyleBase || !this.props.showStyleBase.sourceLayers) ?
+					(!this.props.showStyleBase || !this.props.showStyleBase.sourceLayers || !this.props.showStyleBase.sourceLayers.length) ?
 					<div className='error-notice'>
 						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
 					</div> :
@@ -1023,7 +1023,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 			<div>
 				<h2 className='mhn'>{t('Output channels')}</h2>
 				{
-					(!this.props.showStyleBase || !this.props.showStyleBase.outputLayers) ?
+					(!this.props.showStyleBase || !this.props.showStyleBase.outputLayers || !this.props.showStyleBase.outputLayers.length) ?
 					<div className='error-notice'>
 						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
 					</div> :
