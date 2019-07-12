@@ -805,7 +805,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			<div>
 				<h2 className='mhn'>{t('Source Layers')}</h2>
 				{
-					!this.props.showStyleBase.sourceLayers.length ?
+					(!this.props.showStyleBase || !this.props.showStyleBase.sourceLayers) ?
 					<div className='error-notice'>
 						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
 					</div> :
@@ -843,6 +843,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 	}
 
 	isPGMChannelSet() {
+		if (!this.props.showStyleBase.outputLayers) return false
 		return this.props.showStyleBase.outputLayers.filter(layer => layer.isPGM).length > 0
 	}
 
@@ -1022,7 +1023,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 			<div>
 				<h2 className='mhn'>{t('Output channels')}</h2>
 				{
-					!this.props.showStyleBase.outputLayers.length ?
+					(!this.props.showStyleBase || !this.props.showStyleBase.outputLayers) ?
 					<div className='error-notice'>
 						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
 					</div> :
