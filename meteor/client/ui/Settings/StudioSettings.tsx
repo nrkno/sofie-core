@@ -1176,6 +1176,7 @@ export function setProperty (studio: Studio, property: string, value: any) {
 }
 
 export function findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
+	if (!array) return null
 	let max: { _rank: number } | null = null
 
 	array.forEach((value, index) => {
