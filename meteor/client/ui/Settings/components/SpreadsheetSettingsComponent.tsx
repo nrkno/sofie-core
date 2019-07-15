@@ -101,6 +101,9 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, 'Error when authorizing access token: ' + e, ''))
 					} else {
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, 'Access token saved!', ''))
+						PeripheralDevices.update(this.props.device._id, {$set: {
+							'settings.accessTokenSaved' : true
+						}})
 					}
 				},
 				'receiveAuthToken',
@@ -114,24 +117,28 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 		let device = this.props.device as SpreadsheetDevice
 		return (<div>
 			<div className='mod mvs mhn'>
-				<label className='field'>
-					{t('Application credentials')}
-					<div className='mdi'>
-						<div>
-							{t('Go to the url below and click on the "Enable the Drive API button". Then click on "Download Client configuration", save the credentials.json file and upload it here.')}
-						</div>
-						<div>
-							<a href='https://developers.google.com/drive/api/v3/quickstart/nodejs' target='_blank' >https://developers.google.com/drive/api/v3/quickstart/nodejs</a>
-						</div>
-
-						<div className='mdi'>
-							<input type='file' accept='application/json,.json' onChange={e => this.onUploadCredentialsFile(e)} />
-							<span className='mdfx'></span>
-						</div>
-					</div>
-				</label>
 				{
-					settings.secretCredentials ?
+					!settings.secretCredentials ?
+					<label className='field'>
+						{t('Application credentials')}
+						<div className='mdi'>
+							<div>
+								{t('Go to the url below and click on the "Enable the Drive API button". Then click on "Download Client configuration", save the credentials.json file and upload it here.')}
+							</div>
+							<div>
+								<a href='https://developers.google.com/drive/api/v3/quickstart/nodejs' target='_blank' >https://developers.google.com/drive/api/v3/quickstart/nodejs</a>
+							</div>
+
+							<div className='mdi'>
+								<input type='file' accept='application/json,.json' onChange={e => this.onUploadCredentialsFile(e)} />
+								<span className='mdfx'></span>
+							</div>
+						</div>
+					</label> :
+					null
+				}
+				{
+					settings.secretCredentials && !settings.accessTokenSaved ?
 					<label className='field'>
 						{t('Access token')}
 						<div className='mdi'>

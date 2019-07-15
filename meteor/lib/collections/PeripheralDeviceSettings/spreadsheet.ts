@@ -6,6 +6,7 @@ export interface SpreadsheetDeviceSettings {
 	/** Set to true when secret value exists */
 	secretCredentials: boolean
 	secretAccessToken: boolean
+	accessTokenSaved: boolean
 }
 export interface SpreadsheetDeviceSecretSettings {
 	credentials?: Credentials
