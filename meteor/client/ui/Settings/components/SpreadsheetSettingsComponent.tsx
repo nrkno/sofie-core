@@ -120,7 +120,7 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 						{t('Application credentials')}
 						<div className='mdi'>
 							<div>
-								{t('Go to the url below and click on the "Enable the Drive API button". Then click on "Download Client configuration", save the credentials.json file and upload it here.')}
+								{t('Go to the url below and click on the "Enable the Drive API" button. Then click on "Download Client configuration", save the credentials.json file and upload it here.')}
 							</div>
 							<div>
 								<a href='https://developers.google.com/drive/api/v3/quickstart/nodejs' target='_blank' >https://developers.google.com/drive/api/v3/quickstart/nodejs</a>
