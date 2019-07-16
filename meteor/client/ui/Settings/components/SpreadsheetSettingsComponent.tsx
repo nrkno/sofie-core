@@ -101,9 +101,6 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, 'Error when authorizing access token: ' + e, ''))
 					} else {
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, 'Access token saved!', ''))
-						PeripheralDevices.update(this.props.device._id, {$set: {
-							'settings.accessTokenSaved' : true
-						}})
 					}
 				},
 				'receiveAuthToken',
@@ -138,7 +135,7 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 					null
 				}
 				{
-					settings.secretCredentials && !settings.accessTokenSaved ?
+					settings.secretCredentials && !settings.secretAccessToken ?
 					<label className='field'>
 						{t('Access token')}
 						<div className='mdi'>
