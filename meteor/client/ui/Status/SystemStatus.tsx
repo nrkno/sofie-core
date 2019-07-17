@@ -9,6 +9,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { getCurrentTime } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
+const Tooltip = require('rc-tooltip')
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
@@ -17,6 +18,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { getHelpMode } from '../../lib/localStorage'
 import { getAdminMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 
@@ -187,10 +189,16 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					{getAdminMode() ?
+					<Tooltip
+						overlay='Connect some devices to the playout gateway'
+						visible={getHelpMode() &&
+						this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+						!this.props.children} placement='right'>
+					{getAdminMode() ? 
 						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
 						<div className='value'>{this.props.device.name}</div>
 					}
+					</Tooltip>
 				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
