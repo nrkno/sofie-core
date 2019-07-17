@@ -32,3 +32,11 @@ export function setSpeakingMode (speakingMode: boolean) {
 export function getSpeakingMode (): boolean {
 	return localStorage.getItem('speakingMode') === '1'
 }
+
+export function setHelpMode (helpMode: boolean) {
+	localStorage.setItem('helpMode', (helpMode ? '1' : '0'))
+}
+
+export function getHelpMode (): boolean {
+	return localStorage.getItem('helpMode') === '1'
+}

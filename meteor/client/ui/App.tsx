@@ -13,7 +13,8 @@ import {
 	setTestingMode,
 	getTestingMode,
 	getDeveloperMode,
-	setSpeakingMode
+	setSpeakingMode,
+	setHelpMode
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -61,6 +62,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 		if (params['testing']) setTestingMode(params['testing'] === '1')
 		if (params['speak']) setSpeakingMode(params['speak'] === '1')
+		if (params['help']) setHelpMode(params['help'] === '1')
 		if (params['admin']) {
 			const val = params['admin'] === '1'
 			setStudioMode(val)

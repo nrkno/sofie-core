@@ -17,10 +17,10 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
-import { getDeveloperMode, getAdminMode } from '../lib/localStorage'
+import { getDeveloperMode, getAdminMode, getHelpMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
+import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { Studios } from '../../lib/collections/Studios'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
@@ -175,6 +175,18 @@ interface RundownUI extends Rundown {
 	showStyleBaseName: string
 	showStyleVariantName: string
 }
+
+enum ToolTipStep {
+	TOOLTIP_START_HERE = "TOOLTIP_START_HERE",
+	TOOLTIP_RUN_MIGRATIONS = "TOOLTIP_RUN_MIGRATIONS",
+	TOOLTIP_EXTRAS = "TOOLTIP_EXTRAS"
+}
+
+enum HelpMessages {
+	HELP_CONFIGURE = 'Please add ?configure=1 to the address bar.\n',
+	HELP_MIGRATIONS = 'Please run migrations.\n'
+}
+
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
 	rundowns: Array<RundownUI>
@@ -217,6 +229,26 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		this.state = {}
 	}
 
+	tooltipStep () {
+		const synced = this.props.rundowns.filter(i => !i.unsynced)
+		const unsynced = this.props.rundowns.filter(i => i.unsynced)
+
+		if (
+			this.props.coreSystem &&
+			this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
+			synced.length === 0 &&
+			unsynced.length === 0
+		) {
+			if (getAdminMode()) {
+				return ToolTipStep.TOOLTIP_START_HERE
+			} else {
+				return ToolTipStep.TOOLTIP_RUN_MIGRATIONS
+			}
+		} else {
+			return ToolTipStep.TOOLTIP_EXTRAS
+		}
+	}
+
 	componentDidMount () {
 		const { t } = this.props
 		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
@@ -230,6 +262,40 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				systemStatus: systemStatus
 			})
 		})
+	}
+
+	registerHelp (core: ICoreSystem) {
+		const { t } = this.props
+
+		if (core.support) {
+			let m = {
+				support: {
+					message: ''
+				}
+			}
+			
+			switch (this.tooltipStep()) {
+				case ToolTipStep.TOOLTIP_START_HERE:
+					m.support.message += t(HelpMessages.HELP_CONFIGURE)
+					m.support.message += t(HelpMessages.HELP_MIGRATIONS)
+					break
+				case ToolTipStep.TOOLTIP_RUN_MIGRATIONS:
+					m.support.message += t(HelpMessages.HELP_MIGRATIONS)
+					break
+			}
+
+			if (!this.props.rundowns.length) {
+				m.support.message += t('Add rundowns by connecting a gateway.\n')
+			}
+
+			if (this.state.systemStatus) {
+				if (this.state.systemStatus.status === 'FAIL') {
+					m.support.message += t('Check system status messages.\n')
+				}
+			}
+
+			CoreSystem.update(core._id, { $set: m })
+		}
 	}
 
 	renderRundowns (list: RundownUI[]) {
@@ -265,6 +331,9 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 		return <React.Fragment>
 			{
+				this.props.coreSystem ? this.registerHelp(this.props.coreSystem) : null
+			}
+			{
 				(
 					this.props.coreSystem &&
 					this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
@@ -277,15 +346,20 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 						<ul>
 							<li>
 								{t('Start with giving this browser configuration permissions by adding this to the URL: ')}&nbsp;
-								<a href='?configure=1'>
-									?configure=1
-								</a>
+								<Tooltip overlay={t('Start Here!')} visible={this.tooltipStep() === ToolTipStep.TOOLTIP_START_HERE} placement='top'>
+									<a href='?configure=1'>
+										?configure=1
+									</a>
+								</Tooltip>
+								{this.tooltipStep}
 							</li>
 							<li>
 								{t('Then, run the migrations script:')}&nbsp;
-								<a href='/settings/tools/migration'>
-									{t('Migrations')}
-								</a>
+								<Tooltip overlay={t('Run Migrations to get set up')} visible={this.tooltipStep() === ToolTipStep.TOOLTIP_RUN_MIGRATIONS} placement='bottom'>
+									<a href='/settings/tools/migration'>
+										{t('Migrations')}
+									</a>
+								</Tooltip>
 							</li>
 						</ul>
 						{t('Documentation is available at')}&nbsp;
@@ -357,7 +431,18 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 						this.state.systemStatus ?
 							<React.Fragment>
 								<div>
-									{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
+									{t('status')}:&nbsp;
+									<Tooltip
+										overlay='System has issues which need to be resolved'
+										visible={
+											this.tooltipStep() === ToolTipStep.TOOLTIP_EXTRAS
+											&& this.state.systemStatus.status === 'FAIL'
+											&& getHelpMode()
+										}
+										placement='top'>
+										<span>{this.state.systemStatus.status}</span>
+									</Tooltip>
+									&nbsp;/&nbsp;{this.state.systemStatus._internal.statusCodeString}
 								</div>
 								<div>
 									{
