@@ -282,14 +282,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	componentDidMount() {
-		/* setTimeout(() => {
-			if (this.props.isLiveSegment === true && this.props.followLiveSegments === true) {
-				this.scrollToMe()
-			}
-		}, 1000) */
-	}
-
 	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
 		if (e.touches.length === 0) {
 			document.removeEventListener('touchmove', this.onTimelineTouchMove)
@@ -353,19 +345,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
 			}
 		}
-	}
-
-	scrollToMe() {
-		if (scrollToSegment(this.segmentBlock, true)) {
-			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
-		}
-	}
-
-	componentDidUpdate(prevProps: IProps) {
-		/* if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
-			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
-			this.scrollToMe()
-		} */
 	}
 
 	getSegmentContext = (props) => {

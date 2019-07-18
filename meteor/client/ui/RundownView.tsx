@@ -34,7 +34,7 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
-import { scrollToPart, scrollToPosition, scrollToSegment } from '../lib/viewPort'
+import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
@@ -1125,7 +1125,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		document.body.classList.add('dark', 'vertical-overflow-only')
-		window.addEventListener('scroll', this.onWindowScroll)
+		// window.addEventListener('scroll', this.onWindowScroll)
 
 		let preventDefault = (e) => {
 			e.preventDefault()
@@ -1173,6 +1173,20 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
 			this.props.rundown.nextPartId) {
 			scrollToPart(this.props.rundown.nextPartId).catch(() => { })
+		} else if (
+			// after take
+			(this.props.rundown &&
+			prevProps.rundown && this.props.rundown.currentPartId !== prevProps.rundown.currentPartId &&
+			this.props.rundown.currentPartId && this.state.followLiveSegments)
+		) {
+			scrollToPart(this.props.rundown.currentPartId, true).catch(() => { })
+		} else if (
+			// initial Rundown open
+			(this.props.rundown && this.props.rundown.currentPartId &&
+			this.state.subsReady && !prevState.subsReady)
+		) {
+			// allow for some time for the Rundown to render
+			maintainFocusOnPart(this.props.rundown.currentPartId, 7000, true, true)
 		}
 
 		if (typeof this.props.rundown !== typeof this.props.rundown ||
@@ -1252,7 +1266,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	componentWillUnmount () {
 		this._cleanUp()
 		document.body.classList.remove('dark', 'vertical-overflow-only')
-		window.removeEventListener('scroll', this.onWindowScroll)
+		// window.removeEventListener('scroll', this.onWindowScroll)
 		window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
@@ -1308,15 +1322,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onWindowScroll = (e: Event) => {
-		console.log('Scroll handler')
-		const isAutoScrolling = document.body.classList.contains('auto-scrolling')
-		if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
-			this.setState({
-				followLiveSegments: false
-			})
-		}
-	}
+	// onWindowScroll = (e: Event) => {
+	// 	console.log('Scroll handler')
+	// 	const isAutoScrolling = document.body.classList.contains('auto-scrolling')
+	// 	if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
+	// 		this.setState({
+	// 			followLiveSegments: false
+	// 		})
+	// 	}
+	// }
 
 	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
 		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
@@ -1354,7 +1368,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 3000)
+			}, 4000)
 		} else if (this.props.rundown && this.props.rundown.active && this.props.rundown.currentPartId) {
 			this.setState({
 				followLiveSegments: true
@@ -1370,7 +1384,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 3000)
+			}, 4000)
 		} else {
 			this.setState({
 				followLiveSegments: true

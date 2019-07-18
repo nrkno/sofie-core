@@ -4,19 +4,53 @@ import * as Velocity from 'velocity-animate'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts } from '../../lib/collections/Parts'
 
-export function scrollToPart(partId: string): Promise<boolean> {
-	// TODO: do scrolling within segment as well?
+let focusInterval: NodeJS.Timer | undefined
+let _dontClearInterval: boolean = false
 
+export function maintainFocusOnPart(partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
+	const startTime = Date.now()
+	const focus = () => {
+		console.log('Focus!')
+		if (Date.now() - startTime < timeWindow) {
+			_dontClearInterval = true
+			scrollToPart(partId, forceScroll, noAnimation).then(() => {
+				_dontClearInterval = false
+			}).catch(() => {
+				_dontClearInterval = false
+			})
+		} else {
+			quitFocusOnpart()
+		}
+	}
+	focusInterval = setInterval(focus, 500)
+	focus()
+}
+
+export function isMaintainingFocus(): boolean {
+	return !!focusInterval
+}
+
+function quitFocusOnpart() {
+	if (!_dontClearInterval && focusInterval) {
+		clearInterval(focusInterval)
+		focusInterval = undefined
+		console.log('Finishing focusOnPart')
+	}
+}
+
+export function scrollToPart(partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+	// TODO: do scrolling within segment as well?
+	quitFocusOnpart()
 	let part = Parts.findOne(partId)
 	if (part) {
-		return scrollToSegment(part.segmentId)
+		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
 	}
 	return Promise.reject('Could not find part');
 }
 
 const HEADER_HEIGHT = 175
 
-export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean): Promise<boolean> {
+export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	let elementToScrollTo: HTMLElement | null = (
 		_.isString(elementToScrollToOrSegmentId) ?
 			document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId) :
@@ -36,29 +70,31 @@ export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | stri
 		bottom > window.scrollY + window.innerHeight ||
 		top < window.scrollY) {
 
-		return scrollToPosition(top).then(() => true)
+		return scrollToPosition(top, noAnimation).then(() => true)
 	}
 
 	return Promise.resolve(false)
 }
 
-export function scrollToPosition(scrollPosition: number): Promise<void> {
-	document.body.classList.add('auto-scrolling')
-	const autoScrolling = document.body.dataset.autoScrolling ? parseInt(document.body.dataset.autoScrolling, 10) + 1 : 1
-	document.body.dataset.autoScrolling = String(autoScrolling)
-	return new Promise((resolve, reject) => {
-		Velocity(document.documentElement, 'scroll', {
-			offset: Math.max(0, scrollPosition - HEADER_HEIGHT),
-			mobileHA: false,
-			duration: 400
-		}).then(() => {
-			// delay until next frame, so that the scroll handler can fire
-			const autoScrolling = document.body.dataset.autoScrolling ? parseInt(document.body.dataset.autoScrolling, 10) - 1 : -1
-			document.body.dataset.autoScrolling = String(autoScrolling)
-			if (autoScrolling <= 0) {
-				document.body.classList.remove('auto-scrolling')
-			}
-			setTimeout(() => resolve())
+export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
+	if (noAnimation) {
+		return new Promise((resolve, reject) => {
+			window.scroll({
+				top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+				left: 0
+			})
+			resolve()
 		})
-	})
+	} else {
+		return new Promise((resolve, reject) => {
+			window.requestIdleCallback(() => {
+				window.scroll({
+					top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+					left: 0,
+					behavior: 'smooth'
+				})
+				resolve()
+			}, { timeout: 250 })
+		})
+	}
 }
