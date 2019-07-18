@@ -320,18 +320,17 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	visibleChanged = (entries: IntersectionObserverEntry[]) => {
-		console.log(entries[0].intersectionRatio, isMaintainingFocus())
-		if (entries[0].intersectionRatio < 1 && !isMaintainingFocus()) {
-			console.warn('Scrolled!')
+		if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus()) {
 			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+			// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
 		}
 	}
 
 	startLive = () => {
 		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
 		this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
-			rootMargin: '-150px 0px 0px 0px',
-			threshold: [0, 0.25, 0.5, 0.75, 1]
+			rootMargin: '-150px 0px -20px 0px',
+			threshold: [0, 0.25, 0.5, 0.75, 0.98]
 		})
 		this.intersectionObserver.observe(this.timelineDiv)
 	}

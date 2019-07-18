@@ -1363,7 +1363,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				console.error(e)
 			})
 			setTimeout(() => {
-				console.log('followLiveSegments: true')
 				this.setState({
 					followLiveSegments: true
 				})
@@ -1379,7 +1378,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				console.error(e)
 			})
 			setTimeout(() => {
-				console.log('followLiveSegments: true')
+				// console.log("followLiveSegments: true")
 				this.setState({
 					followLiveSegments: true
 				})

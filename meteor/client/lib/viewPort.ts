@@ -8,9 +8,9 @@ let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
 
 export function maintainFocusOnPart(partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
-	const startTime = Date.now()
+	let startTime = Date.now()
 	const focus = () => {
-		console.log('Focus!')
+		// console.log("focus");
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
 			scrollToPart(partId, forceScroll, noAnimation).then(() => {
@@ -19,7 +19,7 @@ export function maintainFocusOnPart(partId: string, timeWindow: number, forceScr
 				_dontClearInterval = false
 			})
 		} else {
-			quitFocusOnpart()
+			quitFocusOnPart()
 		}
 	}
 	focusInterval = setInterval(focus, 500)
@@ -30,17 +30,17 @@ export function isMaintainingFocus(): boolean {
 	return !!focusInterval
 }
 
-function quitFocusOnpart() {
+function quitFocusOnPart() {
 	if (!_dontClearInterval && focusInterval) {
+		// console.log("quitFocusOnPart")
 		clearInterval(focusInterval)
 		focusInterval = undefined
-		console.log('Finishing focusOnPart')
 	}
 }
 
 export function scrollToPart(partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	// TODO: do scrolling within segment as well?
-	quitFocusOnpart()
+	quitFocusOnPart()
 	let part = Parts.findOne(partId)
 	if (part) {
 		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
@@ -68,7 +68,7 @@ export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | stri
 	// check if the item is in viewport
 	if (forceScroll ||
 		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY) {
+		top < window.scrollY + HEADER_HEIGHT) {
 
 		return scrollToPosition(top, noAnimation).then(() => true)
 	}
