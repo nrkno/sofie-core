@@ -49,6 +49,7 @@ export interface PieceUi extends PieceExtended {
 	message?: string | null
 }
 interface IProps {
+	id: string
 	segmentId: string,
 	studio: Studio,
 	showStyleBase: ShowStyleBase,
@@ -383,6 +384,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
+				id={this.props.id}
 				segmentRef={this.segmentRef}
 				key={this.props.segmentui._id}
 				segment={this.props.segmentui}
