@@ -22,7 +22,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions';
-import { isMaintainingFocus } from '../../lib/viewPort';
+import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort';
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -184,9 +184,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	isLiveSegment: boolean
+	isVisible: boolean
 	rundownCurrentSegmentId: string | null
 	timelineDiv: HTMLDivElement
 	intersectionObserver: IntersectionObserver | undefined
+	mountedTime: number
 
 	private _prevDisplayTime: number
 
@@ -203,6 +205,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
+		this.isVisible = false
 	}
 
 	componentWillMount () {
@@ -222,6 +225,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.startLive()
 		}
 		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		window.requestAnimationFrame(() => {
+			this.mountedTime = Date.now()
+			if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
+				scrollToSegment(this.props.segmentId, true)
+			}
+		})
 	}
 
 	componentDidUpdate (prevProps) {
@@ -320,9 +329,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	visibleChanged = (entries: IntersectionObserverEntry[]) => {
-		if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus()) {
+		// console.log("visibleChanged")
+		if ((entries[0].intersectionRatio < 0.99) && !isMaintainingFocus() && (Date.now() - this.mountedTime > 2000)) {
 			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
+			this.isVisible = false
+		} else {
+			this.isVisible = true
 		}
 	}
 
