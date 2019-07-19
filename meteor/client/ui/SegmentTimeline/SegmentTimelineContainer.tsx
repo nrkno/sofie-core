@@ -345,7 +345,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			rootMargin: '-150px 0px -20px 0px',
 			threshold: [0, 0.25, 0.5, 0.75, 0.98]
 		})
-		this.intersectionObserver.observe(this.timelineDiv)
+		this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
 	}
 
 	stopLive = () => {

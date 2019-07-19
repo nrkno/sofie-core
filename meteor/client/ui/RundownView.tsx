@@ -1357,7 +1357,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToPart(this.props.rundown.nextPartId).then(() => {
+			scrollToPart(this.props.rundown.nextPartId, true).then(() => {
 				// allow for the scroll to finish
 			}).catch((e) => {
 				console.error(e)
@@ -1372,7 +1372,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToPart(this.props.rundown.currentPartId).then(() => {
+			scrollToPart(this.props.rundown.currentPartId, true).then(() => {
 				// allow for the scroll to finish
 			}).catch((e) => {
 				console.error(e)
