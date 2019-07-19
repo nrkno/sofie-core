@@ -31,7 +31,7 @@ export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | stri
 
 	// check if the item is in viewport
 	if (forceScroll ||
-		bottom < 0 ||
+		bottom > window.innerHeight ||
 		top < HEADER_HEIGHT) {
 
 		scrollToPosition(document.documentElement.scrollTop + top)
