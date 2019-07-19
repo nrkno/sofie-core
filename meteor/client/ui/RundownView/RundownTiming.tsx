@@ -244,6 +244,8 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 		if (rundown && parts) {
 			parts.forEach((part, itIndex) => {
+				// ignore if part is invalid
+				if (part.invalid) return
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([part._id, waitAccumulator]) - 1
 
