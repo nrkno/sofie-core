@@ -6,7 +6,7 @@ import { NotificationCenter, NotificationList, NotifierHandle, Notification, Not
 import { RundownAPI } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -357,8 +357,14 @@ class RundownViewNotifier extends WithManagedTracker {
 				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
 				if (sourceLayer && part) {
-					// we don't want this to be in a non-reactive context, so we manage this computation manually
+					// we don't want this to be in a non-reactive context, so we manage this computation manually					
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
+						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
+						if (mediaId) {
+							this.subscribe(PubSub.mediaObjects, studio._id, {
+								mediaId: mediaId.toUpperCase()
+							})
+						}
 						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {

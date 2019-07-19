@@ -22,6 +22,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
+import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 
 const SPEAK_ADVANCE = 500
 
@@ -51,6 +52,7 @@ export interface PieceUi extends PieceExtended {
 	message?: string | null
 }
 interface IProps {
+	id: string
 	segmentId: string,
 	studio: Studio,
 	showStyleBase: ShowStyleBase,
@@ -184,8 +186,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	isLiveSegment: boolean
+	isVisible: boolean
 	rundownCurrentSegmentId: string | null
 	timelineDiv: HTMLDivElement
+	intersectionObserver: IntersectionObserver | undefined
+	mountedTime: number
 
 	private _prevDisplayTime: number
 
@@ -202,6 +207,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
+		this.isVisible = false
 	}
 
 	componentWillMount () {
@@ -218,9 +224,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
-			this.startOnAirLine()
+			this.startLive()
 		}
 		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		window.requestAnimationFrame(() => {
+			this.mountedTime = Date.now()
+			if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
+				scrollToSegment(this.props.segmentId, true)
+			}
+		})
 	}
 
 	componentDidUpdate (prevProps) {
@@ -228,11 +240,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
-			this.startOnAirLine()
+			this.startLive()
 		}
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
-			this.stopOnAirLine()
+			this.stopLive()
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
@@ -256,7 +268,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	componentWillUnmount () {
 		this._cleanUp()
-		this.stopOnAirLine()
+		this.stopLive()
 		window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
@@ -318,12 +330,32 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	startOnAirLine = () => {
-		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+	visibleChanged = (entries: IntersectionObserverEntry[]) => {
+		// console.log("visibleChanged")
+		if ((entries[0].intersectionRatio < 0.99) && !isMaintainingFocus() && (Date.now() - this.mountedTime > 2000)) {
+			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+			// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
+			this.isVisible = false
+		} else {
+			this.isVisible = true
+		}
 	}
 
-	stopOnAirLine = () => {
+	startLive = () => {
+		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
+			rootMargin: '-150px 0px -20px 0px',
+			threshold: [0, 0.25, 0.5, 0.75, 0.98]
+		})
+		this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
+	}
+
+	stopLive = () => {
 		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		if (this.intersectionObserver) {
+			this.intersectionObserver.disconnect()
+			this.intersectionObserver = undefined
+		}
 	}
 
 	onFollowLiveLine = (state: boolean, event: any) => {
@@ -393,6 +425,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
+				id={this.props.id}
 				segmentRef={this.segmentRef}
 				key={this.props.segmentui._id}
 				segment={this.props.segmentui}

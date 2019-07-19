@@ -9,6 +9,7 @@ import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as Escape from 'react-escape'
+import * as i18next from 'i18next'
 import Moment from 'react-moment'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
@@ -34,7 +35,7 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
-import { scrollToPart, scrollToPosition, scrollToSegment } from '../lib/viewPort'
+import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
@@ -53,8 +54,9 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import * as i18next from 'i18next'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { VirtualElement } from '../lib/VirtualElement'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -576,7 +578,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
 						const partId = response.result
-						if (partId) scrollToPart(partId)
+						if (partId) scrollToPart(partId).catch(() => { })
 					}
 				})
 			}
@@ -768,11 +770,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err, response) => {
-				console.log('aaa', err, response)
 				if (!err && response) {
 					if (!handleRundownReloadResponse(t, this.props.rundown, response.result)) {
 						if (this.props.rundown && this.props.rundown.nextPartId) {
-							scrollToPart(this.props.rundown.nextPartId)
+							scrollToPart(this.props.rundown.nextPartId).catch(() => { })
 						}
 					}
 				}
@@ -1138,7 +1139,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		document.body.classList.add('dark', 'vertical-overflow-only')
-		window.addEventListener('scroll', this.onWindowScroll)
+		// window.addEventListener('scroll', this.onWindowScroll)
 
 		let preventDefault = (e) => {
 			e.preventDefault()
@@ -1185,7 +1186,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		} else if (this.props.rundown &&
 			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
 			this.props.rundown.nextPartId) {
-			scrollToPart(this.props.rundown.nextPartId)
+			scrollToPart(this.props.rundown.nextPartId).catch(() => { })
+		} else if (
+			// after take
+			(this.props.rundown &&
+			prevProps.rundown && this.props.rundown.currentPartId !== prevProps.rundown.currentPartId &&
+			this.props.rundown.currentPartId && this.state.followLiveSegments)
+		) {
+			scrollToPart(this.props.rundown.currentPartId, true).catch(() => { })
+		} else if (
+			// initial Rundown open
+			(this.props.rundown && this.props.rundown.currentPartId &&
+			this.state.subsReady && !prevState.subsReady)
+		) {
+			// allow for some time for the Rundown to render
+			maintainFocusOnPart(this.props.rundown.currentPartId, 7000, true, true)
 		}
 
 		if (typeof this.props.rundown !== typeof this.props.rundown ||
@@ -1265,7 +1280,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	componentWillUnmount () {
 		this._cleanUp()
 		document.body.classList.remove('dark', 'vertical-overflow-only')
-		window.removeEventListener('scroll', this.onWindowScroll)
+		// window.removeEventListener('scroll', this.onWindowScroll)
 		window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
@@ -1321,14 +1336,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onWindowScroll = (e: Event) => {
-		const isAutoScrolling = document.body.classList.contains('auto-scrolling')
-		if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
-			this.setState({
-				followLiveSegments: false
-			})
-		}
-	}
+	// onWindowScroll = (e: Event) => {
+	// 	console.log('Scroll handler')
+	// 	const isAutoScrolling = document.body.classList.contains('auto-scrolling')
+	// 	if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
+	// 		this.setState({
+	// 			followLiveSegments: false
+	// 		})
+	// 	}
+	// }
 
 	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
 		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
@@ -1343,11 +1359,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	onGoToTop = () => {
 		scrollToPosition(0)
 
-		Meteor.setTimeout(() => {
+		window.requestIdleCallback(() => {
 			this.setState({
 				followLiveSegments: true
 			})
-		}, 400)
+		}, { timeout: 1000 })
 	}
 	onGoToLiveSegment = () => {
 		if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentPartId &&
@@ -1355,14 +1371,33 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToPart(this.props.rundown.nextPartId)
-			// allow for the scroll to finish
-			Meteor.setTimeout(() => {
+			scrollToPart(this.props.rundown.nextPartId, true).then(() => {
+				// allow for the scroll to finish
+			}).catch((e) => {
+				console.error(e)
+			})
+			setTimeout(() => {
 				this.setState({
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 400)
+			}, 4000)
+		} else if (this.props.rundown && this.props.rundown.active && this.props.rundown.currentPartId) {
+			this.setState({
+				followLiveSegments: true
+			})
+			scrollToPart(this.props.rundown.currentPartId, true).then(() => {
+				// allow for the scroll to finish
+			}).catch((e) => {
+				console.error(e)
+			})
+			setTimeout(() => {
+				// console.log("followLiveSegments: true")
+				this.setState({
+					followLiveSegments: true
+				})
+				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+			}, 4000)
 		} else {
 			this.setState({
 				followLiveSegments: true
@@ -1446,22 +1481,31 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					this.props.showStyleBase
 				) {
 					return <ErrorBoundary key={segment._id}>
-							<SegmentTimelineContainer
-								studio={this.props.studio}
-								showStyleBase={this.props.showStyleBase}
-								followLiveSegments={this.state.followLiveSegments}
-								segmentId={segment._id}
-								rundown={this.props.rundown}
-								liveLineHistorySize={100}
-								timeScale={this.state.timeScale}
-								onTimeScaleChange={this.onTimeScaleChange}
-								onContextMenu={this.onContextMenu}
-								onSegmentScroll={this.onSegmentScroll}
-								isLastSegment={index === array.length - 1}
-								onPieceClick={this.onSelectPiece}
-								onPieceDoubleClick={this.onPieceDoubleClick}
-								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
-							/>
+							<VirtualElement
+								id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+								margin={'100% 0px 100% 0px'}
+								initialShow={index < (window.innerHeight / 260)}
+								placeholderHeight={260}
+								placeholderClassName='placeholder-shimmer-element segment-timeline-placeholder'
+								width='auto'>
+								<SegmentTimelineContainer
+									id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+									studio={this.props.studio}
+									showStyleBase={this.props.showStyleBase}
+									followLiveSegments={this.state.followLiveSegments}
+									segmentId={segment._id}
+									rundown={this.props.rundown}
+									liveLineHistorySize={100}
+									timeScale={this.state.timeScale}
+									onTimeScaleChange={this.onTimeScaleChange}
+									onContextMenu={this.onContextMenu}
+									onSegmentScroll={this.onSegmentScroll}
+									isLastSegment={index === array.length - 1}
+									onPieceClick={this.onSelectPiece}
+									onPieceDoubleClick={this.onPieceDoubleClick}
+									onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+								/>
+							</VirtualElement>
 						</ErrorBoundary>
 				}
 			})

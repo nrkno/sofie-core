@@ -39,6 +39,7 @@ import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 
 interface IProps {
+	id: string
 	key: string
 	segment: SegmentUi
 	rundown: Rundown,
@@ -241,7 +242,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 }
 
-export const SegmentTimelineElementId = 'rundown__segment__'
+export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
@@ -279,14 +280,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (this.props.onShowEntireSegment) {
 			this.props.onShowEntireSegment(e)
 		}
-	}
-
-	componentDidMount() {
-		setTimeout((function () {
-			if (this.props.isLiveSegment === true && this.props.followLiveSegments === true) {
-				this.scrollToMe()
-			}
-		}).bind(this), 1000)
 	}
 
 	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
@@ -351,19 +344,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			if (e.deltaX !== 0) {
 				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
 			}
-		}
-	}
-
-	scrollToMe() {
-		if (scrollToSegment(this.segmentBlock, true)) {
-			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
-		}
-	}
-
-	componentDidUpdate(prevProps: IProps) {
-		if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
-			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
-			this.scrollToMe()
 		}
 	}
 
@@ -507,7 +487,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}, 0)
 
 		return (
-			<div id={SegmentTimelineElementId + this.props.segment._id}
+			<div id={this.props.id}
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 

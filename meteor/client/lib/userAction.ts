@@ -47,6 +47,7 @@ export function doUserAction (
 				, 'userAction')
 			)
 			if (callback) callback(res)
+			navigator.vibrate([400, 300, 400, 300, 400])
 		} else {
 			// all good
 			if (timeoutMessage) {
