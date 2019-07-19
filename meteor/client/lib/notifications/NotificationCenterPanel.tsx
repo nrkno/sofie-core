@@ -162,7 +162,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 
 					container.scrollTo({
 						left: 0,
-						top: containerScrollTop + offsetTop - 10,
+						top: offsetTop - 10,
 						behavior: 'smooth'
 					})
 				}
