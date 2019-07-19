@@ -149,7 +149,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	componentDidUpdate (prevProps, prevState, snapshot) {
 		if (super.componentDidUpdate) super.componentDidUpdate(prevProps, prevState, snapshot)
 
-		if (this.props.highlightedSource && this.props.highlightedLevel) {
+		if (this.props.highlightedSource && this.props.highlightedLevel &&
+			(prevProps.highlightedSource !== this.props.highlightedSource ||
+				prevProps.highlightedLevel !== this.props.highlightedLevel)) {
 			const items: NodeListOf<HTMLElement> = document.querySelectorAll('.notification-pop-up.is-highlighted')
 			if (items.length > 0) {
 				// scroll to highlighted items
@@ -157,12 +159,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 
 				const container = document.querySelector('.notification-center-panel .notification-pop-ups')
 				if (container) {
-					const containerScrollTop = container.scrollTop
 					const offsetTop = items[0].offsetTop || 0
 
-					Velocity(container, {
-						scrollTop: containerScrollTop + offsetTop - 10
-					}, {
+					Velocity(items[0], 'scroll', {
+						offset: -10,
+						container,
 						queue: false,
 						duration: 1000
 					})

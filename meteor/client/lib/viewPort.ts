@@ -31,10 +31,10 @@ export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | stri
 
 	// check if the item is in viewport
 	if (forceScroll ||
-		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY) {
+		bottom < 0 ||
+		top < HEADER_HEIGHT) {
 
-		scrollToPosition(top)
+		scrollToPosition(document.documentElement.scrollTop + top)
 		return true
 	}
 
@@ -45,9 +45,12 @@ export function scrollToPosition(scrollPosition: number): void {
 	document.body.classList.add('auto-scrolling')
 	const autoScrolling = document.body.dataset.autoScrolling ? parseInt(document.body.dataset.autoScrolling, 10) + 1 : 1
 	document.body.dataset.autoScrolling = String(autoScrolling)
-	Velocity(document.body, {
-		scrollTop: Math.max(0, scrollPosition - HEADER_HEIGHT)
-	}, 400).then(() => {
+	// TODO: R12 has better code to handle this, but there are breaking changes, so be careful if/when merging
+	Velocity(document.documentElement, 'scroll', {
+		offset: Math.max(0, scrollPosition - HEADER_HEIGHT),
+		duration: 400,
+		queue: false
+	}).then(() => {
 		// delay until next frame, so that the scroll handler can fire
 		requestAnimationFrame(function () {
 			const autoScrolling = document.body.dataset.autoScrolling ? parseInt(document.body.dataset.autoScrolling, 10) - 1 : -1
