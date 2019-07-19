@@ -160,12 +160,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					const containerScrollTop = container.scrollTop
 					const offsetTop = items[0].offsetTop || 0
 
-					Velocity(container, {
-						scrollTop: containerScrollTop + offsetTop - 10
-					}, {
-							queue: false,
-							duration: 1000
-						})
+					container.scrollTo({
+						left: 0,
+						top: containerScrollTop + offsetTop - 10,
+						behavior: 'smooth'
+					})
 				}
 
 				Array.from(items).forEach(item => {
