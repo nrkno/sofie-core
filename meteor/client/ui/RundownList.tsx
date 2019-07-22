@@ -438,7 +438,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 						this.state.systemStatus ?
 							<React.Fragment>
 								<div>
-									{t('status')}:&nbsp;
+									{t('System Status')}:&nbsp;
 									<Tooltip
 										overlay={t('System has issues which need to be resolved')}
 										visible={
