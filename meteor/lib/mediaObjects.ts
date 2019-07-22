@@ -145,10 +145,11 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 						if (mediaObject.mediainfo) {
 							const formats = getAcceptedFormats(config)
 							const audioConfig = config.find(item => item._id === 'audioStreams')
-							const expectedAudioStreams = audioConfig ? new Set((audioConfig.value + '').split(',').map(v => parseInt(v, 10))) : new Set()
+							const expectedAudioStreams = audioConfig ? new Set<string>((audioConfig.value + '').split(',').map(v => v.trim())) : new Set<string>()
 
 							let timebase
 							let audioStreams = 0
+							let isStereo = false
 
 							// check the streams for resolution info
 							for (const stream of mediaObject.mediainfo.streams) {
@@ -163,6 +164,10 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 										messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
 									}
 								} else if (stream.codec.type === 'audio') {
+									// this is the first (and hopefully last) track of audio, and has 2 channels
+									if (audioStreams === 0 && stream.channels === 2) {
+										isStereo = true
+									}
 									audioStreams++
 								}
 							}
@@ -171,7 +176,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								mediaObject.mediainfo.timebase = timebase
 							}
 
-							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
+							if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
 								messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
 							}
 
