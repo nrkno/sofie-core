@@ -80,7 +80,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	}
 
 	cronJob = () => {
-		console.log('Console')
 		const now = new Date()
 		const hour = now.getHours() + (now.getMinutes() / 60)
 		// if the time is between 3 and 4 and the previous restart happened more than 3 hours ago
