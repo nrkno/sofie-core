@@ -285,7 +285,7 @@ addMigrationSteps('0.19.0', [
 	ensureCollectionProperty('Studios', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
 		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL,), example: https://slsofie without trailing /, short form server name is OK.', undefined, 'studio.settings.sofieUrl from config'),
 	ensureStudioConfig('mediaResolutions', '1920x1080i5000tff', undefined, 'Studio config: mediaResolutions',
-		'A set of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000"'),
+		'A set of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000")'),
 
 	{ // Blueprint.databaseVersion
 		id: 'blueprint.databaseVersion',
