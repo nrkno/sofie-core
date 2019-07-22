@@ -45,7 +45,7 @@ const NullComponent = () => null
 const CRON_INTERVAL = 30 * 60 * 1000
 const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
 const WINDOW_START_HOUR = 3
-const WINDOW_END_HOUR = 4
+const WINDOW_END_HOUR = 5
 
 // App component - represents the whole app
 class App extends React.Component<InjectedI18nProps, IAppState> {
@@ -82,8 +82,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	cronJob = () => {
 		const now = new Date()
 		const hour = now.getHours() + (now.getMinutes() / 60)
-		// if the time is between 3 and 4 and the previous restart happened more than 3 hours ago
-		if ((hour >= WINDOW_START_HOUR) && (hour < WINDOW_END_HOUR) && (Date.now() - this.lastStart > LAST_RESTART_LATENCY)) {
+		// if the time is between 3 and 5
+		if ((hour >= WINDOW_START_HOUR) && (hour < WINDOW_END_HOUR) &&
+		// and the previous restart happened more than 3 hours ago
+			(Date.now() - this.lastStart > LAST_RESTART_LATENCY) &&
+		// and not in an active rundown
+			(document.querySelector('.rundown.active') === null)) {
 			setTimeout(() => window.location.reload(true))
 		}
 	}
