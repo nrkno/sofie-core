@@ -95,12 +95,14 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				<tr className='rundown-list-item'>
 					<th className='rundown-list-item__name'>
 						{this.props.rundown.active ?
-							<div className='origo-pulse small right mrs'>
-								<div className='pulse-marker'>
-									<div className='pulse-rays'></div>
-									<div className='pulse-rays delay'></div>
+							<Tooltip overlay={t('This rundown is currently active')} visible={getHelpMode()} placement='bottom'>
+								<div className='origo-pulse small right mrs'>
+									<div className='pulse-marker'>
+										<div className='pulse-rays'></div>
+										<div className='pulse-rays delay'></div>
+									</div>
 								</div>
-							</div>
+							</Tooltip>
 							: null
 						}
 						<Link to={this.getRundownLink(this.props.rundown._id)}>{this.props.rundown.name}</Link>
@@ -378,7 +380,12 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 						<thead>
 							<tr className='hl'>
 								<th className='c3'>
-									{t('Rundown')}
+									<Tooltip
+										overlay={t('Click on a rundown to control your studio')}
+										visible={getHelpMode()}
+										placement='top'>
+										<span>{t('Rundown')}</span>
+									</Tooltip>
 								</th>
 								<th className='c2'>
 									{t('Studio')}
@@ -433,10 +440,9 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 								<div>
 									{t('status')}:&nbsp;
 									<Tooltip
-										overlay='System has issues which need to be resolved'
+										overlay={t('System has issues which need to be resolved')}
 										visible={
-											this.tooltipStep() === ToolTipStep.TOOLTIP_EXTRAS
-											&& this.state.systemStatus.status === 'FAIL'
+											this.state.systemStatus.status === 'FAIL'
 											&& getHelpMode()
 										}
 										placement='top'>
