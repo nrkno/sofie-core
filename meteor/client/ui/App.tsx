@@ -42,8 +42,15 @@ interface IAppState {
 
 const NullComponent = () => null
 
+const CRON_INTERVAL = 30 * 60 * 1000
+const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
+const WINDOW_START_HOUR = 3
+const WINDOW_END_HOUR = 4
+
 // App component - represents the whole app
 class App extends React.Component<InjectedI18nProps, IAppState> {
+	private lastStart = 0
+
 	constructor (props) {
 		super(props)
 
@@ -68,13 +75,25 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			testingMode: getTestingMode(),
 			developerMode: getDeveloperMode()
 		}
+		
+		this.lastStart = Date.now()
+	}
 
+	cronJob = () => {
+		console.log('Console')
+		const now = new Date()
+		const hour = now.getHours() + (now.getMinutes() / 60)
+		// if the time is between 3 and 4 and the previous restart happened more than 3 hours ago
+		if ((hour >= WINDOW_START_HOUR) && (hour < WINDOW_END_HOUR) && (Date.now() - this.lastStart > LAST_RESTART_LATENCY)) {
+			setTimeout(() => window.location.reload(true))
+		}
 	}
 
 	componentDidMount () {
 		const { i18n } = this.props
 
 		m.locale(i18n.language)
+		setInterval(this.cronJob, CRON_INTERVAL)
 	}
 
 	render () {
