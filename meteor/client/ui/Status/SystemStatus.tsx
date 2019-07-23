@@ -26,6 +26,7 @@ interface IDeviceItemProps {
 	// key: string,
 	device: PeripheralDevice
 	showRemoveButtons?: boolean
+	toplevel?: boolean
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
@@ -193,7 +194,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 						overlay='Connect some devices to the playout gateway'
 						visible={getHelpMode() &&
 						this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-						!this.props.children} placement='right'>
+						this.props.toplevel === true} placement='right'>
 					{getAdminMode() ? 
 						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
 						<div className='value'>{this.props.device.name}</div>
@@ -343,14 +344,14 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			}
 		})
 
-		let getDeviceContent = (d: DeviceInHierarchy): JSX.Element => {
+		let getDeviceContent = (d: DeviceInHierarchy, toplevel: boolean): JSX.Element => {
 			let content: JSX.Element[] = [
-				<DeviceItem key={'device' + d.device._id } device={d.device} />
+				<DeviceItem key={'device' + d.device._id } device={d.device} toplevel={toplevel} />
 			]
 			if (d.children.length) {
 				let children: JSX.Element[] = []
 				_.each(d.children, (child: DeviceInHierarchy) => (
-					children.push(getDeviceContent(child))
+					children.push(getDeviceContent(child, false))
 				))
 				content.push(
 					<div key={d.device._id + '_children'} className='children'>
@@ -364,7 +365,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				</div>
 			)
 		}
-		return _.map(devices, (d) => getDeviceContent(d))
+		return _.map(devices, (d) => getDeviceContent(d, true))
 	}
 
 	render () {
