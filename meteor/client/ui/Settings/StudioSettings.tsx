@@ -2,6 +2,7 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
@@ -51,6 +52,7 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend
 } from '../../../lib/api/studios'
+import { getHelpMode } from '../../lib/localStorage'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -876,7 +878,16 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		const { needsUpdate } = this.state
 
 		return <div>
-			<p className='mhn'>{t('Studio Baseline needs update: ')} {needsUpdate ? t('Yes') : t('No')}</p>
+			<p className='mhn'>
+				{t('Studio Baseline needs update: ')}&nbsp;
+				{
+					needsUpdate ?
+					<Tooltip overlay='Baseline needs reload, this studio may not work until reloaded' visible={getHelpMode()} placement='right'>
+						<span>{t('Yes')}</span>
+					</Tooltip> :
+					t('No')
+				}
+			</p>
 			<p className='mhn'><button className='btn btn-primary' onClick={(e) => this.reloadBaseline()}>{t('Reload Baseline')}</button></p>
 		</div>
 	}
