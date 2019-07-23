@@ -310,18 +310,24 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				)) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
-					displayDurationFromGroup = Math.max(this.props.defaultDuration || 3000,
-						part.displayDuration
-						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup])
-						|| 0)
+					displayDurationFromGroup = part.displayDuration
+						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], this.props.defaultDuration || 3000)
 					memberOfDisplayDurationGroup = true
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
-					currentRemaining = Math.max(0, (part.duration || displayDurationFromGroup || part.expectedDuration || 0)
+					currentRemaining = Math.max(0, (part.duration ||
+						(memberOfDisplayDurationGroup ? 
+							displayDurationFromGroup :
+							part.expectedDuration) ||
+						0)
 						- (now - lastStartedPlayback)) + playOffset
 					partDuration = Math.max((part.duration || part.expectedDuration || 0),
 						(now - lastStartedPlayback))
-					partDisplayDuration = Math.max((part.duration || displayDurationFromGroup || part.expectedDuration || this.props.defaultDuration || 3000),
+					partDisplayDuration = Math.max((part.duration ||
+						(memberOfDisplayDurationGroup ?
+							displayDurationFromGroup :
+							part.expectedDuration) ||
+						this.props.defaultDuration || 3000),
 						(now - lastStartedPlayback)) + playOffset
 					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
 				} else {
@@ -331,6 +337,9 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 						|| part.expectedDuration
 						|| this.props.defaultDuration || 3000)
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
+				}
+				if (part._id === "pj9BSXQ9zGRJ7cl_eTjPlkNNL6w_") {
+					console.log(partDuration, partDisplayDuration, currentRemaining)
 				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
 					this.displayDurationGroups[part.displayDurationGroup] =
