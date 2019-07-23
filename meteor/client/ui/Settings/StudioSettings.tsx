@@ -128,7 +128,14 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Attached Devices')}</h2>
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Devices are needed to control your studio hardware')}
+						visible={getHelpMode() && !this.props.studioDevices.length}
+						placement='right'>
+						<span>{t('Attached Devices')}</span>
+					</Tooltip>
+				</h2>
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
