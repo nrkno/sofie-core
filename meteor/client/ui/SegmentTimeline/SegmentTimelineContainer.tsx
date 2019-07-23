@@ -6,8 +6,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import { getCurrentTime } from '../../../lib/lib'
-import { RundownTiming, computeSegmentDuration } from '../RundownView/RundownTiming'
+import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
@@ -299,7 +298,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	onAirLineRefresh = () => {
+	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
@@ -311,7 +310,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
 			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-				(getCurrentTime() - lastStartedPlayback + partOffset + lastPlayOffset) :
+				(e.detail.currentTime - lastStartedPlayback + partOffset + lastPlayOffset) :
 				partOffset
 
 			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
@@ -322,7 +321,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.setState(_.extend({
 				livePosition: newLivePosition,
 				displayTimecode: this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-					(getCurrentTime() - (lastStartedPlayback + onAirPartDuration)) :
+					(e.detail.currentTime - (lastStartedPlayback + onAirPartDuration)) :
 					(onAirPartDuration * -1)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)

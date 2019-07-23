@@ -98,31 +98,31 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
 
 				if (timelineObj) {
-					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
+					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
-					segmentCopy.enable = timelineObj.enable
+					pieceCopy.enable = timelineObj.enable
 					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
-						segmentCopy.renderedInPoint = timelineObj.enable.start
+						pieceCopy.renderedInPoint = timelineObj.enable.start
 					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
 						if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
-							segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
+							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
 						} else {
-							segmentCopy.renderedInPoint = 0
+							pieceCopy.renderedInPoint = 0
 						}
 					} else {
-						segmentCopy.renderedInPoint = 0
+						pieceCopy.renderedInPoint = 0
 					}
 
-					if (typeof timelineObj.enable.duration === 'number' && !segmentCopy.cropped) {
-						segmentCopy.renderedDuration = (
+					if (typeof timelineObj.enable.duration === 'number' && !pieceCopy.cropped) {
+						pieceCopy.renderedDuration = (
 							timelineObj.enable.duration !== 0 ?
 							timelineObj.enable.duration :
-							(props.partDuration - (segmentCopy.renderedInPoint || 0))
+							(props.partDuration - (pieceCopy.renderedInPoint || 0))
 						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)
 
-					overrides.piece = _.extend(overrides.piece || {}, segmentCopy)
+					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
 				}
 			}
 

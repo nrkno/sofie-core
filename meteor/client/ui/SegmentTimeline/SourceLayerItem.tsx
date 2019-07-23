@@ -218,7 +218,10 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		const userDurationNumber = (piece.userDuration && typeof piece.userDuration.duration === 'number' ? piece.userDuration.duration || 0 : 0)
 		let itemDuration = Math.min(piece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
 
-		if (piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal && !piece.cropped && !piece.playoutDuration && !piece.userDuration) {
+		if ((
+			(piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal) ||
+			(piece.enable.start !== undefined && piece.enable.end === undefined && piece.enable.duration === undefined)
+		) && !piece.cropped && !piece.playoutDuration && !piece.userDuration) {
 			itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 		}

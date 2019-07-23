@@ -263,7 +263,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 				Math.max(
 				(
 					(startedPlayback && props.timingDurations.partDurations &&
-						(SegmentTimelinePart0.getCurrentLiveLinePosition(props.part) +
+						(SegmentTimelinePart0.getCurrentLiveLinePosition(props.part, props.timingDurations.currentTime || getCurrentTime()) +
 							SegmentTimelinePart0.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.partDurations ?
@@ -288,8 +288,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					(
 						(startedPlayback && nextProps.timingDurations.partDurations &&
 							(nextProps.relative ?
-								SegmentTimelinePart0.getCurrentLiveLinePosition(nextProps.part) :
-								SegmentTimelinePart0.getCurrentLiveLinePosition(nextProps.part) +
+								SegmentTimelinePart0.getCurrentLiveLinePosition(nextProps.part, nextProps.timingDurations.currentTime || getCurrentTime()) :
+								SegmentTimelinePart0.getCurrentLiveLinePosition(nextProps.part, nextProps.timingDurations.currentTime || getCurrentTime()) +
 									SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.partDurations ?
@@ -310,12 +310,12 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	static getCurrentLiveLinePosition(part: PartUi) {
+	static getCurrentLiveLinePosition(part: PartUi, currentTime: number) {
 		if (part.startedPlayback && part.getLastStartedPlayback()) {
 			if (part.duration) {
 				return part.duration
 			} else {
-				return getCurrentTime() - (part.getLastStartedPlayback() || 0) + (part.getLastPlayOffset() || 0)
+				return currentTime - (part.getLastStartedPlayback() || 0) + (part.getLastPlayOffset() || 0)
 			}
 		} else {
 			return 0
@@ -346,7 +346,9 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 
 		return Math.max(
 			this.state.liveDuration,
-			(this.props.part.duration || this.props.part.renderedDuration || 0) + playOffset
+			(this.props.part.duration ||
+				this.props.timingDurations.partDisplayDurations && this.props.timingDurations.partDisplayDurations[this.props.part._id] ||
+				this.props.part.renderedDuration || 0) + playOffset
 		)
 
 		/* return part.duration !== undefined ? part.duration : Math.max(
