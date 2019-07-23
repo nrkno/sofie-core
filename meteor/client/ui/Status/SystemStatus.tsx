@@ -191,7 +191,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 				</div>
 				<div className='device-item__id'>
 					<Tooltip
-						overlay='Connect some devices to the playout gateway'
+						overlay={t('Connect some devices to the playout gateway')}
 						visible={getHelpMode() &&
 						this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 						this.props.toplevel === true} placement='right'>
