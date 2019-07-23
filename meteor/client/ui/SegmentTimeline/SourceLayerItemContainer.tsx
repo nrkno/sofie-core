@@ -51,8 +51,11 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	private statusComp: Tracker.Computation
 	private objId: string
 	private overrides: any
+	private destroyed: boolean
 
 	updateMediaObjectSubscription () {
+		if (this.destroyed) return
+
 		if (this.props.piece && this.props.piece.sourceLayer) {
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
@@ -85,6 +88,8 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	}
 
 	updateDataTracker () {
+		if (this.destroyed) return
+
 		this.statusComp = this.autorun(() => {
 			const props = this.props
 			this.overrides = {}
@@ -164,6 +169,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	}
 
 	componentWillUnmount () {
+		this.destroyed = true
 		super.componentWillUnmount()
 	}
 
