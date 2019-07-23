@@ -1,7 +1,11 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Studio } from '../../../lib/collections/Studios'
+const Tooltip = require('rc-tooltip')
+import {
+	Studio,
+	Studios
+} from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -18,6 +22,7 @@ import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import { getHelpMode } from '../../lib/localStorage'
 
 interface ConfigManifestEntryExt extends ConfigManifestEntry {
 	source: string
@@ -334,7 +339,9 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 					<button className={ClassNames('btn btn-primary', {
 						'btn-tight': this.props.subPanel
 					})} onClick={this.addConfigItem}>
-						<FontAwesomeIcon icon={faPlus} />
+						<Tooltip overlay={t('More settings specific to this studio can be found here')} visible={getHelpMode()} placement='right'>
+							<FontAwesomeIcon icon={faPlus} />
+						</Tooltip>
 					</button>
 				</div>
 			</div>
