@@ -882,7 +882,7 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 				{t('Studio Baseline needs update: ')}&nbsp;
 				{
 					needsUpdate ?
-					<Tooltip overlay='Baseline needs reload, this studio may not work until reloaded' visible={getHelpMode()} placement='right'>
+					<Tooltip overlay={t('Baseline needs reload, this studio may not work until reloaded')} visible={getHelpMode()} placement='right'>
 						<span>{t('Yes')}</span>
 					</Tooltip> :
 					t('No')
