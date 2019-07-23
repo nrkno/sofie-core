@@ -6,6 +6,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
+const Tooltip = require('rc-tooltip')
 import { translate } from 'react-i18next'
 import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
@@ -17,6 +18,8 @@ import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { HttpSendDeviceSettingsComponent } from './HttpSendDeviceSettingsComponent'
 import { IPlayoutDeviceSettingsComponentProps, IPlayoutDeviceSettingsComponentState } from './IHttpSendDeviceSettingsComponentProps'
+import { getHelpMode } from '../../../lib/localStorage'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IPlayoutDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
@@ -527,7 +530,13 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 
 			{subDevices &&
 				(<React.Fragment>
-					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
+					<h2 className='mhn'>
+						<Tooltip
+							overlay={t('Connect some devices to the playout gateway')}
+							visible={getHelpMode() && !subDevices.length} placement='right'>
+							<span>{t('Attached Subdevices')}</span>
+						</Tooltip>
+					</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 		</div>)
