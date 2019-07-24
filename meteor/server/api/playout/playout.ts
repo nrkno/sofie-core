@@ -271,7 +271,7 @@ export namespace ServerPlayoutAPI {
 				const resolvedPieces = getResolvedPieces(previousPart)
 
 				const context = new RundownContext(rundown)
-				previousPartEndState = blueprint.getEndStateForPart(context, previousPart.previousPartEndState, resolvedPieces, time)
+				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
 

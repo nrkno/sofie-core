@@ -111,7 +111,8 @@ function resetRundownPlayhead (rundown: Rundown) {
 			updateStoryStatus: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
-			startedPlayback: 1
+			startedPlayback: 1,
+			previousPersistentState: 1
 		}
 	})
 

@@ -61,7 +61,7 @@ import { generateRecordingTimelineObjs } from '../testTools'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { prefixAllObjectIds } from './lib'
-import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces } from './pieces'
+import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 
@@ -207,8 +207,11 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
 				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundown.currentPartId) {
 					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
+					// const previousPart = rundownData.rundown.previousPartId ? rundownData.partsMap[rundownData.rundown.previousPartId] : undefined
 					const context = new PartEventContext(activeRundown, studio, currentPart)
-					const resolvedPieces = getResolvedPieces(currentPart)
+					// const groupObjs = timelineObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId)))
+					// const resolvedPieces = getResolvedPieces(currentPart)
+					const resolvedPieces = getResolvedPiecesFromFullTimeline(rundownData, timelineObjs)
 					const timelineObjs2 = _.map(timelineObjs, obj => {
 						let pieceId: string | undefined = undefined
 						if (obj.inGroup && obj.inGroup.indexOf(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX) === 0) {
@@ -219,7 +222,8 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 							pieceId
 						})
 					})
-					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs2, currentPart.previousPartEndState, resolvedPieces)), (object: OnGenerateTimelineObj) => {
+					const tlGenRes = waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs2, rundownData.rundown.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces, resolvedPieces.time))
+					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric>({
 							...omit(object, 'pieceId'),
 							_id: '', // set later
@@ -227,6 +231,14 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 							studioId: studio._id
 						})
 					})
+					// TODO - is this the best place for this save?
+					if (tlGenRes.persistentState) {
+						Rundowns.update(rundownData.rundown._id, {
+							$set: {
+								previousPersistentState: tlGenRes.persistentState
+							}
+						})
+					}
 				}
 
 				waitForPromise(promiseClearTimeline)

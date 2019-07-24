@@ -25,6 +25,8 @@ import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
 import { DeviceType } from 'timeline-state-resolver-types'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
+import { RundownData } from '../../../lib/collections/Rundowns';
+import { postProcessAdLibPieces } from '../blueprints/postProcess';
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -250,6 +252,147 @@ export function getResolvedPieces (part: Part): Piece[] {
 	})
 
 	return processedPieces
+}
+
+export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, allObjs: TimelineObjGeneric[]): { pieces: Piece[], time: number } {
+	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId))))
+
+	const now = getCurrentTime()
+
+	// let firstPart = undefined
+	// if (rundownData.rundown.previousPartId) {
+	// 	firstPart = rundownData.partsMap[rundownData.rundown.previousPartId]
+	// }
+
+	// const pieces: Piece[] = []
+	const partIds = _.compact([rundownData.rundown.previousPartId, rundownData.rundown.currentPartId])
+	const pieces: Piece[] = rundownData.pieces.filter(p => partIds.indexOf(p.partId) !== -1)
+
+	if (rundownData.rundown.currentPartId && rundownData.rundown.nextPartId) {
+		const part = rundownData.partsMap[rundownData.rundown.currentPartId]
+		if (part && part.autoNext) {
+			pieces.push(...rundownData.pieces.filter(p => p.partId ===  rundownData.rundown.nextPartId))
+		}
+	}
+
+	// if (rundownData.rundown.previousPartId) {
+	// 	const part = rundownData.partsMap[rundownData.rundown.previousPartId]
+	// 	if (part) {
+	// 		pieces.push(part.)
+	// 	}
+	// }
+
+	const itemMap: { [key: string]: Piece } = {}
+	pieces.forEach(piece => itemMap[piece._id] = piece)
+
+	// objs.forEach(o => {
+	// 	if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
+	// 		// Emulate playout starting now. TODO - ensure didnt break other uses
+	// 		o.enable.start = now - (part.getLastStartedPlayback() || 0)
+	// 	} else if (o.enable.start === 0 || o.enable.start === 'now') {
+	// 		o.enable.start = 1
+	// 	}
+	// })
+	objs.forEach(o => {
+		if (o.enable.start === 'now') {
+			o.enable.start = now
+		}
+	})
+
+	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
+		time: now
+	})
+	const events: Array<{
+		start: number
+		end: number | undefined
+		id: string
+		piece: Piece
+	}> = []
+
+	let unresolvedIds: string[] = []
+	_.each(tlResolved.objects, (obj0) => {
+		const obj = obj0 as any as TimelineObjRundown
+		const id = (obj.metadata || {}).pieceId
+
+		// Probably the part
+		if (!id) return
+
+		if (id === 'i_FgRgYxCkjNtIsB9giFD5A7hcw_') {
+			console.log(JSON.stringify(obj0.resolved.instances, undefined, 4))
+		}
+
+		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
+			const firstInstance = obj0.resolved.instances[0] || {}
+			events.push({
+				start: firstInstance.start || now,
+				end: firstInstance.end || undefined,
+				id: id,
+				piece: itemMap[id]
+			})
+		} else {
+			events.push({
+				start: now,
+				end: undefined,
+				id: id,
+				piece: itemMap[id]
+			})
+			unresolvedIds.push(id)
+		}
+	})
+
+	if (tlResolved.statistics.unresolvedCount > 0) {
+		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces (${unresolvedIds.join(', ')})`)
+	}
+	if (pieces.length !== events.length) {
+		logger.warn(`Got ${events.length} ordered pieces. Expected ${pieces.length}.`)
+	}
+
+	events.sort((a, b) => {
+		if (a.start < b.start) {
+			return -1
+		} else if (a.start > b.start) {
+			return 1
+		} else if (a.piece && b.piece) {
+			if (a.piece.isTransition === b.piece.isTransition) {
+				return 0
+			} else if (b.piece.isTransition) {
+				return 1
+			} else {
+				return -1
+			}
+		} else {
+			return 0
+		}
+	})
+
+	const processedPieces: Piece[] = events.map<Piece>(event => {
+		return literal<Piece>({
+			...event.piece,
+			enable: {
+				start: Math.max(0, event.start - 1),
+			},
+			playoutDuration: Math.max(0, (event.end || 0) - event.start) || undefined
+		})
+	})
+
+	// crop infinite pieces
+	processedPieces.forEach((piece, index, source) => {
+		if (piece.infiniteMode) {
+			for (let i = index + 1; i < source.length; i++) {
+				const sourcePiece = source[i]
+				if (piece.sourceLayerId === sourcePiece.sourceLayerId) {
+					// TODO - verify this
+					piece.playoutDuration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
+					return
+				}
+			}
+		}
+	})
+
+	return {
+		pieces: processedPieces,
+		time: now
+	}
 }
 
 
