@@ -98,38 +98,39 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<div className='row'>
-					<h2 className='mhn mtn'>
-						{t('Generic Properties')}
-					</h2>
-					<label className='field'>
-						{t('Device Name')}
-						{
-							!(this.props.device && this.props.device.name) ?
-							<div className='error-notice inline'>
-								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div> :
-							null
-						}
-						<div className='mdi'>
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='name'
-								obj={this.props.device}
-								type='text'
-								collection={PeripheralDevices}
-								className='mdinput'></EditAttribute>
-							<span className='mdfx'></span>
-						</div>
-						<div className='col c12 rl-c6 alright'>
-							<div className='mbs'>
-								<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
-									{t('Restart Device')}
-								</button>
+						<h2 className='mhn mtn'>
+							{t('Generic Properties')}
+						</h2>
+						<label className='field'>
+							{t('Device Name')}
+							{
+								!(this.props.device && this.props.device.name) ?
+								<div className='error-notice inline'>
+									{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+								</div> :
+								null
+							}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='name'
+									obj={this.props.device}
+									type='text'
+									collection={PeripheralDevices}
+									className='mdinput'></EditAttribute>
+								<span className='mdfx'></span>
 							</div>
-							<div className='mbs'>
-								<PeripheralDeviceStatus device={device}/>
+							<div className='col c12 rl-c6 alright'>
+								<div className='mbs'>
+									<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
+										{t('Restart Device')}
+									</button>
+								</div>
+								<div className='mbs'>
+									<PeripheralDeviceStatus device={device}/>
+								</div>
 							</div>
-						</div>
+						</label>
 					</div>
 
 					{this.renderSpecifics()}
