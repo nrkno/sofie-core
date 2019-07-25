@@ -18,8 +18,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { getHelpMode } from '../../lib/localStorage'
-import { getAdminMode } from '../../lib/localStorage'
+import { getAdminMode, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 
 interface IDeviceItemProps {
@@ -195,10 +194,10 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 						visible={getHelpMode() &&
 						this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 						this.props.toplevel === true} placement='right'>
-					{getAdminMode() ? 
-						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
-						<div className='value'>{this.props.device.name}</div>
-					}
+						{getAdminMode() ?
+							<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
+							<div className='value'>{this.props.device.name}</div>
+						}
 					</Tooltip>
 				</div>
 				{this.props.device.versions ?
