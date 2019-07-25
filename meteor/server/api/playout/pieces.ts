@@ -17,7 +17,8 @@ import { logger } from '../../logging'
 import {
 	getPieceGroupId,
 	getPieceFirstObjectId,
-	TimelineObjectCoreExt
+	TimelineObjectCoreExt,
+	PieceLifespan
 } from 'tv-automation-sofie-blueprints-integration'
 import { transformTimeline } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -156,6 +157,7 @@ export function createPieceGroup (
 	})
 }
 export function getResolvedPieces (part: Part): Piece[] {
+	// TODO - can probably undo any changes made to this..
 	const pieces = part.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
@@ -259,40 +261,19 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 
 	const now = getCurrentTime()
 
-	// let firstPart = undefined
-	// if (rundownData.rundown.previousPartId) {
-	// 	firstPart = rundownData.partsMap[rundownData.rundown.previousPartId]
-	// }
-
-	// const pieces: Piece[] = []
 	const partIds = _.compact([rundownData.rundown.previousPartId, rundownData.rundown.currentPartId])
 	const pieces: Piece[] = rundownData.pieces.filter(p => partIds.indexOf(p.partId) !== -1)
 
 	if (rundownData.rundown.currentPartId && rundownData.rundown.nextPartId) {
 		const part = rundownData.partsMap[rundownData.rundown.currentPartId]
 		if (part && part.autoNext) {
-			pieces.push(...rundownData.pieces.filter(p => p.partId ===  rundownData.rundown.nextPartId))
+			pieces.push(...rundownData.pieces.filter(p => p.partId === rundownData.rundown.nextPartId))
 		}
 	}
-
-	// if (rundownData.rundown.previousPartId) {
-	// 	const part = rundownData.partsMap[rundownData.rundown.previousPartId]
-	// 	if (part) {
-	// 		pieces.push(part.)
-	// 	}
-	// }
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(piece => itemMap[piece._id] = piece)
 
-	// objs.forEach(o => {
-	// 	if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
-	// 		// Emulate playout starting now. TODO - ensure didnt break other uses
-	// 		o.enable.start = now - (part.getLastStartedPlayback() || 0)
-	// 	} else if (o.enable.start === 0 || o.enable.start === 'now') {
-	// 		o.enable.start = 1
-	// 	}
-	// })
 	objs.forEach(o => {
 		if (o.enable.start === 'now') {
 			o.enable.start = now
@@ -317,8 +298,10 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 		// Probably the part
 		if (!id) return
 
-		if (id === 'i_FgRgYxCkjNtIsB9giFD5A7hcw_') {
-			console.log(JSON.stringify(obj0.resolved.instances, undefined, 4))
+		// Erm... How?
+		if (!itemMap[id]) {
+			unresolvedIds.push(id)
+			return
 		}
 
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
@@ -377,12 +360,17 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 
 	// crop infinite pieces
 	processedPieces.forEach((piece, index, source) => {
-		if (piece.infiniteMode) {
+		if (piece.infiniteMode) { // && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
 			for (let i = index + 1; i < source.length; i++) {
 				const sourcePiece = source[i]
 				if (piece.sourceLayerId === sourcePiece.sourceLayerId) {
-					// TODO - verify this
-					piece.playoutDuration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
+					// TODO - verify this, the min is necessary and correct though
+					const infDuration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
+					if (piece.playoutDuration) {
+						piece.playoutDuration = Math.min(piece.playoutDuration, infDuration)
+					} else {
+						piece.playoutDuration = infDuration
+					}
 					return
 				}
 			}
