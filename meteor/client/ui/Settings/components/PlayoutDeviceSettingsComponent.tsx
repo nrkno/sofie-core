@@ -257,6 +257,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Minimum recording time')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.minRecordingTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
 					</React.Fragment>)
 					break
 				case PlayoutDeviceType.PHAROS:
