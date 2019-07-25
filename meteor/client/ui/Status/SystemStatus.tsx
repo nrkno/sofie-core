@@ -179,14 +179,6 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 				<div className='status-container'>
 					<PeripheralDeviceStatus device={this.props.device} />
 
-					<div className={statusClassNames}>
-						<div className='value'>
-							<span className='pill device-item__device-status__label'>
-								{this.statusCodeString()}
-							</span>
-						</div>
-						<div className="device-item__device-status-message"><i>{this.statusMessages()}</i></div>
-					</div>
 					<div className='device-item__last-seen'>
 						<label>{t('Last seen')}: </label>
 						<div className='value'>
@@ -443,7 +435,7 @@ export const PeripheralDeviceStatus = i18next.translate()(class PeripheralDevice
 						{this.statusCodeString()}
 					</span>
 				</div>
-				<div><i>{this.statusMessages()}</i></div>
+				<div className='device-item__device-status-message'><i>{this.statusMessages()}</i></div>
 			</div>
 		)
 	}
