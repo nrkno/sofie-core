@@ -9,6 +9,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
+import { Studios } from '../../lib/collections/Studios'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType
@@ -99,6 +100,12 @@ const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavig
 		setTimeout(() => {
 			let after = Blueprints.find({}).fetch()
 			let newBlueprint = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
+			this.props.obj['blueprintId'] = newBlueprint
+			if (this.props.obj) {
+				let m = {}
+				m['blueprintId'] = newBlueprint
+				Studios.update(this.props.obj['_id'], { $set: m })
+			}
 			this.redirectUser('/settings/blueprint/' + newBlueprint)
 		}, 1000)
 	}
