@@ -213,8 +213,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
 								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteStudio(studio) }}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
 								<div className='selectable clickable'>
 									<h3>{studio.name || t('Unnamed Studio')}</h3>
 								</div>
