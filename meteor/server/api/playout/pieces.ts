@@ -26,8 +26,8 @@ import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
 import { DeviceType } from 'timeline-state-resolver-types'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
-import { RundownData } from '../../../lib/collections/Rundowns';
-import { postProcessAdLibPieces } from '../blueprints/postProcess';
+import { RundownData } from '../../../lib/collections/Rundowns'
+import { postProcessAdLibPieces } from '../blueprints/postProcess'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -49,7 +49,7 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 				// Infinite coninuation, needs to start earlier otherwise it will likely end up being unresolved
 				obj.enable.start = 0
 			} else {
-				obj.enable.start = 100 // TODO: write a motivation for this
+				obj.enable.start = 100 // TODO: write a motivation for this. perhaps because absolute 0 with no group has(had?) issues?
 			}
 		}
 
@@ -157,7 +157,7 @@ export function createPieceGroup (
 	})
 }
 export function getResolvedPieces (part: Part): Piece[] {
-	// TODO - can probably undo any changes made to this..
+	// TODO - can probably undo any changes made to this.. but maybe not as it is used by getEndState
 	const pieces = part.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
