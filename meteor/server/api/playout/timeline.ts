@@ -212,20 +212,25 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 					// const groupObjs = timelineObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId)))
 					// const resolvedPieces = getResolvedPieces(currentPart)
 					const resolvedPieces = getResolvedPiecesFromFullTimeline(rundownData, timelineObjs)
-					const timelineObjs2 = _.map(timelineObjs, obj => {
-						let pieceId: string | undefined = undefined
-						if (obj.inGroup && obj.inGroup.indexOf(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX) === 0) {
-							pieceId = obj.inGroup.substring(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX.length)
-						}
-						return literal<OnGenerateTimelineObj & TimelineObjGeneric>({
-							...obj,
-							pieceId
-						})
-					})
-					const tlGenRes = waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs2, rundownData.rundown.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces, resolvedPieces.time))
+					// const timelineObjs2 = _.map(timelineObjs, obj => {
+					// 	let pieceId: string | undefined = undefined
+					// 	// TODO - this is a horrible way to define this ownership... as it will break with nested groups
+					// 	if (obj.inGroup) {
+					// 		// could start with 'previous_', so make sure to trim that off too
+					// 		const index = obj.inGroup.indexOf(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX)
+					// 		if (index !== -1) {
+					// 			pieceId = obj.inGroup.substring(index + PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX.length)
+					// 		}
+					// 	}
+					// 	return literal<OnGenerateTimelineObj & TimelineObjGeneric>({
+					// 		...obj,
+					// 		pieceId
+					// 	})
+					// })
+					const tlGenRes = waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, rundownData.rundown.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces, resolvedPieces.time))
 					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric>({
-							...omit(object, 'pieceId'),
+							...object,
 							_id: '', // set later
 							objectType: TimelineObjType.RUNDOWN,
 							studioId: studio._id
@@ -245,11 +250,11 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 
 				resolve(
 					_.map<TimelineObjGeneric, TimelineObjRundown>(timelineObjs, (timelineObj) => {
-
-						return extendMandadory<TimelineObjGeneric, TimelineObjRundown>(timelineObj, {
+						return {
+							...omit(timelineObj, 'pieceId'), // pieceId is a temporary field that we dont need
 							rundownId: activeRundown._id,
 							objectType: TimelineObjType.RUNDOWN
-						})
+						}
 					})
 				)
 			} else {
@@ -723,7 +728,8 @@ function transformPartIntoTimeline (
 						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup.id : undefined,
 						rundownId: rundown._id,
-						objectType: TimelineObjType.RUNDOWN
+						objectType: TimelineObjType.RUNDOWN,
+						pieceId: piece._id
 					})
 				})
 			}

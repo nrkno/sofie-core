@@ -114,6 +114,7 @@ export function createPieceGroupFirstObject (
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: piece.rundownId,
+		pieceId: piece._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: piece.sourceLayerId + '_firstobject',
@@ -148,6 +149,7 @@ export function createPieceGroup (
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
 		rundownId: piece.rundownId,
+		pieceId: piece._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: calculatePieceTimelineEnable(piece),
 		layer: piece.sourceLayerId,
@@ -405,7 +407,8 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 						_id: '', // set later
 						studioId: '', // set later
-						objectType: TimelineObjType.RUNDOWN
+						objectType: TimelineObjType.RUNDOWN,
+						pieceId: newId
 					})
 				})
 			),
@@ -454,7 +457,8 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 					_id: '', // set later
 					studioId: '', // set later
-					objectType: TimelineObjType.RUNDOWN
+					objectType: TimelineObjType.RUNDOWN,
+					pieceId: newId
 				})
 			})
 		), newId + '_')

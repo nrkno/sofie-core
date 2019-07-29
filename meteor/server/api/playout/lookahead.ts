@@ -38,10 +38,6 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 		const lookaheadDepth = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead, lookaheadDepth)
 
-		if (layerId === 'casparcg_player_clip_pending') {
-			console.log('lookahead res:', JSON.stringify(lookaheadObjs))
-		}
-
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
 			const enable: TimelineTypes.TimelineEnable = {
@@ -60,7 +56,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			const finiteDuration = entry.partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && entry.partId === activeRundown.nextPartId)
 			enable.end = finiteDuration ? `#${entry.obj.id}.start` : undefined
 
-			mutateAndPushObject(entry.obj, `${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY)
+			mutateAndPushObject(entry.obj, `timed${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY)
 		})
 
 		// Add each of the future objects, that have no end point
@@ -71,7 +67,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 
 			// Prioritise so that the earlier ones are higher, decreasing within the range 'reserved' for lookahead
 			const priority = futurePriorityScale * (futureObjCount - i)
-			mutateAndPushObject(entry.obj, `${i}`, { while: '1' }, mapping, priority)
+			mutateAndPushObject(entry.obj, `future${i}`, { while: '1' }, mapping, priority)
 			// We use while: 1 for the enabler, as any time before it should be active will be filled by either a playing object, or a timed lookahead.
 			// And this allows multiple futures to be timed in a way that allows them to co-exist
 		})
@@ -288,7 +284,6 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 function findObjectsForPart (rundownData: RundownData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): TimelineObjRundown[] {
 	const activeRundown = rundownData.rundown
 
-
 	// Sanity check, if no part to search, then abort
 	if (!startingPartOnLayer || startingPartOnLayer.pieces.length === 0) {
 		return []
@@ -305,7 +300,8 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						rundownId: rundownData.rundown._id
+						rundownId: rundownData.rundown._id,
+						pieceId: i._id
 					}))
 				}
 			})
@@ -372,6 +368,7 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
 						rundownId: rundownData.rundown._id,
+						pieceId: piece._id,
 						content: newContent
 					}))
 				}
