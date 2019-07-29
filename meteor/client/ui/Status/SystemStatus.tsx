@@ -149,6 +149,27 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		})
 	}
 
+	onFormatHyperdeck (device: PeripheralDevice) {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Format HyperDeck disks'),
+			message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
+			onAccept: (event: any) => {
+
+				callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck', (err, result) => {
+					if (err) {
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to HyperDecks on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
+					} else {
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Formatting HyperDeck disks on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
+					}
+				})
+			},
+		})
+	}
+
 	render () {
 		const { t } = this.props
 
@@ -195,6 +216,20 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 								}>
 									{t('Restart')}
 									{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
+								</button>
+							</React.Fragment> : null
+						)}
+						{(
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.subType === TSR_DeviceType.HYPERDECK ? <React.Fragment>
+								<button className='btn btn-secondary' onClick={
+									(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										this.onFormatHyperdeck(this.props.device)
+									}
+								}>
+									{t('Format disks')}
 								</button>
 							</React.Fragment> : null
 						)}
