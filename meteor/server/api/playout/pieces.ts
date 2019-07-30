@@ -18,7 +18,8 @@ import {
 	getPieceGroupId,
 	getPieceFirstObjectId,
 	TimelineObjectCoreExt,
-	PieceLifespan
+	PieceLifespan,
+	OnGenerateTimelineObj
 } from 'tv-automation-sofie-blueprints-integration'
 import { transformTimeline } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -108,13 +109,14 @@ export function createPieceGroupFirstObject (
 	piece: Piece,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
-): TimelineObjPieceAbstract {
-	return literal<TimelineObjPieceAbstract>({
+): (TimelineObjPieceAbstract & OnGenerateTimelineObj) {
+	return literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
 		id: getPieceFirstObjectId(piece),
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: piece.rundownId,
 		pieceId: piece._id,
+		infinitePieceId: piece.infiniteId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: piece.sourceLayerId + '_firstobject',
@@ -136,8 +138,8 @@ export function createPieceGroupFirstObject (
 export function createPieceGroup (
 	piece: Piece,
 	partGroup?: TimelineObjRundown
-): TimelineObjGroup & TimelineObjRundown {
-	return literal<TimelineObjGroup & TimelineObjRundown>({
+): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
+	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
 		id: getPieceGroupId(piece),
 		_id: '', // set later
 		studioId: '', // set later
@@ -150,6 +152,7 @@ export function createPieceGroup (
 		isGroup: true,
 		rundownId: piece.rundownId,
 		pieceId: piece._id,
+		infinitePieceId: piece.infiniteId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: calculatePieceTimelineEnable(piece),
 		layer: piece.sourceLayerId,
@@ -159,7 +162,7 @@ export function createPieceGroup (
 	})
 }
 export function getResolvedPieces (part: Part): Piece[] {
-	// TODO - can probably undo any changes made to this.. but maybe not as it is used by getEndState
+	// TODO - was this mangled for endState and could it have broken something else?
 	const pieces = part.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
@@ -407,8 +410,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 						_id: '', // set later
 						studioId: '', // set later
-						objectType: TimelineObjType.RUNDOWN,
-						pieceId: newId
+						objectType: TimelineObjType.RUNDOWN
 					})
 				})
 			),
@@ -457,8 +459,7 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 					_id: '', // set later
 					studioId: '', // set later
-					objectType: TimelineObjType.RUNDOWN,
-					pieceId: newId
+					objectType: TimelineObjType.RUNDOWN
 				})
 			})
 		), newId + '_')

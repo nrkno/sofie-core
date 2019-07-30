@@ -170,7 +170,7 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 
 	return new Promise((resolve, reject) => {
 		try {
-			let timelineObjs: Array<TimelineObjGeneric> = []
+			let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
 			const promiseActiveRundown = asyncCollectionFindOne(Rundowns, {
 				studioId: studio._id,
@@ -207,26 +207,9 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
 				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundown.currentPartId) {
 					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
-					// const previousPart = rundownData.rundown.previousPartId ? rundownData.partsMap[rundownData.rundown.previousPartId] : undefined
 					const context = new PartEventContext(activeRundown, studio, currentPart)
-					// const groupObjs = timelineObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId)))
 					// const resolvedPieces = getResolvedPieces(currentPart)
 					const resolvedPieces = getResolvedPiecesFromFullTimeline(rundownData, timelineObjs)
-					// const timelineObjs2 = _.map(timelineObjs, obj => {
-					// 	let pieceId: string | undefined = undefined
-					// 	// TODO - this is a horrible way to define this ownership... as it will break with nested groups
-					// 	if (obj.inGroup) {
-					// 		// could start with 'previous_', so make sure to trim that off too
-					// 		const index = obj.inGroup.indexOf(PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX)
-					// 		if (index !== -1) {
-					// 			pieceId = obj.inGroup.substring(index + PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX.length)
-					// 		}
-					// 	}
-					// 	return literal<OnGenerateTimelineObj & TimelineObjGeneric>({
-					// 		...obj,
-					// 		pieceId
-					// 	})
-					// })
 					const tlGenRes = waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, rundownData.rundown.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces, resolvedPieces.time))
 					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric>({
@@ -249,9 +232,9 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				waitForPromise(promiseClearTimeline)
 
 				resolve(
-					_.map<TimelineObjGeneric, TimelineObjRundown>(timelineObjs, (timelineObj) => {
+					_.map<TimelineObjGeneric & OnGenerateTimelineObj, TimelineObjRundown>(timelineObjs, (timelineObj) => {
 						return {
-							...omit(timelineObj, 'pieceId'), // pieceId is a temporary field that we dont need
+							...omit(timelineObj, 'pieceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
 							rundownId: activeRundown._id,
 							objectType: TimelineObjType.RUNDOWN
 						}
@@ -385,8 +368,8 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Ti
 	})
 }
 
-function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: RundownBaselineObj[]): TimelineObjRundown[] {
-	let timelineObjs: Array<TimelineObjRundown> = []
+function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 	let currentPartGroup: TimelineObjRundown | undefined
 	let previousPartGroup: TimelineObjRundown | undefined
 
@@ -661,8 +644,8 @@ function transformPartIntoTimeline (
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
-): Array<TimelineObjRundown> {
-	let timelineObjs: Array<TimelineObjRundown> = []
+): Array<TimelineObjRundown & OnGenerateTimelineObj> {
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition = transitionProps && transitionProps.allowed && !isHold && holdState !== RundownHoldState.COMPLETE
@@ -729,7 +712,8 @@ function transformPartIntoTimeline (
 						inGroup: partGroup ? pieceGroup.id : undefined,
 						rundownId: rundown._id,
 						objectType: TimelineObjType.RUNDOWN,
-						pieceId: piece._id
+						pieceId: piece._id,
+						infinitePieceId: piece.infiniteId
 					})
 				})
 			}

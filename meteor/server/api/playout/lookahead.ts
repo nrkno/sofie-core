@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { LookaheadMode, TimelineObjectCoreExt, Timeline as TimelineTypes } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, TimelineObjectCoreExt, Timeline as TimelineTypes, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
 import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
-import { extendMandadory, clone } from '../../../lib/lib'
+import { extendMandadory, clone, literal } from '../../../lib/lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -281,7 +281,7 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 	}
 }
 
-function findObjectsForPart (rundownData: RundownData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): TimelineObjRundown[] {
+function findObjectsForPart (rundownData: RundownData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activeRundown = rundownData.rundown
 
 	// Sanity check, if no part to search, then abort
@@ -296,12 +296,14 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 			_.each(i.content.timelineObjects, (obj) => {
 				if (obj) {
 					fixTimelineId(obj)
-					allObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(obj, {
+					allObjs.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
+						...obj,
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
 						rundownId: rundownData.rundown._id,
-						pieceId: i._id
+						pieceId: i._id,
+						infinitePieceId: i.infiniteId
 					}))
 				}
 			})
@@ -363,12 +365,14 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 					}
 					const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
 
-					res.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(obj, {
+					res.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
+						...obj,
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
 						rundownId: rundownData.rundown._id,
 						pieceId: piece._id,
+						infinitePieceId: piece.infiniteId,
 						content: newContent
 					}))
 				}
