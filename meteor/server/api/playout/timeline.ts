@@ -93,28 +93,26 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time) => void
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	const ps: Promise<any>[] = []
-
-	ps.push(makePromise(() => {
-		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
-			studioId: studio._id,
-			objectType: { $ne: TimelineObjType.STAT }
-		}, timelineObjs, {
-			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
-				// do not overwrite enable when the enable has been denowified
-				if (o.enable.start === 'now' && oldO.enable.setFromNow) {
-					o.enable.start = oldO.enable.start
-					o.enable.setFromNow = true
-				}
-				return o
+	let savedTimelineObjs: TimelineObjGeneric[] = []
+	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
+		studioId: studio._id,
+		objectType: { $ne: TimelineObjType.STAT }
+	}, timelineObjs, {
+		beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
+			// do not overwrite enable when the enable has been denowified
+			if (o.enable.start === 'now' && oldO.enable.setFromNow) {
+				o.enable.start = oldO.enable.start
+				o.enable.setFromNow = true
 			}
-		})
-	}))
+			savedTimelineObjs.push(o)
+			return o
+		},
+		afterInsert: (o: TimelineObjGeneric) => {
+			savedTimelineObjs.push(o)
+		}
+	})
 
-	ps.push(makePromise(() => {
-		afterUpdateTimeline(studio, timelineObjs)
-	}))
-	waitForPromiseAll(ps)
+	afterUpdateTimeline(studio, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
 })
