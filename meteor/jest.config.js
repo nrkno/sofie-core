@@ -56,6 +56,7 @@ module.exports = {
 			displayName: 'client',
 			testMatch: [
 				'<rootDir>/client/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/client/**/__tests__/**/*.(spec|test).(ts|js)',
 				'!.meteor/*.*'
 			],
 			testEnvironment: 'jsdom'
@@ -63,6 +64,7 @@ module.exports = {
 			displayName: 'lib',
 			testMatch: [
 				'<rootDir>/lib/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/lib/**/__tests__/**/*.(spec|test).(ts|js)',
 				'!.meteor/*.*'
 			],
 			testEnvironment: 'node'
@@ -70,6 +72,7 @@ module.exports = {
 			displayName: 'server',
 			testMatch: [
 				'<rootDir>/server/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/server/**/__tests__/**/*.(spec|test).(ts|js)',
 				'!.meteor/*.*'
 			],
 			testEnvironment: 'node'
