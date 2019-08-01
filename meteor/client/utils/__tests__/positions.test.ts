@@ -1,4 +1,4 @@
-import { getElementDocumentOffset } from '../../utils/positions'
+import { getElementDocumentOffset } from '../positions'
 
 describe('getElementDocumentOffset', () => {
 	const emptyRect: ClientRect = {
