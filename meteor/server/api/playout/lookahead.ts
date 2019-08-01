@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { LookaheadMode, TimelineObjectCoreExt, Timeline as TimelineTypes, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, Timeline as TimelineTypes, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
 import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
-import { extendMandadory, clone, literal } from '../../../lib/lib'
+import { clone, literal } from '../../../lib/lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -196,18 +196,10 @@ export function findLookaheadForlayer (
 		future: []
 	}
 
-	// let futureLookaheadObjCount = 0
-
 	const partId = startingPartOnLayer.partId
 	const startingPartIsFuture = startingPartOnLayer.partId !== activeRundown.currentPartId
 	findObjectsForPart(rundownData, layer, timeOrderedPartsWithPieces, startingPartOnLayerIndex, startingPartOnLayer)
 		.forEach(o => (startingPartIsFuture ? res.future : res.timed).push({ obj: o, partId: partId }))
-
-	// if (startingPartIsFuture) {
-	// 	// If not the current part, then anything already found is future
-	// 	// TODO - does this work with retain?
-	// 	futureLookaheadObjCount += lookaheadObjs.length
-	// }
 
 	// Loop over future parts until we have enough objects, or run out of parts
 	let nextPartOnLayerIndex = startingPartOnLayerIndex

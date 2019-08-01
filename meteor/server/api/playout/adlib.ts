@@ -54,7 +54,7 @@ export namespace ServerPlayoutAdLibAPI {
 								// @ts-ignore _id
 								_id: obj.id || obj._id,
 								studioId: '', // set later
-								objectType: TimelineObjType.RUNDOWN,
+								objectType: TimelineObjType.RUNDOWN
 							})
 						})
 					),

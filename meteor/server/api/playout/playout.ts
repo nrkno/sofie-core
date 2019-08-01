@@ -267,7 +267,6 @@ export namespace ServerPlayoutAPI {
 			let previousPartEndState: PartEndState | undefined = undefined
 			if (blueprint.getEndStateForPart && previousPart) {
 				const time = getCurrentTime()
-				// const activePieces = resolveActivePieces(previousPart, time)
 				const resolvedPieces = getResolvedPieces(previousPart)
 
 				const context = new RundownContext(rundown)

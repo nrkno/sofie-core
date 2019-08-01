@@ -81,6 +81,7 @@ export interface DBRundown extends IBlueprintRundownDB {
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
 
+	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
 }
 export class Rundown implements DBRundown {

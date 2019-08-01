@@ -7,7 +7,7 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceGeneric,
-	IBlueprintPiece,
+	IBlueprintPieceDB,
 	PieceLifespan,
 	BaseContent,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -53,7 +53,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	extendOnHold?: boolean
 }
 
-export interface Piece extends PieceGeneric, IBlueprintPiece {
+export interface Piece extends PieceGeneric, IBlueprintPieceDB {
 	// -----------------------------------------------------------------------
 
 	partId: string
