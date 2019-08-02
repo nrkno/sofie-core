@@ -170,6 +170,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	// We also could investigate just skipping this and requiring a full reload if the studio installation is changed
 	if (
 		(typeof props.studio !== typeof nextProps.studio) ||
+		!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
 		!_.isEqual(props.studio.config, nextProps.studio.config) ||
 		!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 		!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||

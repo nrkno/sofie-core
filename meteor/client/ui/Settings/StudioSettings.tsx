@@ -1,7 +1,6 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import {
 	Studio,
@@ -25,7 +24,6 @@ import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
@@ -39,194 +37,10 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { IConfigItem, LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../../../lib/logging'
-import { ConfigManifestSettings, ObjectWithConfig, collectConfigs } from './ConfigManifestSettings'
+import { LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { PlayoutAPI } from '../../../lib/api/playout'
-
-interface IConfigSettingsProps {
-	item: ObjectWithConfig
-}
-interface IConfigSettingsState {
-	editedItems: Array<string>
-}
-
-export const ConfigSettings = translate()(class ConfigSettings extends React.Component<Translated<IConfigSettingsProps>, IConfigSettingsState> {
-	constructor (props: Translated<IConfigSettingsProps>) {
-		super(props)
-
-		this.state = {
-			editedItems: []
-		}
-	}
-
-	isItemEdited = (item: IConfigItem) => {
-		return this.state.editedItems.indexOf(item._id) >= 0
-	}
-
-	finishEditItem = (item: IConfigItem) => {
-		let index = this.state.editedItems.indexOf(item._id)
-		if (index >= 0) {
-			this.state.editedItems.splice(index, 1)
-			this.setState({
-				editedItems: this.state.editedItems
-			})
-		}
-	}
-
-	editItem = (item: IConfigItem) => {
-		if (this.state.editedItems.indexOf(item._id) < 0) {
-			this.state.editedItems.push(item._id)
-			this.setState({
-				editedItems: this.state.editedItems
-			})
-		}
-	}
-	confirmDelete = (item: IConfigItem) => {
-		const { t } = this.props
-		doModalDialog({
-			title: t('Delete this item?'),
-			yes: t('Delete'),
-			no: t('Cancel'),
-			onAccept: () => {
-				this.onDeleteConfigItem(item)
-			},
-			message: <React.Fragment>
-				<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (item && item._id) })}</p>
-				<p>{t('Please note: This action is irreversible!')}</p>
-			</React.Fragment>
-		})
-	}
-	onDeleteConfigItem = (item: IConfigItem) => {
-		this.getCollection().update(this.props.item._id, {
-			$pull: {
-				config: {
-					_id: item._id
-				}
-			}
-		})
-	}
-	onAddConfigItem = () => {
-		const { t } = this.props
-
-		const newItem = literal<IConfigItem>({
-			_id: t('new_config_item'),
-			value: ''
-		})
-
-		if (this.props.item) {
-			this.getCollection().update(this.props.item._id, {
-				$push: {
-					config: newItem
-				}
-			})
-		}
-	}
-	getCollection (): Mongo.Collection<any> {
-		if (this.props.item instanceof Studio) {
-			return Studios
-		} else if (this.props.item instanceof ShowStyleBase) {
-			return ShowStyleBases
-		} else if (this.props.item instanceof ShowStyleVariant) {
-			return ShowStyleVariants
-		} else {
-			logger.error('collectConfigs: unknown item type', this.props.item)
-			throw new Meteor.Error('collectConfigs: unknown item type')
-		}
-	}
-
-	renderItems () {
-		const { t } = this.props
-
-		let manifestEntries = collectConfigs(this.props.item)
-
-		const excludeIds = manifestEntries.map(c => c.id)
-		return (
-			(this.props.item.config || []).map((item, index) => {
-				// Don't show if part of the config manifest
-				if (excludeIds.indexOf(item._id) !== -1) return null
-
-				return <React.Fragment key={item._id}>
-					<tr key={index} className={ClassNames({
-						'hl': this.isItemEdited(item)
-					})}>
-						<th className='settings-studio-custom-config-table__name c2'>
-							{item._id}
-						</th>
-						<td className='settings-studio-custom-config-table__value c3'>
-							{item.value}
-						</td>
-						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-								<FontAwesomeIcon icon={faTrash} />
-							</button>
-						</td>
-					</tr>
-					{this.isItemEdited(item) &&
-						<tr className='expando-details hl'>
-							<td colSpan={4}>
-								<div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('ID')}
-												<EditAttribute
-													modifiedClassName='bghl'
-													attribute={'config.' + index + '._id'}
-													obj={this.props.item}
-													type='text'
-													collection={this.getCollection()}
-													className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Value')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'config.' + index + '.value'}
-												obj={this.props.item}
-												type='text'
-												collection={this.getCollection()}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-								</div>
-								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					}
-				</React.Fragment>
-			})
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		return (
-			<div>
-				<h2 className='mhn'>{t('Custom Configuration')}</h2>
-				<table className='expando settings-studio-custom-config-table'>
-					<tbody>
-						{this.renderItems()}
-					</tbody>
-				</table>
-				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.onAddConfigItem}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-				</div>
-			</div>
-		)
-	}
-})
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -971,7 +785,7 @@ interface IStudioBaselineStatusState {
 class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaselineStatusProps>, IStudioBaselineStatusState> {
 	private updateInterval: number | undefined = undefined
 
-	constructor (props: Translated<IConfigSettingsProps>) {
+	constructor (props: Translated<IStudioBaselineStatusProps>) {
 		super(props)
 
 		this.state = {
@@ -1175,6 +989,45 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<label className='field'>
+						{t('Slack Webhook URLs')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.slackEvaluationUrls'
+								obj={this.props.studio}
+								type='text'
+								collection={Studios}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					<label className='field'>
+						{t('Supported Media Formats')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.supportedMediaFormats'
+								obj={this.props.studio}
+								type='text'
+								collection={Studios}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					<label className='field'>
+						{t('Supported Audio Formats')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.supportedAudioStreams'
+								obj={this.props.studio}
+								type='text'
+								collection={Studios}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
@@ -1192,12 +1045,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studio)} object={this.props.studio} />
-					</div>
-				</div>
-				<div className='row'>
-					<div className='col c12 r1-c12'>
-						<ConfigSettings item={this.props.studio}/>
+						<ConfigManifestSettings
+							t={this.props.t}
+							manifest={collectConfigs(this.props.studio)}
+							object={this.props.studio}
+							collection={Studios}
+							configPath={'config'}
+							/>
 					</div>
 				</div>
 				<div className='row'>

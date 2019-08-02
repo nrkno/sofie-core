@@ -134,7 +134,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().config)
+				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().settings)
 				if (status !== props.piece.status || metadata) {
 					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 

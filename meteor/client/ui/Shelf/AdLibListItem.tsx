@@ -41,7 +41,7 @@ const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : 
 export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
-	const { status } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().config)
+	const { status } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
 
 	return {
 		status
