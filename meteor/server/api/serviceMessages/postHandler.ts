@@ -14,7 +14,7 @@ interface BodyParsingIncomingMessage extends IncomingMessage {
 
 const INPUT_MISSING_PARTIAL = 'Missing data in input: '
 
-const validCriticalities = Object.values(Criticality).filter((value) => !isNaN(value))
+const validCriticalities = Object.keys(Criticality).filter((k) => typeof Criticality[k as any] === 'number').map(k => Criticality[k])
 
 /**
  * Create new or update existing service message.
@@ -41,9 +41,14 @@ function postHandler (
 		return
 	}
 
-	if (!criticality || isNaN(criticality) || validCriticalities.indexOf(criticality) < 0) {
+	if (!criticality || criticality.trim().length < 1) {
 		res.statusCode = 400
 		res.end(`${INPUT_MISSING_PARTIAL}criticality`)
+		return
+	}
+	if (isNaN(criticality) || validCriticalities.indexOf(Number(criticality)) < 0) {
+		res.statusCode = 400
+		res.end(`Invalid value for criticality: ${criticality}, wanted one of ${validCriticalities.join(',')}`)
 		return
 	}
 
@@ -73,6 +78,7 @@ function postHandler (
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
 		res.end(JSON.stringify(serviceMessage))
 	} catch (error) {
+		logger.error(`Unable to store message`, { serviceMessage, error })
 		res.statusCode = 500
 		res.end('System error, unable to store message')
 	}

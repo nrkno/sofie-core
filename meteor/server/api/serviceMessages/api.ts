@@ -4,7 +4,7 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import { postHandler } from './postHandler'
 import { logger } from '../../logging'
 import * as bodyParser from 'body-parser'
-import { readAllMessages } from './serviceMessagesApi'
+import { deleteMessage, readAllMessages } from './serviceMessagesApi'
 
 const postRoute = Picker.filter((req, res) => req.method === 'POST')
 postRoute.middleware(bodyParser.json())
@@ -47,7 +47,20 @@ function deleteHandler (
 	res: ServerResponse,
 	next: () => void
 ) {
-	// exists ? delete => 200/204 : 404
+	const { id } = params
+	try {
+		if (readAllMessages().find(m => m.id === id)) {
+			const deleted = deleteMessage(id)
+			res.setHeader('Content-Type', 'application/json; charset-utf8')
+			res.end(JSON.stringify(deleted), 'utf-8')
+		} else {
+			res.statusCode = 404
+			res.end(`Message with id ${id} can not be found`)
+		}
+	} catch (error) {
+		res.statusCode = 500
+		res.end(`Unable to delete service message ${id}`)
+	}
 }
 
 /**
@@ -59,5 +72,18 @@ function getMessageHandler (
 	res: ServerResponse,
 	next: () => void
 ) {
-	// exists ? => json object, 200 : => 404
+	const { id } = params
+	try {
+		const message = readAllMessages().find(m => m.id === id)
+		if (message) {
+			res.setHeader('Content-Type', 'application/json; charset-utf8')
+			res.end(JSON.stringify(message), 'utf-8')
+		} else {
+			res.statusCode = 404
+			res.end(`Message with id ${id} can not be found`)
+		}
+	} catch (error) {
+		res.statusCode = 500
+		res.end(`Unable to retrieve service message ${id}`)
+	}
 }

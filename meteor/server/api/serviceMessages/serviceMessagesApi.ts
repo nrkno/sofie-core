@@ -1,7 +1,7 @@
 import { CoreSystem, getCoreSystem, ServiceMessage } from '../../../lib/collections/CoreSystem'
 import { logger } from '../../logging'
 
-export { readAllMessages, writeMessage, WriteStatus }
+export { deleteMessage, readAllMessages, writeMessage, WriteStatus }
 
 interface WriteStatus {
 	isUpdate?: boolean
@@ -51,5 +51,28 @@ function writeMessage (message: ServiceMessage): WriteStatus {
 	} catch (error) {
 		logger.error(error.message)
 		throw new Error(`Unable to store service message: ${error.message}`)
+	}
+}
+
+function deleteMessage (id: string): ServiceMessage {
+	const coreSystem = getCoreSystem()
+	if (!coreSystem || !coreSystem.serviceMessages) {
+		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
+	}
+
+	const { serviceMessages } = coreSystem
+	const message = serviceMessages[id]
+
+	try {
+		if (message) {
+			delete serviceMessages[message.id]
+			CoreSystem.update(coreSystem._id, { $set: { serviceMessages } })
+			return message
+		} else {
+			throw new Error(`Message with id ${id} can not be found, and therefore not deleted`)
+		}
+	} catch (error) {
+		logger.error(error.message)
+		throw new Error(`Unable to delete service message ${id}: ${error.message}`)
 	}
 }
