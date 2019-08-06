@@ -230,7 +230,6 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				}
 
 				waitForPromise(promiseClearTimeline)
-
 				resolve(
 					_.map<TimelineObjGeneric, TimelineObjRundown>(timelineObjs, (timelineObj) => {
 

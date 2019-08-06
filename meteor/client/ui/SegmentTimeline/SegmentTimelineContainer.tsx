@@ -347,7 +347,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}, this.props.isLiveSegment ? {
 			followLiveLine: false
 		} : {}))
-		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange((getElementWidth(this.timelineDiv) || 1) / (computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1))
+		if (typeof this.props.onTimeScaleChange === 'function') {
+			this.props.onTimeScaleChange(
+				(
+					getElementWidth(this.timelineDiv) || 1
+				) /
+				(
+					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1
+				)
+			)
+		}
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 	updateSpeech () {

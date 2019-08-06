@@ -58,52 +58,52 @@ export interface DBPart extends IBlueprintPartDB {
 	dirty?: boolean
 }
 export interface PartTimings extends IBlueprintPartDBTimings {
-	// TODO: remove these, as they are duplicates with IBlueprintPartDBTimings
-
-	/** Point in time the Part stopped playing (ie the time of the playout) */
-	stoppedPlayback: Array<Time>,
-	/** Point in time the Part was set as Next (ie the time of the user action) */
-	next: Array<Time>,
 	/** The playback offset that was set for the last take */
 	playOffset: Array<Time>
 }
 
 export class Part implements DBPart {
-	public _id: string
-	public _rank: number
-	public title: string
+
+	// From IBlueprintPart:
 	public externalId: string
-	public segmentId: string
-	public rundownId: string
-	public invalid: boolean
+	public title: string
+	public metaData?: {
+		[key: string]: any
+	}
 	public autoNext?: boolean
 	public autoNextOverlap?: number
 	public prerollDuration?: number
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
 	public transitionDuration?: number | null
-	public metaData?: { [key: string]: any }
-	public status?: string
+	public disableOutTransition?: boolean
 	public expectedDuration?: number
-	public displayDuration?: number
+	public typeVariant: string
+	public subTypeVariant?: string
+	public holdMode?: PartHoldMode
+	public shouldNotifyCurrentPlayingPart?: boolean
+	public classes?: string[]
+	public classesForNext?: string[]
 	public displayDurationGroup?: string
+	public displayDuration?: number
+	public invalid?: boolean
+	// From IBlueprintPartDB:
+	public _id: string
+	public segmentId: string
+	public timings?: PartTimings
+	// From DBPart:
+	public _rank: number
+	public rundownId: string
+	public status?: string
 	public startedPlayback?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
 	public previousPartEndState?: PartEndState
-	public disableOutTransition?: boolean
-	public updateStoryStatus?: boolean
-	public timings?: PartTimings
-	public holdMode?: PartHoldMode
 	public notes?: Array<PartNote>
 	public afterPart?: string
-	public dirty?: boolean
-
+	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
-	public typeVariant: string
-
-	public classes?: Array<string>
-	public classesForNext?: Array<string>
+	public dirty?: boolean
 
 	constructor (document: DBPart) {
 		_.each(_.keys(document), (key) => {
