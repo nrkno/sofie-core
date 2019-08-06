@@ -87,7 +87,7 @@
     "superfly-timeline": "^7.1.2",
     "timecode": "0.0.4",
     "timeline-state-resolver-types": "^3.2.0",
-    "tv-automation-sofie-blueprints-integration": "^0.24.1",
+    "tv-automation-sofie-blueprints-integration": "^0.24.0",
     "underscore": "^1.8.3",
     "velocity-animate": "^1.5.1",
     "velocity-react": "^1.3.3",
