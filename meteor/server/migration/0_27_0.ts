@@ -39,7 +39,7 @@ addMigrationSteps('0.27.0', [
 						// Update the studio
 						Studios.update(studio._id, {
 							$set: {
-								'settings.slackEvaluationUrls': value
+								'settings.slackEvaluationUrls': value.value
 							},
 							$pull: {
 								config: {
@@ -81,7 +81,7 @@ addMigrationSteps('0.27.0', [
 						// Update the studio
 						Studios.update(studio._id, {
 							$set: {
-								'settings.supportedMediaFormats': value
+								'settings.supportedMediaFormats': value.value
 							},
 							$pull: {
 								config: {
@@ -123,7 +123,7 @@ addMigrationSteps('0.27.0', [
 						// Update the studio
 						Studios.update(studio._id, {
 							$set: {
-								'settings.supportedAudioStreams': value
+								'settings.supportedAudioStreams': value.value
 							},
 							$pull: {
 								config: {
