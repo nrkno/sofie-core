@@ -41,6 +41,18 @@ import { LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-bluepr
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { PlayoutAPI } from '../../../lib/api/playout'
+import {
+	mappingIsAbstract,
+	mappingIsCasparCG,
+	mappingIsAtem,
+	mappingIsLawo,
+	mappingIsPanasonicPtz,
+	mappingIsHTTPSend,
+	mappingIsHyperdeck,
+	mappingIsPharos,
+	mappingIsOSC,
+	mappingIsQuantel
+} from '../../../lib/api/studios'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -472,51 +484,50 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<td className='settings-studio-device__id c4'>
 						{
 							(
-								mapping.device === PlayoutDeviceType.ABSTRACT && (
+								mappingIsAbstract(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.CASPARCG && (
-								<span>{ (mapping as MappingCasparCG).channel } - { (mapping as MappingCasparCG).layer }</span>
+								mappingIsCasparCG(mapping) && (
+								<span>{ mapping.channel } - { mapping.layer }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.ATEM && (
-								<span>{ MappingAtemType[(mapping as MappingAtem & MappingExt).mappingType] } { (mapping as MappingAtem & MappingExt).index }</span>
+								mappingIsAtem(mapping) && (
+								<span>{ MappingAtemType[mapping.mappingType] } { mapping.index }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo & MappingExt).identifier }</span>
+								mappingIsLawo(mapping) && (
+								<span>{ mapping.identifier }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+								mappingIsPanasonicPtz(mapping) && (
 									<span>{
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
+										mapping.mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
+										mapping.mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
+										mapping.mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
+										mapping.mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
 										t('Unknown Mapping')
 									}</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.HTTPSEND && (
+								mappingIsHTTPSend(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.HYPERDECK && (
+								mappingIsHyperdeck(mapping) && (
 								<span>{ (mapping as MappingHyperdeck & MappingExt).mappingType }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.PHAROS && (
+								mappingIsPharos(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.OSC && (
+								mappingIsOSC(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === 11 && (
-								// mapping.device === PlayoutDeviceType.QUANTEL && (
-								<span></span> // todo: fill in
+								mappingIsQuantel(mapping) && (
+									<span>{mapping.portId}, {mapping.channelId}</span>
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
