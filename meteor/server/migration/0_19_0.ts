@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureStudioConfig, setExpectedVersion } from './lib'
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
@@ -210,7 +210,7 @@ addMigrationSteps('0.19.0', [
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 
-					if (studio.getConfigValue('media_previews_url')) {
+					if (_.find(studio.config, c => c._id === 'media_previews_url')) {
 						validate = `mediaPreviewsUrl not set on studio ${studio._id}`
 					}
 
@@ -221,7 +221,7 @@ addMigrationSteps('0.19.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
-					let value = studio.getConfigValue('media_previews_url')
+					const value = _.find(studio.config, c => c._id === 'media_previews_url')
 					if (value) {
 						// Update the studio
 						Studios.update(studio._id, {
@@ -249,7 +249,7 @@ addMigrationSteps('0.19.0', [
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
 
-					if (studio.getConfigValue('sofie_url')) {
+					if (_.find(studio.config, c => c._id === 'sofie_url')) {
 						validate = `sofieUrl not set on studio ${studio._id}`
 					}
 
@@ -260,7 +260,7 @@ addMigrationSteps('0.19.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
-					let value = studio.getConfigValue('sofie_url')
+					const value = _.find(studio.config, c => c._id === 'sofie_url')
 					if (value) {
 						// Update the studio
 						Studios.update(studio._id, {
@@ -284,8 +284,6 @@ addMigrationSteps('0.19.0', [
 		'Enter the URL to the media previews provider, example: http://10.0.1.100:8000/', undefined, 'studio.settings.mediaPreviewsUrl from config'),
 	ensureCollectionProperty('Studios', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
 		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL,), example: https://slsofie without trailing /, short form server name is OK.', undefined, 'studio.settings.sofieUrl from config'),
-	ensureStudioConfig('mediaResolutions', '1920x1080i5000tff', undefined, 'Studio config: mediaResolutions',
-		'A set of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000")'),
 
 	{ // Blueprint.databaseVersion
 		id: 'blueprint.databaseVersion',

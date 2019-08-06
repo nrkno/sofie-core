@@ -909,6 +909,11 @@ export type RequiredPropertyNames<T> = {
 export type OptionalProperties<T> = Pick<T, OptionalPropertyNames<T>>
 export type RequiredProperties<T> = Pick<T, RequiredPropertyNames<T>>
 
+export type Diff<T, U> = T extends U ? never : T  // Remove types from T that are assignable to U
+export type KeysByType<TObj, TVal> = Diff<{
+	[K in keyof TObj]: TObj[K] extends TVal ? K : never
+}[keyof TObj], undefined>
+
 /**
  * Returns the difference between object A and B
  */

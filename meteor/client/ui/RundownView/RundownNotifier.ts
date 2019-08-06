@@ -365,7 +365,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								mediaId: mediaId.toUpperCase()
 							})
 						}
-						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.config)
+						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(piece._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + piece.partId, getCurrentTime(), true, [
