@@ -10,7 +10,7 @@ import { Meteor } from 'meteor/meteor'
 import { AdLibPieces } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
@@ -80,6 +80,9 @@ export interface DBRundown extends IBlueprintRundownDB {
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
+
+	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
+	previousPersistentState?: TimelinePersistentState
 }
 export class Rundown implements DBRundown {
 	public _id: string
@@ -111,6 +114,7 @@ export class Rundown implements DBRundown {
 	public holdState?: RundownHoldState
 	public dataSource: string
 	public notes?: Array<RundownNote>
+	public previousPersistentState?: TimelinePersistentState
 	_: any
 
 	constructor (document: DBRundown) {
