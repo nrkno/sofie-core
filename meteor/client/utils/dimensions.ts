@@ -1,7 +1,7 @@
 /**
  * Replicates the behavior of jQuery's width() function. Note that it's only
  * really needed to get the width **excluding padding** for inline elements.
- * For all other use cases there are properties on the Element itself 
+ * For all other use cases there are properties on the Element itself
  * that can be read directly or via window.getComputedStyle.
  * 
  * @param element - the element to calculate width for

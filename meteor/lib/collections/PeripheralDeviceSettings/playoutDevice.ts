@@ -53,7 +53,7 @@ export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettings
 
 export interface PlayoutDeviceSettingsDeviceQuantel extends PlayoutDeviceSettingsDevice {
 	// @ts-ignore
-	type: 11, // PlayoutDeviceType.QUANTEL
+	type: PlayoutDeviceType.QUANTEL
 	options: {
 		gatewayUrl: string
 		ISAUrl: string

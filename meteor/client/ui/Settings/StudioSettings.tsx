@@ -712,9 +712,8 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === 11 && (
-								// mapping.device === PlayoutDeviceType.QUANTEL && (
-								<span></span> // todo: fill in
+								mappingIsQuantel(mapping) && (
+									<span>{mapping.portId}, {mapping.channelId}</span>
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
