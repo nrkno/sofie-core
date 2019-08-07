@@ -69,6 +69,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	insert?: (o: DBInterface) => void
 	update?: (id: string, o: DBInterface,) => void
 	remove?: (o: DBInterface) => void
+	unchanged?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
@@ -130,9 +131,9 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 			let o2 = o
 			if (options.beforeDiff) o2 = options.beforeDiff(o, oldObj)
-			let diff = compareObjs(oldObj,o2)
+			let eql = compareObjs(oldObj,o2)
 
-			if (!diff) {
+			if (!eql) {
 				let p: Promise<any> | undefined
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
 				if (options.update) {
@@ -149,6 +150,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 				if (p) ps.push(p)
 				change.updated++
+			} else {
+				if (options.unchanged) options.unchanged(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {

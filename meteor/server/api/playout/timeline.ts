@@ -109,6 +109,9 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time) => void
 		},
 		afterInsert: (o: TimelineObjGeneric) => {
 			savedTimelineObjs.push(o)
+		},
+		unchanged: (o: TimelineObjGeneric) => {
+			savedTimelineObjs.push(o)
 		}
 	})
 

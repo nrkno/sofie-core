@@ -338,9 +338,6 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 						|| this.props.defaultDuration || 3000)
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
-				if (part._id === "pj9BSXQ9zGRJ7cl_eTjPlkNNL6w_") {
-					console.log(partDuration, partDisplayDuration, currentRemaining)
-				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration
