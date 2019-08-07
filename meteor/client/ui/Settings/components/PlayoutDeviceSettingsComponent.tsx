@@ -279,19 +279,32 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					renderObject = (<React.Fragment>
 						<div className='mod mvs mhs'>
 							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+								{t('Gateway url')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.gatewayUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
 						<div className='mod mvs mhs'>
 							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+								{t('ISA url')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.ISAUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Zone id')} ({t('Optional')})
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.zoneId'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Server id')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+
 					</React.Fragment>)
 					break
-				case 11: // PlayoutDeviceType.QUANTEL:
+				case PlayoutDeviceType.QUANTEL:
 					renderObject = (<React.Fragment>
 						<div className='mod mvs mhs'>
 							<label className='field'>
