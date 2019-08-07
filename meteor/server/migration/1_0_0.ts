@@ -1,10 +1,11 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
-import { renamePropertiesInCollection, ensureCollectionProperty } from './lib';
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
-// 0.27.0 (Release 12)
-addMigrationSteps('0.27.0', [
+// 1.0.0 (Release 12)
+addMigrationSteps('1.0.0', [
 	// renamePropertiesInCollection('Studios rename config',
 	// 	Studios,
 	// 	'Studios',
@@ -137,5 +138,7 @@ addMigrationSteps('0.27.0', [
 			})
 		}
 	},
-
+	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
+	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
+	setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
 ])
