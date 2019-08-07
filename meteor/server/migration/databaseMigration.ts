@@ -70,8 +70,10 @@ export const UNSUPPORTED_VERSIONS = [
 	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
 	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
 	'<=0.18',
-	// 0.24.0 to 0.25.0: Major refactoring, Renamin of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
+	// 0.24.0 to 0.25.0: Major refactoring, Renaming of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
 	'<=0.24',
+	// 0.26.0 to 1.0.0: Adding of RundownPlaylist and support for multiple, concurrent rundowns in a show
+	'<=0.26',
 ]
 
 export function isVersionSupported (version: Version) {
