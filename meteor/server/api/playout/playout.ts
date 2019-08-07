@@ -1190,7 +1190,7 @@ function afterTake (
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
-		if (takePart.updateStoryStatus) {
+		if (takePart.shouldNotifyCurrentPlayingPart) {
 			IngestActions.notifyCurrentPlayingPart(rundown, takePart)
 
 		}

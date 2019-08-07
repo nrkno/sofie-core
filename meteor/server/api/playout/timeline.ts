@@ -231,7 +231,6 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				}
 
 				waitForPromise(promiseClearTimeline)
-
 				resolve(
 					_.map<TimelineObjGeneric & OnGenerateTimelineObj, TimelineObjRundown>(timelineObjs, (timelineObj) => {
 						return {

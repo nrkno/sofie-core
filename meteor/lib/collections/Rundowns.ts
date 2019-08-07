@@ -51,7 +51,10 @@ export interface DBRundown extends IBlueprintRundownDB {
 	status?: string
 	airStatus?: string
 	// There should be something like a Owner user here somewhere?
+	/** Whether the rundown is active or not */
 	active?: boolean
+	/** Whether the rundown is active in rehearsal or not */
+	rehearsal?: boolean
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartId: string | null
 	/** the id of the Next Part - if empty, no segment will follow Live Part */
@@ -85,31 +88,36 @@ export interface DBRundown extends IBlueprintRundownDB {
 	previousPersistentState?: TimelinePersistentState
 }
 export class Rundown implements DBRundown {
-	public _id: string
+	// From IBlueprintRundown:
 	public externalId: string
-	public studioId: string
+	public name: string
+	public expectedStart?: Time
+	public expectedDuration?: number
+	public metaData?: {
+		[key: string]: any
+	}
+	// From IBlueprintRundownDB:
+	public _id: string
 	public showStyleVariantId: string
+	// From DBRundown:
+	public studioId: string
 	public showStyleBaseId: string
 	public peripheralDeviceId: string
-	public name: string
 	public created: Time
 	public modified: Time
 	public importVersions: RundownImportVersions
-	public expectedStart?: Time
-	public expectedDuration?: number
-	public metaData?: { [key: string]: any }
 	public status?: string
 	public airStatus?: string
 	public active?: boolean
 	public rehearsal?: boolean
-	public unsynced?: boolean
-	public unsyncedTime?: Time
-	public previousPartId: string | null
-	public nextPartManual?: boolean
 	public currentPartId: string | null
 	public nextPartId: string | null
-	public nextTimeOffset?: number
+	public nextTimeOffset?: number | null
+	public nextPartManual?: boolean
+	public previousPartId: string | null
 	public startedPlayback?: Time
+	public unsynced?: boolean
+	public unsyncedTime?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
 	public holdState?: RundownHoldState
 	public dataSource: string
@@ -118,7 +126,7 @@ export class Rundown implements DBRundown {
 	_: any
 
 	constructor (document: DBRundown) {
-		_.each(_.keys(document), (key: keyof DBRundown) => {
+		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
@@ -239,7 +247,7 @@ export class Rundown implements DBRundown {
 				return Pieces.find({ rundownId: this._id }).fetch()
 			})
 		]
-		let r = waitForPromiseAll(ps as any)
+		let r: any = waitForPromiseAll(ps as any)
 		let segments: Segment[] 				= r[0].segments
 		let segmentsMap 				 		= r[0].segmentsMap
 		let partsMap 					= r[1].partsMap
