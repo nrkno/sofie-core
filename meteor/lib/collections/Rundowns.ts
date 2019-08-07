@@ -16,6 +16,7 @@ import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
+import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -51,18 +52,7 @@ export interface DBRundown extends IBlueprintRundownDB {
 	status?: string
 	airStatus?: string
 	// There should be something like a Owner user here somewhere?
-	active?: boolean
-	/** the id of the Live Part - if empty, no part in this rundown is live */
-	currentPartId: string | null
-	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	nextPartId: string | null
-	/** The time offset of the next line */
-	nextTimeOffset?: number | null
-	/** if nextPartId was set manually (ie from a user action) */
-	nextPartManual?: boolean
-	/** the id of the Previous Part */
-	previousPartId: string | null
-
+	
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 
@@ -74,7 +64,6 @@ export interface DBRundown extends IBlueprintRundownDB {
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
 
-	holdState?: RundownHoldState
 	/** What the source of the data was */
 	dataSource: string
 
@@ -97,26 +86,28 @@ export class Rundown implements DBRundown {
 	public metaData?: { [key: string]: any }
 	public status?: string
 	public airStatus?: string
-	public active?: boolean
-	public rehearsal?: boolean
 	public unsynced?: boolean
 	public unsyncedTime?: Time
-	public previousPartId: string | null
-	public nextPartManual?: boolean
-	public currentPartId: string | null
-	public nextPartId: string | null
-	public nextTimeOffset?: number
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
-	public holdState?: RundownHoldState
 	public dataSource: string
 	public notes?: Array<RundownNote>
+	public playlistExternalId?: string
+	public playlistId?: string
+	public _rank: number
 	_: any
 
 	constructor (document: DBRundown) {
 		_.each(_.keys(document), (key: keyof DBRundown) => {
 			this[key] = document[key]
 		})
+	}
+	getRundownPlaylist (): RundownPlaylist {
+		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
+		let pls = RundownPlaylists.findOne(this.playlistId)
+		if (pls) {
+			return pls
+		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
 	getShowStyleCompound (): ShowStyleCompound {
 
@@ -166,6 +157,14 @@ export class Rundown implements DBRundown {
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		Rundowns.remove(this._id)
+		if (this.playlistId) {
+			// Check if any other members of the playlist are left
+			if (Rundowns.find({
+				playlistId: this.playlistId
+			}).count() === 0) {
+				RundownPlaylists.remove(this.playlistId)
+			}
+		}
 		Segments.remove({ rundownId: this._id })
 		Parts.remove({ rundownId: this._id })
 		Pieces.remove({ rundownId: this._id })
@@ -206,7 +205,8 @@ export class Rundown implements DBRundown {
 		let ps: [
 			Promise<{ segments: Segment[], segmentsMap: any }>,
 			Promise<{ parts: Part[], partsMap: any } >,
-			Promise<Piece[]>
+			Promise<Piece[]>,
+			Promise<RundownPlaylist>
 		] = [
 			makePromise(() => {
 				let segments = this.getSegments()
@@ -233,6 +233,11 @@ export class Rundown implements DBRundown {
 			}),
 			makePromise(() => {
 				return Pieces.find({ rundownId: this._id }).fetch()
+			}),
+			makePromise(() => {
+				const playlist = RundownPlaylists.findOne(this.playlistId)
+				if (!playlist) throw new Meteor.Error(404, `Owner playlist ${this.playlistId} not found`)
+				return playlist
 			})
 		]
 		let r = waitForPromiseAll(ps as any)
@@ -241,9 +246,11 @@ export class Rundown implements DBRundown {
 		let partsMap 					= r[1].partsMap
 		let parts: Part[]			= r[1].parts
 		let pieces: Piece[] = r[2]
+		let rundownPlaylist: RundownPlaylist = r[3]
 
 		return {
 			rundown: this,
+			rundownPlaylist,
 			segments,
 			segmentsMap,
 			parts,
@@ -265,6 +272,7 @@ export class Rundown implements DBRundown {
 }
 export interface RundownData {
 	rundown: Rundown
+	rundownPlaylist: RundownPlaylist
 	segments: Array<Segment>
 	segmentsMap: {[id: string]: Segment}
 	parts: Array<Part>
@@ -279,8 +287,10 @@ registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Rundowns._ensureIndex({
-			studioId: 1,
-			active: 1
+			playlistId: 1
+		})
+		Rundowns._ensureIndex({
+			playlistExternalId: 1
 		})
 	}
 })

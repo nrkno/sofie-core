@@ -28,7 +28,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { areThereActiveRundownsInStudio } from './playout/studio'
+import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 
 const MINIMUM_TAKE_SPAN = 1000
@@ -129,7 +129,7 @@ export function prepareForBroadcast (rundownId: string): ClientAPI.ClientRespons
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (rundown.active) return ClientAPI.responseError('Rundown is active, please deactivate before preparing it for broadcast')
-	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
@@ -154,7 +154,7 @@ export function resetAndActivate (rundownId: string, rehearsal?: boolean): Clien
 	if (rundown.active && !rundown.rehearsal) {
 		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}
@@ -167,7 +167,7 @@ export function activate (rundownId: string, rehearsal: boolean): ClientAPI.Clie
 	check(rehearsal, Boolean)
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
 	}

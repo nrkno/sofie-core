@@ -7,7 +7,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { getOrderedPiece, PieceResolved } from './pieces'
+import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 
@@ -55,13 +55,19 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
 	}
 
+	let allPieces = Pieces.find({
+		partId: {
+			$in: partsToProcess.map(i => i._id)
+		}
+	}).fetch()
+
    // Prepare pieces:
 	let psPopulateCache: Array<Promise<any>> = []
 	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
 	   psPopulateCache.push(new Promise((resolve, reject) => {
 		   try {
-			   let currentItems = getOrderedPiece(part)
+			   let currentItems = orderPieces(allPieces.filter(p => p.partId === part._id), part._id)
 
 			   currentItemsCache[part._id] = currentItems
 			   resolve()
@@ -230,7 +236,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   }
 	}
 
-	waitForPromiseAll(ps)
+	// waitForPromiseAll(ps)
 	return ''
 }
 

@@ -28,6 +28,7 @@ import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } fro
 import { queueExternalMessages } from './ExternalMessageQueue'
 import { getBlueprintOfRundown } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists';
 
 const EVENT_WAIT_TIME = 500
 
@@ -89,31 +90,48 @@ function handleEvent (event: AsRunLogEvent): void {
 
 // Convenience functions:
 
-export function reportRundownHasStarted (rundownOrId: Rundown | string, timestamp?: Time) {
+export function reportRundownHasStarted (playlistOrId: RundownPlaylist | string, rundownOrId: Rundown | string, timestamp?: Time) {
 	// Called when the first part in rundown starts playing
 
-	let rundown = (
+	const rundown = (
 		_.isString(rundownOrId) ?
 		Rundowns.findOne(rundownOrId) :
 		rundownOrId
 	)
-	if (rundown) {
+	const playlist = (
+		_.isString(playlistOrId) ?
+		RundownPlaylists.findOne(playlistOrId) :
+		playlistOrId
+	)
+	if (rundown && playlist) {
 		Rundowns.update(rundown._id, {
 			$set: {
 				startedPlayback: timestamp
 			}
 		})
+
+		if (!playlist.startedPlayback) {
+			RundownPlaylists.update(playlist._id, {
+				$set: {
+					startedPlayback: timestamp
+				}
+			})
+		}
+
 		// also update local object:
 		rundown.startedPlayback = timestamp
 
-		let event = pushAsRunLog({
+		const event = pushAsRunLog({
 			studioId: rundown.studioId,
 			rundownId: rundown._id,
 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			content2: 'rundown'
-		}, !!rundown.rehearsal, timestamp)
+		}, !!playlist.rehearsal, timestamp)
 		if (event) handleEvent(event)
-	} else logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
+	} else if (playlist)
+		logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
+	else
+		logger.error(`playlist not found in reportRundownHasStarted "${playlistOrId}"`)
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
@@ -126,6 +144,7 @@ export function reportPartHasStarted (partOrId: Part | string , timestamp: Time)
 	)
 	if (part) {
 		let rundown: Rundown
+		let playlist: RundownPlaylist
 
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(Parts, part._id, {
@@ -140,12 +159,13 @@ export function reportPartHasStarted (partOrId: Part | string , timestamp: Time)
 			asyncCollectionFindOne(Rundowns, part.rundownId)
 		])
 		rundown = r[1]
+		playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		part.startedPlayback = true
 		part.stoppedPlayback = false
 		pushOntoPath(part, 'timings.startedPlayback', timestamp)
 
-		if (rundown) {
+		if (rundown && playlist) {
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
@@ -153,9 +173,12 @@ export function reportPartHasStarted (partOrId: Part | string , timestamp: Time)
 				partId:		part._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'part'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`rundown "${part.rundownId}" not found in reportPartHasStarted "${part._id}"`)
+		} else if (!rundown)
+			logger.error(`rundown "${part.rundownId}" not found in reportPartHasStarted "${part._id}"`)
+		else
+			logger.error(`rundown playlist "${rundown.playlistId}" not found in reportPartHasStarted "${part._id}"`)
 	} else logger.error(`part not found in reportPartHasStarted "${partOrId}"`)
 }
 export function reportPartHasStopped (partOrId: Part | string , timestamp: Time) {
@@ -180,6 +203,7 @@ export function reportPartHasStopped (partOrId: Part | string , timestamp: Time)
 			asyncCollectionFindOne(Rundowns, part.rundownId)
 		])
 		rundown = r[1]
+		const playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		part.stoppedPlayback = true
 		pushOntoPath(part, 'timings.stoppedPlayback', timestamp)
@@ -192,7 +216,7 @@ export function reportPartHasStopped (partOrId: Part | string , timestamp: Time)
 				partId:		part._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'part'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
 			return event
 		} else logger.error(`rundown "${part.rundownId}" not found in reportPartHasStopped "${part._id}"`)
@@ -225,6 +249,7 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 		])
 		rundown = r[1]
 		part = r[2]
+		const playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		piece.startedPlayback = timestamp
 		piece.stoppedPlayback = 0
@@ -239,7 +264,7 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 				pieceId:	piece._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'piece'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
 		} else logger.error(`rundown "${part.rundownId}" not found in reportPieceHasStarted "${part._id}"`)
 
@@ -270,6 +295,7 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 		])
 		rundown = r[1]
 		part = r[2]
+		const playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		piece.stoppedPlayback = timestamp
 		pushOntoPath(piece, 'timings.stoppedPlayback', timestamp)
@@ -283,7 +309,7 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 				pieceId:	piece._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'piece'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
 		} else logger.error(`rundown "${part.rundownId}" not found in reportPieceHasStopped "${part._id}"`)
 

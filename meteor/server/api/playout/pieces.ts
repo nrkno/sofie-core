@@ -32,9 +32,7 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-export function getOrderedPiece (part: Part): Array<PieceResolved> {
-	const pieces = part.getAllPieces()
-
+export function orderPieces (pieces: Piece[], partId: string): Array<PieceResolved> {
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(i => itemMap[i._id] = i)
 
@@ -84,10 +82,10 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	})
 
 	if (unresolvedCount > 0) {
-		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
+		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${partId} (${unresolvedIds.join(', ')})`)
 	}
 	if (pieces.length !== resolvedPieces.length) {
-		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${part._id}`)
+		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${partId}`)
 	}
 
 	resolvedPieces.sort((a, b) => {
@@ -100,6 +98,11 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	})
 
 	return resolvedPieces
+}
+export function getOrderedPiece (part: Part): Array<PieceResolved> {
+	const pieces = part.getAllPieces()
+
+	return orderPieces(pieces, part._id)
 }
 export function createPieceGroupFirstObject (
 	piece: Piece,

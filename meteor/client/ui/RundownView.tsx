@@ -12,6 +12,7 @@ import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
 import { NavLink, Route, Prompt } from 'react-router-dom'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Studio, Studios } from '../../lib/collections/Studios'
@@ -60,15 +61,15 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
+interface 
+
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
 }
-interface IKeyboardFocusMarkerProps {
-}
-class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
+class KeyboardFocusMarker extends React.Component<{}, IKeyboardFocusMarkerState> {
 	keyboardFocusInterval: number
 
-	constructor (props: IKeyboardFocusMarkerProps) {
+	constructor (props) {
 		super(props)
 
 		this.state = {
@@ -111,7 +112,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 }
 
 interface ITimingWarningProps {
-	rundown: Rundown
+	playlist: RundownPlaylist
 	inActiveRundownView?: boolean
 	studioMode: boolean
 	oneMinuteBeforeAction: (e: Event) => void
@@ -133,18 +134,18 @@ const WarningDisplay = translate()(timer(5000)(
 		}
 
 		componentDidUpdate (prevProps: ITimingWarningProps) {
-			if ((this.props.rundown.active && !prevProps.rundown.active && this.props.rundown.rehearsal) ||
-				(this.props.rundown.rehearsal !== prevProps.rundown.rehearsal)) {
+			if ((this.props.playlist.active && !prevProps.playlist.active && this.props.playlist.rehearsal) ||
+				(this.props.playlist.rehearsal !== prevProps.playlist.rehearsal)) {
 				this.setState({
 					plannedStartCloseShown: false
 				})
 			}
 
-			if (this.props.rundown.active && this.props.rundown.rehearsal && this.props.rundown.expectedStart &&
+			if (this.props.playlist.active && this.props.playlist.rehearsal && this.props.playlist.expectedStart &&
 				// the expectedStart is near
-				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.rundown.expectedStart &&
+				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.playlist.expectedStart &&
 				// but it's not horribly in the past
-				getCurrentTime() < this.props.rundown.expectedStart + (this.props.rundown.expectedDuration || 60 * 60 * 1000) &&
+				getCurrentTime() < this.props.playlist.expectedStart + (this.props.playlist.expectedDuration || 60 * 60 * 1000) &&
 				!this.props.inActiveRundownView && !this.state.plannedStartCloseShown) {
 
 				this.setState({
@@ -171,7 +172,7 @@ const WarningDisplay = translate()(timer(5000)(
 		render () {
 			const { t } = this.props
 
-			if (!this.props.rundown) return null
+			if (!this.props.playlist) return null
 
 			return <ModalDialog
 				title={t('Start time is close')}
@@ -184,10 +185,10 @@ const WarningDisplay = translate()(timer(5000)(
 					this.props.studioMode &&
 					this.state.plannedStartCloseShow &&
 					!(
-						this.props.rundown.active &&
-						!this.props.rundown.rehearsal
+						this.props.playlist.active &&
+						!this.props.playlist.rehearsal
 					) &&
-					this.props.rundown.active
+					this.props.playlist.active
 				}
 			>
 				<p>{t('You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into playout mode?')}</p>
@@ -319,7 +320,7 @@ interface HotkeyDefinition {
 }
 
 interface IRundownHeaderProps {
-	rundown: Rundown,
+	playlist: RundownPlaylist,
 	studio: Studio,
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
@@ -941,10 +942,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 interface IProps {
 	match?: {
 		params: {
-			rundownId: string
+			playlistId: string
 		}
 	}
-	rundownId?: string
+	playlistId?: string
 	inActiveRundownView?: boolean
 }
 
@@ -973,8 +974,7 @@ export enum RundownViewEvents {
 
 interface ITrackedProps {
 	rundownId: string
-	rundown?: Rundown
-	segments: Array<Segment>
+	rundowns: Rundown[]
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
@@ -982,29 +982,37 @@ interface ITrackedProps {
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
-	let rundownId
-	if (props.match && props.match.params.rundownId) {
-		rundownId = decodeURIComponent(props.match.params.rundownId)
-	} else if (props.rundownId) {
-		rundownId = props.rundownId
+	let playlistId
+	if (props.match && props.match.params.playlistId) {
+		playlistId = decodeURIComponent(props.match.params.playlistId)
+	} else if (props.playlistId) {
+		playlistId = props.playlistId
 	}
 
-	let rundown = Rundowns.findOne({ _id: rundownId })
-	let studio = rundown && Studios.findOne({ _id: rundown.studioId })
+
+	const playlist = RundownPlaylists.findOne(playlistId)
+	let rundowns: Rundown[] = []
+	let studio: Studio | undefined
+	if (playlist) {
+		studio = Studios.findOne({ _id: playlist.studioId })
+		rundowns = Rundowns.find({ playlistId: playlistId }).fetch()
+	}
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
-		rundownId: rundownId,
-		rundown: rundown,
-		segments: rundown ? Segments.find({ rundownId: rundown._id }, {
-			sort: {
-				'_rank': 1
-			}
-		}).fetch() : [],
+		rundownId: playlistId,
+		rundowns: rundowns,
+		// segments: rundowns ? Segments.find({ rundownId: rundown._id }, {
+		// 	sort: {
+		// 		'_rank': 1
+		// 	}
+		// }).fetch() : [],
 		studio: studio,
-		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
-		rundownLayouts: rundown && RundownLayouts.find({
-			showStyleBaseId: rundown.showStyleBaseId }).fetch(),
+		showStyleBase: rundowns.length > 0 ?
+			ShowStyleBases.findOne(rundowns[0].showStyleBaseId) :
+			undefined,
+		rundownLayouts: rundowns && RundownLayouts.find({
+			showStyleBaseId: rundowns[0].showStyleBaseId }).fetch(),
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {
 				$in: PeripheralDevices.find({
@@ -1098,29 +1106,45 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	componentDidMount () {
-		let rundownId = this.props.rundownId
+		let playlistId = this.props.playlistId
 
+		this.subscribe(PubSub.rundownPlaylists, {
+			_id: playlistId
+		})
 		this.subscribe(PubSub.rundowns, {
-			_id: rundownId
+			playlistId
 		})
 		this.subscribe(PubSub.segments, {
-			rundownId: rundownId
+			rundownId: {
+				$in: this.props.rundowns.map(i => i._id)
+			}
 		})
 		this.subscribe(PubSub.parts, {
-			rundownId: rundownId
+			rundownId: {
+				$in: this.props.rundowns.map(i => i._id)
+			}
 		})
 		this.subscribe(PubSub.pieces, {
-			rundownId: rundownId
+			rundownId: {
+				$in: this.props.rundowns.map(i => i._id)
+			}
 		})
 		this.subscribe(PubSub.adLibPieces, {
-			rundownId: rundownId
+			rundownId: {
+				$in: this.props.rundowns.map(i => i._id)
+			}
 		})
 		this.autorun(() => {
-			let rundown = Rundowns.findOne(rundownId)
-			if (rundown) {
+			let playlist = RundownPlaylists.findOne(playlistId)
+			if (playlist) {
 				this.subscribe(PubSub.studios, {
-					_id: rundown.studioId
+					_id: playlist.studioId
 				})
+			}
+		})
+		this.autorun(() => {
+			let rundown = Rundowns.findOne(playlistId)
+			if (rundown) {
 				this.subscribe(PubSub.showStyleBases, {
 					_id: rundown.showStyleBaseId
 				})
@@ -1749,7 +1773,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studio &&
 									<ClipTrimDialog
 										studio={this.props.studio}
-										rundownId={this.props.rundownId}
+										rundownId={this.props.playlistId}
 										selectedPiece={this.state.selectedPiece}
 										onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>

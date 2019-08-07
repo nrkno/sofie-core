@@ -15,6 +15,7 @@ export enum PubSub {
 	recordedFiles = 'recordedFiles',
 	rundownBaselineAdLibPieces = 'rundownBaselineAdLibPieces',
 	ingestDataCache = 'ingestDataCache',
+	rundownPlaylists = 'rundownPlaylists',
 	rundowns = 'rundowns',
 	adLibPieces = 'adLibPieces',
 	pieces = 'pieces',

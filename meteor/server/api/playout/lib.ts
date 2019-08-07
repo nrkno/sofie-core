@@ -19,26 +19,37 @@ import { updateSegmentFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 /**
  * Reset the rundown:
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
-export function resetRundown (rundown: Rundown) {
-	logger.info('resetRundown ' + rundown._id)
+export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
+	logger.info('resetRundown ' + rundownPlaylist._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
+	const rundowns = rundownPlaylist.getRundowns()
+	const rundownIDs = rundowns.map(i => i._id)
+	const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
+
 	Pieces.remove({
-		rundownId: rundown._id,
+		rundownId: {
+			$in: rundownIDs
+		},
 		dynamicallyInserted: true
 	})
 
 	Parts.remove({
-		rundownId: rundown._id,
+		rundownId: {
+			$in: rundownIDs
+		},
 		dynamicallyInserted: true
 	})
 
 	Parts.update({
-		rundownId: rundown._id
+		rundownId: {
+			$in: rundownIDs
+		}
 	}, {
 		$unset: {
 			duration: 1,
@@ -51,11 +62,13 @@ export function resetRundown (rundown: Rundown) {
 	}, { multi: true })
 
 	const dirtyParts = Parts.find({
-		rundownId: rundown._id,
+		rundownId: {
+			$in: rundownIDs
+		},
 		dirty: true
 	}).fetch()
 	dirtyParts.forEach(part => {
-		refreshPart(rundown, part)
+		refreshPart(rundownLookup[part.rundownId], part)
 		Parts.update(part._id, {$unset: {
 			dirty: 1
 		}})
@@ -63,7 +76,9 @@ export function resetRundown (rundown: Rundown) {
 
 	// Reset all pieces that were modified for holds
 	Pieces.update({
-		rundownId: rundown._id,
+		rundownId: {
+			$in: rundownIDs
+		},
 		extendOnHold: true,
 		infiniteId: { $exists: true },
 	}, {
@@ -75,7 +90,9 @@ export function resetRundown (rundown: Rundown) {
 
 	// Reset any pieces that were modified by inserted adlibs
 	Pieces.update({
-		rundownId: rundown._id,
+		rundownId: {
+			$in: rundownIDs
+		},
 		originalInfiniteMode: { $exists: true }
 	}, {
 		$rename: {
@@ -84,7 +101,9 @@ export function resetRundown (rundown: Rundown) {
 	}, { multi: true })
 
 	Pieces.update({
-		rundownId: rundown._id
+		rundownId: {
+			$in: rundownIDs
+		}
 	}, {
 		$unset: {
 			playoutDuration: 1,
@@ -96,15 +115,18 @@ export function resetRundown (rundown: Rundown) {
 	}, { multi: true })
 
 	// ensure that any removed infinites are restored
-	updateSourceLayerInfinitesAfterPart(rundown)
+	rundowns.map(r => updateSourceLayerInfinitesAfterPart(r))
 
-	resetRundownPlayhead(rundown)
+	resetRundownPlaylistPlayhead(rundownPlaylist)
 }
-function resetRundownPlayhead (rundown: Rundown) {
-	logger.info('resetRundownPlayhead ' + rundown._id)
-	let parts = rundown.getParts()
+function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
+	logger.info('resetRundownPlayhead ' + rundownPlaylist._id)
+	const rundowns = rundownPlaylist.getRundowns()
+	const rundown = _.first(rundowns)
+	if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
+	const parts = rundown.getParts()
 
-	Rundowns.update(rundown._id, {
+	RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
 			previousPartId: null,
 			currentPartId: null,
@@ -115,11 +137,21 @@ function resetRundownPlayhead (rundown: Rundown) {
 		}
 	})
 
-	if (rundown.active) {
+	Rundowns.update({
+		playlistId: rundownPlaylist._id
+	}, {
+		$unset: {
+			startedPlayback: 1
+		}
+	}, {
+		multi: true
+	})
+
+	if (rundownPlaylist.active) {
 		// put the first on queue:
-		setNextPart(rundown, _.first(parts) || null)
+		setNextPart(rundownPlaylist, _.first(parts) || null)
 	} else {
-		setNextPart(rundown, null)
+		setNextPart(rundownPlaylist, null)
 	}
 }
 export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
@@ -157,16 +189,16 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
 export function setNextPart (
-	rundown: Rundown,
+	rundownPlaylist: RundownPlaylist,
 	nextPart: DBPart | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
 	let ps: Array<Promise<any>> = []
 	if (nextPart) {
-
-		if (nextPart.rundownId !== rundown._id) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of rundown "${rundown._id}"`)
-		if (nextPart._id === rundown.currentPartId) {
+		const acceptableRundowns = rundownPlaylist.getRundownIDs()
+		if (acceptableRundowns.indexOf(nextPart.rundownId) < 0) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of any rundown in playlist "${rundownPlaylist._id}"`)
+		if (nextPart._id === rundownPlaylist.currentPartId) {
 			throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
 		}
 		if (nextPart.invalid) {
@@ -175,7 +207,7 @@ export function setNextPart (
 
 		ps.push(resetPart(nextPart))
 
-		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
 			$set: {
 				nextPartId: nextPart._id,
 				nextPartManual: !!setManually,
@@ -188,7 +220,7 @@ export function setNextPart (
 			}
 		}))
 	} else {
-		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
 			$set: {
 				nextPartId: null,
 				nextPartManual: !!setManually

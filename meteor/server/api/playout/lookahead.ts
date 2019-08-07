@@ -8,11 +8,13 @@ import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { extendMandadory, clone } from '../../../lib/lib'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
 
 export function getLookeaheadObjects (rundownData: RundownData, studio: Studio): Array<TimelineObjGeneric> {
-	const activeRundown = rundownData.rundown
+	const activePlaylist = rundownData.rundownPlaylist
+	const currentPalylist = rundownData.rundown
 
-	const currentPart = activeRundown.currentPartId ? rundownData.partsMap[activeRundown.currentPartId] : undefined
+	const currentPart = activePlaylist.currentPartId ? rundownData.partsMap[activePlaylist.currentPartId] : undefined
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
@@ -38,7 +40,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			}
 			if (!obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			const finiteDuration = lookaheadObjs[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activeRundown.nextPartId)
+			const finiteDuration = lookaheadObjs[i].partId === activePlaylist.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activePlaylist.nextPartId)
 			enable.end = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start` : undefined
 
 			obj.id = `lookahead_${i}_${obj.id}`
@@ -67,7 +69,8 @@ export function findLookaheadForlayer (
 	obj: TimelineObjRundown,
 	partId: string
 }> {
-	let activeRundown: Rundown = rundownData.rundown
+	let activePlaylist: RundownPlaylist = rundownData.rundownPlaylist
+	let currentRundown: Rundown = rundownData.rundown
 
 	if (mode === undefined || mode === LookaheadMode.NONE) {
 		return []
@@ -135,7 +138,7 @@ export function findLookaheadForlayer (
 			return 0
 		})
 
-		const currentIndex = parts.findIndex(l => l.id === activeRundown.currentPartId)
+		const currentIndex = parts.findIndex(l => l.id === activePlaylist.currentPartId)
 		let partInfos: PartInfo[] = []
 		if (currentIndex >= 0) {
 			partInfos = partInfos.concat(parts.slice(0, currentIndex + 1))
@@ -143,8 +146,8 @@ export function findLookaheadForlayer (
 			currentPos = currentIndex
 		}
 
-		const nextPart = activeRundown.nextPartId
-			? parts.findIndex(l => l.id === activeRundown.nextPartId)
+		const nextPart = activePlaylist.nextPartId
+			? parts.findIndex(l => l.id === activePlaylist.nextPartId)
 			: (currentIndex >= 0 ? currentIndex + 1 : -1)
 
 		if (nextPart >= 0) {
@@ -242,7 +245,7 @@ export function findLookaheadForlayer (
 				const orderedItems = getOrderedPiece(pieceGroup.part)
 
 				let allowTransition = false
-				if (pieceGroupIndex >= 1 && activeRundown.currentPartId) {
+				if (pieceGroupIndex >= 1 && activePlaylist.currentPartId) {
 					const prevPieceGroup = orderedGroups[pieceGroupIndex - 1]
 					allowTransition = !prevPieceGroup.part.disableOutTransition
 				}
@@ -311,7 +314,7 @@ export function findLookaheadForlayer (
 	objs.forEach(o => lookaheadObjs.push({ obj: o, partId: partId }))
 
 	// this is the current one, so look ahead to next to find the next thing to preload too
-	if (pieceGroup && pieceGroup.partId === activeRundown.currentPartId) {
+	if (pieceGroup && pieceGroup.partId === activePlaylist.currentPartId) {
 		pieceGroup = undefined
 		for (let i = currentPos + 1; i < orderedGroups.length; i++) {
 			const v = orderedGroups[i]
