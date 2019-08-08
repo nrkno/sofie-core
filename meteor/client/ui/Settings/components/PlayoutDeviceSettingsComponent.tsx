@@ -168,6 +168,8 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 										this.renderHTTPSendDeviceSettings(subDevice, deviceId) :
 									subDevice.type === PlayoutDeviceType.PANASONIC_PTZ ?
 										this.renderPanasonicPTZDeviceSettings(subDevice, deviceId) :
+									subDevice.type === PlayoutDeviceType.TCPSEND ?
+										this.renderTCPSendDeviceSettings(subDevice, deviceId) :
 									subDevice.type === PlayoutDeviceType.HYPERDECK ?
 										this.renderHyperdeckDeviceSettings(subDevice, deviceId) :
 									subDevice.type === PlayoutDeviceType.PHAROS ?
@@ -284,6 +286,29 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<label className='field'>
 					{t('Port')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderTCPSendDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Buffer Encoding')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.bufferEncoding'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>

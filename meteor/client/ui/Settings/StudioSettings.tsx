@@ -48,7 +48,8 @@ import {
 	mappingIsPharos,
 	mappingIsOSC,
 	mappingIsQuantel,
-	mappingIsSisyfos
+	mappingIsSisyfos,
+	mappingIsTCPSend
 } from '../../../lib/api/studios'
 
 interface IStudioDevicesProps {
@@ -256,7 +257,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		this.editItem(newLayerId)
 	}
 
-	renderCaparCGMappingSettings (layerId: string) {
+	renderCasparCGMappingSettings (layerId: string) {
 		const { t } = this.props
 		return (
 			<React.Fragment>
@@ -374,6 +375,13 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
+			</React.Fragment>
+		)
+	}
+	renderTCPSendSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
 			</React.Fragment>
 		)
 	}
@@ -626,7 +634,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 									</div>
 									{(
 										mappingIsCasparCG(mapping) && (
-											this.renderCaparCGMappingSettings(layerId)
+											this.renderCasparCGMappingSettings(layerId)
 										) ||
 										(
 										mappingIsAtem(mapping) && (
@@ -640,6 +648,10 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 										(
 										mappingIsPanasonicPtz(mapping) && (
 											this.renderPanasonicPTZSettings(layerId)
+										)) ||
+										(
+										mappingIsTCPSend(mapping) && (
+											this.renderTCPSendSettings(layerId)
 										)) ||
 										(
 										mappingIsHyperdeck(mapping) && (
