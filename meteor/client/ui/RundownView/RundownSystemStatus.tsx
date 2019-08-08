@@ -233,7 +233,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 			}
 		}
 		if (segmentId) {
-			scrollToSegment(segmentId)
+			scrollToSegment(segmentId).catch(console.error)
 		}
 	}
 	clickNotes () {

@@ -1358,7 +1358,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onGoToTop = () => {
-		scrollToPosition(0)
+		scrollToPosition(0).catch(console.error)
 
 		window.requestIdleCallback(() => {
 			this.setState({
@@ -1452,7 +1452,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}
 			}
 			if (segmentId) {
-				scrollToSegment(segmentId)
+				scrollToSegment(segmentId).catch(console.error)
 			}
 		}
 	}

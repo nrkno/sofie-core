@@ -230,7 +230,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		window.requestAnimationFrame(() => {
 			this.mountedTime = Date.now()
 			if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
-				scrollToSegment(this.props.segmentId, true)
+				scrollToSegment(this.props.segmentId, true).catch(console.error)
 			}
 		})
 	}
