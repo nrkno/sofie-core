@@ -25,7 +25,6 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
-import { logger } from '../../lib/logging'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
@@ -340,14 +339,11 @@ addMigrationSteps('0.25.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
-			logger.error(currentRundowns)
 			const itemsCount = ExpectedMediaItems.find({
 				rundownId: {
 					$nin: currentRundowns
 				}
 			}).count()
-			logger.error(itemsCount)
-
 			if (itemsCount > 0) {
 				return `ExpectedMediaItems contains ${itemsCount} orphaned media-items`
 			}
