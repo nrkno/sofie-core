@@ -5,14 +5,14 @@ import * as _ from 'underscore'
 import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
-import { getElementWidth, getElementHeight } from '../../utils/dimensions';
+import { getElementWidth, getElementHeight } from '../../utils/dimensions'
 
 // We're cheating a little: Fontface
 declare class FontFace {
 	loaded: Promise<FontFace>
-	constructor(font: string, url: string, options: object)
+	constructor (font: string, url: string, options: object)
 
-	load(): void
+	load (): void
 }
 
 const GRID_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
@@ -26,8 +26,8 @@ interface ITimelineGridProps {
 	onResize: (size: number[]) => void
 }
 
-let gridFont: any | undefined = undefined;
-let gridFontAvailable: boolean = false;
+let gridFont: any | undefined = undefined
+let gridFontAvailable: boolean = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	canvasElement: HTMLCanvasElement
@@ -75,7 +75,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.contextResize()
 	}
 
-	ring(value, ringMax) {
+	ring (value, ringMax) {
 		return (value < 0) ? (ringMax + (value % ringMax)) : value % ringMax
 	}
 
@@ -186,7 +186,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<div className='segment-timeline__timeline-grid' ref={this.setParentRef}>
 				<canvas className='segment-timeline__timeline-grid__canvas' ref={this.setCanvasRef}></canvas>
@@ -194,7 +194,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		)
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		// console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
 		this.ctx = this.canvasElement.getContext('2d', {
 			// alpha: false
@@ -234,18 +234,18 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	shouldComponentUpdate(nextProps, nextState) {
+	shouldComponentUpdate (nextProps, nextState) {
 		if ((nextProps.timeScale !== this.props.timeScale) || (nextProps.scrollLeft !== this.props.scrollLeft)) {
 			return true
 		}
 		return false
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate () {
 		this.requestRepaint()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)

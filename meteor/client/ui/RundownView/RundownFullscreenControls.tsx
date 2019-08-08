@@ -61,7 +61,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 
 		this.state = {
@@ -93,7 +93,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		this.throttledRefreshFullScreenState = _.throttle(this.refreshFullScreenState, 500)
 	}
 
-	componentDidUpdate(prevProps: IProps, prevState: IState) {
+	componentDidUpdate (prevProps: IProps, prevState: IState) {
 		if (this.props.isFollowingOnAir && this.state.onAirHover) {
 			this.setState({
 				onAirHover: false
@@ -106,15 +106,15 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		window.addEventListener('resize', this.throttledRefreshFullScreenState)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		window.removeEventListener('resize', this.throttledRefreshFullScreenState)
 	}
 
-	checkFullScreen() {
+	checkFullScreen () {
 		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 		return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen ||
 			(Math.abs(screen.height - window.innerHeight) < 10) ||
@@ -183,7 +183,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<div className='status-bar'>
 				<VelocityReact.VelocityTransitionGroup

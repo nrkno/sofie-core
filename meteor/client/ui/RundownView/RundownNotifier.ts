@@ -357,7 +357,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
 				if (sourceLayer && part) {
-					// we don't want this to be in a non-reactive context, so we manage this computation manually					
+					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
 						if (mediaId) {

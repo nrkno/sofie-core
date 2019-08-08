@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
 
-export {multilineText, isEventInInputField, loadScript}
+export { multilineText, isEventInInputField, loadScript }
 
 function multilineText (txt: string) {
 	return _.map((txt + '').split('\n'), (line: string, i) => {
@@ -19,7 +19,7 @@ const loadScriptCache: {[url: string]: {
 	callbacks: Array<(err?: any) => void>
 }} = {}
 
-function doCallback (url:string, err?: any) {
+function doCallback (url: string, err?: any) {
 	loadScriptCache[url].callbacks.forEach((cb) => {
 		cb(err)
 	})
@@ -36,21 +36,21 @@ function loadScript (url: string, callback: (err?: any) => void) {
 	if ((loadScriptCache[url] || {}).status === 'loading') {
 		loadScriptCache[url].callbacks.push(callback)
 		return
-	} 
-	
+	}
+
 	loadScriptCache[url] = {
 		status: 'loading',
 		callbacks: [callback]
 	}
-	
-	const script:HTMLScriptElement = document.createElement('script')
+
+	const script: HTMLScriptElement = document.createElement('script')
 	script.onerror = (error) => {
 		doCallback(url, error)
 	}
 	script.onload = () => {
 		doCallback(url)
 	}
-	
+
 	document.head.appendChild(script)
 	script.src = url
 }

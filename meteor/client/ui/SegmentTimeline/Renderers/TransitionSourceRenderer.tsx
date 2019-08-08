@@ -18,7 +18,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 
 		this.state = _.extend(this.state || {}, {
@@ -36,7 +36,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 		this.leftLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.updateAnchoredElsWidths()
 	}
 
@@ -47,7 +47,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 		})
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -57,7 +57,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 		}
 	}
 
-	render() {
+	render () {
 		const content = this.props.piece.content as TransitionContent
 		return <React.Fragment>
 			<span className='segment-timeline__piece__label with-overflow' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>

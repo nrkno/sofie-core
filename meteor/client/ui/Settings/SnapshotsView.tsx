@@ -253,7 +253,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<UploadButton accept='application/json,.json'
 							className='btn btn-secondary'
 							onChange={(e) => this.onUploadFile(e)}
-							key={this.state.uploadFileKey}> 
+							key={this.state.uploadFileKey}>
 							<FontAwesomeIcon icon={faUpload} />
 							<span>{t('Upload snapshot')}</span>
 						</UploadButton>

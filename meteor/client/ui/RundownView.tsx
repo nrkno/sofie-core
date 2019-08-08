@@ -1718,7 +1718,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 											}
 											{this.state.studioMode && this.props.casparCGPlayoutDevices &&
-												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', {device: i.name})}</button>)
+												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', { device: i.name })}</button>)
 											}
 										</SupportPopUp>
 									}

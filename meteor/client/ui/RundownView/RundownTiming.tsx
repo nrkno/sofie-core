@@ -316,7 +316,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
 					currentRemaining = Math.max(0, (part.duration ||
-						(memberOfDisplayDurationGroup ? 
+						(memberOfDisplayDurationGroup ?
 							displayDurationFromGroup :
 							part.expectedDuration) ||
 						0)

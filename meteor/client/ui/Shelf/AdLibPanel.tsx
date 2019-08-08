@@ -27,9 +27,9 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { Random } from 'meteor/random';
-import { literal } from '../../../lib/lib';
-import { RundownAPI } from '../../../lib/api/rundown';
+import { Random } from 'meteor/random'
+import { literal } from '../../../lib/lib'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -59,7 +59,7 @@ const AdLibListView = translate()(class extends React.Component<
 > {
 	table: HTMLTableElement
 
-	constructor(props: Translated<IListViewPropsHeader>) {
+	constructor (props: Translated<IListViewPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -68,7 +68,7 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
+	static getDerivedStateFromProps (props: IListViewPropsHeader, state) {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -93,7 +93,7 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	componentDidUpdate(prevProps: IListViewPropsHeader) {
+	componentDidUpdate (prevProps: IListViewPropsHeader) {
 		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
 			// scroll to selected segment
 			const segmentSelector = `#${this.table.id} .adlib-panel__list-view__item__${this.props.selectedSegment._id}`
@@ -270,7 +270,7 @@ interface IToolbarStateHader {
 const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
-	constructor(props: Translated<IToolbarPropsHeader>) {
+	constructor (props: Translated<IToolbarPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -297,7 +297,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 		this.searchInputChanged()
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		return (
 			<div className={ClassNames('adlib-panel__list-view__toolbar', {
@@ -486,7 +486,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor(props: Translated<IProps & ITrackedProps>) {
+	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -497,7 +497,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		}
 	}
 
-	componentWillMount() {
+	componentWillMount () {
 		this.subscribe(PubSub.segments, {
 			rundownId: this.props.rundown._id
 		})
@@ -518,7 +518,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		if (this.props.liveSegment) {
 			this.setState({
 				selectedSegment: this.props.liveSegment
@@ -528,7 +528,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate(prevProps: IProps & ITrackedProps) {
+	componentDidUpdate (prevProps: IProps & ITrackedProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
@@ -541,7 +541,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		this._cleanUp()
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
@@ -549,7 +549,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.usedHotkeys.length = 0
 	}
 
-	refreshKeyboardHotkeys() {
+	refreshKeyboardHotkeys () {
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
@@ -647,7 +647,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	renderSegmentList() {
+	renderSegmentList () {
 		return this.props.uiSegments.map((item) => {
 			return (
 				<li className={ClassNames('adlib-panel__segments__segment', {
@@ -689,7 +689,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		)
 	}
 
-	render() {
+	render () {
 		if (this.props.visible) {
 			if (!this.props.uiSegments || !this.props.rundown) {
 				return <Spinner />

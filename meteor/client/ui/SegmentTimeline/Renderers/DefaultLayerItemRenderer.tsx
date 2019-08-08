@@ -11,7 +11,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 	}
 
@@ -23,7 +23,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.updateAnchoredElsWidths()
 	}
 
@@ -34,7 +34,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -44,7 +44,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 		}
 	}
 
-	render() {
+	render () {
 		return <React.Fragment>
 			<span className='segment-timeline__piece__label'
 				ref={this.setLeftLabelRef}

@@ -37,7 +37,7 @@ interface RundownOverviewTrackedProps {
 }
 
 const Timediff = class extends React.Component<{ time: number }> {
-	render() {
+	render () {
 		const time = -this.props.time
 		const isNegative = (Math.floor(time / 1000) > 0)
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
@@ -93,7 +93,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 		}
 	})(
 		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
-			componentWillMount() {
+			componentWillMount () {
 				this.subscribe('rundowns', {
 					_id: this.props.rundownId
 				})
@@ -105,7 +105,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 				})
 			}
 
-			render() {
+			render () {
 				const { rundown, segments } = this.props
 
 				if (rundown && this.props.rundownId && this.props.segments) {
@@ -259,7 +259,7 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 	}
 })(
 	class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
-		componentDidMount() {
+		componentDidMount () {
 			document.body.classList.add('dark', 'xdark')
 			let studioId = objectPathGet(this.props, 'match.params.studioId')
 			if (studioId) {
@@ -296,12 +296,12 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount () {
 			this._cleanUp()
 			document.body.classList.remove('dark', 'xdark')
 		}
 
-		render() {
+		render () {
 			const { t } = this.props
 
 			if (this.props.rundown) {

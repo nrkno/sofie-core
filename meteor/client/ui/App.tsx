@@ -75,7 +75,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			testingMode: getTestingMode(),
 			developerMode: getDeveloperMode()
 		}
-		
+
 		this.lastStart = Date.now()
 	}
 

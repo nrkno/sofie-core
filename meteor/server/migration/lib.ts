@@ -36,7 +36,7 @@ export function ensureCollectionProperty<T = any> (
 
 	return {
 		id: `${collectionName}.${property}`,
-		canBeRunAutomatically: (_.isNull(value) ? false : true),
+		canBeRunAutomatically: !_.isNull(value),
 		validate: () => {
 			let objects = collection.find(selector).fetch()
 			let propertyMissing: string | boolean = false

@@ -12,7 +12,7 @@ import { logger } from '../logging'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 export function createRundownLayout (
 	name: string,

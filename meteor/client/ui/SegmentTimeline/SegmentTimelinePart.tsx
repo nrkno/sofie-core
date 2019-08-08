@@ -84,7 +84,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 		this.mousePosition = { left: e.pageX, top: e.pageY }
 	}
 
-	renderInside() {
+	renderInside () {
 		if (this.props.layer.pieces !== undefined) {
 			return _.chain(this.props.layer.pieces.filter((piece) => {
 				// filter only pieces belonging to this part
@@ -118,12 +118,12 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 						scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.scrollWidth}
 						/>
-					)
-				}).value()
+				)
+			}).value()
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
 				className: 'segment-timeline__layer',
@@ -163,7 +163,7 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
-	renderInside() {
+	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
 			return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
 				.map((sourceLayer) => {
@@ -184,7 +184,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<div className={ClassNames('segment-timeline__output-group', {
 				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1,
@@ -248,7 +248,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	private _configValueMemo: { [key: string]: ConfigItemValue } = {}
 
-	constructor(props: Translated<WithTiming<IProps>>) {
+	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
 
 		const isLive = (this.props.rundown.currentPartId === this.props.part._id)
@@ -274,7 +274,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps) {
+	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
 		const isLive = (nextProps.rundown.currentPartId === nextProps.part._id)
 		const isNext = (nextProps.rundown.nextPartId === nextProps.part._id)
 
@@ -306,11 +306,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		})
 	}
 
-	static getLiveLineTimePadding(timeScale) {
+	static getLiveLineTimePadding (timeScale) {
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	static getCurrentLiveLinePosition(part: PartUi, currentTime: number) {
+	static getCurrentLiveLinePosition (part: PartUi, currentTime: number) {
 		if (part.startedPlayback && part.getLastStartedPlayback()) {
 			if (part.duration) {
 				return part.duration
@@ -322,7 +322,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	getLayerStyle() {
+	getLayerStyle () {
 		// this.props.part.expectedDuration ||
 		if (this.props.relative) {
 			return {
@@ -366,7 +366,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		) || 0)
 	}
 
-	isInsideViewport() {
+	isInsideViewport () {
 		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
@@ -380,7 +380,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	renderTimelineOutputGroups(part: PartUi) {
+	renderTimelineOutputGroups (part: PartUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
 				return (layer.used) ? true : false
@@ -421,7 +421,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.rundown.nextPartId))
@@ -451,10 +451,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							{(
 								this.props.part.invalid ?
 									t('Invalid') :
-									[
-										(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' ',
-										this.state.isNext && t('Next')
-									]
+								[
+									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' ',
+									this.state.isNext && t('Next')
+								]
 							)}
 						</div>
 					</div>
@@ -473,10 +473,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 								{(
 									this.props.part.invalid ?
 										t('Invalid') :
-										[
-											(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' ',
-											this.state.isNext && t('Next')
-										]
+									[
+										(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' ',
+										this.state.isNext && t('Next')
+									]
 								)}
 							</div>
 						</div>
@@ -532,7 +532,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 
 	}
 
-	private ensureHasTrailingSlash(input: string | null): string | null {
+	private ensureHasTrailingSlash (input: string | null): string | null {
 		if (input) {
 			return (input.substr(-1) === '/') ? input : input + '/'
 		} else {

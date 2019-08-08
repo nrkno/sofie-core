@@ -137,7 +137,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	// Number of objects
 	let objCount = timelineObjs.length
 	// Hash of all objects
-	timelineObjs = timelineObjs.sort((a, b) => {
+	timelineObjs.sort((a, b) => {
 		if (a._id < b._id) return 1
 		if (a._id > b._id) return -1
 		return 0

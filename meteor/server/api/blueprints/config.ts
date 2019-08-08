@@ -39,7 +39,7 @@ export namespace ConfigRef {
 				const configId = m[3]
 				const studio = Studios.findOne(studioId)
 				if (studio) {
-					const config =_.find(studio.config, (config) => config._id === configId)
+					const config = _.find(studio.config, (config) => config._id === configId)
 					if (config) {
 						return config.value
 					} else {

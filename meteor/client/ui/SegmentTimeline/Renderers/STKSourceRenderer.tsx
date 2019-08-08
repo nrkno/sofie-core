@@ -19,11 +19,11 @@ import { InjectedTranslateProps, translate } from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
 
 export const STKSourceRenderer = translate()(class extends VTSourceRendererBase {
-	constructor(props) {
+	constructor (props) {
 		super(props)
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		let labelItems = this.props.piece.name.split('||')

@@ -32,7 +32,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	private _forceSizingRecheck: boolean
 
-	constructor(props: IProps & InjectedTranslateProps) {
+	constructor (props: IProps & InjectedTranslateProps) {
 		super(props)
 	}
 
@@ -67,7 +67,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		// Create line element
 		this.lineItem = document.createElement('div')
 		this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line')
@@ -87,7 +87,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		let _forceSizingRecheck = false
 
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
@@ -131,12 +131,12 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		// Remove the line element
 		this.lineItem.remove()
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		let labelItems = (this.props.piece.name || '').split('||')
 		let begin = labelItems[0] || ''

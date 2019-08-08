@@ -558,7 +558,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			</React.Fragment>
 		})
 	}
-	
+
 	render () {
 		const { t, subDevices } = this.props
 		let settings = this.props.device.settings as MediaManagerDeviceSettings
