@@ -718,7 +718,7 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
  *
  * creds: https://github.com/rsp/node-caught/blob/master/index.js
  */
-export const caught = (f => p => (p.catch(f), p))(() => {
+export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), p))(() => {
 	// nothing
 })
 
