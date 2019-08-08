@@ -188,16 +188,10 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	}
 
 	getStyle () {
-		return this.props.isExpanded ?
-			{
-				'top': this.getTop(),
-				'transition': this.state.moving ? '' : '0.5s top ease-out'
-			}
-			:
-			{
-				'top': this.getTop(),
-				'transition': this.state.moving ? '' : '0.5s top ease-out'
-			}
+		return {
+			'top': this.getTop(),
+			'transition': this.state.moving ? '' : '0.5s top ease-out'
+		}
 	}
 
 	keyBlurActiveElement = () => {
