@@ -632,42 +632,26 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
-									{(
-										mappingIsCasparCG(mapping) && (
-											this.renderCasparCGMappingSettings(layerId)
-										) ||
-										(
-										mappingIsAtem(mapping) && (
-											this.renderAtemMappingSettings(layerId)
-										))
-										) ||
-										(
-										mappingIsLawo(mapping) && (
-											this.renderLawoMappingSettings(layerId)
-										)) ||
-										(
-										mappingIsPanasonicPtz(mapping) && (
-											this.renderPanasonicPTZSettings(layerId)
-										)) ||
-										(
-										mappingIsTCPSend(mapping) && (
-											this.renderTCPSendSettings(layerId)
-										)) ||
-										(
-										mappingIsHyperdeck(mapping) && (
-											this.renderHyperdeckMappingSettings(layerId)
-										)) ||
-										(
-										mappingIsPharos(mapping) && (
-											this.renderPharosMappingSettings(layerId)
-										)) ||
-										(
-										mappingIsSisyfos(mapping) && (
-											this.renderSisyfosMappingSettings(layerId))) ||
-										(
-										mappingIsQuantel(mapping) && (
-											this.renderQuantelMappingSettings(layerId)
-										))
+									{
+										mappingIsCasparCG(mapping) ?
+											this.renderCasparCGMappingSettings(layerId) :
+										mappingIsAtem(mapping) ?
+											this.renderAtemMappingSettings(layerId) :
+										mappingIsLawo(mapping) ?
+											this.renderLawoMappingSettings(layerId) :
+										mappingIsPanasonicPtz(mapping) ?
+											this.renderPanasonicPTZSettings(layerId) :
+										mappingIsTCPSend(mapping) ?
+											this.renderTCPSendSettings(layerId) :
+										mappingIsHyperdeck(mapping) ?
+											this.renderHyperdeckMappingSettings(layerId) :
+										mappingIsPharos(mapping) ?
+											this.renderPharosMappingSettings(layerId) :
+										mappingIsSisyfos(mapping) ?
+											this.renderSisyfosMappingSettings(layerId) :
+										mappingIsQuantel(mapping) ?
+											this.renderQuantelMappingSettings(layerId) :
+										null
 									}
 								</div>
 								<div className='mod alright'>
