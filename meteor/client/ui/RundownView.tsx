@@ -571,6 +571,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
 		}
 	}
+
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
@@ -578,7 +579,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
 						const partId = response.result
-						if (partId) scrollToPart(partId).catch(() => { })
+						if (partId) scrollToPart(partId).catch(() => console.error)
 					}
 				})
 			}
@@ -773,7 +774,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				if (!err && response) {
 					if (!handleRundownReloadResponse(t, this.props.rundown, response.result)) {
 						if (this.props.rundown && this.props.rundown.nextPartId) {
-							scrollToPart(this.props.rundown.nextPartId).catch(() => { })
+							scrollToPart(this.props.rundown.nextPartId).catch(() => console.error)
 						}
 					}
 				}
@@ -1186,14 +1187,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		} else if (this.props.rundown &&
 			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
 			this.props.rundown.nextPartId) {
-			scrollToPart(this.props.rundown.nextPartId).catch(() => { })
+			scrollToPart(this.props.rundown.nextPartId).catch(() => console.error)
 		} else if (
 			// after take
 			(this.props.rundown &&
 			prevProps.rundown && this.props.rundown.currentPartId !== prevProps.rundown.currentPartId &&
 			this.props.rundown.currentPartId && this.state.followLiveSegments)
 		) {
-			scrollToPart(this.props.rundown.currentPartId, true).catch(() => { })
+			scrollToPart(this.props.rundown.currentPartId, true).catch(() => console.error)
 		} else if (
 			// initial Rundown open
 			(this.props.rundown && this.props.rundown.currentPartId &&
