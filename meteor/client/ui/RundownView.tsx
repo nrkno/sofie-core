@@ -61,8 +61,6 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
-interface 
-
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
 }
@@ -199,6 +197,7 @@ const WarningDisplay = translate()(timer(5000)(
 
 interface ITimingDisplayProps {
 	rundown: Rundown
+	rundownPlaylist: RundownPlaylist
 }
 
 export enum RundownViewKbdShortcuts {
@@ -230,11 +229,14 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
 
-		if (!this.props.rundown) return null
+		if (!this.props.rundown || !this.props.rundownPlaylist) return null
 
 		return (
 			<div className='timing mod'>
-				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
+				{this.props.rundown.startedPlayback && (
+					this.props.rundownPlaylist.active &&
+					!this.props.rundownPlaylist.rehearsal
+				) ?
 					<span className='timing-clock plan-start left'>
 						<span className='timing-clock-label left'>{t('Started')}</span>
 						<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.startedPlayback} />
@@ -244,7 +246,10 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						<Moment interval={0} format='HH:mm:ss' date={this.props.rundown.expectedStart} />
 					</span>
 				}
-				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
+				{this.props.rundown.startedPlayback && (
+					this.props.rundownPlaylist.active &&
+					!this.props.rundownPlaylist.rehearsal
+				) ?
 					this.props.rundown.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
@@ -261,7 +266,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
-					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
+					{this.props.rundownPlaylist.holdState && this.props.rundownPlaylist.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
 						: null
 					}
@@ -554,7 +559,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		const { t } = this.props
 
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.rundown._id, false])
+			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.playlist._id, false])
 		}
 	}
 
@@ -562,21 +567,21 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		const { t } = this.props
 
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.rundown._id, true])
+			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.playlist._id, true])
 		}
 	}
 
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+			doUserAction(t, e, UserActionAPI.methods.take, [this.props.playlist._id])
 		}
 	}
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
 			if (this.props.rundown.active) {
-				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
+				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.playlist._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
 						const partId = response.result
 						if (partId) scrollToPart(partId).catch(() => { })
@@ -894,10 +899,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				</ContextMenu>
 			</Escape>
 			<div className={ClassNames('header rundown', {
-				'active': this.props.rundown.active,
-				'not-active': !this.props.rundown.active,
+				'active': this.props.playlist.active,
+				'not-active': !this.props.playlist.active,
 
-				'rehearsal': this.props.rundown.rehearsal
+				'rehearsal': this.props.playlist.rehearsal
 			})}>
 				<ContextMenuTrigger id='rundown-context-menu' attributes={{
 					className: 'flex-col col-timing horizontal-align-center'
@@ -975,6 +980,7 @@ export enum RundownViewEvents {
 interface ITrackedProps {
 	rundownId: string
 	rundowns: Rundown[]
+	segments: Segment[]
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
@@ -1002,11 +1008,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownId: playlistId,
 		rundowns: rundowns,
-		// segments: rundowns ? Segments.find({ rundownId: rundown._id }, {
-		// 	sort: {
-		// 		'_rank': 1
-		// 	}
-		// }).fetch() : [],
+		segments: playlist ? playlist.getSegments() : [],
 		studio: studio,
 		showStyleBase: rundowns.length > 0 ?
 			ShowStyleBases.findOne(rundowns[0].showStyleBaseId) :

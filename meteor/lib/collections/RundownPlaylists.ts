@@ -107,6 +107,29 @@ export class RundownPlaylist implements DBRundownPlaylist {
 
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
+	getSegments (): Segment[] {
+		const rundowns = this.getRundowns()
+		let rundownsMap = normalizeArray(rundowns, '_id')
+		const segments = Segments.find({
+			rundownId: {
+				$in: rundowns.map(i => i._id)
+			}
+		}, {
+			sort: {
+				rundownId: 1,
+				_rank: 1
+			}
+		}).fetch().sort((a, b) => {
+			if (a.rundownId === b.rundownId) {
+				return a._rank - b._rank
+			} else {
+				const rdA = rundownsMap[a.rundownId]
+				const rdB = rundownsMap[b.rundownId]
+				return rdA._rank - rdB._rank
+			}
+		})
+		return segments
+	}
 	fetchAllData (): RundownPlaylistData {
 		// Do fetches in parallell:
 		const rundowns = Rundowns.find({ playlistId: this._id }, {
