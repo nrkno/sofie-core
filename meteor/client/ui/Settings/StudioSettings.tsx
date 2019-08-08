@@ -47,7 +47,8 @@ import {
 	mappingIsHyperdeck,
 	mappingIsPharos,
 	mappingIsOSC,
-	mappingIsQuantel
+	mappingIsQuantel,
+	mappingIsSisyfos
 } from '../../../lib/api/studios'
 
 interface IStudioDevicesProps {
@@ -405,6 +406,26 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			</React.Fragment>
 		)
 	}
+	renderSisyfosMappingSettings (layerId: string) {
+		const { t } = this.props
+
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('QuanSisyfos Channel')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.channel'}
+							obj={this.props.studio}
+							type='int'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
 	renderQuantelMappingSettings (layerId: string) {
 		const { t } = this.props
 
@@ -491,7 +512,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							)) ||
 							(
 								mappingIsLawo(mapping) && (
-								<span>{ mapping.identifier }</span>
+								<span>{ MappingLawoType[mapping.mappingType] } { mapping.identifier }</span>
 							)) ||
 							(
 								mappingIsPanasonicPtz(mapping) && (
@@ -520,11 +541,15 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 								<span>-</span>
 							)) ||
 							(
-								mappingIsQuantel(mapping) && (
-									<span>{mapping.portId}, {mapping.channelId}</span>
+								mappingIsSisyfos(mapping) && (
+									<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
 							)) ||
 							(
-								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
+								mappingIsQuantel(mapping) && (
+									<span>{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}</span>
+							)) ||
+							(
+								<span>{t('Unknown device type: {{device}}', { device: PlayoutDeviceType[mapping.device] }) } </span>
 							)
 						}
 						</td>
@@ -624,6 +649,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 										mappingIsPharos(mapping) && (
 											this.renderPharosMappingSettings(layerId)
 										)) ||
+										(
+										mappingIsSisyfos(mapping) && (
+											this.renderSisyfosMappingSettings(layerId))) ||
 										(
 										mappingIsQuantel(mapping) && (
 											this.renderQuantelMappingSettings(layerId)
