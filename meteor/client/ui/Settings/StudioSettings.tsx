@@ -261,7 +261,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('channel')}
+						{t('CasparCG Channel')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.channel'}
@@ -269,11 +269,12 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							type='int'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
+						<i>{t('The CasparCG channel to use (1 is the first)')}</i>
 					</label>
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('layer')}
+						{t('CasparCG Layer')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.layer'}
@@ -281,6 +282,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							type='int'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
+						<i>{t('The layer in a channel to use')}</i>
 					</label>
 				</div>
 			</React.Fragment>
@@ -293,7 +295,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -307,7 +309,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('index')}
+						{t('Index')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.index'}
@@ -326,7 +328,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -359,7 +361,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -381,7 +383,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -431,6 +433,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							type='int'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
+						<i>{t('The channel to use for output (0 is the first one)')}</i>
 					</label>
 				</div>
 				<div className='mod mvs mhs'>
@@ -551,6 +554,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												collection={Studios}
 												updateFunction={this.updateLayerId}
 												className='input text-input input-l'></EditAttribute>
+											<i>{t('ID of the timeline-layer to map to some output')}</i>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -565,6 +569,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												optionsAreNumbers={true}
 												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
+											<i>{t('The type of device to use for the output')}</i>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -577,6 +582,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												type='text'
 												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
+											<i>{t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}</i>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
