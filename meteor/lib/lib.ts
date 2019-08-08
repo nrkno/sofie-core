@@ -97,15 +97,25 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		updated: 0,
 		removed: 0
 	}
-	let options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
+	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
-	let identifier = '_id'
+	const identifier = '_id'
 
-	let oldObjs: Array<DocClass> = collection.find(filter).fetch()
+	const pOldObjs = asyncCollectionFindFetch(collection, filter)
 
-	let ps: Array<Promise<any>> = []
+	const newObjIds: {[identifier: string]: true} = {}
+	_.each(newData, (o) => {
+		if (newObjIds[o[identifier]]) {
+			throw new Meteor.Error(500, `saveIntoDb into collection "${collection.rawCollection.name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
+		}
+		newObjIds[o[identifier]] = true
+	})
 
-	let removeObjs: {[id: string]: DocClass} = {}
+	const oldObjs: Array<DocClass> = waitForPromise(pOldObjs)
+
+	const ps: Array<Promise<any>> = []
+
+	const removeObjs: {[id: string]: DocClass} = {}
 	_.each(oldObjs,function (o: DocClass) {
 
 		if (removeObjs['' + o[identifier]]) {
@@ -120,17 +130,11 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	_.each(newData,function (o) {
 
-		// if (_.has(o,'type')) {
-		// 	o.type2 = o.type
-		// 	delete o.type
-		// }
-
-		let oldObj = removeObjs['' + o[identifier]]
+		const oldObj = removeObjs['' + o[identifier]]
 		if (oldObj) {
 
-			let o2 = o
-			if (options.beforeDiff) o2 = options.beforeDiff(o, oldObj)
-			let diff = compareObjs(oldObj,o2)
+			const o2 = (options.beforeDiff ? options.beforeDiff(o, oldObj) : o)
+			const diff = compareObjs(oldObj,o2)
 
 			if (!diff) {
 				let p: Promise<any> | undefined
