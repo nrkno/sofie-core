@@ -8,17 +8,13 @@ import {
 	MappingExt
 } from '../../../lib/collections/Studios'
 import {
-	MappingCasparCG,
-	MappingAtem,
-	MappingLawo,
-	MappingHyperdeck,
 	MappingAtemType,
 	MappingLawoType,
 	MappingPanasonicPtzType,
-	MappingPanasonicPtz,
 	MappingHyperdeckType,
 	DeviceType as PlayoutDeviceType,
-	ChannelFormat
+	ChannelFormat,
+	QuantelControlMode
 } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -409,18 +405,12 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 	}
 	renderQuantelMappingSettings (layerId: string) {
 		const { t } = this.props
-		// tmp! comes trom TSR types
-		enum QuantelControlMode {
-			/** Try to avoid freeze-frames when playing */
-			QUALITY = 'quality',
-			/** Try to play as fast as possible */
-			SPEED = 'speed'
-		}
+
 		return (
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Port ID')}
+						{t('Quantel Port ID')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.portId'}
@@ -428,11 +418,12 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							type='text'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
+						<i>{t('The name you\'d like the port to have')}</i>
 					</label>
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Channel ID')}
+						{t('Quantel Channel ID')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.channelId'}
@@ -515,7 +506,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							)) ||
 							(
 								mappingIsHyperdeck(mapping) && (
-								<span>{ (mapping as MappingHyperdeck & MappingExt).mappingType }</span>
+								<span>{ mapping.mappingType }</span>
 							)) ||
 							(
 								mappingIsPharos(mapping) && (
@@ -603,33 +594,32 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 										</label>
 									</div>
 									{(
-										mapping.device === PlayoutDeviceType.CASPARCG && (
+										mappingIsCasparCG(mapping) && (
 											this.renderCaparCGMappingSettings(layerId)
 										) ||
 										(
-										mapping.device === PlayoutDeviceType.ATEM && (
+										mappingIsAtem(mapping) && (
 											this.renderAtemMappingSettings(layerId)
 										))
 										) ||
 										(
-										mapping.device === PlayoutDeviceType.LAWO && (
+										mappingIsLawo(mapping) && (
 											this.renderLawoMappingSettings(layerId)
 										)) ||
 										(
-										mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+										mappingIsPanasonicPtz(mapping) && (
 											this.renderPanasonicPTZSettings(layerId)
 										)) ||
 										(
-										mapping.device === PlayoutDeviceType.HYPERDECK && (
+										mappingIsHyperdeck(mapping) && (
 											this.renderHyperdeckMappingSettings(layerId)
 										)) ||
 										(
-										mapping.device === PlayoutDeviceType.PHAROS && (
+										mappingIsPharos(mapping) && (
 											this.renderPharosMappingSettings(layerId)
 										)) ||
 										(
-										mapping.device === 11 && (
-										// mapping.device === PlayoutDeviceType.QUANTEL && (
+										mappingIsQuantel(mapping) && (
 											this.renderQuantelMappingSettings(layerId)
 										))
 									}
