@@ -4,8 +4,9 @@ import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
@@ -28,8 +29,8 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random';
-import { literal } from '../../../lib/lib';
-import { RundownAPI } from '../../../lib/api/rundown';
+import { literal, normalizeArray } from '../../../lib/lib';
+import { RundownAPI } from '../../../lib/api/rundown'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -42,7 +43,7 @@ interface IListViewPropsHeader {
 	noSegments: boolean
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 interface IListViewStateHeader {
@@ -181,7 +182,7 @@ const AdLibListView = translate()(class extends React.Component<
 								outputLayer={this.state.outputLayers[item.outputLayerId]}
 								onToggleAdLib={this.props.onToggleAdLib}
 								onSelectAdLib={this.props.onSelectAdLib}
-								rundown={this.props.rundown}
+								playlist={this.props.playlist}
 							/>
 						)
 					})
@@ -228,7 +229,7 @@ const AdLibListView = translate()(class extends React.Component<
 											outputLayer={this.state.outputLayers[item.outputLayerId]}
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
-											rundown={this.props.rundown}
+											playlist={this.props.playlist}
 											/>
 									)
 								})
@@ -349,7 +350,7 @@ interface ISourceLayerLookup {
 interface IProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilter
@@ -382,18 +383,18 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	let sourceHotKeyUse = {}
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
-	let segments: Array<Segment> = props.rundown.getSegments()
+	let segments: Array<Segment> = props.playlist.getSegments()
 
-	const uiSegments = props.rundown ? (segments as Array<SegmentUi>).map((segSource) => {
+	const uiSegments = props.playlist ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.parts = segSource.getParts()
 		let segmentAdLibPieces: Array<AdLibPiece> = []
 		seg.parts.forEach((part) => {
-			if (part._id === props.rundown.currentPartId) {
+			if (part._id === props.playlist.currentPartId) {
 				seg.isLive = true
 				liveSegment = seg
 			}
-			if (part._id === props.rundown.nextPartId) {
+			if (part._id === props.playlist.nextPartId) {
 				seg.isNext = true
 			}
 			segmentAdLibPieces = segmentAdLibPieces.concat(part.getAdLibPieces())
@@ -419,58 +420,72 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		return seg
 	}) : []
 
+	let currentRundown: Rundown | undefined = undefined
 	let rundownBaselineAdLibs: Array<AdLibPieceUi> = []
-	if (props.rundown && props.filter && props.includeGlobalAdLibs && (
+	if (props.playlist && props.filter && props.includeGlobalAdLibs && (
 		props.filter.rundownBaseline === true || props.filter.rundownBaseline === 'only'
 	)) {
-		let rundownAdLibItems = RundownBaselineAdLibPieces.find({
-			rundownId: props.rundown._id
-		}, {
-			sort: { sourceLayerId: 1, _rank: 1 }
-		}).fetch()
-		rundownBaselineAdLibs = rundownAdLibItems.map((item) => {
-			// automatically assign hotkeys based on adLibItem index
-			const uiAdLib: AdLibPieceUi = _.clone(item)
-			uiAdLib.isGlobal = true
+		const rundowns = props.playlist.getRundowns()
+		const rMap = normalizeArray(rundowns, '_id')
+		currentRundown = rundowns[0]
+		const partId = props.playlist.currentPartId || props.playlist.nextPartId
+		if (partId) {
+			const part = Parts.findOne(partId)
+			if (part) {
+				currentRundown = rMap[part.rundownId]
+			}
+		}
 
-			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
-			if (sourceLayer &&
-				sourceLayer.activateKeyboardHotkeys &&
-				sourceLayer.assignHotkeysToGlobalAdlibs
-			) {
-				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-				const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
-				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
-					// add one to the usage hash table
-					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+		if (currentRundown) {
+			let rundownAdLibItems = RundownBaselineAdLibPieces.find({
+				rundownId: currentRundown._id
+			}, {
+				sort: { sourceLayerId: 1, _rank: 1 }
+			}).fetch()
+			rundownBaselineAdLibs = rundownAdLibItems.map((item) => {
+				// automatically assign hotkeys based on adLibItem index
+				const uiAdLib: AdLibPieceUi = _.clone(item)
+				uiAdLib.isGlobal = true
+	
+				let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+				if (sourceLayer &&
+					sourceLayer.activateKeyboardHotkeys &&
+					sourceLayer.assignHotkeysToGlobalAdlibs
+				) {
+					let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+					const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
+					if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+						uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
+						// add one to the usage hash table
+						sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+					}
 				}
-			}
-
-			if (sourceLayer && sourceLayer.isHidden) {
-				uiAdLib.isHidden = true
-			}
-
-			// always add them to the list
-			return uiAdLib
-		}).
-		concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
-			map(layer => literal<AdLibPieceUi>({
-				_id: layer._id,
-				hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
-				name: props.t('Last ') + (layer.abbreviation || layer.name),
-				status: RundownAPI.PieceStatusCode.UNKNOWN,
-				isSticky: true,
-				isGlobal: true,
-				expectedDuration: 0,
-				disabled: false,
-				externalId: layer._id,
-				rundownId: '',
-				sourceLayerId: layer._id,
-				outputLayerId: '',
-				_rank: 0
-			}))
-		)
+	
+				if (sourceLayer && sourceLayer.isHidden) {
+					uiAdLib.isHidden = true
+				}
+	
+				// always add them to the list
+				return uiAdLib
+			}).
+			concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
+				map(layer => literal<AdLibPieceUi>({
+					_id: layer._id,
+					hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
+					name: props.t('Last ') + (layer.abbreviation || layer.name),
+					status: RundownAPI.PieceStatusCode.UNKNOWN,
+					isSticky: true,
+					isGlobal: true,
+					expectedDuration: 0,
+					disabled: false,
+					externalId: layer._id,
+					rundownId: '',
+					sourceLayerId: layer._id,
+					outputLayerId: '',
+					_rank: 0
+				}))
+			)
+		}
 
 		if (props.filter.rundownBaseline === 'only') {
 			uiSegments.length = 0
@@ -497,28 +512,43 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		}
 	}
 
-	componentWillMount() {
-		this.subscribe(PubSub.segments, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.parts, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.adLibPieces, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-			rundownId: this.props.rundown._id
+	componentDidMount() {
+		this.subscribe(PubSub.rundowns, {
+			playlistId: this.props.playlist._id
 		})
 		this.subscribe(PubSub.studios, {
-			_id: this.props.rundown.studioId
+			_id: this.props.playlist.studioId
 		})
-		this.subscribe(PubSub.showStyleBases, {
-			_id: this.props.rundown.showStyleBaseId
+		this.autorun(() => {
+			const rundowns = this.props.playlist.getRundowns()
+			const rundownIds = rundowns.map(i => i._id)
+			if (rundowns.length > 0) {
+				this.subscribe(PubSub.segments, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.parts, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.adLibPieces, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.showStyleBases, {
+					_id: rundowns[0].showStyleBaseId
+				})
+			}
 		})
-	}
 
-	componentDidMount() {
 		if (this.props.liveSegment) {
 			this.setState({
 				selectedSegment: this.props.liveSegment
@@ -547,7 +577,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
 
 		this.usedHotkeys.length = 0
-	}
+	} 
 
 	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
@@ -612,18 +642,18 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartId) {
 			if (!piece.isGlobal) {
 				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
 				])
 			} else if (piece.isGlobal && !piece.isSticky) {
 				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
 				])
 			} else if (piece.isSticky) {
 				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
-					this.props.rundown._id, piece.sourceLayerId
+					this.props.playlist._id, piece.sourceLayerId
 				])
 			}
 		}
@@ -632,9 +662,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id
+				this.props.playlist._id, this.props.playlist.currentPartId, sourceLayer._id
 			])
 		}
 	}
@@ -683,7 +713,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					showStyleBase={this.props.showStyleBase}
 					searchFilter={this.state.searchFilter}
 					filter={this.props.filter}
-					rundown={this.props.rundown}
+					playlist={this.props.playlist}
 					noSegments={!withSegments} />
 			</React.Fragment>
 		)
@@ -691,7 +721,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	render() {
 		if (this.props.visible) {
-			if (!this.props.uiSegments || !this.props.rundown) {
+			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
 			} else {
 				return (

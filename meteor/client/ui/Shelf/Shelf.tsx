@@ -13,13 +13,14 @@ import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { getElementDocumentOffset } from '../../utils/positions';
+import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
-import { UIStateStorage } from '../../lib/UIStateStorage';
+import { UIStateStorage } from '../../lib/UIStateStorage'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -31,7 +32,7 @@ export interface ShelfProps {
 	isExpanded: boolean
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -90,7 +91,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined)
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.playlist._id}`, 'shelfTab', undefined) as (string | undefined)
 		}
 
 		const { t } = props
@@ -286,7 +287,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			selectedTab: tab
 		})
 
-		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, 'shelfTab', tab)
+		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
 	render() {
@@ -322,7 +323,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					<AdLibPanel
 						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
 						registerHotkeys={true}
-						
 						{...this.props}></AdLibPanel>
 					{this.props.rundownLayout && this.props.rundownLayout.filters.map(f =>
 						<AdLibPanel

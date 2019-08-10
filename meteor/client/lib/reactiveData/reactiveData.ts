@@ -10,6 +10,7 @@ import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQu
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
+import * as _ from 'underscore';
 
 export namespace reactiveData {
 	export function getRRundownId (rundownId: string): ReactiveVar<string | undefined> {
@@ -64,12 +65,16 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRPieces (rundownId: string): ReactiveVar<Piece[]> {
+	export function getRPieces (rundownIds: string[]): ReactiveVar<Piece[]>
+	export function getRPieces (rundownId: string): ReactiveVar<Piece[]>
+	export function getRPieces (rundownId: string | string[]): ReactiveVar<Piece[]> {
 		const rVar = new ReactiveVar<Piece[]>([])
 
 		Tracker.autorun(() => {
 			const slis = Pieces.find({
-				rundownId: rundownId
+				rundownId: _.isArray(rundownId) ?
+					{ $in: rundownId } :
+					rundownId
 			}).fetch()
 			rVar.set(slis)
 		})
@@ -114,7 +119,7 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getUnsentExternalMessageCount (studioId: string, rundownId: string): ReactiveVar<number> {
+	export function getUnsentExternalMessageCount (studioId: string, rundownIds: string[]): ReactiveVar<number> {
 		const rVar = new ReactiveVar<number>(0)
 
 		Tracker.autorun(() => {
@@ -122,7 +127,7 @@ export namespace reactiveData {
 			const unsentMessages = ExternalMessageQueue.find({
 				expires: { $gt: now },
 				studioId: { $eq: studioId },
-				rundownId: { $eq: rundownId },
+				rundownId: { $in: rundownIds },
 				sent: { $not: { $gt: 0 } },
 				tryCount: { $not: { $lt: 1 } }
 			}, {

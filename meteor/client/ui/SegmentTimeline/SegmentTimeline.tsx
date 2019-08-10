@@ -6,6 +6,7 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { ContextMenuTrigger } from 'react-contextmenu'
 
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
@@ -42,7 +43,7 @@ interface IProps {
 	id: string
 	key: string
 	segment: SegmentUi
-	rundown: Rundown,
+	playlist: RundownPlaylist,
 	followLiveSegments: boolean,
 	studio: Studio
 	parts: Array<PartUi>
@@ -149,7 +150,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 			return (
 				<SegmentTimelinePart key={part._id}
 					segment={this.props.segment}
-					rundown={this.props.rundown}
+					playlist={this.props.playlist}
 					studio={this.props.studio}
 					collapsedOutputs={this.props.collapsedOutputs}
 					isCollapsed={this.props.isCollapsed}
@@ -162,7 +163,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					followLiveLine={this.props.followLiveLine}
 					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.segment._id === this.props.rundown.currentPartId && part.startedPlayback && part.getLastStartedPlayback() ? this.props.livePosition - (part.getLastStartedPlayback() || 0) : null}
+					livePosition={this.props.segment._id === this.props.playlist.currentPartId && part.startedPlayback && part.getLastStartedPlayback() ? this.props.livePosition - (part.getLastStartedPlayback() || 0) : null}
 					isLastInSegment={false}
 					isLastSegment={false} />
 			)
@@ -405,7 +406,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
 						{!this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
 						{this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
-						{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
+						{this.props.playlist.holdState && this.props.playlist.holdState !== RundownHoldState.COMPLETE ?
 							<div className='segment-timeline__liveline__status segment-timeline__liveline__status--hold'>{t('Hold')}</div>
 							: null
 						}
@@ -534,7 +535,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{this.props.rundown && this.props.parts && this.props.parts.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
+					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
 							partIds={this.props.parts.filter(item => item.duration === undefined).map(item => item._id)}
 						/>
@@ -542,14 +543,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</div>
 				<div className='segment-timeline__timeUntil'
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{this.props.rundown && this.props.parts && this.props.parts.length > 0 &&
+					{this.props.playlist && this.props.parts && this.props.parts.length > 0 &&
 						<PartCountdown
 							partId={
 								(
 									!this.props.isLiveSegment &&
 									(
 										this.props.isNextSegment ?
-											this.props.rundown.nextPartId :
+											this.props.playlist.nextPartId :
 											this.props.parts[0]._id
 									)
 								) || undefined}

@@ -4,6 +4,7 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 
 import {
@@ -16,7 +17,7 @@ import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {
-	rundown: Rundown
+	playlist: RundownPlaylist
 	part?: PartUi
 	outputGroups?: {
 		[key: string]: IOutputLayerUi
@@ -58,7 +59,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 										followLiveLine={false}
 										liveLineHistorySize={0}
 										livePosition={0}
-										rundown={this.props.rundown}
+										playlist={this.props.playlist}
 										piece={piece}
 										layer={layer}
 										outputLayer={outputLayer}

@@ -92,6 +92,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}, options)
 		).fetch().map(i => i._id)
 	}
+	getRundownsMap(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
+		return normalizeArray(this.getRundowns(selector, options), '_id')
+	}
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		const allRundowns = Rundowns.find({

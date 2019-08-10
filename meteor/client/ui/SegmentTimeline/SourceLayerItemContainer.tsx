@@ -4,6 +4,7 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -28,7 +29,7 @@ interface IPropsHeader {
 	partStartsAt: number
 	partDuration: number
 	piece: PieceUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -72,7 +73,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.rundown.studioId, {
+				this.subscribe('mediaObjects', this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}
@@ -134,7 +135,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().config)
+				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.playlist.getStudio().config)
 				if (status !== props.piece.status || metadata) {
 					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 

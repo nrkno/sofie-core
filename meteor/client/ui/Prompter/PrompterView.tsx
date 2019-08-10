@@ -4,6 +4,7 @@ import * as Velocity from 'velocity-animate'
 import * as ClassNames from 'classnames'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
@@ -37,7 +38,7 @@ interface IProps {
 	}
 }
 interface ITrackedProps {
-	rundown?: Rundown
+	rundownPlaylist?: RundownPlaylist
 	studio?: Studio
 	studioId?: string
 	// isReady: boolean
@@ -120,13 +121,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.checkScrollToCurrent()
 	}
 	checkScrollToCurrent() {
-		let rundownId = this.props.rundown && this.props.rundown._id
-		let rundown = Rundowns.findOne(rundownId || '')
+		let playlistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id
+		let playlist = RundownPlaylists.findOne(playlistId || '')
 		if (this.configOptions.followTake) {
-			if (rundown) {
+			if (playlist) {
 
-				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
-					this.autoScrollPreviousPartId = rundown.currentPartId
+				if (playlist.currentPartId !== this.autoScrollPreviousPartId) {
+					this.autoScrollPreviousPartId = playlist.currentPartId
 
 					this.scrollToCurrent()
 				}
@@ -185,10 +186,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 	checkCurrentTakeMarkers = () => {
-		const rundownId = this.props.rundown && this.props.rundown._id
-		const rundown = Rundowns.findOne(rundownId || '')
+		const playlistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id
+		const playlist = RundownPlaylists.findOne(playlistId || '')
 
-		if (rundown !== undefined) {
+		if (playlist !== undefined) {
 
 			const positionTop = window.scrollY
 			const positionBottom = positionTop + window.innerHeight
@@ -203,11 +204,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const current = anchors[index]
 				const next = index + 1 < anchors.length ? anchors[index + 1] : null;
 
-				if (rundown.currentPartId && current.classList.contains(`part-${rundown.currentPartId}`)) {
+				if (playlist.currentPartId && current.classList.contains(`part-${playlist.currentPartId}`)) {
 					currentPartElement = current
 					currentPartElementAfter = next
 				}
-				if (rundown.nextPartId && current.classList.contains(`part-${rundown.nextPartId}`)) {
+				if (playlist.nextPartId && current.classList.contains(`part-${playlist.nextPartId}`)) {
 					nextPartElementAfter = next
 				}
 			}
@@ -293,8 +294,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 						<Spinner />
 					</div> :
 					(
-						this.props.rundown ?
-							<Prompter rundownId={this.props.rundown._id} config={this.configOptions} /> :
+						this.props.rundownPlaylist ?
+							<Prompter rundownId={this.props.rundownPlaylist._id} config={this.configOptions} /> :
 							this.props.studio ?
 								this.renderMessage(t('There is no rundown active in this studio.')) :
 								this.props.studioId ?
@@ -331,7 +332,7 @@ interface IPrompterProps {
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	rundown: Rundown | undefined,
+	playlist: RundownPlaylist | undefined,
 	currentPartId: string,
 	nextPartId: string,
 	prompterData: PrompterData
@@ -341,14 +342,14 @@ interface IPrompterState {
 }
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 
-	const rundown = Rundowns.findOne(props.rundownId)
+	const playlist = RundownPlaylists.findOne(props.rundownId)
 
 	let prompterData = PrompterAPI.getPrompterData(props.rundownId)
 
 	return {
-		rundown: rundown,
-		currentPartId: rundown && rundown.currentPartId || '',
-		nextPartId: rundown && rundown.nextPartId || '',
+		playlist,
+		currentPartId: playlist && playlist.currentPartId || '',
+		nextPartId: playlist && playlist.nextPartId || '',
 		prompterData
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
@@ -443,7 +444,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	render() {
 		const { t } = this.props
 
-		if (this.props.prompterData && this.props.rundown) {
+		if (this.props.prompterData && this.props.playlist) {
 			return (
 				<div
 					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
@@ -466,7 +467,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					</div>
 
 					<div className='prompter-break begin'>
-						{this.props.rundown.name}
+						{this.props.playlist.name}
 					</div>
 
 					{this.renderPrompterData(this.props.prompterData)}

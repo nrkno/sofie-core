@@ -13,6 +13,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -56,7 +57,7 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 
 interface IProps {
 	studio: Studio
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 interface IState {
@@ -147,7 +148,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	})
 
-	let segments = props.rundown.getSegments()
+	let segments = props.playlist.getSegments()
 
 	let notes: Array<PartNote> = []
 	_.each(segments, s => {

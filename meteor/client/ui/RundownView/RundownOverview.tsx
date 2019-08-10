@@ -13,6 +13,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { PartExtended } from '../../../lib/Rundown'
 import { Part } from '../../../lib/collections/Parts'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
 
 interface SegmentUi extends Segment {
 	items: Array<PartUi>
@@ -20,7 +21,7 @@ interface SegmentUi extends Segment {
 
 interface ISegmentPropsHeader {
 	segment: SegmentUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	totalDuration: number
 	segmentLiveDurations: TimeMap
 	segmentStartsAt?: TimeMap
@@ -75,8 +76,8 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 
 	return props.segment.items && (
 		<div className={ClassNames('rundown__overview__segment', {
-			'next': props.segment.items.find((i) => i._id === props.rundown.nextPartId) ? true : false,
-			'live': props.segment.items.find((i) => i._id === props.rundown.currentPartId) ? true : false
+			'next': props.segment.items.find((i) => i._id === props.playlist.nextPartId) ? true : false,
+			'live': props.segment.items.find((i) => i._id === props.playlist.currentPartId) ? true : false
 		})} style={{
 			'width': ((segmentDuration || 0) / props.totalDuration * 100) + '%'
 		}}>
@@ -87,8 +88,8 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 						totalDuration={props.totalDuration}
 						segmentLiveDurations={props.segmentLiveDurations}
 						segmentStartsAt={props.segmentStartsAt}
-						isLive={props.rundown.currentPartId === item._id}
-						isNext={props.rundown.nextPartId === item._id}
+						isLive={props.playlist.currentPartId === item._id}
+						isNext={props.playlist.nextPartId === item._id}
 						segmentDuration={segmentDuration}
 						 />
 				)
@@ -108,24 +109,24 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 }
 
 interface RundownOverviewProps {
-	rundownId: string
+	rundownPlaylistId: string
 	segmentLiveDurations?: TimeMap
 }
 interface RundownOverviewState {
 }
 interface RundownOverviewTrackedProps {
-	rundown?: Rundown
+	playlist?: RundownPlaylist
 	segments: Array<SegmentUi>
 }
 
 export const RundownOverview = withTiming<RundownOverviewProps, RundownOverviewState>()(
 withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
 
-	let rundown: Rundown | undefined
-	if (props.rundownId) rundown = Rundowns.findOne(props.rundownId)
+	let playlist: RundownPlaylist | undefined
+	if (props.rundownPlaylistId) playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 	let segments: Array<SegmentUi> = []
-	if (rundown) {
-		segments = _.map(rundown.getSegments(), (segment) => {
+	if (playlist) {
+		segments = _.map(playlist.getSegments(), (segment) => {
 			return extendMandadory<Segment, SegmentUi>(segment, {
 				items: _.map(segment.getParts(), (part) => {
 					let sle = extendMandadory<Part, PartExtended>(part, {
@@ -142,24 +143,24 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 	}
 	return {
 		segments,
-		rundown: rundown
+		playlist
 	}
 })(
 class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
 	render () {
-		if (this.props.rundown && this.props.rundownId && this.props.segments) {
+		if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
 
 			return (<ErrorBoundary>
 				<div className='rundown__overview'>
 				{
 					this.props.segments.map((item) => {
-						if (this.props.rundown) {
+						if (this.props.playlist) {
 							return <SegmentOverview
 								segment={item}
 								key={item._id}
-								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.rundown.expectedDuration || 1)}
+								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.playlist.expectedDuration || 1)}
 								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
-								rundown={this.props.rundown}
+								playlist={this.props.playlist}
 								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
 								/>
 						}

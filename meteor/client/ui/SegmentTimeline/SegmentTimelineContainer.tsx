@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
@@ -55,7 +56,7 @@ interface IProps {
 	segmentId: string,
 	studio: Studio,
 	showStyleBase: ShowStyleBase,
-	rundown: Rundown,
+	playlist: RundownPlaylist,
 	timeScale: number,
 	liveLineHistorySize: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -113,7 +114,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	let o = getResolvedSegment(props.showStyleBase, props.rundown, segment)
+	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part) => {
 		notes = notes.concat(part.getNotes(true))
@@ -150,15 +151,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 	// Check rundown changes that are important to the segment
 	if (
-		(typeof props.rundown !== typeof nextProps.rundown) ||
+		(typeof props.playlist !== typeof nextProps.playlist) ||
 		(
 			(
-				props.rundown.currentPartId !== nextProps.rundown.currentPartId ||
-				props.rundown.nextPartId !== nextProps.rundown.nextPartId
+				props.playlist.currentPartId !== nextProps.playlist.currentPartId ||
+				props.playlist.nextPartId !== nextProps.playlist.nextPartId
 			) && (
 				(data.parts && (
-					data.parts.find(i => (i._id === props.rundown.currentPartId) || (i._id === nextProps.rundown.currentPartId)) ||
-					data.parts.find(i => (i._id === props.rundown.nextPartId) || (i._id === nextProps.rundown.nextPartId))
+					data.parts.find(i => (i._id === props.playlist.currentPartId) || (i._id === nextProps.playlist.currentPartId)) ||
+					data.parts.find(i => (i._id === props.playlist.nextPartId) || (i._id === nextProps.playlist.nextPartId))
 					)
 				)
 			)
@@ -197,8 +198,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		super(props)
 
 		this.state = {
-			collapsedOutputs: UIStateStorage.getItemBooleanMap(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}.outputs`, {}),
-			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}`, false),
+			collapsedOutputs: UIStateStorage.getItemBooleanMap(`rundownView.${this.props.playlist._id}`, `segment.${props.segmentId}.outputs`, {}),
+			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.playlist._id}`, `segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
@@ -220,7 +221,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentDidMount () {
-		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
+		this.rundownCurrentSegmentId = this.props.playlist.currentPartId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
 			this.startLive()
@@ -235,7 +236,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentDidUpdate (prevProps) {
-		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
+		this.rundownCurrentSegmentId = this.props.playlist.currentPartId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -247,11 +248,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
-		if (this.props.rundown && this.props.rundown.active && prevProps.rundown && !prevProps.rundown.active) {
+		if (this.props.playlist && this.props.playlist.active && prevProps.rundown && !prevProps.rundown.active) {
 			this.setState({
 				scrollLeft: 0
 			})
-		} else if (this.props.rundown && !this.props.rundown.active && prevProps.rundown && prevProps.rundown.active) {
+		} else if (this.props.playlist && !this.props.playlist.active && prevProps.rundown && prevProps.rundown.active) {
 			this.setState({
 				livePosition: 0,
 				displayTimecode: 0
@@ -274,11 +275,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = { ...this.state.collapsedOutputs }
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
-		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, `segment.${this.props.segmentId}.outputs`, collapsedOutputs)
+		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, `segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
 	onCollapseSegmentToggle = () => {
-		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, `segment.${this.props.segmentId}`, !this.state.collapsed)
+		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, `segment.${this.props.segmentId}`, !this.state.collapsed)
 		this.setState({ collapsed: !this.state.collapsed })
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
@@ -439,7 +440,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onCollapseSegmentToggle={this.onCollapseSegmentToggle}
 				isCollapsed={this.state.collapsed}
 				scrollLeft={this.state.scrollLeft}
-				rundown={this.props.rundown}
+				playlist={this.props.playlist}
 				followLiveSegments={this.props.followLiveSegments}
 				isLiveSegment={this.props.isLiveSegment}
 				isNextSegment={this.props.isNextSegment}

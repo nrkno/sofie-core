@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { translate } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
@@ -9,7 +10,7 @@ import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 
 interface IProps {
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 interface IState {
 	q0: string
@@ -33,15 +34,15 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 		const saveEvaluation = (snapshotId?: string) => {
 			let evaluation: EvaluationBase = {
-				studioId: this.props.rundown.studioId,
-				rundownId: this.props.rundown._id,
+				studioId: this.props.playlist.studioId,
+				playlistId: this.props.playlist._id,
 				answers: answers
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
 			doUserAction(t, e, UserActionAPI.methods.saveEvaluation, [evaluation])
 
-			doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
+			doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.playlist._id])
 
 			this.setState({
 				q0: '',
@@ -51,7 +52,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 
 		if (answers.q0 !== 'nothing') {
-			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'Evaluation form'], (err, response) => {
+			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.playlist._id, 'Evaluation form'], (err, response) => {
 				if (!err && response) {
 					saveEvaluation(response.result)
 				} else {
