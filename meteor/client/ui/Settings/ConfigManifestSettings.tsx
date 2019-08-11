@@ -19,9 +19,12 @@ import { logger } from '../../../lib/logging'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 
+interface ConfigManifestEntryExt extends ConfigManifestEntry {
+	source: string
+}
 
 interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
-	manifest: ConfigManifestEntry[]
+	manifest: ConfigManifestEntryExt[]
 
 	collection: TCol
 	object: TObj
@@ -172,7 +175,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 
 				const configItem = values[valIndex]
 
-				return <React.Fragment key={item.id}>
+				return <React.Fragment key={`${item.source}_${item.id}`}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
@@ -337,7 +340,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 	}
 }
 
-export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntry[] {
+export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntryExt[] {
 	let showStyleBases: Array<ShowStyleBase> = []
 
 	if (item instanceof Studio) {
@@ -365,11 +368,14 @@ export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant)
 		}
 	}).fetch()
 
-	let manifestEntries: Array<ConfigManifestEntry> = []
+	let manifestEntries: Array<ConfigManifestEntryExt> = []
 	_.each(blueprints, (blueprint: Blueprint) => {
 		const entries = item instanceof Studio ? blueprint.studioConfigManifest : blueprint.showStyleConfigManifest
 		_.each(entries, (entry: ConfigManifestEntry) => {
-			manifestEntries.push(entry)
+			manifestEntries.push({
+				...entry,
+				source: blueprint._id
+			})
 		})
 	})
 	return manifestEntries
