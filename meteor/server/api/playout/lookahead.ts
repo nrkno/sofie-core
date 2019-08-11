@@ -203,7 +203,7 @@ export function findLookaheadForlayer (
 
 	// Loop over future parts until we have enough objects, or run out of parts
 	let nextPartOnLayerIndex = startingPartOnLayerIndex
-	do {
+	while (nextPartOnLayerIndex !== -1 && res.future.length < lookaheadDepth) {
 		nextPartOnLayerIndex = _.findIndex(timeOrderedPartsWithPieces, (v, i) => i > nextPartOnLayerIndex && v.pieces.length > 0)
 
 		if (nextPartOnLayerIndex !== -1) {
@@ -212,7 +212,7 @@ export function findLookaheadForlayer (
 			findObjectsForPart(rundownData, layer, timeOrderedPartsWithPieces, nextPartOnLayerIndex, nextPartOnLayer)
 				.forEach(o => res.future.push({ obj: o, partId: partId }))
 		}
-	} while (nextPartOnLayerIndex !== -1 && res.future.length < lookaheadDepth)
+	}
 
 	return res
 }
