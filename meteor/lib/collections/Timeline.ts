@@ -18,6 +18,8 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	_id: string
 	/** Unique within a timeline (ie within a studio) */
 	id: string
+	/** Set when the id of the object is prefixed */
+	originalId?: string
 
 	/** Studio installation Id */
 	studioId: string

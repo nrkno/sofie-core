@@ -307,7 +307,10 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 	return objList.map(i => {
 		const o = clone(i)
 
-		o.id = prefix + o.id
+		if (!o.originalId) {
+			o.originalId = o.id
+		}
+		o.id = prefix + o.originalId
 
 		for (const key of _.keys(o.enable)) {
 			if (typeof o.enable[key] === 'string') {
