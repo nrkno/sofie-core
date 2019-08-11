@@ -295,12 +295,18 @@ export function onPartHasStoppedPlaying (part: Part, stoppedPlayingTime: Time) {
 	}
 }
 export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string): T[] {
-	const changedIds = objList.map(o => o.id)
+	const idMap: { [oldId: string]: string | undefined } = {}
+	_.each(objList, o => {
+		if (!o.originalId) {
+			o.originalId = o.id
+		}
+		idMap[o.id] = prefix + o.originalId
+	})
 
 	let replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
 			const id = m.substr(1, m.length - 1)
-			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id : m
+			return `#${idMap[id] || id}`
 		})
 	}
 
@@ -319,7 +325,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		}
 
 		if (typeof o.inGroup === 'string') {
-			o.inGroup = changedIds.indexOf(o.inGroup) === -1 ? o.inGroup : prefix + o.inGroup
+			o.inGroup = idMap[o.inGroup] || o.inGroup
 		}
 
 		return o
