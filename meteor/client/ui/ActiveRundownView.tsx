@@ -4,6 +4,7 @@ import {
 	Route
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { Studios, Studio } from '../../lib/collections/Studios'
 
@@ -20,7 +21,7 @@ interface IProps {
 	}
 }
 interface ITrackedProps {
-	rundown?: Rundown
+	playlist?: RundownPlaylist
 	studio?: Studio
 	studioId?: string
 	// isReady: boolean
@@ -35,14 +36,13 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	if (studioId) {
 		studio = Studios.findOne(studioId)
 	}
-	const rundown = Rundowns.findOne(_.extend({
-		active: true
-	}, {
-			studioId: studioId
-		}))
+	const playlist = RundownPlaylists.findOne({
+		active: true,
+		studioId: studioId
+	})
 
 	return {
-		rundown,
+		playlist,
 		studio,
 		studioId
 	}
@@ -56,7 +56,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 
 	componentWillMount() {
-		this.subscribe('rundowns', _.extend({
+		this.subscribe('rundownPlaylists', _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
@@ -119,8 +119,8 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 				</div >
 			)
 		} else {
-			if (this.props.rundown) {
-				return <RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+			if (this.props.playlist) {
+				return <RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} />
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {

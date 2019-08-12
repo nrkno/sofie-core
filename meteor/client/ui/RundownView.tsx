@@ -1818,7 +1818,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						<div className='rundown-view__label'>
 							<p>
 								{
-									!this.props.rundown ?
+									!this.props.playlist ?
 										t('This rundown has been unpublished from Sofie.') :
 									!this.props.studio ?
 										t('Error: The studio of this Rundown was not found.') :

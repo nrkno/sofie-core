@@ -14,10 +14,11 @@ import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { PubSub } from '../../../lib/api/pubsub';
 
 interface IPropsHeader {
 	partId: string
-	rundownId: string
+	rundownIds: string[]
 	showStyleBaseId: string
 }
 
@@ -66,10 +67,10 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 	_pieceSubscription: Meteor.SubscriptionHandle
 
 	componentWillMount () {
-		this.subscribe('piecesSimple', {
-			rundownId: this.props.rundownId
+		this.subscribe(PubSub.piecesSimple, {
+			rundownId: { $in: this.props.rundownIds }
 		})
-		this.subscribe('showStyleBases', {
+		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.showStyleBaseId
 		})
 	}
@@ -129,10 +130,10 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	_pieceSubscription: Meteor.SubscriptionHandle
 
 	componentWillMount () {
-		this.subscribe('piecesSimple', {
-			rundownId: this.props.rundownId
+		this.subscribe(PubSub.piecesSimple, {
+			rundownId: { $in: this.props.rundownIds }
 		})
-		this.subscribe('showStyleBases', {
+		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.showStyleBaseId
 		})
 	}
