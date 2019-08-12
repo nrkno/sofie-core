@@ -43,6 +43,7 @@ export interface ShelfProps {
 		label: string
 	}>
 	rundownLayout?: RundownLayoutBase
+	fullViewport?: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (hotkeys: Array<{
@@ -350,12 +351,14 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	}
 
 	render () {
-		const { t } = this.props
+		const { t, fullViewport } = this.props
 		return (
-			<div className='rundown-view__shelf dark' style={this.getStyle()}>
-				<div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
+			<div className={ClassNames('rundown-view__shelf dark', {
+				'full-viewport': fullViewport
+			})} style={fullViewport ? undefined : this.getStyle()}>
+				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
 					<FontAwesomeIcon icon={faBars} />
-				</div>
+				</div>}
 				<ErrorBoundary>
 				{
 					(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?

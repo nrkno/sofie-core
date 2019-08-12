@@ -12,7 +12,7 @@ import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { NavLink, Route, Prompt } from 'react-router-dom'
+import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Studio, Studios } from '../../lib/collections/Studios'
@@ -1018,6 +1018,7 @@ interface IProps {
 	}
 	rundownId?: string
 	inActiveRundownView?: boolean
+	onlyShelf?: boolean
 }
 
 interface IState {
@@ -1748,7 +1749,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			if (
 				this.props.rundown &&
 				this.props.studio &&
-				this.props.showStyleBase
+				this.props.showStyleBase &&
+				!this.props.onlyShelf
 			) {
 				return (
 					<RundownTimingProvider
@@ -1878,6 +1880,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</div> */}
 					</RundownTimingProvider>
 				)
+			} else if (
+				this.props.rundown &&
+				this.props.studio &&
+				this.props.showStyleBase &&
+				this.props.onlyShelf
+			) {
+				return <ErrorBoundary>
+					<Shelf
+						ref={this.setInspectorDrawer}
+						isExpanded={this.state.isInspectorDrawerExpanded}
+						onChangeExpanded={this.onDrawerChangeExpanded}
+						segments={this.props.segments}
+						hotkeys={this.state.usedHotkeys}
+						rundown={this.props.rundown}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.state.studioMode}
+						onChangeBottomMargin={this.onChangeBottomMargin}
+						onRegisterHotkeys={this.onRegisterHotkeys}
+						rundownLayout={this.state.rundownLayout}
+						fullViewport={true} />
+				</ErrorBoundary>
 			} else {
 				return (
 					<div className='rundown-view rundown-view--unpublished'>

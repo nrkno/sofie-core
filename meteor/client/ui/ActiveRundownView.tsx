@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	Route
+	Route, Switch
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -13,10 +13,11 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
 
 interface IProps {
-	match?: {
+	match: {
 		params?: {
 			studioId: string
 		}
+		path: string
 	}
 }
 interface ITrackedProps {
@@ -120,7 +121,14 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 		} else {
 			if (this.props.rundown) {
-				return <RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+				return <Switch>
+							<Route path={this.props.match.path} exact>
+								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+							</Route>
+							<Route path={`${this.props.match.path}/shelf`}>
+								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} onlyShelf={true} />
+							</Route>
+						</Switch> 
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {
