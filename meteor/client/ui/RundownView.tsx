@@ -611,9 +611,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
-			title: t('Other Rundown is active'),
-			message: t('Rundown "{{rundownName}}" will need to be deactivated in order to activate this one. Are you sure you want to continue?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
-			yes: t('Activate'),
+			title: t('Another Rundown is Already Active!'),
+			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			yes: t('Activate Anyway'),
 			no: t('Cancel'),
 			warning: true,
 			onAccept: (le: any) => {
