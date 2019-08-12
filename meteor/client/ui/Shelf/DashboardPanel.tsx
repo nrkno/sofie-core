@@ -25,13 +25,15 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton';
+import { ensureHasTrailingSlash } from '../../lib/lib';
+import { Studio } from '../../../lib/collections/Studios';
 
 interface IState {
 	outputLayers: {
@@ -42,9 +44,24 @@ interface IState {
 	}
 }
 
-export const DashboardPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return fetchAndFilter(props)
-})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>, IState> {
+const BUTTON_GRID_WIDTH = 30
+const BUTTON_GRID_HEIGHT = 26
+const PANEL_MARGIN_WIDTH = 15
+const PANEL_MARGIN_HEIGHT = 44
+
+interface IDashboardPanelProps {
+	mediaPreviewUrl?: string
+}
+
+interface IDashboardPanelTrackedProps {
+	studio?: Studio
+}
+
+export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	return Object.assign({}, fetchAndFilter(props), {
+		studio: props.rundown.getStudio()
+	})
+})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -249,14 +266,24 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps, IState, IAd
 	}
 
 	render () {
-		if (this.props.visible && this.props.showStyleBase) {
+		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
+			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.rundown) {
 				return <Spinner />
 			} else {
 				return (
-					<div className='dashboard-panel'>
+					<div className='dashboard-panel'
+						style={{
+							width: (filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH,
+							height: (filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT,
+							left: filter.x >= 0 ? (filter.x * BUTTON_GRID_WIDTH) : undefined,
+							top: filter.y >= 0 ? (filter.y * BUTTON_GRID_HEIGHT) : undefined,
+							right: filter.x < 0 ? ((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) : undefined,
+							bottom: filter.y < 0 ? ((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) : undefined
+						}}
+					>
 						<h4 className='dashboard-panel__header'>
-							{this.props.filter && this.props.filter.name}
+							{this.props.filter.name}
 						</h4>
 						<div className='dashboard-panel__panel'>
 							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
@@ -271,7 +298,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps, IState, IAd
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
 												rundown={this.props.rundown}
-
+												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											>
 												{item.name}
 									</DashboardPieceButton>

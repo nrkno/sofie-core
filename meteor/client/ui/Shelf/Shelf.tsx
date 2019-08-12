@@ -17,11 +17,13 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts';
 import { DashboardPanel } from './DashboardPanel';
+import { ensureHasTrailingSlash } from '../../lib/lib';
+import { ErrorBoundary } from '../../lib/ErrorBoundary';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -335,7 +337,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		return <div className='dashboard'>
 			{rundownLayout.filters
 				.sort((a, b) => a.rank - b.rank)
-				.map(f =>
+				.map((f: DashboardLayoutFilter) =>
 					<DashboardPanel
 						key={f._id}
 						includeGlobalAdLibs={true}
@@ -354,6 +356,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				<div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>
+				<ErrorBoundary>
 				{
 					(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
 						this.renderRundownLayout(this.props.rundownLayout) :
@@ -362,6 +365,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						// ultimate fallback if not found
 						this.renderRundownLayout()
 				}
+				</ErrorBoundary>
 			</div>
 		)
 	}

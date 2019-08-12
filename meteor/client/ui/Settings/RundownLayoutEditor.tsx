@@ -209,6 +209,62 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('X')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.x`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Y')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.y`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Width')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.width`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Height')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.height`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Display Rank')}

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { ensureHasTrailingSlash } from '../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -140,7 +141,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		const { t } = this.props
 		let previewUrl: string | undefined = undefined
 		if (this.props.mediaObject && this.props.studio) {
-			const mediaPreviewUrl = this.ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+			const mediaPreviewUrl = ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 			previewUrl = mediaPreviewUrl + 'media/preview/' + encodeURIComponent(this.props.mediaObject.mediaId)
 		}
 
@@ -170,13 +171,5 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				</div>
 			</div>
 		)
-	}
-
-	private ensureHasTrailingSlash (input: string | null): string | null {
-		if (input) {
-			return (input.substr(-1) === '/') ? input : input + '/'
-		} else {
-			return input
-		}
 	}
 })

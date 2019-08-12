@@ -19,6 +19,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
+import { ensureHasTrailingSlash } from '../../lib/lib'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -392,7 +393,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
+							mediaPreviewUrl={ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}
 							part={part}
@@ -530,13 +531,5 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			)
 		}
 
-	}
-
-	private ensureHasTrailingSlash (input: string | null): string | null {
-		if (input) {
-			return (input.substr(-1) === '/') ? input : input + '/'
-		} else {
-			return input
-		}
 	}
 }))

@@ -10,6 +10,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
 import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
 
@@ -28,19 +29,22 @@ interface IListViewItemProps {
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	rundown: Rundown
+	mediaPreviewUrl?: string
 }
 
 interface IAdLibListItemTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
+	metadata: MediaObject | null
 }
 
 export const DashboardPieceButton = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
-	const { status } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
 
 	return {
-		status
+		status,
+		metadata
 	}
 })(class extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
 	private objId: string
@@ -75,7 +79,31 @@ export const DashboardPieceButton = translateWithTracker<IListViewItemProps, {},
 		}
 	}
 
-	render() {
+	getPreviewUrl = (): string | undefined => {
+		const { metadata } = this.props 
+		if (this.props.mediaPreviewUrl && metadata) {
+			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
+				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)
+			}
+		}
+		return undefined
+	}
+
+	renderVTLiveSpeak () {
+		if (this.props.metadata) {
+			const previewUrl = this.getPreviewUrl()
+			const adLib = this.props.item as AdLibPieceUi
+			return <React.Fragment>
+				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
+				{adLib.content && (adLib.content as VTContent) &&
+					<span className='dashboard-panel__panel__button__sub-label'>
+						{RundownUtils.formatDiffToTimecode((adLib.content as VTContent).sourceDuration, false, undefined, undefined, undefined, true)}
+					</span>}
+			</React.Fragment>
+		}
+	}
+
+	render () {
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
 				'invalid': this.props.item.invalid,
@@ -85,7 +113,12 @@ export const DashboardPieceButton = translateWithTracker<IListViewItemProps, {},
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
 				>
-				{this.props.item.name}
+				{
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+						this.renderVTLiveSpeak() :
+						null
+				}
+				<span className='dashboard-panel__panel__button__label'>{this.props.item.name}</span>
 			</div>
 		)
 	}
