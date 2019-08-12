@@ -13,15 +13,21 @@ export namespace ClientAPI {
 		error: number
 		/** On error, provide a human-readable error message */
 		message?: string
+		/** Any additional extra information about the error */
+		details?: any
 	}
 	/**
 	 * Used to reply to the user that the action didn't succeed (but it's not bad enough to log it as an error)
 	 * @param errorMessage
 	 */
-	export function responseError (errorMessage: string): ClientResponseError {
+	export function responseError (errorCode: number, errorMessage: string, details?: any): ClientResponseError
+	export function responseError (errorMessage: string, details?: any): ClientResponseError
+	export function responseError (arg1: string | number, arg2: any, details?: any): ClientResponseError {
+		const hasCustomCode = _.isNumber(arg1)
 		return {
-			error: 500,
-			message: errorMessage
+			error: hasCustomCode ? Number(arg1) : 500,
+			message: hasCustomCode ? arg2 : arg1,
+			details
 		}
 	}
 	export interface ClientResponseSuccess {

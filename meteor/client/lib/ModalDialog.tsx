@@ -23,6 +23,7 @@ interface IModalDialogAttributes {
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	inputs?: {[attribute: string]: ModalInput}
+	warning?: boolean
 }
 interface ModalInput {
 	type: EditAttributeType
@@ -126,7 +127,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 										opacity: [1, 0]
 									}, easing: 'spring', duration: 250 }} runOnMount={true}>
 										<dialog open={true} className='border-box overlay-m'>
-											<div className='flex-row info vertical-align-stretch tight-s'>
+											<div className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}>
 												<div className='flex-col c12'>
 													<h2>
 														{this.props.title}
@@ -211,6 +212,8 @@ export interface ModalDialogQueueItem {
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	/** Customomize input fields */
 	inputs?: {[attribute: string]: ModalInput}
+	/** Is a critical decition/information */
+	warning?: boolean
 }
 interface IModalDialogGlobalContainerProps {
 }
@@ -293,6 +296,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 				onSecondary		= {this.onSecondary}
 				inputs			= {onQueue.inputs}
 				show			= {true}
+				warning			= {onQueue.warning}
 			>
 				{
 					_.isString(onQueue.message) ?

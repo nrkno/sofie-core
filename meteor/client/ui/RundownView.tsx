@@ -35,6 +35,7 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
@@ -605,6 +606,47 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0) + (this.props.rundown.expectedDuration || 0)
 	}
 
+	handleActivationError = (originalMethod: UserActionAPI.methods, originalParams: any[], err: ClientAPI.ClientResponseError, clb?: Function) => {
+		const { t } = this.props
+
+		const otherRundowns = err.details as Rundown[]
+		doModalDialog({
+			title: t('Other Rundown is active'),
+			message: t('Rundown "{{rundownName}}" will need to be deactivated in order to activate this one. Are you sure you want to continue?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			yes: t('Activate'),
+			no: t('Cancel'),
+			warning: true,
+			onAccept: (le: any) => {
+				Promise.all(otherRundowns.map(r => {
+					return new Promise((resolve, reject) => {
+						doUserAction(t, le, UserActionAPI.methods.deactivate, [r._id], (err, res) => {
+							if (!err) {
+								resolve()
+								return
+							}
+							reject(err)
+						})
+					})
+				})).then((res) => {
+					doUserAction(t, le, originalMethod, originalParams, (err, response) => {
+						if (!err) {
+							if (typeof clb === 'function') clb()
+						}
+					})
+				}, (err) => {
+					doModalDialog({
+						title: t('Failed to deactivate'),
+						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
+						acceptOnly: true,
+						warning: true,
+						yes: t('OK'),
+						onAccept: (le: any) => { console.log() }
+					})
+				}).catch(console.error)
+			}
+		})
+	}
+
 	activate = (e: any) => {
 		const { t } = this.props
 		if (e.persist) e.persist()
@@ -619,10 +661,21 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				)
 			)
 		) {
-			let doActivate = (le: any) => {
-				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.rundown._id, false], (err, response) => {
+			const onSuccess = () => {
+				this.deferFlushAndRewindSegments()
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			}
+			const doActivate = (le: any) => {
+				doUserAction(t, le, UserActionAPI.methods.activate, [this.props.rundown._id, false], (err, response) => {
 					if (!err) {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+					} else if (ClientAPI.isClientResponseError(err)) {
+						if (err.error === 409) {
+							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, () => {
+								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+							})
+							return false
+						}
 					}
 				})
 			}
@@ -635,8 +688,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						this.rewindSegments()
 						doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id], (err, response) => {
 							if (!err) {
-								this.deferFlushAndRewindSegments()
-								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+								onSuccess()
+							} else if (ClientAPI.isClientResponseError(err)) {
+								if (err.error === 409) {
+									this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, onSuccess)
+									return false
+								}
 							}
 						})
 					}
@@ -670,10 +727,18 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				)
 			)
 		) {
-			let doActivateRehersal = () => {
-				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.rundown._id, true], (err, response) => {
+			const onSuccess = () => {
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			}
+			let doActivateRehersal = (le: any) => {
+				doUserAction(t, le, UserActionAPI.methods.activate, [this.props.rundown._id, true], (err, response) => {
 					if (!err) {
-						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+						onSuccess()
+					} else if (ClientAPI.isClientResponseError(err)) {
+						if (err.error === 409) {
+							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, true], err, onSuccess)
+							return false
+						}
 					}
 				})
 			}
@@ -683,7 +748,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					// inactive, do the full preparation:
 					doUserAction(t, e, UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], (err, response) => {
 						if (!err) {
-							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+							onSuccess()
+						} else if (ClientAPI.isClientResponseError(err)) {
+							if (err.error === 409) {
+								this.handleActivationError(UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], err, onSuccess)
+								return false
+							}
 						}
 					})
 				} else if (!this.props.rundown.rehearsal) {
@@ -691,8 +761,8 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
-						onAccept: () => {
-							doActivateRehersal()
+						onAccept: (e) => {
+							doActivateRehersal(e)
 						}
 					})
 				} else {
@@ -705,13 +775,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
-						onAccept: () => {
-							doActivateRehersal()
+						onAccept: (e) => {
+							doActivateRehersal(e)
 						}
 					})
 				} else {
 					// The broadcast has ended
-					doActivateRehersal()
+					doActivateRehersal(e)
 				}
 			}
 		}
