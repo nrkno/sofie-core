@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-12T12:21:02.303Z\n"
-"PO-Revision-Date: 2019-08-12T12:21:02.303Z\n"
+"POT-Creation-Date: 2019-08-12T13:56:32.084Z\n"
+"PO-Revision-Date: 2019-08-12T13:56:32.084Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -781,16 +781,16 @@ msgstr ""
 msgid "Target Storage"
 msgstr ""
 
-msgid "Delete this monitor?"
+msgid "Delete this Monitor?"
 msgstr ""
 
 msgid "Are you sure you want to delete the monitor \"{{monitorId}}\"?"
 msgstr ""
 
-msgid "Id already exists"
+msgid "ID already exists"
 msgstr ""
 
-msgid "The id {{monitorId}} already exists!"
+msgid "The ID {{monitorId}} already exists!"
 msgstr ""
 
 msgid "Monitor ID"
@@ -799,22 +799,22 @@ msgstr ""
 msgid "Monitor Type"
 msgstr ""
 
-msgid "Media-Scanner host"
+msgid "Media Scanner Host"
 msgstr ""
 
-msgid "Media-Scanner port"
+msgid "Media Scanner Port"
 msgstr ""
 
-msgid "Quantel gateway URL"
+msgid "Quantel Gateway URL"
 msgstr ""
 
-msgid "Quantel ISA url"
+msgid "Quantel ISA URL"
 msgstr ""
 
 msgid "Zone ID (leave blank for default)"
 msgstr ""
 
-msgid "Quantel server id"
+msgid "Quantel Server ID"
 msgstr ""
 
 msgid "No. of Available Workers"
@@ -827,12 +827,6 @@ msgid "Workflow Linger Time"
 msgstr ""
 
 msgid "Cron-Job Interval Time"
-msgstr ""
-
-msgid "Media Scanner Host"
-msgstr ""
-
-msgid "Media Scanner Port"
 msgstr ""
 
 msgid "Activate Debug Logging"
@@ -938,9 +932,6 @@ msgid "ISA URL"
 msgstr ""
 
 msgid "Zone ID"
-msgstr ""
-
-msgid "Quantel Server ID"
 msgstr ""
 
 msgid "Activate Multi-Threading"
