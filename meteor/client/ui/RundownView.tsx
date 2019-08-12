@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
+import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
@@ -1050,6 +1051,7 @@ interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
 	casparCGPlayoutDevices?: PeripheralDevice[]
+	rundownLayoutId?: string
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -1062,6 +1064,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	let rundown = Rundowns.findOne({ _id: rundownId })
 	let studio = rundown && Studios.findOne({ _id: rundown.studioId })
+
+	const params = queryStringParse(location.search)
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1084,7 +1088,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			},
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			subType: TSR_DeviceType.CASPARCG
-		}).fetch()) || undefined
+		}).fetch()) || undefined,
+		rundownLayoutId: String(params['layout'])
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1156,11 +1161,19 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	static getDerivedStateFromProps (props: Translated<IProps & ITrackedProps>, state: IState) {
-		let selectedLayout: RundownLayout | undefined = undefined
+		let selectedLayout: RundownLayoutBase | undefined = undefined
 
 		if (props.rundownLayouts) {
-			selectedLayout = props.rundownLayouts
-				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT) as RundownLayout | undefined
+			// first try to use the one selected by the user
+			if (props.rundownLayoutId) selectedLayout = props.rundownLayouts
+				.find((i) => i._id === props.rundownLayoutId)
+			
+			// if not, try the first RUNDOWN_LAYOUT available
+			if (!selectedLayout) selectedLayout = props.rundownLayouts
+				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+
+			// if still not found, use the first one
+			if (!selectedLayout) selectedLayout = props.rundownLayouts[0]
 		}
 
 		return {

@@ -72,7 +72,7 @@ export interface RundownLayoutBase {
 	blueprintId?: string
 	userId?: string
 	name: string
-	type: RundownLayoutType
+	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutFilterBase[]
 }
 

@@ -25,7 +25,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
@@ -346,13 +346,13 @@ interface ISourceLayerLookup {
 	[key: string]: ISourceLayer
 }
 
-interface IProps {
+export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	rundown: Rundown
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
-	filter?: RundownLayoutFilter
+	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
 }
@@ -363,14 +363,14 @@ interface IState {
 	followLive: boolean
 	searchFilter: string | undefined
 }
-interface ITrackedProps {
+export interface IAdLibPanelTrackedProps {
 	uiSegments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
 	sourceLayerLookup: ISourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
-export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
+export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup = (
@@ -426,8 +426,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		let rundownAdLibItems = RundownBaselineAdLibPieces.find({
 			rundownId: props.rundown._id
 		}, {
-			sort: { sourceLayerId: 1, _rank: 1 }
-		}).fetch()
+				sort: { sourceLayerId: 1, _rank: 1 }
+			}).fetch()
 		rundownBaselineAdLibs = rundownAdLibItems.map((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: AdLibPieceUi = _.clone(item)
@@ -454,23 +454,23 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			// always add them to the list
 			return uiAdLib
 		}).
-		concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
-			map(layer => literal<AdLibPieceUi>({
-				_id: layer._id,
-				hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
-				name: props.t('Last ') + (layer.abbreviation || layer.name),
-				status: RundownAPI.PieceStatusCode.UNKNOWN,
-				isSticky: true,
-				isGlobal: true,
-				expectedDuration: 0,
-				disabled: false,
-				externalId: layer._id,
-				rundownId: '',
-				sourceLayerId: layer._id,
-				outputLayerId: '',
-				_rank: 0
-			}))
-		)
+			concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
+				map(layer => literal<AdLibPieceUi>({
+					_id: layer._id,
+					hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
+					name: props.t('Last ') + (layer.abbreviation || layer.name),
+					status: RundownAPI.PieceStatusCode.UNKNOWN,
+					isSticky: true,
+					isGlobal: true,
+					expectedDuration: 0,
+					disabled: false,
+					externalId: layer._id,
+					rundownId: '',
+					sourceLayerId: layer._id,
+					outputLayerId: '',
+					_rank: 0
+				}))
+			)
 
 		if (props.filter.rundownBaseline === 'only') {
 			uiSegments.length = 0
@@ -483,10 +483,14 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		sourceLayerLookup,
 		rundownBaselineAdLibs
 	}
-})(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+}
+
+export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	return fetchAndFilter(props)
+})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor (props: Translated<IProps & ITrackedProps>) {
+	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -528,7 +532,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IProps & ITrackedProps) {
+	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
@@ -682,7 +686,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					selectedSegment={this.state.selectedSegment}
 					showStyleBase={this.props.showStyleBase}
 					searchFilter={this.state.searchFilter}
-					filter={this.props.filter}
+					filter={this.props.filter as RundownLayoutFilter}
 					rundown={this.props.rundown}
 					noSegments={!withSegments} />
 			</React.Fragment>

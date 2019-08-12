@@ -1,0 +1,68 @@
+@import "../colorScheme";
+@import "../itemTypeColors";
+
+.dashboard {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow: auto;
+}
+
+.dashboard-panel {
+	background: rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(0,0,0,0.1);
+	border-radius: 5px;
+	padding: 10px;
+	margin: 10px;
+	user-select: none;
+
+	.dashboard-panel__header {
+		margin: 0 0 10px;
+		padding: 0;
+	}
+
+	.dashboard-panel__panel {
+		font-size: 1.3em;
+	}
+
+	.dashboard-panel__panel__button {
+		display: inline-flex;
+  		align-items: flex-end;
+		position: relative;
+		background: #000;
+		border-radius: 3px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: normal;
+		line-break: loose;
+		word-break: break-all;
+		width: 5em;
+		height: 4em;
+		border: none;
+		margin-right: 0.5em;
+		margin-bottom: 0.5em;
+		vertical-align: top;
+		text-align: left;
+		text-transform: uppercase;
+		padding: 0.2em;
+
+		@include item-type-colors();
+		@include invalid-overlay();
+		@include missing-overlay();
+
+		&:active {
+			&::before {
+				content: ' ';
+				display: block;
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				background: rgba(0, 0, 0, 0.2);
+			}
+		}
+	}
+}

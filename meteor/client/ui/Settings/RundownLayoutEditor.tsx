@@ -7,7 +7,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -73,11 +73,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	onAddFilter = (item: RundownLayoutBase) => {
 		const { t } = this.props
+
+		const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
+		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
+
 		RundownLayouts.update(item._id, {
 			$push: {
 				filters: literal<RundownLayoutFilter>({
 					_id: Random.id(),
-					name: t('New tab'),
+					name: isRundownLayout ?
+							t('New tab') :
+						isDashboardLayout ?
+							t('New panel') :
+							t('New item'),
 					currentSegment: false,
 					displayStyle: PieceDisplayStyle.LIST,
 					label: undefined,
@@ -100,7 +108,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
-	onRemoveFilter = (item: RundownLayoutBase, filter: RundownLayoutFilter) => {
+	onRemoveFilter = (item: RundownLayoutBase, filter: RundownLayoutFilterBase) => {
 		RundownLayouts.update(item._id, {
 			$pull: {
 				filters: {
@@ -147,7 +155,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		)
 	}
 
-	renderRundownLayoutTabs (item: RundownLayout) {
+	renderFilters (item: RundownLayoutBase) {
 		const { t } = this.props
 		const rundownBaselineOptions = [
 			{
@@ -164,18 +172,30 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		]
 
+		const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
+		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
+
 		return <React.Fragment>
-			<h4 className='mod mhs'>Tabs</h4>
+			<h4 className='mod mhs'>
+				{isRundownLayout ?
+					t('Tabs') :
+				 isDashboardLayout ?
+					t('Panels') :
+					null
+				}
+			</h4>
 			{item.filters.map((tab, index) => (
 				<div className='rundown-layout-editor-filter mod pan mas' key={tab._id}>
 					<button className='action-btn right mod man pas' onClick={(e) => this.onRemoveFilter(item, tab)}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
-					<button className={ClassNames('action-btn right mod man pas', {
-						'star': tab.default
-					})} onClick={(e) => this.onToggleDefault(item, index, !tab.default)}>
-						<FontAwesomeIcon icon={faStar} />
-					</button>
+					{isRundownLayout &&
+						<button className={ClassNames('action-btn right mod man pas', {
+							'star': (tab as RundownLayoutFilter).default
+						})} onClick={(e) => this.onToggleDefault(item as RundownLayout, index, !(tab as RundownLayoutFilter).default)}>
+							<FontAwesomeIcon icon={faStar} />
+						</button>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Name')}
@@ -387,7 +407,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 							<div>
 								{item.type === RundownLayoutType.RUNDOWN_LAYOUT ?
-									this.renderRundownLayoutTabs(item as RundownLayout)
+									this.renderFilters(item) :
+								 item.type === RundownLayoutType.DASHBOARD_LAYOUT ?
+									this.renderFilters(item)
 									: null}
 							</div>
 							<div className='mod mls'>
