@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-02T09:04:45.576Z\n"
-"PO-Revision-Date: 2019-05-02T09:04:45.576Z\n"
+"POT-Creation-Date: 2019-08-12T12:21:02.303Z\n"
+"PO-Revision-Date: 2019-08-12T12:21:02.303Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -88,6 +88,9 @@ msgstr ""
 msgid "Connected to the"
 msgstr ""
 
+msgid "Could not get system status. Please consult system administrator."
+msgstr ""
+
 msgid "Welcome to the Sofie Automation system"
 msgstr ""
 
@@ -104,9 +107,6 @@ msgid "Home"
 msgstr ""
 
 msgid "Rundowns"
-msgstr ""
-
-msgid "Nyman's Playground"
 msgstr ""
 
 msgid "Test Tools"
@@ -269,6 +269,27 @@ msgstr ""
 msgid "Log Error"
 msgstr ""
 
+msgid "Another Rundown is Already Active!"
+msgstr ""
+
+msgid ""
+"The rundown \"{{rundownName}}\" will need to be deactivated in order to "
+"activate this one.\n"
+"\n"
+"Are you sure you want to activate this one anyway?"
+msgstr ""
+
+msgid "Activate Anyway"
+msgstr ""
+
+msgid "Failed to deactivate"
+msgstr ""
+
+msgid ""
+"System was unable to deactivate existing rundowns. Please contact the "
+"system administrator."
+msgstr ""
+
 msgid "Do you want to activate this Rundown?"
 msgstr ""
 
@@ -337,6 +358,18 @@ msgstr ""
 msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
 msgstr ""
 
+msgid "Restart CasparCG Server"
+msgstr ""
+
+msgid "Do you want to restart CasparCG Server \"{{device}}\"?"
+msgstr ""
+
+msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
+msgstr ""
+
+msgid "CasparCG on device \"{{deviceName}}\" restarting..."
+msgstr ""
+
 msgid "Show Hotkeys"
 msgstr ""
 
@@ -344,6 +377,9 @@ msgid "Take a Snapshot"
 msgstr ""
 
 msgid "Restart Playout"
+msgstr ""
+
+msgid "Restart {{device}}"
 msgstr ""
 
 msgid "This rundown has been unpublished from Sofie."
@@ -356,6 +392,20 @@ msgid "Error: The ShowStyle of this Rundown was not found."
 msgstr ""
 
 msgid "Unknown error"
+msgstr ""
+
+msgid "Rundown {{rundownName}} is missing, what do you want to do?"
+msgstr ""
+
+msgid "Mark rundown as unsynced"
+msgstr ""
+
+msgid "Remove rundown"
+msgstr ""
+
+msgid ""
+"Do you really want to remove the rundown \"{{rundownName}}\"? This cannot "
+"be undone!"
 msgstr ""
 
 msgid ""
@@ -371,8 +421,22 @@ msgstr ""
 
 msgid ""
 "Are you sure you want to re-sync the Rundown?\n"
-"(If the currently playing Part has been changed, this can affect the "
-"output.)"
+"(If the currently playing Part has been changed, this can affect the output)"
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
+msgid ""
+"Fixing this problem requires a restart to the host device. Are you sure you "
+"want to restart {{device}}?\n"
+"(This might affect output)"
+msgstr ""
+
+msgid "Device \"{{deviceName}}\" restarting..."
+msgstr ""
+
+msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Show issue"
@@ -518,6 +582,9 @@ msgstr ""
 msgid "MOS Gateway"
 msgstr ""
 
+msgid "Spreadsheet Gateway"
+msgstr ""
+
 msgid "Play-out Gateway"
 msgstr ""
 
@@ -610,6 +677,12 @@ msgstr ""
 msgid ""
 "Are you sure you want to update the blueprints from the file "
 "\"{{fileName}}\"?"
+msgstr ""
+
+msgid "Blueprints updated successfully."
+msgstr ""
+
+msgid "Failed to update blueprints: {{errorMessage}}"
 msgstr ""
 
 msgid "Assigned Show Styles:"
@@ -708,6 +781,42 @@ msgstr ""
 msgid "Target Storage"
 msgstr ""
 
+msgid "Delete this monitor?"
+msgstr ""
+
+msgid "Are you sure you want to delete the monitor \"{{monitorId}}\"?"
+msgstr ""
+
+msgid "Id already exists"
+msgstr ""
+
+msgid "The id {{monitorId}} already exists!"
+msgstr ""
+
+msgid "Monitor ID"
+msgstr ""
+
+msgid "Monitor Type"
+msgstr ""
+
+msgid "Media-Scanner host"
+msgstr ""
+
+msgid "Media-Scanner port"
+msgstr ""
+
+msgid "Quantel gateway URL"
+msgstr ""
+
+msgid "Quantel ISA url"
+msgstr ""
+
+msgid "Zone ID (leave blank for default)"
+msgstr ""
+
+msgid "Quantel server id"
+msgstr ""
+
 msgid "No. of Available Workers"
 msgstr ""
 
@@ -747,6 +856,12 @@ msgstr ""
 msgid "Media Flows"
 msgstr ""
 
+msgid "Monitors"
+msgstr ""
+
+msgid "Attached Subdevices"
+msgstr ""
+
 msgid "Device ID"
 msgstr ""
 
@@ -771,7 +886,10 @@ msgstr ""
 msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
 msgstr ""
 
-msgid "Attached Subdevices"
+msgid "Device Type"
+msgstr ""
+
+msgid "Thread Usage"
 msgstr ""
 
 msgid "Host"
@@ -792,6 +910,12 @@ msgstr ""
 msgid "Ramp Function Path"
 msgstr ""
 
+msgid "Buffer Encoding"
+msgstr ""
+
+msgid "Enable SSL"
+msgstr ""
+
 msgid "URI"
 msgstr ""
 
@@ -807,13 +931,16 @@ msgstr ""
 msgid "Interval"
 msgstr ""
 
-msgid "Enable SSL"
+msgid "Gateway URL"
 msgstr ""
 
-msgid "Device Type"
+msgid "ISA URL"
 msgstr ""
 
-msgid "Thread Usage"
+msgid "Zone ID"
+msgstr ""
+
+msgid "Quantel Server ID"
 msgstr ""
 
 msgid "Activate Multi-Threading"
@@ -823,6 +950,12 @@ msgid "Activate Multi-Threaded Timeline Resolving"
 msgstr ""
 
 msgid "(Restart to apply)"
+msgstr ""
+
+msgid "Spreadsheet credentials succesfully uploaded."
+msgstr ""
+
+msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
 msgstr ""
 
 msgid "Application credentials"
@@ -887,16 +1020,13 @@ msgstr ""
 msgid "Restart this Device?"
 msgstr ""
 
-msgid "Restart"
-msgstr ""
-
-msgid "Restart Device"
-msgstr ""
-
 msgid "Generic Properties"
 msgstr ""
 
 msgid "Device Name"
+msgstr ""
+
+msgid "Restart Device"
 msgstr ""
 
 msgid "Reset Database Version"
@@ -977,6 +1107,56 @@ msgid "The migration was completed successfully!"
 msgstr ""
 
 msgid "All is well, go get a"
+msgstr ""
+
+msgid "New Layout"
+msgstr ""
+
+msgid "New tab"
+msgstr ""
+
+msgid "Only match Global Ad-Libs"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Display Rank"
+msgstr ""
+
+msgid "Display only Ad-Libs from current Segment"
+msgstr ""
+
+msgid "Include Global Ad-Libs"
+msgstr ""
+
+msgid "Filter disabled"
+msgstr ""
+
+msgid "Source Layer Types"
+msgstr ""
+
+msgid "Output channels"
+msgstr ""
+
+msgid "Label contains"
+msgstr ""
+
+msgid "Default layout"
+msgstr ""
+
+msgid ""
+"Are you sure you want to upload the rundown layout from the file "
+"\"{{fileName}}\"?"
+msgstr ""
+
+msgid "Rundown layout uploaded successfully."
+msgstr ""
+
+msgid "Failed to upload rundown layout: {{errorMessage}}"
+msgstr ""
+
+msgid "Rundown Layouts"
 msgstr ""
 
 msgid "Show Style Base Name"
@@ -1083,9 +1263,6 @@ msgstr ""
 msgid "Is hidden"
 msgstr ""
 
-msgid "Display Rank"
-msgstr ""
-
 msgid "Display on Presenter's Screen"
 msgstr ""
 
@@ -1126,9 +1303,6 @@ msgid "Channel Name"
 msgstr ""
 
 msgid "Is PGM Output"
-msgstr ""
-
-msgid "Output channels"
 msgstr ""
 
 msgid "Key"
@@ -1189,6 +1363,9 @@ msgstr ""
 msgid "Restore from Snapshot File"
 msgstr ""
 
+msgid "Upload snapshot"
+msgstr ""
+
 msgid "Restore from Stored Snapshots"
 msgstr ""
 
@@ -1196,9 +1373,6 @@ msgid "Restore"
 msgstr ""
 
 msgid "Show \"Remove snapshots\"-buttons"
-msgstr ""
-
-msgid "Custom Configuration"
 msgstr ""
 
 msgid "Attached Devices"
@@ -1210,19 +1384,43 @@ msgstr ""
 msgid "Are you sure you want to remove mapping for layer \"{{mappingId}}\"?"
 msgstr ""
 
-msgid "channel"
+msgid "CasparCG Channel"
 msgstr ""
 
-msgid "layer"
+msgid "The CasparCG channel to use (1 is the first)"
 msgstr ""
 
-msgid "mappingType"
+msgid "CasparCG Layer"
 msgstr ""
 
-msgid "index"
+msgid "The layer in a channel to use"
+msgstr ""
+
+msgid "Mapping type"
+msgstr ""
+
+msgid "Index"
 msgstr ""
 
 msgid "Identifier"
+msgstr ""
+
+msgid "QuanSisyfos Channel"
+msgstr ""
+
+msgid "Quantel Port ID"
+msgstr ""
+
+msgid "The name you'd like the port to have"
+msgstr ""
+
+msgid "Quantel Channel ID"
+msgstr ""
+
+msgid "The channel to use for output (0 is the first one)"
+msgstr ""
+
+msgid "Mode"
 msgstr ""
 
 msgid "Preset"
@@ -1240,7 +1438,27 @@ msgstr ""
 msgid "Unknown Mapping"
 msgstr ""
 
+msgid "Channel: {{channel}}"
+msgstr ""
+
+msgid "Port: {{port}}, Channel: {{channel}}"
+msgstr ""
+
+msgid "Unknown device type: {{device}}"
+msgstr ""
+
 msgid "Layer ID"
+msgstr ""
+
+msgid "ID of the timeline-layer to map to some output"
+msgstr ""
+
+msgid "The type of device to use for the output"
+msgstr ""
+
+msgid ""
+"ID of the device (corresponds to the device ID in the peripheralDevice "
+"settings)"
 msgstr ""
 
 msgid "Lookahead Mode"
@@ -1250,9 +1468,6 @@ msgid "Layer Mappings"
 msgstr ""
 
 msgid "Test Tools – Recordings"
-msgstr ""
-
-msgid "CasparCG Channel"
 msgstr ""
 
 msgid "Path Prefix"
@@ -1291,6 +1506,15 @@ msgstr ""
 msgid "Sofie Host URL"
 msgstr ""
 
+msgid "Slack Webhook URLs"
+msgstr ""
+
+msgid "Supported Media Formats"
+msgstr ""
+
+msgid "Supported Audio Formats"
+msgstr ""
+
 msgid "Installation name"
 msgstr ""
 
@@ -1315,13 +1539,16 @@ msgstr ""
 msgid "Search..."
 msgstr ""
 
+msgid "Last "
+msgstr ""
+
 msgid "Invalid AdLib"
 msgstr ""
 
-msgid "Cannot play this AdLib becasue it is marked as Invalid"
+msgid "Cannot play this AdLib because it is marked as Invalid"
 msgstr ""
 
-msgid "Last "
+msgid "Cannot play this AdLib becasue it is marked as Invalid"
 msgstr ""
 
 msgid "Toggle Drawer"
@@ -1435,13 +1662,16 @@ msgstr ""
 msgid "Abort"
 msgstr ""
 
+msgid "Prioritize"
+msgstr ""
+
 msgid "Media Transfer Status"
 msgstr ""
 
-msgid "Not Connected"
+msgid "Abort All"
 msgstr ""
 
-msgid "Restart CasparCG Server"
+msgid "Restart All"
 msgstr ""
 
 msgid "Do you want to restart CasparCG Server?"
@@ -1457,6 +1687,9 @@ msgid "Restart this device?"
 msgstr ""
 
 msgid "System Status"
+msgstr ""
+
+msgid "Not Connected"
 msgstr ""
 
 msgid "Execution time"
@@ -1486,6 +1719,9 @@ msgstr ""
 msgid "Timeline"
 msgstr ""
 
+msgid "User Log Player"
+msgstr ""
+
 msgid "A required setting is not configured"
 msgstr ""
 
@@ -1504,9 +1740,6 @@ msgstr ""
 msgid "Are you sure you want to delete recording \"{{name}}\"?"
 msgstr ""
 
-msgid "Name"
-msgstr ""
-
 msgid "Stopped"
 msgstr ""
 
@@ -1514,8 +1747,4 @@ msgid "Your browser does not support video playback"
 msgstr ""
 
 msgid "Recording still in progress"
-msgstr ""
-
-msgctxt "item"
-msgid "new_config"
 msgstr ""
