@@ -1168,6 +1168,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			// first try to use the one selected by the user
 			if (props.rundownLayoutId) selectedLayout = props.rundownLayouts
 				.find((i) => i._id === props.rundownLayoutId)
+
+			// if couldn't find based on id, try matching part of the name
+			if (props.rundownLayoutId && !selectedLayout) selectedLayout = props.rundownLayouts
+				.find((i) => i.name.indexOf(props.rundownLayoutId!) >= 0)
 			
 			// if not, try the first RUNDOWN_LAYOUT available
 			if (!selectedLayout) selectedLayout = props.rundownLayouts
