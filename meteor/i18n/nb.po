@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-08-12T13:56:32.084Z\n"
-"PO-Revision-Date: 2019-08-12 16:11+0200\n"
+"POT-Creation-Date: 2019-08-13T12:29:55.324Z\n"
+"PO-Revision-Date: 2019-08-13 14:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -430,11 +430,8 @@ msgid ""
 "through."
 msgstr ""
 
-msgid "Re-sync"
-msgstr ""
-
-msgid "Re-sync Rundown"
-msgstr ""
+msgid "Re-Sync Rundown"
+msgstr "Synkroniser kjøreplanen med ENPS på nytt"
 
 msgid ""
 "Are you sure you want to re-sync the Rundown?\n"
@@ -1135,43 +1132,68 @@ msgstr "Alt er greit, ta deg en"
 msgid "New Layout"
 msgstr "Ny layout"
 
-msgid "New tab"
+msgid "New Tab"
 msgstr ""
 
-msgid "Only match Global Ad-Libs"
+msgid "New Panel"
+msgstr ""
+
+msgid "New Item"
+msgstr "Nytt element"
+
+msgid "Only Match Global AdLibs"
+msgstr "Inkluder bare hurtigtaster"
+
+msgid "Tabs"
+msgstr ""
+
+msgid "Panels"
 msgstr ""
 
 msgid "Name"
 msgstr "Navn"
 
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Width"
+msgstr ""
+
+msgid "Height"
+msgstr ""
+
 msgid "Display Rank"
 msgstr ""
 
-msgid "Display only Ad-Libs from current Segment"
+msgid "Only Display AdLibs from Current Segment"
 msgstr ""
 
-msgid "Include Global Ad-Libs"
-msgstr ""
+msgid "Include Global AdLibs"
+msgstr "Inkluder hurtigtaster"
 
-msgid "Filter disabled"
+msgid "Filter Disabled"
 msgstr ""
 
 msgid "Source Layer Types"
 msgstr "Kildelagstyper"
 
-msgid "Output channels"
-msgstr "Utgangskanal"
+msgid "Filter disabled"
+msgstr ""
 
 msgid "Label contains"
 msgstr ""
 
-msgid "Default layout"
-msgstr ""
+msgid "Default Layout"
+msgstr "Standardlayout"
 
 msgid ""
 "Are you sure you want to upload the rundown layout from the file "
 "\"{{fileName}}\"?"
-msgstr "Er du sikker på at du vil laste opp kjøreplan fra \"{{fileName}}\"?"
+msgstr ""
+"Er du sikker på at du vil laste opp kjøreplanlayout fra \"{{fileName}}\"?"
 
 msgid "Rundown layout uploaded successfully."
 msgstr ""
@@ -1328,6 +1350,9 @@ msgstr "Kanalnavn"
 msgid "Is PGM Output"
 msgstr "Ligger på program"
 
+msgid "Output channels"
+msgstr "Utgangskanal"
+
 msgid "Key"
 msgstr "Key"
 
@@ -1355,7 +1380,7 @@ msgid "Restore from this Snapshot file?"
 msgstr "Gjenopprette fra denne snapshotfilen?"
 
 msgid ""
-"Are you sure you want to restore the system from the Snapshot file "
+"Are you sure you want to restore the system from the snapshot file "
 "\"{{fileName}}\"?"
 msgstr ""
 "Er du sikker på at du vil gjenopprettet systemet fra snapshotfilen "
@@ -1393,7 +1418,7 @@ msgstr "Lagre et studiosnapshot utelukkende for \"{{studioName}}\""
 msgid "Restore from Snapshot File"
 msgstr "Gjenopprett fra snapshotfil"
 
-msgid "Upload snapshot"
+msgid "Upload Snapshot"
 msgstr "Last opp snapshot"
 
 msgid "Restore from Stored Snapshots"
@@ -1581,7 +1606,7 @@ msgstr ""
 msgid "Cannot play this AdLib becasue it is marked as Invalid"
 msgstr ""
 
-msgid "Toggle Drawer"
+msgid "Toggle Shelf"
 msgstr "Skuff"
 
 msgid "Escape from filter search"
@@ -1591,7 +1616,7 @@ msgid "AdLib"
 msgstr "Manuelle elementer"
 
 msgid "Global AdLib"
-msgstr "Hurtigtaster"
+msgstr "Hurtigtast"
 
 msgid "Shortcuts"
 msgstr "Funksjonstaster"

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-12T13:56:32.084Z\n"
-"PO-Revision-Date: 2019-08-12T13:56:32.084Z\n"
+"POT-Creation-Date: 2019-08-13T12:29:55.324Z\n"
+"PO-Revision-Date: 2019-08-13T12:29:55.324Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -413,10 +413,7 @@ msgid ""
 "come through."
 msgstr ""
 
-msgid "Re-sync"
-msgstr ""
-
-msgid "Re-sync Rundown"
+msgid "Re-Sync Rundown"
 msgstr ""
 
 msgid ""
@@ -1103,37 +1100,61 @@ msgstr ""
 msgid "New Layout"
 msgstr ""
 
-msgid "New tab"
+msgid "New Tab"
 msgstr ""
 
-msgid "Only match Global Ad-Libs"
+msgid "New Panel"
+msgstr ""
+
+msgid "New Item"
+msgstr ""
+
+msgid "Only Match Global AdLibs"
+msgstr ""
+
+msgid "Tabs"
+msgstr ""
+
+msgid "Panels"
 msgstr ""
 
 msgid "Name"
 msgstr ""
 
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Width"
+msgstr ""
+
+msgid "Height"
+msgstr ""
+
 msgid "Display Rank"
 msgstr ""
 
-msgid "Display only Ad-Libs from current Segment"
+msgid "Only Display AdLibs from Current Segment"
 msgstr ""
 
-msgid "Include Global Ad-Libs"
+msgid "Include Global AdLibs"
 msgstr ""
 
-msgid "Filter disabled"
+msgid "Filter Disabled"
 msgstr ""
 
 msgid "Source Layer Types"
 msgstr ""
 
-msgid "Output channels"
+msgid "Filter disabled"
 msgstr ""
 
 msgid "Label contains"
 msgstr ""
 
-msgid "Default layout"
+msgid "Default Layout"
 msgstr ""
 
 msgid ""
@@ -1296,6 +1317,9 @@ msgstr ""
 msgid "Is PGM Output"
 msgstr ""
 
+msgid "Output channels"
+msgstr ""
+
 msgid "Key"
 msgstr ""
 
@@ -1321,7 +1345,7 @@ msgid "Restore from this Snapshot file?"
 msgstr ""
 
 msgid ""
-"Are you sure you want to restore the system from the Snapshot file "
+"Are you sure you want to restore the system from the snapshot file "
 "\"{{fileName}}\"?"
 msgstr ""
 
@@ -1354,7 +1378,7 @@ msgstr ""
 msgid "Restore from Snapshot File"
 msgstr ""
 
-msgid "Upload snapshot"
+msgid "Upload Snapshot"
 msgstr ""
 
 msgid "Restore from Stored Snapshots"
@@ -1542,7 +1566,7 @@ msgstr ""
 msgid "Cannot play this AdLib becasue it is marked as Invalid"
 msgstr ""
 
-msgid "Toggle Drawer"
+msgid "Toggle Shelf"
 msgstr ""
 
 msgid "Escape from filter search"
