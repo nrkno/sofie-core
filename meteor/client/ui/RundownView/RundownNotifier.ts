@@ -161,13 +161,13 @@ class RundownViewNotifier extends WithManagedTracker {
 						true,
 						[
 							{
-								label: t('Re-sync'),
+								label: t('Re-Sync'),
 								type: 'primary',
 								action: () => {
 									doModalDialog({
-										title: t('Re-sync Rundown'),
+										title: t('Re-Sync Rundown'),
 										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output)'),
-										yes: t('Re-sync'),
+										yes: t('Re-Sync'),
 										no: t('Cancel'),
 										onAccept: (event) => {
 											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId], (err, response) => {

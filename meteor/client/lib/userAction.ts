@@ -111,7 +111,7 @@ function userActionMethodName (
 		case UserActionAPI.methods.sourceLayerOnPartStop: return t('Stopping source layer')
 
 		case UserActionAPI.methods.removeRundown: return t('Removing Rundown')
-		case UserActionAPI.methods.resyncRundown: return t('Re-syncing Rundown')
+		case UserActionAPI.methods.resyncRundown: return t('Re-Syncing Rundown')
 
 		case UserActionAPI.methods.recordStop: return t('Stopping recording')
 		case UserActionAPI.methods.recordStart: return t('Starting recording')

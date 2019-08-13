@@ -77,7 +77,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			doModalDialog({
 				title: t('Restore from this Snapshot file?'),
-				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
+				message: t('Are you sure you want to restore the system from the snapshot file "{{fileName}}"?', { fileName: file.name }),
 				onAccept: () => {
 					fetchFrom('/snapshot/restore', {
 						method: 'POST',
@@ -107,7 +107,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		if (snapshot) {
 			doModalDialog({
 				title: 'Restore Snapshot',
-				message: `Do you really want to restore the Snapshot ${snapshot.name}?`,
+				message: `Do you really want to restore the snapshot ${snapshot.name}?`,
 				onAccept: () => {
 					Meteor.call(SnapshotFunctionsAPI.RESTORE_SNAPSHOT, snapshotId, (err) => {
 						if (err) {
@@ -255,7 +255,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							onChange={(e) => this.onUploadFile(e)}
 							key={this.state.uploadFileKey}>
 							<FontAwesomeIcon icon={faUpload} />
-							<span>{t('Upload snapshot')}</span>
+							<span>{t('Upload Snapshot')}</span>
 						</UploadButton>
 					</div>
 					<h2 className='mhn'>{t('Restore from Stored Snapshots')}</h2>
