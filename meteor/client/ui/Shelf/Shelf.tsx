@@ -104,7 +104,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			{
 				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
 				up: this.keyToggleShelf,
-				label: t('Toggle Drawer')
+				label: t('Toggle Shelf')
 			},
 			// {
 			// 	key: RundownViewKbdShortcuts.RUNDOWN_RESET_FOCUS,
