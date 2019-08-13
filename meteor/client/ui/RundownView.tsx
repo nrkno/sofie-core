@@ -3,6 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -1355,15 +1356,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		// if (piece && piece.content && (piece.content as VTContent).editable &&
-		// 	((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-		// 	((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
-		// 	this.setState({
-		// 		isClipTrimmerOpen: true,
-		// 		selectedPiece: piece
+		if (piece && piece.content && (piece.content as VTContent).editable &&
+			((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+			((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+			this.setState({
+				isClipTrimmerOpen: true,
+				selectedPiece: piece
 
-		// 	})
-		// }
+			})
+		}
 	}
 
 	componentWillUnmount () {
