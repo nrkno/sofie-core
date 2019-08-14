@@ -6,20 +6,18 @@ import { callMethod } from '../lib/clientAPI'
 import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 
 import {
-	Timeline as TimelineTypes,
 	TimelineObjAtemME,
 	TimelineContentTypeAtem,
 	AtemTransitionStyle,
 	DeviceType as PlayoutDeviceType,
 	MappingAtem,
 	MappingAtemType,
-	MappingCasparCG,
 	TimelineObjCCGMedia,
 	TimelineContentTypeCasparCg,
 	DeviceType,
-	TSRTimelineObjBase
+	TimelineObjQuantelAny
 } from 'timeline-state-resolver-types'
-import { Studios, Studio } from '../../lib/collections/Studios'
+import { Studios, Studio, MappingExt } from '../../lib/collections/Studios'
 import {
 	PeripheralDevices,
 } from '../../lib/collections/PeripheralDevices'
@@ -29,10 +27,15 @@ import {
 } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'
+import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
 interface IManualPlayoutProps {
 }
 interface IManualPlayoutState {
-	inputValues: {[id: string]: string}
+	inputValues: {
+		[id: string]: {
+			[no: string]: string
+		}
+	}
 }
 export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IManualPlayoutState> {
 
@@ -107,13 +110,13 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
 	}
 	getManualLayers (studio: Studio) {
-		let mappings: {[layer: string]: MappingCasparCG} = {}
+		let mappings: {[layer: string]: MappingExt} = {}
 		_.each(studio.mappings, (mapping, layerId) => {
 			if (
 				mapping.device === PlayoutDeviceType.CASPARCG ||
-				mapping.device === 11 // TODO: quantel
+				mapping.device === DeviceType.QUANTEL
 			) {
-				mappings[layerId] = mapping as MappingCasparCG
+				mappings[layerId] = mapping
 
 			}
 		})
@@ -121,7 +124,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 	}
 	casparcgPlay (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
 
-		let input = this.state.inputValues[mappingLayerId]
+		let file = this.state.inputValues[mappingLayerId].file
 
 		let o: TimelineObjCCGMedia = {
 			id: 'caspar_' + mappingLayerId,
@@ -133,7 +136,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				deviceType: DeviceType.CASPARCG,
 				type: TimelineContentTypeCasparCg.MEDIA,
 
-				file: input + '',
+				file: file + '',
 
 			}
 		}
@@ -146,15 +149,17 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		let input = this.state.inputValues[mappingLayerId]
 
-		let o: TSRTimelineObjBase = { // TODO quantel
+		let o: TimelineObjQuantelAny = {
 
 			id: 'quantel_' + mappingLayerId ,
 
 			classes: [],
 			content: {
-				deviceType: 11,
-				// @ts-ignore
-				title: input + ''
+				deviceType: DeviceType.QUANTEL,
+
+				title: input.title || '',
+				// @ts-ignore temporary ignore, remove soon
+				guid: input.title.guid || ''
 			},
 			enable: {
 				start: 'now',
@@ -173,10 +178,12 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 	quantelClear (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
 		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'quantel_' + mappingLayerId)
 	}
-	onInputChange (id: string, value: any) {
+	onInputChange (id: string, no: string, value: any) {
 
 		let iv = this.state.inputValues
-		iv[id] = value
+		if (!iv[id]) iv[id] = {}
+		iv[id][no] = value
+
 		this.setState({
 			inputValues: iv
 		})
@@ -217,7 +224,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 								<tbody>
 								{
 									_.map(this.getManualLayers(studio), (mapping, mappingLayerId) => {
-										if (mapping.device === PlayoutDeviceType.CASPARCG) {
+										if (mappingIsCasparCG(mapping)) {
 											return <tr key={mappingLayerId}>
 												<th>{mappingLayerId}</th>
 												<td>
@@ -230,13 +237,13 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 												</td>
 												<td>
 													<EditAttribute
-														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, value)}
+														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'file', value)}
 														type='text'
 														overrideDisplayValue={this.state.inputValues[mappingLayerId]}
 													/>
 												</td>
 											</tr>
-										} else if (mapping.device === 11) { // TODO: quantel
+										} else if (mappingIsQuantel(mapping)) {
 											return <tr key={mappingLayerId}>
 												<th>{mappingLayerId}</th>
 												<td>
@@ -249,9 +256,16 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 												</td>
 												<td>
 													<EditAttribute
-														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, value)}
+														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'title', value)}
 														type='text'
-														overrideDisplayValue={this.state.inputValues[mappingLayerId]}
+														overrideDisplayValue={(this.state.inputValues[mappingLayerId] || {}).title}
+													/>
+												</td>
+												<td>
+													<EditAttribute
+														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'guid', value)}
+														type='text'
+														overrideDisplayValue={(this.state.inputValues[mappingLayerId] || {}).guid}
 													/>
 												</td>
 											</tr>

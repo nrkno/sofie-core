@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Methods, setMeteorMethods } from '../../methods'
 import { IngestActions } from './actions'
-import { updateTimeline } from '../playout/timeline';
+import { updateTimeline } from '../playout/timeline'
 
 let methods: Methods = {}
 

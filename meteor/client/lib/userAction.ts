@@ -14,7 +14,7 @@ export function doUserAction (
 	event: any,
 	method: UserActionAPI.methods,
 	params: Array<any>,
-	callback?: (err: any, res?: ClientAPI.ClientResponseSuccess) => void,
+	callback?: (err: any, res?: ClientAPI.ClientResponseSuccess) => void | boolean,
 	okMessage?: string
 ) {
 
@@ -36,28 +36,42 @@ export function doUserAction (
 
 		if (err) {
 			// console.error(err) - this is a result of an error server-side. Will be logged, no reason to print it out to console
-			NotificationCenter.push(
-				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', { actionName: userActionMethodName(t, method) }), 'userAction')
-			)
-			if (callback) callback(err)
+			let doDefault: boolean | void = true
+			if (callback) {
+				doDefault = callback(err)
+			}
+			if (doDefault !== false) {
+				NotificationCenter.push(
+					new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', { actionName: userActionMethodName(t, method) }), 'userAction')
+				)
+				navigator.vibrate([400, 300, 400, 300, 400])
+			}
 		} else if (ClientAPI.isClientResponseError(res)) {
-			NotificationCenter.push(
-				new Notification(undefined, NoticeLevel.CRITICAL,
-					t('Action {{actionName}} failed: {{error}}', { error: res.message || res.error, actionName: userActionMethodName(t, method) })
-				, 'userAction')
-			)
-			if (callback) callback(res)
-			navigator.vibrate([400, 300, 400, 300, 400])
+			let doDefault: boolean | void = true
+			if (callback) {
+				doDefault = callback(res)
+			}
+			if (doDefault !== false) {
+				NotificationCenter.push(
+					new Notification(undefined, NoticeLevel.CRITICAL,
+						t('Action {{actionName}} failed: {{error}}', { error: res.message || res.error, actionName: userActionMethodName(t, method) })
+					, 'userAction')
+				)
+				navigator.vibrate([400, 300, 400, 300, 400])
+			}
 		} else {
+			let doDefault: boolean | void = true
 			// all good
-			if (timeoutMessage) {
+			if (callback) {
+				doDefault = callback(undefined, res)
+			}
+			if (timeoutMessage && doDefault !== false) {
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.NOTIFICATION,
 						okMessage || t('Action {{actionName}} done!', { actionName: userActionMethodName(t, method) })
 					, 'userAction', undefined, false, undefined, undefined, 2000)
 				)
 			}
-			if (callback) callback(undefined, res)
 		}
 	})
 }
@@ -97,7 +111,7 @@ function userActionMethodName (
 		case UserActionAPI.methods.sourceLayerOnPartStop: return t('Stopping source layer')
 
 		case UserActionAPI.methods.removeRundown: return t('Removing Rundown')
-		case UserActionAPI.methods.resyncRundown: return t('Re-syncing Rundown')
+		case UserActionAPI.methods.resyncRundown: return t('Re-Syncing Rundown')
 
 		case UserActionAPI.methods.recordStop: return t('Stopping recording')
 		case UserActionAPI.methods.recordStart: return t('Starting recording')

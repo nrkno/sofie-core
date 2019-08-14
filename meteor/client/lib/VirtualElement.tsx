@@ -13,10 +13,10 @@ export interface IProps {
 
 declare global {
 	interface Window {
-		requestIdleCallback(callback: Function, options?: {
+		requestIdleCallback (callback: Function, options?: {
 			timeout: number
 		}): number
-		cancelIdleCallback(callback: number)
+		cancelIdleCallback (callback: number)
 	}
 }
 
@@ -79,7 +79,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 	}
 
 	refreshSizing = () => {
-		this.refreshSizingTimeout = null;
+		this.refreshSizingTimeout = null
 		if (this.el) {
 			const style = this.styleObj || window.getComputedStyle(this.el)
 			this.styleObj = style

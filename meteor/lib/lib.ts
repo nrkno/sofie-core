@@ -69,6 +69,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	insert?: (o: DBInterface) => void
 	update?: (id: string, o: DBInterface,) => void
 	remove?: (o: DBInterface) => void
+	unchanged?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
@@ -130,9 +131,9 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 			let o2 = o
 			if (options.beforeDiff) o2 = options.beforeDiff(o, oldObj)
-			let diff = compareObjs(oldObj,o2)
+			let eql = compareObjs(oldObj,o2)
 
-			if (!diff) {
+			if (!eql) {
 				let p: Promise<any> | undefined
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
 				if (options.update) {
@@ -149,6 +150,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 				if (p) ps.push(p)
 				change.updated++
+			} else {
+				if (options.unchanged) options.unchanged(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
@@ -715,7 +718,7 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
  *
  * creds: https://github.com/rsp/node-caught/blob/master/index.js
  */
-export const caught = (f => p => (p.catch(f), p))(() => {
+export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), p))(() => {
 	// nothing
 })
 
@@ -908,6 +911,11 @@ export type RequiredPropertyNames<T> = {
 }[keyof T]
 export type OptionalProperties<T> = Pick<T, OptionalPropertyNames<T>>
 export type RequiredProperties<T> = Pick<T, RequiredPropertyNames<T>>
+
+export type Diff<T, U> = T extends U ? never : T  // Remove types from T that are assignable to U
+export type KeysByType<TObj, TVal> = Diff<{
+	[K in keyof TObj]: TObj[K] extends TVal ? K : never
+}[keyof TObj], undefined>
 
 /**
  * Returns the difference between object A and B

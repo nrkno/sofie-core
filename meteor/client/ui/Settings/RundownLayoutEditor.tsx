@@ -7,7 +7,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -73,11 +73,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	onAddFilter = (item: RundownLayoutBase) => {
 		const { t } = this.props
+
+		const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
+		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
+
 		RundownLayouts.update(item._id, {
 			$push: {
 				filters: literal<RundownLayoutFilter>({
 					_id: Random.id(),
-					name: t('New tab'),
+					name: isRundownLayout ?
+							t('New Tab') :
+						isDashboardLayout ?
+							t('New Panel') :
+							t('New Item'),
 					currentSegment: false,
 					displayStyle: PieceDisplayStyle.LIST,
 					label: undefined,
@@ -100,7 +108,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
-	onRemoveFilter = (item: RundownLayoutBase, filter: RundownLayoutFilter) => {
+	onRemoveFilter = (item: RundownLayoutBase, filter: RundownLayoutFilterBase) => {
 		RundownLayouts.update(item._id, {
 			$pull: {
 				filters: {
@@ -147,7 +155,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		)
 	}
 
-	renderRundownLayoutTabs (item: RundownLayout) {
+	renderFilters (item: RundownLayoutBase) {
 		const { t } = this.props
 		const rundownBaselineOptions = [
 			{
@@ -159,23 +167,35 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				value: false
 			},
 			{
-				name: t('Only match Global Ad-Libs'),
+				name: t('Only Match Global AdLibs'),
 				value: 'only'
 			}
 		]
 
+		const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
+		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
+
 		return <React.Fragment>
-			<h4 className='mod mhs'>Tabs</h4>
+			<h4 className='mod mhs'>
+				{isRundownLayout ?
+					t('Tabs') :
+				 isDashboardLayout ?
+					t('Panels') :
+					null
+				}
+			</h4>
 			{item.filters.map((tab, index) => (
 				<div className='rundown-layout-editor-filter mod pan mas' key={tab._id}>
 					<button className='action-btn right mod man pas' onClick={(e) => this.onRemoveFilter(item, tab)}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
-					<button className={ClassNames('action-btn right mod man pas', {
-						'star': tab.default
-					})} onClick={(e) => this.onToggleDefault(item, index, !tab.default)}>
-						<FontAwesomeIcon icon={faStar} />
-					</button>
+					{isRundownLayout &&
+						<button className={ClassNames('action-btn right mod man pas', {
+							'star': (tab as RundownLayoutFilter).default
+						})} onClick={(e) => this.onToggleDefault(item as RundownLayout, index, !(tab as RundownLayoutFilter).default)}>
+							<FontAwesomeIcon icon={faStar} />
+						</button>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Name')}
@@ -189,6 +209,62 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('X')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.x`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Y')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.y`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Width')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.width`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Height')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.height`}
+										obj={item}
+										options={RundownLayoutType}
+										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Display Rank')}
@@ -204,7 +280,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Display only Ad-Libs from current Segment')}
+							{t('Only Display AdLibs from Current Segment')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.currentSegment`}
@@ -216,7 +292,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Include Global Ad-Libs')}
+							{t('Include Global AdLibs')}
 						</label>
 						<EditAttribute
 							modifiedClassName='bghl'
@@ -224,7 +300,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							obj={item}
 							options={rundownBaselineOptions}
 							type='dropdown'
-							label={t('Filter disabled')}
+							label={t('Filter Disabled')}
 							collection={RundownLayouts}
 							className='input text-input input-l dropdown' />
 					</div>
@@ -247,7 +323,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							obj={item}
 							options={this.props.showStyleBase.sourceLayers.map(l => { return { name: l.name, value: l._id } })}
 							type='multiselect'
-							label={t('Filter disabled')}
+							label={t('Filter Disabled')}
 							collection={RundownLayouts}
 							className='input text-input input-l dropdown'
 							mutateUpdateValue={v => v && v.length > 0 ? v : undefined} />
@@ -279,7 +355,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Output channels')}
+							{t('Output Channels')}
 						</label>
 						<EditAttribute
 							modifiedClassName='bghl'
@@ -296,7 +372,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							obj={item}
 							options={this.props.showStyleBase.outputLayers.map(l => { return { name: l.name, value: l._id } })}
 							type='multiselect'
-							label={t('Filter disabled')}
+							label={t('Filter Disabled')}
 							collection={RundownLayouts}
 							className='input text-input input-l dropdown'
 							mutateUpdateValue={v => v && v.length > 0 ? v : undefined} />
@@ -320,7 +396,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								type='text'
 								collection={RundownLayouts}
 								className='input text-input input-l'
-								label={t('Filter disabled')}
+								label={t('Filter Disabled')}
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
 								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 						</label>
@@ -338,7 +414,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					'hl': this.isItemEdited(item)
 				})}>
 					<th className='settings-studio-rundown-layouts-table__name c3'>
-						{item.name || t('Default layout')}
+						{item.name || t('Default Layout')}
 					</th>
 					<td className='settings-studio-rundown-layouts-table__value c2'>
 						{item.type}
@@ -387,7 +463,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 							<div>
 								{item.type === RundownLayoutType.RUNDOWN_LAYOUT ?
-									this.renderRundownLayoutTabs(item as RundownLayout)
+									this.renderFilters(item) :
+								 item.type === RundownLayoutType.DASHBOARD_LAYOUT ?
+									this.renderFilters(item)
 									: null}
 							</div>
 							<div className='mod mls'>

@@ -40,6 +40,7 @@ export namespace MediaScannerIntegration {
 		if (_.isNull(doc)) {
 			MediaObjects.remove(_id)
 		} else if (doc) {
+			if (doc.mediaId !== doc.mediaId.toUpperCase()) throw new Meteor.Error(400, 'mediaId must only use uppercase characters')
 			let doc2 = _.extend(doc, {
 				studioId: studioId,
 				collectionId: collectionId,

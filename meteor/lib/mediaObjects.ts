@@ -2,13 +2,13 @@ import * as _ from 'underscore'
 import {
 	VTContent,
 	SourceLayerType,
-	IConfigItem,
 	ISourceLayer,
 	IBlueprintPieceGeneric
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
+import { IStudioSettings } from './collections/Studios'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -81,9 +81,9 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<string>> {
-	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
-	const formatsString: string = (formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000') + ''
+export function getAcceptedFormats (settings: IStudioSettings | undefined): Array<Array<string>> {
+	const formatsConfigField = settings ? settings.supportedMediaFormats : ''
+	const formatsString: string = (formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
 	return _.compact(formatsString
 		.split(',')
 		.map((res) => {
@@ -109,7 +109,7 @@ export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLaye
 	return undefined
 }
 
-export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
@@ -143,9 +143,9 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 
 						// Do a format check:
 						if (mediaObject.mediainfo) {
-							const formats = getAcceptedFormats(config)
-							const audioConfig = config.find(item => item._id === 'audioStreams')
-							const expectedAudioStreams = audioConfig ? new Set<string>((audioConfig.value + '').split(',').map(v => v.trim())) : new Set<string>()
+							const formats = getAcceptedFormats(settings)
+							const audioConfig = settings ? settings.supportedAudioStreams : ''
+							const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
 
 							let timebase
 							let audioStreams = 0

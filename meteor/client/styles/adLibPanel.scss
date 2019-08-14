@@ -298,13 +298,8 @@ $adlib-item-selected-color: #009DFF;
 							border: 1px solid $adlib-item-selected-color;
 						}
 					}
-					&.invalid {
-						opacity: 0.5;
-						background-color: #333;
-						background-image:
-							repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
-							repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
-					}
+					
+					@include invalid-overlay();
 				}
 
 				.adlib-panel__list-view__list__table__cell--icon {

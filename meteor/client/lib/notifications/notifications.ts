@@ -7,7 +7,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { Time } from '../../../lib/lib'
-import { HTMLAttributes } from 'react';
+import { HTMLAttributes } from 'react'
 
 /**
  * Priority level for Notifications.

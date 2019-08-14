@@ -10,7 +10,7 @@ import { Meteor } from 'meteor/meteor'
 import { AdLibPieces } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
@@ -69,21 +69,29 @@ export interface DBRundown extends IBlueprintRundownDB {
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
+
+	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
+	previousPersistentState?: TimelinePersistentState
 }
 export class Rundown implements DBRundown {
-	public _id: string
+	// From IBlueprintRundown:
 	public externalId: string
-	public studioId: string
+	public name: string
+	public expectedStart?: Time
+	public expectedDuration?: number
+	public metaData?: {
+		[key: string]: any
+	}
+	// From IBlueprintRundownDB:
+	public _id: string
 	public showStyleVariantId: string
+	// From DBRundown:
+	public studioId: string
 	public showStyleBaseId: string
 	public peripheralDeviceId: string
-	public name: string
 	public created: Time
 	public modified: Time
 	public importVersions: RundownImportVersions
-	public expectedStart?: Time
-	public expectedDuration?: number
-	public metaData?: { [key: string]: any }
 	public status?: string
 	public airStatus?: string
 	public unsynced?: boolean
@@ -98,7 +106,7 @@ export class Rundown implements DBRundown {
 	_: any
 
 	constructor (document: DBRundown) {
-		_.each(_.keys(document), (key: keyof DBRundown) => {
+		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
@@ -240,7 +248,7 @@ export class Rundown implements DBRundown {
 				return playlist
 			})
 		]
-		let r = waitForPromiseAll(ps as any)
+		let r: any = waitForPromiseAll(ps as any)
 		let segments: Segment[] 				= r[0].segments
 		let segmentsMap 				 		= r[0].segmentsMap
 		let partsMap 					= r[1].partsMap

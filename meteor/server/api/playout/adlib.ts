@@ -3,7 +3,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType, TimelineObjectCoreExt, PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { extendMandadory, getCurrentTime } from '../../../lib/lib'
+import { extendMandadory, getCurrentTime, literal } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { Timeline, TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -51,7 +51,8 @@ export namespace ServerPlayoutAdLibAPI {
 				newPiece.content.timelineObjects = prefixAllObjectIds(
 					_.compact(
 						_.map(newPiece.content.timelineObjects, (obj) => {
-							return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+							return literal<TimelineObjGeneric>({
+								...obj,
 								// @ts-ignore _id
 								_id: obj.id || obj._id,
 								studioId: '', // set later

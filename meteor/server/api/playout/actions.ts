@@ -36,8 +36,8 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 		throw new Meteor.Error(
 			409,
 			'Only one rundown can be active at the same time. Active rundown playlists: ' +
-				_.map(anyOtherActiveRundowns, rundown => rundown._id),
-			JSON.stringify(_.map(anyOtherActiveRundowns, rundown => rundown._id)))
+				_.map(anyOtherActiveRundowns, playlist => playlist._id),
+			JSON.stringify(_.map(anyOtherActiveRundowns, playlist => playlist._id)))
 	}
 
 	let m = {

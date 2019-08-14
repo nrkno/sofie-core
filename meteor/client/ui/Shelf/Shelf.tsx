@@ -18,9 +18,13 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { DashboardPanel } from './DashboardPanel'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -39,7 +43,8 @@ export interface ShelfProps {
 		key: string
 		label: string
 	}>
-	rundownLayout?: RundownLayout
+	rundownLayout?: RundownLayoutBase
+	fullViewport?: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (hotkeys: Array<{
@@ -64,16 +69,16 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		x: number
 		y: number
 	} = {
-			x: 0,
-			y: 0
-		}
+		x: 0,
+		y: 0
+	}
 	private _mouseOffset: {
 		x: number
 		y: number
 	} = {
-			x: 0,
-			y: 0
-		}
+		x: 0,
+		y: 0
+	}
 	private _mouseDown: number
 
 	private bindKeys: Array<{
@@ -84,7 +89,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		global?: boolean
 	}> = []
 
-	constructor(props: Translated<ShelfProps>) {
+	constructor (props: Translated<ShelfProps>) {
 		super(props)
 
 		this.state = {
@@ -100,7 +105,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			{
 				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
 				up: this.keyToggleShelf,
-				label: t('Toggle Drawer')
+				label: t('Toggle Shelf')
 			},
 			// {
 			// 	key: RundownViewKbdShortcuts.RUNDOWN_RESET_FOCUS,
@@ -111,7 +116,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		]
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		let preventDefault = (e) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
@@ -140,7 +145,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		this.restoreDefaultTab()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.unbind(k.key, 'keyup')
@@ -152,7 +157,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		})
 	}
 
-	componentDidUpdate(prevProps: ShelfProps, prevState: IState) {
+	componentDidUpdate (prevProps: ShelfProps, prevState: IState) {
 		if ((prevProps.isExpanded !== this.props.isExpanded) || (prevState.shelfHeight !== this.state.shelfHeight)) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
 				// console.log(this.state.expanded, this.getHeight())
@@ -164,7 +169,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	}
 
 	restoreDefaultTab () {
-		if (this.state.selectedTab === undefined && this.props.rundownLayout) {
+		if (this.state.selectedTab === undefined && this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) {
 			const defaultTab = this.props.rundownLayout.filters.find(i => i.default)
 			if (defaultTab) {
 				this.setState({
@@ -174,12 +179,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		}
 	}
 
-	getHeight(): string {
+	getHeight (): string {
 		const top = parseFloat(this.state.shelfHeight.substr(0, this.state.shelfHeight.length - 2))
 		return this.props.isExpanded ? (100 - top).toString() + 'vh' : '0px'
 	}
 
-	getTop(newState?: boolean): string | undefined {
+	getTop (newState?: boolean): string | undefined {
 		return this.state.overrideHeight ?
 			((this.state.overrideHeight / window.innerHeight) * 100) + 'vh' :
 			((newState !== undefined ? newState : this.props.isExpanded) ?
@@ -188,17 +193,11 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				undefined)
 	}
 
-	getStyle() {
-		return this.props.isExpanded ?
-			{
-				'top': this.getTop(),
-				'transition': this.state.moving ? '' : '0.5s top ease-out'
-			}
-			:
-			{
-				'top': this.getTop(),
-				'transition': this.state.moving ? '' : '0.5s top ease-out'
-			}
+	getStyle () {
+		return {
+			'top': this.getTop(),
+			'transition': this.state.moving ? '' : '0.5s top ease-out'
+		}
 	}
 
 	keyBlurActiveElement = () => {
@@ -290,51 +289,87 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	render() {
+	renderRundownLayout (rundownLayout?: RundownLayout) {
 		const { t } = this.props
-		return (
-			<div className='rundown-view__shelf dark' style={this.getStyle()}>
-				<div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
-					<FontAwesomeIcon icon={faBars} />
-				</div>
-				<div className='rundown-view__shelf__tabs'>
-					<OverflowingContainer className='rundown-view__shelf__tabs__tab-group'>
-						<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-							'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB
-						})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
-						{this.props.rundownLayout && this.props.rundownLayout.filters
-							.sort((a, b) => a.rank - b.rank)
-							.map(f =>
+		return <React.Fragment>
+			<div className='rundown-view__shelf__tabs'>
+				<OverflowingContainer className='rundown-view__shelf__tabs__tab-group'>
+					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+						'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB
+					})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
+					{rundownLayout && rundownLayout.filters
+						.sort((a, b) => a.rank - b.rank)
+						.map(f =>
 							<div className={ClassNames('rundown-view__shelf__tabs__tab', {
 								'selected': (this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`
-							})} 
+							})}
 								key={f._id}
 								onClick={(e) => this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`)} tabIndex={0}>{f.name}</div>
 						)}
-					</OverflowingContainer>
-					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-						'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB
-					})} onClick={(e) => this.switchTab(ShelfTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
-					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-						'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS
-					})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
-				</div>
-				<div className='rundown-view__shelf__panel super-dark'>
+				</OverflowingContainer>
+				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB
+				})} onClick={(e) => this.switchTab(ShelfTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
+				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS
+				})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
+			</div>
+			<div className='rundown-view__shelf__panel super-dark'>
+				<AdLibPanel
+					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
+					registerHotkeys={true}
+					{...this.props}></AdLibPanel>
+				{rundownLayout && rundownLayout.filters.map(f =>
 					<AdLibPanel
-						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
-						registerHotkeys={true}
-						{...this.props}></AdLibPanel>
-					{this.props.rundownLayout && this.props.rundownLayout.filters.map(f =>
-						<AdLibPanel
-							key={f._id}
-							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`}
-							includeGlobalAdLibs={true}
-							filter={f}
-							{...this.props}></AdLibPanel>
-					)}
-					<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
-					<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
-				</div>
+						key={f._id}
+						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`}
+						includeGlobalAdLibs={true}
+						filter={f}
+						{...this.props}
+						/>
+				)}
+				<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+			</div>
+		</React.Fragment>
+	}
+
+	renderDashboardLayout (rundownLayout: DashboardLayout) {
+		const { t } = this.props
+		return <div className='dashboard'>
+			{rundownLayout.filters
+				.sort((a, b) => a.rank - b.rank)
+				.map((f: DashboardLayoutFilter) =>
+					<DashboardPanel
+						key={f._id}
+						includeGlobalAdLibs={true}
+						filter={f}
+						visible={true}
+						{...this.props}
+						/>	
+			)}
+		</div>
+	}
+
+	render () {
+		const { t, fullViewport } = this.props
+		return (
+			<div className={ClassNames('rundown-view__shelf dark', {
+				'full-viewport': fullViewport
+			})} style={fullViewport ? undefined : this.getStyle()}>
+				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
+					<FontAwesomeIcon icon={faBars} />
+				</div>}
+				<ErrorBoundary>
+				{
+					(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
+						this.renderRundownLayout(this.props.rundownLayout) :
+					(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
+						this.renderDashboardLayout(this.props.rundownLayout) :
+						// ultimate fallback if not found
+						this.renderRundownLayout()
+				}
+				</ErrorBoundary>
 			</div>
 		)
 	}

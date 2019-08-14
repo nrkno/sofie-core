@@ -398,7 +398,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 
 		const { t } = this.props
 		doModalDialog({
-			title: t('Delete this monitor?'),
+			title: t('Delete this Monitor?'),
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: () => {
@@ -443,13 +443,13 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			} else {
 				const { t } = this.props
 				doModalDialog({
-					title: t('Id already exists'),
+					title: t('ID already exists'),
 					acceptOnly: true,
 					onAccept: () => {
 						// nothing
 					},
 					message: <React.Fragment>
-						<p>{t('The id {{monitorId}} already exists!', { monitorId: newMonitorId })}</p>
+						<p>{t('The ID {{monitorId}} already exists!', { monitorId: newMonitorId })}</p>
 					</React.Fragment>
 				})
 			}
@@ -507,13 +507,13 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 									<React.Fragment>
 										<div className='mod mvs mhs'>
 											<label className='field'>
-												{t('Media-Scanner host')}
+												{t('Media Scanner Host')}
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
 										<div className='mod mvs mhs'>
 											<label className='field'>
-												{t('Media-Scanner port')}
+												{t('Media Scanner Port')}
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
@@ -522,13 +522,13 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 									<React.Fragment>
 										<div className='mod mvs mhs'>
 											<label className='field'>
-												{t('Quantel gateway URL')}
+												{t('Quantel Gateway URL')}
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.gatewayUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
 										<div className='mod mvs mhs'>
 											<label className='field'>
-												{t('Quantel ISA url')}
+												{t('Quantel ISA URL')}
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.ISAUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
@@ -540,7 +540,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 										</div>
 										<div className='mod mvs mhs'>
 											<label className='field'>
-												{t('Quantel server id')}
+												{t('Quantel Server ID')}
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
@@ -558,7 +558,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			</React.Fragment>
 		})
 	}
-	
+
 	render () {
 		const { t, subDevices } = this.props
 		let settings = this.props.device.settings as MediaManagerDeviceSettings

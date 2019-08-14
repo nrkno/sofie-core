@@ -40,7 +40,7 @@ interface RundownOverviewTrackedProps {
 }
 
 const Timediff = class extends React.Component<{ time: number }> {
-	render() {
+	render () {
 		const time = -this.props.time
 		const isNegative = (Math.floor(time / 1000) > 0)
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
@@ -129,7 +129,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			render() {
 				const { playlist, segments, showStyleBaseId } = this.props
 
-				if (playlist && this.props.playlistId && this.props.segments) {
+				if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
 					let currentPart: PartUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
@@ -235,9 +235,10 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string
-	rundown: Rundown
-	segments: Array<Segment>
-	parts: Array<Part>
+	playlist: RundownPlaylist
+	rundowns: Array<Rundown> | undefined
+	segments: Array<Segment> | undefined
+	parts: Array<Part> | undefined
 	match: {
 		params: {
 			studioId: string
@@ -250,8 +251,8 @@ interface IStateHeader {
 
 export const ClockView = translate()(withTracker(function (props: IPropsHeader) {
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let rundown = (
-		Rundowns.findOne({
+	let playlist = (
+		RundownPlaylists.findOne({
 			active: true,
 			studioId: studioId
 		})
@@ -266,21 +267,19 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 	// 	console.log('a')
 	// 	dep.changed()
 	// }, 3000)
-	let segments = rundown ? Segments.find({ rundownId: rundown._id }, {
-		sort: {
-			'_rank': 1
-		}
-	}).fetch() : undefined
-	let parts = rundown ? Parts.find({ rundownId: rundown._id }).fetch() : undefined
+	let rundowns = playlist ? playlist.getRundowns() : undefined
+	let segments = playlist ? playlist.getSegments() : undefined
+	let parts = segments ? _.flatten(segments.map(s => s.getParts())) : undefined
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
-		rundown,
+		playlist,
+		rundowns,
 		segments,
 		parts
 	}
 })(
 	class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
-		componentDidMount() {
+		componentDidMount () {
 			document.body.classList.add('dark', 'xdark')
 			let studioId = objectPathGet(this.props, 'match.params.studioId')
 			if (studioId) {
@@ -298,37 +297,38 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 					studioId: studioId
 				})
 			)
-			if (rundown) {
+			if (this.props.rundowns) {
+				const rundownIDs = this.props.rundowns.map(i => i._id)
 				this.subscribe('segments', {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 				this.subscribe('parts', {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 				this.subscribe('pieces', {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 				this.subscribe('showStyleBases', {
-					_id: rundown.showStyleBaseId
+					_id: { $in: _.uniq(this.props.rundowns.map(i => i.showStyleBaseId)) }
 				})
 				this.subscribe('adLibPieces', {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount () {
 			this._cleanUp()
 			document.body.classList.remove('dark', 'xdark')
 		}
 
-		render() {
+		render () {
 			const { t } = this.props
 
-			if (this.props.rundown) {
+			if (this.props.playlist) {
 				return (
-					<RundownTimingProvider rundown={this.props.rundown} >
-						<ClockComponent rundownId={this.props.rundown._id} />
+					<RundownTimingProvider playlist={this.props.playlist} >
+						<ClockComponent playlistId={this.props.playlist._id} />
 					</RundownTimingProvider>
 				)
 			} else {

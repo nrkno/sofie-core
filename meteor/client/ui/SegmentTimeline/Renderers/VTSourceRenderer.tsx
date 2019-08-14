@@ -32,7 +32,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 
 	metadataRev: string | undefined
 
-	constructor(props: IProps & InjectedTranslateProps) {
+	constructor (props: IProps & InjectedTranslateProps) {
 		super(props)
 
 		this.state = {}
@@ -68,7 +68,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.updateAnchoredElsWidths()
 		const metadata = this.props.piece.contentMetaData as MediaObject
 		if (metadata && metadata._rev) {
@@ -88,7 +88,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -228,7 +228,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		}
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		let labelItems = this.props.piece.name.split('||')

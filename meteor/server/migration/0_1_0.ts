@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureStudioConfig } from './lib'
+import { ensureCollectionProperty } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 

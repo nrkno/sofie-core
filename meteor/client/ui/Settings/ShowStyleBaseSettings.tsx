@@ -166,7 +166,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(showStyleBase)} object={showStyleBase} />
+						<ConfigManifestSettings
+							t={this.props.t}
+							manifest={collectConfigs(showStyleBase)}
+							object={showStyleBase}
+							collection={ShowStyleBases}
+							configPath={'config'}
+							/>
 					</div>
 				</div>
 				<div className='row'>
@@ -1242,6 +1248,8 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 										<ConfigManifestSettings
 											t={this.props.t}
 											manifest={collectConfigs(showStyleVariant)}
+											collection={ShowStyleVariants}
+											configPath={'config'}
 											object={showStyleVariant}
 											subPanel={true} />
 									</div>

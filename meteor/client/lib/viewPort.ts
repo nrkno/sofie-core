@@ -7,7 +7,7 @@ import { Parts } from '../../lib/collections/Parts'
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
 
-export function maintainFocusOnPart(partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
+export function maintainFocusOnPart (partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
 	let startTime = Date.now()
 	const focus = () => {
 		// console.log("focus");
@@ -26,11 +26,11 @@ export function maintainFocusOnPart(partId: string, timeWindow: number, forceScr
 	focus()
 }
 
-export function isMaintainingFocus(): boolean {
+export function isMaintainingFocus (): boolean {
 	return !!focusInterval
 }
 
-function quitFocusOnPart() {
+function quitFocusOnPart () {
 	if (!_dontClearInterval && focusInterval) {
 		// console.log("quitFocusOnPart")
 		clearInterval(focusInterval)
@@ -38,19 +38,19 @@ function quitFocusOnPart() {
 	}
 }
 
-export function scrollToPart(partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	// TODO: do scrolling within segment as well?
 	quitFocusOnPart()
 	let part = Parts.findOne(partId)
 	if (part) {
 		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
 	}
-	return Promise.reject('Could not find part');
+	return Promise.reject('Could not find part')
 }
 
 const HEADER_HEIGHT = 175
 
-export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	let elementToScrollTo: HTMLElement | null = (
 		_.isString(elementToScrollToOrSegmentId) ?
 			document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId) :
@@ -58,7 +58,7 @@ export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | stri
 	)
 
 	if (!elementToScrollTo) {
-		return Promise.reject('Could not find segment element');
+		return Promise.reject('Could not find segment element')
 	}
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
@@ -76,7 +76,7 @@ export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | stri
 	return Promise.resolve(false)
 }
 
-export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
+export function scrollToPosition (scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	if (noAnimation) {
 		return new Promise((resolve, reject) => {
 			window.scroll({

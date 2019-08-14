@@ -6,8 +6,7 @@ import { ChannelFormat } from 'timeline-state-resolver-types'
 import {
 	IConfigItem,
 	BlueprintMappings,
-	BlueprintMapping,
-	ConfigItemValue
+	BlueprintMapping
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash } from './lib'
@@ -25,6 +24,13 @@ export interface IStudioSettings {
 	mediaPreviewsUrl: string // (former media_previews_url in config)
 	/** URL to Sofie Core endpoint */
 	sofieUrl: string // (former sofie_url in config)
+	/** URLs for slack webhook to send evaluations */
+	slackEvaluationUrls?: string // (former slack_evaluation in config)
+
+	/** Media Resolutions supported by the studio for media playback */
+	supportedMediaFormats?: string // (former mediaResolutions in config)
+	/** Audio Stream Formats supported by the studio for media playback */
+	supportedAudioStreams?: string // (former audioStreams in config)
 }
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
@@ -66,7 +72,7 @@ export class Studio implements DBStudio {
 	public blueprintId?: string
 	public mappings: MappingsExt
 	public supportedShowStyleBase: Array<string>
-	public config: Array<IConfigItem>
+	public config: Array<IConfigItem> // TODO - migration to rename
 	public settings: IStudioSettings
 	public testToolsConfig?: ITestToolsConfig
 
@@ -76,17 +82,6 @@ export class Studio implements DBStudio {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
-	}
-	public getConfigValue (name: string): ConfigItemValue | undefined {
-		const item = this.config.find((item) => {
-			return (item._id === name)
-		})
-		if (item) {
-			return item.value
-		} else {
-			// logger.warn(`Studio "${this._id}": Config "${name}" not set`)
-			return undefined
-		}
 	}
 }
 

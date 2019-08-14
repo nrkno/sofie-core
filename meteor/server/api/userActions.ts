@@ -134,7 +134,7 @@ export function prepareForBroadcast (rundownPlaylistId: string): ClientAPI.Clien
 	if (playlist.active) return ClientAPI.responseError('Rundown Playlist is active, please deactivate before preparing it for broadcast')
 	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, playlist.name).join(', '))
+		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.prepareRundownForBroadcast(rundownPlaylistId)
@@ -154,14 +154,14 @@ export function resetRundown (rundownPlaylistId: string): ClientAPI.ClientRespon
 }
 export function resetAndActivate(rundownPlaylistId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
 	check(rundownPlaylistId, String)
-	let playlists = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlists) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (playlists.active && !playlists.rehearsal) {
+	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	if (playlist.active && !playlist.rehearsal) {
 		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlists.studioId, playlists._id)
+	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, playlists.name).join(', '))
+		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
 
 	return ClientAPI.responseSuccess(
@@ -175,7 +175,7 @@ export function activate (rundownPlaylistId: string, rehearsal: boolean): Client
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, playlist.name).join(', '))
+		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.activateRundown(rundownPlaylistId, rehearsal)

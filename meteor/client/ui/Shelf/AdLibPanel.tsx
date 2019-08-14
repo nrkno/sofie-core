@@ -26,10 +26,10 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random';
-import { literal, normalizeArray } from '../../../lib/lib';
+import { literal, normalizeArray } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 
 interface IListViewPropsHeader {
@@ -60,7 +60,7 @@ const AdLibListView = translate()(class extends React.Component<
 > {
 	table: HTMLTableElement
 
-	constructor(props: Translated<IListViewPropsHeader>) {
+	constructor (props: Translated<IListViewPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -69,7 +69,7 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
+	static getDerivedStateFromProps (props: IListViewPropsHeader, state) {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -94,7 +94,7 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	componentDidUpdate(prevProps: IListViewPropsHeader) {
+	componentDidUpdate (prevProps: IListViewPropsHeader) {
 		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
 			// scroll to selected segment
 			const segmentSelector = `#${this.table.id} .adlib-panel__list-view__item__${this.props.selectedSegment._id}`
@@ -271,7 +271,7 @@ interface IToolbarStateHader {
 const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
-	constructor(props: Translated<IToolbarPropsHeader>) {
+	constructor (props: Translated<IToolbarPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -298,7 +298,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 		this.searchInputChanged()
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		return (
 			<div className={ClassNames('adlib-panel__list-view__toolbar', {
@@ -347,13 +347,13 @@ interface ISourceLayerLookup {
 	[key: string]: ISourceLayer
 }
 
-interface IProps {
+export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
-	filter?: RundownLayoutFilter
+	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
 }
@@ -364,14 +364,14 @@ interface IState {
 	followLive: boolean
 	searchFilter: string | undefined
 }
-interface ITrackedProps {
+export interface IAdLibPanelTrackedProps {
 	uiSegments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
 	sourceLayerLookup: ISourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
-export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
+export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup = (
@@ -498,10 +498,14 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		sourceLayerLookup,
 		rundownBaselineAdLibs
 	}
-})(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+}
+
+export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	return fetchAndFilter(props)
+})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor(props: Translated<IProps & ITrackedProps>) {
+	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -558,7 +562,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate(prevProps: IProps & ITrackedProps) {
+	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
@@ -571,7 +575,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		this._cleanUp()
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
@@ -579,7 +583,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.usedHotkeys.length = 0
 	} 
 
-	refreshKeyboardHotkeys() {
+	refreshKeyboardHotkeys () {
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
@@ -677,7 +681,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	renderSegmentList() {
+	renderSegmentList () {
 		return this.props.uiSegments.map((item) => {
 			return (
 				<li className={ClassNames('adlib-panel__segments__segment', {
@@ -712,14 +716,14 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					selectedSegment={this.state.selectedSegment}
 					showStyleBase={this.props.showStyleBase}
 					searchFilter={this.state.searchFilter}
-					filter={this.props.filter}
+					filter={this.props.filter as RundownLayoutFilter}
 					playlist={this.props.playlist}
 					noSegments={!withSegments} />
 			</React.Fragment>
 		)
 	}
 
-	render() {
+	render () {
 		if (this.props.visible) {
 			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />

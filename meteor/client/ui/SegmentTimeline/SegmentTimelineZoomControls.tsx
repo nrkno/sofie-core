@@ -2,7 +2,7 @@ import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
 import { getElementWidth } from '../../utils/dimensions'
-import { getElementDocumentOffset } from '../../utils/positions';
+import { getElementDocumentOffset } from '../../utils/positions'
 
 interface IPropsHeader {
 	scrollLeft: number
@@ -34,7 +34,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	SMALL_WIDTH_BREAKPOINT = 25
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 
 		this.state = {
@@ -104,7 +104,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaEndMove(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+	zoomAreaEndMove (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
 		if (!this._isTouch) {
 			document.removeEventListener('mousemove', this.zoomAreaMove)
 		} else {
@@ -117,7 +117,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaBeginMove(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isTouch?: boolean) {
+	zoomAreaBeginMove (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isTouch?: boolean) {
 		this._isTouch = !!isTouch
 		let clientX = 0
 		let clientY = 0
@@ -170,7 +170,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaEndLeftMove(e: React.SyntheticEvent<HTMLDivElement>) {
+	zoomAreaEndLeftMove (e: React.SyntheticEvent<HTMLDivElement>) {
 		document.removeEventListener('mousemove', this.zoomAreaLeftMove)
 		this.setState({
 			zoomAreaResizeBegin: false
@@ -178,7 +178,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaLeftBeginMove(e: Event & any) {
+	zoomAreaLeftBeginMove (e: Event & any) {
 		// console.log('Left handle')
 		e.preventDefault()
 		e.stopPropagation()
@@ -198,7 +198,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		})
 	}
 
-	zoomAreaEndRightMove(e: React.SyntheticEvent<HTMLDivElement>) {
+	zoomAreaEndRightMove (e: React.SyntheticEvent<HTMLDivElement>) {
 		document.removeEventListener('mousemove', this.zoomAreaRightMove)
 		this.setState({
 			zoomAreaResizeEnd: false
@@ -216,7 +216,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaRightBeginMove(e: Event & any) {
+	zoomAreaRightBeginMove (e: Event & any) {
 		e.preventDefault()
 		e.stopPropagation()
 
@@ -243,18 +243,18 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.selAreaElement = element
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		elementResizeEvent(this.parentElement, this.onElementResize)
 		this.setState({
 			width: getElementWidth(this.parentElement) || 1
 		})
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		elementResizeEvent.unbind(this.parentElement, this.onElementResize)
 	}
 
-	render() {
+	render () {
 		return (
 			<div className='segment-timeline__zoom-area__controls' ref={this.setParentRef}>
 				<div className='segment-timeline__zoom-area__controls__left-mask'

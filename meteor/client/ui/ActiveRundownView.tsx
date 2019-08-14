@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	Route
+	Route, Switch
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
@@ -14,10 +14,11 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
 
 interface IProps {
-	match?: {
+	match: {
 		params?: {
 			studioId: string
 		}
+		path: string
 	}
 }
 interface ITrackedProps {
@@ -48,7 +49,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 })(class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 		this.state = {
 			subsReady: false
@@ -61,12 +62,20 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
+
 		if (this.props.studioId) {
 			this.subscribe('studios', {
 				_id: this.props.studioId
 			})
 		}
+
 		this.autorun(() => {
+			if (this.props.playlist) {
+				this.subscribe('rundowns', {
+					playlistId: this.props.playlist._id
+				})
+			}
+
 			let subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
 				this.setState({
@@ -76,20 +85,20 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		})
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		super.componentWillUnmount()
 		document.body.classList.remove('dark', 'vertical-overflow-only')
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate () {
 		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
-	renderMessage(message: string) {
+	renderMessage (message: string) {
 		const { t } = this.props
 
 		return (
@@ -110,7 +119,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		)
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		if (!this.state.subsReady) {
 			return (
@@ -120,7 +129,14 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 		} else {
 			if (this.props.playlist) {
-				return <RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} />
+				return <Switch>
+							<Route path={this.props.match.path} exact>
+								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} />
+							</Route>
+							<Route path={`${this.props.match.path}/shelf`}>
+								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} onlyShelf={true} />
+							</Route>
+						</Switch> 
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {

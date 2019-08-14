@@ -171,6 +171,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	// We also could investigate just skipping this and requiring a full reload if the studio installation is changed
 	if (
 		(typeof props.studio !== typeof nextProps.studio) ||
+		!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
 		!_.isEqual(props.studio.config, nextProps.studio.config) ||
 		!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 		!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
@@ -230,7 +231,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		window.requestAnimationFrame(() => {
 			this.mountedTime = Date.now()
 			if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
-				scrollToSegment(this.props.segmentId, true)
+				scrollToSegment(this.props.segmentId, true).catch(console.error)
 			}
 		})
 	}
@@ -379,7 +380,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}, this.props.isLiveSegment ? {
 			followLiveLine: false
 		} : {}))
-		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange((getElementWidth(this.timelineDiv) || 1) / (computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1))
+		if (typeof this.props.onTimeScaleChange === 'function') {
+			this.props.onTimeScaleChange(
+				(
+					getElementWidth(this.timelineDiv) || 1
+				) /
+				(
+					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1
+				)
+			)
+		}
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 	updateSpeech () {

@@ -1,7 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
+import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -11,7 +13,7 @@ import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { NavLink, Route, Prompt } from 'react-router-dom'
+import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -36,6 +38,7 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
@@ -576,6 +579,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			doUserAction(t, e, UserActionAPI.methods.take, [this.props.playlist._id])
 		}
 	}
+
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
@@ -583,7 +587,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.playlist._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
 						const partId = response.result
-						if (partId) scrollToPart(partId).catch(() => { })
+						if (partId) scrollToPart(partId).catch(() => console.error)
 					}
 				})
 			}
@@ -609,6 +613,47 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		return getCurrentTime() > (this.props.playlist.expectedStart || 0) + (this.props.playlist.expectedDuration || 0)
 	}
 
+	handleActivationError = (originalMethod: UserActionAPI.methods, originalParams: any[], err: ClientAPI.ClientResponseError, clb?: Function) => {
+		const { t } = this.props
+
+		const otherRundowns = err.details as Rundown[]
+		doModalDialog({
+			title: t('Another Rundown is Already Active!'),
+			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			yes: t('Activate Anyway'),
+			no: t('Cancel'),
+			warning: true,
+			onAccept: (le: any) => {
+				Promise.all(otherRundowns.map(r => {
+					return new Promise((resolve, reject) => {
+						doUserAction(t, le, UserActionAPI.methods.deactivate, [r._id], (err, res) => {
+							if (!err) {
+								resolve()
+								return
+							}
+							reject(err)
+						})
+					})
+				})).then((res) => {
+					doUserAction(t, le, originalMethod, originalParams, (err, response) => {
+						if (!err) {
+							if (typeof clb === 'function') clb()
+						}
+					})
+				}, (err) => {
+					doModalDialog({
+						title: t('Failed to deactivate'),
+						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
+						acceptOnly: true,
+						warning: true,
+						yes: t('OK'),
+						onAccept: (le: any) => { console.log() }
+					})
+				}).catch(console.error)
+			}
+		})
+	}
+
 	activate = (e: any) => {
 		const { t } = this.props
 		if (e.persist) e.persist()
@@ -623,10 +668,21 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				)
 			)
 		) {
-			let doActivate = (le: any) => {
+			const onSuccess = () => {
+				this.deferFlushAndRewindSegments()
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			}
+			const doActivate = (le: any) => {
 				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.playlist._id, false], (err, response) => {
 					if (!err) {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+					} else if (ClientAPI.isClientResponseError(err)) {
+						if (err.error === 409) {
+							this.handleActivationError(UserActionAPI.methods.activate, [this.props.playlist._id, false], err, () => {
+								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+							})
+							return false
+						}
 					}
 				})
 			}
@@ -639,8 +695,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						this.rewindSegments()
 						doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.playlist._id], (err, response) => {
 							if (!err) {
-								this.deferFlushAndRewindSegments()
-								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+								onSuccess()
+							} else if (ClientAPI.isClientResponseError(err)) {
+								if (err.error === 409) {
+									this.handleActivationError(UserActionAPI.methods.activate, [this.props.playlist._id, false], err, onSuccess)
+									return false
+								}
 							}
 						})
 					}
@@ -674,10 +734,18 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				)
 			)
 		) {
-			let doActivateRehersal = () => {
+			const onSuccess = () => {
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			}
+			let doActivateRehersal = (le: any) => {
 				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.playlist._id, true], (err, response) => {
 					if (!err) {
-						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+						onSuccess()
+					} else if (ClientAPI.isClientResponseError(err)) {
+						if (err.error === 409) {
+							this.handleActivationError(UserActionAPI.methods.activate, [this.props.playlist._id, true], err, onSuccess)
+							return false
+						}
 					}
 				})
 			}
@@ -687,7 +755,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					// inactive, do the full preparation:
 					doUserAction(t, e, UserActionAPI.methods.prepareForBroadcast, [this.props.playlist._id], (err, response) => {
 						if (!err) {
-							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+							onSuccess()
+						} else if (ClientAPI.isClientResponseError(err)) {
+							if (err.error === 409) {
+								this.handleActivationError(UserActionAPI.methods.prepareForBroadcast, [this.props.playlist._id], err, onSuccess)
+								return false
+							}
 						}
 					})
 				} else if (!this.props.playlist.rehearsal) {
@@ -695,8 +768,8 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
-						onAccept: () => {
-							doActivateRehersal()
+						onAccept: (e) => {
+							doActivateRehersal(e)
 						}
 					})
 				} else {
@@ -709,13 +782,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
-						onAccept: () => {
-							doActivateRehersal()
+						onAccept: (e) => {
+							doActivateRehersal(e)
 						}
 					})
 				} else {
 					// The broadcast has ended
-					doActivateRehersal()
+					doActivateRehersal(e)
 				}
 			}
 		}
@@ -778,7 +851,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				if (!err && response) {
 					if (!handleRundownReloadResponse(t, this.props.playlist, response.result)) {
 						if (this.props.playlist && this.props.playlist.nextPartId) {
-							scrollToPart(this.props.playlist.nextPartId).catch(() => { })
+							scrollToPart(this.props.playlist.nextPartId).catch(() => console.error)
 						}
 					}
 				}
@@ -951,6 +1024,7 @@ interface IProps {
 	}
 	playlistId?: string
 	inActiveRundownView?: boolean
+	onlyShelf?: boolean
 }
 
 interface IState {
@@ -985,6 +1059,7 @@ interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
 	casparCGPlayoutDevices?: PeripheralDevice[]
+	rundownLayoutId?: string
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -1003,6 +1078,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = Rundowns.find({ playlistId: playlistId }).fetch()
 	}
+
+	const params = queryStringParse(location.search)
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1024,7 +1101,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			},
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			subType: TSR_DeviceType.CASPARCG
-		}).fetch()) || undefined
+		}).fetch()) || undefined,
+		rundownLayoutId: String(params['layout'])
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1096,11 +1174,23 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	static getDerivedStateFromProps (props: Translated<IProps & ITrackedProps>, state: IState) {
-		let selectedLayout: RundownLayout | undefined = undefined
+		let selectedLayout: RundownLayoutBase | undefined = undefined
 
 		if (props.rundownLayouts) {
-			selectedLayout = props.rundownLayouts
-				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT) as RundownLayout | undefined
+			// first try to use the one selected by the user
+			if (props.rundownLayoutId) selectedLayout = props.rundownLayouts
+				.find((i) => i._id === props.rundownLayoutId)
+
+			// if couldn't find based on id, try matching part of the name
+			if (props.rundownLayoutId && !selectedLayout) selectedLayout = props.rundownLayouts
+				.find((i) => i.name.indexOf(props.rundownLayoutId!) >= 0)
+			
+			// if not, try the first RUNDOWN_LAYOUT available
+			if (!selectedLayout) selectedLayout = props.rundownLayouts
+				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+
+			// if still not found, use the first one
+			if (!selectedLayout) selectedLayout = props.rundownLayouts[0]
 		}
 
 		return {
@@ -1213,14 +1303,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		} else if (this.props.playlist &&
 			prevProps.playlist && !prevProps.playlist.active && this.props.playlist.active &&
 			this.props.playlist.nextPartId) {
-			scrollToPart(this.props.playlist.nextPartId).catch(() => { })
+			scrollToPart(this.props.playlist.nextPartId).catch(() => console.error)
 		} else if (
 			// after take
 			(this.props.playlist &&
 			prevProps.playlist && this.props.playlist.currentPartId !== prevProps.playlist.currentPartId &&
 			this.props.playlist.currentPartId && this.state.followLiveSegments)
 		) {
-			scrollToPart(this.props.playlist.currentPartId, true).catch(() => { })
+			scrollToPart(this.props.playlist.currentPartId, true).catch(() => console.error)
 		} else if (
 			// initial Rundown open
 			(this.props.playlist && this.props.playlist.currentPartId &&
@@ -1293,15 +1383,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		// if (piece && piece.content && (piece.content as VTContent).editable &&
-		// 	((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-		// 	((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
-		// 	this.setState({
-		// 		isClipTrimmerOpen: true,
-		// 		selectedPiece: piece
+		if (piece && piece.content && (piece.content as VTContent).editable &&
+			((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+			((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+			this.setState({
+				isClipTrimmerOpen: true,
+				selectedPiece: piece
 
-		// 	})
-		// }
+			})
+		}
 	}
 
 	componentWillUnmount () {
@@ -1384,7 +1474,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onGoToTop = () => {
-		scrollToPosition(0)
+		scrollToPosition(0).catch(console.error)
 
 		window.requestIdleCallback(() => {
 			this.setState({
@@ -1469,7 +1559,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}
 			}
 			if (segmentId) {
-				scrollToSegment(segmentId)
+				scrollToSegment(segmentId).catch(console.error)
 			}
 		}
 	}
@@ -1682,7 +1772,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			if (
 				this.props.playlist &&
 				this.props.studio &&
-				this.props.showStyleBase
+				this.props.showStyleBase &&
+				!this.props.onlyShelf
 			) {
 				return (
 					<RundownTimingProvider
@@ -1736,7 +1827,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 											}
 											{this.state.studioMode && this.props.casparCGPlayoutDevices &&
-												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', {device: i.name})}</button>)
+												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', { device: i.name })}</button>)
 											}
 										</SupportPopUp>
 									}
@@ -1812,6 +1903,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</div> */}
 					</RundownTimingProvider>
 				)
+			} else if (
+				this.props.playlist &&
+				this.props.studio &&
+				this.props.showStyleBase &&
+				this.props.onlyShelf
+			) {
+				return <ErrorBoundary>
+					<Shelf
+						ref={this.setInspectorDrawer}
+						isExpanded={this.state.isInspectorDrawerExpanded}
+						onChangeExpanded={this.onDrawerChangeExpanded}
+						segments={this.props.segments}
+						hotkeys={this.state.usedHotkeys}
+						playlist={this.props.playlist}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.state.studioMode}
+						onChangeBottomMargin={this.onChangeBottomMargin}
+						onRegisterHotkeys={this.onRegisterHotkeys}
+						rundownLayout={this.state.rundownLayout}
+						fullViewport={true} />
+				</ErrorBoundary>
 			} else {
 				return (
 					<div className='rundown-view rundown-view--unpublished'>

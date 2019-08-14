@@ -12,7 +12,16 @@ $inspector-drawer-tabs-height: 2.3em;
     right: 60px;
     bottom: 0;
     z-index: 291;
-    box-shadow: 0 0 20px #000;
+	box-shadow: 0 0 20px #000;
+	
+	&.full-viewport {
+		display: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		box-shadow: none;
+	}
 
 	.rundown-view__shelf__handle {
 		position: absolute;

@@ -276,10 +276,10 @@ export namespace ServerPlayoutAPI {
 			let previousPartEndState: PartEndState | undefined = undefined
 			if (blueprint.getEndStateForPart && previousPart) {
 				const time = getCurrentTime()
-				const activePieces = resolveActivePieces(previousPart, time)
+				const resolvedPieces = getResolvedPieces(previousPart)
 
 				const context = new RundownContext(rundown)
-				previousPartEndState = blueprint.getEndStateForPart(context, previousPart.previousPartEndState, activePieces)
+				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
 
@@ -1213,7 +1213,7 @@ function afterTake (
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
-		if (takePart.updateStoryStatus) {
+		if (takePart.shouldNotifyCurrentPlayingPart) {
 			IngestActions.notifyCurrentPlayingPart(rundown, takePart)
 
 		}

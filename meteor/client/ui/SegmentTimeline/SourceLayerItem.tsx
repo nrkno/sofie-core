@@ -24,8 +24,8 @@ import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialo
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate, InjectedTranslateProps } from 'react-i18next'
-import { getElementWidth } from '../../utils/dimensions';
-import { getElementDocumentOffset, Position } from '../../utils/positions';
+import { getElementWidth } from '../../utils/dimensions'
+import { getElementDocumentOffset, Position } from '../../utils/positions'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -69,7 +69,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 		this.state = {
 			showMiniInspector: false,
@@ -229,7 +229,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		return itemDuration
 	}
 
-	getItemStyle(): { [key: string]: string } {
+	getItemStyle (): { [key: string]: string } {
 		let piece = this.props.piece
 
 		let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
@@ -246,7 +246,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode
-				'left': (((piece.renderedInPoint || 0)) / (this.props.partDuration || 1) * 100).toString() + '%',
+				'left': ((piece.renderedInPoint || 0) / (this.props.partDuration || 1) * 100).toString() + '%',
 				'width': ((itemDuration) / (this.props.partDuration || 1) * 100).toString() + '%'
 			}
 		} else {
@@ -269,11 +269,11 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.checkElementWidth()
 	}
 
-	componentDidUpdate(prevProps: ISourceLayerItemProps) {
+	componentDidUpdate (prevProps: ISourceLayerItemProps) {
 		this._forceSizingRecheck = true
 
 		if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
@@ -391,7 +391,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		})
 	}
 
-	renderInsideItem(typeClass: string) {
+	renderInsideItem (typeClass: string) {
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
 				// case SourceLayerType.MIC:
@@ -456,7 +456,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		}
 	}
 
-	isInsideViewport() {
+	isInsideViewport () {
 		if (this.props.relative) {
 			return true
 		} else {
@@ -464,7 +464,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		}
 	}
 
-	render() {
+	render () {
 		if (this.isInsideViewport()) {
 
 			this._placeHolderElement = false

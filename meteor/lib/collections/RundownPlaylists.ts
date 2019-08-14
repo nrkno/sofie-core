@@ -8,6 +8,7 @@ import { Studio, Studios } from './Studios'
 import { Segments, Segment } from './Segments';
 import { Parts, Part } from './Parts';
 import { Pieces, Piece } from './Pieces';
+import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration';
 
 interface DBRundownPlaylist {
 	_id: string
@@ -66,6 +67,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartId: string | null
+
+	public previousPersistentState?: TimelinePersistentState
 
 	constructor (document: DBRundownPlaylist) {
 		_.each(_.keys(document), (key: keyof DBRundownPlaylist) => {

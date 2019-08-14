@@ -165,7 +165,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					{getAdminMode() ? 
+					{getAdminMode() ?
 						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
 						<div className='value'>{this.props.device.name}</div>
 					}

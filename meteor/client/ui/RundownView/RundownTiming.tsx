@@ -330,7 +330,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
 					currentRemaining = Math.max(0, (part.duration ||
-						(memberOfDisplayDurationGroup ? 
+						(memberOfDisplayDurationGroup ?
 							displayDurationFromGroup :
 							part.expectedDuration) ||
 						0)
@@ -351,9 +351,6 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 						|| part.expectedDuration
 						|| this.props.defaultDuration || 3000)
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
-				}
-				if (part._id === "pj9BSXQ9zGRJ7cl_eTjPlkNNL6w_") {
-					console.log(partDuration, partDisplayDuration, currentRemaining)
 				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
 					this.displayDurationGroups[part.displayDurationGroup] =

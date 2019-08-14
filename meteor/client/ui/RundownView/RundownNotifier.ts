@@ -372,7 +372,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
 				if (sourceLayer && part) {
-					// we don't want this to be in a non-reactive context, so we manage this computation manually					
+					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
 						if (mediaId) {
@@ -380,7 +380,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								mediaId: mediaId.toUpperCase()
 							})
 						}
-						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.config)
+						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(piece._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + piece.partId, getCurrentTime(), true, [
