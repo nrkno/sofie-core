@@ -1033,7 +1033,7 @@ interface IState {
 	usedHotkeys: Array<HotkeyDefinition>
 	isNotificationsCenterOpen: boolean
 	isSupportPanelOpen: boolean
-	isInspectorDrawerExpanded: boolean
+	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
@@ -1110,7 +1110,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
-	private _inspectorDrawer: WrappedShelf | null
+	private _inspectorShelf: WrappedShelf | null
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1155,7 +1155,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			]),
 			isNotificationsCenterOpen: false,
 			isSupportPanelOpen: false,
-			isInspectorDrawerExpanded: false,
+			isInspectorShelfExpanded: false,
 			isClipTrimmerOpen: false,
 			selectedPiece: undefined,
 			rundownLayout: undefined
@@ -1658,16 +1658,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onToggleHotkeys = () => {
-		if (!this.state.isInspectorDrawerExpanded) {
+		if (!this.state.isInspectorShelfExpanded) {
 			this.setState({
-				isInspectorDrawerExpanded: true
+				isInspectorShelfExpanded: true
 			})
-			if (this._inspectorDrawer) {
-				this._inspectorDrawer.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
+			if (this._inspectorShelf) {
+				this._inspectorShelf.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
 			}
 		} else {
 			this.setState({
-				isInspectorDrawerExpanded: false
+				isInspectorShelfExpanded: false
 			})
 		}
 	}
@@ -1724,14 +1724,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onDrawerChangeExpanded = (value: boolean) => {
+	onShelfChangeExpanded = (value: boolean) => {
 		this.setState({
-			isInspectorDrawerExpanded: value
+			isInspectorShelfExpanded: value
 		})
 	}
 
-	setInspectorDrawer = (isp: WrappedShelf | null) => {
-		this._inspectorDrawer = isp
+	setInspectorShelf = (isp: WrappedShelf | null) => {
+		this._inspectorShelf = isp
 	}
 
 	onTake = (e: any) => {
@@ -1854,9 +1854,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf
-									ref={this.setInspectorDrawer}
-									isExpanded={this.state.isInspectorDrawerExpanded}
-									onChangeExpanded={this.onDrawerChangeExpanded}
+									ref={this.setInspectorShelf}
+									isExpanded={this.state.isInspectorShelfExpanded}
+									onChangeExpanded={this.onShelfChangeExpanded}
 									segments={this.props.segments}
 									hotkeys={this.state.usedHotkeys}
 									rundown={this.props.rundown}
@@ -1893,9 +1893,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			) {
 				return <ErrorBoundary>
 					<Shelf
-						ref={this.setInspectorDrawer}
-						isExpanded={this.state.isInspectorDrawerExpanded}
-						onChangeExpanded={this.onDrawerChangeExpanded}
+						ref={this.setInspectorShelf}
+						isExpanded={this.state.isInspectorShelfExpanded}
+						onChangeExpanded={this.onShelfChangeExpanded}
 						segments={this.props.segments}
 						hotkeys={this.state.usedHotkeys}
 						rundown={this.props.rundown}
