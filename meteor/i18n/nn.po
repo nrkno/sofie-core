@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
 "POT-Creation-Date: 2019-08-13T12:29:55.324Z\n"
-"PO-Revision-Date: 2019-08-13 14:40+0200\n"
+"PO-Revision-Date: 2019-08-14 16:56+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -47,13 +47,13 @@ msgid "Save message and Deactivate Rundown"
 msgstr "Send evalueringa og deaktiver køyreplanen"
 
 msgid "No problems"
-msgstr "Inga problem"
+msgstr "Ingen problem"
 
 msgid "Something went wrong, but it didn't affect the output"
-msgstr "Noko gikk gale, men det virka ikkje inn på sendinga"
+msgstr "Noko gjekk gale, men det virka ikkje inn på sendinga"
 
 msgid "Something went wrong, and it affected the output"
-msgstr "Noko gikk gale, og det virka inn på sendinga"
+msgstr "Noko gjekk gale, og det virka inn på sendinga"
 
 msgid "Trim \"{{name}}\""
 msgstr ""
@@ -80,7 +80,7 @@ msgid "Connecting to the"
 msgstr "Koplar til"
 
 msgid "Cannot connect to the"
-msgstr "Kan ikkje koble til"
+msgstr "Kan ikkje kople til"
 
 msgid "Sofie Automation Server:"
 msgstr "Sofie:"
@@ -92,13 +92,13 @@ msgid "Your machine is offline and cannot connect to the"
 msgstr "Maskina di er fråkopla og kan ikkje kople til"
 
 msgid "Connected to the"
-msgstr "Tilkopla til"
+msgstr "Kopla til"
 
 msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
 msgid "Welcome to the Sofie Automation system"
-msgstr "Velkommen til Sofie"
+msgstr "Velkomen til Sofie"
 
 msgid "Sofie Automation version"
 msgstr "Sofie-versjon"
@@ -159,7 +159,6 @@ msgid ""
 msgstr ""
 "Er du sikker på at du vil synkronisere køyreplanen \"{{name}}\" med MOS?"
 
-#, fuzzy
 msgid "Re-sync with MOS"
 msgstr "Synkroniser med MOS"
 
@@ -242,7 +241,7 @@ msgid "Diff"
 msgstr "Skilnad"
 
 msgid "Expected End"
-msgstr "Forventa slutt"
+msgstr "Venta slutt"
 
 msgid "Take"
 msgstr "Take"
@@ -290,13 +289,11 @@ msgid ""
 "Are you sure you want to activate this one anyway?"
 msgstr ""
 
-#, fuzzy
 msgid "Activate Anyway"
-msgstr "Aktiver allikevel"
+msgstr "Aktiver likevel"
 
-#, fuzzy
 msgid "Failed to deactivate"
-msgstr "Kunne ikke deaktivere"
+msgstr "Kunne ikkje deaktivere"
 
 msgid ""
 "System was unable to deactivate existing rundowns. Please contact the system "
@@ -343,7 +340,7 @@ msgid "Store Snapshot"
 msgstr "Lagre snapshot"
 
 msgid "No actions available"
-msgstr "Inga køyreplanval tilgjengelege i påsynmodus"
+msgstr "Ingen køyreplanval tilgjengelege i påsynmodus"
 
 msgid "Error"
 msgstr "Feil"
@@ -377,7 +374,6 @@ msgstr ""
 msgid "Restart CasparCG Server"
 msgstr "Restart Caspar"
 
-#, fuzzy
 msgid "Do you want to restart CasparCG Server \"{{device}}\"?"
 msgstr "Er du sikker på at du vil restarte CasparCG Server \"{{device}}\"?"
 
@@ -388,9 +384,8 @@ msgstr ""
 msgid "CasparCG on device \"{{deviceName}}\" restarting..."
 msgstr ""
 
-#, fuzzy
 msgid "Show Hotkeys"
-msgstr "Vise hurtigtastar"
+msgstr "Vis hurtigtastar"
 
 msgid "Take a Snapshot"
 msgstr "Lagre eit snapshot"
@@ -398,7 +393,6 @@ msgstr "Lagre eit snapshot"
 msgid "Restart Playout"
 msgstr ""
 
-#, fuzzy
 msgid "Restart {{device}}"
 msgstr "Start {{device}} på nytt"
 
@@ -420,35 +414,31 @@ msgstr ""
 msgid "Mark rundown as unsynced"
 msgstr ""
 
-#, fuzzy
 msgid "Remove rundown"
-msgstr "Fjern kjøreplan"
+msgstr "Fjern køyreplan"
 
-#, fuzzy
 msgid ""
 "Do you really want to remove the rundown \"{{rundownName}}\"? This cannot be "
 "undone!"
 msgstr ""
-"Er du sikker på at du vil slette køyreplanen {{rundownName}} frå Sofie?"
+"Er du sikker på at du vil slette køyreplanen {{rundownName}} frå Sofie? "
+"Denne handlinga kan du ikkje angre!"
 
 msgid ""
 "The Rundown has been UNSYNCED from ENPS! No data updates will currently come "
 "through."
 msgstr ""
 
-#, fuzzy
-#| msgid "Re-sync Rundown"
 msgid "Re-Sync Rundown"
 msgstr "Tilbakestill køyreplanen"
 
-#, fuzzy
 msgid ""
 "Are you sure you want to re-sync the Rundown?\n"
 "(If the currently playing Part has been changed, this can affect the output)"
 msgstr ""
 "Er du sikker på at du vil gjenopprette synkronisering mot ENPS for denne "
-"kjøreplanen?\n"
-"(Dette kan påvirke gjennomføring av en pågående sending)"
+"køyreplanen?\n"
+"(Dette kan virke inn på pågåande sending)"
 
 msgid "Restart"
 msgstr "Restart"
@@ -708,7 +698,6 @@ msgid ""
 msgstr ""
 "Er du sikker på at du vil oppdatere blueprintet frå fila \"{{fileName}}\"?"
 
-#, fuzzy
 msgid "Blueprints updated successfully."
 msgstr "Blueprints ble oppdatert."
 
@@ -811,11 +800,9 @@ msgstr ""
 msgid "Target Storage"
 msgstr ""
 
-#, fuzzy
 msgid "Delete this Monitor?"
 msgstr "Slett denne monitoren?"
 
-#, fuzzy
 msgid "Are you sure you want to delete the monitor \"{{monitorId}}\"?"
 msgstr "Er du sikker på at du vil slette monitoren \"{{monitorId}}\"?"
 
@@ -828,7 +815,6 @@ msgstr ""
 msgid "Monitor ID"
 msgstr ""
 
-#, fuzzy
 msgid "Monitor Type"
 msgstr "Monitortype"
 
@@ -958,7 +944,6 @@ msgstr ""
 msgid "Interval"
 msgstr ""
 
-#, fuzzy
 msgid "Gateway URL"
 msgstr "Gateway-URL"
 
@@ -1145,7 +1130,6 @@ msgstr "Migreringa var vellukka!"
 msgid "All is well, go get a"
 msgstr "Alt er i orden, gå og ta deg ein"
 
-#, fuzzy
 msgid "New Layout"
 msgstr "Ny layout"
 
@@ -1155,7 +1139,6 @@ msgstr ""
 msgid "New Panel"
 msgstr ""
 
-#, fuzzy
 msgid "New Item"
 msgstr "Nytt element"
 
@@ -1195,9 +1178,8 @@ msgstr "Inkluder hurtigtastar"
 msgid "Filter Disabled"
 msgstr ""
 
-#, fuzzy
 msgid "Source Layer Types"
-msgstr "Kjeldelagstyper"
+msgstr "Kjeldelagstypar"
 
 msgid "Filter disabled"
 msgstr ""
@@ -1205,12 +1187,9 @@ msgstr ""
 msgid "Label contains"
 msgstr ""
 
-#, fuzzy
-#| msgid "Default layout"
 msgid "Default Layout"
 msgstr "Standardlayout"
 
-#, fuzzy
 msgid ""
 "Are you sure you want to upload the rundown layout from the file "
 "\"{{fileName}}\"?"
@@ -1223,7 +1202,6 @@ msgstr ""
 msgid "Failed to upload rundown layout: {{errorMessage}}"
 msgstr ""
 
-#, fuzzy
 msgid "Rundown Layouts"
 msgstr "Skuffoppsett"
 
@@ -1244,7 +1222,6 @@ msgid ""
 "{{value}}\"?"
 msgstr ""
 
-#, fuzzy
 msgid "Hotkeys"
 msgstr "Hurtigtastar"
 
@@ -1380,7 +1357,6 @@ msgstr "Utgangskanalar"
 msgid "Key"
 msgstr "Key"
 
-#, fuzzy
 msgid "Custom Hotkey Labels"
 msgstr "Eigendefinerte etikettar for hurtigtastar"
 
@@ -1404,15 +1380,11 @@ msgstr "Variantar"
 msgid "Restore from this Snapshot file?"
 msgstr "Gjenopprett ifrå denne snapshotfila?"
 
-#, fuzzy
-#| msgid ""
-#| "Are you sure you want to restore the system from the Snapshot file "
-#| "\"{{fileName}}\"?"
 msgid ""
 "Are you sure you want to restore the system from the snapshot file "
 "\"{{fileName}}\"?"
 msgstr ""
-"Er du sikker på at du vil gjenopprette systemet ifrå denne snapshotfila "
+"Er du sikker på at du vil gjenopprette systemet frå denne snapshotfila "
 "\"{{fileName}}\"?"
 
 msgid "Successfully restored snapshot"
@@ -1447,7 +1419,6 @@ msgstr "Lagre eit studiosnapshot utelukkande for \"{{studioName}}\""
 msgid "Restore from Snapshot File"
 msgstr "Gjenopprett ìfrå snapshotfil"
 
-#, fuzzy
 msgid "Upload Snapshot"
 msgstr "Last opp snapshot"
 
@@ -1475,7 +1446,6 @@ msgstr "CasparCG-kanal"
 msgid "The CasparCG channel to use (1 is the first)"
 msgstr ""
 
-#, fuzzy
 msgid "CasparCG Layer"
 msgstr "CasparCG-lag"
 
@@ -1524,7 +1494,6 @@ msgstr "Zoom-hastighet"
 msgid "Unknown Mapping"
 msgstr "Ukjend lag"
 
-#, fuzzy
 msgid "Channel: {{channel}}"
 msgstr "Kanal: {{channel}}"
 
@@ -1638,8 +1607,6 @@ msgstr ""
 msgid "Cannot play this AdLib becasue it is marked as Invalid"
 msgstr ""
 
-#, fuzzy
-#| msgid "Toggle Drawer"
 msgid "Toggle Shelf"
 msgstr "Skuff"
 
@@ -1760,7 +1727,6 @@ msgstr ""
 msgid "Abort All"
 msgstr ""
 
-#, fuzzy
 msgid "Restart All"
 msgstr "Restart alt"
 
@@ -1809,9 +1775,8 @@ msgstr "Opptak"
 msgid "Timeline"
 msgstr "Tidslinje"
 
-#, fuzzy
 msgid "User Log Player"
-msgstr "Brukarloggspiller"
+msgstr "Brukarloggspelar"
 
 msgid "A required setting is not configured"
 msgstr "Ei obligatorisk innstilling er ikkje konfigurert"
