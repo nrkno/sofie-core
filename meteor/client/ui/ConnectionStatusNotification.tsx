@@ -11,12 +11,14 @@ import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { TranslationFunction, translate } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
+import { notDeepEqual } from 'assert';
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
 	private _translator: TranslationFunction
+	private _serviceMessageRegistry: {[index: string]: ServiceMessage}
 
 	constructor (t: TranslationFunction) {
 		super()
@@ -30,14 +32,15 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			return this._notificationList
 		})
 
+		// internal registry for service messages
+		this._serviceMessageRegistry = {}
+
 		let lastNotificationId: string | undefined = undefined
 		let lastStatus: any = undefined
 
 		this.autorun(() => {
-			const connected = Meteor.status().connected
-			const status = Meteor.status().status
-			const reason = Meteor.status().reason
-			const retryTime = Meteor.status().retryTime
+			const meteorStatus = Meteor.status()
+			const cs = CoreSystem.findOne()
 
 			if (lastNotificationId) {
 				const buf = lastNotificationId
@@ -49,43 +52,10 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				}
 			}
 
-			const cs = CoreSystem.findOne()
-			let systemNotification: Notification | undefined = undefined
-			if (cs && cs.systemInfo && cs.systemInfo.enabled) {
-				systemNotification = new Notification(
-					Random.id(),
-					NoticeLevel.CRITICAL,
-					cs.systemInfo.message,
-					'SystemMessage',
-					undefined,
-					true,
-					undefined,
-					1000)
-			}
-
 			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
-
-			let newNotification = new Notification(
-				Random.id(),
-				this.getNoticeLevel(status),
-				this.getStatusText(status, reason, retryTime),
-				t('Sofie Automation Server'),
-				Date.now(),
-				!connected,
-				(status === 'failed' || status === 'waiting' || status === 'offline')
-				? [
-					{
-						label: 'Show issue',
-						type: 'default'
-					}
-				] : undefined,
-				-100)
-			newNotification.on('action', (notification, type, e) => {
-				switch (type) {
-					case 'default':
-						Meteor.reconnect()
-				}
-			})
+			
+			let systemNotification: Notification | undefined = createSystemNotification(cs)
+			let newNotification =  this.createNewNotification(meteorStatus)
 
 			if (newNotification.persistent) {
 				this._notificationList.set(_.compact([newNotification, systemNotification]))
@@ -95,6 +65,10 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 					NotificationCenter.push(newNotification)
 					lastNotificationId = newNotification.id
 				}
+			}
+
+			if (cs) {
+				this.updateServiceMessages(cs.serviceMessages)
 			}
 
 			lastStatus = status
@@ -118,6 +92,17 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 	}
 
+	private getNoticeLevelForCriticality(criticality:Criticality) {
+		switch(criticality) {
+			case Criticality.CRITICAL:
+				return NoticeLevel.CRITICAL
+			case Criticality.WARNING:
+				return NoticeLevel.WARNING
+			case Criticality.NOTIFICATION:
+				return NoticeLevel.NOTIFICATION
+		}
+	}
+
 	private getStatusText (
 		status: string,
 		reason: string | undefined,
@@ -128,7 +113,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			case 'connecting':
 				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>
 			case 'failed':
-				return <span>{t('Cannot connect to the')} {t('Sofie Automation Server:')}) + reason}</span>
+				return <span>{t('Cannot connect to the')} {t('Sofie Automation Server:')} + reason}</span>
 			case 'waiting':
 				return <span>{t('Reconnecting to the')} {t('Sofie Automation Server')} <MomentFromNow unit='seconds'>{retryTime}</MomentFromNow></span>
 			case 'offline':
@@ -138,7 +123,92 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 		return null
 	}
+
+	private createNewNotification(meteorStatus:DDP.DDPStatus):Notification {
+		const {status, reason, retryTime, connected} = meteorStatus
+		const notification = new Notification(
+			Random.id(),
+			this.getNoticeLevel(status),
+			this.getStatusText(status, reason, retryTime),
+			this._translator('Sofie Automation Server'),
+			Date.now(),
+			!connected,
+			(status === 'failed' || status === 'waiting' || status === 'offline')
+			? [
+				{
+					label: 'Show issue',
+					type: 'default'
+				}
+			] : undefined,
+			-100)
+	
+		notification.on('action', (notification, type, e) => {
+			switch (type) {
+				case 'default':
+					Meteor.reconnect()
+			}
+		})
+	
+		return notification
+	}
+
+	private updateServiceMessages(serviceMessages: {[index: string]: ServiceMessage}):void {
+		const systemMessageIds = Object.keys(serviceMessages)
+		
+		// remove from internal list where ids not in active list
+		Object.keys(this._serviceMessageRegistry).filter(id => systemMessageIds.indexOf(id) < 0)
+			.forEach(idToRemove => {
+				delete this._serviceMessageRegistry[idToRemove]
+				
+			})
+		
+		const localMessagesId = Object.keys(this._serviceMessageRegistry)
+		// add ids not found in internal list
+		systemMessageIds.filter(id => localMessagesId.indexOf(id) < 0)
+			.forEach(id => {
+				const newMessage = serviceMessages[id]
+				const notification = new Notification(
+					id,
+					this.getNoticeLevelForCriticality(newMessage.criticality),
+					newMessage.message,
+					newMessage.sender || '(service message)',
+					newMessage.timestamp.getMilliseconds()
+					)
+					
+				this._serviceMessageRegistry[id] = newMessage
+				NotificationCenter.push(notification)
+			})
+
+		// compare and update where ids are in both lists
+		systemMessageIds.filter(id => localMessagesId.indexOf(id) > -1)
+			.forEach(id => {
+				const current = serviceMessages[id]
+				// Nope, can't use that, throws error. Probably something in _ that's useful :)
+				if (notDeepEqual(current, this._serviceMessageRegistry[id])) {
+					this._serviceMessageRegistry[id] = current
+					// replace exisiting notification
+				}
+			})
+
+	}
 }
+
+function createSystemNotification(cs:ICoreSystem|undefined):Notification | undefined {
+	if (cs && cs.systemInfo && cs.systemInfo.enabled) {
+		return new Notification(
+			Random.id(),
+			NoticeLevel.CRITICAL,
+			cs.systemInfo.message,
+			'SystemMessage',
+			undefined,
+			true,
+			undefined,
+			1000)
+	}
+
+	return undefined
+}
+
 
 interface IProps {
 }
