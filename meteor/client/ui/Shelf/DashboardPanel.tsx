@@ -274,12 +274,32 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				return (
 					<div className='dashboard-panel'
 						style={{
-							width: (filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH,
-							height: (filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT,
-							left: filter.x >= 0 ? (filter.x * BUTTON_GRID_WIDTH) : undefined,
-							top: filter.y >= 0 ? (filter.y * BUTTON_GRID_HEIGHT) : undefined,
-							right: filter.x < 0 ? ((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) : undefined,
-							bottom: filter.y < 0 ? ((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) : undefined
+							width: filter.width >= 0 ?
+								(filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH :
+								undefined,
+							height: filter.height >= 0 ?
+								(filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT :
+								undefined,
+							left: filter.x >= 0 ?
+								(filter.x * BUTTON_GRID_WIDTH) :
+								filter.width < 0 ?
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									undefined,
+							top: filter.y >= 0 ?
+								(filter.y * BUTTON_GRID_HEIGHT) :
+								filter.height < 0 ?
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									undefined,
+							right: filter.x < 0 ?
+								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) :
+								filter.width < 0 ?
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									undefined,
+							bottom: filter.y < 0 ?
+								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) :
+								filter.height < 0 ?
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									undefined
 						}}
 					>
 						<h4 className='dashboard-panel__header'>
