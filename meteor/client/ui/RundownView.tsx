@@ -1855,10 +1855,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studio &&
+								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studio && this.props.playlistId &&
 									<ClipTrimDialog
 										studio={this.props.studio}
-										rundownId={this.props.playlistId}
+										playlistId={this.props.playlistId}
 										selectedPiece={this.state.selectedPiece}
 										onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>
@@ -1961,12 +1961,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 }
 )
 
-export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundownPlaylist: RundownPlaylist, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
+export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundownPlaylist: RundownPlaylist, result: UserActionAPI.ReloadRundownResponse): boolean {
 	let hasDoneSomething = false
 	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
 		hasDoneSomething = true
 		const notification = NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL,
-			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundown.name }),
+			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundownPlaylist.name }),
 			'userAction',
 			undefined,
 			true, [
@@ -1975,7 +1975,7 @@ export function handleRundownReloadResponse (t: i18next.TranslationFunction<any,
 					label: t('Mark rundown as unsynced'),
 					type: 'default',
 					action: () => {
-						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ rundown._id ], (err) => {
+						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ rundownPlaylist._id ], (err) => {
 							if (!err) {
 								notification.stop()
 							}
@@ -1988,10 +1988,10 @@ export function handleRundownReloadResponse (t: i18next.TranslationFunction<any,
 					action: () => {
 						doModalDialog({
 							title: rundownPlaylist.name,
-							message: t('Do you really want to remove the rundown "{{rundownName}}"? This cannot be undone!', { rundownName: rundown.name }),
+							message: t('Do you really want to remove the rundown "{{rundownName}}"? This cannot be undone!', { rundownName: rundownPlaylist.name }),
 							onAccept: () => {
 								// nothing
-								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ rundown._id ], (err) => {
+								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ rundownPlaylist._id ], (err) => {
 									if (!err) {
 										notification.stop()
 										window.location.assign(`/`)

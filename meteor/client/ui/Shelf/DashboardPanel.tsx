@@ -59,7 +59,7 @@ interface IDashboardPanelTrackedProps {
 
 export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio()
+		studio: props.playlist.getStudio()
 	})
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -97,25 +97,42 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			return state
 		}
 	}
-	
+
 	componentDidMount () {
-		this.subscribe(PubSub.segments, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.parts, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.adLibPieces, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-			rundownId: this.props.rundown._id
+		this.subscribe(PubSub.rundowns, {
+			playlistId: this.props.playlist._id
 		})
 		this.subscribe(PubSub.studios, {
-			_id: this.props.rundown.studioId
+			_id: this.props.playlist.studioId
 		})
-		this.subscribe(PubSub.showStyleBases, {
-			_id: this.props.rundown.showStyleBaseId
+		this.autorun(() => {
+			const rundowns = this.props.playlist.getRundowns()
+			const rundownIds = rundowns.map(i => i._id)
+			if (rundowns.length > 0) {
+				this.subscribe(PubSub.segments, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.parts, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.adLibPieces, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.showStyleBases, {
+					_id: rundowns[0].showStyleBaseId
+				})
+			}
 		})
 
 		this.refreshKeyboardHotkeys()
@@ -186,18 +203,18 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartId) {
 			if (!piece.isGlobal) {
 				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
 				])
 			} else if (piece.isGlobal && !piece.isSticky) {
 				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
 				])
 			} else if (piece.isSticky) {
 				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
-					this.props.rundown._id, piece.sourceLayerId
+					this.props.playlist._id, piece.sourceLayerId
 				])
 			}
 		}
@@ -206,9 +223,9 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id
+				this.props.playlist._id, this.props.playlist.currentPartId, sourceLayer._id
 			])
 		}
 	}
@@ -268,7 +285,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
-			if (!this.props.uiSegments || !this.props.rundown) {
+			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
 			} else {
 				return (
@@ -297,7 +314,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												layer={this.state.sourceLayers[item.sourceLayerId]}
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
-												rundown={this.props.rundown}
+												playlist={this.props.playlist}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											>
 												{item.name}

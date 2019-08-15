@@ -184,7 +184,7 @@ class RundownViewNotifier extends WithManagedTracker {
 											onAccept: (event) => {
 												doUserAction(t, event, UserActionAPI.methods.resyncRundown, [ rundown._id ], (err, response) => {
 													if (!err && response) {
-														handleRundownReloadResponse(t, playlist, rundown, response.result)
+														handleRundownReloadResponse(t, playlist, response.result)
 													}
 												})
 											}
