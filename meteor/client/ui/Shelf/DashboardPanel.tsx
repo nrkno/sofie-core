@@ -68,9 +68,15 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		startedPlayback: {
 			$exists: true
 		},
-		playoutDuration: {
-			$exists: false
-		},
+		$or: [{
+			stoppedPlayback: {
+				$ne: 0
+			}
+		}, {
+			stoppedPlayback: {
+				$exists: false
+			}
+		}],
 		adLibSourceId: {
 			$exists: true
 		}
@@ -128,9 +134,6 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			rundownId: this.props.rundown._id,
 			startedPlayback: {
 				$exists: true
-			},
-			playoutDuration: {
-				$exists: false
 			},
 			adLibSourceId: {
 				$exists: true
