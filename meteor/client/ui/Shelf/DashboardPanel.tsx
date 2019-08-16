@@ -34,6 +34,7 @@ import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi
 import { DashboardPieceButton } from './DashboardPieceButton';
 import { ensureHasTrailingSlash } from '../../lib/lib';
 import { Studio } from '../../../lib/collections/Studios';
+import { Piece, Pieces } from '../../../lib/collections/Pieces';
 
 interface IState {
 	outputLayers: {
@@ -55,11 +56,29 @@ interface IDashboardPanelProps {
 
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
+	unfinishedPieces: {
+		[key: string]: Piece[]
+	}
 }
 
 export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
+		rundownId: props.rundown._id,
+		partId: props.rundown.currentPartId,
+		startedPlayback: {
+			$exists: true
+		},
+		playoutDuration: {
+			$exists: false
+		},
+		adLibSourceId: {
+			$exists: true
+		}
+	}).fetch() : [], (piece) => piece.adLibSourceId)
+
 	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio()
+		studio: props.rundown.getStudio(),
+		unfinishedPieces
 	})
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -105,6 +124,18 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		this.subscribe(PubSub.parts, {
 			rundownId: this.props.rundown._id
 		})
+		this.subscribe(PubSub.pieces, {
+			rundownId: this.props.rundown._id,
+			startedPlayback: {
+				$exists: true
+			},
+			playoutDuration: {
+				$exists: false
+			},
+			adLibSourceId: {
+				$exists: true
+			}
+		})
 		this.subscribe(PubSub.adLibPieces, {
 			rundownId: this.props.rundown._id
 		})
@@ -134,6 +165,13 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
 
 		this.usedHotkeys.length = 0
+	}
+
+	isAdLibOnAir (adLib: AdLibPieceUi) {
+		if (this.props.unfinishedPieces[adLib._id] && this.props.unfinishedPieces[adLib._id].length > 0) {
+			return true
+		}
+		return false
 	}
 
 	refreshKeyboardHotkeys () {
@@ -167,6 +205,57 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				}
 			})
 		}
+
+		if (this.props.rundownBaselineAdLibs) {
+			this.props.rundownBaselineAdLibs.forEach((item) => {
+				if (item.hotkey) {
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
+						this.onToggleAdLib(item, false, e)
+					}, 'keyup')
+					this.usedHotkeys.push(item.hotkey)
+
+					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
+					if (sourceLayer && sourceLayer.isQueueable) {
+						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleAdLib(item, true, e)
+						}, 'keyup')
+						this.usedHotkeys.push(queueHotkey)
+					}
+				}
+			})
+		}
+
+		if (this.props.sourceLayerLookup) {
+			_.each(this.props.sourceLayerLookup, (item) => {
+				if (item.clearKeyboardHotkey) {
+					item.clearKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onClearAllSourceLayer(item, e)
+						}, 'keyup')
+						this.usedHotkeys.push(element)
+					})
+
+				}
+
+				if (item.isSticky && item.activateStickyKeyboardHotkey) {
+					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleSticky(item._id, e)
+						}, 'keyup')
+						this.usedHotkeys.push(element)
+					})
+				}
+			})
+		}
 	}
 
 	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
@@ -181,25 +270,37 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			return
 		}
 
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
-			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
+		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+
+		if (queue && sourceLayer && sourceLayer.isQueueable) {
 			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			if (!piece.isGlobal) {
-				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
-				])
-			} else if (piece.isGlobal && !piece.isSticky) {
-				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
-				])
-			} else if (piece.isSticky) {
-				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
-					this.props.rundown._id, piece.sourceLayerId
-				])
+			if (!this.isAdLibOnAir(piece)) {
+				if (!piece.isGlobal) {
+					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
+						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+					])
+				} else if (piece.isGlobal && !piece.isSticky) {
+					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
+						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+					])
+				} else if (piece.isSticky) {
+					this.onToggleSticky(piece.sourceLayerId, e)
+				}
+			} else {
+				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+					this.onClearAllSourceLayer(sourceLayer, e)
+				}
 			}
+		}
+	}
+
+	onToggleSticky = (sourceLayerId: string, e: any) => {
+		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.rundown._id, sourceLayerId])
 		}
 	}
 
@@ -213,7 +314,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
-	matchFilter(item: AdLibPieceUi) {
+	matchFilter (item: AdLibPieceUi) {
 		if (!this.props.filter) return true
 		const liveSegment = this.props.uiSegments.find(i => i.isLive === true)
 		const uppercaseLabel = item.name.toUpperCase()
@@ -318,6 +419,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
 												rundown={this.props.rundown}
+												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											>
 												{item.name}

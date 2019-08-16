@@ -23,21 +23,22 @@ export interface IAdLibListItem {
 	invalid?: boolean
 }
 
-interface IListViewItemProps {
+interface IDashboardButtonProps {
 	item: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	rundown: Rundown
 	mediaPreviewUrl?: string
+	isOnAir?: boolean
 }
 
-interface IAdLibListItemTrackedProps {
+interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
 	metadata: MediaObject | null
 }
 
-export const DashboardPieceButton = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
+export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
 	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
@@ -46,10 +47,10 @@ export const DashboardPieceButton = translateWithTracker<IListViewItemProps, {},
 		status,
 		metadata
 	}
-})(class extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
+})(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
 
-	constructor(props: IListViewItemProps) {
+	constructor(props: IDashboardButtonProps) {
 		super(props)
 	}
 
@@ -107,9 +108,12 @@ export const DashboardPieceButton = translateWithTracker<IListViewItemProps, {},
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
 				'invalid': this.props.item.invalid,
+
 				'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN
+				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
+
+				'live': this.props.isOnAir
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
 				>
