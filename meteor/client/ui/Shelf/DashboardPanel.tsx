@@ -70,7 +70,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		},
 		$or: [{
 			stoppedPlayback: {
-				$ne: 0
+				$eq: 0
 			}
 		}, {
 			stoppedPlayback: {
@@ -137,7 +137,16 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			},
 			adLibSourceId: {
 				$exists: true
-			}
+			},
+			$or: [{
+				stoppedPlayback: {
+					$eq: 0
+				}
+			}, {
+				stoppedPlayback: {
+					$exists: false
+				}
+			}]
 		})
 		this.subscribe(PubSub.adLibPieces, {
 			rundownId: this.props.rundown._id
