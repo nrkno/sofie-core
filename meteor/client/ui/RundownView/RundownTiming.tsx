@@ -302,7 +302,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 						- (now - lastStartedPlayback)) + playOffset
 					partDuration = Math.max((part.duration || part.expectedDuration || 0),
 						(now - lastStartedPlayback))
-					partDisplayDuration = Math.max((part.duration || displayDurationFromGroup || part.expectedDuration || 0),
+					partDisplayDuration = Math.max((part.duration || displayDurationFromGroup || part.expectedDuration || this.props.defaultDuration || 3000),
 						(now - lastStartedPlayback)) + playOffset
 					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
 				} else {
@@ -310,7 +310,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					partDisplayDuration = Math.max(0, part.duration && part.duration + playOffset
 						|| displayDurationFromGroup
 						|| part.expectedDuration
-						|| 0)
+						|| this.props.defaultDuration || 3000)
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
@@ -326,7 +326,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				this.partDurations[part._id] = partDuration
 				this.partDisplayDurations[part._id] = partDisplayDuration
 				startsAtAccumulator += this.partDurations[part._id]
-				displayStartsAtAccumulator += partDisplayDuration || this.props.defaultDuration || 3000
+				displayStartsAtAccumulator += partDisplayDuration // || this.props.defaultDuration || 3000
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')

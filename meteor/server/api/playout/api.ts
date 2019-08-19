@@ -11,8 +11,8 @@ methods[PlayoutAPI.methods.rundownPrepareForBroadcast] = (rundownId: string) => 
 methods[PlayoutAPI.methods.rundownResetRundown] = (rundownId: string) => {
 	return ServerPlayoutAPI.resetRundown(rundownId)
 }
-methods[PlayoutAPI.methods.rundownResetAndActivate] = (rundownId: string) => {
-	return ServerPlayoutAPI.resetAndActivateRundown(rundownId)
+methods[PlayoutAPI.methods.rundownResetAndActivate] = (rundownId: string, rehearsal?: boolean) => {
+	return ServerPlayoutAPI.resetAndActivateRundown(rundownId, rehearsal)
 }
 methods[PlayoutAPI.methods.rundownActivate] = (rundownId: string, rehearsal: boolean) => {
 	return ServerPlayoutAPI.activateRundown(rundownId, rehearsal)

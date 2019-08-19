@@ -7,7 +7,6 @@ import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import Moment from 'react-moment'
@@ -41,12 +40,12 @@ import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
@@ -54,6 +53,8 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import * as i18next from 'i18next'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -75,12 +76,16 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 
 	componentDidMount () {
 		this.keyboardFocusInterval = Meteor.setInterval(this.checkFocus, 3000)
-		$(document.body).on('focusin mousedown focus', this.checkFocus)
+		document.body.addEventListener('focusin', this.checkFocus)
+		document.body.addEventListener('focus', this.checkFocus)
+		document.body.addEventListener('mousedown', this.checkFocus)
 	}
 
 	componentWillUnmount () {
 		Meteor.clearInterval(this.keyboardFocusInterval)
-		$(document.body).off('focusin mousedown focus', this.checkFocus)
+		document.body.removeEventListener('focusin', this.checkFocus)
+		document.body.removeEventListener('focus', this.checkFocus)
+		document.body.removeEventListener('mousedown', this.checkFocus)
 	}
 
 	checkFocus = () => {
@@ -762,10 +767,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	reloadRundown = (e: any, changeRehearsal?: boolean) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err) => {
-				if (!err) {
-					if (this.props.rundown && this.props.rundown.nextPartId) {
-						scrollToPart(this.props.rundown.nextPartId)
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err, response) => {
+				console.log('aaa', err, response)
+				if (!err && response) {
+					if (!handleRundownReloadResponse(t, this.props.rundown, response.result)) {
+						if (this.props.rundown && this.props.rundown.nextPartId) {
+							scrollToPart(this.props.rundown.nextPartId)
+						}
 					}
 				}
 			})
@@ -969,6 +977,7 @@ interface ITrackedProps {
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
+	casparCGPlayoutDevices?: PeripheralDevice[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -994,7 +1003,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		studio: studio,
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 		rundownLayouts: rundown && RundownLayouts.find({
-			showStyleBaseId: rundown.showStyleBaseId }).fetch()
+			showStyleBaseId: rundown.showStyleBaseId }).fetch(),
+		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
+			parentDeviceId: {
+				$in: PeripheralDevices.find({
+					studioId: studio._id
+				}).fetch().map(i => i._id)
+			},
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			subType: TSR_DeviceType.CASPARCG
+		}).fetch()) || undefined
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1119,8 +1137,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
-		$(window).on('scroll', this.onWindowScroll)
+		document.body.classList.add('dark', 'vertical-overflow-only')
+		window.addEventListener('scroll', this.onWindowScroll)
+
 		let preventDefault = (e) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
@@ -1174,9 +1193,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
 			this.state.studioMode !== prevState.studioMode) {
 			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
-				$(window).on('beforeunload', this.onBeforeUnload)
+				window.addEventListener('beforeunload', this.onBeforeUnload)
 			} else {
-				$(window).off('beforeunload', this.onBeforeUnload)
+				window.removeEventListener('beforeunload', this.onBeforeUnload)
 			}
 		}
 
@@ -1245,9 +1264,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	componentWillUnmount () {
 		this._cleanUp()
-		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
-		$(window).off('scroll', this.onWindowScroll)
-		$(window).off('beforeunload', this.onBeforeUnload)
+		document.body.classList.remove('dark', 'vertical-overflow-only')
+		window.removeEventListener('scroll', this.onWindowScroll)
+		window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
@@ -1302,8 +1321,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onWindowScroll = (e: JQuery.Event) => {
-		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
+	onWindowScroll = (e: Event) => {
+		const isAutoScrolling = document.body.classList.contains('auto-scrolling')
 		if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
 			this.setState({
 				followLiveSegments: false
@@ -1542,6 +1561,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onRestartCasparCG = (device: PeripheralDevice) => {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Restart CasparCG Server'),
+			message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
+			onAccept: (event: any) => {
+
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
+					if (err) {
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
+					} else {
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
+					}
+				})
+			},
+		})
+	}
+
 	onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const { t } = this.props
 		if (this.props.rundown) {
@@ -1632,6 +1672,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 											<button className='btn btn-primary' onClick={this.onTakeRundownSnapshot}>{t('Take a Snapshot')}</button>
 											{this.state.studioMode &&
 												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+											}
+											{this.state.studioMode && this.props.casparCGPlayoutDevices &&
+												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', {device: i.name})}</button>)
 											}
 										</SupportPopUp>
 									}
@@ -1743,3 +1786,49 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 }
 )
+
+export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
+	let hasDoneSomething = false
+	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
+		hasDoneSomething = true
+		const notification = NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL,
+			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundown.name }),
+			'userAction',
+			undefined,
+			true, [
+				// actions:
+				{
+					label: t('Mark rundown as unsynced'),
+					type: 'default',
+					action: () => {
+						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ rundown._id ], (err) => {
+							if (!err) {
+								notification.stop()
+							}
+						})
+					}
+				},
+				{
+					label: t('Remove rundown'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: rundown.name,
+							message: t('Do you really want to remove the rundown "{{rundownName}}"? This cannot be undone!', { rundownName: rundown.name }),
+							onAccept: () => {
+								// nothing
+								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ rundown._id], (err) => {
+									if (!err) {
+										notification.stop()
+										window.location.assign(`/`)
+									}
+								})
+							},
+						})
+					}
+				}
+			]
+		))
+	}
+	return hasDoneSomething
+}

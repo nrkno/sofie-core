@@ -1,4 +1,4 @@
-module.exports = {
+const commonConfig = {
 	modulePaths: [
 		'<rootDir>/node_modules/',
 		'<rootDir>/node_modules/jest-meteor-stubs/lib/',
@@ -26,18 +26,13 @@ module.exports = {
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest'
 	},
-	testMatch: [
-		'**/__tests__/**/*.(spec|test).(ts|js)',
-		'!.meteor/*.*'
-	],
-	setupFilesAfterEnv : ['./__mocks__/_setupMocks.ts'],
-	testEnvironment: 'node',
+	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
 	coverageThreshold: {
 		global: {
-		  branches: 0,
-		  functions: 0,
-		  lines: 0,
-		  statements: 0
+			branches: 0,
+			functions: 0,
+			lines: 0,
+			statements: 0
 		}
 	},
 	coverageDirectory: "./.coverage/",
@@ -52,5 +47,35 @@ module.exports = {
 	collectCoverage: false,
 	watchPathIgnorePatterns: [
 		'/.meteor/'
+	]
+}
+
+module.exports = {
+	projects: [
+		Object.assign({}, commonConfig, {
+			displayName: 'client',
+			testMatch: [
+				'<rootDir>/client/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/client/**/__tests__/**/*.(spec|test).(ts|js)',
+				'!.meteor/*.*'
+			],
+			testEnvironment: 'jsdom'
+		}), Object.assign({}, commonConfig, {
+			displayName: 'lib',
+			testMatch: [
+				'<rootDir>/lib/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/lib/**/__tests__/**/*.(spec|test).(ts|js)',
+				'!.meteor/*.*'
+			],
+			testEnvironment: 'node'
+		}), Object.assign({}, commonConfig, {
+			displayName: 'server',
+			testMatch: [
+				'<rootDir>/server/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/server/**/__tests__/**/*.(spec|test).(ts|js)',
+				'!.meteor/*.*'
+			],
+			testEnvironment: 'node'
+		})
 	]
 }

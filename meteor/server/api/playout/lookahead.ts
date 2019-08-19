@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { LookaheadMode, TimelineObjectCoreExt, Timeline as TimelineTypes } from 'tv-automation-sofie-blueprints-integration'
 import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -15,15 +15,15 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 	const currentPart = activeRundown.currentPartId ? rundownData.partsMap[activeRundown.currentPartId] : undefined
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
-	_.each(studio.mappings || {}, (m, l) => {
+	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
 
-		const lookaheadObjs = findLookaheadForlayer(rundownData, l, m.lookahead)
+		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead)
 		if (lookaheadObjs.length === 0) {
 			return
 		}
 
 		for (let i = 0; i < lookaheadObjs.length; i++) {
-			const r = clone(lookaheadObjs[i].obj) as TimelineObjGeneric
+			const obj = clone(lookaheadObjs[i].obj) as TimelineObjGeneric
 
 			let enable: TimelineTypes.TimelineEnable = {
 				start: 1 // Absolute 0 without a group doesnt work
@@ -36,24 +36,24 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 				const startOffset = prevHasDelayFlag ? 1000 : 0
 				enable.start = `#${prevObj.id}.start + ${startOffset}`
 			}
-			if (!r.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
+			if (!obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			const finiteDuration = lookaheadObjs[i].partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && lookaheadObjs[i].partId === activeRundown.nextPartId)
 			enable.end = finiteDuration ? `#${lookaheadObjs[i].obj.id}.start` : undefined
 
-			r.id = `lookahead_${i}_${r.id}`
-			r.priority = 0.1
-			r.enable = enable
-			r.isLookahead = true
-			delete r.keyframes
-			delete r.inGroup // force it to be cleared
+			obj.id = `lookahead_${i}_${obj.id}`
+			obj.priority = 0.1
+			obj.enable = enable
+			obj.isLookahead = true
+			delete obj.keyframes
+			delete obj.inGroup // force it to be cleared
 
-			if (m.lookahead === LookaheadMode.PRELOAD) {
-				r.lookaheadForLayer = r.layer
-				r.layer += '_lookahead'
+			if (mapping.lookahead === LookaheadMode.PRELOAD) {
+				obj.lookaheadForLayer = obj.layer
+				obj.layer += '_lookahead'
 			}
 
-			timelineObjs.push(r)
+			timelineObjs.push(obj)
 		}
 	})
 	return timelineObjs

@@ -1,10 +1,8 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
+import * as Velocity from 'velocity-animate'
 import * as ClassNames from 'classnames'
-import {
-	Route
-} from 'react-router-dom'
+import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Studios, Studio } from '../../../lib/collections/Studios'
@@ -69,7 +67,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	private checkWindowScroll: number | null = null
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
 			subsReady: false
@@ -95,7 +93,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	componentWillMount () {
+	componentWillMount() {
 		this.subscribe('rundowns', _.extend({
 			active: true
 		}, this.props.studioId ? {
@@ -116,12 +114,12 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		})
 	}
 
-	componentDidUpdate () {
-		$(document.body).addClass(['dark', 'xdark', 'vertical-overflow-only'])
+	componentDidUpdate() {
+		document.body.classList.add('dark', 'xdark', 'vertical-overflow-only')
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
-	checkScrollToCurrent () {
+	checkScrollToCurrent() {
 		let rundownId = this.props.rundown && this.props.rundown._id
 		let rundown = Rundowns.findOne(rundownId || '')
 		if (this.configOptions.followTake) {
@@ -135,45 +133,43 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}
 		}
 	}
-	scrollToCurrent () {
-		const elementPosition = $('.prompter .current').offset()
-		if (elementPosition) {
-			let scrollTop = elementPosition.top // $('html,body').scrollTop()
+	scrollToCurrent() {
+		const current = document.querySelector('.prompter .current')
 
-			$('html,body').animate({
-				scrollTop: Math.max(0, scrollTop)
+		if (current) {
+			const { top } = current.getBoundingClientRect()
+
+			Velocity(document.body, {
+				scrollTop: Math.max(0, top)
 			}, 300)
 		}
 	}
-	scrollToNext () {
-		const elementPosition = $('.prompter .next').offset()
-		if (elementPosition) {
-			let scrollTop = elementPosition.top // $('html,body').scrollTop()
+	scrollToNext() {
+		const next = document.querySelector('.prompter .next')
 
-			$('html,body').animate({
-				scrollTop: Math.max(0, scrollTop)
+		if (next) {
+			const { top } = next.getBoundingClientRect()
+
+			Velocity(document.body, {
+				scrollTop: Math.max(0, top)
 			}, 300)
 		}
 	}
-	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
+	findAnchorPosition(startY: number, endY: number, sortDirection: number = 1): number | null {
 		let foundPositions: number[] = []
-		_.find($('.prompter .scroll-anchor'), el => {
-			const offset = $(el).offset()
-			if (
-				offset &&
-				(startY === -1 || offset.top > startY) &&
-				(endY === -1 	|| offset.top <= endY)
-			) {
-				foundPositions.push(offset.top)
-				return true
+		const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+
+		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
+			const { top } = anchor.getBoundingClientRect()
+			if ((startY === -1 || top > startY) &&
+				(endY === -1 || top <= endY)) {
+				foundPositions.push(top)
 			}
 		})
+
 		foundPositions = _.sortBy(foundPositions, v => sortDirection * v)
 
 		return foundPositions[0] || null
-	}
-	getScrollPosition (): number | undefined {
-		return window.scrollY || window.pageYOffset || (document.documentElement || { scrollTop: undefined }).scrollTop
 	}
 	onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
@@ -189,82 +185,82 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 	checkCurrentTakeMarkers = () => {
+		const rundownId = this.props.rundown && this.props.rundown._id
+		const rundown = Rundowns.findOne(rundownId || '')
 
-		let rundownId = this.props.rundown && this.props.rundown._id
-		let rundown = Rundowns.findOne(rundownId || '')
+		if (rundown !== undefined) {
 
-		if (rundown) {
-
-			const positionTop = this.getScrollPosition() || 0
+			const positionTop = window.scrollY
 			const positionBottom = positionTop + window.innerHeight
 
-			const anchors = $('.scroll-anchor')
+			let currentPartElement: Element | null = null
+			let currentPartElementAfter: Element | null = null
+			let nextPartElementAfter: Element | null = null
 
-			let currentPartElement: JQuery<HTMLElement> | null = null
-			let currentPartElementAfter: JQuery<HTMLElement> | null = null
-			let nextPartElement: JQuery<HTMLElement> | null = null
-			let nextPartElementAfter: JQuery<HTMLElement> | null = null
+			const anchors: Array<Element> = Array.from(document.querySelectorAll('.scroll-anchor'))
 
-			for (let i = 0; i < anchors.length; i++) {
-				const el = anchors[i]
-				const next = anchors[i + 1]
+			for (let index = 0; index < anchors.length; index++) {
+				const current = anchors[index]
+				const next = index + 1 < anchors.length ? anchors[index + 1] : null;
 
-				if (rundown.currentPartId && el.className.match('.part-' + rundown.currentPartId)) {
-					currentPartElement = $(el)
-					currentPartElementAfter = $(next) || null
+				if (rundown.currentPartId && current.classList.contains(`part-${rundown.currentPartId}`)) {
+					currentPartElement = current
+					currentPartElementAfter = next
 				}
-				if (rundown.nextPartId && el.className.match('.part-' + rundown.nextPartId)) {
-					nextPartElement = $(el)
-					nextPartElementAfter = $(next) || null
+				if (rundown.nextPartId && current.classList.contains(`part-${rundown.nextPartId}`)) {
+					nextPartElementAfter = next
 				}
 			}
 
-			const currentPositionStart 	= currentPartElement 		? (currentPartElement.offset() 		|| { top: undefined }).top : null
-			const currentPositionEnd 	= currentPartElementAfter 	? (currentPartElementAfter.offset() 	|| { top: undefined }).top : null
+			const currentPositionStart = currentPartElement ? currentPartElement.getBoundingClientRect().top + positionTop : null
+			const currentPositionEnd = currentPartElementAfter ? currentPartElementAfter.getBoundingClientRect().top + positionTop : null
 
-			// const nextPositionStart 	= nextPartElement 			? (nextPartElement.offset() 		|| {top: undefined}).top : null
-			const nextPositionEnd 		= nextPartElementAfter 		? (nextPartElementAfter.offset() 	|| { top: undefined }).top : null
+			const nextPositionEnd = nextPartElementAfter ? nextPartElementAfter.getBoundingClientRect().top + positionTop : null
 
-			if (currentPositionEnd && currentPositionEnd < positionTop) {
-				// Display take "^" indicator
-				$('.take-indicator').toggleClass('hidden', false).toggleClass('top', true)
-			} else if (currentPositionStart && currentPositionStart > positionBottom) {
-				// Display take "v" indicator
-				$('.take-indicator').toggleClass('hidden', false).toggleClass('top', false)
-			} else {
-				$('.take-indicator').toggleClass('hidden', true)
+			const takeIndicator = document.querySelector('.take-indicator')
+			if (takeIndicator) {
+				if (currentPositionEnd && currentPositionEnd < positionTop) {
+					// Display take "^" indicator
+					takeIndicator.classList.remove('hidden')
+					takeIndicator.classList.add('top')
+				} else if (currentPositionStart && currentPositionStart > positionBottom) {
+					// Display take "v" indicator
+					takeIndicator.classList.remove('hidden', 'top')
+				} else {
+					takeIndicator.classList.add('hidden')
+				}
 			}
 
-			if (nextPositionEnd && nextPositionEnd < positionTop) {
-				// Display next "^" indicator
-				$('.next-indicator').toggleClass('hidden', false).toggleClass('top', true)
-			// } else if (nextPositionStart && nextPositionStart > positionBottom) {
-				// Don't display next "v" indicator
-				// $('.next-indicator').toggleClass('hidden', false).toggleClass('top', false)
-			} else {
-				$('.next-indicator').toggleClass('hidden', true)
+			const nextIndicator = document.querySelector('.take-indicator')
+			if (nextIndicator) {
+				if (nextPositionEnd && nextPositionEnd < positionTop) {
+					// Display next "^" indicator
+					nextIndicator.classList.remove('hidden')
+					nextIndicator.classList.add('top')
+				} else {
+					nextIndicator.classList.add('hidden')
+				}
 			}
 		}
 	}
 
-	componentDidMount () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+	componentDidMount() {
+		document.body.classList.add('dark', 'vertical-overflow-only')
 		window.addEventListener('scroll', this.onWindowScroll)
 		this.isMounted0 = true
 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
-	componentWillUnmount () {
+	componentWillUnmount() {
 		super.componentWillUnmount()
 
-		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
+		document.body.classList.remove('dark', 'vertical-overflow-only')
 		window.removeEventListener('scroll', this.onWindowScroll)
 		this.isMounted0 = false
-
 	}
 
-	renderMessage (message: string) {
+	renderMessage(message: string) {
 		const { t } = this.props
 
 		return (
@@ -285,7 +281,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
 		return <React.Fragment>
@@ -296,15 +292,15 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 					<div className='rundown-view rundown-view--loading' >
 						<Spinner />
 					</div> :
-				(
-					this.props.rundown ?
-						<Prompter rundownId={this.props.rundown._id} config={this.configOptions} /> :
-					this.props.studio ?
-						this.renderMessage(t('There is no rundown active in this studio.')) :
-					this.props.studioId ?
-						this.renderMessage(t('This studio doesn\'t exist.')) :
-					this.renderMessage(t('There are no active rundowns.'))
-				)
+					(
+						this.props.rundown ?
+							<Prompter rundownId={this.props.rundown._id} config={this.configOptions} /> :
+							this.props.studio ?
+								this.renderMessage(t('There is no rundown active in this studio.')) :
+								this.props.studioId ?
+									this.renderMessage(t('This studio doesn\'t exist.')) :
+									this.renderMessage(t('There are no active rundowns.'))
+					)
 			}
 		</React.Fragment>
 	}
@@ -319,8 +315,8 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
-		studioId: studioId
-	}))
+			studioId: studioId
+		}))
 
 	return {
 		rundown,
@@ -357,25 +353,25 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
 			subsReady: false
 		}
 	}
-	componentWillUnmount () {
+	componentWillUnmount() {
 		super.componentWillUnmount()
 	}
-	componentWillMount () {
+	componentWillMount() {
 
-		this.subscribe('rundowns', 	{ _id: 				this.props.rundownId })
-		this.subscribe('segments', 			{ rundownId: 	this.props.rundownId })
-		this.subscribe('parts', 		{ rundownId: 	this.props.rundownId })
-		this.subscribe('pieces', 	{ rundownId: 	this.props.rundownId })
+		this.subscribe('rundowns', { _id: this.props.rundownId })
+		this.subscribe('segments', { rundownId: this.props.rundownId })
+		this.subscribe('parts', { rundownId: this.props.rundownId })
+		this.subscribe('pieces', { rundownId: this.props.rundownId })
 
 	}
 
-	renderPrompterData (prompterData: PrompterData) {
+	renderPrompterData(prompterData: PrompterData) {
 
 		let divs: any[] = []
 		let previousSegmentId = ''
@@ -386,8 +382,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			currentNextLine = (
 				this.props.currentPartId === line.partId ? 'current' :
-				this.props.nextPartId 	=== line.partId ? 'next' :
-				null
+					this.props.nextPartId === line.partId ? 'next' :
+						null
 			)
 
 			if (line.segmentId !== previousSegmentId) {
@@ -404,7 +400,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							currentNextLine
 						)}
 					>
-						{ segment ? segment.name : 'N/A' }
+						{segment ? segment.name : 'N/A'}
 					</div>
 				)
 			} else if (line.partId !== previousPartId) {
@@ -444,7 +440,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		})
 		return divs
 	}
-	render () {
+	render() {
 		const { t } = this.props
 
 		if (this.props.prompterData && this.props.rundown) {
@@ -452,11 +448,11 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				<div
 					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
 					style={{
-						fontSize:		(this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined),
-						marginLeft:		(this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
-						marginRight:	(this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
-						marginTop:		(this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
-						marginBottom:	(this.props.config.margin ? this.props.config.margin + 'vh' : undefined)
+						fontSize: (this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined),
+						marginLeft: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
+						marginRight: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
+						marginTop: (this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
+						marginBottom: (this.props.config.margin ? this.props.config.margin + 'vh' : undefined)
 					}}
 				>
 					<div className='overlay-fix'>
@@ -477,8 +473,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 					{
 						this.props.prompterData.lines.length ?
-						<div className='prompter-break end'>
-							-{t('End of script')}-
+							<div className='prompter-break end'>
+								-{t('End of script')}-
 						</div> : null
 					}
 				</div >

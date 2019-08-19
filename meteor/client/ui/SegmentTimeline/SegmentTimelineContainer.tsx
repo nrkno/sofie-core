@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -22,6 +21,9 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
+import { getElementWidth } from '../../utils/dimensions'
+
+const SPEAK_ADVANCE = 500
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -348,7 +350,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (typeof this.props.onTimeScaleChange === 'function') {
 			this.props.onTimeScaleChange(
 				(
-					$(this.timelineDiv).width() || 1
+					getElementWidth(this.timelineDiv) || 1
 				) /
 				(
 					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1
@@ -359,11 +361,19 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 	updateSpeech () {
 
-		let displayTime = Math.floor((this.state.displayTimecode / 1000))
+		// Note that the displayTime is negative when counting down to 0.
+		let displayTime = this.state.displayTimecode
+
+		if (displayTime === 0) {
+			// do nothing
+		} else {
+			displayTime += SPEAK_ADVANCE
+			displayTime = Math.floor(displayTime / 1000)
+		}
 
 		if (this._prevDisplayTime !== displayTime) {
 
-			let text = ''
+			let text = '' // Say nothing
 
 			if (getSpeakingMode()) {
 				switch (displayTime) {
@@ -379,12 +389,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					case -10: text = 'Ten'; break
 				}
 				if (displayTime === 0 && this._prevDisplayTime === -1) {
-					text = 'Zerundown'
+					text = 'Zero'
 				}
 			}
 			this._prevDisplayTime = displayTime
 			if (text) {
-				SpeechSynthesiser.speak(text)
+				SpeechSynthesiser.speak(text, 'countdown')
 			}
 		}
 	}

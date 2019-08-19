@@ -12,11 +12,15 @@ const VOICE_PREFERENCE = [ // ordered in preferred order (best first)
 const VOICE_PITCH = 0.9
 const VOICE_RATE = 1 // speed
 
+interface TextCommand {
+	text: string
+	category: string
+}
 class SpeechSynthesisClass {
 	private _isInitialized: boolean = false
 	private _voice: SpeechSynthesisVoice | undefined
 
-	private _queue: Array<string> = []
+	private _queue: Array<TextCommand> = []
 	init () {
 		if (!this._isInitialized) {
 			this._isInitialized = true
@@ -28,10 +32,13 @@ class SpeechSynthesisClass {
 			}
 		}
 	}
-	speak (textToSpeak: string) {
-		return this._speak(textToSpeak)
+	speak (textToSpeak: string, category?: string) {
+		return this._speak({
+			text: textToSpeak,
+			category: category || ''
+		})
 	}
-	_speak (textToSpeak: string, fromQueue?: boolean) {
+	_speak (textCommand: TextCommand, fromQueue?: boolean) {
 		if (!this._isInitialized) {
 			console.warn('Speech synthesis not initialized')
 			return
@@ -40,21 +47,28 @@ class SpeechSynthesisClass {
 			console.warn('SpeechSynthesis: No voice found')
 			return
 		}
-		if (!textToSpeak) {
+		if (!textCommand.text) {
 			// do nothing
 			return
 		}
 		if (speechSynthesis.speaking) {
 			// Put on queue
 			if (fromQueue) {
-				this._queue.unshift(textToSpeak)
+				// it came from the queue, put it back there
+				this._queue.unshift(textCommand)
 			} else {
-				this._queue.push(textToSpeak)
+				if (this._queue.length && textCommand.category) {
+					// filter out queued ones of the same category:
+					this._queue = _.reject(this._queue, (c) => {
+						return c.category === textCommand.category
+					})
+				}
+				this._queue.push(textCommand)
 			}
 			return
 		}
 
-		let utterThis = new SpeechSynthesisUtterance(textToSpeak)
+		let utterThis = new SpeechSynthesisUtterance(textCommand.text)
 		utterThis.onend = () => {
 			this._checkQueue()
 		}
@@ -68,9 +82,9 @@ class SpeechSynthesisClass {
 		speechSynthesis.speak(utterThis)
 	}
 	private _checkQueue () {
-		let textToSpeak = this._queue.shift()
-		if (textToSpeak) {
-			this.speak(textToSpeak)
+		let textCommand = this._queue.shift()
+		if (textCommand) {
+			this._speak(textCommand)
 		}
 	}
 	private selectVoice (): SpeechSynthesisVoice | undefined {

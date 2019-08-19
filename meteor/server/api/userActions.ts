@@ -148,7 +148,7 @@ export function resetRundown (rundownId: string): ClientAPI.ClientResponse {
 		ServerPlayoutAPI.resetRundown(rundownId)
 	)
 }
-export function resetAndActivate (rundownId: string): ClientAPI.ClientResponse {
+export function resetAndActivate (rundownId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (rundown.active && !rundown.rehearsal) {
@@ -160,7 +160,7 @@ export function resetAndActivate (rundownId: string): ClientAPI.ClientResponse {
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.resetAndActivateRundown(rundownId)
+		ServerPlayoutAPI.resetAndActivateRundown(rundownId, rehearsal)
 	)
 }
 export function activate (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
@@ -186,6 +186,11 @@ export function deactivate (rundownId: string): ClientAPI.ClientResponse {
 export function reloadData (rundownId: string) {
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.reloadData(rundownId)
+	)
+}
+export function unsyncRundown (rundownId: string) {
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.unsyncRundown(rundownId)
 	)
 }
 export function disableNextPiece (rundownId: string, undo?: boolean) {
@@ -464,8 +469,8 @@ methods[UserActionAPI.methods.prepareForBroadcast] = function (rundownId: string
 methods[UserActionAPI.methods.resetRundown] = function (rundownId: string): ClientAPI.ClientResponse {
 	return resetRundown.call(this, rundownId)
 }
-methods[UserActionAPI.methods.resetAndActivate] = function (rundownId: string): ClientAPI.ClientResponse {
-	return resetAndActivate.call(this, rundownId)
+methods[UserActionAPI.methods.resetAndActivate] = function (rundownId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
+	return resetAndActivate.call(this, rundownId, rehearsal)
 }
 methods[UserActionAPI.methods.activate] = function (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 	return activate.call(this, rundownId, rehearsal)
@@ -475,6 +480,9 @@ methods[UserActionAPI.methods.deactivate] = function (rundownId: string): Client
 }
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)
+}
+methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): ClientAPI.ClientResponse {
+	return unsyncRundown.call(this, rundownId)
 }
 methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
 	return disableNextPiece.call(this, rundownId, undo)

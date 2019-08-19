@@ -1,6 +1,40 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [0.26.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v0.25.0...v0.26.0-0) (2019-08-06)
+
+
+### Bug Fixes
+
+* add additional fallbacks for a 0-situation ([2444d56](https://github.com/nrkno/tv-automation-server-core/commit/2444d56))
+* fix an issue with resizing Shelf when scrolled down ([78155d6](https://github.com/nrkno/tv-automation-server-core/commit/78155d6))
+* fix for React whitespace error: ([f66983b](https://github.com/nrkno/tv-automation-server-core/commit/f66983b))
+* Jest not finding all tests ([2464e87](https://github.com/nrkno/tv-automation-server-core/commit/2464e87))
+* limit black/freeze markers width to within the item ([5bbb385](https://github.com/nrkno/tv-automation-server-core/commit/5bbb385))
+* optimize font loading in TimelineGrid ([b4c60c1](https://github.com/nrkno/tv-automation-server-core/commit/b4c60c1))
+* Out of space build failures. Run circleci for tags ([08b4a2c](https://github.com/nrkno/tv-automation-server-core/commit/08b4a2c))
+* **GUI:** bug in EditAttribute dropdown, causing NaN to be written if optionsAreNumbers is not set ([efc1162](https://github.com/nrkno/tv-automation-server-core/commit/efc1162))
+* right zoom area handle stops moving after first move ([20820fa](https://github.com/nrkno/tv-automation-server-core/commit/20820fa))
+* **scroll:** fix issues with non-jQuery scroll methods ([4b5afb2](https://github.com/nrkno/tv-automation-server-core/commit/4b5afb2))
+* scroll needed check ([5e8c77c](https://github.com/nrkno/tv-automation-server-core/commit/5e8c77c))
+* speech synthesis: say the countdown time slightly earlier. and fix of a bug from the Big Renaming ([fa0c334](https://github.com/nrkno/tv-automation-server-core/commit/fa0c334))
+* typings issue ([4f96c3d](https://github.com/nrkno/tv-automation-server-core/commit/4f96c3d))
+* update blueprints-integration ([5b247f8](https://github.com/nrkno/tv-automation-server-core/commit/5b247f8))
+* update timeline-visualizer ([a43166c](https://github.com/nrkno/tv-automation-server-core/commit/a43166c))
+* update typings ([4accaea](https://github.com/nrkno/tv-automation-server-core/commit/4accaea))
+
+
+### Features
+
+* **endstate:** Use intermediary states for adlib pieces ([5117a33](https://github.com/nrkno/tv-automation-server-core/commit/5117a33))
+* add buttons to restart CasparCG servers ([c1396b4](https://github.com/nrkno/tv-automation-server-core/commit/c1396b4))
+* handle situation when reloading rundown and rundown is missing ([9138a2b](https://github.com/nrkno/tv-automation-server-core/commit/9138a2b))
+* Part EndState persistance ([a84f74b](https://github.com/nrkno/tv-automation-server-core/commit/a84f74b))
+* quick-n-dirty implementation of a preliminary REST-API, using existing methods and publications ([7ba8896](https://github.com/nrkno/tv-automation-server-core/commit/7ba8896))
+* User log player ([e80f665](https://github.com/nrkno/tv-automation-server-core/commit/e80f665))
+
+
 
 <a name="0.25.0"></a>
 # 0.25.0 (2019-07-05)

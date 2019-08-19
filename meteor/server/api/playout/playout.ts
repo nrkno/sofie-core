@@ -24,7 +24,8 @@ import { logger } from '../../logging'
 import {
 	PieceLifespan,
 	PartHoldMode,
-	VTContent
+	VTContent,
+	PartEndState
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios } from '../../../lib/collections/Studios'
 import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
@@ -38,7 +39,7 @@ import {
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { getBlueprintOfRundown } from '../blueprints/cache'
-import { PartEventContext } from '../blueprints/context'
+import { PartEventContext, PartContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
@@ -53,12 +54,14 @@ import {
 	activateRundown as libActivateRundown,
 	deactivateRundown as libDeactivateRundown
 } from './actions'
-import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece } from './pieces'
+import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece, resolveActivePieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { areThereActiveRundownsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
+import { transformTimeline } from '../../../lib/timeline'
+import * as SuperTimeline from 'superfly-timeline'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -104,7 +107,7 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundown, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function resetAndActivateRundown (rundownId: string) {
+	export function resetAndActivateRundown (rundownId: string, rehearsal?: boolean) {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -112,7 +115,7 @@ export namespace ServerPlayoutAPI {
 
 			libResetRundown(rundown)
 
-			return libActivateRundown(rundown, false) // Activate rundown
+			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
 		})
 	}
 	/**
@@ -260,6 +263,17 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 
+			// TODO - the state could change after this sampling point. This should be handled properly
+			let previousPartEndState: PartEndState | undefined = undefined
+			if (blueprint.getEndStateForPart && previousPart) {
+				const time = getCurrentTime()
+				const activePieces = resolveActivePieces(previousPart, time)
+
+				const context = new RundownContext(rundown)
+				previousPartEndState = blueprint.getEndStateForPart(context, previousPart.previousPartEndState, activePieces)
+				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+			}
+
 			let ps: Array<Promise<any>> = []
 			let m = {
 				previousPartId: rundown.currentPartId,
@@ -269,12 +283,23 @@ export namespace ServerPlayoutAPI {
 			ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 				$set: m
 			}))
-			ps.push(asyncCollectionUpdate(Parts, takePart._id, {
+
+			let partM = {
 				$push: {
 					'timings.take': now,
 					'timings.playOffset': timeOffset || 0
 				}
-			}))
+			}
+			if (previousPartEndState) {
+				partM['$set'] = literal<Partial<Part>>({
+					previousPartEndState: previousPartEndState
+				})
+			} else {
+				partM['$unset'] = {
+					previousPartEndState: 1
+				}
+			}
+			ps.push(asyncCollectionUpdate(Parts, takePart._id, partM))
 			if (m.previousPartId) {
 				ps.push(asyncCollectionUpdate(Parts, m.previousPartId, {
 					$push: {

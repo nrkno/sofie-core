@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as $ from 'jquery'
+import { getElementWidth } from '../../../utils/dimensions'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -33,13 +33,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.subItems = this.rebuildSubItems()
 	}
 
-	componentWillUpdate () {
+	componentWillUpdate() {
 		this.subItems = this.rebuildSubItems()
 	}
 
@@ -51,18 +51,18 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		this.rightLabel = e
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.updateAnchoredElsWidths()
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -102,7 +102,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		return []
 	}
 
-	renderSubItems () {
+	renderSubItems() {
 		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item, index, array) => {
 			return (
 				<div key={'item-' + item._id}
@@ -118,7 +118,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		})
 	}
 
-	renderSplitPreview () {
+	renderSplitPreview() {
 		return (
 			<div className='video-preview'>
 				{
@@ -134,13 +134,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 									'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
 								}
 							)}
-							key={item._id + '-preview'}
-							style={{
-								'left': ((item.content && item.content.x) * 100).toString() + '%',
-								'top': ((item.content && item.content.y) * 100).toString() + '%',
-								'width': ((item.content && item.content.scale) * 100).toString() + '%',
-								'height': ((item.content && item.content.scale) * 100).toString() + '%'
-							}}>
+								key={item._id + '-preview'}
+								style={{
+									'left': ((item.content && item.content.x) * 100).toString() + '%',
+									'top': ((item.content && item.content.y) * 100).toString() + '%',
+									'width': ((item.content && item.content.scale) * 100).toString() + '%',
+									'height': ((item.content && item.content.scale) * 100).toString() + '%'
+								}}>
 								{item.role === SplitRole.BOX && (
 									<div className='video-preview__label'>{item.label}</div>
 								)}
@@ -152,7 +152,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		)
 	}
 
-	render () {
+	render() {
 		let labelItems = this.props.piece.name.split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
