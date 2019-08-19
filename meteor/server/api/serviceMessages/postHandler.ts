@@ -66,7 +66,7 @@ function postHandler (
 
 	const serviceMessage = {
 		id,
-		criticality,
+		criticality: Number(criticality),
 		message,
 		sender,
 		timestamp: new Date(timestamp)
