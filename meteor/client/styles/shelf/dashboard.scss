@@ -106,6 +106,9 @@
 			left: 4px;
 			max-width: calc(100% - 8px);
 			text-align: left;
+			hyphens: auto;
+			-webkit-hyphens: auto;
+			-ms-hyphens: auto;
 			text-transform: uppercase;
 			font-weight: 400;
 			text-shadow: 1px 1px 0 rgba(0,0,0,0.3);

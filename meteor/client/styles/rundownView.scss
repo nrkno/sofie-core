@@ -414,13 +414,18 @@ body.vertical-overflow-only {
 		background: $segment-title-background-color;
 
 		word-break: break-word;
+
 		h2 {
 			margin: 0;
 			padding: 0.3em;
 			line-height: 1.2em;
 			letter-spacing: 0px;
 			font-weight: 400;
+			hyphens: auto;
+			-webkit-hyphens: auto;
+			-ms-hyphens: auto;
 		}
+		
 		.segment-timeline__title__notes {
 			margin: 0 0 0.5em;
 			padding: 0.5em;
