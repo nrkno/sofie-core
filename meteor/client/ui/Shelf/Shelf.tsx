@@ -20,10 +20,10 @@ import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts';
-import { DashboardPanel } from './DashboardPanel';
-import { ensureHasTrailingSlash } from '../../lib/lib';
-import { ErrorBoundary } from '../../lib/ErrorBoundary';
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { DashboardPanel } from './DashboardPanel'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -345,7 +345,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						filter={f}
 						visible={true}
 						{...this.props}
-						/>	
+						/>
 			)}
 		</div>
 	}

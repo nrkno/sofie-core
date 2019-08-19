@@ -1,4 +1,4 @@
-import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType } from "../collections/RundownLayouts"
+import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType } from '../collections/RundownLayouts'
 
 export namespace RundownLayoutsAPI {
 	export enum methods {

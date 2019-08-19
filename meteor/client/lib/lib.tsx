@@ -76,7 +76,7 @@ export function fetchFrom (input: RequestInfo, init?: RequestInit) {
 	})
 }
 
-export function ensureHasTrailingSlash(input: string | null): string | null {
+export function ensureHasTrailingSlash (input: string | null): string | null {
 	if (input) {
 		return (input.substr(-1) === '/') ? input : input + '/'
 	} else {

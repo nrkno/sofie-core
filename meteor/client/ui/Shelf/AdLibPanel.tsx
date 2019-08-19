@@ -370,7 +370,7 @@ export interface IAdLibPanelTrackedProps {
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
-export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
+export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup = (

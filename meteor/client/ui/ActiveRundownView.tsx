@@ -128,7 +128,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 							<Route path={`${this.props.match.path}/shelf`}>
 								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} onlyShelf={true} />
 							</Route>
-						</Switch> 
+						</Switch>
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {

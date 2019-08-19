@@ -50,11 +50,11 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 })(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
 
-	constructor(props: IDashboardButtonProps) {
+	constructor (props: IDashboardButtonProps) {
 		super(props)
 	}
 
-	updateMediaObjectSubscription() {
+	updateMediaObjectSubscription () {
 		if (this.props.item && this.props.layer) {
 			const piece = this.props.item as any as AdLibPieceUi
 			let objId: string | undefined = undefined
@@ -81,7 +81,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	getPreviewUrl = (): string | undefined => {
-		const { metadata } = this.props 
+		const { metadata } = this.props
 		if (this.props.mediaPreviewUrl && metadata) {
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)

@@ -31,10 +31,10 @@ import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
-import { DashboardPieceButton } from './DashboardPieceButton';
-import { ensureHasTrailingSlash } from '../../lib/lib';
-import { Studio } from '../../../lib/collections/Studios';
-import { Piece, Pieces } from '../../../lib/collections/Pieces';
+import { DashboardPieceButton } from './DashboardPieceButton'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 interface IState {
 	outputLayers: {
@@ -89,7 +89,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -122,7 +122,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			return state
 		}
 	}
-	
+
 	componentDidMount () {
 		this.subscribe(PubSub.segments, {
 			rundownId: this.props.rundown._id
