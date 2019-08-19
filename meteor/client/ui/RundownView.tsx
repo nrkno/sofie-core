@@ -60,6 +60,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
+import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -311,6 +312,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						}
 					</React.Fragment>)
 				}
+				<NoraPreviewRenderer />
 			</div>
 		)
 	}
