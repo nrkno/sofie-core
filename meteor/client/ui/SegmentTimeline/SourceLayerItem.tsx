@@ -425,7 +425,9 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
+				// @ts-ignore TODO: fix this typings issue!
 				return <STKSourceRenderer key={this.props.piece._id}
+					// @ts-ignore TODO: fix this typings issue!
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
