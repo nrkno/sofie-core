@@ -25,7 +25,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, RundownLayoutFilterBase, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
@@ -51,6 +51,61 @@ interface IListViewStateHeader {
 	}
 	sourceLayers: {
 		[key: string]: ISourceLayer
+	}
+}
+
+export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, uiSegments: Array<SegmentUi>, filter?: RundownLayoutFilterBase, searchFilter?: string) {
+	if (!searchFilter && !filter) return true
+	const liveSegment = uiSegments.find(i => i.isLive === true)
+	const uppercaseLabel = item.name.toUpperCase()
+	if (filter) {
+		// Filter currentSegment only
+		if (
+			filter.currentSegment === true &&
+			(
+				(liveSegment && liveSegment.parts.find(i => item.partId === i._id) === undefined) ||
+				(!liveSegment)
+			)
+		) {
+			return false
+		}
+		// Filter out items that are not within outputLayerIds filter
+		if (
+			filter.outputLayerIds !== undefined &&
+			filter.outputLayerIds.indexOf(item.outputLayerId) < 0
+		) {
+			return false
+		}
+		// Source layers
+		if (
+			filter.sourceLayerIds !== undefined &&
+			filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
+		) {
+			return false
+		}
+		// Source layer types
+		const sourceLayerType = showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
+		if (
+			sourceLayerType &&
+			filter.sourceLayerTypes !== undefined &&
+			filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
+		) {
+			return false
+		}
+		// Item label needs at least one of the strings in the label array
+		if (
+			filter.label !== undefined &&
+			filter.label.reduce((p, v) => {
+				return p || uppercaseLabel.indexOf(v.toUpperCase()) >= 0
+			}, false) === false
+		) {
+			return false
+		}
+	}
+	if (searchFilter) {
+		return uppercaseLabel.indexOf(searchFilter.toUpperCase()) >= 0
+	} else {
+		return true
 	}
 }
 
@@ -107,61 +162,6 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	matchFilter (item: AdLibPieceUi) {
-		if (!this.props.searchFilter && !this.props.filter) return true
-		const liveSegment = this.props.uiSegments.find(i => i.isLive === true)
-		const uppercaseLabel = item.name.toUpperCase()
-		if (this.props.filter) {
-			// Filter currentSegment only
-			if (
-				this.props.filter.currentSegment === true &&
-				(
-					(liveSegment && liveSegment.parts.find(i => item.partId === i._id) === undefined) ||
-					(!liveSegment)
-				)
-			) {
-				return false
-			}
-			// Filter out items that are not within outputLayerIds filter
-			if (
-				this.props.filter.outputLayerIds !== undefined &&
-				this.props.filter.outputLayerIds.indexOf(item.outputLayerId) < 0
-			) {
-				return false
-			}
-			// Source layers
-			if (
-				this.props.filter.sourceLayerIds !== undefined &&
-				this.props.filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
-			) {
-				return false
-			}
-			// Source layer types
-			const sourceLayerType = this.props.showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
-			if (
-				sourceLayerType &&
-				this.props.filter.sourceLayerTypes !== undefined &&
-				this.props.filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
-			) {
-				return false
-			}
-			// Item label needs at least one of the strings in the label array
-			if (
-				this.props.filter.label !== undefined &&
-				this.props.filter.label.reduce((p, v) => {
-					return p || uppercaseLabel.indexOf(v) >= 0
-				}, false) === false
-			) {
-				return false
-			}
-		}
-		if (this.props.searchFilter) {
-			return uppercaseLabel.indexOf(this.props.searchFilter.toUpperCase()) >= 0
-		} else {
-			return true
-		}
-	}
-
 	renderRundownAdLibs () {
 		const { t } = this.props
 
@@ -169,7 +169,7 @@ const AdLibListView = translate()(class extends React.Component<
 			{
 				this.props.rundownAdLibs && this.props.rundownAdLibs.
 					filter((item) => {
-						return this.matchFilter(item)
+						return matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.props.searchFilter)
 					}).
 					map((item: AdLibPieceUi) => {
 						return (
@@ -217,7 +217,7 @@ const AdLibListView = translate()(class extends React.Component<
 						{
 							seg.pieces && seg.pieces.
 								sort((a, b) => a._rank - b._rank).
-								filter((item) => this.matchFilter(item)).
+								filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.props.searchFilter)).
 								map((item: AdLibPieceUi) => {
 									return (
 										<AdLibListItem
@@ -332,6 +332,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isGlobal?: boolean
 	isHidden?: boolean
 	isSticky?: boolean
+	isClearSourceLayer?: boolean
 }
 
 export interface SegmentUi extends Segment {
@@ -423,6 +424,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	if (props.rundown && props.filter && props.includeGlobalAdLibs && (
 		props.filter.rundownBaseline === true || props.filter.rundownBaseline === 'only'
 	)) {
+		const t = props.t
+
 		let rundownAdLibItems = RundownBaselineAdLibPieces.find({
 			rundownId: props.rundown._id
 		}, {
@@ -456,9 +459,9 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		}).
 			concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
 				map(layer => literal<AdLibPieceUi>({
-					_id: layer._id,
+					_id: `sticky_${layer._id}`,
 					hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
-					name: props.t('Last ') + (layer.abbreviation || layer.name),
+					name: t('Last {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 					status: RundownAPI.PieceStatusCode.UNKNOWN,
 					isSticky: true,
 					isGlobal: true,
@@ -474,6 +477,27 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 
 		if (props.filter.rundownBaseline === 'only') {
 			uiSegments.length = 0
+		}
+
+		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
+			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(props.showStyleBase.sourceLayers.filter(i => !!i.clearKeyboardHotkey).
+				map(layer => literal<AdLibPieceUi>({
+					_id: `clear_${layer._id}`,
+					hotkey: layer.clearKeyboardHotkey ? layer.clearKeyboardHotkey.split(',')[0] : '',
+					name: t('Clear {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
+					status: RundownAPI.PieceStatusCode.UNKNOWN,
+					isSticky: false,
+					isClearSourceLayer: true,
+					isGlobal: true,
+					expectedDuration: 0,
+					disabled: false,
+					externalId: layer._id,
+					rundownId: '',
+					sourceLayerId: layer._id,
+					outputLayerId: '',
+					_rank: 0
+				}))
+			)
 		}
 	}
 

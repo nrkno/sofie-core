@@ -304,6 +304,23 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							collection={RundownLayouts}
 							className='input text-input input-l dropdown' />
 					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Include Clear Source Layer in Ad-Libs')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.includeClearInRundownBaseline`}
+										obj={item}
+										options={RundownLayoutType}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Source Layers')}
