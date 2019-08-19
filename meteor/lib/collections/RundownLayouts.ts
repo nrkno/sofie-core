@@ -64,6 +64,8 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	y: number
 	width: number
 	height: number
+
+	includeClearInRundownBaseline: boolean
 }
 
 export interface RundownLayoutBase {

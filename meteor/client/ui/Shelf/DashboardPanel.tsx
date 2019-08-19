@@ -30,10 +30,11 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
-import { DashboardPieceButton } from './DashboardPieceButton';
-import { ensureHasTrailingSlash } from '../../lib/lib';
-import { Studio } from '../../../lib/collections/Studios';
+import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter } from './AdLibPanel'
+import { DashboardPieceButton } from './DashboardPieceButton'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 interface IState {
 	outputLayers: {
@@ -55,16 +56,39 @@ interface IDashboardPanelProps {
 
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
+	unfinishedPieces: {
+		[key: string]: Piece[]
+	}
 }
 
 export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	const unfinishedPieces = _.groupBy(props.playlist.currentPartId ? Pieces.find({
+		partId: props.playlist.currentPartId,
+		startedPlayback: {
+			$exists: true
+		},
+		$or: [{
+			stoppedPlayback: {
+				$eq: 0
+			}
+		}, {
+			stoppedPlayback: {
+				$exists: false
+			}
+		}],
+		adLibSourceId: {
+			$exists: true
+		}
+	}).fetch() : [], (piece) => piece.adLibSourceId)
+
 	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.playlist.getStudio()
+		studio: props.playlist.getStudio(),
+		unfinishedPieces
 	})
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -132,6 +156,26 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				this.subscribe(PubSub.showStyleBases, {
 					_id: rundowns[0].showStyleBaseId
 				})
+				this.subscribe(PubSub.pieces, {
+					rundownId: {
+						$in: rundownIds
+					},
+					startedPlayback: {
+						$exists: true
+					},
+					adLibSourceId: {
+						$exists: true
+					},
+					$or: [{
+						stoppedPlayback: {
+							$eq: 0
+						}
+					}, {
+						stoppedPlayback: {
+							$exists: false
+						}
+					}]
+				})
 			}
 		})
 
@@ -151,6 +195,13 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
 
 		this.usedHotkeys.length = 0
+	}
+
+	isAdLibOnAir (adLib: AdLibPieceUi) {
+		if (this.props.unfinishedPieces[adLib._id] && this.props.unfinishedPieces[adLib._id].length > 0) {
+			return true
+		}
+		return false
 	}
 
 	refreshKeyboardHotkeys () {
@@ -184,6 +235,57 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				}
 			})
 		}
+
+		if (this.props.rundownBaselineAdLibs) {
+			this.props.rundownBaselineAdLibs.forEach((item) => {
+				if (item.hotkey) {
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
+						this.onToggleAdLib(item, false, e)
+					}, 'keyup')
+					this.usedHotkeys.push(item.hotkey)
+
+					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
+					if (sourceLayer && sourceLayer.isQueueable) {
+						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleAdLib(item, true, e)
+						}, 'keyup')
+						this.usedHotkeys.push(queueHotkey)
+					}
+				}
+			})
+		}
+
+		if (this.props.sourceLayerLookup) {
+			_.each(this.props.sourceLayerLookup, (item) => {
+				if (item.clearKeyboardHotkey) {
+					item.clearKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onClearAllSourceLayer(item, e)
+						}, 'keyup')
+						this.usedHotkeys.push(element)
+					})
+
+				}
+
+				if (item.isSticky && item.activateStickyKeyboardHotkey) {
+					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleSticky(item._id, e)
+						}, 'keyup')
+						this.usedHotkeys.push(element)
+					})
+				}
+			})
+		}
 	}
 
 	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
@@ -198,25 +300,37 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			return
 		}
 
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
-			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
+		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+
+		if (queue && sourceLayer && sourceLayer.isQueueable) {
 			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 		if (this.props.playlist && this.props.playlist.currentPartId) {
-			if (!piece.isGlobal) {
-				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
-				])
-			} else if (piece.isGlobal && !piece.isSticky) {
-				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
-				])
-			} else if (piece.isSticky) {
-				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
-					this.props.playlist._id, piece.sourceLayerId
-				])
+			if (!this.isAdLibOnAir(piece)) {
+				if (!piece.isGlobal) {
+					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
+						this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
+					])
+				} else if (piece.isGlobal && !piece.isSticky) {
+					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
+						this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
+					])
+				} else if (piece.isSticky) {
+					this.onToggleSticky(piece.sourceLayerId, e)
+				}
+			} else {
+				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+					this.onClearAllSourceLayer(sourceLayer, e)
+				}
 			}
+		}
+	}
+
+	onToggleSticky = (sourceLayerId: string, e: any) => {
+		if (this.props.playlist && this.props.playlist.currentPartId && this.props.playlist.active) {
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
 		}
 	}
 
@@ -230,58 +344,6 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
-	matchFilter(item: AdLibPieceUi) {
-		if (!this.props.filter) return true
-		const liveSegment = this.props.uiSegments.find(i => i.isLive === true)
-		const uppercaseLabel = item.name.toUpperCase()
-		if (this.props.filter) {
-			// Filter currentSegment only
-			if (
-				this.props.filter.currentSegment === true &&
-				(
-					(liveSegment && liveSegment.parts.find(i => item.partId === i._id) === undefined) ||
-					(!liveSegment)
-				)
-			) {
-				return false
-			}
-			// Filter out items that are not within outputLayerIds filter
-			if (
-				this.props.filter.outputLayerIds !== undefined &&
-				this.props.filter.outputLayerIds.indexOf(item.outputLayerId) < 0
-			) {
-				return false
-			}
-			// Source layers
-			if (
-				this.props.filter.sourceLayerIds !== undefined &&
-				this.props.filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
-			) {
-				return false
-			}
-			// Source layer types
-			const sourceLayerType = this.props.showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
-			if (
-				sourceLayerType &&
-				this.props.filter.sourceLayerTypes !== undefined &&
-				this.props.filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
-			) {
-				return false
-			}
-			// Item label needs at least one of the strings in the label array
-			if (
-				this.props.filter.label !== undefined &&
-				this.props.filter.label.reduce((p, v) => {
-					return p || uppercaseLabel.indexOf(v) >= 0
-				}, false) === false
-			) {
-				return false
-			}
-		}
-
-		return true
-	}
-
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -291,12 +353,32 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				return (
 					<div className='dashboard-panel'
 						style={{
-							width: (filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH,
-							height: (filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT,
-							left: filter.x >= 0 ? (filter.x * BUTTON_GRID_WIDTH) : undefined,
-							top: filter.y >= 0 ? (filter.y * BUTTON_GRID_HEIGHT) : undefined,
-							right: filter.x < 0 ? ((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) : undefined,
-							bottom: filter.y < 0 ? ((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) : undefined
+							width: filter.width >= 0 ?
+								(filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH :
+								undefined,
+							height: filter.height >= 0 ?
+								(filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT :
+								undefined,
+							left: filter.x >= 0 ?
+								(filter.x * BUTTON_GRID_WIDTH) :
+								filter.width < 0 ?
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									undefined,
+							top: filter.y >= 0 ?
+								(filter.y * BUTTON_GRID_HEIGHT) :
+								filter.height < 0 ?
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									undefined,
+							right: filter.x < 0 ?
+								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) :
+								filter.width < 0 ?
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									undefined,
+							bottom: filter.y < 0 ?
+								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) :
+								filter.height < 0 ?
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									undefined
 						}}
 					>
 						<h4 className='dashboard-panel__header'>
@@ -306,7 +388,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
 								.concat(this.props.rundownBaselineAdLibs)
 								.sort((a, b) => a._rank - b._rank)
-								.filter((item) => this.matchFilter(item))
+								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton
 												key={item._id}
@@ -315,6 +397,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
 												playlist={this.props.playlist}
+												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											>
 												{item.name}

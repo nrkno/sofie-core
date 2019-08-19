@@ -346,7 +346,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						filter={f}
 						visible={true}
 						{...this.props}
-						/>	
+						/>
 			)}
 		</div>
 	}

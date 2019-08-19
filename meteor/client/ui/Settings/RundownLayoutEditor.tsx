@@ -133,7 +133,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	downloadItem = (item: RundownLayoutBase) => {
-		window.location.replace(`/rundownLayouts/${item._id}`)
+		window.location.replace(`/shelfLayouts/${item._id}`)
 	}
 
 	finishEditItem = (item: RundownLayoutBase) => {
@@ -304,6 +304,23 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							collection={RundownLayouts}
 							className='input text-input input-l dropdown' />
 					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Include Clear Source Layer in Ad-Libs')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.includeClearInRundownBaseline`}
+										obj={item}
+										options={RundownLayoutType}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Source Layers')}
@@ -506,12 +523,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				yes: t('Update'),
 				no: t('Cancel'),
 				message: <React.Fragment>
-					<p>{t('Are you sure you want to upload the rundown layout from the file "{{fileName}}"?',
+					<p>{t('Are you sure you want to upload the shelf layout from the file "{{fileName}}"?',
 						{ fileName: file.name })}</p>,
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents) {
-						fetchFrom('/rundownLayouts', {
+						fetchFrom('/shelfLayouts', {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
@@ -522,14 +539,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							NotificationCenter.push(new Notification(
 								undefined,
 								NoticeLevel.NOTIFICATION,
-								t('Rundown layout uploaded successfully.'),
+								t('Shelf layout uploaded successfully.'),
 								'RundownLayouts'))
 						}).catch(err => {
 							// console.error('Blueprint restore failure: ', err)
 							NotificationCenter.push(new Notification(
 								undefined,
 								NoticeLevel.WARNING,
-								t('Failed to upload rundown layout: {{errorMessage}}', { errorMessage: err + '' }),
+								t('Failed to upload shelf layout: {{errorMessage}}', { errorMessage: err + '' }),
 								'RundownLayouts'))
 						})
 					}
@@ -549,7 +566,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 		return (
 			<div className='studio-edit rundown-layout-editor'>
-				<h2 className='mhn'>{t('Rundown Layouts')}</h2>
+				<h2 className='mhn'>{t('Shelf Layouts')}</h2>
 				<table className='expando settings-studio-rundown-layouts-table'>
 					<tbody>
 						{this.renderItems()}

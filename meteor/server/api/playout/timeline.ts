@@ -450,7 +450,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activeRundown.holdState, undefined))
 
-				prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
+				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
 
 				timelineObjs = timelineObjs.concat(prevObjs)
 			}

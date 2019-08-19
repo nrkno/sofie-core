@@ -191,6 +191,7 @@ addMigrationSteps('0.25.0', [
 		Timeline,
 		'Timeline',
 		{
+			studioId: 'siId',
 			rundownId: 'roId',
 			objectType: {content: {
 				rundown: 'ro'
@@ -265,20 +266,85 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
+	{
+		id: 'peripheralDevicesTypeAndSubtype',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const devices = PeripheralDevices.find({}).fetch()
 
+			const devicesNeedFixing = _.filter(devices, (device) => {
+				// Old devices had property: type: number
+				// New devices has properties: category, type, subType
+
+				return (
+					_.has(device, 'type') &&
+					!_.has(device, 'category')
+				)
+			})
+
+			if (devicesNeedFixing.length > 0) {
+				return `PeripheralDevices contains ${devicesNeedFixing.length} devices that needs updating`
+			}
+			return false
+		},
+		migrate: () => {
+			const devices = PeripheralDevices.find({}).fetch()
+
+			_.each(devices, (device) => {
+				if (
+					_.has(device, 'type') &&
+					!_.has(device, 'category')
+				) {
+					const m: {
+						category: PeripheralDeviceAPI.DeviceCategory,
+						type: PeripheralDeviceAPI.DeviceType,
+						subType: PeripheralDeviceAPI.DeviceSubType
+					} = {
+						category: 'unknown' as any,
+						type: '' as any,
+						subType: '' as any
+					}
+					enum OLDDeviceType { // From old typings
+						MOSDEVICE = 0,
+						PLAYOUT = 1,
+						OTHER = 2, // i.e. sub-devices
+						MEDIA_MANAGER = 3,
+					}
+					const oldDeviceType = device.type as any as OLDDeviceType
+
+					if (oldDeviceType === OLDDeviceType.MOSDEVICE) {
+						m.category = PeripheralDeviceAPI.DeviceCategory.INGEST
+						m.type = PeripheralDeviceAPI.DeviceType.MOS
+						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
+
+					} else if (oldDeviceType === OLDDeviceType.PLAYOUT) {
+						m.category = PeripheralDeviceAPI.DeviceCategory.PLAYOUT
+						m.type = PeripheralDeviceAPI.DeviceType.PLAYOUT
+						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
+
+					} else if (oldDeviceType === OLDDeviceType.MEDIA_MANAGER) {
+						m.category = PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
+						m.type = PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
+						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
+
+					} else if (oldDeviceType === OLDDeviceType.OTHER) {
+						// Unknown sub-device
+					}
+					PeripheralDevices.update(device._id, { $set: m })
+				}
+			})
+		}
+	},
 	{
 		id: 'cleanUpExpectedItems',
 		canBeRunAutomatically: true,
 		validate: () => {
 			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
-			logger.error(currentRundowns)
 			const itemsCount = ExpectedMediaItems.find({
 				rundownId: {
 					$nin: currentRundowns
 				}
 			}).count()
-			logger.error(itemsCount)
-
 			if (itemsCount > 0) {
 				return `ExpectedMediaItems contains ${itemsCount} orphaned media-items`
 			}

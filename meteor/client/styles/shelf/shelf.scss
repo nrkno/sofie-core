@@ -1,4 +1,4 @@
-$inspector-drawer-tabs-height: 2.3em;
+$inspector-shelf-tabs-height: 2.3em;
 
 .rundown-view__shelf {
 	position: fixed;
@@ -53,7 +53,7 @@ $inspector-drawer-tabs-height: 2.3em;
 		flex-direction: row;
 		align-items: stretch;
 		justify-items: left;
-		min-height: $inspector-drawer-tabs-height;
+		min-height: $inspector-shelf-tabs-height;
 
 		.rundown-view__shelf__tabs__tab-group {
 			display: flex;
@@ -72,7 +72,7 @@ $inspector-drawer-tabs-height: 2.3em;
 			white-space: nowrap;
 			text-align: center;
 			color: #4F4F4F;
-			line-height: $inspector-drawer-tabs-height;
+			line-height: $inspector-shelf-tabs-height;
 			cursor: pointer;
 			user-select: none;
 

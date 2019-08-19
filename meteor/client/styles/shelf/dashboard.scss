@@ -56,6 +56,36 @@
 		@include invalid-overlay();
 		@include missing-overlay();
 
+		&.live {
+			@keyframes button-flash {
+				0% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 1;
+				}
+				50.001% {
+					opacity: 0;
+				}
+				100% {
+					opacity: 0;
+				}
+			}
+
+			&::before {
+				content: ' ';
+				display: block;
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				background: rgba(255, 255, 255, 0.3);
+				z-index: 10;
+				// animation: 2s button-flash normal infinite;
+			}
+		}
+
 		&:active {
 			&::before {
 				content: ' ';
@@ -76,6 +106,9 @@
 			left: 4px;
 			max-width: calc(100% - 8px);
 			text-align: left;
+			hyphens: auto;
+			-webkit-hyphens: auto;
+			-ms-hyphens: auto;
 			text-transform: uppercase;
 			font-weight: 400;
 			text-shadow: 1px 1px 0 rgba(0,0,0,0.3);

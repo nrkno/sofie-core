@@ -641,6 +641,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						}
 					})
 				}, (err) => {
+					console.error(err)
 					doModalDialog({
 						title: t('Failed to deactivate'),
 						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
@@ -1038,7 +1039,7 @@ interface IState {
 	usedHotkeys: Array<HotkeyDefinition>
 	isNotificationsCenterOpen: boolean
 	isSupportPanelOpen: boolean
-	isInspectorDrawerExpanded: boolean
+	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
@@ -1121,7 +1122,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
-	private _inspectorDrawer: WrappedShelf | null
+	private _inspectorShelf: WrappedShelf | null
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1166,7 +1167,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			]),
 			isNotificationsCenterOpen: false,
 			isSupportPanelOpen: false,
-			isInspectorDrawerExpanded: false,
+			isInspectorShelfExpanded: false,
 			isClipTrimmerOpen: false,
 			selectedPiece: undefined,
 			rundownLayout: undefined
@@ -1178,19 +1179,24 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		if (props.rundownLayouts) {
 			// first try to use the one selected by the user
-			if (props.rundownLayoutId) selectedLayout = props.rundownLayouts
-				.find((i) => i._id === props.rundownLayoutId)
+			if (props.rundownLayoutId) {
+				selectedLayout = props.rundownLayouts.find((i) => i._id === props.rundownLayoutId)
+			}
 
 			// if couldn't find based on id, try matching part of the name
-			if (props.rundownLayoutId && !selectedLayout) selectedLayout = props.rundownLayouts
-				.find((i) => i.name.indexOf(props.rundownLayoutId!) >= 0)
-			
+			if (props.rundownLayoutId && !selectedLayout) {
+				selectedLayout = props.rundownLayouts.find((i) => i.name.indexOf(props.rundownLayoutId!) >= 0)
+			}
+
 			// if not, try the first RUNDOWN_LAYOUT available
-			if (!selectedLayout) selectedLayout = props.rundownLayouts
-				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+			if (!selectedLayout) {
+				selectedLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+			}
 
 			// if still not found, use the first one
-			if (!selectedLayout) selectedLayout = props.rundownLayouts[0]
+			if (!selectedLayout) {
+				selectedLayout = props.rundownLayouts[0]
+			}
 		}
 
 		return {
@@ -1676,16 +1682,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onToggleHotkeys = () => {
-		if (!this.state.isInspectorDrawerExpanded) {
+		if (!this.state.isInspectorShelfExpanded) {
 			this.setState({
-				isInspectorDrawerExpanded: true
+				isInspectorShelfExpanded: true
 			})
-			if (this._inspectorDrawer) {
-				this._inspectorDrawer.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
+			if (this._inspectorShelf) {
+				this._inspectorShelf.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
 			}
 		} else {
 			this.setState({
-				isInspectorDrawerExpanded: false
+				isInspectorShelfExpanded: false
 			})
 		}
 	}
@@ -1742,14 +1748,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onDrawerChangeExpanded = (value: boolean) => {
+	onShelfChangeExpanded = (value: boolean) => {
 		this.setState({
-			isInspectorDrawerExpanded: value
+			isInspectorShelfExpanded: value
 		})
 	}
 
-	setInspectorDrawer = (isp: WrappedShelf | null) => {
-		this._inspectorDrawer = isp
+	setInspectorShelf = (isp: WrappedShelf | null) => {
+		this._inspectorShelf = isp
 	}
 
 	onTake = (e: any) => {
@@ -1872,9 +1878,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf
-									ref={this.setInspectorDrawer}
-									isExpanded={this.state.isInspectorDrawerExpanded}
-									onChangeExpanded={this.onDrawerChangeExpanded}
+									ref={this.setInspectorShelf}
+									isExpanded={this.state.isInspectorShelfExpanded}
+									onChangeExpanded={this.onShelfChangeExpanded}
 									segments={this.props.segments}
 									hotkeys={this.state.usedHotkeys}
 									playlist={this.props.playlist}
@@ -1911,9 +1917,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			) {
 				return <ErrorBoundary>
 					<Shelf
-						ref={this.setInspectorDrawer}
-						isExpanded={this.state.isInspectorDrawerExpanded}
-						onChangeExpanded={this.onDrawerChangeExpanded}
+						ref={this.setInspectorShelf}
+						isExpanded={this.state.isInspectorShelfExpanded}
+						onChangeExpanded={this.onShelfChangeExpanded}
 						segments={this.props.segments}
 						hotkeys={this.state.usedHotkeys}
 						playlist={this.props.playlist}

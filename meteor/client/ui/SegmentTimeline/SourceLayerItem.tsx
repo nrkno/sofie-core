@@ -428,6 +428,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
+				// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 				return <STKSourceRenderer key={this.props.piece._id}
 					// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 					typeClass={typeClass}

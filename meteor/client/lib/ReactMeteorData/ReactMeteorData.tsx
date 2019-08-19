@@ -222,7 +222,7 @@ export function withTracker<IProps, IState, TrackedProps> (
 	}
 }
 export function translateWithTracker<IProps, IState, TrackedProps> (autorunFunction: (props: IProps, state?: IState) => TrackedProps) {
-	return (WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) => {
+	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
 		return translate()(withTracker(autorunFunction)(WrappedComponent))
 	}
 }

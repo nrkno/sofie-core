@@ -326,16 +326,24 @@ export function onPartHasStoppedPlaying (part: Part, stoppedPlayingTime: Time) {
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
 	}
 }
-export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string): T[] {
+export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string, ignoreOriginal?: boolean): T[] {
+	const getUpdatePrefixedId = (o: T) => {
+		let id = o.id
+		if (!ignoreOriginal) {
+			if (!o.originalId) {
+				o.originalId = o.id
+			}
+			id = o.originalId
+		}
+		return prefix + id
+	}
+
 	const idMap: { [oldId: string]: string | undefined } = {}
 	_.each(objList, o => {
-		if (!o.originalId) {
-			o.originalId = o.id
-		}
-		idMap[o.id] = prefix + o.originalId
+		idMap[o.id] = getUpdatePrefixedId(o)
 	})
 
-	let replaceIds = (str: string) => {
+	const replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
 			const id = m.substr(1, m.length - 1)
 			return `#${idMap[id] || id}`
@@ -344,11 +352,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 
 	return objList.map(i => {
 		const o = clone(i)
-
-		if (!o.originalId) {
-			o.originalId = o.id
-		}
-		o.id = prefix + o.originalId
+		o.id = getUpdatePrefixedId(o)
 
 		for (const key of _.keys(o.enable)) {
 			if (typeof o.enable[key] === 'string') {
