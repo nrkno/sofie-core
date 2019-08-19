@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-19T14:40:08.996Z\n"
-"PO-Revision-Date: 2019-08-19T14:40:08.996Z\n"
+"POT-Creation-Date: 2019-08-19T14:55:25.467Z\n"
+"PO-Revision-Date: 2019-08-19T14:55:25.467Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -1570,9 +1570,6 @@ msgid "Invalid AdLib"
 msgstr ""
 
 msgid "Cannot play this AdLib because it is marked as Invalid"
-msgstr ""
-
-msgid "Last "
 msgstr ""
 
 msgid "Cannot play this AdLib becasue it is marked as Invalid"
