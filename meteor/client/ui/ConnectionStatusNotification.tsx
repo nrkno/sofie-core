@@ -55,7 +55,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
 			
 			let systemNotification: Notification | undefined = createSystemNotification(cs)
-			let newNotification =  this.createNewNotification(meteorStatus)
+			let newNotification =  this.createNewStatusNotification(meteorStatus)
 
 			if (newNotification.persistent) {
 				this._notificationList.set(_.compact([newNotification, systemNotification]))
@@ -96,9 +96,12 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		switch(criticality) {
 			case Criticality.CRITICAL:
 				return NoticeLevel.CRITICAL
+			
 			case Criticality.WARNING:
 				return NoticeLevel.WARNING
+			
 			case Criticality.NOTIFICATION:
+			default:
 				return NoticeLevel.NOTIFICATION
 		}
 	}
@@ -124,7 +127,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		return null
 	}
 
-	private createNewNotification(meteorStatus:DDP.DDPStatus):Notification {
+	private createNewStatusNotification(meteorStatus:DDP.DDPStatus):Notification {
 		const {status, reason, retryTime, connected} = meteorStatus
 		const notification = new Notification(
 			Random.id(),
@@ -159,7 +162,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		Object.keys(this._serviceMessageRegistry).filter(id => systemMessageIds.indexOf(id) < 0)
 			.forEach(idToRemove => {
 				delete this._serviceMessageRegistry[idToRemove]
-				
+				NotificationCenter.drop(idToRemove)
 			})
 		
 		const localMessagesId = Object.keys(this._serviceMessageRegistry)
@@ -167,29 +170,35 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		systemMessageIds.filter(id => localMessagesId.indexOf(id) < 0)
 			.forEach(id => {
 				const newMessage = serviceMessages[id]
-				const notification = new Notification(
-					id,
-					this.getNoticeLevelForCriticality(newMessage.criticality),
-					newMessage.message,
-					newMessage.sender || '(service message)',
-					newMessage.timestamp.getMilliseconds()
-					)
-					
 				this._serviceMessageRegistry[id] = newMessage
+				
+				const notification = this.createNotificationFromServiceMessage(newMessage)
 				NotificationCenter.push(notification)
 			})
 
-		// compare and update where ids are in both lists
+		// compare and update where ids are in both lists, update if changed
 		systemMessageIds.filter(id => localMessagesId.indexOf(id) > -1)
 			.forEach(id => {
 				const current = serviceMessages[id]
-				// Nope, can't use that, throws error. Probably something in _ that's useful :)
-				if (notDeepEqual(current, this._serviceMessageRegistry[id])) {
+				if (!_.isEqual(current, this._serviceMessageRegistry[id])) {
 					this._serviceMessageRegistry[id] = current
-					// replace exisiting notification
+					const notification = this.createNotificationFromServiceMessage(current)
+					NotificationCenter.drop(id)
+					NotificationCenter.push(notification)
 				}
 			})
 
+	}
+
+	private createNotificationFromServiceMessage(message: ServiceMessage):Notification {
+		return new Notification(
+			message.id,
+			this.getNoticeLevelForCriticality(message.criticality),
+			message.message,
+			message.sender || '(service message)',
+			message.timestamp.getMilliseconds(),
+			true
+			)
 	}
 }
 
