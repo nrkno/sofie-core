@@ -341,19 +341,27 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 }
 
 export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntryExt[] {
-	let showStyleBases: Array<ShowStyleBase> = []
+	let blueprintIds: Array<string | undefined> = []
 
 	if (item instanceof Studio) {
+		// Studio blueprint
+		blueprintIds.push(item.blueprintId)
+
 		// All showStyles that the studio is supposed to support:
-		showStyleBases = ShowStyleBases.find({
+		ShowStyleBases.find({
 			_id: { $in: item.supportedShowStyleBase || [] }
-		}).fetch()
+		}).forEach(showStyleBase => {
+			blueprintIds.push(showStyleBase.blueprintId)
+		})
+
 	} else if (item instanceof ShowStyleBase) {
-		showStyleBases = [item]
+		blueprintIds.push(item.blueprintId)
 	} else if (item instanceof ShowStyleVariant) {
-		showStyleBases = ShowStyleBases.find({
+		ShowStyleBases.find({
 			_id: item.showStyleBaseId
-		}).fetch()
+		}).forEach(showStyleBase => {
+			blueprintIds.push(showStyleBase.blueprintId)
+		})
 	} else {
 		logger.error('collectConfigs: unknown item type', item)
 	}
@@ -362,9 +370,7 @@ export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant)
 
 	let blueprints = Blueprints.find({
 		_id: {
-			$in: _.compact(_.map(showStyleBases, (showStyleBase) => {
-				return showStyleBase.blueprintId
-			}))
+			$in: _.compact(blueprintIds)
 		}
 	}).fetch()
 
