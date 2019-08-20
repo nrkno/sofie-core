@@ -32,6 +32,8 @@ export class NoraPreviewController extends React.Component<IPropsHeader> {
 export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	static __singletonRef: NoraPreviewRenderer
 
+	iframeElement: HTMLIFrameElement
+
 	static show (noraContent: NoraContent, style: { [key: string]: any }) {
 		NoraPreviewRenderer.__singletonRef.__show(noraContent, style)
 	}
@@ -47,6 +49,33 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	__show (noraContent: NoraContent, style: { [key: string]: any }) {
+		if (this.state && JSON.stringify(this.state.noraContent) !== JSON.stringify(noraContent)) {
+			if (this.iframeElement && this.iframeElement.contentWindow) {
+				this.iframeElement.contentWindow.postMessage({
+					event: 'nora',
+					contentToShow: {
+						'manifest': noraContent.payload.manifest,
+						'template': {
+							'event': 'preview',
+							'name': noraContent.payload.template.name,
+							'channel': 'gfx1',
+							'layer': noraContent.payload.template.layer,
+							'system': 'html'
+						},
+						'content': {
+							...noraContent.payload.content,
+							_valid: false
+						},
+						'timing': {
+							duration: "00:05",
+							in: "auto",
+							out: "auto",
+							timeIn: "00:00"
+						}
+					}
+				}, '*')
+			}
+		}
 		this.setState({
 			show: true,
 			noraContent,
@@ -63,6 +92,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 	private __setPreview = (e: HTMLIFrameElement) => {
 		if (!e) return
+		this.iframeElement = e
 		const noraContent = this.state.noraContent
 		window.onmessage = msg => {
 			if (msg.data.source === 'nora-render') console.log(msg)
@@ -81,7 +111,8 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 							'system': 'html'
 						},
 						'content': {
-							...noraContent.payload.content
+							...noraContent.payload.content,
+							_valid: false
 						},
 						'timing': {
 							duration: "00:05",
