@@ -221,9 +221,12 @@ export function withTracker<IProps, IState, TrackedProps> (
 		}
 	}
 }
-export function translateWithTracker<IProps, IState, TrackedProps> (autorunFunction: (props: IProps, state?: IState) => TrackedProps) {
+export function translateWithTracker<IProps, IState, TrackedProps> (
+	autorunFunction: (props: IProps, state?: IState) => TrackedProps,
+	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
+	) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		return translate()(withTracker(autorunFunction)(WrappedComponent))
+		return translate()(withTracker(autorunFunction, checkUpdate)(WrappedComponent))
 	}
 }
 export type Translated<T> = T & InjectedTranslateProps
