@@ -85,6 +85,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		studio: props.playlist.getStudio(),
 		unfinishedPieces
 	})
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 

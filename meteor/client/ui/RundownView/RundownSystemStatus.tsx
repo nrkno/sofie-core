@@ -165,6 +165,9 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		playoutStatus: playout.status,
 		playoutDevices: playout.onlineOffline
 	}
+}, (data, props: IProps, nextProps: IProps) => {
+	if (props.rundown._id === nextProps.rundown._id && props.studio._id === nextProps.studio._id) return false
+	return true
 })(class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	private notificationTimeout: number
 	private STATE_CHANGE_NOTIFICATION_DURATION = 7000

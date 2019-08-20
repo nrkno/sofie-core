@@ -62,7 +62,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 	if (filter) {
 		// Filter currentSegment only
 		if (
-			filter.currentSegment === true &&
+			filter.currentSegment === true && item.partId &&
 			(
 				(liveSegment && liveSegment.parts.find(i => item.partId === i._id) === undefined) ||
 				(!liveSegment)
@@ -526,6 +526,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 
 export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return fetchAndFilter(props)
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
