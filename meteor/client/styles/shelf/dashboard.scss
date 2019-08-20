@@ -51,6 +51,7 @@
 		border: none;
 		margin: 4px;
 		vertical-align: top;
+		cursor: pointer;
 
 		@include item-type-colors();
 		@include invalid-overlay();

@@ -183,10 +183,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					return { rundowns, rundownsMap: normalizeArray(rundowns, '_id') }
 				})
 			]
-		let r = waitForPromiseAll(ps as any)
+		let r = waitForPromiseAll(ps as any) as any[]
 		let segments: Segment[] = r[0].segments
-		let segmentsMap = r[0].segmentsMap
-		let partsMap = r[1].partsMap
+		let segmentsMap: { [key: string]: Segment } = r[0].segmentsMap
+		let partsMap: { [key: string]: Part } = r[1].partsMap
 		let parts: Part[] = r[1].parts
 		let pieces: Piece[] = r[2]
 		let rundownsMap: { [key: string]: Rundown } = r[3].rundownsMap
