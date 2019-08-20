@@ -116,6 +116,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'live': this.props.isOnAir
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
+				data-obj-id={this.props.item._id}
 				>
 				{
 					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
