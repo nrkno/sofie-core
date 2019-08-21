@@ -152,6 +152,28 @@ describe('ServiceMessages API POST endpoint', () => {
 				expect(mockResponse.statusCode).toEqual(400)
 				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
+
+			it('should accept a valid value as a string', () => {
+				const alsoValid:any = {...validInput}
+				alsoValid.criticality = `${validInput.criticality}`
+				mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
+
+				postHandler({}, mockRequest, mockResponse)
+
+				expect(mockResponse.statusCode).toBeHttpOkStatusCode()
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+			})
+
+			it('should reject empty string value', () => {
+				const invalidInput: any = { ...validInput }
+				invalidInput.criticality = ''
+				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
+
+				postHandler({}, mockRequest, mockResponse)
+
+				expect(mockResponse.statusCode).toEqual(400)
+				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+			})
 		})
 
 		describe('message field', () => {
@@ -253,8 +275,19 @@ describe('ServiceMessages API POST endpoint', () => {
 		})
 
 		it('should call API writeMessage with the given criticality', () => {
-			const expected = validInput.criticality
+			const expected = Number(validInput.criticality)
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
+
+			postHandler({}, mockRequest, mockResponse)
+
+			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('criticality', expected)
+		})
+
+		it('should call API writeMessage with the given criticality when criticality is a string', () => {
+			const expected = Number(validInput.criticality)
+			const alsoValid:any = {...validInput}
+			alsoValid.criticality = `${validInput.criticality}`
+			mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 
 			postHandler({}, mockRequest, mockResponse)
 

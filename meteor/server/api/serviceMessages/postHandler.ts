@@ -41,7 +41,7 @@ function postHandler (
 		return
 	}
 
-	if (!criticality || criticality.trim().length < 1) {
+	if (!criticality || (typeof criticality === 'string' && criticality.trim().length < 1)) {
 		res.statusCode = 400
 		res.end(`${INPUT_MISSING_PARTIAL}criticality`)
 		return
