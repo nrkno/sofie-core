@@ -485,8 +485,8 @@ export namespace ServerPlayoutAPI {
 				if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
 				partIndex = -1
-				_.find(parts, (part, i) => {
-					if (part._id === part._id) {
+				_.find(parts, (p, i) => {
+					if (p._id === part._id) {
 						partIndex = i
 						return true
 					}
