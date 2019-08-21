@@ -160,7 +160,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 				title: input.title || '',
 				// @ts-ignore temporary ignore, remove soon
-				guid: input.title.guid || ''
+				guid: input.guid || ''
 			},
 			enable: {
 				start: 'now',
