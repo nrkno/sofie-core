@@ -170,7 +170,7 @@ export namespace ServerPlayoutAdLibAPI {
 				}
 			})
 
-			ServerPlayoutAPI.setNextPartInner(rundown, partId)
+			ServerPlayoutAPI.setNextPartInner(rundownPlaylist, partId)
 		} else {
 			cropInfinitesOnLayer(rundown, part, newPiece)
 			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)

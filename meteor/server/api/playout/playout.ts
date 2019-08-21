@@ -279,7 +279,7 @@ export namespace ServerPlayoutAPI {
 				const resolvedPieces = getResolvedPieces(previousPart)
 
 				const context = new RundownContext(rundown)
-				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
+				previousPartEndState = blueprint.getEndStateForPart(context, playlist.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
 
@@ -575,7 +575,7 @@ export namespace ServerPlayoutAPI {
 			const currentSement = Segments.findOne(currentPart.segmentId)
 			if (!currentSement) throw new Meteor.Error(404, `Segment "${currentPart.segmentId}" not found!`)
 
-			let o = getResolvedSegment(showStyleBase, rundown, currentSement)
+			let o = getResolvedSegment(showStyleBase, playlist, currentSement)
 
 			// @ts-ignore stringify
 			// logger.info(o)

@@ -206,12 +206,12 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studio))
 
 				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
-				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundown.currentPartId) {
-					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
+				if (showStyleBlueprint.onTimelineGenerate && rundownData.rundownPlaylist.currentPartId) {
+					const currentPart = rundownData.partsMap[rundownData.rundownPlaylist.currentPartId]
 					const context = new PartEventContext(activeRundown, studio, currentPart)
 					// const resolvedPieces = getResolvedPieces(currentPart)
 					const resolvedPieces = getResolvedPiecesFromFullTimeline(rundownData, timelineObjs)
-					const tlGenRes = waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, rundownData.rundown.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces))
+					const tlGenRes = waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs, rundownData.rundownPlaylist.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces))
 					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
 							...object,
@@ -380,6 +380,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 	let previousPart: Part | undefined
 
 	let activeRundown = rundownData.rundown
+	let activePlaylist = rundownData.rundownPlaylist
 
 	timelineObjs.push(literal<TimelineObjRundown>({
 		id: activeRundown._id + '_status',
@@ -392,23 +393,23 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		content: {
 			deviceType: DeviceType.ABSTRACT
 		},
-		classes: [activeRundown.rehearsal ? 'rundown_rehersal' : 'rundown_active']
+		classes: [activePlaylist.rehearsal ? 'rundown_rehersal' : 'rundown_active']
 	}))
 
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
-	if (activeRundown.nextPartId) {
+	if (activePlaylist.nextPartId) {
 		// We may be at the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-		nextPart = rundownData.partsMap[activeRundown.nextPartId]
-		if (!nextPart) throw new Meteor.Error(404, `Part "${activeRundown.nextPartId}" not found!`)
+		nextPart = rundownData.partsMap[activePlaylist.nextPartId]
+		if (!nextPart) throw new Meteor.Error(404, `Part "${activePlaylist.nextPartId}" not found!`)
 	}
 
-	if (activeRundown.currentPartId) {
-		currentPart = rundownData.partsMap[activeRundown.currentPartId]
-		if (!currentPart) throw new Meteor.Error(404, `Part "${activeRundown.currentPartId}" not found!`)
+	if (activePlaylist.currentPartId) {
+		currentPart = rundownData.partsMap[activePlaylist.currentPartId]
+		if (!currentPart) throw new Meteor.Error(404, `Part "${activePlaylist.currentPartId}" not found!`)
 
-		if (activeRundown.previousPartId) {
-			previousPart = rundownData.partsMap[activeRundown.previousPartId]
-			if (!previousPart) throw new Meteor.Error(404, `Part "${activeRundown.previousPartId}" not found!`)
+		if (activePlaylist.previousPartId) {
+			previousPart = rundownData.partsMap[activePlaylist.previousPartId]
+			if (!previousPart) throw new Meteor.Error(404, `Part "${activePlaylist.previousPartId}" not found!`)
 		}
 	}
 
@@ -448,7 +449,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: TimelineObjRundown[] = [previousPartGroup]
 				prevObjs = prevObjs.concat(
-					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activeRundown.holdState, undefined))
+					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activePlaylist.holdState, undefined))
 
 				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
 
@@ -501,7 +502,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 			const showHoldExcept = piece.infiniteId !== piece._id
-			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(rundownData.rundown, [piece], groupClasses, infiniteGroup, undefined, activeRundown.holdState, showHoldExcept))
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(rundownData.rundown, [piece], groupClasses, infiniteGroup, undefined, activePlaylist.holdState, showHoldExcept))
 		}
 
 		const groupClasses: string[] = ['current_part']
@@ -513,7 +514,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		}
 		timelineObjs = timelineObjs.concat(
 			currentPartGroup,
-			transformPartIntoTimeline(rundownData.rundown, currentNormalItems, groupClasses, currentPartGroup, transProps, activeRundown.holdState, undefined)
+			transformPartIntoTimeline(rundownData.rundown, currentNormalItems, groupClasses, currentPartGroup, transProps, activePlaylist.holdState, undefined)
 		)
 
 		timelineObjs.push(createPartGroupFirstObject(currentPart, currentPartGroup, previousPart))

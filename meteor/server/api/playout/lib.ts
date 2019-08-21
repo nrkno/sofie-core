@@ -25,8 +25,94 @@ import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/Rund
  * Reset the rundown:
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
+export function resetRundown (rundown: Rundown) {
+	logger.info('resetRundown ' + rundown._id)
+	// Remove all dunamically inserted pieces (adlibs etc)
+
+	Pieces.remove({
+		rundownId: rundown._id,
+		dynamicallyInserted: true
+	})
+
+	Parts.remove({
+		rundownId: rundown._id,
+		dynamicallyInserted: true
+	})
+
+	Parts.update({
+		rundownId: rundown._id
+	}, {
+			$unset: {
+				duration: 1,
+				previousPartEndState: 1,
+				startedPlayback: 1,
+				timings: 1,
+				runtimeArguments: 1,
+				stoppedPlayback: 1
+			}
+		}, { multi: true })
+
+	const dirtyParts = Parts.find({
+		rundownId: rundown._id,
+		dirty: true
+	}).fetch()
+	dirtyParts.forEach(part => {
+		refreshPart(rundown, part)
+		Parts.update(part._id, {
+			$unset: {
+				dirty: 1
+			}
+		})
+	})
+
+	// Reset all pieces that were modified for holds
+	Pieces.update({
+		rundownId: rundown._id,
+		extendOnHold: true,
+		infiniteId: { $exists: true },
+	}, {
+		$unset: {
+			infiniteId: 0,
+			infiniteMode: 0,
+		}
+	}, { multi: true })
+
+	// Reset any pieces that were modified by inserted adlibs
+	Pieces.update({
+		rundownId: rundown._id,
+		originalInfiniteMode: { $exists: true }
+	}, {
+		$rename: {
+			originalInfiniteMode: 'infiniteMode'
+		}
+	}, { multi: true })
+
+	Pieces.update({
+		rundownId: rundown._id
+	}, {
+		$unset: {
+			playoutDuration: 1,
+			startedPlayback: 1,
+			userDuration: 1,
+			disabled: 1,
+			hidden: 1
+		}
+	}, { multi: true })
+
+	// ensure that any removed infinites are restored
+	updateSourceLayerInfinitesAfterPart(rundown)
+
+	const playlist = RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
+	resetRundownPlaylistPlayhead(playlist)
+}
+
+/**
+ * Reset the rundown playlist (all of the rundowns within the playlist):
+ * Remove all dynamically inserted/updated pieces, parts, timings etc..
+ */
 export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
-	logger.info('resetRundown ' + rundownPlaylist._id)
+	logger.info('resetRundownPlaylist ' + rundownPlaylist._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
 	const rundowns = rundownPlaylist.getRundowns()
 	const rundownIDs = rundowns.map(i => i._id)

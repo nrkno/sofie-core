@@ -65,7 +65,7 @@ function handleEvent (event: AsRunLogEvent): void {
 		try {
 			if (event.rundownId) {
 
-				const rundown = Rundowns.findOne(event.rundownId) as Rundown
+				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
 				const { blueprint } = getBlueprintOfRundown(rundown)

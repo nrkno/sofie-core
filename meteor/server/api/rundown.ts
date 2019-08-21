@@ -152,8 +152,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	})
 
 	const rundown = Rundowns.findOne(rundownId)
-	if (rundown && rundown.active) {
-		// Ensure the next-part is still valid
+	if (rundown) {
 		UpdateNext.ensureNextPartIsValid(rundown)
 	}
 }
@@ -264,7 +263,8 @@ export namespace ServerRundownAPI {
 
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		if (rundown.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}".`)
+		const playlist = rundown.getRundownPlaylist()
+		if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}".`)
 
 		rundown.remove()
 	}

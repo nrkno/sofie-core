@@ -269,13 +269,13 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 
 	const now = getCurrentTime()
 
-	const partIds = _.compact([rundownData.rundown.previousPartId, rundownData.rundown.currentPartId])
+	const partIds = _.compact([rundownData.rundownPlaylist.previousPartId, rundownData.rundownPlaylist.currentPartId])
 	const pieces: Piece[] = rundownData.pieces.filter(p => partIds.indexOf(p.partId) !== -1)
 
-	if (rundownData.rundown.currentPartId && rundownData.rundown.nextPartId) {
-		const part = rundownData.partsMap[rundownData.rundown.currentPartId]
+	if (rundownData.rundownPlaylist.currentPartId && rundownData.rundownPlaylist.nextPartId) {
+		const part = rundownData.partsMap[rundownData.rundownPlaylist.currentPartId]
 		if (part && part.autoNext) {
-			pieces.push(...rundownData.pieces.filter(p => p.partId === rundownData.rundown.nextPartId))
+			pieces.push(...rundownData.pieces.filter(p => p.partId === rundownData.rundownPlaylist.nextPartId))
 		}
 	}
 

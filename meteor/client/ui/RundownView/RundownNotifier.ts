@@ -97,7 +97,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						this.reactiveMediaStatus(rIds, showStyleBase, studio)
 						this.reactivePartNotes(rIds)
 						this.reactivePeripheralDeviceStatus(studio._id)
-						this.reactiveQueueStatus(studio._id, rIds)
+						this.reactiveQueueStatus(studio._id, playlistId)
 					} else {
 						this.cleanUpMediaStatus()
 					}
@@ -455,11 +455,11 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveQueueStatus (studioId: string, rundownIds: string[]) {
+	private reactiveQueueStatus (studioId: string, playlistId: string) {
 		const t = i18nTranslator
 		let reactiveUnsentMessageCount: ReactiveVar<number>
-		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, rundownId: { $in: rundownIds } })
-		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, rundownIds)
+		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
+		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
 		this.autorun(() => {
 			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {
 				this._unsentExternalMessagesStatus = new Notification(`unsent_${studioId}`, NoticeLevel.WARNING, t('External message queue has unsent messages.'), 'ExternalMessageQueue', getCurrentTime(), true, undefined, -1)

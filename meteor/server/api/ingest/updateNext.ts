@@ -1,7 +1,9 @@
+import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { fetchAfter } from '../../../lib/lib'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 function getRundownValidParts (rundown: Rundown) {
 	return rundown.getParts({
@@ -14,48 +16,54 @@ function getRundownValidParts (rundown: Rundown) {
 
 export namespace UpdateNext {
 	export function ensureNextPartIsValid (rundown: Rundown) {
+		const playlist = RundownPlaylists.findOne(rundown.playlistId)
+		if (!playlist) throw new Meteor.Error(501, `Orphaned playlist: "${rundown._id}"`)
+
 		// Ensure the next-id is still valid
-		if (rundown && rundown.active && rundown.nextPartId) {
+		if (rundown && playlist.active && playlist.nextPartId) {
 			const allValidParts = getRundownValidParts(rundown)
 
-			const currentPart = allValidParts.find(part => part._id === rundown.currentPartId)
-			const currentNextPart = allValidParts.find(part => part._id === rundown.nextPartId)
+			const currentPart = allValidParts.find(part => part._id === playlist.currentPartId)
+			const currentNextPart = allValidParts.find(part => part._id === playlist.nextPartId)
 
 			// If the current part is missing, then we can't know what the next is
-			if (!currentPart && rundown.currentPartId !== null) {
+			if (!currentPart && playlist.currentPartId !== null) {
 				if (!currentNextPart) {
 					// Clear the invalid data
-					ServerPlayoutAPI.setNextPartInner(rundown, null)
+					ServerPlayoutAPI.setNextPartInner(playlist, null)
 				}
 			} else {
 				const expectedAutoNextPart = fetchAfter(allValidParts, {}, currentPart ? currentPart._rank : null)
 				const expectedAutoNextPartId = expectedAutoNextPart ? expectedAutoNextPart._id : null
 
 				// If not manually set, make sure that next is done by rank
-				if (!rundown.nextPartManual && expectedAutoNextPartId !== rundown.nextPartId) {
-					ServerPlayoutAPI.setNextPartInner(rundown, expectedAutoNextPart || null)
+				if (!playlist.nextPartManual && expectedAutoNextPartId !== playlist.nextPartId) {
+					ServerPlayoutAPI.setNextPartInner(playlist, expectedAutoNextPart || null)
 
-				} else if (rundown.nextPartId && !currentNextPart) {
+				} else if (playlist.nextPartId && !currentNextPart) {
 					// If the specified next is not valid, then reset
-					ServerPlayoutAPI.setNextPartInner(rundown, expectedAutoNextPart || null)
+					ServerPlayoutAPI.setNextPartInner(playlist, expectedAutoNextPart || null)
 				}
 			}
 		}
 	}
 	export function afterInsertParts (rundown: Rundown, newPartExternalIds: string[], removePrevious: boolean) {
-		if (rundown && rundown.active) {
+		const playlist = RundownPlaylists.findOne(rundown.playlistId)
+		if (!playlist) throw new Meteor.Error(501, `Orphaned playlist: "${rundown._id}"`)
+
+		if (rundown && playlist.active) {
 			// If manually chosen, and could have been removed then special case handling
-			if (rundown.nextPartManual && removePrevious) {
+			if (playlist.nextPartManual && removePrevious) {
 				const allValidParts = getRundownValidParts(rundown)
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
-				const currentNextPart = allValidParts.find(part => part._id === rundown.nextPartId)
+				const currentNextPart = allValidParts.find(part => part._id === playlist.nextPartId)
 				if (!currentNextPart) {
 					// Set to the first of the inserted parts
 					const firstNewPart = allValidParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1)
 					if (firstNewPart) {
 						// Matched a part that replaced the old, so set to it
-						ServerPlayoutAPI.setNextPartInner(rundown, firstNewPart)
+						ServerPlayoutAPI.setNextPartInner(playlist, firstNewPart)
 
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it

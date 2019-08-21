@@ -1092,8 +1092,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		showStyleBase: rundowns.length > 0 ?
 			ShowStyleBases.findOne(rundowns[0].showStyleBaseId) :
 			undefined,
-		rundownLayouts: rundowns.length > 0 ? RundownLayouts.find({
-			showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() :
+		rundownLayouts: rundowns.length > 0 ?
+			RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() :
 			undefined,
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {

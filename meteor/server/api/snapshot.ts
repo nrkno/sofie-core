@@ -52,12 +52,14 @@ import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/Inges
 import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 interface RundownSnapshot {
 	version: string
-	rundownId: string
+	playlistId: string
 	snapshot: SnapshotRundown
-	rundown: Rundown
+	playlist: RundownPlaylist
+	rundowns: Array<Rundown>
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	baselineObjs: Array<RundownBaselineObj>
@@ -101,44 +103,48 @@ type AnySnapshot = RundownSnapshot | SystemSnapshot | DebugSnapshot
 
 /**
  * Create a snapshot of all items related to a rundown
- * @param rundownId
+ * @param playlistId
  */
-function createRundownSnapshot (rundownId: string): RundownSnapshot {
+function createRundownSnapshot (playlistId: string): RundownSnapshot {
 	let snapshotId = Random.id()
-	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${rundownId}"`)
+	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${playlistId}"`)
 
-	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404,`Rundown ${rundownId} not found`)
-	const ingestData = IngestDataCache.find({ rundownId: rundownId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
-	const userActions = UserActionsLog.find({ args: { $regex: `.*"${rundownId}".*` } }).fetch()
+	const playlist = RundownPlaylists.findOne(playlistId)
+	if (!playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
+	const rundowns = playlist.getRundowns()
+	const rundownIds = rundowns.map(i => i._id)
+	const ingestData = IngestDataCache.find({ rundownId: { $in: rundownIds } }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
+	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join("|") + `).*` } }).fetch()
 
-	const segments = Segments.find({ rundownId }).fetch()
-	const parts = Parts.find({ rundownId }).fetch()
-	const pieces = Pieces.find({ rundownId }).fetch()
-	const adLibPieces = AdLibPieces.find({ rundownId }).fetch()
+	const segments = Segments.find({ rundownId: { $in: rundownIds } }).fetch()
+	const parts = Parts.find({ rundownId: { $in: rundownIds } }).fetch()
+	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
 		...pieces.filter(piece => piece.content && piece.content.fileName).map((piece) => ((piece.content as AudioContent).fileName)),
-		...adLibPieces.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName))
+		...adLibPieces.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName)),
+		...baselineAdlibs.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()
-	const baselineObjs = RundownBaselineObjs.find({ rundownId: rundownId }).fetch()
-	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: rundownId }).fetch()
+	const baselineObjs = RundownBaselineObjs.find({ rundownId: { $in: rundownIds } }).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
-		rundownId: rundownId,
+		playlistId,
 		snapshot: {
 			_id: snapshotId,
 			created: getCurrentTime(),
 			type: SnapshotType.RUNDOWN,
-			rundownId: rundownId,
-			studioId: rundown.studioId,
-			name: `Rundown_${rundown.name}_${rundown._id}_${formatDateTime(getCurrentTime())}`,
+			playlistId,
+			studioId: playlist.studioId,
+			name: `Rundown_${playlist.name}_${playlist._id}_${formatDateTime(getCurrentTime())}`,
 			version: CURRENT_SYSTEM_VERSION
 		},
-		rundown,
+		playlist,
+		rundowns,
 		ingestData,
 		userActions,
 		baselineObjs,
@@ -390,46 +396,70 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 
 function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
-	let rundownId = snapshot.rundownId
+	let playlistId = snapshot.playlistId
 
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	if (rundownId !== snapshot.rundown._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${rundownId}", "${snapshot.rundown._id}!"`)
+	// TODO: Import old snapshot - development only
+	if (!playlistId && (snapshot as any).rundownId) {
+		const rundownId = (snapshot as any).rundownId
+		saveIntoDb(Rundowns, { _id: rundownId }, [ (snapshot as any).rundown ])
+		saveIntoDb(IngestDataCache, { rundownId }, snapshot.ingestData)
+		// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
+		saveIntoDb(RundownBaselineObjs, { rundownId }, snapshot.baselineObjs)
+		saveIntoDb(RundownBaselineAdLibPieces, { rundownId }, snapshot.baselineAdlibs)
+		saveIntoDb(Segments, { rundownId }, snapshot.segments)
+		saveIntoDb(Parts, { rundownId }, snapshot.parts)
+		saveIntoDb(Pieces, { rundownId }, snapshot.pieces)
+		saveIntoDb(AdLibPieces, { rundownId }, snapshot.adLibPieces)
+		saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
+		saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
 
-	let dbRundown = Rundowns.findOne(rundownId)
+		logger.info('Restore single rundown done')
 
-	if (dbRundown && !dbRundown.unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked Rundown!`)
-
-	if (!snapshot.rundown.unsynced) {
-		snapshot.rundown.unsynced = true
-		snapshot.rundown.unsyncedTime = getCurrentTime()
+		return
 	}
 
-	snapshot.rundown.active					= (dbRundown ? dbRundown.active : false)
-	snapshot.rundown.currentPartId		= (dbRundown ? dbRundown.currentPartId : null)
-	snapshot.rundown.nextPartId			= (dbRundown ? dbRundown.nextPartId : null)
-	snapshot.rundown.notifiedCurrentPlayingPartExternalId = (dbRundown ? dbRundown.notifiedCurrentPlayingPartExternalId : undefined)
+	if (playlistId !== snapshot.playlist._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${playlistId}", "${snapshot.playlist._id}!"`)
+
+	const dbPlaylist = RundownPlaylists.findOne(playlistId)
+	const dbRundowns = dbPlaylist ? dbPlaylist.getRundowns() : []
+	const dbRundownMap = dbPlaylist ? dbPlaylist.getRundownsMap() : {}
+
+	const unsynced = dbRundowns.reduce((p, v) => (p || v.unsynced), false)
+	if (unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked Rundown!`)
 
 	const studios = Studios.find().fetch()
-	if (studios.length === 1) snapshot.rundown.studioId = studios[0]._id
+	if (studios.length === 1) snapshot.playlist.studioId = studios[0]._id
 
-	const showStyleVariants = ShowStyleVariants.find().fetch()
-	if (showStyleVariants.length === 1) {
-		snapshot.rundown.showStyleBaseId = showStyleVariants[0].showStyleBaseId
-		snapshot.rundown.showStyleVariantId = showStyleVariants[0]._id
-	}
+	snapshot.rundowns.forEach(rd => {
+		if (!rd.unsynced) {
+			rd.unsynced = true
+			rd.unsyncedTime = getCurrentTime()
+		}
 
-	saveIntoDb(Rundowns, { _id: rundownId }, [snapshot.rundown])
-	saveIntoDb(IngestDataCache, { rundownId: rundownId }, snapshot.ingestData)
+		rd.notifiedCurrentPlayingPartExternalId = (dbRundownMap[rd._id] ? dbRundownMap[rd._id].notifiedCurrentPlayingPartExternalId : undefined)
+		if (studios.length === 1) rd.studioId = studios[0]._id 
+		
+		const showStyleVariants = ShowStyleVariants.find().fetch()
+		if (showStyleVariants.length === 1) {
+			rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
+			rd.showStyleVariantId = showStyleVariants[0]._id
+		}
+	})
+
+	saveIntoDb(RundownPlaylists, { _id: playlistId }, [ snapshot.playlist ])
+	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
+	saveIntoDb(IngestDataCache, { rundownId: playlistId }, snapshot.ingestData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(RundownBaselineObjs, { rundownId: rundownId }, snapshot.baselineObjs)
-	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, snapshot.baselineAdlibs)
-	saveIntoDb(Segments, { rundownId: rundownId }, snapshot.segments)
-	saveIntoDb(Parts, { rundownId: rundownId }, snapshot.parts)
-	saveIntoDb(Pieces, { rundownId: rundownId }, snapshot.pieces)
-	saveIntoDb(AdLibPieces, { rundownId: rundownId }, snapshot.adLibPieces)
+	saveIntoDb(RundownBaselineObjs, { rundownId: playlistId }, snapshot.baselineObjs)
+	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: playlistId }, snapshot.baselineAdlibs)
+	saveIntoDb(Segments, { rundownId: playlistId }, snapshot.segments)
+	saveIntoDb(Parts, { rundownId: playlistId }, snapshot.parts)
+	saveIntoDb(Pieces, { rundownId: playlistId }, snapshot.pieces)
+	saveIntoDb(AdLibPieces, { rundownId: playlistId }, snapshot.adLibPieces)
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
 

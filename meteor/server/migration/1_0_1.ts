@@ -64,7 +64,8 @@ addMigrationSteps('1.0.1', [
 				}))
 				Rundowns.update(rundown._id, {
 					$set: {
-						playlistId
+						playlistId,
+						_rank: 1
 					}
 				})
 			})

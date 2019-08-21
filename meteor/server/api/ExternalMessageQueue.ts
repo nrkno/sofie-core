@@ -19,6 +19,7 @@ import {
 } from '../../lib/lib'
 import { setMeteorMethods, Methods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
@@ -52,7 +53,8 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 
 		message2 = removeNullyProperties(message2)
 
-		if (!rundown.rehearsal) { // Don't save the message when running rehearsals
+		const playlist = rundown.getRundownPlaylist()
+		if (!playlist.rehearsal) { // Don't save the message when running rehearsals
 			ExternalMessageQueue.insert(message2)
 
 			triggerdoMessageQueue() // trigger processing of the queue

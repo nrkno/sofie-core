@@ -226,15 +226,12 @@ function updateRundownFromIngestData (
 			},
 
 			// omit the below fields
-			previousPartId: null,
-			currentPartId: null,
-			nextPartId: null,
 			created: 0,
 			modified: 0,
 
 			peripheralDeviceId: '', // added later
 			dataSource: '' // added later
-		}), ['previousPartId', 'currentPartId', 'nextPartId', 'created', 'modified', 'peripheralDeviceId', 'dataSource'])
+		}), ['created', 'modified', 'peripheralDeviceId', 'dataSource'])
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
