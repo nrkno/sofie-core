@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
@@ -22,12 +23,19 @@ import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { PubSub } from '../../lib/api/pubsub';
 
 const PackageInfo = require('../../package.json')
 
+interface RundownPlaylistUi extends RundownPlaylist {
+	status: string
+	airStatus: string
+	unsynced: boolean
+}
+
 interface IRundownListItemProps {
 	key: string,
-	rundown: Rundown
+	rundown: RundownPlaylistUi
 }
 
 interface IRundownListItemStats {
@@ -43,7 +51,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
 	}
 
-	confirmDelete (rundown: Rundown) {
+	confirmDelete (rundown: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -60,7 +68,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		})
 	}
 
-	confirmReSyncRO (rundown: Rundown) {
+	confirmReSyncRO (rundown: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
 			title: t('Re-Sync this rundown?'),
@@ -150,7 +158,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
-	rundowns: Array<Rundown>
+	rundowns: Array<RundownPlaylistUi>
 }
 
 interface IRundownsListState {
@@ -163,7 +171,13 @@ export const RundownList = translateWithTracker(() => {
 
 	return {
 		coreSystem: getCoreSystem(),
-		rundowns: Rundowns.find({}, { sort: { created: -1 } }).fetch()
+		rundowns: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((p: RundownPlaylistUi) => {
+			const rs = p.getRundowns()
+			p.airStatus = rs.map(r => r.airStatus).join(', ')
+			p.status = rs.map(r => r.status).join(', ')
+			p.unsynced = rs.reduce((p, v) => p || v.unsynced || false, false)
+			return p
+		})
 	}
 })(
 class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
@@ -190,13 +204,13 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		})
 	}
 
-	renderRundowns (list: Rundown[]) {
+	renderRundowns (list: RundownPlaylistUi[]) {
 		return list.map((rundown) => (
 			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
 		))
 	}
 
-	renderUnsyncedRundowns (list: Rundown[]) {
+	renderUnsyncedRundowns (list: RundownPlaylistUi[]) {
 		return list.map((rundown) => (
 			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
 		))
@@ -205,7 +219,8 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 	componentWillMount () {
 		// Subscribe to data:
 		// TODO: make something clever here, to not load ALL the rundowns
-		this.subscribe('rundowns', {})
+		this.subscribe(PubSub.rundownPlaylists, {})
+		this.subscribe(PubSub.rundowns, {})
 	}
 
 	render () {

@@ -10,7 +10,7 @@ import { Parts, Part } from './Parts';
 import { Pieces, Piece } from './Pieces';
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration';
 
-interface DBRundownPlaylist {
+export interface DBRundownPlaylist {
 	_id: string
 	externalId: string
 	studioId: string

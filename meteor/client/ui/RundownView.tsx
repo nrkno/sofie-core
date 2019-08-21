@@ -1104,7 +1104,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			subType: TSR_DeviceType.CASPARCG
 		}).fetch()) || undefined,
-		rundownLayoutId: String(params['layout'])
+		rundownLayoutId: String(params['layout'] || '')
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1206,33 +1206,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	componentDidMount () {
-		let playlistId = this.props.playlistId
+		let playlistId = this.props.rundownId
 
 		this.subscribe(PubSub.rundownPlaylists, {
 			_id: playlistId
 		})
 		this.subscribe(PubSub.rundowns, {
 			playlistId
-		})
-		this.subscribe(PubSub.segments, {
-			rundownId: {
-				$in: this.props.rundowns.map(i => i._id)
-			}
-		})
-		this.subscribe(PubSub.parts, {
-			rundownId: {
-				$in: this.props.rundowns.map(i => i._id)
-			}
-		})
-		this.subscribe(PubSub.pieces, {
-			rundownId: {
-				$in: this.props.rundowns.map(i => i._id)
-			}
-		})
-		this.subscribe(PubSub.adLibPieces, {
-			rundownId: {
-				$in: this.props.rundowns.map(i => i._id)
-			}
 		})
 		this.autorun(() => {
 			let playlist = RundownPlaylists.findOne(playlistId)
@@ -1243,13 +1223,45 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 		this.autorun(() => {
-			let rundown = Rundowns.findOne(playlistId)
-			if (rundown) {
+			let playlist = RundownPlaylists.findOne(playlistId)
+			if (playlist) {
+				const rundowns = playlist.getRundowns()
 				this.subscribe(PubSub.showStyleBases, {
-					_id: rundown.showStyleBaseId
+					_id: {
+						$in: rundowns.map(i => i.showStyleBaseId)
+					}
 				})
 				this.subscribe(PubSub.rundownLayouts, {
-					showStyleBaseId: rundown.showStyleBaseId
+					showStyleBaseId: {
+						$in: rundowns.map(i => i.showStyleBaseId)
+					}
+				})
+
+				const rundownIDs = rundowns.map(i => i._id)
+				this.subscribe(PubSub.segments, {
+					rundownId: {
+						$in: rundownIDs
+					}
+				})
+				this.subscribe(PubSub.parts, {
+					rundownId: {
+						$in: rundownIDs
+					}
+				})
+				this.subscribe(PubSub.pieces, {
+					rundownId: {
+						$in: rundownIDs
+					}
+				})
+				this.subscribe(PubSub.adLibPieces, {
+					rundownId: {
+						$in: rundownIDs
+					}
+				})
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: {
+						$in: rundownIDs
+					}
 				})
 			}
 		})
@@ -1263,7 +1275,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		document.body.classList.add('dark', 'vertical-overflow-only')
-		// window.addEventListener('scroll', this.onWindowScroll)
 
 		let preventDefault = (e) => {
 			e.preventDefault()
