@@ -15,7 +15,8 @@ import { getCurrentTime,
 	waitForPromise,
 	makePromise,
 	clone,
-	literal} from '../../../lib/lib'
+	literal,
+	asyncCollectionRemove} from '../../../lib/lib'
 import { Timeline, getTimelineId, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -161,7 +162,6 @@ export namespace ServerPlayoutAPI {
 	 */
 	export function takeNextPart (rundownId: string): ClientAPI.ClientResponse {
 		let now = getCurrentTime()
-
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			let rundown = Rundowns.findOne(rundownId) as Rundown
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -172,6 +172,8 @@ export namespace ServerPlayoutAPI {
 
 			let firstTake = !rundown.startedPlayback
 			let rundownData = rundown.fetchAllData()
+
+			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
 			if (currentPart && currentPart.transitionDuration) {
@@ -195,29 +197,30 @@ export namespace ServerPlayoutAPI {
 				})
 			// If hold is active, then this take is to clear it
 			} else if (rundown.holdState === RundownHoldState.ACTIVE) {
-				Rundowns.update(rundown._id, {
+				const ps: Promise<any>[] = []
+				ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 					$set: {
 						holdState: RundownHoldState.COMPLETE
 					}
-				})
+				}))
 
 				if (rundown.currentPartId) {
 					const currentPart = rundownData.partsMap[rundown.currentPartId]
 					if (!currentPart) throw new Meteor.Error(404, 'currentPart not found!')
 
 					// Remove the current extension line
-					Pieces.remove({
+					ps.push(asyncCollectionRemove(Pieces, {
 						partId: currentPart._id,
 						extendOnHold: true,
 						dynamicallyInserted: true
-					})
+					}))
 				}
 				if (rundown.previousPartId) {
 					const previousPart = rundownData.partsMap[rundown.previousPartId]
 					if (!previousPart) throw new Meteor.Error(404, 'previousPart not found!')
 
 					// Clear the extended mark on the original
-					Pieces.update({
+					ps.push(asyncCollectionUpdate(Pieces, {
 						partId: previousPart._id,
 						extendOnHold: true,
 						dynamicallyInserted: false
@@ -226,13 +229,12 @@ export namespace ServerPlayoutAPI {
 							infiniteId: 0,
 							infiniteMode: 0,
 						}
-					}, { multi: true })
+					}, { multi: true }))
 				}
-
+				waitForPromiseAll(ps)
 				updateTimeline(rundown.studioId)
 				return ClientAPI.responseSuccess()
 			}
-			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			let previousPart = (rundown.currentPartId ?
 				rundownData.partsMap[rundown.currentPartId]
@@ -251,6 +253,7 @@ export namespace ServerPlayoutAPI {
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
 
+
 			const { blueprint } = waitForPromise(pBlueprint)
 			if (blueprint.onPreTake) {
 				try {
@@ -262,7 +265,6 @@ export namespace ServerPlayoutAPI {
 					logger.error(e)
 				}
 			}
-
 			// TODO - the state could change after this sampling point. This should be handled properly
 			let previousPartEndState: PartEndState | undefined = undefined
 			if (blueprint.getEndStateForPart && previousPart) {
@@ -273,9 +275,8 @@ export namespace ServerPlayoutAPI {
 				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
-
 			let ps: Array<Promise<any>> = []
-			let m = {
+			let m: Partial<Rundown> = {
 				previousPartId: rundown.currentPartId,
 				currentPartId: takePart._id,
 				holdState: !rundown.holdState || rundown.holdState === RundownHoldState.COMPLETE ? RundownHoldState.NONE : rundown.holdState + 1,
@@ -311,7 +312,6 @@ export namespace ServerPlayoutAPI {
 
 			libSetNextPart(rundown, nextPart)
 			waitForPromiseAll(ps)
-
 			ps = []
 
 			// Setup the parts for the HOLD we are starting
@@ -334,7 +334,7 @@ export namespace ServerPlayoutAPI {
 
 					// make the extension
 					const newPiece = clone(piece) as Piece
-					newPiece.partId = m.currentPartId
+					newPiece.partId = takePart._id
 					newPiece.enable = { start: 0 }
 					const content = newPiece.content as VTContent
 					if (content.fileName && content.sourceDuration && piece.startedPlayback) {
@@ -350,27 +350,31 @@ export namespace ServerPlayoutAPI {
 				})
 			}
 			waitForPromiseAll(ps)
-			afterTake(rundown, takePart, timeOffset)
+			afterTake(rundownData, takePart, timeOffset)
 
-			// last:
-			Parts.update(takePart._id, {
-				$push: {
-					'timings.takeDone': getCurrentTime()
-				}
-			})
-
+			// Last:
+			const takeDoneTime = getCurrentTime()
 			Meteor.defer(() => {
+				Parts.update(takePart._id, {
+					$push: {
+						'timings.takeDone': takeDoneTime
+					}
+				})
 				// let bp = getBlueprintOfRundown(rundown)
 				if (firstTake) {
 					if (blueprint.onRundownFirstTake) {
-						Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(rundown, undefined, takePart)))
-						.catch(logger.error)
+						waitForPromise(
+							Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(rundown, undefined, takePart)))
+							.catch(logger.error)
+						)
 					}
 				}
 
 				if (blueprint.onPostTake) {
-					Promise.resolve(blueprint.onPostTake(new PartEventContext(rundown, undefined, takePart)))
-					.catch(logger.error)
+					waitForPromise(
+						Promise.resolve(blueprint.onPostTake(new PartEventContext(rundown, undefined, takePart)))
+						.catch(logger.error)
+					)
 				}
 			})
 
@@ -757,13 +761,14 @@ export namespace ServerPlayoutAPI {
 				if (!isPlaying) {
 					logger.info(`Playout reports part "${partId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
-					let rundown = Rundowns.findOne(rundownId)
+					let rundown = Rundowns.findOne(rundownId) as Rundown
 					if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 					if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
-					const currentPart = (rundown.currentPartId ?
-						Parts.findOne(rundown.currentPartId)
-						: null
+					const currentPart = (
+						rundown.currentPartId ?
+						Parts.findOne(rundown.currentPartId) :
+						null
 					)
 
 					if (rundown.currentPartId === partId) {
@@ -800,6 +805,8 @@ export namespace ServerPlayoutAPI {
 								$gt: playingPart._rank,
 							},
 							_id: { $ne: playingPart._id }
+						}, {
+							limit: 1
 						})
 
 						let nextPart: Part | null = _.first(partsAfter) || null
@@ -846,7 +853,9 @@ export namespace ServerPlayoutAPI {
 
 					reportPartHasStarted(playingPart, startedPlayback)
 
-					afterTake(rundown, playingPart)
+					const rundownData = rundown.fetchAllData()
+
+					afterTake(rundownData, playingPart)
 				}
 			} else {
 				throw new Meteor.Error(404, `Part "${partId}" in rundown "${rundownId}" not found!`)
@@ -1189,7 +1198,7 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 }
 
 function afterTake (
-	rundown: Rundown,
+	rundownData: RundownData,
 	takePart: Part,
 	timeOffset: number | null = null
 ) {
@@ -1200,12 +1209,12 @@ function afterTake (
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(rundown.studioId, forceNowTime)
+	updateTimeline(rundownData.rundown.studioId, forceNowTime, rundownData)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
 		if (takePart.shouldNotifyCurrentPlayingPart) {
-			IngestActions.notifyCurrentPlayingPart(rundown, takePart)
+			IngestActions.notifyCurrentPlayingPart(rundownData.rundown, takePart)
 
 		}
 	}, 40)

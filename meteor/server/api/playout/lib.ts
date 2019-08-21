@@ -11,7 +11,8 @@ import {
 	asyncCollectionRemove,
 	Time,
 	pushOntoPath,
-	clone
+	clone,
+	toc
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -136,9 +137,9 @@ export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegme
 	}
 	return undefined
 }
-function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
+function getPreviousPart (dbPart: DBPart) {
 	return Parts.findOne({
-		rundownId: dbRundown._id,
+		rundownId: dbPart.rundownId,
 		_rank: { $lt: dbPart._rank }
 	}, { sort: { _rank: -1 } })
 }
@@ -183,6 +184,10 @@ export function setNextPart (
 				nextTimeOffset: nextTimeOffset || null
 			}
 		}))
+		rundown.nextPartId = nextPart._id
+		rundown.nextPartManual = !!setManually
+		rundown.nextTimeOffset = nextTimeOffset || null
+
 		ps.push(asyncCollectionUpdate(Parts, nextPart._id, {
 			$push: {
 				'timings.next': getCurrentTime()
@@ -195,17 +200,19 @@ export function setNextPart (
 				nextPartManual: !!setManually
 			}
 		}))
+		rundown.nextPartId = null
+		rundown.nextPartManual = !!setManually
 	}
+
 	waitForPromiseAll(ps)
 }
 
 function resetPart (part: DBPart): Promise<void> {
 	let ps: Array<Promise<any>> = []
 
-	let isDirty = part.dirty || false
 
 	ps.push(asyncCollectionUpdate(Parts, {
-		rundownId: part.rundownId,
+		// rundownId: part.rundownId,
 		_id: part._id
 	}, {
 		$unset: {
@@ -218,7 +225,7 @@ function resetPart (part: DBPart): Promise<void> {
 		}
 	}))
 	ps.push(asyncCollectionUpdate(Pieces, {
-		rundownId: part.rundownId,
+		// rundownId: part.rundownId,
 		partId: part._id
 	}, {
 		$unset: {
@@ -257,6 +264,8 @@ function resetPart (part: DBPart): Promise<void> {
 		multi: true
 	}))
 
+	let isDirty = part.dirty || false
+
 	if (isDirty) {
 		return new Promise((resolve, reject) => {
 			const rundown = Rundowns.findOne(part.rundownId)
@@ -271,7 +280,8 @@ function resetPart (part: DBPart): Promise<void> {
 	} else {
 		const rundown = Rundowns.findOne(part.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
-		const prevPart = getPreviousPart(rundown, part)
+		const prevPart = getPreviousPart(part)
+
 
 		return Promise.all(ps)
 		.then(() => {

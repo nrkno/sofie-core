@@ -583,6 +583,35 @@ function cleanUprateLimitIgnore () {
 		}
 	}
 }
+const cacheResultCache: {
+	[name: string]: {
+		ttl: number,
+		value: any
+	}
+} = {}
+/** Cache the result of function for a limited time */
+export function cacheResult<T> (name: string, fcn: () => T, limitTime: number = 1000) {
+
+	if (Math.random() < 0.01) {
+		Meteor.setTimeout(cleanCacheResult, 10000)
+	}
+	const cache = cacheResultCache[name]
+	if (!cache || cache.ttl < Date.now()) {
+		const value = fcn()
+		cacheResultCache[name] = {
+			ttl: Date.now() + limitTime,
+			value: value
+		}
+		return value
+	} else {
+		return cache.value
+	}
+}
+function cleanCacheResult () {
+	_.each(cacheResultCache, (cache, name) => {
+		if (cache.ttl < Date.now()) delete cacheResultCache[name]
+	})
+}
 
 export function escapeHtml (text: string): string {
 	// Escape strings, so they are XML-compatible:
@@ -613,10 +642,23 @@ const ticCache = {}
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()
 }
-export function toc (name: string = 'default', logStr?: string) {
-	let t: number = Date.now() - ticCache[name]
-	if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
-	return t
+export function toc (name: string = 'default', logStr?: string | Promise<any>[]) {
+
+	if (_.isArray(logStr)) {
+		_.each(logStr, (promise, i) => {
+			promise.then((result) => {
+				toc(name, 'Promise ' + i)
+				return result
+			})
+			.catch(e => {
+				throw e
+			})
+		})
+	} else {
+		let t: number = Date.now() - ticCache[name]
+		if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
+		return t
+	}
 }
 
 export function asyncCollectionFindFetch<DocClass, DBInterface> (

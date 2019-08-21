@@ -8,7 +8,7 @@ import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray } from '../../../lib/lib'
+import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
@@ -22,8 +22,11 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   runUntilEnd = true
 	}
 
+	let ps: Array<Promise<any>> = []
+
+	const pPartsToProcess = makePromise(() => rundown.getParts())
+
 	if (previousPart) {
-	   let ps: Array<Promise<any>> = []
 	   // figure out the baseline to set
 	   let prevPieces = getOrderedPiece(previousPart)
 	   _.each(prevPieces, piece => {
@@ -47,10 +50,11 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   }
 		   }
 	   })
-	   waitForPromiseAll(ps)
 	}
 
-	let partsToProcess = rundown.getParts()
+	let partsToProcess = waitForPromise(pPartsToProcess)
+	waitForPromiseAll(ps)
+
 	if (previousPart) {
 	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
 	}
@@ -72,7 +76,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	})
 	waitForPromiseAll(psPopulateCache)
 
-	let ps: Array<Promise<any>> = []
+	ps = []
 	for (let part of partsToProcess) {
 	   // Drop any that relate only to previous segments
 	   for (let k in activeInfiniteItemsSegmentId) {

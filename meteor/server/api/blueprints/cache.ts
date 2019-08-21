@@ -15,6 +15,7 @@ import {
 	SystemBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { makePromise, rateLimit, cacheResult } from '../../../lib/lib'
 
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
@@ -69,11 +70,25 @@ export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | 
 	}
 }
 
-export function getBlueprintOfRundown (runnningOrder: Rundown): WrappedShowStyleBlueprint {
-	if (!runnningOrder.showStyleBaseId) throw new Meteor.Error(400, `Rundown is missing showStyleBaseId!`)
-	let showStyleBase = ShowStyleBases.findOne(runnningOrder.showStyleBaseId)
-	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${runnningOrder.showStyleBaseId}" not found!`)
-	return loadShowStyleBlueprints(showStyleBase)
+export function getBlueprintOfRundownAsync (rundown: Rundown): Promise<WrappedShowStyleBlueprint> {
+	return makePromise(() => {
+		return getBlueprintOfRundown(rundown)
+	})
+}
+export function getBlueprintOfRundown (rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
+
+	const fcn = () => {
+		if (!rundown.showStyleBaseId) throw new Meteor.Error(400, `Rundown is missing showStyleBaseId!`)
+		let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
+		return loadShowStyleBlueprints(showStyleBase)
+	}
+
+	if (noCache) {
+		return fcn()
+	} else {
+		return cacheResult(`rundownBlueprint_${rundown._id}`, fcn, 1000)
+	}
 }
 
 export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
