@@ -343,11 +343,17 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntryExt[] {
 	let showStyleBases: Array<ShowStyleBase> = []
 
+	const blueprints: Blueprint[] = []
+
 	if (item instanceof Studio) {
 		// All showStyles that the studio is supposed to support:
 		showStyleBases = ShowStyleBases.find({
 			_id: { $in: item.supportedShowStyleBase || [] }
 		}).fetch()
+		if (item.blueprintId) {
+			const studioBlueprint = Blueprints.findOne(item.blueprintId)
+			if (studioBlueprint) blueprints.push(studioBlueprint)
+		}
 	} else if (item instanceof ShowStyleBase) {
 		showStyleBases = [item]
 	} else if (item instanceof ShowStyleVariant) {
@@ -360,13 +366,13 @@ export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant)
 
 	// By extension, all blueprints that the studio is supposed to support:
 
-	let blueprints = Blueprints.find({
+	Blueprints.find({
 		_id: {
 			$in: _.compact(_.map(showStyleBases, (showStyleBase) => {
 				return showStyleBase.blueprintId
 			}))
 		}
-	}).fetch()
+	}).forEach(bp => blueprints.push(bp))
 
 	let manifestEntries: Array<ConfigManifestEntryExt> = []
 	_.each(blueprints, (blueprint: Blueprint) => {
