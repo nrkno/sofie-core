@@ -110,10 +110,12 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 
 				if (rundown && this.props.rundownId && this.props.segments) {
 					let currentPart: PartUi | undefined
+					let currentSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
 								if (item._id === rundown.currentPartId) {
+									currentSegment = segment
 									currentPart = item
 								}
 							}
@@ -128,11 +130,13 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						}
 					}
 
-					let nextPart
+					let nextPart: PartUi | undefined
+					let nextSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
 								if (item._id === rundown.nextPartId) {
+									nextSegment = segment
 									nextPart = item
 								}
 							}
@@ -160,7 +164,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 											<PieceIconContainer partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 										</div>
 										<div className='clocks-part-title clocks-current-segment-title'>
-											{currentPart.title.split(';')[0]}
+											{currentSegment!.name}
 										</div>
 										<div className='clocks-part-title clocks-part-title clocks-current-segment-title'>
 											<PieceNameContainer partSlug={currentPart.title} partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
@@ -186,11 +190,11 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 											<div style={{ display: 'inline-block', height: '18vh' }}>
 												<img style={{ height: '12vh', paddingTop: '2vh' }} src='/icons/auto-presenter-screen.svg' />
 											</div> : ''}
-										{nextPart && nextPart.slug ? nextPart.slug.split(';')[0] : '_'}
+										{nextSegment && nextSegment.name ? nextSegment.name.split(';')[0] : '_'}
 									</div>
 									<div className='clocks-part-title clocks-part-title'>
-										{nextPart && nextPart.slug ?
-											<PieceNameContainer partSlug={nextPart.slug} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+										{nextPart && nextPart.title ?
+											<PieceNameContainer partSlug={nextPart.title} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 											: '_'}
 									</div>
 								</div>
