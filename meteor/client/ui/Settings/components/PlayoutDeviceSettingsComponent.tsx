@@ -117,13 +117,13 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 		const { t } = this.props
 
 		return <table className='expando settings-studio-device-table'>
-			<tr>
-				<th>{t('Device id')}</th>
-				<th>{t('Type')}</th>
-				<th>{t('Disable')}</th>
-			</tr>
-			<tbody>{
-				_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
+			<tbody>
+				<tr>
+					<th>{t('Device id')}</th>
+					<th>{t('Type')}</th>
+					<th>{t('Disable')}</th>
+				</tr>
+				{_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
 					return <React.Fragment key={deviceId}>
 						<tr className={ClassNames({
 							'hl': this.isItemEdited(deviceId)
@@ -207,7 +207,6 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				})}
 			</tbody>
 		</table>
-		
 	}
 	renderCasparCGDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
 		const { t } = this.props
