@@ -434,82 +434,96 @@ export namespace ServerPlayoutAPI {
 		if (!horisontalDelta && !verticalDelta) throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horisontalDelta}, ${verticalDelta})`)
 
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
+			return moveNextPartInner(
+				rundownId,
+				horisontalDelta,
+				verticalDelta,
+				setManually,
+				currentNextPieceId
+			)
+		})
+	}
+	function moveNextPartInner (
+		rundownId: string,
+		horisontalDelta: number,
+		verticalDelta: number,
+		setManually: boolean,
+		currentNextPieceId?: string
+	): string {
 
-			if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
-			let currentNextPiece: Part
-			if (currentNextPieceId) {
-				currentNextPiece = Parts.findOne(currentNextPieceId) as Part
-			} else {
-				if (!rundown.nextPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next part!`)
-				currentNextPiece = Parts.findOne(rundown.nextPartId) as Part
+		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
+
+		let currentNextPiece: Part
+		if (currentNextPieceId) {
+			currentNextPiece = Parts.findOne(currentNextPieceId) as Part
+		} else {
+			if (!rundown.nextPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next part!`)
+			currentNextPiece = Parts.findOne(rundown.nextPartId) as Part
+		}
+
+		if (!currentNextPiece) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
+
+		let currentNextSegment = Segments.findOne(currentNextPiece.segmentId) as Segment
+		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPiece.segmentId}" not found!`)
+
+		let parts = rundown.getParts()
+		let segments = rundown.getSegments()
+
+		let partIndex: number = -1
+		_.find(parts, (part, i) => {
+			if (part._id === currentNextPiece._id) {
+				partIndex = i
+				return true
 			}
+		})
+		let segmentIndex: number = -1
+		_.find(segments, (s, i) => {
+			if (s._id === currentNextSegment._id) {
+				segmentIndex = i
+				return true
+			}
+		})
+		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
+		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+		if (verticalDelta !== 0) {
+			segmentIndex += verticalDelta
 
-			if (!currentNextPiece) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
+			let segment = segments[segmentIndex]
 
-			let currentNextSegment = Segments.findOne(currentNextPiece.segmentId) as Segment
-			if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPiece.segmentId}" not found!`)
+			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
 
-			let parts = rundown.getParts()
-			let segments = rundown.getSegments()
+			let partsInSegment = segment.getParts()
+			let part = _.first(partsInSegment) as Part
+			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
-			let partIndex: number = -1
-			_.find(parts, (part, i) => {
-				if (part._id === currentNextPiece._id) {
+			partIndex = -1
+			_.find(parts, (p, i) => {
+				if (p._id === part._id) {
 					partIndex = i
 					return true
 				}
 			})
-			let segmentIndex: number = -1
-			_.find(segments, (s, i) => {
-				if (s._id === currentNextSegment._id) {
-					segmentIndex = i
-					return true
-				}
-			})
-			if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
-			if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+			if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
+		}
+		partIndex += horisontalDelta
 
-			if (verticalDelta !== 0) {
-				segmentIndex += verticalDelta
+		partIndex = Math.max(0, Math.min(parts.length - 1, partIndex))
 
-				let segment = segments[segmentIndex]
+		let part = parts[partIndex]
+		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-				if (!segment) throw new Meteor.Error(404, `No Segment found!`)
-
-				let partsInSegment = segment.getParts()
-				let part = _.first(partsInSegment) as Part
-				if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
-
-				partIndex = -1
-				_.find(parts, (p, i) => {
-					if (p._id === part._id) {
-						partIndex = i
-						return true
-					}
-				})
-				if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
-			}
-
-			partIndex += horisontalDelta
-
-			partIndex = Math.max(0, Math.min(parts.length - 1, partIndex))
-
-			let part = parts[partIndex]
-			if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
-
-			if ((part._id === rundown.currentPartId && !currentNextPieceId) || part.invalid) {
-				// Whoops, we're not allowed to next to that.
-				// Skip it, then (ie run the whole thing again)
-				return moveNextPart(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
-			} else {
-				setNextPartInner(rundown, part, setManually)
-				return part._id
-			}
-		})
+		if ((part._id === rundown.currentPartId && !currentNextPieceId) || part.invalid) {
+			// Whoops, we're not allowed to next to that.
+			// Skip it, then (ie run the whole thing again)
+			return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+		} else {
+			setNextPartInner(rundown, part, setManually)
+			return part._id
+		}
 	}
 	export function activateHold (rundownId: string) {
 		check(rundownId, String)
