@@ -94,13 +94,13 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 	})(
 		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
 			componentWillMount () {
-				this.subscribe('rundowns', {
+				this.subscribe(PubSub.rundowns, {
 					_id: this.props.rundownId
 				})
-				this.subscribe('segments', {
+				this.subscribe(PubSub.segments, {
 					rundownId: this.props.rundownId
 				})
-				this.subscribe('parts', {
+				this.subscribe(PubSub.parts, {
 					rundownId: this.props.rundownId
 				})
 			}
@@ -267,10 +267,10 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			document.body.classList.add('dark', 'xdark')
 			let studioId = objectPathGet(this.props, 'match.params.studioId')
 			if (studioId) {
-				this.subscribe('studios', {
+				this.subscribe(PubSub.studios, {
 					_id: studioId
 				})
-				this.subscribe('rundowns', {
+				this.subscribe(PubSub.rundowns, {
 					active: true,
 					studioId: studioId
 				})
@@ -282,19 +282,19 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 				})
 			)
 			if (rundown) {
-				this.subscribe('segments', {
+				this.subscribe(PubSub.segments, {
 					rundownId: rundown._id
 				})
-				this.subscribe('parts', {
+				this.subscribe(PubSub.parts, {
 					rundownId: rundown._id
 				})
-				this.subscribe('pieces', {
+				this.subscribe(PubSub.pieces, {
 					rundownId: rundown._id
 				})
-				this.subscribe('showStyleBases', {
+				this.subscribe(PubSub.showStyleBases, {
 					_id: rundown.showStyleBaseId
 				})
-				this.subscribe('adLibPieces', {
+				this.subscribe(PubSub.adLibPieces, {
 					rundownId: rundown._id
 				})
 			}

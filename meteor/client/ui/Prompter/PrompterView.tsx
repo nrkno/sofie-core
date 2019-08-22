@@ -17,6 +17,7 @@ import { Segments } from '../../../lib/collections/Segments'
 import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
 import { Meteor } from 'meteor/meteor'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -94,13 +95,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentWillMount () {
-		this.subscribe('rundowns', _.extend({
+		this.subscribe(PubSub.rundowns, _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studios', {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
 		}
@@ -364,10 +365,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	}
 	componentWillMount () {
 
-		this.subscribe('rundowns', { _id: this.props.rundownId })
-		this.subscribe('segments', { rundownId: this.props.rundownId })
-		this.subscribe('parts', { rundownId: this.props.rundownId })
-		this.subscribe('pieces', { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
+		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownId })
 
 	}
 

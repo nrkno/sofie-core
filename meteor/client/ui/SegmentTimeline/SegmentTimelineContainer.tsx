@@ -22,6 +22,7 @@ import { getSpeakingMode } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
+import { PubSub } from '../../../lib/api/pubsub'
 
 const SPEAK_ADVANCE = 500
 
@@ -211,10 +212,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentWillMount () {
-		this.subscribe('segment', {
+		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
 		})
-		this.subscribe('parts', {
+		this.subscribe(PubSub.parts, {
 			segmentId: this.props.segmentId
 		})
 		SpeechSynthesiser.init()

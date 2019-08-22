@@ -14,6 +14,7 @@ import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { RecordingView } from './RecordingView'
 import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IStatusMenuProps {
 	match?: any
@@ -57,9 +58,9 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this.subscribe('studios', {})
-		this.subscribe('showStyleBases', {})
-		this.subscribe('showStyleVariants', {})
+		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.showStyleBases, {})
+		this.subscribe(PubSub.showStyleVariants, {})
 	}
 	render () {
 

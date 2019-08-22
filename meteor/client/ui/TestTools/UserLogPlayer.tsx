@@ -249,8 +249,8 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 	componentWillMount () {
 		// Subscribe to data:
 
-		this.subscribe('rundowns', {})
-		this.subscribe('snapshots', {
+		this.subscribe(PubSub.rundowns, {})
+		this.subscribe(PubSub.snapshots, {
 			type: SnapshotType.RUNDOWN
 		})
 	}

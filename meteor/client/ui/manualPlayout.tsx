@@ -28,6 +28,7 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'
 import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
+import { PubSub } from '../../lib/api/pubsub'
 interface IManualPlayoutProps {
 }
 interface IManualPlayoutState {
@@ -46,8 +47,8 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 	}
 	componentWillMount () {
-		this.subscribe('studios', {})
-		this.subscribe('peripheralDevices', {})
+		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.peripheralDevices, {})
 	}
 	getStudios () {
 		return Studios.find().fetch()
