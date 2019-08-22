@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { getCurrentTime, Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export interface PeripheralDeviceCommand {
 	_id: string
@@ -18,7 +18,7 @@ export interface PeripheralDeviceCommand {
 	time: Time // time
 }
 export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>
-	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+	= createMongoCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 
 // Monitor and remove old, lingering commands:

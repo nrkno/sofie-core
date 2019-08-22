@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../api/rundown'
 import { TimelineTransition, Timeline } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
@@ -11,6 +10,7 @@ import {
 	PieceLifespan,
 	BaseContent,
 } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 /** A Single item in a "line": script, VT, cameras */
 export interface PieceGeneric extends IBlueprintPieceGeneric {
@@ -79,7 +79,7 @@ export interface Piece extends PieceGeneric, IBlueprintPieceDB {
 }
 
 export const Pieces: TransformedCollection<Piece, Piece>
-	= new Mongo.Collection<Piece>('pieces')
+	= createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

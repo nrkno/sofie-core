@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
@@ -6,6 +5,7 @@ import {
 	IBlueprintAsRunLogEvent,
 	IBlueprintAsRunLogEventContent
 } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 export interface AsRunLogEventBase {
 	studioId: string,
@@ -31,7 +31,7 @@ export interface AsRunLogEvent extends AsRunLogEventBase, IBlueprintAsRunLogEven
 }
 
 export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent>
-	= new Mongo.Collection<AsRunLogEvent>('asRunLog')
+	= createMongoCollection<AsRunLogEvent>('asRunLog')
 registerCollection('AsRunLog', AsRunLog)
 
 Meteor.startup(() => {

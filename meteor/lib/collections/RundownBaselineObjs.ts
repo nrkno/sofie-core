@@ -1,8 +1,8 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { TimelineObjGeneric } from './Timeline'
+import { createMongoCollection } from './lib'
 
 export interface RundownBaselineObj {
 	_id: string
@@ -13,7 +13,7 @@ export interface RundownBaselineObj {
 }
 
 export const RundownBaselineObjs: TransformedCollection<RundownBaselineObj, RundownBaselineObj>
-	= new Mongo.Collection<RundownBaselineObj>('rundownBaselineObjs')
+	= createMongoCollection<RundownBaselineObj>('rundownBaselineObjs')
 registerCollection('RundownBaselineObjs', RundownBaselineObjs)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
