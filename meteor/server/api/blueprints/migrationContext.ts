@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { OmitId, trimIfString, getHash } from '../../../lib/lib'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -70,12 +70,20 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		let configItem = _.find(this.studio.config, c => c._id === configId)
 		if (configItem) {
+			let modifier: Mongo.Modifier<DBStudio> = {}
+			if (value === undefined) {
+				modifier = {$unset: {
+					'config.$.value' : 1
+				}}
+			} else {
+				modifier = {$set: {
+					'config.$.value' : value
+				}}
+			}
 			Studios.update({
 				_id: this.studio._id,
 				'config._id': configId
-			}, {$set: {
-				'config.$.value' : value
-			}})
+			}, modifier)
 			configItem.value = value // Update local
 		} else {
 			let config: IConfigItem = {
