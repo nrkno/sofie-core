@@ -259,9 +259,10 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		let part = _.find(this.showStyleBase.sourceLayers, part => part._id === sourceLayerId) as ISourceLayer
 		if (!part) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
 
-		_.each(layer, (value, key: keyof ISourceLayer) => {
-			part[key] = value // Update local object
-		})
+		part = {
+			...part,
+			...layer
+		}
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
 			'sourceLayers._id': sourceLayerId
