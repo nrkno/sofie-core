@@ -268,6 +268,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	componentWillUnmount () {
 		this._cleanUp()
+		if (this.intersectionObserver && this.props.isLiveSegment && this.props.followLiveSegments) {
+			const entries = this.intersectionObserver.takeRecords()
+			if (entries[0] && entries[0].intersectionRatio < 0.99) {
+				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+			}
+		}
 		this.stopLive()
 		window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 	}
