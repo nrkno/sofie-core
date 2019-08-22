@@ -1477,7 +1477,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 4000)
+			}, 2000)
 		} else if (this.props.rundown && this.props.rundown.active && this.props.rundown.currentPartId) {
 			this.setState({
 				followLiveSegments: true
@@ -1493,7 +1493,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 4000)
+			}, 2000)
 		} else {
 			this.setState({
 				followLiveSegments: true
