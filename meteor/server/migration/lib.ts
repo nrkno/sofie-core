@@ -199,7 +199,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 				let device = devices[i]
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
 
 				if (expectedVersion) {
 					try {
@@ -219,7 +219,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 			_.each(devices, (device) => {
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
 				if (!expectedVersion || semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr
