@@ -333,7 +333,7 @@ export namespace ServerPlayoutAPI {
 					}))
 
 					// make the extension
-					const newPiece = clone(piece) as Piece
+					const newPiece: Piece = clone(piece)
 					newPiece.partId = takePart._id
 					newPiece.enable = { start: 0 }
 					const content = newPiece.content as VTContent

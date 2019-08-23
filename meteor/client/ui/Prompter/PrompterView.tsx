@@ -158,7 +158,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
 		let foundPositions: number[] = []
-		const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
 		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
 			const { top } = anchor.getBoundingClientRect()

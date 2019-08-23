@@ -481,7 +481,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: TimelineObjRundown[] = [previousPartGroup]
 				prevObjs = prevObjs.concat(
-					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activeRundown.holdState, undefined))
+					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activeRundown.holdState))
 
 				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
 
@@ -546,7 +546,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		}
 		timelineObjs = timelineObjs.concat(
 			currentPartGroup,
-			transformPartIntoTimeline(rundownData.rundown, currentNormalItems, groupClasses, currentPartGroup, transProps, activeRundown.holdState, undefined)
+			transformPartIntoTimeline(rundownData.rundown, currentNormalItems, groupClasses, currentPartGroup, transProps, activeRundown.holdState)
 		)
 
 		timelineObjs.push(createPartGroupFirstObject(currentPart, currentPartGroup, previousPart))

@@ -84,7 +84,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 		this.subscribe(PubSub.showStyleVariants, {})
 	}
 	render () {
-		const { t } = this.props
+		// const { t } = this.props
 
 		return (
 			<div className='mtl gutter has-statusbar'>
