@@ -343,7 +343,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntryExt[] {
 	let showStyleBases: Array<ShowStyleBase> = []
 
-	const blueprints: Blueprint[] = []
+	let blueprints: Blueprint[] = []
 
 	if (item instanceof Studio) {
 		// All showStyles that the studio is supposed to support:
@@ -373,6 +373,8 @@ export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant)
 			}))
 		}
 	}).forEach(bp => blueprints.push(bp))
+
+	blueprints = _.uniq(blueprints, false, bp => bp._id)
 
 	let manifestEntries: Array<ConfigManifestEntryExt> = []
 	_.each(blueprints, (blueprint: Blueprint) => {
