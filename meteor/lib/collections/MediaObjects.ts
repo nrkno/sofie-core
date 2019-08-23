@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export interface MediaObject0 {
 	// Media object file path relative to playout server
@@ -126,7 +126,7 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
-	= new Mongo.Collection<MediaObject>('mediaObjects')
+	= createMongoCollection<MediaObject>('mediaObjects')
 registerCollection('MediaObjects', MediaObjects)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

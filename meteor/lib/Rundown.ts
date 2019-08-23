@@ -133,13 +133,13 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				}
 			}, { sort: { _rank: 1 }, limit: 1 }).fetch()
 			if (followingParts.length > 0) {
-				let followingPart = followingParts[0]
+				let firstFollowingPart = followingParts[0]
 
 				let pieces = Pieces.find({
-					partId: followingPart._id
+					partId: firstFollowingPart._id
 				}).fetch()
 
-				followingPart = extendMandadory<Part, PartExtended>(followingPart, {
+				followingPart = extendMandadory<Part, PartExtended>(firstFollowingPart, {
 					pieces: _.map(pieces, (piece) => {
 						return extendMandadory<Piece, PieceExtended>(piece, {
 							// sourceLayer: ISourceLayerExtended,
@@ -224,16 +224,17 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			if (rundown.nextPartId === partE._id) {
 				isNextSegment = true
 			}
-			autoNextPart = (
-				currentLivePart ?
-				currentLivePart.autoNext || false : false
-			) && (
+			autoNextPart = !!(
+				currentLivePart &&
+				currentLivePart.autoNext &&
 				(
-					currentLivePart &&
-					currentLivePart.expectedDuration !== undefined
-				) ?
-				currentLivePart.expectedDuration !== 0 :
-				false
+					(
+						currentLivePart &&
+						currentLivePart.expectedDuration !== undefined
+					) ?
+					currentLivePart.expectedDuration !== 0 :
+					false
+				)
 			)
 			if (partE.startedPlayback !== undefined) {
 				hasAlreadyPlayed = true
@@ -491,8 +492,8 @@ export function offsetTimelineEnableExpression (val: SuperTimeline.Expression | 
 }
 
 export function calculatePieceTimelineEnable (piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
-	let duration: SuperTimeline.Expression | undefined = undefined
-	let end: SuperTimeline.Expression | undefined = undefined
+	let duration: SuperTimeline.Expression | undefined
+	let end: SuperTimeline.Expression | undefined
 	if (piece.playoutDuration !== undefined) {
 		duration = piece.playoutDuration
 	} else if (piece.userDuration !== undefined) {

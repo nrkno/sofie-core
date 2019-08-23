@@ -17,7 +17,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	const mutateAndPushObject = (rawObj: TimelineObjRundown, i: string, enable: TimelineObjRundown['enable'], mapping: MappingExt, priority: number) => {
-		const obj = clone(rawObj) as TimelineObjGeneric
+		const obj: TimelineObjGeneric = clone(rawObj)
 
 		obj.id = `lookahead_${i}_${obj.id}`
 		obj.priority = priority

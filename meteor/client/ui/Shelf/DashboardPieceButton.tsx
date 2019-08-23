@@ -13,6 +13,7 @@ import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { PubSub } from '../../../lib/api/pubsub'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -71,7 +72,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
 					mediaId: this.objId
 				})
 			}

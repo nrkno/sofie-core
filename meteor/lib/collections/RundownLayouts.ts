@@ -1,8 +1,8 @@
-import { Mongo } from 'meteor/mongo'
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 /**
  * The view targeted by this layout:
@@ -114,7 +114,7 @@ export interface DashboardLayout extends RundownLayoutBase {
 }
 
 export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>
-	= new Mongo.Collection<RundownLayoutBase>('rundownLayouts')
+	= createMongoCollection<RundownLayoutBase>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

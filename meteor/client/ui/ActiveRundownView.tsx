@@ -11,6 +11,7 @@ import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
+import { PubSub } from '../../lib/api/pubsub'
 
 interface IProps {
 	match: {
@@ -57,13 +58,13 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 
 	componentWillMount () {
-		this.subscribe('rundowns', _.extend({
+		this.subscribe(PubSub.rundowns, _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studios', {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
 		}

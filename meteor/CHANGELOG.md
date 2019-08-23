@@ -1,6 +1,89 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [1.0.0-1](https://github.com/nrkno/tv-automation-server-core/compare/v0.26.0...v1.0.0-1) (2019-08-19)
+
+
+### Bug Fixes
+
+* **dashboard:** better filter for unfinished adlibs ([a3e0154](https://github.com/nrkno/tv-automation-server-core/commit/a3e0154))
+* Jest not finding all tests ([d26c9aa](https://github.com/nrkno/tv-automation-server-core/commit/d26c9aa))
+* **dashboard:** fix a bug in active adlib detection ([b9f2c3c](https://github.com/nrkno/tv-automation-server-core/commit/b9f2c3c))
+* **media scanner integration:** better way for checking upercase mediaId ([30afac8](https://github.com/nrkno/tv-automation-server-core/commit/30afac8))
+* **media scanner integration:** throw an error when mediaId contains lowercase characters ([3afe36e](https://github.com/nrkno/tv-automation-server-core/commit/3afe36e))
+* incorrect timeline hash when preserving previous object start ([b95753b](https://github.com/nrkno/tv-automation-server-core/commit/b95753b))
+* **mediaObject subscriptions:** subscribe to the mediaObjects from RundownNotifier in case the subscriptions aren't made by other UI components ([d798f89](https://github.com/nrkno/tv-automation-server-core/commit/d798f89))
+* add subdevices in settings for media manager ([4d05f16](https://github.com/nrkno/tv-automation-server-core/commit/4d05f16))
+* add support for allowing stereo audio in media files ([0d7aaaf](https://github.com/nrkno/tv-automation-server-core/commit/0d7aaaf))
+* blueprint config ui breaking with multiple blueprints using same config keys ([4664845](https://github.com/nrkno/tv-automation-server-core/commit/4664845))
+* broken timeline id prefixing ([c8d93d4](https://github.com/nrkno/tv-automation-server-core/commit/c8d93d4))
+* bugfix: error in typings for waitForPromiseAll ([64a2cba](https://github.com/nrkno/tv-automation-server-core/commit/64a2cba))
+* corrected OSC Device settings ([0781154](https://github.com/nrkno/tv-automation-server-core/commit/0781154))
+* Corrected spelling of adlibs and replaced "drawer" with "shelf". ([8687e97](https://github.com/nrkno/tv-automation-server-core/commit/8687e97))
+* don't remove adlib piece prefix when adding previous_ (to avoid duplicate key exceptions) ([ff2c8b5](https://github.com/nrkno/tv-automation-server-core/commit/ff2c8b5))
+* ignore timing of invalid parts ([6780944](https://github.com/nrkno/tv-automation-server-core/commit/6780944))
+* Improve setting pieceId on TimelineObjs for onTimelineGenerate ([5fccdd7](https://github.com/nrkno/tv-automation-server-core/commit/5fccdd7))
+* issue with timeline div moving ([9c9391b](https://github.com/nrkno/tv-automation-server-core/commit/9c9391b))
+* issues with certain displayGroup configurations ([d8e8b78](https://github.com/nrkno/tv-automation-server-core/commit/d8e8b78))
+* issues with out-of-viewport detection ([33e22fe](https://github.com/nrkno/tv-automation-server-core/commit/33e22fe))
+* Jest not finding all tests ([e106c77](https://github.com/nrkno/tv-automation-server-core/commit/e106c77))
+* limit growth of timeline obj ids when prefixing ([d22ed9f](https://github.com/nrkno/tv-automation-server-core/commit/d22ed9f))
+* lookahead adding too many objects too timeline ([3b63075](https://github.com/nrkno/tv-automation-server-core/commit/3b63075))
+* make "go to onAir" work consistently ([d3adef8](https://github.com/nrkno/tv-automation-server-core/commit/d3adef8))
+* manualPlayout: quantel use title or guid to play ([28268c9](https://github.com/nrkno/tv-automation-server-core/commit/28268c9))
+* migration error when moving config to studio ([4ec1bf8](https://github.com/nrkno/tv-automation-server-core/commit/4ec1bf8))
+* pass piece infiniteId to onTimelineGenerate for both pieces and objects ([6f190c9](https://github.com/nrkno/tv-automation-server-core/commit/6f190c9))
+* pieces being made too long when passed to onTimelineGenerate, causing the resolver to think the mp claims were longer than reality ([73d430d](https://github.com/nrkno/tv-automation-server-core/commit/73d430d))
+* proper quantel implementation ([94cf35f](https://github.com/nrkno/tv-automation-server-core/commit/94cf35f))
+* resolve a warning about an unmounted component ([adf1a3e](https://github.com/nrkno/tv-automation-server-core/commit/adf1a3e))
+* resolve issues with pending updates not being committed to state ([f4eac33](https://github.com/nrkno/tv-automation-server-core/commit/f4eac33))
+* resolve some additional issues with displayDurations ([a951b40](https://github.com/nrkno/tv-automation-server-core/commit/a951b40))
+* revert tv-automation-sofie-blueprints-integration dep update, temporarily ([2434552](https://github.com/nrkno/tv-automation-server-core/commit/2434552))
+* **virtual list:** fix delayed measure - when the component is optimized away on first render ([f8d2b44](https://github.com/nrkno/tv-automation-server-core/commit/f8d2b44))
+* scrollTo in NotificationCenterPanel should be absolute ([5e86231](https://github.com/nrkno/tv-automation-server-core/commit/5e86231))
+* statobj generation using incomplete data ([b144aa8](https://github.com/nrkno/tv-automation-server-core/commit/b144aa8))
+* studio settings page: Quantel settings ([d35aa71](https://github.com/nrkno/tv-automation-server-core/commit/d35aa71))
+* The Shelf was still called "Drawer". ([5c1cd30](https://github.com/nrkno/tv-automation-server-core/commit/5c1cd30))
+* typing fixes ([6babb11](https://github.com/nrkno/tv-automation-server-core/commit/6babb11))
+* typo ([147c493](https://github.com/nrkno/tv-automation-server-core/commit/147c493))
+* update blueprints-integration and tsr-types ([ead3a22](https://github.com/nrkno/tv-automation-server-core/commit/ead3a22))
+* Updated case of labels for consistency. ([ce5be3d](https://github.com/nrkno/tv-automation-server-core/commit/ce5be3d))
+
+
+### Features
+
+* add button for formatting hyperdeck ([005858a](https://github.com/nrkno/tv-automation-server-core/commit/005858a))
+* add option for minRecordingTime in HyperDeck settings ([afa927c](https://github.com/nrkno/tv-automation-server-core/commit/afa927c))
+* add sisyfos settings ([5023753](https://github.com/nrkno/tv-automation-server-core/commit/5023753))
+* add TCPSend device settings ([1778734](https://github.com/nrkno/tv-automation-server-core/commit/1778734))
+* allow hyphenation in compatible browsers ([c18e38f](https://github.com/nrkno/tv-automation-server-core/commit/c18e38f))
+* also check if not in an active rundown ([183be03](https://github.com/nrkno/tv-automation-server-core/commit/183be03))
+* an entirely new way of scrolling and scroll detection ([bc48a8e](https://github.com/nrkno/tv-automation-server-core/commit/bc48a8e))
+* Automatic restart between around 3 o'clock ([25bc898](https://github.com/nrkno/tv-automation-server-core/commit/25bc898))
+* better activation experience when another rundown is already active ([658aac2](https://github.com/nrkno/tv-automation-server-core/commit/658aac2))
+* convenience functions to determine type of mapping ([d946947](https://github.com/nrkno/tv-automation-server-core/commit/d946947))
+* GUI: Settings for Media-manager monitors ([4eb5f10](https://github.com/nrkno/tv-automation-server-core/commit/4eb5f10))
+* improve warnings ([ebcbb8c](https://github.com/nrkno/tv-automation-server-core/commit/ebcbb8c))
+* MM AbortAll, RestartAll, Prioritize ([ebf8842](https://github.com/nrkno/tv-automation-server-core/commit/ebf8842))
+* move system config out of studio blueprint config array ([d6f63b8](https://github.com/nrkno/tv-automation-server-core/commit/d6f63b8))
+* **dashboard:** standalone shelf ([60949dd](https://github.com/nrkno/tv-automation-server-core/commit/60949dd))
+* preliminary support for upcoming playout device: Quantel-player ([462856e](https://github.com/nrkno/tv-automation-server-core/commit/462856e))
+* **dashboard:** initial implementation of dashboard layouts ([43df2a4](https://github.com/nrkno/tv-automation-server-core/commit/43df2a4))
+* **dashboard:** show AdLib live status in Dashboard, fix dashboard global adLib and sticky hotkeys ([81d090d](https://github.com/nrkno/tv-automation-server-core/commit/81d090d))
+* **dashboard:** some additional work on dashboard view ([175acf5](https://github.com/nrkno/tv-automation-server-core/commit/175acf5))
+* **dashboard layout:** allow for negative width and height ([6756f2e](https://github.com/nrkno/tv-automation-server-core/commit/6756f2e))
+* **quantel:** quantel device settings ([b38a2a5](https://github.com/nrkno/tv-automation-server-core/commit/b38a2a5))
+* **rundown layouts:** allow for using the name to select layout ([95c15d9](https://github.com/nrkno/tv-automation-server-core/commit/95c15d9))
+* preliminary UI implementation of upcoming Quantel device ([de6a451](https://github.com/nrkno/tv-automation-server-core/commit/de6a451))
+* **virtual list:** some improvements ([bb7eea8](https://github.com/nrkno/tv-automation-server-core/commit/bb7eea8))
+* **virtual list rundown:** merge ([11398db](https://github.com/nrkno/tv-automation-server-core/commit/11398db))
+* **virtual lists:** lazy load Rundown view components ([432366b](https://github.com/nrkno/tv-automation-server-core/commit/432366b))
+* refactor lookahead and support for lookaheadDepth parameter ([440750e](https://github.com/nrkno/tv-automation-server-core/commit/440750e))
+* replace velocity animation with native scroll animation for better performance ([5b2bc5c](https://github.com/nrkno/tv-automation-server-core/commit/5b2bc5c))
+* Support for the media-manager monitors ([1f96cbc](https://github.com/nrkno/tv-automation-server-core/commit/1f96cbc))
+
+
 
 <a name="0.26.0"></a>
 # 0.26.0 (2019-08-19)

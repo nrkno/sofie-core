@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
@@ -8,6 +7,7 @@ import { MediaManagerDeviceSettings } from './PeripheralDeviceSettings/mediaMana
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { MosDeviceSettings } from './PeripheralDeviceSettings/mosDevice'
 import { SpreadsheetDeviceSettings, SpreadsheetDeviceSecretSettings } from './PeripheralDeviceSettings/spreadsheet'
+import { createMongoCollection } from './lib'
 
 export interface PeripheralDevice {
 	_id: string
@@ -77,7 +77,7 @@ export interface SpreadsheetDevice extends PeripheralDevice {
 }
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
-	= new Mongo.Collection<PeripheralDevice>('peripheralDevices')
+	= createMongoCollection<PeripheralDevice>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
