@@ -280,6 +280,9 @@ export function handleInsertParts (
 	removePrevious: boolean,
 	newStories: MOS.IMOSROStory[]
 ) {
+	// inserts stories and all of their defined items before the referenced story in a Running Order
+	// ...and roStoryReplace message replaces the referenced story with another story or stories
+
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
@@ -290,13 +293,18 @@ export function handleInsertParts (
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const insertBeforePartIdStr = parseMosString(previousPartId)
-		const oldIndex = ingestParts.findIndex(p => p.externalId === insertBeforePartIdStr)
-		if (oldIndex === -1) {
-			throw new Meteor.Error(404, `Part ${insertBeforePartIdStr} in rundown ${rundown.externalId} not found`)
+		const insertBeforePartExternalId = parseMosString(previousPartId)
+		const insertIndex = ingestParts.findIndex(p => p.externalId === insertBeforePartExternalId)
+		if (insertIndex === -1) {
+			throw new Meteor.Error(404, `Part ${insertBeforePartExternalId} in rundown ${rundown.externalId} not found`)
 		}
 
 		const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true))
+
+		if (removePrevious) {
+			ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
+		}
+
 		const newPartIds = _.map(newParts, part => part.externalId)
 		const collidingPartIds = _.map(
 			_.filter(ingestParts, part => newPartIds.indexOf(part.externalId) !== -1),
@@ -310,10 +318,7 @@ export function handleInsertParts (
 		}
 
 		// Update parts list
-		ingestParts.splice(oldIndex, 0, ...newParts)
-		if (removePrevious) {
-			ingestParts.splice(oldIndex + 1, 1)
-		}
+		ingestParts.splice(insertIndex, 0, ...newParts)
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
