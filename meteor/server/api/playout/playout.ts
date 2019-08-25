@@ -428,8 +428,7 @@ export namespace ServerPlayoutAPI {
 		rundownId: string,
 		horisontalDelta: number,
 		verticalDelta: number,
-		setManually: boolean,
-		currentNextPieceId?: string
+		setManually: boolean
 	): string {
 		check(rundownId, String)
 		check(horisontalDelta, Number)
@@ -442,8 +441,7 @@ export namespace ServerPlayoutAPI {
 				rundownId,
 				horisontalDelta,
 				verticalDelta,
-				setManually,
-				currentNextPieceId
+				setManually
 			)
 		})
 	}
@@ -452,7 +450,7 @@ export namespace ServerPlayoutAPI {
 		horisontalDelta: number,
 		verticalDelta: number,
 		setManually: boolean,
-		currentNextPieceId?: string
+		nextPartId0?: string
 	): string {
 
 		const rundown = Rundowns.findOne(rundownId)
@@ -461,25 +459,29 @@ export namespace ServerPlayoutAPI {
 
 		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
 
-		let currentNextPiece: Part
-		if (currentNextPieceId) {
-			currentNextPiece = Parts.findOne(currentNextPieceId) as Part
+		let nextPartId: string = ''
+		if (nextPartId0) {
+			nextPartId = nextPartId0
 		} else {
-			if (!rundown.nextPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next part!`)
-			currentNextPiece = Parts.findOne(rundown.nextPartId) as Part
+			if (!rundown.nextPartId) {
+				if (!rundown.currentPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next and no current part!`)
+				nextPartId = rundown.currentPartId
+			} else {
+				nextPartId = rundown.nextPartId
+			}
 		}
+		let currentNextPart: Part = Parts.findOne(nextPartId) as Part
+		if (!currentNextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
-		if (!currentNextPiece) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
-
-		let currentNextSegment = Segments.findOne(currentNextPiece.segmentId) as Segment
-		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPiece.segmentId}" not found!`)
+		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
+		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
 		let parts = rundown.getParts()
 		let segments = rundown.getSegments()
 
 		let partIndex: number = -1
 		_.find(parts, (part, i) => {
-			if (part._id === currentNextPiece._id) {
+			if (part._id === currentNextPart._id) {
 				partIndex = i
 				return true
 			}
@@ -520,7 +522,7 @@ export namespace ServerPlayoutAPI {
 		let part = parts[partIndex]
 		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-		if ((part._id === rundown.currentPartId && !currentNextPieceId) || part.invalid) {
+		if ((part._id === rundown.currentPartId && !nextPartId0) || part.invalid) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
