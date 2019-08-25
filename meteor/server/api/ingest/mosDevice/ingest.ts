@@ -276,7 +276,7 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 export function handleInsertParts (
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
-	previousPartId: MOS.MosString128,
+	insertBeforeStoryId: MOS.MosString128 | null,
 	removePrevious: boolean,
 	newStories: MOS.IMOSROStory[]
 ) {
@@ -293,8 +293,12 @@ export function handleInsertParts (
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const insertBeforePartExternalId = parseMosString(previousPartId)
-		const insertIndex = ingestParts.findIndex(p => p.externalId === insertBeforePartExternalId)
+		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
+		const insertIndex = (
+			!insertBeforePartExternalId ? // insert last
+				ingestParts.length :
+				ingestParts.findIndex(p => p.externalId === insertBeforePartExternalId)
+		)
 		if (insertIndex === -1) {
 			throw new Meteor.Error(404, `Part ${insertBeforePartExternalId} in rundown ${rundown.externalId} not found`)
 		}
@@ -371,7 +375,7 @@ export function handleSwapStories (
 export function handleMoveStories (
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
-	insertBefore: MOS.MosString128,
+	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
@@ -403,13 +407,14 @@ export function handleMoveStories (
 		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
 
 		// Find insert point
-		const insertBeforeStr = insertBefore ? parseMosString(insertBefore) || '' : ''
-		const insertIndex =
-			insertBeforeStr !== ''
-				? filteredParts.findIndex(p => p.externalId === insertBeforeStr)
-				: filteredParts.length
+		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
+		const insertIndex = (
+			!insertBeforePartExternalId ? // insert last
+				filteredParts.length :
+				filteredParts.findIndex(p => p.externalId === insertBeforePartExternalId)
+		)
 		if (insertIndex === -1) {
-			throw new Meteor.Error(404, `Part ${insertBefore} was not found in rundown ${rundown.externalId}`)
+			throw new Meteor.Error(404, `Part ${insertBeforeStoryId} was not found in rundown ${rundown.externalId}`)
 		}
 
 		// Reinsert parts
