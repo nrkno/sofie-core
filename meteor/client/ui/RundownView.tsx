@@ -1502,9 +1502,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onActivate = (isRehearsal: boolean) => {
-		this.setState({
-			followLiveSegments: true
-		})
+		this.onGoToLiveSegment()
 	}
 
 	onContextMenu = (contextMenuContext: any) => {
