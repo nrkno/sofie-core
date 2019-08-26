@@ -886,17 +886,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		Meteor.defer(() => {
 			Tracker.flush()
 			Meteor.setTimeout(() => {
-				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+				this.rewindSegments()
 				window.dispatchEvent(new Event(RundownViewEvents.goToTop))
 			}, 500)
 		})
 	}
 
 	render () {
-		if (this.state.isError) {
-			throw new Error('Dupa')
-		}
-
 		const { t } = this.props
 		return <React.Fragment>
 			<Escape to='document'>
