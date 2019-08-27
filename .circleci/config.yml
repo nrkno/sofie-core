@@ -64,7 +64,7 @@ jobs:
       - run:
            name: Publish Docker Image to Github Package Registry
            command: |
-             echo "$GITHUB_PASS" | docker login -u "$GITHUB_USERNAME" --password-stdin
+             echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
              docker tag sofietv/tv-automation-server-core:$CIRCLE_TAG docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_TAG
              docker push docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_TAG
   publish-branch:
@@ -87,7 +87,7 @@ jobs:
       - run:
            name: Publish Docker Image to Github Package Registry
            command: |
-             echo "$GITHUB_PASS" | docker login -u "$GITHUB_USERNAME" --password-stdin
+             echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
              docker tag sofietv/tv-automation-server-core:$CIRCLE_BRANCH docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_BRANCH
              docker push docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_BRANCH
 
