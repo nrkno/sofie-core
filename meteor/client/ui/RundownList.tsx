@@ -23,7 +23,10 @@ import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
-import { PubSub } from '../../lib/api/pubsub';
+import { Studios } from '../../lib/collections/Studios'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { PubSub } from '../../lib/api/pubsub'
 
 const PackageInfo = require('../../package.json')
 
@@ -31,6 +34,8 @@ interface RundownPlaylistUi extends RundownPlaylist {
 	status: string
 	airStatus: string
 	unsynced: boolean
+	studioName: string
+	showStyles: Array<{ id: string, baseName: string, variantName: string }>
 }
 
 interface IRundownListItemProps {
@@ -46,9 +51,17 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
-	getRundownLink (rundownId) {
+	getRundownLink (rundownId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
+	}
+	getStudioLink (studioId: string) {
+		// double encoding so that "/" are handled correctly
+		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(studioId))
+	}
+	getshowStyleBaseLink (showStyleBaseId: string) {
+		// double encoding so that "/" are handled correctly
+		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
 	}
 
 	confirmDelete (rundown: RundownPlaylist) {
@@ -101,8 +114,23 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						}
 						<Link to={this.getRundownLink(this.props.rundown._id)}>{this.props.rundown.name}</Link>
 					</th>
-					<td className='rundown-list-item__id'>
-						{this.props.rundown._id}
+					<td className='rundown-list-item__studio'>
+						{
+							getAdminMode() ?
+							<Link to={this.getStudioLink(this.props.rundown.studioId)}>{this.props.rundown.studioName}</Link> :
+							this.props.rundown.studioName
+						}
+					</td>
+					<td className='rundown-list-item__showStyle'>
+						{
+							getAdminMode() ?
+								this.props.rundown.showStyles.length === 1 ?
+									<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyles[0].id)}>{`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}`}</Link> :
+									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length }) :
+								this.props.rundown.showStyles.length === 1 ?
+									`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}` :
+									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+						}
 					</td>
 					<td className='rundown-list-item__created'>
 						<MomentFromNow>{this.props.rundown.created}</MomentFromNow>
@@ -155,7 +183,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		)
 	}
 }
-
+interface RundownUI extends Rundown {
+	studioName: string
+	showStyleBaseName: string
+	showStyleVariantName: string
+}
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
 	rundowns: Array<RundownPlaylistUi>
@@ -165,9 +197,13 @@ interface IRundownsListState {
 	systemStatus?: StatusResponse
 }
 
-export const RundownList = translateWithTracker(() => {
+export const RundownList = translateWithTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+
+	const studios = Studios.find().fetch()
+	const showStyleBases = ShowStyleBases.find().fetch()
+	const showStyleVariants = ShowStyleVariants.find().fetch()
 
 	return {
 		coreSystem: getCoreSystem(),
@@ -176,6 +212,22 @@ export const RundownList = translateWithTracker(() => {
 			p.airStatus = rs.map(r => r.airStatus).join(', ')
 			p.status = rs.map(r => r.status).join(', ')
 			p.unsynced = rs.reduce((p, v) => p || v.unsynced || false, false)
+
+			const studio = _.find(studios, s => s._id === p.studioId)
+			
+			p.studioName = studio && studio.name || ''
+			p.showStyles = _.uniq(
+				rs.map(r => [r.showStyleBaseId, r.showStyleVariantId]), false, (t) => t[0] + '_' + t[1]
+				).map(combo => {
+					const showStyleBase = _.find(showStyleBases, s => s._id === combo[0])
+					const showStyleVariant = _.find(showStyleVariants, s => s._id === combo[1])
+
+					return {
+						id: showStyleBase && showStyleBase._id || '',
+						baseName: showStyleBase && showStyleBase.name || '',
+						variantName: showStyleVariant && showStyleVariant.name || ''
+					}
+				})
 			return p
 		})
 	}
@@ -220,7 +272,23 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		// Subscribe to data:
 		// TODO: make something clever here, to not load ALL the rundowns
 		this.subscribe(PubSub.rundownPlaylists, {})
-		this.subscribe(PubSub.rundowns, {})
+		this.subscribe(PubSub.studios, {})
+		
+		this.autorun(() => {
+			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
+			const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleVariantId))
+			const playlistIds = _.uniq(RundownPlaylists.find().fetch().map(i => i._id))
+			
+			this.subscribe(PubSub.showStyleBases, {
+				_id: { $in: showStyleBaseIds }
+			})
+			this.subscribe(PubSub.showStyleVariants, {
+				_id: { $in: showStyleVariantIds }
+			})
+			this.subscribe(PubSub.rundowns, {
+				playlistId: { $in: playlistIds }
+			})
+		})
 	}
 
 	render () {
@@ -273,7 +341,10 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 									{t('Rundown')}
 								</th>
 								<th className='c2'>
-									{t('ID')}
+									{t('Studio')}
+								</th>
+								<th className='c2'>
+									{t('Show style')}
 								</th>
 								<th className='c2'>
 									{t('Created')}
@@ -306,7 +377,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 							</tr>
 						</tbody>}
 						<tbody>
-							{this.renderUnsyncedRundowns(unsynced)}
+							{this.renderRundowns(unsynced)}
 						</tbody>
 					</table>
 				</div>

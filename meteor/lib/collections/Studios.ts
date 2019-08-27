@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
@@ -9,7 +8,7 @@ import {
 	BlueprintMapping
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
-import { ObserveChangesForHash } from './lib'
+import { ObserveChangesForHash, createMongoCollection } from './lib'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -86,7 +85,7 @@ export class Studio implements DBStudio {
 }
 
 export const Studios: TransformedCollection<Studio, DBStudio>
-	= new Mongo.Collection<Studio>('studios', { transform: (doc) => applyClassToDocument(Studio, doc) })
+	= createMongoCollection<Studio>('studios', { transform: (doc) => applyClassToDocument(Studio, doc) })
 registerCollection('Studios', Studios)
 
 Meteor.startup(() => {

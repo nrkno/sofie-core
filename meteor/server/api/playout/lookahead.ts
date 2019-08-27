@@ -8,19 +8,17 @@ import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { literal, extendMandadory, clone } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
-export function getLookeaheadObjects (rundownData: RundownData, studio: Studio): Array<TimelineObjGeneric> {
+export function getLookeaheadObjects (rundownData: RundownPlaylistData, studio: Studio): Array<TimelineObjGeneric> {
 	const activePlaylist = rundownData.rundownPlaylist
-	const currentPalylist = rundownData.rundown
-
 	const currentPart = activePlaylist.currentPartId ? rundownData.partsMap[activePlaylist.currentPartId] : undefined
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	const mutateAndPushObject = (rawObj: TimelineObjRundown, i: string, enable: TimelineObjRundown['enable'], mapping: MappingExt, priority: number) => {
-		const obj = clone(rawObj) as TimelineObjGeneric
+		const obj: TimelineObjGeneric = clone(rawObj)
 
 		obj.id = `lookahead_${i}_${obj.id}`
 		obj.priority = priority
@@ -98,13 +96,14 @@ export interface LookaheadResult {
 }
 
 export function findLookaheadForlayer (
-	rundownData: RundownData,
+	rundownData: RundownPlaylistData,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadDepth: number
 	): LookaheadResult {
 	let activePlaylist: RundownPlaylist = rundownData.rundownPlaylist
-	let currentRundown: Rundown = rundownData.rundown
+	const currentPart = activePlaylist.currentPartId ? rundownData.partsMap[activePlaylist.currentPartId] : undefined
+	const currentRundown = currentPart ? rundownData.rundownsMap[currentPart.rundownId] : undefined
 
 	if (mode === undefined || mode === LookaheadMode.NONE) {
 		return { timed: [], future: [] }
@@ -221,9 +220,8 @@ export function findLookaheadForlayer (
 	return res
 }
 
-function getPartsOrderedByTime (rundownData: RundownData) {
+function getPartsOrderedByTime (rundownData: RundownPlaylistData) {
 	// This could be cached across all lookahead layers, as it doesnt care about layer
-	const currentRundown = rundownData.rundown
 	const activePlaylist = rundownData.rundownPlaylist
 
 	// calculate ordered list of parts, which can be cached for other layers
@@ -278,9 +276,9 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 	}
 }
 
-function findObjectsForPart (rundownData: RundownData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+function findObjectsForPart (rundownData: RundownPlaylistData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activePlaylist = rundownData.rundownPlaylist
-	const currentPlaylist = rundownData.rundown
+	const activeRundown = rundownData.rundownsMap[startingPartOnLayer.part.rundownId]
 
 	// Sanity check, if no part to search, then abort
 	if (!startingPartOnLayer || startingPartOnLayer.pieces.length === 0) {
@@ -299,7 +297,8 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						rundownId: rundownData.rundown._id,
+						rundownId: activeRundown._id,
+						playlistId: activePlaylist._id,
 						pieceId: i._id,
 						infinitePieceId: i.infiniteId
 					}))
@@ -368,7 +367,8 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						rundownId: rundownData.rundown._id,
+						rundownId: activeRundown._id,
+						playlistId: rundownData.rundownPlaylist._id,
 						pieceId: piece._id,
 						infinitePieceId: piece.infiniteId,
 						content: newContent

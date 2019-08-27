@@ -15,6 +15,7 @@ import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { StudioSelect } from './StudioSelect'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IRecordingListProps {
 	match?: {
@@ -64,10 +65,10 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	componentWillMount () {
 		if (this.props.match && this.props.match.params) {
 			// Subscribe to data:
-			this.subscribe('recordedFiles', {
+			this.subscribe(PubSub.recordedFiles, {
 				studioId: this.props.match.params.studioId
 			})
-			this.subscribe('studios', {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.match.params.studioId
 			})
 		}

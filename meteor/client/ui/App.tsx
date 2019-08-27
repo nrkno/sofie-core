@@ -87,7 +87,10 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		// and the previous restart happened more than 3 hours ago
 			(Date.now() - this.lastStart > LAST_RESTART_LATENCY) &&
 		// and not in an active rundown
-			(document.querySelector('.rundown.active') === null)) {
+			(document.querySelector('.rundown.active') === null)
+		) {
+			// forceReload is marked as deprecated, but it's still usable
+			// tslint:disable-next-line
 			setTimeout(() => window.location.reload(true))
 		}
 	}

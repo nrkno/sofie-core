@@ -19,6 +19,7 @@ import {
 	PieceUi
 } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IPropsHeader {
 	layer: ISourceLayerUi
@@ -73,7 +74,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.playlist.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}

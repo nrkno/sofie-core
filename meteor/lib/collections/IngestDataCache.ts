@@ -1,8 +1,8 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 export enum IngestCacheType {
 	RUNDOWN = 'rundown',
@@ -46,7 +46,7 @@ export interface IngestDataCacheObjPart extends IngestDataCacheObjBase {
 export type IngestDataCacheObj = IngestDataCacheObjRundown | IngestDataCacheObjSegment | IngestDataCacheObjPart
 
 export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDataCacheObj>
-	= new Mongo.Collection<IngestDataCacheObj>('ingestDataCache')
+	= createMongoCollection<IngestDataCacheObj>('ingestDataCache')
 registerCollection('IngestDataCache', IngestDataCache)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

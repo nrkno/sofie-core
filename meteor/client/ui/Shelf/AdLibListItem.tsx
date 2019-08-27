@@ -13,6 +13,7 @@ import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { PubSub } from '../../../lib/api/pubsub'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -37,7 +38,7 @@ interface IAdLibListItemTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
 }
 
-const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
+const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
 export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
 	const piece = props.item as any as AdLibPieceUi
@@ -71,7 +72,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.playlist.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}

@@ -837,10 +837,6 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		}
 	}
 
-	componentDidUpdate () {
-		this.updateStatus(this.props)
-	}
-
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
 		const studio = props ? props.studio : this.props.studio
 

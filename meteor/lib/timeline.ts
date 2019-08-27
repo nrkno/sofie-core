@@ -14,7 +14,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			_.omit(
 				{
 					...obj,
-					rundownId: obj.rundownId
+					rundownId: obj.playlistId
 				}, ['_id', 'deviceId', 'studioId']
 			)
 	   )
@@ -26,7 +26,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			// Will cause a callback to be called, when the object starts to play:
 			transformedObj.content.callBack = 'partPlaybackStarted'
 			transformedObj.content.callBackData = {
-				rundownId: obj.rundownId,
+				rundownId: obj.playlistId,
 				partId: obj['partId']
 			}
 			transformedObj.content.callBackStopped = 'partPlaybackStopped'
@@ -35,7 +35,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			// Will cause a callback to be called, when the object starts to play:
 			transformedObj.content.callBack = 'piecePlaybackStarted'
 			transformedObj.content.callBackData = {
-				rundownId: obj.rundownId,
+				rundownId: obj.playlistId,
 				pieceId: obj['pieceId']
 			}
 			transformedObj.content.callBackStopped = 'piecePlaybackStopped'

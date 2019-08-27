@@ -891,17 +891,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		Meteor.defer(() => {
 			Tracker.flush()
 			Meteor.setTimeout(() => {
-				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+				this.rewindSegments()
 				window.dispatchEvent(new Event(RundownViewEvents.goToTop))
 			}, 500)
 		})
 	}
 
 	render () {
-		if (this.state.isError) {
-			throw new Error('Dupa')
-		}
-
 		const { t } = this.props
 		return <React.Fragment>
 			<Escape to='document'>
@@ -1512,7 +1508,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 4000)
+			}, 2000)
 		} else if (this.props.playlist && this.props.playlist.active && this.props.playlist.currentPartId) {
 			this.setState({
 				followLiveSegments: true
@@ -1523,7 +1519,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 4000)
+			}, 2000)
 		} else {
 			this.setState({
 				followLiveSegments: true
@@ -1532,9 +1528,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onActivate = (isRehearsal: boolean) => {
-		this.setState({
-			followLiveSegments: true
-		})
+		this.onGoToLiveSegment()
 	}
 
 	onContextMenu = (contextMenuContext: any) => {

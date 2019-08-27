@@ -15,6 +15,7 @@ import { Studio, Studios } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IProps {
 	match: {
@@ -52,12 +53,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 	}
 	componentWillMount () {
-		this.subscribe('snapshots', {
+		this.subscribe(PubSub.snapshots, {
 			created: {
 				$gt: getCurrentTime() - 30 * 24 * 3600 * 1000 // last 30 days
 			}
 		})
-		this.subscribe('studios', {})
+		this.subscribe(PubSub.studios, {})
 	}
 
 	onUploadFile (e) {

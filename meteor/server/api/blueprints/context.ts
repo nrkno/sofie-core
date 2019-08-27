@@ -34,6 +34,7 @@ import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadCachedIngestPart, loadCachedRundownData } from '../ingest/ingestCache'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 /** Common */
 
@@ -250,12 +251,14 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 export class RundownContext extends ShowStyleContext implements IRundownContext {
 	rundownId: string
 	rundown: Rundown
+	playlistId: string | undefined
 
 	constructor (rundown: Rundown, studio?: Studio, contextName?: string, segmentId?: string, partId?: string) {
 		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
 
 		this.rundownId = rundown._id
 		this.rundown = rundown
+		this.playlistId = rundown.playlistId
 	}
 }
 

@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
@@ -17,6 +16,7 @@ import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
+import { createMongoCollection } from './lib'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -101,7 +101,7 @@ export class Rundown implements DBRundown {
 	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
-	public playlistId?: string
+	public playlistId: string
 	public _rank: number
 	_: any
 
@@ -288,9 +288,9 @@ export interface RundownData {
 	pieces: Array<Piece>
 }
 
-// export const Rundowns = new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
+// export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
 export const Rundowns: TransformedCollection<Rundown, DBRundown>
-	= new Mongo.Collection<Rundown>('rundowns', { transform: (doc) => applyClassToDocument(Rundown, doc) })
+	= createMongoCollection<Rundown>('rundowns', { transform: (doc) => applyClassToDocument(Rundown, doc) })
 registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

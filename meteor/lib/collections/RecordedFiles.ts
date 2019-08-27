@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export interface RecordedFile {
 	_id: string
@@ -15,7 +15,7 @@ export interface RecordedFile {
 }
 
 export const RecordedFiles: TransformedCollection<RecordedFile, RecordedFile>
-	= new Mongo.Collection<RecordedFile>('recordedFiles')
+	= createMongoCollection<RecordedFile>('recordedFiles')
 registerCollection('RecordedFiles', RecordedFiles)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, applyClassToDocument } from '../lib'
@@ -10,7 +9,7 @@ import {
 	ISourceLayer,
 	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
-import { ObserveChangesForHash } from './lib'
+import { ObserveChangesForHash, createMongoCollection } from './lib'
 
 export interface HotkeyDefinition {
 	_id: string
@@ -50,7 +49,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 }
 
 export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase>
-	= new Mongo.Collection<ShowStyleBase>('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
+	= createMongoCollection<ShowStyleBase>('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 Meteor.startup(() => {

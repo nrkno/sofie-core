@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 export interface Evaluation extends EvaluationBase {
 	_id: string,
 	userId: string,
@@ -17,7 +17,7 @@ export interface EvaluationBase {
 }
 
 export const Evaluations: TransformedCollection<Evaluation, Evaluation>
-	= new Mongo.Collection<Evaluation>('evaluations')
+	= createMongoCollection<Evaluation>('evaluations')
 registerCollection('Evaluations', Evaluations)
 
 Meteor.startup(() => {

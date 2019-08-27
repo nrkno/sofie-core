@@ -117,16 +117,16 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 	})(
 		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
 			componentWillMount() {
-				this.subscribe('rundownPlaylists', {
+				this.subscribe(PubSub.rundownPlaylists, {
 					_id: this.props.playlistId
 				})
-				this.subscribe('rundowns', {
+				this.subscribe(PubSub.rundowns, {
 					playlistId: this.props.playlistId
 				})
-				this.subscribe('segments', {
+				this.subscribe(PubSub.segments, {
 					rundownId: this.props.playlistId
 				})
-				this.subscribe('parts', {
+				this.subscribe(PubSub.parts, {
 					rundownId: this.props.playlistId
 				})
 			}
@@ -136,10 +136,12 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 
 				if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
 					let currentPart: PartUi | undefined
+					let currentSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
 								if (item._id === playlist.currentPartId) {
+									currentSegment = segment
 									currentPart = item
 								}
 							}
@@ -154,11 +156,13 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						}
 					}
 
-					let nextPart
+					let nextPart: PartUi | undefined
+					let nextSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
 								if (item._id === playlist.nextPartId) {
+									nextSegment = segment
 									nextPart = item
 								}
 							}
@@ -186,7 +190,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 											<PieceIconContainer partId={currentPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
 										</div>
 										<div className='clocks-part-title clocks-current-segment-title'>
-											{currentPart.title.split(';')[0]}
+											{currentSegment!.name}
 										</div>
 										<div className='clocks-part-title clocks-part-title clocks-current-segment-title'>
 											<PieceNameContainer partSlug={currentPart.title} partId={currentPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
@@ -212,11 +216,11 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 											<div style={{ display: 'inline-block', height: '18vh' }}>
 												<img style={{ height: '12vh', paddingTop: '2vh' }} src='/icons/auto-presenter-screen.svg' />
 											</div> : ''}
-										{nextPart && nextPart.slug ? nextPart.slug.split(';')[0] : '_'}
+										{nextSegment && nextSegment.name ? nextSegment.name.split(';')[0] : '_'}
 									</div>
 									<div className='clocks-part-title clocks-part-title'>
-										{nextPart && nextPart.slug ?
-											<PieceNameContainer partSlug={nextPart.slug} partId={nextPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
+										{nextPart && nextPart.title ?
+											<PieceNameContainer partSlug={nextPart.title} partId={nextPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
 											: '_'}
 									</div>
 								</div>
@@ -288,10 +292,10 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			document.body.classList.add('dark', 'xdark')
 			let studioId = objectPathGet(this.props, 'match.params.studioId')
 			if (studioId) {
-				this.subscribe('studios', {
+				this.subscribe(PubSub.studios, {
 					_id: studioId
 				})
-				this.subscribe('rundowns', {
+				this.subscribe(PubSub.rundowns, {
 					active: true,
 					studioId: studioId
 				})
@@ -304,19 +308,19 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			)
 			if (this.props.rundowns) {
 				const rundownIDs = this.props.rundowns.map(i => i._id)
-				this.subscribe('segments', {
+				this.subscribe(PubSub.segments, {
 					rundownId: { $in: rundownIDs }
 				})
-				this.subscribe('parts', {
+				this.subscribe(PubSub.parts, {
 					rundownId: { $in: rundownIDs }
 				})
-				this.subscribe('pieces', {
+				this.subscribe(PubSub.pieces, {
 					rundownId: { $in: rundownIDs }
 				})
-				this.subscribe('showStyleBases', {
+				this.subscribe(PubSub.showStyleBases, {
 					_id: { $in: _.uniq(this.props.rundowns.map(i => i.showStyleBaseId)) }
 				})
-				this.subscribe('adLibPieces', {
+				this.subscribe(PubSub.adLibPieces, {
 					rundownId: { $in: rundownIDs }
 				})
 			}

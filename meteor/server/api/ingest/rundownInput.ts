@@ -268,11 +268,11 @@ function updateRundownFromIngestData (
 	const baselineObj: RundownBaselineObj = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
-		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
+		objects: postProcessPartBaselineItems(blueprintRundownContext.rundown.playlistId, blueprintRundownContext, rundownRes.baseline)
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
-	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
+	const adlibItems = postProcessAdLibPieces(blueprintRundownContext.rundown.playlistId, blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
 	const existingRundownParts = Parts.find({
 		rundownId: dbRundown._id,
@@ -635,10 +635,10 @@ function generateSegmentContents (
 		parts.push(part)
 
 		// Update pieces
-		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
+		const pieces = postProcessPieces(context.rundown.playlistId, context, blueprintPart.pieces, blueprintId, part._id)
 		segmentPieces.push(...pieces)
 
-		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
+		const adlibs = postProcessAdLibPieces(context.rundown.playlistId, context, blueprintPart.adLibPieces, blueprintId, part._id)
 		adlibPieces.push(...adlibs)
 	}
 

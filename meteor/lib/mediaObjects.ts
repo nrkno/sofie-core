@@ -139,7 +139,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 					}
 					if (mediaObject) {
 						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
-						const messages: Array<String> = []
+						const messages: Array<string> = []
 
 						// Do a format check:
 						if (mediaObject.mediainfo) {

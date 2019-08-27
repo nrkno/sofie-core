@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import { Piece } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { extendMandadory, getHash } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
@@ -19,7 +20,7 @@ import {
 import { RundownAPI } from '../../../lib/api/rundown'
 import { Timeline, TSRTimelineObjBase } from 'timeline-state-resolver-types'
 
-export function postProcessPieces (innerContext: IRundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
+export function postProcessPieces (playlistId: string, innerContext: IRundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
@@ -39,7 +40,7 @@ export function postProcessPieces (innerContext: IRundownContext, pieces: IBluep
 		if (piece.content && piece.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const obj = convertTimelineObject(innerContext.rundown._id, o)
+				const obj = convertTimelineObject(playlistId, innerContext.rundown._id, o)
 
 				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_' + (i++))
 
@@ -54,7 +55,7 @@ export function postProcessPieces (innerContext: IRundownContext, pieces: IBluep
 	})
 }
 
-export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: string, partId?: string): AdLibPiece[] {
+export function postProcessAdLibPieces (playlistId: string, innerContext: IRundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: string, partId?: string): AdLibPiece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
@@ -76,7 +77,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 		if (piece.content && piece.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const obj = convertTimelineObject(innerContext.rundown._id, o)
+				const obj = convertTimelineObject(playlistId, innerContext.rundown._id, o)
 
 				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_adlib_' + (i++))
 
@@ -94,7 +95,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 export function postProcessStudioBaselineObjects (studio: Studio, objs: TSRTimelineObjBase[]): TimelineObjRundown[] {
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(objs, (o, i) => {
-		const obj = convertTimelineObject('', o)
+		const obj = convertTimelineObject('', '', o)
 
 		if (!obj.id) obj.id = getHash('baseline_' + (i++))
 
@@ -105,24 +106,25 @@ export function postProcessStudioBaselineObjects (studio: Studio, objs: TSRTimel
 	})
 }
 
-function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): TimelineObjRundown {
+function convertTimelineObject (playlistId: string, rundownId: string, o: TimelineObjectCoreExt): TimelineObjRundown {
 	let rundown: TimelineObjRundown = extendMandadory<TimelineObjectCoreExt, TimelineObjRundown>(o, {
 		id: o.id,
 		_id: '', // set later
 		studioId: '', // set later
-		rundownId: rundownId,
+		playlistId,
+		rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 	})
 
 	return rundown
 }
 
-export function postProcessPartBaselineItems (innerContext: RundownContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
+export function postProcessPartBaselineItems (playlistId: string, innerContext: RundownContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 
 	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric): TimelineObjGeneric => {
-		const obj: TimelineObjGeneric = convertTimelineObject(innerContext.rundown._id, o)
+		const obj: TimelineObjGeneric = convertTimelineObject(playlistId, innerContext.rundown._id, o)
 
 		if (!obj.id) obj.id = innerContext.getHashId('baseline_' + (i++))
 

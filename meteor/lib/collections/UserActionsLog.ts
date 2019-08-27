@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export interface UserActionsLogItem {
 	_id: string,
@@ -18,7 +18,7 @@ export interface UserActionsLogItem {
 }
 
 export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActionsLogItem>
-	= new Mongo.Collection<UserActionsLogItem>('userActionsLog')
+	= createMongoCollection<UserActionsLogItem>('userActionsLog')
 registerCollection('UserActionsLog', UserActionsLog)
 
 Meteor.startup(() => {

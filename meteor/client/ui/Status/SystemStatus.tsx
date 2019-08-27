@@ -18,6 +18,7 @@ import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { getAdminMode } from '../../lib/localStorage'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -303,7 +304,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 })(class SystemStatus extends MeteorReactComponent<Translated<ISystemStatusProps & ISystemStatusTrackedProps>, ISystemStatusState> {
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe('peripheralDevices', {})
+		this.subscribe(PubSub.peripheralDevices, {})
 	}
 	renderPeripheralDevices () {
 

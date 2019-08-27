@@ -136,6 +136,29 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 		return segments
 	}
+	getParts (): Part[] {
+		const rundowns = this.getRundowns()
+		let rundownsMap = normalizeArray(rundowns, '_id')
+		const segments = Parts.find({
+			rundownId: {
+				$in: rundowns.map(i => i._id)
+			}
+		}, {
+			sort: {
+				rundownId: 1,
+				_rank: 1
+			}
+		}).fetch().sort((a, b) => {
+			if (a.rundownId === b.rundownId) {
+				return a._rank - b._rank
+			} else {
+				const rdA = rundownsMap[a.rundownId]
+				const rdB = rundownsMap[b.rundownId]
+				return rdA._rank - rdB._rank
+			}
+		})
+		return segments
+	}
 	fetchAllData (): RundownPlaylistData {
 		// Do fetches in parallell:
 		const rundowns = Rundowns.find({ playlistId: this._id }, {

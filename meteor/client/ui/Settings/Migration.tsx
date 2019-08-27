@@ -61,6 +61,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	private cancelRequests: boolean
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
+
 		this.state = {
 			databasePreviousVersion: null,
 			showAllSteps: false,
@@ -108,12 +109,28 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				this.setErrorMessage(err)
 			} else {
 				console.log(r)
+
+				let inputValues = this.state.inputValues
+				_.each(r.migration.manualInputs, (manualInput: MigrationStepInput) => {
+					if (manualInput.stepId && manualInput.inputType && manualInput.attribute) {
+						let stepId = manualInput.stepId
+
+						if (!inputValues[stepId]) inputValues[stepId] = {}
+
+						let value = inputValues[stepId][manualInput.attribute]
+						if (_.isUndefined(value)) {
+							inputValues[stepId][manualInput.attribute] = manualInput.defaultValue
+						}
+					}
+				})
+
 				this.setState({
 					// systemVersion: r.systemVersion,
 					// databaseVersion: r.databaseVersion,
 					// databasePreviousVersion: r.databasePreviousVersion,
 					migrationNeeded: r.migrationNeeded,
-					migration: r.migration
+					migration: r.migration,
+					inputValues: inputValues
 				})
 			}
 		})
@@ -243,9 +260,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					let value
 					if (manualInput.attribute) {
 						value = (this.state.inputValues[stepId] || {})[manualInput.attribute]
-						if (_.isUndefined(value)) {
-							value = manualInput.defaultValue
-						}
 					}
 					return (<div key={rank++}>
 						<h3 className='mhn mbsx mtl'>{manualInput.label}</h3>
@@ -343,7 +357,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					</div>
 					{this.state.migrationNeeded && this.state.migration ?
 						<div>
-							<h2 className='mhn'>Migrate database</h2>
+							<h2 className='mhn'>{t('Migrate database')}</h2>
 
 							<p className='mhn mvs'>
 								{t(`This migration consists of ${this.state.migration.automaticStepCount} automatic steps and  ${this.state.migration.manualStepCount} manual steps (${this.state.migration.ignoredStepCount} steps are ignored).`)}

@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export enum WorkStepStatus {
 	IDLE = 'idle',
@@ -35,7 +35,7 @@ export abstract class MediaWorkFlowStep {
 }
 
 export const MediaWorkFlowSteps: TransformedCollection<MediaWorkFlowStep, MediaWorkFlowStep>
-	= new Mongo.Collection<MediaWorkFlowStep>('mediaWorkFlowSteps')
+	= createMongoCollection<MediaWorkFlowStep>('mediaWorkFlowSteps')
 registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

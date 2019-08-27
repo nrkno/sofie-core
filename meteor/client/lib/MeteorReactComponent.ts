@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import * as React from 'react'
 import { stringifyObjects } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
+import { PubSub } from '../../lib/api/pubsub'
 export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 
 	private _subscriptions: {[id: string]: Meteor.SubscriptionHandle} = {}
@@ -14,7 +15,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	componentWillUnmount () {
 		this._cleanUp()
 	}
-	subscribe (name: string, ...args: any[]): Meteor.SubscriptionHandle {
+	subscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
 		// @ts-ignore
 		return Tracker.nonreactive(() => {
 			// let id = name + '_' + JSON.stringify(args.join())

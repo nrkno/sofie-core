@@ -193,7 +193,7 @@ addMigrationSteps('0.25.0', [
 		'Timeline',
 		{
 			studioId: 'siId',
-			rundownId: 'roId',
+			playlistId: 'roId',
 			objectType: {content: {
 				rundown: 'ro'
 			}}

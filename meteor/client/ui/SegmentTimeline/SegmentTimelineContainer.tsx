@@ -271,13 +271,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	componentWillUnmount () {
 		this._cleanUp()
+		if (this.intersectionObserver && this.props.isLiveSegment && this.props.followLiveSegments) {
+			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+		}
 		this.stopLive()
 		window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = { ...this.state.collapsedOutputs }
-		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
+		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] !== true
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, `segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
@@ -334,10 +337,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	visibleChanged = (entries: IntersectionObserverEntry[]) => {
-		// console.log("visibleChanged")
 		if ((entries[0].intersectionRatio < 0.99) && !isMaintainingFocus() && (Date.now() - this.mountedTime > 2000)) {
-			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
+			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			this.isVisible = false
 		} else {
 			this.isVisible = true
@@ -346,8 +348,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	startLive = () => {
 		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		// calculate the browser viewport zoom factor. Works perfectly in Chrome on Windows.
+		const zoomFactor = window.outerWidth / window.innerWidth
 		this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
-			rootMargin: '-150px 0px -20px 0px',
+			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
+			// is viewport. This seems like an implementation bug and IntersectionObserver is
+			// an Experimental Feature in Chrome, so this might change in the future.
+			rootMargin: `-${150 * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 			threshold: [0, 0.25, 0.5, 0.75, 0.98]
 		})
 		this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)

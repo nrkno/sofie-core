@@ -14,7 +14,7 @@ import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { PubSub } from '../../../lib/api/pubsub';
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IPropsHeader {
 	partId: string

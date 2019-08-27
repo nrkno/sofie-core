@@ -1,5 +1,3 @@
-import { Mongo } from 'meteor/mongo'
-
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
@@ -7,6 +5,8 @@ import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integratio
 import { Timeline as TimelineTypes, TSRTimelineObj, DeviceType } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
 import { logger } from '../logging'
+import { createMongoCollection } from './lib'
+
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -23,7 +23,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	/** Studio installation Id */
 	studioId: string
-	rundownId?: string
+	playlistId?: string
 
 	objectType: TimelineObjType
 
@@ -62,6 +62,8 @@ export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
 	/** Rundown Id */
 	rundownId: string
+	/** Playlist Id */
+	playlistId: string
 }
 export interface TimelineObjRecording extends TimelineObjGeneric {
 	objectType: TimelineObjType.RECORDING
@@ -143,9 +145,9 @@ export function fixTimelineId (obj: TimelineObjectCoreExt) {
 	}
 }
 
-// export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
+// export const Timeline = createMongoCollection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric>
-	= new Mongo.Collection<TimelineObjGeneric>('timeline')
+	= createMongoCollection<TimelineObjGeneric>('timeline')
 registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

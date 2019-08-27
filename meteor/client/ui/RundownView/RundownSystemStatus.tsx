@@ -14,6 +14,7 @@ import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -191,7 +192,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 	}
 
 	componentWillMount () {
-		this.subscribe('peripheralDevicesAndSubDevices', {
+		this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
 			studioId: this.props.studio._id
 		})
 	}
