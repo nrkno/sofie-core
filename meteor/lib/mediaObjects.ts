@@ -119,6 +119,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
 			const fileName = getMediaObjectMediaId(piece, sourceLayer)
+			const displayName = piece.name
 			if (fileName) {
 				// If the fileName is not set...
 				if (!fileName) {
@@ -131,11 +132,11 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 					// If media object not found, then...
 					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-						message = t('Source is missing: {{fileName}}', { fileName: fileName })
+						message = t('Source is missing: {{fileName}}', { fileName: displayName })
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: fileName })
+						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: displayName })
 					}
 					if (mediaObject) {
 						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
@@ -207,13 +208,13 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 							}
 						} else {
-							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: fileName }))
+							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: displayName }))
 						}
 
 						if (messages.length) {
 							if (newStatus === RundownAPI.PieceStatusCode.OK) {
 								newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-								message = messages.join(', ')
+								message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
 							} else {
 								message += ', ' + messages.join(', ')
 							}
