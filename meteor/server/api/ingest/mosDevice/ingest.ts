@@ -10,15 +10,16 @@ import {
 	fixIllegalObject,
 	parseMosString
 } from './lib'
-import { literal, asyncCollectionUpdate } from '../../../../lib/lib'
+import { literal, asyncCollectionUpdate, waitForPromiseAll } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
-	updateSegmentFromIngestData,
 	rundownSyncFunction,
 	RundownSyncFunctionPriority,
 	handleUpdatedRundownInner,
-	handleUpdatedPartInner
+	handleUpdatedPartInner,
+	updateSegmentsFromIngestData,
+	afterIngestChangedData
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
@@ -447,18 +448,17 @@ function diffAndApplyChanges (
 
 	// Update segment ranks
 	let ps: Array<Promise<any>> = []
-	_.each(segmentDiff.rankChanged, ranks => {
-		const rank = ranks[1]
+	_.each(segmentDiff.rankChanged, (rankChange) => {
 		ps.push(
 			asyncCollectionUpdate(
 				Segments,
 				{
 					rundownId: rundown._id,
-					_id: getSegmentId(rundown._id, newIngestRundown.segments[rank].externalId)
+					_id: getSegmentId(rundown._id, newIngestRundown.segments[rankChange.newRank].externalId)
 				},
 				{
 					$set: {
-						_rank: rank
+						_rank: rankChange.newRank
 					}
 				}
 			)
@@ -470,10 +470,12 @@ function diffAndApplyChanges (
 	)
 	removeSegments(rundown._id, removedSegmentIds)
 
+	waitForPromiseAll(ps)
+
 	// Create/Update segments
-	for (const i of segmentDiff.changed) {
-		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])
-	}
+	updateSegmentsFromIngestData(studio, rundown, _.map(segmentDiff.changed, i => ingestSegments[i]))
+
+	afterIngestChangedData(rundown, _.map(segmentDiff.rankChanged, i => getSegmentId(rundown._id, newIngestRundown.segments[i.newRank].externalId)))
 }
 
 export interface SegmentEntry {
@@ -490,29 +492,30 @@ function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[]
 }
 
 export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[]) {
-	const rankChanged: number[][] = [] // (Old, New) index
+	const rankChanged: { oldRank: number, newRank: number }[] = []
 	const unchanged: number[] = [] // New index
-	const removed: number[] = [] // Old index
 	const changed: number[] = [] // New index
+	const removed: number[] = [] // Old index
 
 	// Convert to object to track their original index in the arrays
-	const unusedOldSegmentEntries = _.map(oldSegmentEntries, (e, i) => ({ e, i }))
-	const unusedNewSegmentEntries = _.map(newSegmentEntries, (e, i) => ({ e, i }))
+	const unusedOldSegmentEntries = _.map(oldSegmentEntries, (segmentEntry, rank) => ({ segmentEntry, rank }))
+	const unusedNewSegmentEntries = _.map(newSegmentEntries, (segmentEntry, rank) => ({ segmentEntry, rank }))
 
 	let prune: number[] = []
 
 	// Deep compare
-	_.each(newSegmentEntries, (e, i) => {
-		const matching = unusedOldSegmentEntries.findIndex(o => _.isEqual(o.e, e))
+	_.each(newSegmentEntries, (segmentEntry, newRank) => {
+		const matching = unusedOldSegmentEntries.findIndex(old => _.isEqual(old.segmentEntry, segmentEntry))
 		if (matching !== -1) {
-			if (i === unusedOldSegmentEntries[matching].i) {
-				unchanged.push(i)
+			const oldRank = unusedOldSegmentEntries[matching].rank
+			if (newRank === oldRank) {
+				unchanged.push(newRank)
 			} else {
-				rankChanged.push([unusedOldSegmentEntries[matching].i, i])
+				rankChanged.push({ oldRank, newRank })
 			}
 
 			unusedOldSegmentEntries.splice(matching, 1)
-			prune.push(i)
+			prune.push(newRank)
 		}
 	})
 
@@ -521,15 +524,15 @@ export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmen
 	prune = []
 
 	// Match any by name
-	_.each(unusedNewSegmentEntries, (e, i) => {
-		const matching = unusedOldSegmentEntries.findIndex(o => o.e.name === e.e.name)
+	_.each(unusedNewSegmentEntries, (unused, i) => {
+		const matching = unusedOldSegmentEntries.findIndex(old => old.segmentEntry.name === unused.segmentEntry.name)
 		if (matching !== -1) {
 			const oldItem = unusedOldSegmentEntries[matching]
-			if (e.e.id !== oldItem.e.id) {
+			if (unused.segmentEntry.id !== oldItem.segmentEntry.id) {
 				// If Id has changed, then the old one needs to be explicitly removed
-				removed.push(oldItem.i)
+				removed.push(oldItem.rank)
 			}
-			changed.push(e.i)
+			changed.push(unused.rank)
 			unusedOldSegmentEntries.splice(matching, 1)
 			prune.push(i)
 		}
@@ -539,8 +542,8 @@ export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmen
 	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
 	prune = []
 
-	changed.push(..._.map(unusedNewSegmentEntries, e => e.i))
-	removed.push(..._.map(unusedOldSegmentEntries, e => e.i))
+	changed.push(..._.map(unusedNewSegmentEntries, e => e.rank))
+	removed.push(..._.map(unusedOldSegmentEntries, e => e.rank))
 
 	return {
 		rankChanged,

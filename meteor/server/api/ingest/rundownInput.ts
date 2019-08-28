@@ -412,18 +412,34 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		updateSegmentFromIngestData(studio, rundown, ingestSegment)
 	})
 }
+export function updateSegmentsFromIngestData (
+	studio: Studio,
+	rundown: Rundown,
+	ingestSegments: IngestSegment[]
+) {
+	const changedSegmentIds: string[] = []
+	for (let ingestSegment of ingestSegments) {
+		const segmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (segmentId !== null) {
+			changedSegmentIds.push(segmentId)
+		}
+	}
+	if (changedSegmentIds.length > 0) {
+		afterIngestChangedData(rundown, changedSegmentIds)
+	}
+}
 /**
  * Run ingestData through blueprints and update the Segment
  * @param studio
  * @param rundown
  * @param ingestSegment
- * @returns true if data has changed
+ * @returns a segmentId if data has changed, null otherwise
  */
-export function updateSegmentFromIngestData (
+function updateSegmentFromIngestData (
 	studio: Studio,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): boolean {
+): string | null {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = getBlueprintOfRundown(rundown)
 
@@ -492,14 +508,9 @@ export function updateSegmentFromIngestData (
 			}
 		})
 	)
-
-	const didChange = anythingChanged(changes)
-	if (didChange) {
-		afterIngestChangedData(rundown, [segmentId])
-	}
-	return didChange
+	return anythingChanged(changes) ? segmentId : null
 }
-function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+export function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updatePartRanks(rundown._id)
