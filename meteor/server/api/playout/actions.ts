@@ -44,7 +44,7 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 		active: true,
 		rehearsal: rehearsal,
 	}
-	Rundowns.update(rundownPlaylist._id, {
+	RundownPlaylists.update(rundownPlaylist._id, {
 		$set: m
 	})
 	// Update local object:
