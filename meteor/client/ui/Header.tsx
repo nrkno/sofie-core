@@ -37,9 +37,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
-		if (!this.state.showNotifications === true) {
-			NotificationCenter.snoozeAll()
-		}
+		NotificationCenter.isOpen = !this.state.showNotifications
 
 		this.setState({
 			showNotifications: !this.state.showNotifications
