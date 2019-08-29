@@ -167,6 +167,8 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 	const allSegments = Segments.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 
+	logger.debug(`updatePartRanks (${allParts.length} parts, ${allSegments.length} segments)`)
+
 	const rankedParts: Array<Part> = []
 	const partsToPutAfter: {[id: string]: Array<Part>} = {}
 
@@ -213,6 +215,7 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 			part._rank = newRank
 		}
 	})
+	logger.debug(`updatePartRanks: ${ps.length} parts updated`)
 
 	let hasAddedAnything = true
 	while (hasAddedAnything) {
