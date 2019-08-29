@@ -201,6 +201,8 @@ export function withTracker<IProps, IState, TrackedProps> (
 	return (WrappedComponent) => {
 		// return ''
 		return class extends ReactMeteorComponentWrapper<IProps, IState> {
+			displayName: string = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'})`
+
 			getMeteorData () {
 				return expandedOptions.getMeteorData.call(this, this.props)
 			}

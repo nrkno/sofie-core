@@ -82,6 +82,14 @@ class RundownViewNotifier extends WithManagedTracker {
 			// console.log('RundownViewNotifier 1')
 			const rundowns = Rundowns.find({
 				playlistId: playlistId
+			}, {
+				fields: {
+					'_id': 1,
+					'_rank': 1,
+				},
+				sort: {
+					'_rank': 1
+				}
 			}).fetch()
 			const rIds = rundowns.map(i => i._id)
 			const rPlaylistId = playlistId

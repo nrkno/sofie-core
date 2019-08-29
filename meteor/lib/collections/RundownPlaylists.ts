@@ -91,7 +91,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				playlistId: this._id
 			}, selector),
 			_.extend({
-				sort: { _rank: 1 }
+				sort: { 
+					_rank: 1 
+				},
+				fields: {
+					_id: 1,
+					_rank: 1
+				}
 			}, options)
 		).fetch().map(i => i._id)
 	}
@@ -113,19 +119,24 @@ export class RundownPlaylist implements DBRundownPlaylist {
 
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
-	getSegments (): Segment[] {
-		const rundowns = this.getRundowns()
+	getSegments (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Segment[] {
+		const rundowns = this.getRundowns(undefined, {
+			fields: {
+				_rank: 1,
+				playlistId: 1
+			}
+		})
 		let rundownsMap = normalizeArray(rundowns, '_id')
-		const segments = Segments.find({
+		const segments = Segments.find(_.extend({
 			rundownId: {
 				$in: rundowns.map(i => i._id)
 			}
-		}, {
+		}, selector), _.extend({
 			sort: {
 				rundownId: 1,
 				_rank: 1
 			}
-		}).fetch().sort((a, b) => {
+		}, options)).fetch().sort((a, b) => {
 			if (a.rundownId === b.rundownId) {
 				return a._rank - b._rank
 			} else {
@@ -136,14 +147,20 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 		return segments
 	}
-	getParts (): Part[] {
-		const rundowns = this.getRundowns()
+	getParts (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Part[] {
+		const rundowns = this.getRundowns(undefined, {
+			fields: {
+				_id: 1,
+				_rank: 1,
+				name: 1
+			}
+		})
 		let rundownsMap = normalizeArray(rundowns, '_id')
-		const segments = Parts.find({
+		const segments = Parts.find(_.extend({
 			rundownId: {
 				$in: rundowns.map(i => i._id)
 			}
-		}, {
+		}, selector), {
 			sort: {
 				rundownId: 1,
 				_rank: 1

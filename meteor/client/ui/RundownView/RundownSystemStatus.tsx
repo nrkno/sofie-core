@@ -5,6 +5,7 @@ import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosParentDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
@@ -59,6 +60,7 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 interface IProps {
 	studio: Studio
 	playlist: RundownPlaylist
+	rundownIDs: string[]
 }
 
 interface IState {
@@ -149,7 +151,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	})
 
-	let segments = props.playlist.getSegments()
+	const segments = Segments.find({ rundownId: { $in: props.rundownIDs }}).fetch()
 
 	let notes: Array<PartNote> = []
 	_.each(segments, s => {

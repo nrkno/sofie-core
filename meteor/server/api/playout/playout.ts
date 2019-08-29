@@ -182,7 +182,9 @@ export namespace ServerPlayoutAPI {
 			let firstTake = !playlist.startedPlayback
 			let rundownData = playlist.fetchAllData()
 
-			const currentPart = playlist.currentPartId ? Parts.findOne(playlist.currentPartId) : undefined
+			const partId = playlist.currentPartId || playlist.nextPartId
+
+			const currentPart = partId ? Parts.findOne(partId) : undefined
 			const currentRundown = currentPart ? rundownData.rundownsMap[currentPart.rundownId] : undefined
 
 			if (!currentRundown) throw new Meteor.Error(404, `Rundown "${currentPart && currentPart.rundownId || ''}" could not be found!`)
@@ -202,7 +204,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			if (playlist.holdState === RundownHoldState.COMPLETE) {
-				Rundowns.update(playlist._id, {
+				RundownPlaylists.update(playlist._id, {
 					$set: {
 						holdState: RundownHoldState.NONE
 					}
@@ -210,7 +212,7 @@ export namespace ServerPlayoutAPI {
 			// If hold is active, then this take is to clear it
 			} else if (playlist.holdState === RundownHoldState.ACTIVE) {
 				const ps: Promise<any>[] = []
-				ps.push(asyncCollectionUpdate(Rundowns, playlist._id, {
+				ps.push(asyncCollectionUpdate(RundownPlaylists, playlist._id, {
 					$set: {
 						holdState: RundownHoldState.COMPLETE
 					}
@@ -256,7 +258,7 @@ export namespace ServerPlayoutAPI {
 			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
 			let partAfter = fetchAfter(rundownData.parts, {
-				rundownId: playlist._id,
+				rundownId: takePart.rundownId,
 				invalid: { $ne: true }
 			}, takePart._rank)
 
@@ -294,7 +296,7 @@ export namespace ServerPlayoutAPI {
 				currentPartId: takePart._id,
 				holdState: !playlist.holdState || playlist.holdState === RundownHoldState.COMPLETE ? RundownHoldState.NONE : playlist.holdState + 1,
 			}
-			ps.push(asyncCollectionUpdate(Rundowns, playlist._id, {
+			ps.push(asyncCollectionUpdate(RundownPlaylists, playlist._id, {
 				$set: m
 			}))
 
@@ -566,7 +568,7 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" already doing a hold!`)
 			}
 
-			Rundowns.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
+			RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
 
 			updateTimeline(playlist.studioId)
 
@@ -858,7 +860,7 @@ export namespace ServerPlayoutAPI {
 							currentPartId: playingPart._id,
 						}
 
-						Rundowns.update(playlist._id, {
+						RundownPlaylists.update(playlist._id, {
 							$set: rundownChange
 						})
 						_.extend(playlist, rundownChange) as Rundown

@@ -329,6 +329,7 @@ interface HotkeyDefinition {
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist,
 	studio: Studio,
+	rundownIDs: string[],
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
@@ -997,7 +998,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							</div>
 						</div>
 						<TimingDisplay rundownPlaylist={this.props.playlist} />
-						<RundownSystemStatus studio={this.props.studio} playlist={this.props.playlist} />
+						<RundownSystemStatus studio={this.props.studio} playlist={this.props.playlist} rundownIDs={this.props.rundownIDs} />
 					</div>
 					<div className='row dark'>
 						<div className='col c12 rundown-overview'>
@@ -1855,6 +1856,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								<RundownHeader
 									playlist={this.props.playlist}
 									studio={this.props.studio}
+									rundownIDs={this.props.rundowns.map(r => r._id)}
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}

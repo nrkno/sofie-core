@@ -384,11 +384,25 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	let sourceHotKeyUse = {}
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
-	let segments: Array<Segment> = props.playlist.getSegments()
+	let segments: Array<Segment> = props.playlist.getSegments(undefined, {
+		fields: {
+			'_id': 1,
+			'_rank': 1,
+			'name': 1,
+			'rundownId': 1
+		}
+	})
 
 	const uiSegments = props.playlist ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
-		seg.parts = segSource.getParts()
+		seg.parts = segSource.getParts(undefined, {
+			fields: {
+				'_id': 1,
+				'_rank': 1,
+				'name': 1,
+				'rundownId': 1
+			}
+		})
 		let segmentAdLibPieces: Array<AdLibPiece> = []
 		seg.parts.forEach((part) => {
 			if (part._id === props.playlist.currentPartId) {
@@ -428,7 +442,13 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	)) {
 		const { t } = props
 
-		const rundowns = props.playlist.getRundowns()
+		const rundowns = props.playlist.getRundowns(undefined, {
+			fields: {
+				'_id': 1,
+				'_rank': 1,
+				'name': 1
+			}
+		})
 		const rMap = normalizeArray(rundowns, '_id')
 		currentRundown = rundowns[0]
 		const partId = props.playlist.currentPartId || props.playlist.nextPartId
