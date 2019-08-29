@@ -180,7 +180,10 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 	})
 
 	// Sort the parts by segment, then rank
-	const segmentIds = _.map(allSegments, seg => seg._id)
+	const segmentRanks: {[segmentId: string]: number} = {}
+	_.each(allSegments, seg => {
+		segmentRanks[seg._id] = seg._rank
+	})
 	rankedParts.sort((a, b) => {
 		let compareRanks = (ar: number, br: number) => {
 			if (ar === br) {
@@ -195,8 +198,8 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 		if (a.segmentId === b.segmentId) {
 			return compareRanks(a._rank, b._rank)
 		} else {
-			const aRank = segmentIds.indexOf(a.segmentId)
-			const bRank = segmentIds.indexOf(b.segmentId)
+			const aRank = segmentRanks[a.segmentId] || -1
+			const bRank = segmentRanks[a.segmentId] || -1
 			return compareRanks(aRank, bRank)
 		}
 	})
