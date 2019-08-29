@@ -254,6 +254,8 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 					})
 				}
 				delete partsToPutAfter[partId]
+			} else {
+				// TODO - part is invalid and should be deleted/warned about
 			}
 		})
 	}
