@@ -201,7 +201,7 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 			return compareRanks(a._rank, b._rank)
 		} else {
 			const aRank = segmentRanks[a.segmentId] || -1
-			const bRank = segmentRanks[a.segmentId] || -1
+			const bRank = segmentRanks[b.segmentId] || -1
 			return compareRanks(aRank, bRank)
 		}
 	})
