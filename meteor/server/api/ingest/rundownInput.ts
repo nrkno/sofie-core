@@ -409,7 +409,10 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		if (!canBeUpdated(rundown, segmentId)) return
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (updatedSegmentId) {
+			afterIngestChangedData(rundown, [updatedSegmentId])
+		}
 	})
 }
 export function updateSegmentsFromIngestData (
@@ -542,7 +545,11 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+
+		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (updatedSegmentId) {
+			afterIngestChangedData(rundown, [updatedSegmentId])
+		}
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
@@ -567,7 +574,10 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	ingestSegment.parts.push(ingestPart)
 
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	if (updatedSegmentId) {
+		afterIngestChangedData(rundown, [updatedSegmentId])
+	}
 }
 
 function generateSegmentContents (
