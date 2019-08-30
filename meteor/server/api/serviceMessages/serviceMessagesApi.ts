@@ -17,6 +17,7 @@ interface WriteStatus {
 function readAllMessages (): Array<ServiceMessage> {
 	const coreSystem = getCoreSystem()
 	if (!coreSystem || !coreSystem.serviceMessages) {
+		logger.error('coreSystem.serviceMessages doesnt exist. ServiceMessages API wont work.')
 		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
 	}
 
