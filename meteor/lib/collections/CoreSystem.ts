@@ -1,10 +1,10 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import * as semver from 'semver'
+import { createMongoCollection } from './lib'
 
 export const SYSTEM_ID = 'core'
 
@@ -76,7 +76,7 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 // This represents the "system"
 
 export const CoreSystem: TransformedCollection<ICoreSystem, ICoreSystem>
-	= new Mongo.Collection<ICoreSystem>('coreSystem')
+	= createMongoCollection<ICoreSystem>('coreSystem')
 registerCollection('CoreSystem', CoreSystem)
 
 export function getCoreSystem (): ICoreSystem | undefined {

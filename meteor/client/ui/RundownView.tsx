@@ -1,7 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
+import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -9,8 +11,9 @@ import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as Escape from 'react-escape'
+import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { NavLink, Route, Prompt } from 'react-router-dom'
+import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Studio, Studios } from '../../lib/collections/Studios'
@@ -34,18 +37,19 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
-import { scrollToPart, scrollToPosition, scrollToSegment } from '../lib/viewPort'
+import { ClientAPI } from '../../lib/api/client'
+import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
@@ -53,6 +57,9 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { VirtualElement } from '../lib/VirtualElement'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -567,6 +574,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
 		}
 	}
+
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
@@ -574,7 +582,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.rundown._id, horizonalDelta, verticalDelta], (err, response) => {
 					if (!err && response) {
 						const partId = response.result
-						if (partId) scrollToPart(partId)
+						if (partId) scrollToPart(partId).catch(() => console.error)
 					}
 				})
 			}
@@ -600,6 +608,48 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0) + (this.props.rundown.expectedDuration || 0)
 	}
 
+	handleActivationError = (originalMethod: UserActionAPI.methods, originalParams: any[], err: ClientAPI.ClientResponseError, clb?: Function) => {
+		const { t } = this.props
+
+		const otherRundowns = err.details as Rundown[]
+		doModalDialog({
+			title: t('Another Rundown is Already Active!'),
+			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			yes: t('Activate Anyway'),
+			no: t('Cancel'),
+			warning: true,
+			onAccept: (le: any) => {
+				Promise.all(otherRundowns.map(r => {
+					return new Promise((resolve, reject) => {
+						doUserAction(t, le, UserActionAPI.methods.deactivate, [r._id], (err, res) => {
+							if (!err) {
+								resolve()
+								return
+							}
+							reject(err)
+						})
+					})
+				})).then((res) => {
+					doUserAction(t, le, originalMethod, originalParams, (err, response) => {
+						if (!err) {
+							if (typeof clb === 'function') clb()
+						}
+					})
+				}, (err) => {
+					console.error(err)
+					doModalDialog({
+						title: t('Failed to deactivate'),
+						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
+						acceptOnly: true,
+						warning: true,
+						yes: t('OK'),
+						onAccept: (le: any) => { console.log() }
+					})
+				}).catch(console.error)
+			}
+		})
+	}
+
 	activate = (e: any) => {
 		const { t } = this.props
 		if (e.persist) e.persist()
@@ -614,10 +664,21 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				)
 			)
 		) {
-			let doActivate = (le: any) => {
-				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.rundown._id, false], (err, response) => {
+			const onSuccess = () => {
+				this.deferFlushAndRewindSegments()
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			}
+			const doActivate = (le: any) => {
+				doUserAction(t, le, UserActionAPI.methods.activate, [this.props.rundown._id, false], (err, response) => {
 					if (!err) {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+					} else if (ClientAPI.isClientResponseError(err)) {
+						if (err.error === 409) {
+							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, () => {
+								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+							})
+							return false
+						}
 					}
 				})
 			}
@@ -630,8 +691,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						this.rewindSegments()
 						doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id], (err, response) => {
 							if (!err) {
-								this.deferFlushAndRewindSegments()
-								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+								onSuccess()
+							} else if (ClientAPI.isClientResponseError(err)) {
+								if (err.error === 409) {
+									this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, onSuccess)
+									return false
+								}
 							}
 						})
 					}
@@ -665,10 +730,18 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				)
 			)
 		) {
-			let doActivateRehersal = () => {
-				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.rundown._id, true], (err, response) => {
+			const onSuccess = () => {
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			}
+			let doActivateRehersal = (le: any) => {
+				doUserAction(t, le, UserActionAPI.methods.activate, [this.props.rundown._id, true], (err, response) => {
 					if (!err) {
-						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+						onSuccess()
+					} else if (ClientAPI.isClientResponseError(err)) {
+						if (err.error === 409) {
+							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, true], err, onSuccess)
+							return false
+						}
 					}
 				})
 			}
@@ -678,7 +751,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					// inactive, do the full preparation:
 					doUserAction(t, e, UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], (err, response) => {
 						if (!err) {
-							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+							onSuccess()
+						} else if (ClientAPI.isClientResponseError(err)) {
+							if (err.error === 409) {
+								this.handleActivationError(UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], err, onSuccess)
+								return false
+							}
 						}
 					})
 				} else if (!this.props.rundown.rehearsal) {
@@ -686,8 +764,8 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
-						onAccept: () => {
-							doActivateRehersal()
+						onAccept: (e) => {
+							doActivateRehersal(e)
 						}
 					})
 				} else {
@@ -700,13 +778,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
-						onAccept: () => {
-							doActivateRehersal()
+						onAccept: (e) => {
+							doActivateRehersal(e)
 						}
 					})
 				} else {
 					// The broadcast has ended
-					doActivateRehersal()
+					doActivateRehersal(e)
 				}
 			}
 		}
@@ -765,10 +843,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	reloadRundown = (e: any, changeRehearsal?: boolean) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err) => {
-				if (!err) {
-					if (this.props.rundown && this.props.rundown.nextPartId) {
-						scrollToPart(this.props.rundown.nextPartId)
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.rundown._id, changeRehearsal], (err, response) => {
+				if (!err && response) {
+					if (!handleRundownReloadResponse(t, this.props.rundown, response.result)) {
+						if (this.props.rundown && this.props.rundown.nextPartId) {
+							scrollToPart(this.props.rundown.nextPartId).catch(() => console.error)
+						}
 					}
 				}
 			})
@@ -806,17 +886,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		Meteor.defer(() => {
 			Tracker.flush()
 			Meteor.setTimeout(() => {
-				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+				this.rewindSegments()
 				window.dispatchEvent(new Event(RundownViewEvents.goToTop))
 			}, 500)
 		})
 	}
 
 	render () {
-		if (this.state.isError) {
-			throw new Error('Dupa')
-		}
-
 		const { t } = this.props
 		return <React.Fragment>
 			<Escape to='document'>
@@ -940,6 +1016,7 @@ interface IProps {
 	}
 	rundownId?: string
 	inActiveRundownView?: boolean
+	onlyShelf?: boolean
 }
 
 interface IState {
@@ -953,7 +1030,7 @@ interface IState {
 	usedHotkeys: Array<HotkeyDefinition>
 	isNotificationsCenterOpen: boolean
 	isSupportPanelOpen: boolean
-	isInspectorDrawerExpanded: boolean
+	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
@@ -972,6 +1049,8 @@ interface ITrackedProps {
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
+	casparCGPlayoutDevices?: PeripheralDevice[]
+	rundownLayoutId?: string
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -985,6 +1064,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let rundown = Rundowns.findOne({ _id: rundownId })
 	let studio = rundown && Studios.findOne({ _id: rundown.studioId })
 
+	const params = queryStringParse(location.search)
+
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownId: rundownId,
@@ -997,7 +1078,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		studio: studio,
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 		rundownLayouts: rundown && RundownLayouts.find({
-			showStyleBaseId: rundown.showStyleBaseId }).fetch()
+			showStyleBaseId: rundown.showStyleBaseId }).fetch(),
+		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
+			parentDeviceId: {
+				$in: PeripheralDevices.find({
+					studioId: studio._id
+				}).fetch().map(i => i._id)
+			},
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			subType: TSR_DeviceType.CASPARCG
+		}).fetch()) || undefined,
+		rundownLayoutId: String(params['layout'])
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1016,7 +1107,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
-	private _inspectorDrawer: WrappedShelf | null
+	private _inspectorShelf: WrappedShelf | null
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1061,7 +1152,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			]),
 			isNotificationsCenterOpen: false,
 			isSupportPanelOpen: false,
-			isInspectorDrawerExpanded: false,
+			isInspectorShelfExpanded: false,
 			isClipTrimmerOpen: false,
 			selectedPiece: undefined,
 			rundownLayout: undefined
@@ -1069,11 +1160,28 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	static getDerivedStateFromProps (props: Translated<IProps & ITrackedProps>, state: IState) {
-		let selectedLayout: RundownLayout | undefined = undefined
+		let selectedLayout: RundownLayoutBase | undefined = undefined
 
 		if (props.rundownLayouts) {
-			selectedLayout = props.rundownLayouts
-				.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT) as RundownLayout | undefined
+			// first try to use the one selected by the user
+			if (props.rundownLayoutId) {
+				selectedLayout = props.rundownLayouts.find((i) => i._id === props.rundownLayoutId)
+			}
+
+			// if couldn't find based on id, try matching part of the name
+			if (props.rundownLayoutId && !selectedLayout) {
+				selectedLayout = props.rundownLayouts.find((i) => i.name.indexOf(props.rundownLayoutId!) >= 0)
+			}
+
+			// if not, try the first RUNDOWN_LAYOUT available
+			if (!selectedLayout) {
+				selectedLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+			}
+
+			// if still not found, use the first one
+			if (!selectedLayout) {
+				selectedLayout = props.rundownLayouts[0]
+			}
 		}
 
 		return {
@@ -1123,7 +1231,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		document.body.classList.add('dark', 'vertical-overflow-only')
-		window.addEventListener('scroll', this.onWindowScroll)
+		// window.addEventListener('scroll', this.onWindowScroll)
 
 		let preventDefault = (e) => {
 			e.preventDefault()
@@ -1170,7 +1278,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		} else if (this.props.rundown &&
 			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
 			this.props.rundown.nextPartId) {
-			scrollToPart(this.props.rundown.nextPartId)
+			scrollToPart(this.props.rundown.nextPartId).catch(() => console.error)
+		} else if (
+			// after take
+			(this.props.rundown &&
+			prevProps.rundown && this.props.rundown.currentPartId !== prevProps.rundown.currentPartId &&
+			this.props.rundown.currentPartId && this.state.followLiveSegments)
+		) {
+			scrollToPart(this.props.rundown.currentPartId, true).catch(() => console.error)
+		} else if (
+			// initial Rundown open
+			(this.props.rundown && this.props.rundown.currentPartId &&
+			this.state.subsReady && !prevState.subsReady)
+		) {
+			// allow for some time for the Rundown to render
+			maintainFocusOnPart(this.props.rundown.currentPartId, 7000, true, true)
 		}
 
 		if (typeof this.props.rundown !== typeof this.props.rundown ||
@@ -1236,21 +1358,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		// if (piece && piece.content && (piece.content as VTContent).editable &&
-		// 	((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-		// 	((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
-		// 	this.setState({
-		// 		isClipTrimmerOpen: true,
-		// 		selectedPiece: piece
+		if (piece && piece.content && (piece.content as VTContent).editable &&
+			((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+			((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+			this.setState({
+				isClipTrimmerOpen: true,
+				selectedPiece: piece
 
-		// 	})
-		// }
+			})
+		}
 	}
 
 	componentWillUnmount () {
 		this._cleanUp()
 		document.body.classList.remove('dark', 'vertical-overflow-only')
-		window.removeEventListener('scroll', this.onWindowScroll)
+		// window.removeEventListener('scroll', this.onWindowScroll)
 		window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
@@ -1306,14 +1428,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onWindowScroll = (e: Event) => {
-		const isAutoScrolling = document.body.classList.contains('auto-scrolling')
-		if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
-			this.setState({
-				followLiveSegments: false
-			})
-		}
-	}
+	// onWindowScroll = (e: Event) => {
+	// 	console.log('Scroll handler')
+	// 	const isAutoScrolling = document.body.classList.contains('auto-scrolling')
+	// 	if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
+	// 		this.setState({
+	// 			followLiveSegments: false
+	// 		})
+	// 	}
+	// }
 
 	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
 		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
@@ -1326,13 +1449,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onGoToTop = () => {
-		scrollToPosition(0)
+		scrollToPosition(0).catch(console.error)
 
-		Meteor.setTimeout(() => {
+		window.requestIdleCallback(() => {
 			this.setState({
 				followLiveSegments: true
 			})
-		}, 400)
+		}, { timeout: 1000 })
 	}
 	onGoToLiveSegment = () => {
 		if (this.props.rundown && this.props.rundown.active && !this.props.rundown.currentPartId &&
@@ -1340,14 +1463,33 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToPart(this.props.rundown.nextPartId)
-			// allow for the scroll to finish
-			Meteor.setTimeout(() => {
+			scrollToPart(this.props.rundown.nextPartId, true).then(() => {
+				// allow for the scroll to finish
+			}).catch((e) => {
+				console.error(e)
+			})
+			setTimeout(() => {
 				this.setState({
 					followLiveSegments: true
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
-			}, 400)
+			}, 2000)
+		} else if (this.props.rundown && this.props.rundown.active && this.props.rundown.currentPartId) {
+			this.setState({
+				followLiveSegments: true
+			})
+			scrollToPart(this.props.rundown.currentPartId, true).then(() => {
+				// allow for the scroll to finish
+			}).catch((e) => {
+				console.error(e)
+			})
+			setTimeout(() => {
+				// console.log("followLiveSegments: true")
+				this.setState({
+					followLiveSegments: true
+				})
+				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+			}, 2000)
 		} else {
 			this.setState({
 				followLiveSegments: true
@@ -1356,9 +1498,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onActivate = (isRehearsal: boolean) => {
-		this.setState({
-			followLiveSegments: true
-		})
+		this.onGoToLiveSegment()
 	}
 
 	onContextMenu = (contextMenuContext: any) => {
@@ -1401,7 +1541,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}
 			}
 			if (segmentId) {
-				scrollToSegment(segmentId)
+				scrollToSegment(segmentId).catch(console.error)
 			}
 		}
 	}
@@ -1431,22 +1571,31 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					this.props.showStyleBase
 				) {
 					return <ErrorBoundary key={segment._id}>
-							<SegmentTimelineContainer
-								studio={this.props.studio}
-								showStyleBase={this.props.showStyleBase}
-								followLiveSegments={this.state.followLiveSegments}
-								segmentId={segment._id}
-								rundown={this.props.rundown}
-								liveLineHistorySize={100}
-								timeScale={this.state.timeScale}
-								onTimeScaleChange={this.onTimeScaleChange}
-								onContextMenu={this.onContextMenu}
-								onSegmentScroll={this.onSegmentScroll}
-								isLastSegment={index === array.length - 1}
-								onPieceClick={this.onSelectPiece}
-								onPieceDoubleClick={this.onPieceDoubleClick}
-								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
-							/>
+							<VirtualElement
+								id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+								margin={'100% 0px 100% 0px'}
+								initialShow={index < (window.innerHeight / 260)}
+								placeholderHeight={260}
+								placeholderClassName='placeholder-shimmer-element segment-timeline-placeholder'
+								width='auto'>
+								<SegmentTimelineContainer
+									id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+									studio={this.props.studio}
+									showStyleBase={this.props.showStyleBase}
+									followLiveSegments={this.state.followLiveSegments}
+									segmentId={segment._id}
+									rundown={this.props.rundown}
+									liveLineHistorySize={100}
+									timeScale={this.state.timeScale}
+									onTimeScaleChange={this.onTimeScaleChange}
+									onContextMenu={this.onContextMenu}
+									onSegmentScroll={this.onSegmentScroll}
+									isLastSegment={index === array.length - 1}
+									onPieceClick={this.onSelectPiece}
+									onPieceDoubleClick={this.onPieceDoubleClick}
+									onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+								/>
+							</VirtualElement>
 						</ErrorBoundary>
 				}
 			})
@@ -1499,9 +1648,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (!this.state.isNotificationsCenterOpen === true) {
-			NotificationCenter.snoozeAll()
 			NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 		}
+
+		NotificationCenter.isOpen = !this.state.isNotificationsCenterOpen
 
 		this.setState({
 			isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen
@@ -1509,16 +1659,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onToggleHotkeys = () => {
-		if (!this.state.isInspectorDrawerExpanded) {
+		if (!this.state.isInspectorShelfExpanded) {
 			this.setState({
-				isInspectorDrawerExpanded: true
+				isInspectorShelfExpanded: true
 			})
-			if (this._inspectorDrawer) {
-				this._inspectorDrawer.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
+			if (this._inspectorShelf) {
+				this._inspectorShelf.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
 			}
 		} else {
 			this.setState({
-				isInspectorDrawerExpanded: false
+				isInspectorShelfExpanded: false
 			})
 		}
 	}
@@ -1546,6 +1696,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onRestartCasparCG = (device: PeripheralDevice) => {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Restart CasparCG Server'),
+			message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
+			onAccept: (event: any) => {
+
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
+					if (err) {
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
+					} else {
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
+					}
+				})
+			},
+		})
+	}
+
 	onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const { t } = this.props
 		if (this.props.rundown) {
@@ -1554,14 +1725,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onDrawerChangeExpanded = (value: boolean) => {
+	onShelfChangeExpanded = (value: boolean) => {
 		this.setState({
-			isInspectorDrawerExpanded: value
+			isInspectorShelfExpanded: value
 		})
 	}
 
-	setInspectorDrawer = (isp: WrappedShelf | null) => {
-		this._inspectorDrawer = isp
+	setInspectorShelf = (isp: WrappedShelf | null) => {
+		this._inspectorShelf = isp
 	}
 
 	onTake = (e: any) => {
@@ -1584,7 +1755,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			if (
 				this.props.rundown &&
 				this.props.studio &&
-				this.props.showStyleBase
+				this.props.showStyleBase &&
+				!this.props.onlyShelf
 			) {
 				return (
 					<RundownTimingProvider
@@ -1637,6 +1809,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 											{this.state.studioMode &&
 												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 											}
+											{this.state.studioMode && this.props.casparCGPlayoutDevices &&
+												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', { device: i.name })}</button>)
+											}
 										</SupportPopUp>
 									}
 								</VelocityReact.VelocityTransitionGroup>
@@ -1680,9 +1855,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf
-									ref={this.setInspectorDrawer}
-									isExpanded={this.state.isInspectorDrawerExpanded}
-									onChangeExpanded={this.onDrawerChangeExpanded}
+									ref={this.setInspectorShelf}
+									isExpanded={this.state.isInspectorShelfExpanded}
+									onChangeExpanded={this.onShelfChangeExpanded}
 									segments={this.props.segments}
 									hotkeys={this.state.usedHotkeys}
 									rundown={this.props.rundown}
@@ -1711,6 +1886,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</div> */}
 					</RundownTimingProvider>
 				)
+			} else if (
+				this.props.rundown &&
+				this.props.studio &&
+				this.props.showStyleBase &&
+				this.props.onlyShelf
+			) {
+				return <ErrorBoundary>
+					<Shelf
+						ref={this.setInspectorShelf}
+						isExpanded={this.state.isInspectorShelfExpanded}
+						onChangeExpanded={this.onShelfChangeExpanded}
+						segments={this.props.segments}
+						hotkeys={this.state.usedHotkeys}
+						rundown={this.props.rundown}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.state.studioMode}
+						onChangeBottomMargin={this.onChangeBottomMargin}
+						onRegisterHotkeys={this.onRegisterHotkeys}
+						rundownLayout={this.state.rundownLayout}
+						fullViewport={true} />
+				</ErrorBoundary>
 			} else {
 				return (
 					<div className='rundown-view rundown-view--unpublished'>
@@ -1747,3 +1943,49 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 }
 )
+
+export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
+	let hasDoneSomething = false
+	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
+		hasDoneSomething = true
+		const notification = NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL,
+			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundown.name }),
+			'userAction',
+			undefined,
+			true, [
+				// actions:
+				{
+					label: t('Mark rundown as unsynced'),
+					type: 'default',
+					action: () => {
+						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ rundown._id ], (err) => {
+							if (!err) {
+								notification.stop()
+							}
+						})
+					}
+				},
+				{
+					label: t('Remove rundown'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: rundown.name,
+							message: t('Do you really want to remove the rundown "{{rundownName}}"? This cannot be undone!', { rundownName: rundown.name }),
+							onAccept: () => {
+								// nothing
+								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ rundown._id], (err) => {
+									if (!err) {
+										notification.stop()
+										window.location.assign(`/`)
+									}
+								})
+							},
+						})
+					}
+				}
+			]
+		))
+	}
+	return hasDoneSomething
+}

@@ -39,7 +39,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		}
 	}
 	componentWillMount () {
-		this.subscribe('studios', {})
+		this.subscribe(PubSub.studios, {})
 	}
 	onClickStudio = (studio) => {
 		this.setState({

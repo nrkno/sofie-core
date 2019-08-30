@@ -15,7 +15,7 @@ jobs:
           no_output_timeout: 60m
       - run:
           name: Meteor Build
-          command: cd meteor && NODE_OPTIONS="--max-old-space-size=8192" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
+          command: cd meteor && NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
           no_output_timeout: 60m
       - run:
           name: Meteor Bundle NPM Build
@@ -61,6 +61,12 @@ jobs:
            command: |
              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
              docker push sofietv/tv-automation-server-core:$CIRCLE_TAG
+      - run:
+           name: Publish Docker Image to Github Package Registry
+           command: |
+             echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
+             docker tag sofietv/tv-automation-server-core:$CIRCLE_TAG docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_TAG
+             docker push docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_TAG
   publish-branch:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -78,6 +84,12 @@ jobs:
            command: |
              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
              docker push sofietv/tv-automation-server-core:$CIRCLE_BRANCH
+      - run:
+           name: Publish Docker Image to Github Package Registry
+           command: |
+             echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
+             docker tag sofietv/tv-automation-server-core:$CIRCLE_BRANCH docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_BRANCH
+             docker push docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_BRANCH
 
 workflows:
   version: 2

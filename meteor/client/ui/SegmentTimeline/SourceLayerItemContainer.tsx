@@ -18,6 +18,7 @@ import {
 	PieceUi
 } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IPropsHeader {
 	layer: ISourceLayerUi
@@ -51,8 +52,11 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	private statusComp: Tracker.Computation
 	private objId: string
 	private overrides: any
+	private destroyed: boolean
 
 	updateMediaObjectSubscription () {
+		if (this.destroyed) return
+
 		if (this.props.piece && this.props.piece.sourceLayer) {
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
@@ -69,7 +73,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
 					mediaId: this.objId
 				})
 			}
@@ -85,6 +89,8 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	}
 
 	updateDataTracker () {
+		if (this.destroyed) return
+
 		this.statusComp = this.autorun(() => {
 			const props = this.props
 			this.overrides = {}
@@ -98,38 +104,38 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
 
 				if (timelineObj) {
-					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
+					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
-					segmentCopy.enable = timelineObj.enable
+					pieceCopy.enable = timelineObj.enable
 					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
-						segmentCopy.renderedInPoint = timelineObj.enable.start
+						pieceCopy.renderedInPoint = timelineObj.enable.start
 					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
 						if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
-							segmentCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
+							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
 						} else {
-							segmentCopy.renderedInPoint = 0
+							pieceCopy.renderedInPoint = 0
 						}
 					} else {
-						segmentCopy.renderedInPoint = 0
+						pieceCopy.renderedInPoint = 0
 					}
 
-					if (typeof timelineObj.enable.duration === 'number' && !segmentCopy.cropped) {
-						segmentCopy.renderedDuration = (
+					if (typeof timelineObj.enable.duration === 'number' && !pieceCopy.cropped) {
+						pieceCopy.renderedDuration = (
 							timelineObj.enable.duration !== 0 ?
 							timelineObj.enable.duration :
-							(props.partDuration - (segmentCopy.renderedInPoint || 0))
+							(props.partDuration - (pieceCopy.renderedInPoint || 0))
 						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)
 
-					overrides.piece = _.extend(overrides.piece || {}, segmentCopy)
+					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
 				}
 			}
 
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().config)
+				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().settings)
 				if (status !== props.piece.status || metadata) {
 					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 
@@ -164,6 +170,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	}
 
 	componentWillUnmount () {
+		this.destroyed = true
 		super.componentWillUnmount()
 	}
 

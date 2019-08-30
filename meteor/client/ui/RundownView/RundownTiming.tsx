@@ -5,9 +5,15 @@ import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part, Parts } from '../../../lib/collections/Parts'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, literal } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+
+export interface TimeEventArgs {
+	currentTime: number
+}
+
+export type TimingEvent = CustomEvent<TimeEventArgs>
 
 export namespace RundownTiming {
 	/**
@@ -72,6 +78,7 @@ export namespace RundownTiming {
 		partExpectedDurations?: {
 			[key: string]: number
 		}
+		currentTime?: number
 	}
 
 	/**
@@ -182,13 +189,13 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 	}
 
 	onRefreshTimer = () => {
-		this.updateDurations()
-
-		this.dispatchHREvent()
+		const now = getCurrentTime()
+		this.updateDurations(now)
+		this.dispatchHREvent(now)
 
 		this.refreshDecimator++
 		if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
-			this.dispatchEvent()
+			this.dispatchEvent(now)
 		}
 	}
 
@@ -211,17 +218,27 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		Meteor.clearInterval(this.refreshTimer)
 	}
 
-	dispatchHREvent () {
-		const event = new Event(RundownTiming.Events.timeupdateHR)
+	dispatchHREvent (now: number) {
+		const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateHR, {
+			detail: {
+				currentTime: now
+			},
+			cancelable: false
+		})
 		window.dispatchEvent(event)
 	}
 
-	dispatchEvent () {
-		const event = new Event(RundownTiming.Events.timeupdate)
+	dispatchEvent (now: number) {
+		const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdate, {
+			detail: {
+				currentTime: now
+			},
+			cancelable: false
+		})
 		window.dispatchEvent(event)
 	}
 
-	updateDurations () {
+	updateDurations (now: number) {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
 		let asPlayedRundownDuration = 0
@@ -240,10 +257,10 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		let nextAIndex = -1
 		let currentAIndex = -1
 
-		let now = getCurrentTime()
-
 		if (rundown && parts) {
 			parts.forEach((part, itIndex) => {
+				// ignore if part is invalid
+				if (part.invalid) return
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([part._id, waitAccumulator]) - 1
 
@@ -284,25 +301,33 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				// display durations will take up that much time in the Rundown. The left-over time from the display duration group
 				// will be used by Parts without expectedDurations.
 				let memberOfDisplayDurationGroup = false
-					// using a separate displayDurationGroup processing flag simplifies implementation
+				// using a separate displayDurationGroup processing flag simplifies implementation
 				if (part.displayDurationGroup && (
 					// either this is not the first element of the displayDurationGroup
-					(this.displayDurationGroups[part.displayDurationGroup]) ||
+					(this.displayDurationGroups[part.displayDurationGroup] !== undefined) ||
 					// or there is a following member of this displayDurationGroup
 					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
 				)) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
-					displayDurationFromGroup = Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0)
-						|| this.displayDurationGroups[part.displayDurationGroup] || this.props.defaultDuration || 3000
+					displayDurationFromGroup = part.displayDuration
+						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], this.props.defaultDuration || 3000)
 					memberOfDisplayDurationGroup = true
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
-					currentRemaining = Math.max(0, (part.duration || displayDurationFromGroup || part.expectedDuration || 0)
+					currentRemaining = Math.max(0, (part.duration ||
+						(memberOfDisplayDurationGroup ?
+							displayDurationFromGroup :
+							part.expectedDuration) ||
+						0)
 						- (now - lastStartedPlayback)) + playOffset
 					partDuration = Math.max((part.duration || part.expectedDuration || 0),
 						(now - lastStartedPlayback))
-					partDisplayDuration = Math.max((part.duration || displayDurationFromGroup || part.expectedDuration || 0),
+					partDisplayDuration = Math.max((part.duration ||
+						(memberOfDisplayDurationGroup ?
+							displayDurationFromGroup :
+							part.expectedDuration) ||
+						this.props.defaultDuration || 3000),
 						(now - lastStartedPlayback)) + playOffset
 					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
 				} else {
@@ -310,12 +335,12 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					partDisplayDuration = Math.max(0, part.duration && part.duration + playOffset
 						|| displayDurationFromGroup
 						|| part.expectedDuration
-						|| 0)
+						|| this.props.defaultDuration || 3000)
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
 				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
-					this.displayDurationGroups[part.displayDurationGroup] = Math.max(0,
-						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration)
+					this.displayDurationGroups[part.displayDurationGroup] =
+						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration
 				}
 				/* if (item.displayDurationGroup && item.slug.startsWith('Julian')) {
 					console.log(item.displayDurationGroup + ', ' + item.slug + ': ' + (segLineDisplayDuration / 1000))
@@ -326,7 +351,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				this.partDurations[part._id] = partDuration
 				this.partDisplayDurations[part._id] = partDisplayDuration
 				startsAtAccumulator += this.partDurations[part._id]
-				displayStartsAtAccumulator += partDisplayDuration || this.props.defaultDuration || 3000
+				displayStartsAtAccumulator += partDisplayDuration // || this.props.defaultDuration || 3000
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
@@ -379,7 +404,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 		// console.log(linearSegLines.map((value) => value[1]))
 
-		this.durations = Object.assign(this.durations, {
+		this.durations = Object.assign(this.durations, literal<RundownTiming.RundownTimingContext>({
 			totalRundownDuration,
 			remainingRundownDuration,
 			asPlayedRundownDuration,
@@ -389,8 +414,9 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 			partStartsAt: this.partStartsAt,
 			partDisplayStartsAt: this.partDisplayStartsAt,
 			partExpectedDurations: this.partExpectedDurations,
-			partDisplayDurations: this.partDisplayDurations
-		})
+			partDisplayDurations: this.partDisplayDurations,
+			currentTime: now
+		}))
 	}
 
 	render () {

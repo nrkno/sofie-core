@@ -30,7 +30,7 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _updateSpeedHandle: number | null = null
 
-	constructor(view: PrompterViewInner) {
+	constructor (view: PrompterViewInner) {
 		super(view)
 
 		this._prompterView = view
@@ -41,10 +41,10 @@ export class KeyboardController extends ControllerAbstract {
 			recalledMode as Mode || Mode.NORMAL
 		)
 	}
-	public destroy() {
+	public destroy () {
 		this._destroyed = true
 	}
-	public onKeyDown(e: KeyboardEvent) {
+	public onKeyDown (e: KeyboardEvent) {
 		console.log(e)
 		if (!this._keyDown[e.code]) this._keyDown[e.code] = Date.now()
 
@@ -78,7 +78,7 @@ export class KeyboardController extends ControllerAbstract {
 			}
 		}
 	}
-	public onKeyUp(e: KeyboardEvent) {
+	public onKeyUp (e: KeyboardEvent) {
 		const timeSincePress = Date.now() - this._keyDown[e.code]
 
 		if (this._mode === Mode.NORMAL) {
@@ -116,36 +116,36 @@ export class KeyboardController extends ControllerAbstract {
 
 		this._keyDown[e.code] = 0
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown (e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp (e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel (e: WheelEvent) {
 		// Nothing
 	}
 
-	private _toggleMode() {
+	private _toggleMode () {
 		this._setMode(Mode.NORMAL)
 	}
-	private _setMode(mode: Mode) {
+	private _setMode (mode: Mode) {
 		this._mode = mode
 		console.log('Arrow-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
 	}
-	private _getDistanceToStop(currentSpeed, stopAcceleration): number {
+	private _getDistanceToStop (currentSpeed, stopAcceleration): number {
 		if (!stopAcceleration) return 0
 		let timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (stopAcceleration * Math.pow(timeToStop, 2) / 2) + currentSpeed * timeToStop
 	}
-	private _getAccelerationToStopInTime(currentSpeed, normalStopAcceleration, distanceLeft): number {
+	private _getAccelerationToStopInTime (currentSpeed, normalStopAcceleration, distanceLeft): number {
 		let timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (2 * (distanceLeft - (currentSpeed * timeToStop))) / Math.pow(timeToStop, 2)
 	}
-	private _updateScrollPosition() {
+	private _updateScrollPosition () {
 		if (this._destroyed) return
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null

@@ -30,6 +30,8 @@ import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { UpdateNext } from './ingest/updateNext'
+import { UserActionAPI } from '../../lib/api/userActions'
+import { IngestActions } from './ingest/actions'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -266,7 +268,7 @@ export namespace ServerRundownAPI {
 
 		rundown.remove()
 	}
-	export function resyncRundown (rundownId: string) {
+	export function resyncRundown (rundownId: string): UserActionAPI.ReloadRundownResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
@@ -279,9 +281,9 @@ export namespace ServerRundownAPI {
 			}
 		})
 
-		Meteor.call(PlayoutAPI.methods.reloadData, rundownId, false)
+		return IngestActions.reloadRundown(rundown)
 	}
-	export function unsyncRundown (rundownId: string) {
+	export function unsyncRundown (rundownId: string): void {
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 

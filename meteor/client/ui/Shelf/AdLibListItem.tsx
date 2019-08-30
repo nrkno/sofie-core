@@ -12,6 +12,7 @@ import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakConten
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { PubSub } from '../../../lib/api/pubsub'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -36,12 +37,12 @@ interface IAdLibListItemTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
 }
 
-const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
+const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
 export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
-	const { status } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().config)
+	const { status } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
 
 	return {
 		status
@@ -70,7 +71,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
 					mediaId: this.objId
 				})
 			}
@@ -86,7 +87,9 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 				'invalid': this.props.item.invalid
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
-				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}>
+				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
+				data-obj-id={this.props.item._id}
+				>
 				<td className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
 					RundownUtils.getSourceLayerClassName(this.props.layer.type),

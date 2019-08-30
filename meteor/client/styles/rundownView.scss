@@ -6,6 +6,7 @@ $output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.3s;
 
 $segment-header-height: 2.3em;
+$segment-header-width: 200px;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-next-preview-background-color: #181818;
@@ -56,6 +57,47 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 @mixin collapse-triangle-collapsed {
 	&::before {
 		transform: translate(0, -50%) rotate(-90deg);
+	}
+}
+
+.segment-timeline-placeholder {
+	position: relative;
+	background: lighten($segment-background-color, 10%);
+	background-image: linear-gradient(
+		to right,
+		lighten($segment-background-color, 10%) 0%,
+		lighten($segment-background-color, 14%) 20%,
+		lighten($segment-background-color, 10%) 40%,
+		lighten($segment-background-color, 10%) 100%);
+	background-repeat: repeat-y;
+	background-size: 800px 1px;
+
+	animation-duration: 1s;
+	animation-fill-mode: forwards; 
+	animation-iteration-count: infinite;
+	animation-name: placeholder-shimmer;
+	animation-timing-function: linear;
+
+	&::before {
+		content: ' ';
+		display: block;
+		position: absolute;
+		top: $segment-header-height;
+		width: $segment-header-width;
+		left: 0;
+		bottom: 0;
+		background: darken($segment-title-background-color, 20%);
+		mix-blend-mode: screen;
+	}
+}
+
+@keyframes placeholder-shimmer {
+	0% {
+		background-position: -800px 0;
+	}
+
+	100% {
+		background-position: 100vw 0; 
 	}
 }
 
@@ -326,12 +368,17 @@ body.vertical-overflow-only {
 	background-color: #660
 }
 
+.segment-timeline-placeholder {
+	margin: 1.5em;
+	width: auto;
+}
+
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
@@ -367,13 +414,18 @@ body.vertical-overflow-only {
 		background: $segment-title-background-color;
 
 		word-break: break-word;
+
 		h2 {
 			margin: 0;
 			padding: 0.3em;
 			line-height: 1.2em;
 			letter-spacing: 0px;
 			font-weight: 400;
+			hyphens: auto;
+			-webkit-hyphens: auto;
+			-ms-hyphens: auto;
 		}
+		
 		.segment-timeline__title__notes {
 			margin: 0 0 0.5em;
 			padding: 0.5em;

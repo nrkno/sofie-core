@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export enum WorkFlowSource {
 	EXPECTED_MEDIA_ITEM = 'expected_media_item',
@@ -35,7 +35,7 @@ export interface MediaWorkFlow {
 }
 
 export const MediaWorkFlows: TransformedCollection<MediaWorkFlow, MediaWorkFlow>
-	= new Mongo.Collection<MediaWorkFlow>('mediaWorkFlows')
+	= createMongoCollection<MediaWorkFlow>('mediaWorkFlows')
 registerCollection('MediaWorkFlows', MediaWorkFlows)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

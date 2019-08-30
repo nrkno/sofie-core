@@ -50,3 +50,14 @@ export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettings
 		spart?: boolean
 	}
 }
+
+export interface PlayoutDeviceSettingsDeviceQuantel extends PlayoutDeviceSettingsDevice {
+	// @ts-ignore
+	type: PlayoutDeviceType.QUANTEL
+	options: {
+		gatewayUrl: string
+		ISAUrl: string
+		zoneId?: string
+		serverId: number
+	}
+}

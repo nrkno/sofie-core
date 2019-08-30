@@ -1,60 +1,100 @@
 import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
 
-import { SegmentTimelineElementId } from '../ui/SegmentTimeline/SegmentTimeline'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts } from '../../lib/collections/Parts'
 
-export function scrollToPart(partId: string): boolean {
-	// TODO: do scrolling within segment as well?
+let focusInterval: NodeJS.Timer | undefined
+let _dontClearInterval: boolean = false
 
+export function maintainFocusOnPart (partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
+	let startTime = Date.now()
+	const focus = () => {
+		// console.log("focus");
+		if (Date.now() - startTime < timeWindow) {
+			_dontClearInterval = true
+			scrollToPart(partId, forceScroll, noAnimation).then(() => {
+				_dontClearInterval = false
+			}).catch(() => {
+				_dontClearInterval = false
+			})
+		} else {
+			quitFocusOnPart()
+		}
+	}
+	focusInterval = setInterval(focus, 500)
+	focus()
+}
+
+export function isMaintainingFocus (): boolean {
+	return !!focusInterval
+}
+
+function quitFocusOnPart () {
+	if (!_dontClearInterval && focusInterval) {
+		// console.log("quitFocusOnPart")
+		clearInterval(focusInterval)
+		focusInterval = undefined
+	}
+}
+
+export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+	// TODO: do scrolling within segment as well?
+	quitFocusOnPart()
 	let part = Parts.findOne(partId)
 	if (part) {
-		return scrollToSegment(part.segmentId)
+		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
 	}
-	return false
+	return Promise.reject('Could not find part')
 }
 
 const HEADER_HEIGHT = 175
 
-export function scrollToSegment(elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean): boolean {
+export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	let elementToScrollTo: HTMLElement | null = (
 		_.isString(elementToScrollToOrSegmentId) ?
-			document.querySelector('#' + SegmentTimelineElementId + elementToScrollToOrSegmentId) :
+			document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId) :
 			elementToScrollToOrSegmentId
 	)
 
 	if (!elementToScrollTo) {
-		return false;
+		return Promise.reject('Could not find segment element')
 	}
 
-	const { top, bottom } = elementToScrollTo.getBoundingClientRect()
+	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
+	top += window.scrollY
+	bottom += window.scrollY
 
 	// check if the item is in viewport
 	if (forceScroll ||
 		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY) {
+		top < window.scrollY + HEADER_HEIGHT) {
 
-		scrollToPosition(top)
-		return true
+		return scrollToPosition(top, noAnimation).then(() => true)
 	}
 
-	return false
+	return Promise.resolve(false)
 }
 
-export function scrollToPosition(scrollPosition: number): void {
-	document.body.classList.add('auto-scrolling')
-	const autoScrolling = document.body.dataset.autoScrolling ? parseInt(document.body.dataset.autoScrolling, 10) + 1 : 1
-	document.body.dataset.autoScrolling = String(autoScrolling)
-	Velocity(document.body, {
-		scrollTop: Math.max(0, scrollPosition - HEADER_HEIGHT)
-	}, 400).then(() => {
-		// delay until next frame, so that the scroll handler can fire
-		requestAnimationFrame(function () {
-			const autoScrolling = document.body.dataset.autoScrolling ? parseInt(document.body.dataset.autoScrolling, 10) - 1 : -1
-			document.body.dataset.autoScrolling = String(autoScrolling)
-			if (autoScrolling <= 0) {
-				document.body.classList.remove('auto-scrolling')
-			}
+export function scrollToPosition (scrollPosition: number, noAnimation?: boolean): Promise<void> {
+	if (noAnimation) {
+		return new Promise((resolve, reject) => {
+			window.scroll({
+				top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+				left: 0
+			})
+			resolve()
 		})
-	})
+	} else {
+		return new Promise((resolve, reject) => {
+			window.requestIdleCallback(() => {
+				window.scroll({
+					top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+					left: 0,
+					behavior: 'smooth'
+				})
+				resolve()
+			}, { timeout: 250 })
+		})
+	}
 }

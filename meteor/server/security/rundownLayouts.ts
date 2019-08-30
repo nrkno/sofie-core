@@ -1,5 +1,5 @@
 import { RundownLayouts, RundownLayout } from '../../lib/collections/RundownLayouts'
-import { rejectFields } from './lib';
+import { rejectFields } from './lib'
 
 export namespace RundownLayoutSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {

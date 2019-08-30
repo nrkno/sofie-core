@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
 import { Parts } from './Parts'
@@ -7,6 +6,7 @@ import { FindOptions, MongoSelector, TransformedCollection } from '../typings/me
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote } from '../api/notes'
+import { createMongoCollection } from './lib'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends IBlueprintSegmentDB {
@@ -70,9 +70,9 @@ export class Segment implements DBSegment {
 	}
 }
 
-// export const Segments = new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
+// export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
 export const Segments: TransformedCollection<Segment, DBSegment>
-	= new Mongo.Collection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
+	= createMongoCollection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
 registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

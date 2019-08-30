@@ -19,6 +19,11 @@ export interface MediaManagerDeviceSettings {
 		host: string
 		port: number
 	}
+
+	/** A list of Monitors, which will monitor media statuses */
+	monitors?: {
+		[monitorId: string]: MonitorSettings
+	}
 }
 
 export enum MediaFlowType {
@@ -81,4 +86,40 @@ export interface FileShareStorage extends StorageSettings {
 		password?: string // wip?
 		onlySelectedFiles?: boolean
 	}
+}
+export type MonitorSettings = MonitorSettingsNull | MonitorSettingsMediaScanner | MonitorSettingsQuantel
+export interface MonitorSettingsBase {
+	type: MonitorSettingsType
+
+	/** The storageId is defining the storage/server on which the media is on.
+	 * (in the media-scanner, this is equivalent to the collectionId)
+	 */
+	storageId: string
+	disable?: boolean
+}
+export enum MonitorSettingsType {
+	NULL = '',
+	MEDIA_SCANNER = 'mediascanner',
+	QUANTEL = 'quantel'
+}
+export interface MonitorSettingsNull extends MonitorSettingsBase {
+	type: MonitorSettingsType.NULL
+}
+export interface MonitorSettingsMediaScanner extends MonitorSettingsBase {
+	type: MonitorSettingsType.MEDIA_SCANNER
+	/** Host of the media-scanner PouchDB server */
+	host: string
+	port: number
+}
+export interface MonitorSettingsQuantel extends MonitorSettingsBase {
+	type: MonitorSettingsType.QUANTEL
+
+	/** Url to the quantel gateway  */
+	gatewayUrl: string
+	/** Address to the ISA, for the gateway to connect to */
+	ISAUrl: string
+	/** The ID of the zone to use. If omitted, will be using "default" */
+	zoneId?: string
+	/** The id of the server to control. An Ingeter */
+	serverId: number
 }

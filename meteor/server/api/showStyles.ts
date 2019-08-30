@@ -6,7 +6,7 @@ import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { literal } from '../../lib/lib'
-import { RundownLayouts } from '../../lib/collections/RundownLayouts';
+import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 
 export function insertShowStyleBase (): string {
 	let id = ShowStyleBases.insert(literal<ShowStyleBase>({

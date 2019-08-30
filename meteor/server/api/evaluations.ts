@@ -22,7 +22,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 		let studio = Studios.findOne(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
-		let webhookUrls = _.compact((studio.getConfigValue('slack_evaluation') + '').split(','))
+		const webhookUrls = _.compact((studio.settings.slackEvaluationUrls || '').split(','))
 
 		if (webhookUrls.length) {
 			// Only send notes if not everything is OK

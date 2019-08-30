@@ -157,8 +157,6 @@ describe('Basic test of test environment', () => {
 		Studios.remove('def')
 		const studios = Studios.find().fetch()
 		expect(studios).toHaveLength(1)
-		expect(studios[0].getConfigValue).toBeTruthy()
-		expect(typeof studios[0].getConfigValue).toEqual('function')
 
 		const observer = Studios.find({ _id: 'abc' }).observeChanges({})
 		expect(observer).toBeTruthy()

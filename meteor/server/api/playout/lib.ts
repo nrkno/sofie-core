@@ -11,7 +11,8 @@ import {
 	asyncCollectionRemove,
 	Time,
 	pushOntoPath,
-	clone
+	clone,
+	toc
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -111,7 +112,8 @@ function resetRundownPlayhead (rundown: Rundown) {
 			updateStoryStatus: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
-			startedPlayback: 1
+			startedPlayback: 1,
+			previousPersistentState: 1
 		}
 	})
 
@@ -135,9 +137,9 @@ export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegme
 	}
 	return undefined
 }
-function getPreviousPart (dbRundown: DBRundown, dbPart: DBPart) {
+function getPreviousPart (dbPart: DBPart) {
 	return Parts.findOne({
-		rundownId: dbRundown._id,
+		rundownId: dbPart.rundownId,
 		_rank: { $lt: dbPart._rank }
 	}, { sort: { _rank: -1 } })
 }
@@ -182,6 +184,10 @@ export function setNextPart (
 				nextTimeOffset: nextTimeOffset || null
 			}
 		}))
+		rundown.nextPartId = nextPart._id
+		rundown.nextPartManual = !!setManually
+		rundown.nextTimeOffset = nextTimeOffset || null
+
 		ps.push(asyncCollectionUpdate(Parts, nextPart._id, {
 			$push: {
 				'timings.next': getCurrentTime()
@@ -194,17 +200,19 @@ export function setNextPart (
 				nextPartManual: !!setManually
 			}
 		}))
+		rundown.nextPartId = null
+		rundown.nextPartManual = !!setManually
 	}
+
 	waitForPromiseAll(ps)
 }
 
 function resetPart (part: DBPart): Promise<void> {
 	let ps: Array<Promise<any>> = []
 
-	let isDirty = part.dirty || false
 
 	ps.push(asyncCollectionUpdate(Parts, {
-		rundownId: part.rundownId,
+		// rundownId: part.rundownId,
 		_id: part._id
 	}, {
 		$unset: {
@@ -217,7 +225,7 @@ function resetPart (part: DBPart): Promise<void> {
 		}
 	}))
 	ps.push(asyncCollectionUpdate(Pieces, {
-		rundownId: part.rundownId,
+		// rundownId: part.rundownId,
 		partId: part._id
 	}, {
 		$unset: {
@@ -256,6 +264,8 @@ function resetPart (part: DBPart): Promise<void> {
 		multi: true
 	}))
 
+	let isDirty = part.dirty || false
+
 	if (isDirty) {
 		return new Promise((resolve, reject) => {
 			const rundown = Rundowns.findOne(part.rundownId)
@@ -270,7 +280,8 @@ function resetPart (part: DBPart): Promise<void> {
 	} else {
 		const rundown = Rundowns.findOne(part.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
-		const prevPart = getPreviousPart(rundown, part)
+		const prevPart = getPreviousPart(part)
+
 
 		return Promise.all(ps)
 		.then(() => {
@@ -293,20 +304,33 @@ export function onPartHasStoppedPlaying (part: Part, stoppedPlayingTime: Time) {
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
 	}
 }
-export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string): T[] {
-	const changedIds = objList.map(o => o.id)
+export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string, ignoreOriginal?: boolean): T[] {
+	const getUpdatePrefixedId = (o: T) => {
+		let id = o.id
+		if (!ignoreOriginal) {
+			if (!o.originalId) {
+				o.originalId = o.id
+			}
+			id = o.originalId
+		}
+		return prefix + id
+	}
 
-	let replaceIds = (str: string) => {
+	const idMap: { [oldId: string]: string | undefined } = {}
+	_.each(objList, o => {
+		idMap[o.id] = getUpdatePrefixedId(o)
+	})
+
+	const replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
 			const id = m.substr(1, m.length - 1)
-			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id : m
+			return `#${idMap[id] || id}`
 		})
 	}
 
 	return objList.map(i => {
 		const o = clone(i)
-
-		o.id = prefix + o.id
+		o.id = getUpdatePrefixedId(o)
 
 		for (const key of _.keys(o.enable)) {
 			if (typeof o.enable[key] === 'string') {
@@ -315,7 +339,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		}
 
 		if (typeof o.inGroup === 'string') {
-			o.inGroup = changedIds.indexOf(o.inGroup) === -1 ? o.inGroup : prefix + o.inGroup
+			o.inGroup = idMap[o.inGroup] || o.inGroup
 		}
 
 		return o

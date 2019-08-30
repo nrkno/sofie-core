@@ -7,7 +7,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { DeviceType as PlayoutDeviceType, DeviceOptions as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
@@ -115,237 +115,354 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 	renderDevices () {
 		let settings = this.props.device.settings as PlayoutDeviceSettings
 		const { t } = this.props
-		return _.map(settings.devices, (device: PlayoutDeviceSettingsDevice, deviceId) => {
-			let renderObject: any | undefined = undefined
-			switch (device.type) {
-				case PlayoutDeviceType.CASPARCG:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('CasparCG Launcher Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.launcherHost'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('CasparCG Launcher Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.launcherPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.ATEM:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.LAWO:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Sources Path')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.sourcesPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Ramp Function Path')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.rampMotorFunctionPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.HTTPSEND:
-					renderObject = (<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />)
-					break
-				case PlayoutDeviceType.HTTPWATCHER:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('URI')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.uri'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('HTTPMethod')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.httpMethod'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('expectedHttpResponse')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.expectedHttpResponse'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Keyword')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.keyword'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Interval')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.interval'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.PANASONIC_PTZ:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.HYPERDECK:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.PHAROS:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Enable SSL')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				case PlayoutDeviceType.OSC:
-					renderObject = (<React.Fragment>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Host')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Port')}
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-							</label>
-						</div>
-					</React.Fragment>)
-					break
-				default:
-					break
-			}
-			return <React.Fragment key={deviceId}>
-				<tr className={ClassNames({
-					'hl': this.isItemEdited(deviceId)
-				})}>
-					<th className='settings-studio-device__name c5'>
-						{deviceId}
-					</th>
-					<td className='settings-studio-device__id c4'>
-						{PlayoutDeviceType[device.type]}
-					</td>
-					<td className='settings-studio-device__actions table-item-actions c3'>
-						<button className='action-btn' onClick={(e) => this.editItem(deviceId)}>
-							<FontAwesomeIcon icon={faPencilAlt} />
-						</button>
-						<button className='action-btn' onClick={(e) => this.confirmRemove(deviceId)}>
-							<FontAwesomeIcon icon={faTrash} />
-						</button>
-					</td>
+
+		return <table className='expando settings-studio-device-table'>
+			<tbody>
+				<tr>
+					<th>{t('Device id')}</th>
+					<th>{t('Type')}</th>
+					<th>{t('Disable')}</th>
 				</tr>
-				{this.isItemEdited(deviceId) &&
-					<tr className='expando-details hl' key={deviceId + '-details'}>
-						<td colSpan={5}>
-							<div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device ID')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.devices'} overrideDisplayValue={deviceId} obj={this.props.device} type='text' collection={PeripheralDevices} updateFunction={this.updateDeviceId} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device Type')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.type'} obj={this.props.device} type='dropdown' options={PlayoutDeviceType} optionsAreNumbers={true} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Thread Usage')}
-										<EditAttribute modifiedClassName='bghl' attribute={`settings.devices.${deviceId}.threadUsage`} obj={this.props.device} type='float' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								{renderObject}
-							</div>
-							<div className='mod alright'>
-								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>
-									<FontAwesomeIcon icon={faCheck} />
+				{_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
+					return <React.Fragment key={deviceId}>
+						<tr className={ClassNames({
+							'hl': this.isItemEdited(deviceId)
+						})}>
+							<th className='settings-studio-device__name c5'>
+								{deviceId}
+							</th>
+							<td className='settings-studio-device__id c4'>
+								{PlayoutDeviceType[subDevice.type]}
+							</td>
+							<td className='settings-studio-device__id c4'>
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.disable'} obj={this.props.device} type='checkbox' options={PlayoutDeviceType} collection={PeripheralDevices} className='input'></EditAttribute>
+							</td>
+							<td className='settings-studio-device__actions table-item-actions c3'>
+								<button className='action-btn' onClick={(e) => this.editItem(deviceId)}>
+									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-							</div>
-						</td>
-					</tr>}
-			</React.Fragment>
-		})
+								<button className='action-btn' onClick={(e) => this.confirmRemove(deviceId)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>
+						{this.isItemEdited(deviceId) &&
+							<tr className='expando-details hl' key={deviceId + '-details'}>
+								<td colSpan={5}>
+									<div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Device ID')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.devices'} overrideDisplayValue={deviceId} obj={this.props.device} type='text' collection={PeripheralDevices} updateFunction={this.updateDeviceId} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Device Type')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.type'} obj={this.props.device} type='dropdown' options={PlayoutDeviceType} optionsAreNumbers={true} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Thread Usage')}
+												<EditAttribute modifiedClassName='bghl' attribute={`settings.devices.${deviceId}.threadUsage`} obj={this.props.device} type='float' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										{
+											subDevice.type === PlayoutDeviceType.CASPARCG ?
+												this.renderCasparCGDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.ATEM ?
+												this.renderAtemDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.LAWO ?
+												this.renderLawoDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.HTTPSEND ?
+												this.renderHTTPSendDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.PANASONIC_PTZ ?
+												this.renderPanasonicPTZDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.TCPSEND ?
+												this.renderTCPSendDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.HYPERDECK ?
+												this.renderHyperdeckDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.PHAROS ?
+												this.renderPharosDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.OSC ?
+												this.renderOSCDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.HTTPWATCHER ?
+												this.renderHTTPWatcherDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.SISYFOS ?
+												this.renderSisyfosDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.QUANTEL ?
+												this.renderQuantelDeviceSettings(subDevice, deviceId) :
+											null
+										}
+									</div>
+									<div className='mod alright'>
+										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>
+											<FontAwesomeIcon icon={faCheck} />
+										</button>
+									</div>
+								</td>
+							</tr>}
+					</React.Fragment>
+				})}
+			</tbody>
+		</table>
+	}
+	renderCasparCGDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('CasparCG Launcher Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.launcherHost'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('CasparCG Launcher Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.launcherPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderAtemDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderLawoDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Sources Path')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.sourcesPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Ramp Function Path')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.rampMotorFunctionPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderHTTPSendDeviceSettings (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		return <HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={subDevice} deviceId={deviceId} />
+	}
+	renderPanasonicPTZDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderTCPSendDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Buffer Encoding')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.bufferEncoding'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderHyperdeckDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Minimum recording time')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.minRecordingTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderPharosDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Enable SSL')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderOSCDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderHTTPWatcherDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('URI')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.uri'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('HTTPMethod')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.httpMethod'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('expectedHttpResponse')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.expectedHttpResponse'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Keyword')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.keyword'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Interval')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.interval'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderSisyfosDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderQuantelDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Gateway URL')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.gatewayUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('ISA URL')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.ISAUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Zone ID')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.zoneId'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Quantel Server ID')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
 	}
 	render () {
 		const { t, subDevices } = this.props
@@ -390,11 +507,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			{settings && settings.devices &&
 				(<React.Fragment>
 					<h2 className='mhn'>{t('Devices')}</h2>
-					<table className='expando settings-studio-device-table'>
-						<tbody>
-							{this.renderDevices()}
-						</tbody>
-					</table>
+					{this.renderDevices()}
 				</React.Fragment>)}
 
 			<div className='mod mhs'>

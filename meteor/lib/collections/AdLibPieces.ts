@@ -1,9 +1,9 @@
-import { Mongo } from 'meteor/mongo'
 import { PieceGeneric } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	/** The object describing the piece in detail */
@@ -13,7 +13,7 @@ export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	disabled: false
 }
 export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece>
-	= new Mongo.Collection<AdLibPiece>('adLibPieces')
+	= createMongoCollection<AdLibPiece>('adLibPieces')
 registerCollection('AdLibPieces', AdLibPieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

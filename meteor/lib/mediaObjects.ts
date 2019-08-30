@@ -2,13 +2,13 @@ import * as _ from 'underscore'
 import {
 	VTContent,
 	SourceLayerType,
-	IConfigItem,
 	ISourceLayer,
 	IBlueprintPieceGeneric
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
+import { IStudioSettings } from './collections/Studios'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -81,9 +81,9 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<string>> {
-	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
-	const formatsString: string = (formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000') + ''
+export function getAcceptedFormats (settings: IStudioSettings | undefined): Array<Array<string>> {
+	const formatsConfigField = settings ? settings.supportedMediaFormats : ''
+	const formatsString: string = (formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
 	return _.compact(formatsString
 		.split(',')
 		.map((res) => {
@@ -97,7 +97,19 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 		}))
 }
 
-export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
+export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+	switch (sourceLayer.type) {
+		case SourceLayerType.VT:
+		case SourceLayerType.LIVE_SPEAK:
+			if (piece.content && piece.content.fileName) {
+				return (piece.content as VTContent).fileName
+			}
+			return undefined
+	}
+	return undefined
+}
+
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
@@ -106,37 +118,39 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			if (piece.content && piece.content.fileName) {
-				const content = piece.content as VTContent
+			const fileName = getMediaObjectMediaId(piece, sourceLayer)
+			const displayName = piece.name
+			if (fileName) {
 				// If the fileName is not set...
-				if (!content.fileName) {
+				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
 					message = t('Source is not set')
 				} else {
 					const mediaObject = MediaObjects.findOne({
-						mediaId: content.fileName.toUpperCase()
+						mediaId: fileName.toUpperCase()
 					})
 					// If media object not found, then...
-					if (!mediaObject && content.fileName) {
+					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-						message = t('Source is missing: {{fileName}}', { fileName: content.fileName })
+						message = t('Source is missing: {{fileName}}', { fileName: displayName })
 						// All VT content should have at least two streams
 					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: content.fileName })
+						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: displayName })
 					}
 					if (mediaObject) {
 						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
-						const messages: Array<String> = []
+						const messages: Array<string> = []
 
 						// Do a format check:
 						if (mediaObject.mediainfo) {
-							const formats = getAcceptedFormats(config)
-							const audioConfig = config.find(item => item._id === 'audioStreams')
-							const expectedAudioStreams = audioConfig ? new Set((audioConfig.value + '').split(',').map(v => parseInt(v, 10))) : new Set()
+							const formats = getAcceptedFormats(settings)
+							const audioConfig = settings ? settings.supportedAudioStreams : ''
+							const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
 
 							let timebase
 							let audioStreams = 0
+							let isStereo = false
 
 							// check the streams for resolution info
 							for (const stream of mediaObject.mediainfo.streams) {
@@ -151,6 +165,10 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 										messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
 									}
 								} else if (stream.codec.type === 'audio') {
+									// this is the first (and hopefully last) track of audio, and has 2 channels
+									if (audioStreams === 0 && stream.channels === 2) {
+										isStereo = true
+									}
 									audioStreams++
 								}
 							}
@@ -159,7 +177,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								mediaObject.mediainfo.timebase = timebase
 							}
 
-							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
+							if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
 								messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
 							}
 
@@ -190,13 +208,13 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 							}
 						} else {
-							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: content.fileName }))
+							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: displayName }))
 						}
 
 						if (messages.length) {
 							if (newStatus === RundownAPI.PieceStatusCode.OK) {
 								newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-								message = messages.join(', ')
+								message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
 							} else {
 								message += ', ' + messages.join(', ')
 							}

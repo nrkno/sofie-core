@@ -131,7 +131,7 @@ export function prepareForBroadcast (rundownId: string): ClientAPI.ClientRespons
 	if (rundown.active) return ClientAPI.responseError('Rundown is active, please deactivate before preparing it for broadcast')
 	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
+		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '), anyOtherActiveRundowns)
 	}
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.prepareRundownForBroadcast(rundownId)
@@ -156,7 +156,7 @@ export function resetAndActivate (rundownId: string, rehearsal?: boolean): Clien
 	}
 	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
+		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '), anyOtherActiveRundowns)
 	}
 
 	return ClientAPI.responseSuccess(
@@ -169,7 +169,7 @@ export function activate (rundownId: string, rehearsal: boolean): ClientAPI.Clie
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '))
+		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '), anyOtherActiveRundowns)
 	}
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.activateRundown(rundownId, rehearsal)
@@ -186,6 +186,11 @@ export function deactivate (rundownId: string): ClientAPI.ClientResponse {
 export function reloadData (rundownId: string) {
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.reloadData(rundownId)
+	)
+}
+export function unsyncRundown (rundownId: string) {
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.unsyncRundown(rundownId)
 	)
 }
 export function disableNextPiece (rundownId: string, undo?: boolean) {
@@ -429,6 +434,21 @@ export function mediaAbortWorkflow (workflowId: string) {
 		MediaManagerAPI.abortWorkflow(workflowId)
 	)
 }
+export function mediaPrioritizeWorkflow (workflowId: string) {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.prioritizeWorkflow(workflowId)
+	)
+}
+export function mediaRestartAllWorkflows () {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.restartAllWorkflows()
+	)
+}
+export function mediaAbortAllWorkflows () {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.abortAllWorkflows()
+	)
+}
 export function regenerateRundown (rundownId: string) {
 	check(rundownId, String)
 
@@ -475,6 +495,9 @@ methods[UserActionAPI.methods.deactivate] = function (rundownId: string): Client
 }
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)
+}
+methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): ClientAPI.ClientResponse {
+	return unsyncRundown.call(this, rundownId)
 }
 methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
 	return disableNextPiece.call(this, rundownId, undo)
@@ -532,6 +555,15 @@ methods[UserActionAPI.methods.mediaRestartWorkflow] = function (workflowId: stri
 }
 methods[UserActionAPI.methods.mediaAbortWorkflow] = function (workflowId: string) {
 	return mediaAbortWorkflow.call(this, workflowId)
+}
+methods[UserActionAPI.methods.mediaPrioritizeWorkflow] = function (workflowId: string) {
+	return mediaPrioritizeWorkflow.call(this, workflowId)
+}
+methods[UserActionAPI.methods.mediaRestartAllWorkflows] = function () {
+	return mediaRestartAllWorkflows.call(this)
+}
+methods[UserActionAPI.methods.mediaAbortAllWorkflows] = function () {
+	return mediaAbortAllWorkflows.call(this)
 }
 methods[UserActionAPI.methods.regenerateRundown] = function (rundownId: string) {
 	return regenerateRundown.call(this, rundownId)

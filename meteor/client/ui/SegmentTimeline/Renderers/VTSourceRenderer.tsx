@@ -23,7 +23,7 @@ interface IState {
 	blacks?: Array<Anomaly>
 	freezes?: Array<Anomaly>
 }
-export const VTSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 	vPreview: HTMLVideoElement
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -32,7 +32,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 
 	metadataRev: string | undefined
 
-	constructor(props: IProps & InjectedTranslateProps) {
+	constructor (props: IProps & InjectedTranslateProps) {
 		super(props)
 
 		this.state = {}
@@ -68,7 +68,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.updateAnchoredElsWidths()
 		const metadata = this.props.piece.contentMetaData as MediaObject
 		if (metadata && metadata._rev) {
@@ -88,7 +88,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -228,7 +228,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		}
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		let labelItems = this.props.piece.name.split('||')
@@ -261,11 +261,11 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 			{this.state.freezes &&
 				this.state.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker' key={i.start}
-						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(itemDuration - (i.start - seek), i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 			{this.state.blacks &&
 				this.state.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
-						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(itemDuration - (i.start - seek), i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				<span className={ClassNames('segment-timeline__piece__label', {
 					'overflow-label': this.end !== ''
@@ -308,4 +308,6 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 			</FloatingInspector>
 		</React.Fragment>
 	}
-})
+}
+
+export const VTSourceRenderer = translate()(VTSourceRendererBase)

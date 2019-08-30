@@ -13,6 +13,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -164,6 +165,9 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		playoutStatus: playout.status,
 		playoutDevices: playout.onlineOffline
 	}
+}, (data, props: IProps, nextProps: IProps) => {
+	if (props.rundown._id === nextProps.rundown._id && props.studio._id === nextProps.studio._id) return false
+	return true
 })(class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	private notificationTimeout: number
 	private STATE_CHANGE_NOTIFICATION_DURATION = 7000
@@ -187,7 +191,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 	}
 
 	componentWillMount () {
-		this.subscribe('peripheralDevicesAndSubDevices', {
+		this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
 			studioId: this.props.studio._id
 		})
 	}
@@ -233,7 +237,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 			}
 		}
 		if (segmentId) {
-			scrollToSegment(segmentId)
+			scrollToSegment(segmentId).catch(console.error)
 		}
 	}
 	clickNotes () {

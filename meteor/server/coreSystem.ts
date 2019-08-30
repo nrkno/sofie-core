@@ -28,7 +28,7 @@ const PackageInfo = require('../package.json')
 
 export { PackageInfo }
 
-function initializeCoreSystem() {
+function initializeCoreSystem () {
 	let system = getCoreSystem()
 	if (!system) {
 		// At this point, we probably have a system that is as fresh as it gets
@@ -76,7 +76,7 @@ function initializeCoreSystem() {
 
 let blueprints: { [id: string]: true } = {}
 
-function checkDatabaseVersions() {
+function checkDatabaseVersions () {
 	// Core system
 
 	let databaseSystem = getCoreSystem()
@@ -168,7 +168,7 @@ function checkDatabaseVersions() {
  * @param currentVersion
  * @param dbVersion
  */
-function checkDatabaseVersion(
+function checkDatabaseVersion (
 	currentVersion: Version | null,
 	expectVersion: VersionRange | null,
 	fixMessage: string,
@@ -251,7 +251,7 @@ function checkDatabaseVersion(
 	}
 }
 
-function checkBlueprintCompability(blueprint: Blueprint) {
+function checkBlueprintCompability (blueprint: Blueprint) {
 	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
 
 	let systemStatusId = 'blueprintCompability_' + blueprint._id
@@ -303,7 +303,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 		})
 	}
 }
-export function getRelevantSystemVersions(): { [name: string]: string } {
+export function getRelevantSystemVersions (): { [name: string]: string } {
 	const versions: { [name: string]: string } = {}
 
 	let dependencies: any = PackageInfo.dependencies

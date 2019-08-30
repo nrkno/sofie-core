@@ -39,7 +39,12 @@ export namespace ConfigRef {
 				const configId = m[3]
 				const studio = Studios.findOne(studioId)
 				if (studio) {
-					return studio.getConfigValue(configId)
+					const config = _.find(studio.config, (config) => config._id === configId)
+					if (config) {
+						return config.value
+					} else {
+						return undefined
+					}
 				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Studio "${studioId}" not found`)
 			} else if (
 				m[1] === 'showStyle' &&
@@ -50,9 +55,7 @@ export namespace ConfigRef {
 				const configId = m[3]
 				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
-					const config = _.find(showStyleCompound.config, (config) => {
-						return config._id === configId
-					})
+					const config = _.find(showStyleCompound.config, (config) => config._id === configId)
 					if (config) {
 						return config.value
 					} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
@@ -63,7 +66,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function compileStudioConfig (studio: Studio) {
+export function compileStudioconfig (studio: Studio) {
 	const res: {[key: string]: ConfigItemValue} = {}
 	_.each(studio.config, (c) => {
 		res[c._id] = c.value

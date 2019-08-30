@@ -37,7 +37,7 @@ interface RundownOverviewTrackedProps {
 }
 
 const Timediff = class extends React.Component<{ time: number }> {
-	render() {
+	render () {
 		const time = -this.props.time
 		const isNegative = (Math.floor(time / 1000) > 0)
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
@@ -93,27 +93,29 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 		}
 	})(
 		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
-			componentWillMount() {
-				this.subscribe('rundowns', {
+			componentWillMount () {
+				this.subscribe(PubSub.rundowns, {
 					_id: this.props.rundownId
 				})
-				this.subscribe('segments', {
+				this.subscribe(PubSub.segments, {
 					rundownId: this.props.rundownId
 				})
-				this.subscribe('parts', {
+				this.subscribe(PubSub.parts, {
 					rundownId: this.props.rundownId
 				})
 			}
 
-			render() {
+			render () {
 				const { rundown, segments } = this.props
 
 				if (rundown && this.props.rundownId && this.props.segments) {
 					let currentPart: PartUi | undefined
+					let currentSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
 								if (item._id === rundown.currentPartId) {
+									currentSegment = segment
 									currentPart = item
 								}
 							}
@@ -128,11 +130,13 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						}
 					}
 
-					let nextPart
+					let nextPart: PartUi | undefined
+					let nextSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
 								if (item._id === rundown.nextPartId) {
+									nextSegment = segment
 									nextPart = item
 								}
 							}
@@ -160,7 +164,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 											<PieceIconContainer partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 										</div>
 										<div className='clocks-part-title clocks-current-segment-title'>
-											{currentPart.title.split(';')[0]}
+											{currentSegment!.name}
 										</div>
 										<div className='clocks-part-title clocks-part-title clocks-current-segment-title'>
 											<PieceNameContainer partSlug={currentPart.title} partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
@@ -186,11 +190,11 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 											<div style={{ display: 'inline-block', height: '18vh' }}>
 												<img style={{ height: '12vh', paddingTop: '2vh' }} src='/icons/auto-presenter-screen.svg' />
 											</div> : ''}
-										{nextPart && nextPart.slug ? nextPart.slug.split(';')[0] : '_'}
+										{nextSegment && nextSegment.name ? nextSegment.name.split(';')[0] : '_'}
 									</div>
 									<div className='clocks-part-title clocks-part-title'>
-										{nextPart && nextPart.slug ?
-											<PieceNameContainer partSlug={nextPart.slug} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+										{nextPart && nextPart.title ?
+											<PieceNameContainer partSlug={nextPart.title} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
 											: '_'}
 									</div>
 								</div>
@@ -259,14 +263,14 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 	}
 })(
 	class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
-		componentDidMount() {
+		componentDidMount () {
 			document.body.classList.add('dark', 'xdark')
 			let studioId = objectPathGet(this.props, 'match.params.studioId')
 			if (studioId) {
-				this.subscribe('studios', {
+				this.subscribe(PubSub.studios, {
 					_id: studioId
 				})
-				this.subscribe('rundowns', {
+				this.subscribe(PubSub.rundowns, {
 					active: true,
 					studioId: studioId
 				})
@@ -278,30 +282,30 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 				})
 			)
 			if (rundown) {
-				this.subscribe('segments', {
+				this.subscribe(PubSub.segments, {
 					rundownId: rundown._id
 				})
-				this.subscribe('parts', {
+				this.subscribe(PubSub.parts, {
 					rundownId: rundown._id
 				})
-				this.subscribe('pieces', {
+				this.subscribe(PubSub.pieces, {
 					rundownId: rundown._id
 				})
-				this.subscribe('showStyleBases', {
+				this.subscribe(PubSub.showStyleBases, {
 					_id: rundown.showStyleBaseId
 				})
-				this.subscribe('adLibPieces', {
+				this.subscribe(PubSub.adLibPieces, {
 					rundownId: rundown._id
 				})
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount () {
 			this._cleanUp()
 			document.body.classList.remove('dark', 'xdark')
 		}
 
-		render() {
+		render () {
 			const { t } = this.props
 
 			if (this.props.rundown) {

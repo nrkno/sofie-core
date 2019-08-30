@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../api/rundown'
 import { TimelineTransition, Timeline } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
@@ -7,10 +6,11 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceGeneric,
-	IBlueprintPiece,
+	IBlueprintPieceDB,
 	PieceLifespan,
 	BaseContent,
 } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 /** A Single item in a "line": script, VT, cameras */
 export interface PieceGeneric extends IBlueprintPieceGeneric {
@@ -53,7 +53,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	extendOnHold?: boolean
 }
 
-export interface Piece extends PieceGeneric, IBlueprintPiece {
+export interface Piece extends PieceGeneric, IBlueprintPieceDB {
 	// -----------------------------------------------------------------------
 
 	partId: string
@@ -63,8 +63,8 @@ export interface Piece extends PieceGeneric, IBlueprintPiece {
 	infiniteMode?: PieceLifespan
 	/** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */
 	originalInfiniteMode?: PieceLifespan
-	/** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
-	infiniteId?: string
+	// /** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
+	// infiniteId?: string
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece
@@ -79,7 +79,7 @@ export interface Piece extends PieceGeneric, IBlueprintPiece {
 }
 
 export const Pieces: TransformedCollection<Piece, Piece>
-	= new Mongo.Collection<Piece>('pieces')
+	= createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

@@ -1,10 +1,7 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
-import {
-	Studio,
-	Studios
-} from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -15,19 +12,24 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
-import { literal } from '../../../lib/lib'
+import { literal, DBObj, KeysByType } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
-import { MongoModifier } from '../../../lib/typings/meteor'
+import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 
-export type ObjectWithConfig = Studio | ShowStyleBase | ShowStyleVariant
+interface ConfigManifestEntryExt extends ConfigManifestEntry {
+	source: string
+}
 
-interface IConfigManifestSettingsProps {
-	manifest: ConfigManifestEntry[]
+interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+	manifest: ConfigManifestEntryExt[]
 
-	object: ObjectWithConfig
+	collection: TCol
+	object: TObj
+	configPath: KeysByType<TObj, Array<IConfigItem>>
+
 	subPanel?: boolean
 }
 interface IConfigManifestSettingsState {
@@ -38,10 +40,10 @@ interface IConfigManifestSettingsState {
 	editedItems: Array<string>
 }
 
-export class ConfigManifestSettings
-	extends React.Component<Translated<IConfigManifestSettingsProps>, IConfigManifestSettingsState> {
+export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
+	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>, IConfigManifestSettingsState> {
 
-	constructor (props: Translated<IConfigManifestSettingsProps>) {
+	constructor (props: Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>) {
 		super(props)
 
 		this.state = {
@@ -53,14 +55,12 @@ export class ConfigManifestSettings
 		}
 	}
 
-	updateObject<T> (obj: T, updateObj: MongoModifier<T>) {
-		if (obj instanceof Studio) {
-			Studios.update(obj._id, updateObj)
-		} else if (obj instanceof ShowStyleBase) {
-			ShowStyleBases.update(obj._id, updateObj)
-		} else if (obj instanceof ShowStyleVariant) {
-			ShowStyleVariants.update(obj._id, updateObj)
-		}
+	getObjectConfig (): Array<IConfigItem> {
+		return this.props.object[this.props.configPath]
+	}
+
+	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+		this.props.collection.update(obj._id, updateObj)
 	}
 
 	isItemEdited = (item: ConfigManifestEntry) => {
@@ -78,19 +78,17 @@ export class ConfigManifestSettings
 	}
 
 	createItem = (item: ConfigManifestEntry) => {
-		this.updateObject(this.props.object, {
-			$push: {
-				config: literal<IConfigItem>({
-					_id: item.id,
-					value: item.defaultVal
-				})
-			}
+		const m: any = {}
+		m[this.props.configPath] = literal<IConfigItem>({
+			_id: item.id,
+			value: item.defaultVal
 		})
+		this.updateObject(this.props.object, { $push: m })
 	}
 
 	editItem = (item: ConfigManifestEntry) => {
 		// Ensure the item exists, so edit by index works
-		const valIndex = this.props.object.config.findIndex(v => v._id === item.id)
+		const valIndex = this.getObjectConfig().findIndex(v => v._id === item.id)
 
 		if (valIndex === -1) throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`)
 
@@ -122,14 +120,12 @@ export class ConfigManifestSettings
 	handleConfirmAddItemAccept = (e) => {
 		if (this.state.addItemId) {
 			const item = this.props.manifest.find(c => c.id === this.state.addItemId)
-			this.updateObject(this.props.object, {
-				$push: {
-					config: literal<IConfigItem>({
-						_id: this.state.addItemId,
-						value: item ? item.defaultVal : ''
-					})
-				}
+			const m: any = {}
+			m[this.props.configPath] = literal<IConfigItem>({
+				_id: this.state.addItemId,
+				value: item ? item.defaultVal : ''
 			})
+			this.updateObject(this.props.object, { $push: m })
 		}
 
 		this.setState({
@@ -155,13 +151,11 @@ export class ConfigManifestSettings
 
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			this.updateObject(this.props.object, {
-				$pull: {
-					config: {
-						_id: this.state.deleteConfirmItem.id
-					}
-				}
-			})
+			const m: any = {}
+			m[this.props.configPath] = {
+				_id: this.state.deleteConfirmItem.id
+			}
+			this.updateObject(this.props.object, { $pull: m })
 		}
 
 		this.setState({
@@ -173,16 +167,7 @@ export class ConfigManifestSettings
 	renderItems () {
 		const { t } = this.props
 
-		let collection: any = null
-		if (this.props.object instanceof Studio) {
-			collection = Studios
-		} else if (this.props.object instanceof ShowStyleBase) {
-			collection = ShowStyleBases
-		} else if (this.props.object instanceof ShowStyleVariant) {
-			collection = ShowStyleVariants
-		}
-
-		const values = this.props.object.config
+		const values = this.getObjectConfig()
 		return (
 			this.props.manifest.map((item, index) => {
 				const valIndex = values.findIndex(v => v._id === item.id)
@@ -190,7 +175,7 @@ export class ConfigManifestSettings
 
 				const configItem = values[valIndex]
 
-				return <React.Fragment key={item.id}>
+				return <React.Fragment key={`${item.source}_${item.id}`}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
@@ -247,7 +232,7 @@ export class ConfigManifestSettings
 														attribute={'config.' + valIndex + '.value'}
 														obj={this.props.object}
 														type='text'
-														collection={collection}
+														collection={this.props.collection}
 														className='input text-input input-l' />
 												))
 												|| (item.type === ConfigManifestEntryType.NUMBER && (
@@ -256,7 +241,7 @@ export class ConfigManifestSettings
 														attribute={'config.' + valIndex + '.value'}
 														obj={this.props.object}
 														type='int'
-														collection={collection}
+														collection={this.props.collection}
 														className='input text-input input-l' />
 												))
 												|| (item.type === ConfigManifestEntryType.BOOLEAN && (
@@ -265,7 +250,7 @@ export class ConfigManifestSettings
 														attribute={'config.' + valIndex + '.value'}
 														obj={this.props.object}
 														type='checkbox'
-														collection={collection}
+														collection={this.props.collection}
 														className='input text-input input-l' />
 												))
 												|| (item.type === ConfigManifestEntryType.ENUM && (
@@ -275,7 +260,7 @@ export class ConfigManifestSettings
 														obj={this.props.object}
 														type='dropdown'
 														options={item.options || []}
-														collection={collection}
+														collection={this.props.collection}
 														className='input text-input input-l' />
 												))
 											}
@@ -298,7 +283,7 @@ export class ConfigManifestSettings
 	getAddOptions () {
 		let existingIds: string[] = []
 		let addOptions: { value: string, name: string }[] = []
-		existingIds = this.props.object.config.map(c => c._id)
+		existingIds = this.getObjectConfig().map(c => c._id)
 		addOptions = this.props.manifest.map(c => ({ value: c.id, name: c.name }))
 
 		return addOptions.filter(o => existingIds.indexOf(o.value) === -1)
@@ -355,40 +340,55 @@ export class ConfigManifestSettings
 	}
 }
 
-export function collectConfigs (item: ObjectWithConfig): ConfigManifestEntry[] {
-	let showStyleBases: Array<ShowStyleBase> = []
+export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntryExt[] {
+	let blueprintIds: Array<string | undefined> = []
+
+	let blueprints: Blueprint[] = []
 
 	if (item instanceof Studio) {
+		// Studio blueprint
+		blueprintIds.push(item.blueprintId)
+
 		// All showStyles that the studio is supposed to support:
-		showStyleBases = ShowStyleBases.find({
+		ShowStyleBases.find({
 			_id: { $in: item.supportedShowStyleBase || [] }
-		}).fetch()
+		}).forEach(showStyleBase => {
+			blueprintIds.push(showStyleBase.blueprintId)
+		})
+		if (item.blueprintId) {
+			const studioBlueprint = Blueprints.findOne(item.blueprintId)
+			if (studioBlueprint) blueprints.push(studioBlueprint)
+		}
 	} else if (item instanceof ShowStyleBase) {
-		showStyleBases = [item]
+		blueprintIds.push(item.blueprintId)
 	} else if (item instanceof ShowStyleVariant) {
-		showStyleBases = ShowStyleBases.find({
+		ShowStyleBases.find({
 			_id: item.showStyleBaseId
-		}).fetch()
+		}).forEach(showStyleBase => {
+			blueprintIds.push(showStyleBase.blueprintId)
+		})
 	} else {
 		logger.error('collectConfigs: unknown item type', item)
 	}
 
 	// By extension, all blueprints that the studio is supposed to support:
 
-	let blueprints = Blueprints.find({
+	Blueprints.find({
 		_id: {
-			$in: _.compact(_.map(showStyleBases, (showStyleBase) => {
-				return showStyleBase.blueprintId
-			}))
+			$in: _.compact(blueprintIds)
 		}
-	}).fetch()
+	}).forEach(bp => blueprints.push(bp))
 
-	let manifestEntries: Array<ConfigManifestEntry> = []
+	blueprints = _.uniq(blueprints, false, bp => bp._id)
+
+	let manifestEntries: Array<ConfigManifestEntryExt> = []
 	_.each(blueprints, (blueprint: Blueprint) => {
 		const entries = item instanceof Studio ? blueprint.studioConfigManifest : blueprint.showStyleConfigManifest
 		_.each(entries, (entry: ConfigManifestEntry) => {
-			// @todo: placeholder, implement this correctly
-			manifestEntries.push(entry)
+			manifestEntries.push({
+				...entry,
+				source: blueprint._id
+			})
 		})
 	})
 	return manifestEntries

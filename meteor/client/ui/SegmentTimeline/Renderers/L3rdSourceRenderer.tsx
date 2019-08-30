@@ -36,11 +36,11 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -50,7 +50,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		}
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		const noraContent = this.props.piece.content as NoraContent

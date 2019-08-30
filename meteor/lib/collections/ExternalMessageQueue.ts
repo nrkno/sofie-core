@@ -1,8 +1,8 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
 	_id: string
@@ -44,7 +44,7 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 }
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>
-	= new Mongo.Collection<ExternalMessageQueueObj>('externalMessageQueue')
+	= createMongoCollection<ExternalMessageQueueObj>('externalMessageQueue')
 registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

@@ -140,19 +140,14 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			(status === 'failed' || status === 'waiting' || status === 'offline')
 			? [
 				{
-					label: 'Show issue',
-					type: 'default'
+					label: 'Reconnect now',
+					type: 'primary',
+					icon: 'icon-retry',
+					action: () => {Meteor.reconnect()}
 				}
-			] : undefined,
+		] : undefined,
 			-100)
-	
-		notification.on('action', (notification, type, e) => {
-			switch (type) {
-				case 'default':
-					Meteor.reconnect()
-			}
-		})
-	
+		
 		return notification
 	}
 
