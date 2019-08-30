@@ -429,7 +429,7 @@ export namespace ServerPlayoutAPI {
 		horisontalDelta: number,
 		verticalDelta: number,
 		setManually: boolean
-	): string {
+	): string | null {
 		check(rundownId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -451,7 +451,7 @@ export namespace ServerPlayoutAPI {
 		verticalDelta: number,
 		setManually: boolean,
 		nextPartId0?: string
-	): string {
+	): string | null {
 
 		const rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -525,7 +525,14 @@ export namespace ServerPlayoutAPI {
 		if ((part._id === rundown.currentPartId && !nextPartId0) || part.invalid) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
-			return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+			if (part._id !== nextPartId0) {
+				return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+			} else {
+				// Calling ourselves again at this point would result in an infinite loop
+				// There probably isn't any Part available to Next then...
+				setNextPartInner(rundown, null, setManually)
+				return null
+			}
 		} else {
 			setNextPartInner(rundown, part, setManually)
 			return part._id
