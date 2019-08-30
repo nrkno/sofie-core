@@ -81,7 +81,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				playlistId: this._id
 			}, selector),
 			_.extend({
-				sort: { _rank: 1 }
+				sort: {
+					_rank: 1,
+					_id: 1
+				}
 			}, options)
 		).fetch()
 	}
@@ -95,8 +98,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					_rank: 1 
 				},
 				fields: {
-					_id: 1,
-					_rank: 1
+					_rank: 1,
+					_id: 1
 				}
 			}, options)
 		).fetch().map(i => i._id)
@@ -156,7 +159,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}
 		})
 		let rundownsMap = normalizeArray(rundowns, '_id')
-		const segments = Parts.find(_.extend({
+		const parts = Parts.find(_.extend({
 			rundownId: {
 				$in: rundowns.map(i => i._id)
 			}
@@ -174,7 +177,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				return rdA._rank - rdB._rank
 			}
 		})
-		return segments
+		return parts
 	}
 	fetchAllData (): RundownPlaylistData {
 		// Do fetches in parallell:
@@ -186,7 +189,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const rundownIds = rundowns.map(i => i._id)
 		let ps: [
 			Promise<{ segments: Segment[], segmentsMap: any }>,
-			Promise<{ parts: Part[], partsMap: any }>,
+			// Promise<{ parts: Part[], partsMap: any }>,
 			Promise<Piece[]>,
 			Promise<{ rundowns: Rundown[], rundownsMap: any }>
 		] = [
@@ -195,27 +198,27 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					let segmentsMap = normalizeArray(segments, '_id')
 					return { segments, segmentsMap }
 				}),
-				makePromise(() => {
-					let parts = _.map(Parts.find({ rundownId: { $in: rundownIds } }).fetch(), (part) => {
-						// Override member function to use cached data instead:
-						part.getAllPieces = () => {
-							return _.map(_.filter(pieces, (piece) => {
-								return (
-									piece.partId === part._id
-								)
-							}), (part) => {
-								return _.clone(part)
-							})
-						}
-						part.getRundown = () => {
-							return rundowns[part.rundownId]
-						}
-						return part
+				// makePromise(() => {
+				// 	let parts = _.map(Parts.find({ rundownId: { $in: rundownIds } }).fetch(), (part) => {
+				// 		// Override member function to use cached data instead:
+				// 		part.getAllPieces = () => {
+				// 			return _.map(_.filter(pieces, (piece) => {
+				// 				return (
+				// 					piece.partId === part._id
+				// 				)
+				// 			}), (part) => {
+				// 				return _.clone(part)
+				// 			})
+				// 		}
+				// 		part.getRundown = () => {
+				// 			return rundowns[part.rundownId]
+				// 		}
+				// 		return part
 
-					})
-					let partsMap = normalizeArray(parts, '_id')
-					return { parts, partsMap }
-				}),
+				// 	})
+				// 	let partsMap = normalizeArray(parts, '_id')
+				// 	return { parts, partsMap }
+				// }),
 				makePromise(() => {
 					return Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
 				}),
@@ -223,13 +226,33 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					return { rundowns, rundownsMap: normalizeArray(rundowns, '_id') }
 				})
 			]
-		let r = waitForPromiseAll(ps as any) as any[]
-		let segments: Segment[] = r[0].segments
-		let segmentsMap: { [key: string]: Segment } = r[0].segmentsMap
-		let partsMap: { [key: string]: Part } = r[1].partsMap
-		let parts: Part[] = r[1].parts
-		let pieces: Piece[] = r[2]
-		let rundownsMap: { [key: string]: Rundown } = r[3].rundownsMap
+		const r = waitForPromiseAll(ps as any) as any[]
+		const segments: Segment[] = r[0].segments
+		const segmentsMap: { [key: string]: Segment } = r[0].segmentsMap
+		// let partsMap: { [key: string]: Part } = r[1].partsMap
+		// let parts: Part[] = r[1].parts
+		const pieces: Piece[] = r[1]
+		const rundownsMap: { [key: string]: Rundown } = r[2].rundownsMap
+
+		const parts = Parts.find({
+			rundownId: {
+				$in: rundowns.map(i => i._id)
+			}
+		}, {
+			sort: {
+				rundownId: 1,
+				_rank: 1
+			}
+		}).fetch().sort((a, b) => {
+			if (a.rundownId === b.rundownId) {
+				return a._rank - b._rank
+			} else {
+				const rdA = rundownsMap[a.rundownId]
+				const rdB = rundownsMap[b.rundownId]
+				return rdA._rank - rdB._rank
+			}
+		})
+		const partsMap = normalizeArray(parts, '_id')
 
 		return {
 			rundownPlaylist: this,

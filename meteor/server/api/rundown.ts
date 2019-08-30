@@ -8,9 +8,7 @@ import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Segments } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
-	fetchBefore,
 	getRank,
-	fetchAfter,
 	getCurrentTime,
 	asyncCollectionUpdate,
 	waitForPromiseAll

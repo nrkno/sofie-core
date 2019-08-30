@@ -49,7 +49,8 @@ import {
 	setNextPart as libSetNextPart,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPreviousPartForSegment
+	getPreviousPartForSegment,
+	fetchAfterInPlaylist
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -256,14 +257,21 @@ export namespace ServerPlayoutAPI {
 			)
 			let takePart = rundownData.partsMap[playlist.nextPartId]
 			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
+			let takeRundown = rundownData.rundownsMap[takePart.rundownId]
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			let partAfter = fetchAfter(rundownData.parts, {
-				rundownId: takePart.rundownId,
-				invalid: { $ne: true }
-			}, takePart._rank)
+			let partAfter = fetchAfterInPlaylist(
+				rundownData.parts,
+				{
+					rundownId: takePart.rundownId,
+					invalid: { $ne: true }
+				},
+				playlist,
+				takeRundown,
+				takePart
+			)
 
 			let nextPart: DBPart | null = partAfter || null
-			const rundown = rundownData.rundownsMap[takePart.rundownId]
+			// const rundown = rundownData.rundownsMap[takePart.rundownId]
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
@@ -273,7 +281,7 @@ export namespace ServerPlayoutAPI {
 			if (blueprint.onPreTake) {
 				try {
 					waitForPromise(
-						Promise.resolve(blueprint.onPreTake(new PartEventContext(rundown, undefined, takePart)))
+						Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, undefined, takePart)))
 						.catch(logger.error)
 					)
 				} catch (e) {
@@ -286,7 +294,7 @@ export namespace ServerPlayoutAPI {
 				const time = getCurrentTime()
 				const resolvedPieces = getResolvedPieces(previousPart)
 
-				const context = new RundownContext(rundown)
+				const context = new RundownContext(takeRundown)
 				previousPartEndState = blueprint.getEndStateForPart(context, playlist.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
@@ -379,7 +387,7 @@ export namespace ServerPlayoutAPI {
 				if (firstTake) {
 					if (blueprint.onRundownFirstTake) {
 						waitForPromise(
-							Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(rundown, undefined, takePart)))
+							Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(takeRundown, undefined, takePart)))
 							.catch(logger.error)
 						)
 					}
@@ -387,7 +395,7 @@ export namespace ServerPlayoutAPI {
 
 				if (blueprint.onPostTake) {
 					waitForPromise(
-						Promise.resolve(blueprint.onPostTake(new PartEventContext(rundown, undefined, takePart)))
+						Promise.resolve(blueprint.onPostTake(new PartEventContext(takeRundown, undefined, takePart)))
 						.catch(logger.error)
 					)
 				}

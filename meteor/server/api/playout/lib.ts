@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
@@ -12,7 +13,8 @@ import {
 	Time,
 	pushOntoPath,
 	clone,
-	toc
+	toc,
+	mongoWhere
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -21,6 +23,7 @@ import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { MongoSelector } from '../../../lib/typings/meteor';
 
 /**
  * Reset the rundown:
@@ -462,4 +465,58 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 
 		return o
 	})
+}
+export function fetchAfterInPlaylist(parts: Mongo.Collection<Part> | Array<Part>, selector: MongoSelector<Part>, playlist: RundownPlaylist, partRundown: Rundown | undefined, part: Part | undefined): Part | undefined {
+	let rank: number
+	let rundownId: string
+	if (!partRundown) {
+		partRundown = playlist.getRundowns({}, { limit: 1 })[0]
+	}
+	rundownId = partRundown._id
+	if (part === undefined) {
+		rank = Number.NEGATIVE_INFINITY
+	} else {
+		rank = part._rank
+		if (part.rundownId !== partRundown._id) throw new Meteor.Error(501, `If provided, part must be a member of the partRundown.`)
+	}
+
+	selector = _.extend({}, selector, {
+		_rank: { $gt: rank },
+		rundownId: rundownId
+	})
+
+	let result: Part | undefined
+	if (_.isArray(parts)) {
+		result = _.find(parts, (o) => mongoWhere(o, selector))
+	} else {
+		result = parts.find(selector, {
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			limit: 1
+		}).fetch()[0]
+	}
+
+	if (result) {
+		return result
+	} else {
+		return fetchAfterInPlaylist(
+			parts,
+			selector,
+			playlist,
+			playlist.getRundowns({
+				_rank: {
+					$gt: partRundown._rank
+				}
+			}, {
+				sort: {
+					_rank: 1,
+					_id: 1
+				},
+				limit: 1
+			})[0],
+			undefined
+		)
+	}
 }
