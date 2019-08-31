@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, extendMandadory } from '../../../lib/lib'
+import { getCurrentTime, extendMandadory, normalizeArray } from '../../../lib/lib'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RundownTiming'
@@ -126,20 +126,35 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 	if (props.rundownPlaylistId) playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 	let segments: Array<SegmentUi> = []
 	if (playlist) {
-		segments = _.map(playlist.getSegments(), (segment) => {
-			return extendMandadory<Segment, SegmentUi>(segment, {
-				items: _.map(segment.getParts(), (part) => {
-					let sle = extendMandadory<Part, PartExtended>(part, {
-						pieces: [],
-						renderedDuration: 0,
-						startsAt: 0,
-						willProbablyAutoNext: false
-					})
+		segments = playlist.getSegments().map((s) => extendMandadory<Segment, SegmentUi>(s, {
+			items: []
+		}))
+		const segmentsMap = normalizeArray(segments, '_id')
+		const parts = playlist.getParts() as PartExtended[]
 
-					return extendMandadory<PartExtended, PartUi>(sle, {})
-				})
-			})
+		parts.forEach(p => {
+			segmentsMap[p.segmentId].items.push(extendMandadory<Part, PartExtended>(p, {
+				pieces: [],
+				renderedDuration: 0,
+				startsAt: 0,
+				willProbablyAutoNext: false
+			}))
 		})
+
+		// segments = _.map(playlist.getSegments(), (segment) => {
+		// 	return extendMandadory<Segment, SegmentUi>(segment, {
+		// 		items: _.map(segment.getParts(), (part) => {
+		// 			let sle = extendMandadory<Part, PartExtended>(part, {
+		// 				pieces: [],
+		// 				renderedDuration: 0,
+		// 				startsAt: 0,
+		// 				willProbablyAutoNext: false
+		// 			})
+
+		// 			return extendMandadory<PartExtended, PartUi>(sle, {})
+		// 		})
+		// 	})
+		// })
 	}
 	return {
 		segments,
@@ -149,21 +164,18 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
 	render () {
 		if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
-
 			return (<ErrorBoundary>
 				<div className='rundown__overview'>
 				{
 					this.props.segments.map((item) => {
-						if (this.props.playlist) {
-							return <SegmentOverview
-								segment={item}
-								key={item._id}
-								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.playlist.expectedDuration || 1)}
-								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
-								playlist={this.props.playlist}
-								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
-								/>
-						}
+						return <SegmentOverview
+							segment={item}
+							key={item._id}
+							totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.playlist!.expectedDuration || 1)}
+							segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
+							playlist={this.props.playlist!}
+							segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
+							/>
 					})
 				}
 				</div>
