@@ -129,6 +129,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 

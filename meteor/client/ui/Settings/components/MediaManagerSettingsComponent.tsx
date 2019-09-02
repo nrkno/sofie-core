@@ -82,6 +82,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedStorages: this.state.editedStorages
 			})
+		} else {
+			this.finishEditStorageItem(deviceId)
 		}
 	}
 	editFlowItem = (flowId: string) => {
@@ -90,6 +92,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedFlows: this.state.editedFlows
 			})
+		} else {
+			this.finishEditFlowItem(flowId)
 		}
 	}
 	editMonitorItem = (monitorId: string) => {
@@ -98,6 +102,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedMonitors: this.state.editedMonitors
 			})
+		} else {
+			this.finishEditMonitorItem(monitorId)
 		}
 	}
 	handleConfirmRemoveStorageCancel = (e) => {

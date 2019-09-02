@@ -97,6 +97,8 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 

@@ -39,11 +39,14 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 		}
 	}
 	editItem = (deviceId: string) => {
-		if (this.state.editedDevices.indexOf(deviceId) < 0) {
+		const index = this.state.editedDevices.indexOf(deviceId)
+		if (index < 0) {
 			this.state.editedDevices.push(deviceId)
 			this.setState({
 				editedDevices: this.state.editedDevices
 			})
+		} else {
+			this.finishEditItem(deviceId)
 		}
 	}
 	handleConfirmRemoveCancel = (e) => {
