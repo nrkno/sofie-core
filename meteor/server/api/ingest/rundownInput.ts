@@ -132,10 +132,16 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		if (rundown) {
-			logger.info('Removing rundown ' + rundown._id)
 
 			if (canBeUpdated(rundown)) {
-				rundown.remove()
+				if (rundown.active) {
+					// Don't allow removing currently playing rundowns:
+					logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
+					ServerRundownAPI.unsyncRundown(rundown._id)
+				} else {
+					logger.info(`Removing rundown "${rundown._id}"`)
+					rundown.remove()
+				}
 			} else {
 				logger.info(`Rundown "${rundown._id}" cannot be updated`)
 				if (!rundown.unsynced) {
