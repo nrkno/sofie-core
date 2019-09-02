@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown } from '../lib'
+import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -32,8 +32,9 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments } from '../../../../lib/collections/Segments'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
-import { removeSegments } from '../../rundown'
+import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
+import { logger } from '../../../../lib/logging'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -440,6 +441,23 @@ function diffAndApplyChanges (
 	const oldSegmentEntries = compileSegmentEntries(ingestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(ingestSegments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
+
+	// Check if operation affect currently playing Part:
+	if (rundown.active && rundown.currentPartId) {
+		const currentPart = _.find(ingestParts, (ingestPart) => {
+			const partId = getPartId(rundown._id, ingestPart.externalId)
+			return partId === rundown.currentPartId
+		})
+		if (!currentPart) {
+			// Looks like the currently playing part has been removed.
+			logger.warn(`Currently playing part "${rundown.currentPartId}" was removed during ingestData. Unsyncing the rundown!`)
+			ServerRundownAPI.unsyncRundown(rundown._id)
+			return
+		} else {
+			// TODO: add logic for determining whether to allow changes to the currently playing Part.
+		}
+	}
+
 
 	// Save new cache
 	const newIngestRundown = _.clone(ingestRundown)
