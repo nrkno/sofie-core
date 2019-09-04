@@ -103,7 +103,10 @@
 
 		> .dashboard-panel__panel__button__label {
 			position: absolute;
-			bottom: 4px;
+			
+			vertical-align: bottom;
+			max-height: calc(100% - 4px);
+
 			left: 4px;
 			max-width: calc(100% - 8px);
 			text-align: left;
