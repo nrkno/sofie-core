@@ -501,6 +501,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.multiThreadedResolver'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute><i>{t('(Restart to apply)')}</i>
 				</label>
 			</div>
+			<div>
+				<label className='field'>
+					{t('Report command timings on all commangs')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.reportAllCommands'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute>
+				</label>
+			</div>
 
 			<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 				<p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) })}</p>

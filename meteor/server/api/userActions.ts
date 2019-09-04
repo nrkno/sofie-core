@@ -99,8 +99,7 @@ export function moveNext (
 	rundownId: string,
 	horisontalDelta: number,
 	verticalDelta: number,
-	setManually: boolean,
-	currentNextPieceId?: string
+	setManually: boolean
 ): ClientAPI.ClientResponse {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -110,18 +109,16 @@ export function moveNext (
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	if (!currentNextPieceId) {
-		if (!rundown.nextPartId) {
-			return ClientAPI.responseError('Rundown has no next part!')
-		}
+	if (!rundown.nextPartId && !rundown.currentPartId) {
+		return ClientAPI.responseError('Rundown has no next and no current part!')
 	}
+
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.moveNextPart(
 			rundownId,
 			horisontalDelta,
 			verticalDelta,
-			setManually,
-			currentNextPieceId
+			setManually
 		)
 	)
 }

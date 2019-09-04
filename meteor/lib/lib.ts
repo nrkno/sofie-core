@@ -445,7 +445,12 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
-export function getRank (beforeOrLast, after, i: number, count: number): number {
+export function getRank<T extends {_rank: number}> (
+	beforeOrLast: T | null | undefined,
+	after: T | null | undefined,
+	i: number,
+	count: number
+): number {
 	let newRankMax
 	let newRankMin
 
