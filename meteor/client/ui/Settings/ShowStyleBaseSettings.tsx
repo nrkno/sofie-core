@@ -232,6 +232,8 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 	onDeleteROArgument = (item: IBlueprintRuntimeArgumentsItem) => {
@@ -411,6 +413,8 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			this.setState({
 				editedSources: this.state.editedSources
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -836,6 +840,8 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 			this.setState({
 				editedOutputs: this.state.editedOutputs
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -1039,6 +1045,8 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -1185,6 +1193,8 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			this.setState({
 				editedMappings: this.state.editedMappings
 			})
+		} else {
+			this.finishEditItem(layerId)
 		}
 	}
 	onAddShowStyleVariant = () => {

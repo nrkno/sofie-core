@@ -30,7 +30,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
+import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
@@ -86,6 +86,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		studio: props.rundown.getStudio(),
 		unfinishedPieces
 	})
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
 })(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
@@ -326,58 +328,6 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
-	matchFilter (item: AdLibPieceUi) {
-		if (!this.props.filter) return true
-		const liveSegment = this.props.uiSegments.find(i => i.isLive === true)
-		const uppercaseLabel = item.name.toUpperCase()
-		if (this.props.filter) {
-			// Filter currentSegment only
-			if (
-				this.props.filter.currentSegment === true &&
-				(
-					(liveSegment && liveSegment.parts.find(i => item.partId === i._id) === undefined) ||
-					(!liveSegment)
-				)
-			) {
-				return false
-			}
-			// Filter out items that are not within outputLayerIds filter
-			if (
-				this.props.filter.outputLayerIds !== undefined &&
-				this.props.filter.outputLayerIds.indexOf(item.outputLayerId) < 0
-			) {
-				return false
-			}
-			// Source layers
-			if (
-				this.props.filter.sourceLayerIds !== undefined &&
-				this.props.filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
-			) {
-				return false
-			}
-			// Source layer types
-			const sourceLayerType = this.props.showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
-			if (
-				sourceLayerType &&
-				this.props.filter.sourceLayerTypes !== undefined &&
-				this.props.filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
-			) {
-				return false
-			}
-			// Item label needs at least one of the strings in the label array
-			if (
-				this.props.filter.label !== undefined &&
-				this.props.filter.label.reduce((p, v) => {
-					return p || uppercaseLabel.indexOf(v) >= 0
-				}, false) === false
-			) {
-				return false
-			}
-		}
-
-		return true
-	}
-
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -422,7 +372,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
 								.concat(this.props.rundownBaselineAdLibs)
 								.sort((a, b) => a._rank - b._rank)
-								.filter((item) => this.matchFilter(item))
+								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton
 												key={item._id}

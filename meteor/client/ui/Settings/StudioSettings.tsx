@@ -190,6 +190,8 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			this.setState({
 				editedMappings: this.state.editedMappings
 			})
+		} else {
+			this.finishEditItem(layerId)
 		}
 	}
 	confirmRemove = (mappingId: string) => {

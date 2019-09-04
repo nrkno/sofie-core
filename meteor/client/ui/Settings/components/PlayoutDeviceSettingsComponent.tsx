@@ -39,11 +39,14 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 		}
 	}
 	editItem = (deviceId: string) => {
-		if (this.state.editedDevices.indexOf(deviceId) < 0) {
+		const index = this.state.editedDevices.indexOf(deviceId)
+		if (index < 0) {
 			this.state.editedDevices.push(deviceId)
 			this.setState({
 				editedDevices: this.state.editedDevices
 			})
+		} else {
+			this.finishEditItem(deviceId)
 		}
 	}
 	handleConfirmRemoveCancel = (e) => {
@@ -115,85 +118,98 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 	renderDevices () {
 		let settings = this.props.device.settings as PlayoutDeviceSettings
 		const { t } = this.props
-		return _.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
-			return <React.Fragment key={deviceId}>
-				<tr className={ClassNames({
-					'hl': this.isItemEdited(deviceId)
-				})}>
-					<th className='settings-studio-device__name c5'>
-						{deviceId}
-					</th>
-					<td className='settings-studio-device__id c4'>
-						{PlayoutDeviceType[subDevice.type]}
-					</td>
-					<td className='settings-studio-device__actions table-item-actions c3'>
-						<button className='action-btn' onClick={(e) => this.editItem(deviceId)}>
-							<FontAwesomeIcon icon={faPencilAlt} />
-						</button>
-						<button className='action-btn' onClick={(e) => this.confirmRemove(deviceId)}>
-							<FontAwesomeIcon icon={faTrash} />
-						</button>
-					</td>
+
+		return <table className='expando settings-studio-device-table'>
+			<tbody>
+				<tr>
+					<th>{t('Device id')}</th>
+					<th>{t('Type')}</th>
+					<th>{t('Disable')}</th>
 				</tr>
-				{this.isItemEdited(deviceId) &&
-					<tr className='expando-details hl' key={deviceId + '-details'}>
-						<td colSpan={5}>
-							<div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device ID')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.devices'} overrideDisplayValue={deviceId} obj={this.props.device} type='text' collection={PeripheralDevices} updateFunction={this.updateDeviceId} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device Type')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.type'} obj={this.props.device} type='dropdown' options={PlayoutDeviceType} optionsAreNumbers={true} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Thread Usage')}
-										<EditAttribute modifiedClassName='bghl' attribute={`settings.devices.${deviceId}.threadUsage`} obj={this.props.device} type='float' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								{
-									subDevice.type === PlayoutDeviceType.CASPARCG ?
-										this.renderCasparCGDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.ATEM ?
-										this.renderAtemDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.LAWO ?
-										this.renderLawoDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.HTTPSEND ?
-										this.renderHTTPSendDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.PANASONIC_PTZ ?
-										this.renderPanasonicPTZDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.TCPSEND ?
-										this.renderTCPSendDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.HYPERDECK ?
-										this.renderHyperdeckDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.PHAROS ?
-										this.renderPharosDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.OSC ?
-										this.renderOSCDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.HTTPWATCHER ?
-										this.renderHTTPWatcherDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.SISYFOS ?
-										this.renderSisyfosDeviceSettings(subDevice, deviceId) :
-									subDevice.type === PlayoutDeviceType.QUANTEL ?
-										this.renderQuantelDeviceSettings(subDevice, deviceId) :
-									null
-								}
-							</div>
-							<div className='mod alright'>
-								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>
-									<FontAwesomeIcon icon={faCheck} />
+				{_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
+					return <React.Fragment key={deviceId}>
+						<tr className={ClassNames({
+							'hl': this.isItemEdited(deviceId)
+						})}>
+							<th className='settings-studio-device__name c5'>
+								{deviceId}
+							</th>
+							<td className='settings-studio-device__id c4'>
+								{PlayoutDeviceType[subDevice.type]}
+							</td>
+							<td className='settings-studio-device__id c4'>
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.disable'} obj={this.props.device} type='checkbox' options={PlayoutDeviceType} collection={PeripheralDevices} className='input'></EditAttribute>
+							</td>
+							<td className='settings-studio-device__actions table-item-actions c3'>
+								<button className='action-btn' onClick={(e) => this.editItem(deviceId)}>
+									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-							</div>
-						</td>
-					</tr>}
-			</React.Fragment>
-		})
+								<button className='action-btn' onClick={(e) => this.confirmRemove(deviceId)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>
+						{this.isItemEdited(deviceId) &&
+							<tr className='expando-details hl' key={deviceId + '-details'}>
+								<td colSpan={5}>
+									<div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Device ID')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.devices'} overrideDisplayValue={deviceId} obj={this.props.device} type='text' collection={PeripheralDevices} updateFunction={this.updateDeviceId} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Device Type')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.type'} obj={this.props.device} type='dropdown' options={PlayoutDeviceType} optionsAreNumbers={true} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Thread Usage')}
+												<EditAttribute modifiedClassName='bghl' attribute={`settings.devices.${deviceId}.threadUsage`} obj={this.props.device} type='float' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										{
+											subDevice.type === PlayoutDeviceType.CASPARCG ?
+												this.renderCasparCGDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.ATEM ?
+												this.renderAtemDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.LAWO ?
+												this.renderLawoDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.HTTPSEND ?
+												this.renderHTTPSendDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.PANASONIC_PTZ ?
+												this.renderPanasonicPTZDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.TCPSEND ?
+												this.renderTCPSendDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.HYPERDECK ?
+												this.renderHyperdeckDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.PHAROS ?
+												this.renderPharosDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.OSC ?
+												this.renderOSCDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.HTTPWATCHER ?
+												this.renderHTTPWatcherDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.SISYFOS ?
+												this.renderSisyfosDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.QUANTEL ?
+												this.renderQuantelDeviceSettings(subDevice, deviceId) :
+											null
+										}
+									</div>
+									<div className='mod alright'>
+										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>
+											<FontAwesomeIcon icon={faCheck} />
+										</button>
+									</div>
+								</td>
+							</tr>}
+					</React.Fragment>
+				})}
+			</tbody>
+		</table>
 	}
 	renderCasparCGDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
 		const { t } = this.props
@@ -500,11 +516,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			{settings && settings.devices &&
 				(<React.Fragment>
 					<h2 className='mhn'>{t('Devices')}</h2>
-					<table className='expando settings-studio-device-table'>
-						<tbody>
-							{this.renderDevices()}
-						</tbody>
-					</table>
+					{this.renderDevices()}
 				</React.Fragment>)}
 
 			<div className='mod mhs'>
