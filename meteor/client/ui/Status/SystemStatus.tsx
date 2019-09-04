@@ -26,7 +26,7 @@ interface IDeviceItemProps {
 	device: PeripheralDevice
 	showRemoveButtons?: boolean
 	toplevel?: boolean
-	hasChildren: boolean
+	hasChildren?: boolean
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
@@ -195,7 +195,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 						visible={getHelpMode() &&
 						this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 						this.props.toplevel === true &&
-						!this.props.hasChildren} placement='right'>
+						(!this.props.hasChildren && this.props.hasChildren !== undefined)} placement='right'>
 						{getAdminMode() ?
 							<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
 							<div className='value'>{this.props.device.name}</div>
