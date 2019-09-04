@@ -381,6 +381,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												rundown={this.props.rundown}
 												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+												widthScale={filter.buttonWidthScale}
+												heightScale={filter.buttonHeightScale}
 											>
 												{item.name}
 									</DashboardPieceButton>
