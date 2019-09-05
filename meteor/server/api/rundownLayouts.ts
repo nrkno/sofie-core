@@ -41,8 +41,15 @@ postJsRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postJsRoute.route('/shelfLayouts', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
+
+	const showStyleBaseId = params.showStyleBaseId
+
+	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+	if (!showStyleBase) {
+		throw new Error(`ShowStylebase "${showStyleBaseId}" not found`)
+	}
 
 	let content = ''
 	try {
@@ -58,9 +65,7 @@ postJsRoute.route('/shelfLayouts', (params, req: IncomingMessage, res: ServerRes
 		check(layout.showStyleBaseId, String)
 		check(layout.type, String)
 
-		if (ShowStyleBases.findOne(layout.showStyleBaseId) === undefined) {
-			throw new Error(`Unsupported showStyleBase: ${layout.showStyleBaseId}`)
-		}
+		layout.showStyleBaseId = showStyleBase._id
 
 		RundownLayouts.upsert(layout._id, layout)
 
@@ -75,7 +80,7 @@ postJsRoute.route('/shelfLayouts', (params, req: IncomingMessage, res: ServerRes
 })
 
 const getJsRoute = Picker.filter((req, res) => req.method === 'GET')
-getJsRoute.route('/shelfLayouts/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
+getJsRoute.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	let layoutId = params.id
 
 	check(layoutId, String)

@@ -135,7 +135,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	downloadItem = (item: RundownLayoutBase) => {
-		window.location.replace(`/shelfLayouts/${item._id}`)
+		window.location.replace(`/shelfLayouts/download/${item._id}`)
 	}
 
 	finishEditItem = (item: RundownLayoutBase) => {
@@ -556,7 +556,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents) {
-						fetchFrom('/shelfLayouts', {
+						fetchFrom(`/shelfLayouts/upload/${this.props.showStyleBase._id}`, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
