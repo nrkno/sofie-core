@@ -1,6 +1,6 @@
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import { ClientAPI } from '../../lib/api/client'
 import { setMeteorMethods, Methods } from '../methods'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
@@ -59,7 +59,7 @@ postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incomin
 		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
 
 		const layout = JSON.parse(body) as RundownLayoutBase
-		check(layout._id, String)
+		check(layout._id, Match.Optional(String))
 		check(layout.name, String)
 		check(layout.filters, Array)
 		check(layout.showStyleBaseId, String)
