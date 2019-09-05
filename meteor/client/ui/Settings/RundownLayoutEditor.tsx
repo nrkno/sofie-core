@@ -150,11 +150,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	onDeleteLayout = (e: any, item: RundownLayoutBase) => {
-		callMethod(
-			e,
-			RundownLayoutsAPI.methods.removeRundownLayout,
-			item._id
-		)
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Delete layout?'),
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
+			onAccept: () => {
+				callMethod(
+					e,
+					RundownLayoutsAPI.methods.removeRundownLayout,
+					item._id
+				)
+			}
+
+		})
 	}
 
 	renderFilters (item: RundownLayoutBase) {
@@ -547,8 +558,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			let uploadFileContents = (e2.target as any).result
 
 			doModalDialog({
-				title: t('Update Blueprints?'),
-				yes: t('Update'),
+				title: t('Upload Layout?'),
+				yes: t('Upload'),
 				no: t('Cancel'),
 				message: <React.Fragment>
 					<p>{t('Are you sure you want to upload the shelf layout from the file "{{fileName}}"?',
