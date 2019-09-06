@@ -46,10 +46,8 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-const BUTTON_GRID_WIDTH = 30
-const BUTTON_GRID_HEIGHT = 26
-const PANEL_MARGIN_WIDTH = 15
-const PANEL_MARGIN_HEIGHT = 44
+const BUTTON_GRID_WIDTH = 1
+const BUTTON_GRID_HEIGHT = 0.61803
 
 interface IDashboardPanelProps {
 	searchFilter?: string | undefined
@@ -90,7 +88,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
+})(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -347,30 +345,30 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 					<div className='dashboard-panel'
 						style={{
 							width: filter.width >= 0 ?
-								(filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH :
+								(filter.width * BUTTON_GRID_WIDTH) + 'vw' :
 								undefined,
 							height: filter.height >= 0 ?
-								(filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT :
+								(filter.height * BUTTON_GRID_HEIGHT) + 'vw' :
 								undefined,
 							left: filter.x >= 0 ?
-								(filter.x * BUTTON_GRID_WIDTH) :
+								(filter.x * BUTTON_GRID_WIDTH) + 'vw' :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
 									undefined,
 							top: filter.y >= 0 ?
-								(filter.y * BUTTON_GRID_HEIGHT) :
+								(filter.y * BUTTON_GRID_HEIGHT) + 'vw' :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
 									undefined,
 							right: filter.x < 0 ?
-								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) :
+								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) + 'vw' :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
 									undefined,
 							bottom: filter.y < 0 ?
-								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) :
+								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
 									undefined
 						}}
 					>
