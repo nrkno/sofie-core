@@ -7,7 +7,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { updateDynamicPartRanks } from '../../rundown'
+import { updatePartRanks } from '../../rundown'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -896,7 +896,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updateDynamicPartRanks(rundown._id)
+		updatePartRanks(rundown._id)
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
 		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
@@ -976,10 +976,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updateDynamicPartRanks(rundown._id)
+		updatePartRanks(rundown._id)
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
+		expect(dynamicPart._rank).toEqual(1.5)
 
 		// Update the segment owning the part and it should remain
 		const segmentData = rundownData.segments[0]
@@ -988,16 +988,17 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(dynamicPart).toBeTruthy()
 
 		// Change the rank of the part it belongs to and this rank should update
-		segmentData.parts[1].rank = 5
+		segmentData.parts[0].rank = 5
 		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
 		dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(5.5) // TODO - this value is bad
+		expect(dynamicPart._rank).toEqual(0.5)
 
-		// Remove the part it is set to be after, and it should be removed
-		segmentData.parts[1].externalId = 'not-the-same'
-		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
-		dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeFalsy()
+		// // Invalidate the part it is set to be after, and it should be removed
+		// segmentData.parts[0].rank = 0
+		// Parts.update(dynamicPartId, { $set: { afterPart: 'not-a-real-part' } })
+		// Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
+		// dynamicPart = Parts.findOne(dynamicPartId) as Part
+		// expect(dynamicPart).toBeFalsy()
 	})
 })

@@ -6,20 +6,20 @@
 	top: 220px;
 	overflow-x: scroll;
 	
-	.testtools-timeline-llayer-label {
+	.testtools-timeline-layer-label {
 		position: sticky;
 		left: 0;
 		border: 1px solid #000;
 	}
 
-	.testtools-timeline-llayer-row {
+	.testtools-timeline-layer-row {
 		position: static;
 		top: 0px;
 		left: 0px;
 		width: 100%;
 	}
 
-	.testtools-timeline-llayer-object {
+	.testtools-timeline-layer-object {
 		position: absolute;
 		border: 1px solid #f00;
 		background: #fff;

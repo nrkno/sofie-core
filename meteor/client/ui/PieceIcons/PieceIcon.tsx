@@ -14,6 +14,7 @@ import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IPropsHeader {
 	partId: string
@@ -26,43 +27,50 @@ interface INamePropsHeader extends IPropsHeader {
 }
 
 export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
-	let items = Pieces.find({ partId: props.partId }).fetch()
+	let pieces = Pieces.find({ partId: props.partId }).fetch()
 
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
-	let sourceLayer: ISourceLayer | undefined
-	let piece: Piece | undefined
+	let foundSourceLayer: ISourceLayer | undefined
+	let foundPiece: Piece | undefined
 	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT ])
 
-	for (const item of items) {
-		let layer = sourceLayers[item.sourceLayerId]
+	for (const piece of pieces) {
+		let layer = sourceLayers[piece.sourceLayerId]
 		if (!layer) continue
-		if (typeof sourceLayer !== 'undefined' && typeof piece !== 'undefined') {
-			if (layer.onPresenterScreen && sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
-				sourceLayer = layer
-				if (piece.trigger && item.trigger && item.trigger.value > piece.trigger.value) {
-					piece = item
+		if (foundSourceLayer && foundPiece) {
+			if (
+				layer.onPresenterScreen &&
+				foundSourceLayer._rank >= layer._rank &&
+				supportedLayers.has(layer.type)
+			) {
+				foundSourceLayer = layer
+				if (piece.enable &&
+					foundPiece.enable &&
+					(piece.enable.start || 0) > (foundPiece.enable.start || 0) // TODO: look into this, what should the do, really?
+				) {
+					foundPiece = piece
 				}
 			}
 		} else if (layer.onPresenterScreen && supportedLayers.has(layer.type)) {
-			sourceLayer = layer
-			piece = item
+			foundSourceLayer = layer
+			foundPiece = piece
 		}
 	}
 
 	return {
-		sourceLayer,
-		piece
+		sourceLayer: foundSourceLayer,
+		piece: foundPiece
 	}
 })(class extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, piece: Piece }> {
 	_pieceSubscription: Meteor.SubscriptionHandle
 
 	componentWillMount () {
-		this.subscribe('piecesSimple', {
+		this.subscribe(PubSub.piecesSimple, {
 			rundownId: this.props.rundownId
 		})
-		this.subscribe('showStyleBases', {
+		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.showStyleBaseId
 		})
 	}
@@ -82,42 +90,50 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
-	let items = Pieces.find({ partId: props.partId }).fetch()
+	let pieces = Pieces.find({ partId: props.partId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
-	let sourceLayer: ISourceLayer | undefined
-	let piece: Piece | undefined
+	let foundSourceLayer: ISourceLayer | undefined
+	let foundPiece: Piece | undefined
 	const supportedLayers = new Set([ SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.REMOTE, SourceLayerType.SPLITS, SourceLayerType.VT, SourceLayerType.CAMERA ])
 
-	for (const item of items) {
-		let layer = sourceLayers[item.sourceLayerId]
+	for (const piece of pieces) {
+		let layer = sourceLayers[piece.sourceLayerId]
 		if (!layer) continue
-		if (typeof sourceLayer !== 'undefined' && typeof piece !== 'undefined') {
-			if (layer.onPresenterScreen && sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
-				sourceLayer = layer
-				if (piece.trigger && item.trigger && item.trigger.value > piece.trigger.value) {
-					piece = item
+		if (
+			layer.onPresenterScreen &&
+			supportedLayers.has(layer.type)
+		) {
+			if (foundSourceLayer && foundPiece) {
+				if (foundSourceLayer._rank >= layer._rank) {
+					foundSourceLayer = layer
+					if (piece.enable &&
+						foundPiece.enable &&
+						(piece.enable.start || 0) > (foundPiece.enable.start || 0) // TODO: look into this, what should the do, really?
+					) {
+						foundPiece = piece
+					}
 				}
+			} else {
+				foundSourceLayer = layer
+				foundPiece = piece
 			}
-		} else if (layer.onPresenterScreen && supportedLayers.has(layer.type)) {
-			sourceLayer = layer
-			piece = item
 		}
 	}
 
 	return {
-		sourceLayer,
-		piece
+		sourceLayer: foundSourceLayer,
+		piece: foundPiece
 	}
 })(class extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, piece: Piece }> {
 	_pieceSubscription: Meteor.SubscriptionHandle
 
 	componentWillMount () {
-		this.subscribe('piecesSimple', {
+		this.subscribe(PubSub.piecesSimple, {
 			rundownId: this.props.rundownId
 		})
-		this.subscribe('showStyleBases', {
+		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.showStyleBaseId
 		})
 	}

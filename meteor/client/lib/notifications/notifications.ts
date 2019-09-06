@@ -7,6 +7,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { Time } from '../../../lib/lib'
+import { HTMLAttributes } from 'react'
 
 /**
  * Priority level for Notifications.
@@ -124,9 +125,21 @@ class NotificationCenter0 {
 	/** The highlighted level of highlighted level */
 	private highlightedLevel: ReactiveVar<NoticeLevel>
 
+	private _isOpen: boolean = false
+
 	constructor () {
 		this.highlightedSource = new ReactiveVar<string>('')
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+	}
+
+	get isOpen (): boolean {
+		return this._isOpen
+	}
+
+	set isOpen (value: boolean) {
+		this._isOpen = value
+
+		if (value) NotificationCenter.snoozeAll()
 	}
 
 	/**
@@ -157,6 +170,10 @@ class NotificationCenter0 {
 
 		if (!notice.persistent) {
 			this.timeout(notice)
+		}
+
+		if (!notice.snoozed && this._isOpen) {
+			notice.snooze()
 		}
 
 		return {
@@ -192,7 +209,10 @@ class NotificationCenter0 {
 	getNotifications (): Array<Notification> {
 		notificationsDep.depend()
 
-		return _.flatten(_.map(notifiers, (item, key) => item.result)
+		return _.flatten(_.map(notifiers, (item, key) => {
+			item.result.forEach(i => this._isOpen && !i.snoozed && i.snooze())
+			return item.result
+		})
 		.concat(_.map(notifications, (item, key) => item)))
 	}
 
@@ -280,7 +300,7 @@ export const NotificationCenter = new NotificationCenter0()
 export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
-	message: string | React.ReactNode
+	message: string | React.ReactElement<HTMLElement> | null
 	source: string
 	persistent?: boolean
 	timeout?: number
@@ -292,13 +312,14 @@ export class Notification extends EventEmitter {
 	constructor (
 		id: string | undefined,
 		status: NoticeLevel,
-		message: string | React.ReactNode,
+		message: string | React.ReactElement<HTMLElement> | null,
 		source: string,
 		created?: Time,
 		persistent?: boolean,
 		actions?: Array<NotificationAction>,
 		rank?: number,
-		timeout?: number) {
+		timeout?: number
+	) {
 		super()
 
 		this.id = id

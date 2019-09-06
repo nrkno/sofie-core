@@ -49,6 +49,10 @@ import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
+import { ingestMOSRundown } from './ingest/http'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+
 interface RundownSnapshot {
 	version: string
 	rundownId: string
@@ -56,6 +60,8 @@ interface RundownSnapshot {
 	rundown: Rundown
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
+	baselineObjs: Array<RundownBaselineObj>
+	baselineAdlibs: Array<RundownBaselineAdLibItem>
 	segments: Array<Segment>
 	parts: Array<Part>
 	pieces: Array<Piece>
@@ -116,6 +122,8 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()
+	const baselineObjs = RundownBaselineObjs.find({ rundownId: rundownId }).fetch()
+	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: rundownId }).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -131,8 +139,10 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 			version: CURRENT_SYSTEM_VERSION
 		},
 		rundown,
-		ingestData: ingestData,
+		ingestData,
 		userActions,
+		baselineObjs,
+		baselineAdlibs,
 		segments,
 		parts,
 		pieces,
@@ -289,7 +299,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 	try {
 		let s: any = snapshotFcn()
 		response.setHeader('Content-Type', 'application/json')
-		response.setHeader('Content-Disposition', `attachment; filename="${s.snapshot.name}.json"`)
+		response.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(s.snapshot.name)}.json`)
 
 		let content = (
 			_.isString(s) ?
@@ -355,11 +365,23 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	// Determine what kind of snapshot
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
+	// First, some special (debugging) cases:
+	// @ts-ignore is's not really a snapshot here:
+	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') { // Special: Not a snapshot, but a datadump of a MOS rundown
+		const studio = Studios.findOne() // just pick one.. this probably need to be refactored at some point..
+		if (studio) {
+			ingestMOSRundown(studio._id, snapshot)
+			return
+		} throw new Meteor.Error(500, `No Studio found`)
+	}
+
+	// Then, continue as if it's a normal snapshot:
+
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
 
-	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) {
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown
 		return restoreFromRundownSnapshot(snapshot as RundownSnapshot)
-	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
+	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) { // A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)
@@ -402,6 +424,8 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	saveIntoDb(Rundowns, { _id: rundownId }, [snapshot.rundown])
 	saveIntoDb(IngestDataCache, { rundownId: rundownId }, snapshot.ingestData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
+	saveIntoDb(RundownBaselineObjs, { rundownId: rundownId }, snapshot.baselineObjs)
+	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, snapshot.baselineAdlibs)
 	saveIntoDb(Segments, { rundownId: rundownId }, snapshot.segments)
 	saveIntoDb(Parts, { rundownId: rundownId }, snapshot.parts)
 	saveIntoDb(Pieces, { rundownId: rundownId }, snapshot.pieces)

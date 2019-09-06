@@ -85,6 +85,15 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 	newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
 	newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
 
+	if (
+		blueprint &&
+		blueprint.blueprintType &&
+		newBlueprint.blueprintType &&
+		blueprint.blueprintType !== newBlueprint.blueprintType
+	) {
+		throw new Meteor.Error(400, `Cannot replace old blueprint (of type "${blueprint.blueprintType}") with new blueprint of type "${newBlueprint.blueprintType}"`)
+	}
+
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
 	}
@@ -159,11 +168,15 @@ postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: S
 		const body = (req as any).body
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+		let collection = body
+		if (_.isString(body)) {
+			if (body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+			collection = JSON.parse(body) as BlueprintManifestSet
+		} else if (!_.isObject(body)) {
+			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+		}
 
-		logger.info(`Got blueprint collection. ${body.length} bytes`)
-
-		const collection = JSON.parse(body) as BlueprintManifestSet
+		logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
 
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {

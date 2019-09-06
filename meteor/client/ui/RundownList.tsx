@@ -22,12 +22,16 @@ import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { Studios } from '../../lib/collections/Studios'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { PubSub } from '../../lib/api/pubsub'
 
 const PackageInfo = require('../../package.json')
 
 interface IRundownListItemProps {
 	key: string,
-	rundown: Rundown
+	rundown: RundownUI
 }
 
 interface IRundownListItemStats {
@@ -41,6 +45,14 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	getRundownLink (rundownId) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
+	}
+	getStudioLink (studioId) {
+		// double encoding so that "/" are handled correctly
+		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(studioId))
+	}
+	getshowStyleBaseLink (showStyleBaseId) {
+		// double encoding so that "/" are handled correctly
+		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
 	}
 
 	confirmDelete (rundown: Rundown) {
@@ -93,8 +105,19 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						}
 						<Link to={this.getRundownLink(this.props.rundown._id)}>{this.props.rundown.name}</Link>
 					</th>
-					<td className='rundown-list-item__id'>
-						{this.props.rundown._id}
+					<td className='rundown-list-item__studio'>
+						{
+							getAdminMode() ?
+							<Link to={this.getStudioLink(this.props.rundown.studioId)}>{this.props.rundown.studioName}</Link> :
+							this.props.rundown.studioName
+						}
+					</td>
+					<td className='rundown-list-item__showStyle'>
+						{
+							getAdminMode() ?
+							<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyleBaseId)}>{`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`}</Link> :
+							`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`
+						}
 					</td>
 					<td className='rundown-list-item__created'>
 						<MomentFromNow>{this.props.rundown.created}</MomentFromNow>
@@ -147,10 +170,14 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		)
 	}
 }
-
+interface RundownUI extends Rundown {
+	studioName: string
+	showStyleBaseName: string
+	showStyleVariantName: string
+}
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
-	rundowns: Array<Rundown>
+	rundowns: Array<RundownUI>
 }
 
 interface IRundownsListState {
@@ -161,9 +188,24 @@ export const RundownList = translateWithTracker(() => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
+	const studios = Studios.find().fetch()
+	const showStyleBases = ShowStyleBases.find().fetch()
+	const showStyleVariants = ShowStyleVariants.find().fetch()
+
 	return {
 		coreSystem: getCoreSystem(),
-		rundowns: Rundowns.find({}, { sort: { created: -1 } }).fetch()
+		rundowns: _.map(Rundowns.find({}, { sort: { created: -1 } }).fetch(), (rundown) => {
+			const studio = _.find(studios, s => s._id === rundown.studioId)
+			const showStyleBase = _.find(showStyleBases, s => s._id === rundown.showStyleBaseId)
+			const showStyleVariant = _.find(showStyleVariants, s => s._id === rundown.showStyleVariantId)
+
+			return {
+				...rundown,
+				studioName: studio && studio.name || 'N/A',
+				showStyleBaseName: showStyleBase && showStyleBase.name || 'N/A',
+				showStyleVariantName: showStyleVariant && showStyleVariant.name || 'N/A'
+			}
+		})
 	}
 })(
 class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
@@ -190,13 +232,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		})
 	}
 
-	renderRundowns (list: Rundown[]) {
-		return list.map((rundown) => (
-			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
-		))
-	}
-
-	renderUnsyncedRundowns (list: Rundown[]) {
+	renderRundowns (list: RundownUI[]) {
 		return list.map((rundown) => (
 			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
 		))
@@ -205,7 +241,20 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 	componentWillMount () {
 		// Subscribe to data:
 		// TODO: make something clever here, to not load ALL the rundowns
-		this.subscribe('rundowns', {})
+		this.subscribe(PubSub.rundowns, {})
+		this.subscribe(PubSub.studios, {})
+
+		this.autorun(() => {
+			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
+			const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleVariantId))
+
+			this.subscribe(PubSub.showStyleBases, {
+				_id: { $in: showStyleBaseIds }
+			})
+			this.subscribe(PubSub.showStyleVariants, {
+				_id: { $in: showStyleVariantIds }
+			})
+		})
 	}
 
 	render () {
@@ -258,7 +307,10 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 									{t('Rundown')}
 								</th>
 								<th className='c2'>
-									{t('ID')}
+									{t('Studio')}
+								</th>
+								<th className='c2'>
+									{t('Show style')}
 								</th>
 								<th className='c2'>
 									{t('Created')}
@@ -291,7 +343,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 							</tr>
 						</tbody>}
 						<tbody>
-							{this.renderUnsyncedRundowns(unsynced)}
+							{this.renderRundowns(unsynced)}
 						</tbody>
 					</table>
 				</div>

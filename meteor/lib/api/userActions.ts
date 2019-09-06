@@ -14,6 +14,7 @@ export namespace UserActionAPI {
 		'activate' 								= 'userAction.activate',
 		'deactivate' 							= 'userAction.deactivate',
 		'reloadData' 							= 'userAction.reloadData',
+		'unsyncRundown' 						= 'userAction.unsyncRundown',
 
 		'disableNextPiece'						= 'userAction.disableNextPiece',
 		'togglePartArgument'					= 'userAction.togglePartArgument',
@@ -44,6 +45,20 @@ export namespace UserActionAPI {
 		'recordDelete'							= 'userAction.recordDelete',
 
 		'mediaRestartWorkflow'					= 'userAction.mediamanager.restartWorkflow',
-		'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow'
+		'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow',
+		'mediaRestartAllWorkflows'				= 'userAction.mediamanager.restartAllWorkflows',
+		'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
+		'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
+
+		'regenerateRundown'					= 'userAction.ingest.regenerateRundown'
+	}
+
+	export enum ReloadRundownResponse {
+		/** When reloading has been successfully completed */
+		COMPLETED = 'ok',
+		/** When reloading has successfully started, and will finish asynchronously */
+		WORKING = 'working',
+		/** When reloading cannot continue, because the rundown is missing */
+		MISSING = 'missing'
 	}
 }

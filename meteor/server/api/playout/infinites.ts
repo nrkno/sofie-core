@@ -8,7 +8,7 @@ import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray } from '../../../lib/lib'
+import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
@@ -22,12 +22,15 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   runUntilEnd = true
 	}
 
+	let ps: Array<Promise<any>> = []
+
+	const pPartsToProcess = makePromise(() => rundown.getParts())
+
 	if (previousPart) {
-	   let ps: Array<Promise<any>> = []
 	   // figure out the baseline to set
 	   let prevPieces = getOrderedPiece(previousPart)
 	   _.each(prevPieces, piece => {
-		   if (!piece.infiniteMode || piece.duration || piece.durationOverride || piece.expectedDuration) {
+		   if (!piece.infiniteMode || piece.playoutDuration || piece.userDuration || piece.enable.end || piece.enable.duration) {
 			   delete activeInfinitePieces[piece.sourceLayerId]
 			   delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
 		   } else {
@@ -39,7 +42,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 						   $set: { infiniteId: piece.infiniteId }
 					   })
 				   )
-				   logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
+				//    logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
 			   }
 			   if (piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
 				   activeInfinitePieces[piece.sourceLayerId] = piece
@@ -47,10 +50,11 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   }
 		   }
 	   })
-	   waitForPromiseAll(ps)
 	}
 
-	let partsToProcess = rundown.getParts()
+	let partsToProcess = waitForPromise(pPartsToProcess)
+	waitForPromiseAll(ps)
+
 	if (previousPart) {
 	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
 	}
@@ -72,7 +76,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	})
 	waitForPromiseAll(psPopulateCache)
 
-	let ps: Array<Promise<any>> = []
+	ps = []
 	for (let part of partsToProcess) {
 	   // Drop any that relate only to previous segments
 	   for (let k in activeInfiniteItemsSegmentId) {
@@ -99,12 +103,12 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   ps.push(asyncCollectionRemove(Pieces, piece._id))
 
 			   removedInfinites.push(piece._id)
-			   logger.debug(`updateSourceLayerInfinitesAfterPart: removed old infinite "${piece._id}" from "${piece.partId}"`)
+			//    logger.debug(`updateSourceLayerInfinitesAfterPart: removed old infinite "${piece._id}" from "${piece.partId}"`)
 		   }
 	   }
 
 	   // stop if not running to the end and there is/was nothing active
-	   const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
+	   const midInfinites = currentInfinites.filter(i => !i.enable.end && !i.enable.duration && i.infiniteMode)
 	   if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && midInfinites.length === 0) {
 		   // TODO - this guard is useless, as all shows have klokke and logo as infinites throughout...
 		   // This should instead do a check after each iteration to check if anything changed (even fields such as name on the piece)
@@ -149,7 +153,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 				   // If something starts at the beginning, then dont bother adding this infinite.
 				   // Otherwise we should add the infinite but set it to end at the start of the first piece
-				   if (firstExistingPiece.trigger.type === Timeline.TriggerType.TIME_ABSOLUTE && firstExistingPiece.trigger.value === 0) {
+				   if (firstExistingPiece.enable.start === 0) {
 					   // skip the infinite, as it will never show
 					   allowInsert = false
 				   }
@@ -157,22 +161,20 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   }
 		   newPiece.partId = part._id
 		   newPiece.continuesRefId = newPiece._id
-		   newPiece.trigger = {
-			   type: Timeline.TriggerType.TIME_ABSOLUTE,
-			   value: 0
-		   }
+		   newPiece.enable = { start: 0 }
 		   newPiece._id = newPiece.infiniteId + '_' + part._id
 		   newPiece.startedPlayback = undefined
 		   newPiece.stoppedPlayback = undefined
 		   newPiece.timings = undefined
 
 		   if (existingItems && existingItems.length) {
-			   newPiece.expectedDuration = `#${getPieceGroupId(existingItems[0])}.start - #.start`
+			   newPiece.enable.end = `#${getPieceGroupId(existingItems[0])}.start`
+			   delete newPiece.enable.duration
 			   newPiece.infiniteMode = PieceLifespan.Normal // it is no longer infinite, and the ui needs this to draw properly
 		   }
 
 		   if (existingPiece) { // Some properties need to be persisted
-			   newPiece.durationOverride = existingPiece.durationOverride
+			   newPiece.userDuration = existingPiece.userDuration
 			   newPiece.startedPlayback = existingPiece.startedPlayback
 			   newPiece.stoppedPlayback = existingPiece.stoppedPlayback
 			   newPiece.timings = existingPiece.timings
@@ -192,14 +194,14 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   } else if (existingPiece && pieceToInsert && existingPiece._id === pieceToInsert._id) {
 			   // same _id; we can do an update:
 			   ps.push(asyncCollectionUpdate(Pieces, pieceToInsert._id, pieceToInsert))// note; not a $set, because we want to replace the object
-			   logger.debug(`updateSourceLayerInfinitesAfterPart: updated infinite continuation "${pieceToInsert._id}"`)
+			//    logger.debug(`updateSourceLayerInfinitesAfterPart: updated infinite continuation "${pieceToInsert._id}"`)
 		   } else {
 			   if (existingPiece) {
 				   ps.push(asyncCollectionRemove(Pieces, existingPiece._id))
 			   }
 			   if (pieceToInsert) {
 				   ps.push(asyncCollectionInsert(Pieces, pieceToInsert))
-				   logger.debug(`updateSourceLayerInfinitesAfterPart: inserted infinite continuation "${pieceToInsert._id}"`)
+				//    logger.debug(`updateSourceLayerInfinitesAfterPart: inserted infinite continuation "${pieceToInsert._id}"`)
 			   }
 		   }
 	   }
@@ -209,9 +211,10 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   for (let piece of newInfiniteContinations.concat(currentItems)) {
 		   if (
 			   !piece.infiniteMode ||
-			   piece.duration ||
-			   piece.durationOverride ||
-			   piece.expectedDuration
+			   piece.playoutDuration ||
+			   piece.userDuration ||
+			   piece.enable.end ||
+			   piece.enable.duration
 		   ) {
 			   delete activeInfinitePieces[piece.sourceLayerId]
 			   delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
@@ -222,7 +225,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 				   ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
 					   infiniteId: piece.infiniteId }
 				   }))
-				   logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
+				//    logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
 			   }
 
 			   activeInfinitePieces[piece.sourceLayerId] = piece
@@ -249,8 +252,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	let ps: Array<Promise<any>> = []
 	for (const piece of pieces) {
 		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
-			expectedDuration: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0} - #.start`,
-			originalExpectedDuration: piece.originalExpectedDuration !== undefined ? piece.originalExpectedDuration : piece.expectedDuration,
+			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
 			infiniteMode: PieceLifespan.Normal,
 			originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
 		}}))

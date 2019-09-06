@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, getStudioIdFromDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 export function getRundownId (studio: Studio, rundownExternalId: string) {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
@@ -21,19 +22,7 @@ export function getPartId (rundownId: string, partExternalId: string) {
 	return getHash(`${rundownId}_part_${partExternalId}`)
 }
 
-function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
-	if (peripheralDevice.studioId) {
-		return peripheralDevice.studioId
-	}
-	if (peripheralDevice.parentDeviceId) {
-		// Also check the parent device:
-		const parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
-		if (parentDevice) {
-			return parentDevice.studioId
-		}
-	}
-	return undefined
-}
+
 export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio {
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
@@ -55,6 +44,7 @@ export function getPeripheralDeviceFromRundown (rundown: Rundown): PeripheralDev
 
 	const device = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 	if (!device) throw new Meteor.Error(404, `PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" not found`)
+	if (device.category !== PeripheralDeviceAPI.DeviceCategory.INGEST) throw new Meteor.Error(404, `PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" is not an INGEST device!`)
 	return device
 }
 

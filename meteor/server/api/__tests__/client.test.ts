@@ -234,11 +234,11 @@ describe('ClientAPI', () => {
 							fail('Log entry not found')
 							return
 						}
-	
+
 						expect(log.success).toBe(false)
 						expect(log.doneTime).toBeDefined()
 						expect(value).toBe('Failed')
-					}).then(() => { })
+					})
 				})
 			})
 		})

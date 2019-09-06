@@ -24,16 +24,7 @@ postRoute.route('/ingest/:studioId', (params, req: IncomingMessage, response: Se
 			ingestRundown = JSON.parse(ingestRundown)
 		}
 
-		const studio = Studios.findOne(params.studioId)
-		if (!studio) throw new Meteor.Error(404, `Studio ${params.studioId} does not exist`)
-
-		const rundownId = getRundownId(studio, ingestRundown.externalId)
-
-		const existingDbRundown = Rundowns.findOne(rundownId)
-		// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
-		if (existingDbRundown && existingDbRundown.dataSource !== 'http') throw new Meteor.Error(403, `Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`)
-
-		updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http', undefined)
+		ingestMOSRundown(params.studioId, ingestRundown)
 
 		response.statusCode = 200
 		response.end(content)
@@ -47,3 +38,15 @@ postRoute.route('/ingest/:studioId', (params, req: IncomingMessage, response: Se
 		}
 	}
 })
+export function ingestMOSRundown (studioId: string, ingestRundown: any) {
+	const studio = Studios.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
+
+	const rundownId = getRundownId(studio, ingestRundown.externalId)
+
+	const existingDbRundown = Rundowns.findOne(rundownId)
+	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
+	if (existingDbRundown && existingDbRundown.dataSource !== 'http') throw new Meteor.Error(403, `Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`)
+
+	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http')
+}

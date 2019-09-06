@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { Rundowns } from './Rundowns'
@@ -14,8 +13,10 @@ import {
 	PartHoldMode,
 	BlueprintRuntimeArguments,
 	IBlueprintPartDBTimings,
+	PartEndState,
 } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
+import { createMongoCollection } from './lib'
 
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends IBlueprintPartDB {
@@ -41,6 +42,8 @@ export interface DBPart extends IBlueprintPartDB {
 	 * This is set when Take:ing the next part
 	 */
 	duration?: number
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
@@ -55,51 +58,52 @@ export interface DBPart extends IBlueprintPartDB {
 	dirty?: boolean
 }
 export interface PartTimings extends IBlueprintPartDBTimings {
-	// TODO: remove these, as they are duplicates with IBlueprintPartDBTimings
-
-	/** Point in time the Part stopped playing (ie the time of the playout) */
-	stoppedPlayback: Array<Time>,
-	/** Point in time the Part was set as Next (ie the time of the user action) */
-	next: Array<Time>,
 	/** The playback offset that was set for the last take */
 	playOffset: Array<Time>
 }
 
 export class Part implements DBPart {
-	public _id: string
-	public _rank: number
-	public title: string
+
+	// From IBlueprintPart:
 	public externalId: string
-	public segmentId: string
-	public rundownId: string
-	public invalid: boolean
+	public title: string
+	public metaData?: {
+		[key: string]: any
+	}
 	public autoNext?: boolean
 	public autoNextOverlap?: number
 	public prerollDuration?: number
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
 	public transitionDuration?: number | null
-	public metaData?: { [key: string]: any }
-	public status?: string
+	public disableOutTransition?: boolean
 	public expectedDuration?: number
-	public displayDuration?: number
+	public typeVariant: string
+	public subTypeVariant?: string
+	public holdMode?: PartHoldMode
+	public shouldNotifyCurrentPlayingPart?: boolean
+	public classes?: string[]
+	public classesForNext?: string[]
 	public displayDurationGroup?: string
+	public displayDuration?: number
+	public invalid?: boolean
+	// From IBlueprintPartDB:
+	public _id: string
+	public segmentId: string
+	public timings?: PartTimings
+	// From DBPart:
+	public _rank: number
+	public rundownId: string
+	public status?: string
 	public startedPlayback?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
-	public disableOutTransition?: boolean
-	public updateStoryStatus?: boolean
-	public timings?: PartTimings
-	public holdMode?: PartHoldMode
+	public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
 	public afterPart?: string
-	public dirty?: boolean
-
+	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
-	public typeVariant: string
-
-	public classes?: Array<string>
-	public classesForNext?: Array<string>
+	public dirty?: boolean
 
 	constructor (document: DBPart) {
 		_.each(_.keys(document), (key) => {
@@ -184,7 +188,7 @@ export class Part implements DBPart {
 
 				if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 					const part = partLookup[piece.sourceLayerId]
-					const st = checkPieceContentStatus(piece, part, studio ? studio.config : [])
+					const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
 					if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
@@ -220,7 +224,7 @@ export class Part implements DBPart {
 }
 
 export const Parts: TransformedCollection<Part, DBPart>
-	= new Mongo.Collection<Part>('parts', { transform: (doc) => applyClassToDocument(Part, doc) })
+	= createMongoCollection<Part>('parts', { transform: (doc) => applyClassToDocument(Part, doc) })
 registerCollection('Parts', Parts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

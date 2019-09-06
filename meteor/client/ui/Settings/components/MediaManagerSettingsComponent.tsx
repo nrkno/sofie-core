@@ -8,10 +8,12 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { translate } from 'react-i18next'
 import { literal } from '../../../../lib/lib'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { MediaManagerDeviceSettings, StorageType, StorageSettings, MediaFlow, MediaFlowType } from '../../../../lib/collections/PeripheralDeviceSettings/mediaManager'
-import { EditAttribute } from '../../../lib/EditAttribute'
-import { ModalDialog } from '../../../lib/ModalDialog'
+import { MediaManagerDeviceSettings, StorageType, StorageSettings, MediaFlow, MediaFlowType, MonitorSettings, MonitorSettingsType } from '../../../../lib/collections/PeripheralDeviceSettings/mediaManager'
+import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
+import { ModalDialog, doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
+import * as _ from 'underscore'
+import { DeviceItem } from '../../Status/SystemStatus'
 interface IMediaManagerSettingsComponentState {
 	deleteConfirmStorageId: string | undefined
 	showDeleteStorageConfirm: boolean
@@ -19,9 +21,11 @@ interface IMediaManagerSettingsComponentState {
 	deleteConfirmFlowId: string | undefined
 	showDeleteFlowConfirm: boolean
 	editedFlows: Array<string>
+	editedMonitors: Array<string>
 }
 interface IMediaManagerSettingsComponentProps {
 	device: PeripheralDevice
+	subDevices?: PeripheralDevice[]
 }
 export const MediaManagerSettingsComponent = translate()(class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
 	constructor (props: Translated<IMediaManagerSettingsComponentProps>) {
@@ -32,7 +36,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			editedStorages: [],
 			deleteConfirmFlowId: undefined,
 			showDeleteFlowConfirm: false,
-			editedFlows: []
+			editedFlows: [],
+			editedMonitors: []
 		}
 	}
 	isStorageItemEdited = (deviceId: string) => {
@@ -40,6 +45,9 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 	}
 	isFlowItemEdited = (flowId: string) => {
 		return this.state.editedFlows.indexOf(flowId) >= 0
+	}
+	isMonitorItemEdited = (monitorId: string) => {
+		return this.state.editedMonitors.indexOf(monitorId) >= 0
 	}
 	finishEditStorageItem = (deviceId: string) => {
 		let index = this.state.editedStorages.indexOf(deviceId)
@@ -59,12 +67,23 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			})
 		}
 	}
+	finishEditMonitorItem = (monitorId: string) => {
+		let index = this.state.editedMonitors.indexOf(monitorId)
+		if (index >= 0) {
+			this.state.editedMonitors.splice(index, 1)
+			this.setState({
+				editedMonitors: this.state.editedMonitors
+			})
+		}
+	}
 	editStorageItem = (deviceId: string) => {
 		if (this.state.editedStorages.indexOf(deviceId) < 0) {
 			this.state.editedStorages.push(deviceId)
 			this.setState({
 				editedStorages: this.state.editedStorages
 			})
+		} else {
+			this.finishEditStorageItem(deviceId)
 		}
 	}
 	editFlowItem = (flowId: string) => {
@@ -73,6 +92,18 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedFlows: this.state.editedFlows
 			})
+		} else {
+			this.finishEditFlowItem(flowId)
+		}
+	}
+	editMonitorItem = (monitorId: string) => {
+		if (this.state.editedMonitors.indexOf(monitorId) < 0) {
+			this.state.editedMonitors.push(monitorId)
+			this.setState({
+				editedMonitors: this.state.editedMonitors
+			})
+		} else {
+			this.finishEditMonitorItem(monitorId)
 		}
 	}
 	handleConfirmRemoveStorageCancel = (e) => {
@@ -348,23 +379,197 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			</React.Fragment>
 		})
 	}
-	// componentDidMount() {
-	// 	// const script = document.createElement('script')
-	// 	// script.type = 'text/javascript'
-	// 	// script.async = true
-	// 	// script.innerHTML = "document.write('This is output by document.write()!')"
-	// 	// // this.instance.appendChild(s)
-	// 	// document.body.appendChild(script)
-	// 	loadScript('/scripts/statusChecker.js', err => {
-	// 		if(err) {
-	// 			console.error(err)
-	// 		}
-	// 	})
-	// }
-	render () {
+	addNewMonitor = () => {
+		let settings = this.props.device.settings as MediaManagerDeviceSettings || {}
+
+		// Find free key name:
+		let iter = 0
+		let newMonitorId: string = ''
+		do {
+			newMonitorId = 'monitor' + iter
+			iter++
+		} while (_.find(_.keys(settings.monitors || {}), monitorId => monitorId === newMonitorId))
+
+		const newMonitor: MonitorSettings = {
+			type: MonitorSettingsType.NULL,
+			storageId: ''
+		}
+		const m: any = {}
+		m['settings.monitors.' + newMonitorId] = newMonitor
+		PeripheralDevices.update(this.props.device._id, {
+			$set: m
+		})
+	}
+	removeMonitor = (monitorId: string) => {
+
 		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this Monitor?'),
+			yes: t('Delete'),
+			no: t('Cancel'),
+			onAccept: () => {
+				const m: any = {}
+				m['settings.monitors.' + monitorId] = 1
+				PeripheralDevices.update(this.props.device._id, {
+					$unset: m
+				})
+			},
+			message: <React.Fragment>
+				<p>{t('Are you sure you want to delete the monitor "{{monitorId}}"?', { monitorId: monitorId })}</p>
+			</React.Fragment>
+		})
+	}
+	onEditMonitorId = (edit: EditAttributeBase, newMonitorId: any): void => {
+		const oldMonitorId = edit.props.attribute
+		if (oldMonitorId && newMonitorId) {
+
+			// @ts-ignore
+			const settings: MediaManagerDeviceSettings = this.props.device.settings || {}
+			const monitor = (settings.monitors || {})[oldMonitorId]
+
+			const existingMonitor = (settings.monitors || {})[newMonitorId]
+			if (!existingMonitor) {
+				if (newMonitorId !== oldMonitorId && monitor) {
+
+					// remove old
+					const mUnset: any = {}
+					mUnset['settings.monitors.' + oldMonitorId] = 1
+
+					const mSet: any = {}
+					mSet['settings.monitors.' + newMonitorId] = monitor
+
+					PeripheralDevices.update(this.props.device._id, {
+						$unset: mUnset,
+						$set: mSet
+					})
+
+					this.finishEditMonitorItem(oldMonitorId)
+					this.editMonitorItem(newMonitorId)
+				}
+			} else {
+				const { t } = this.props
+				doModalDialog({
+					title: t('ID already exists'),
+					acceptOnly: true,
+					onAccept: () => {
+						// nothing
+					},
+					message: <React.Fragment>
+						<p>{t('The ID {{monitorId}} already exists!', { monitorId: newMonitorId })}</p>
+					</React.Fragment>
+				})
+			}
+		}
+
+	}
+	renderMonitors () {
 		let settings = this.props.device.settings as MediaManagerDeviceSettings
-		return (<div>
+		const { t } = this.props
+		return _.map(settings.monitors || {}, (monitor: MonitorSettings, monitorId: string) => {
+			return <React.Fragment key={monitorId}>
+				<tr key={monitorId} className={ClassNames({
+					'hl': this.isMonitorItemEdited(monitorId)
+				})}>
+					<th className='settings-studio-device__name c5'>
+						{monitorId}
+					</th>
+					<td className='settings-studio-device__id c4'>
+						{MonitorSettingsType[monitor.type]}
+					</td>
+					<td className='settings-studio-device__actions table-item-actions c3'>
+						<button className='action-btn' onClick={(e) => this.editMonitorItem(monitorId)}>
+							<FontAwesomeIcon icon={faPencilAlt} />
+						</button>
+						<button className='action-btn' onClick={(e) => this.removeMonitor(monitorId)}>
+							<FontAwesomeIcon icon={faTrash} />
+						</button>
+					</td>
+				</tr>
+				{this.isMonitorItemEdited(monitorId) &&
+					<tr className='expando-details hl' key={monitorId + '-details'}>
+						<td colSpan={5}>
+							<div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Monitor ID')}
+										<EditAttribute modifiedClassName='bghl' attribute={monitorId} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l' overrideDisplayValue={monitorId} updateFunction={this.onEditMonitorId}></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Monitor Type')}
+										<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.type'} obj={this.props.device} type='dropdown' options={MonitorSettingsType} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Storage ID')}
+										<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.storageId'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+
+								{
+									monitor.type === MonitorSettingsType.MEDIA_SCANNER ?
+									<React.Fragment>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Media Scanner Host')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Media Scanner Port')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+									</React.Fragment> :
+									monitor.type === MonitorSettingsType.QUANTEL ?
+									<React.Fragment>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Quantel Gateway URL')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.gatewayUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Quantel ISA URL')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.ISAUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Zone ID (leave blank for default)')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.zoneId'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Quantel Server ID')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.monitors.' + monitorId + '.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+									</React.Fragment> :
+									null
+								}
+							</div>
+							<div className='mod alright'>
+								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditMonitorItem(monitorId)}>
+									<FontAwesomeIcon icon={faCheck} />
+								</button>
+							</div>
+						</td>
+					</tr>}
+			</React.Fragment>
+		})
+	}
+
+	render () {
+		const { t, subDevices } = this.props
+		let settings = this.props.device.settings as MediaManagerDeviceSettings
+		return (
+		<div>
 			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('No. of Available Workers')}
@@ -441,6 +646,26 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 			</div>
+
+			<h2 className='mhn'>{t('Monitors')}</h2>
+			{settings && settings.monitors &&
+				(<table className='expando settings-studio-device-table'>
+					<tbody>
+						{this.renderMonitors()}
+					</tbody>
+				</table>)}
+			<div className='mod mhs'>
+				<button className='btn btn-primary' onClick={(e) => this.addNewMonitor()}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+			</div>
+
+			{subDevices &&
+				(<React.Fragment>
+					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
+					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
+				</React.Fragment>)}
+
 		</div>)
 	}
 })

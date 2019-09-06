@@ -182,17 +182,20 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				// We've got a reply!
 				// logger.debug('got reply ' + commandId)
 
-				if (cmd.replyError) {
-					cb(cmd.replyError, null)
-				} else {
-					cb(null, cmd.reply)
-				}
+				// Cleanup before the callback to ensure it doesnt get a timeout during the callback
 				observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 				if (timeoutCheck) {
 					Meteor.clearTimeout(timeoutCheck)
 					timeoutCheck = 0
+				}
+
+				// Handle result
+				if (cmd.replyError) {
+					cb(cmd.replyError, null)
+				} else {
+					cb(null, cmd.reply)
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)

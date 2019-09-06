@@ -11,8 +11,8 @@ import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevic
 import { literal } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
-import { UpdateNext } from '../updateNext'
-jest.mock('../updateNext')
+import { UpdateNext } from '../../updateNext'
+jest.mock('../../updateNext')
 
 require('../api.ts') // include in order to create the Meteor methods needed
 

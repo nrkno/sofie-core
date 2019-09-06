@@ -73,7 +73,7 @@ function initializeCoreSystem () {
 	checkDatabaseVersions()
 }
 
-let blueprints: {[id: string]: true} = {}
+let blueprints: { [id: string]: true } = {}
 
 function checkDatabaseVersions () {
 	// Core system
@@ -89,7 +89,7 @@ function checkDatabaseVersions () {
 		setSystemStatus('databaseVersion', checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database'))
 
 		// Blueprints:
-		let blueprintIds: {[id: string]: true} = {}
+		let blueprintIds: { [id: string]: true } = {}
 		Blueprints.find().forEach((blueprint) => {
 			if (blueprint.code) {
 				blueprintIds[blueprint._id] = true
@@ -107,7 +107,7 @@ function checkDatabaseVersions () {
 					messages: []
 				}
 
-				let studioIds: {[studioId: string]: true} = {}
+				let studioIds: { [studioId: string]: true } = {}
 				ShowStyleBases.find({
 					blueprintId: blueprint._id
 				}).forEach((showStyleBase) => {
@@ -197,7 +197,7 @@ function checkDatabaseVersion (
 					if (!expectV || !currentV) {
 						return {
 							statusCode: StatusCode.BAD,
-							messages: [ message ]
+							messages: [message]
 						}
 					} else if (expectV.major !== currentV.major) {
 						return {
@@ -222,16 +222,16 @@ function checkDatabaseVersion (
 					} else {
 						return {
 							statusCode: StatusCode.BAD,
-							messages: [ message ]
+							messages: [message]
 						}
 					}
-				// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
+					// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
 				} catch (e) {
 					const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
 
 					return {
 						statusCode: StatusCode.BAD,
-						messages: [ message ]
+						messages: [message]
 					}
 				}
 			}
@@ -302,8 +302,8 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		})
 	}
 }
-export function getRelevantSystemVersions (): {[name: string]: string} {
-	const versions: {[name: string]: string} = {}
+export function getRelevantSystemVersions (): { [name: string]: string } {
+	const versions: { [name: string]: string } = {}
 
 	let dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
@@ -324,6 +324,7 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'@types/request',
 			'amqplib',
 			'body-parser',
+			'caller-module',
 			'chai',
 			'classnames',
 			'core-js',
@@ -334,7 +335,6 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'i18next-browser-languagedetector',
 			'i18next-xhr-backend',
 			'indexof',
-			'jquery',
 			'lottie-web',
 			'meteor-node-stubs',
 			'moment',
@@ -357,6 +357,7 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'react-router-dom',
 			'react-timer-hoc',
 			'safer-eval',
+			'semver',
 			'timecode',
 			'soap',
 			'underscore',
@@ -386,6 +387,10 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 	return versions
 }
 function startupMessage () {
+	if (!Meteor.isTest) {
+		console.log('process started') // This is a message all Sofie processes log upon startup
+	}
+
 	logger.info(`Core starting up`)
 	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
 

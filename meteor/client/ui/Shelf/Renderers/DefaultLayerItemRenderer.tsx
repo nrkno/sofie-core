@@ -14,7 +14,7 @@ export const DefaultListItemRenderer: React.SFC<IPropsHeader> = (props: IPropsHe
 		<td className='adlib-panel__list-view__list__table__cell--name'>
 			{props.item.name}
 		</td>
-		<td className='adlib-panel__list-view__list__table__cell--data'>
+		{/*<td className='adlib-panel__list-view__list__table__cell--data'>
 			&nbsp;
 		</td>
 		<td className='adlib-panel__list-view__list__table__cell--resolution'>
@@ -28,6 +28,6 @@ export const DefaultListItemRenderer: React.SFC<IPropsHeader> = (props: IPropsHe
 		</td>
 		<td className='adlib-panel__list-view__list__table__cell--tc-start'>
 			&nbsp;
-		</td>
+		</td> */}
 	</React.Fragment>
 )

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
@@ -25,6 +24,8 @@ import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialo
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { getElementWidth } from '../../utils/dimensions'
+import { getElementDocumentOffset, Position } from '../../utils/positions'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -55,8 +56,8 @@ export interface ISourceLayerItemProps {
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
-	elementPosition: JQueryCoordinates
-	cursorPosition: JQueryCoordinates
+	elementPosition: Position
+	cursorPosition: Position
 	scrollLeftOffset: number
 	cursorTimePosition: number
 	elementWidth: number
@@ -116,7 +117,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				const nextIsTouching = !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration)))
+				const nextIsTouching = !!(this.props.piece.cropped || (this.props.piece.enable.end && _.isString(this.props.piece.enable.end)))
 
 				if (this.props.followLiveLine && this.props.isLiveLine) {
 					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
@@ -213,10 +214,14 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	getItemDuration = (): number => {
 		let piece = this.props.piece
 
-		const expectedDurationNumber = (typeof piece.expectedDuration === 'number' ? piece.expectedDuration || 0 : 0)
-		let itemDuration = Math.min(piece.durationOverride || piece.duration || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
+		const expectedDurationNumber = (typeof piece.enable.duration === 'number' ? piece.enable.duration || 0 : 0)
+		const userDurationNumber = (piece.userDuration && typeof piece.userDuration.duration === 'number' ? piece.userDuration.duration || 0 : 0)
+		let itemDuration = Math.min(piece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
 
-		if (piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal && !piece.cropped && !piece.duration && !piece.durationOverride) {
+		if ((
+			(piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal) ||
+			(piece.enable.start !== undefined && piece.enable.end === undefined && piece.enable.duration === undefined)
+		) && !piece.cropped && !piece.playoutDuration && !piece.userDuration) {
 			itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 		}
@@ -241,7 +246,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode
-				'left': (((piece.renderedInPoint || 0)) / (this.props.partDuration || 1) * 100).toString() + '%',
+				'left': ((piece.renderedInPoint || 0) / (this.props.partDuration || 1) * 100).toString() + '%',
 				'width': ((itemDuration) / (this.props.partDuration || 1) * 100).toString() + '%'
 			}
 		} else {
@@ -255,7 +260,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	checkElementWidth = () => {
 		if (this.state.itemElement && this._forceSizingRecheck) {
 			this._forceSizingRecheck = false
-			const width = $(this.state.itemElement).width() || 0
+			const width = getElementWidth(this.state.itemElement) || 0
 			if (this.state.elementWidth !== width) {
 				this.setState({
 					elementWidth: width
@@ -346,7 +351,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			showMiniInspector: v
 		})
 		// console.log($(this.itemElement).offset())
-		const elementPos = this.state.itemElement && $(this.state.itemElement).offset() || {
+		const elementPos = getElementDocumentOffset(this.state.itemElement) || {
 			top: 0,
 			left: 0
 		}
@@ -389,64 +394,66 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	renderInsideItem (typeClass: string) {
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
-			// case SourceLayerType.MIC:
+				// case SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.VT:
 				return <VTSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.GRAPHICS:
 			case SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
+				// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 				return <STKSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 
 			case SourceLayerType.TRANSITION:
 				return <TransitionSourceRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 			default:
 				return <DefaultLayerItemRenderer key={this.props.piece._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+					typeClass={typeClass}
+					getItemDuration={this.getItemDuration}
+					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+					getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+					setAnchoredElsWidths={this.setAnchoredElsWidths}
+					{...this.props} {...this.state} />
 		}
 	}
 
@@ -472,8 +479,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': (this.props.piece.duration === undefined && this.props.piece.durationOverride === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
-					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration))),
+					'infinite': (this.props.piece.playoutDuration === undefined && this.props.piece.userDuration === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
+					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.enable.end && _.isString(this.props.piece.enable.end))),
 
 					'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
 					'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
@@ -493,7 +500,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.piece.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
+								{this.props.piece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.enable.duration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.enable.duration).substr(-5) : ''}
 							</div>
 						)
 					}

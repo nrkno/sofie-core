@@ -8,6 +8,12 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as crypto from 'crypto'
+const cloneOrg = require('fast-clone')
+
+export function clone<T> (o: T): T {
+	// Use this instead of fast-clone directly, as this retains the type
+	return cloneOrg(o)
+}
 
 export function getHash (str: string): string {
 	const hash = crypto.createHash('sha1')
@@ -63,6 +69,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	insert?: (o: DBInterface) => void
 	update?: (id: string, o: DBInterface,) => void
 	remove?: (o: DBInterface) => void
+	unchanged?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
@@ -91,15 +98,25 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		updated: 0,
 		removed: 0
 	}
-	let options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
+	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
-	let identifier = '_id'
+	const identifier = '_id'
 
-	let oldObjs: Array<DocClass> = collection.find(filter).fetch()
+	const pOldObjs = asyncCollectionFindFetch(collection, filter)
 
-	let ps: Array<Promise<any>> = []
+	const newObjIds: {[identifier: string]: true} = {}
+	_.each(newData, (o) => {
+		if (newObjIds[o[identifier]]) {
+			throw new Meteor.Error(500, `saveIntoDb into collection "${collection.rawCollection.name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
+		}
+		newObjIds[o[identifier]] = true
+	})
 
-	let removeObjs: {[id: string]: DocClass} = {}
+	const oldObjs: Array<DocClass> = waitForPromise(pOldObjs)
+
+	const ps: Array<Promise<any>> = []
+
+	const removeObjs: {[id: string]: DocClass} = {}
 	_.each(oldObjs,function (o: DocClass) {
 
 		if (removeObjs['' + o[identifier]]) {
@@ -114,19 +131,13 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	_.each(newData,function (o) {
 
-		// if (_.has(o,'type')) {
-		// 	o.type2 = o.type
-		// 	delete o.type
-		// }
-
-		let oldObj = removeObjs['' + o[identifier]]
+		const oldObj = removeObjs['' + o[identifier]]
 		if (oldObj) {
 
-			let o2 = o
-			if (options.beforeDiff) o2 = options.beforeDiff(o, oldObj)
-			let diff = compareObjs(oldObj,o2)
+			const o2 = (options.beforeDiff ? options.beforeDiff(o, oldObj) : o)
+			const eql = compareObjs(oldObj, o2)
 
-			if (!diff) {
+			if (!eql) {
 				let p: Promise<any> | undefined
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
 				if (options.update) {
@@ -143,6 +154,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 				if (p) ps.push(p)
 				change.updated++
+			} else {
+				if (options.unchanged) options.unchanged(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
@@ -176,7 +189,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			}
 
 			if (options.afterRemove) {
-				p = Promise.resolve(p)
+				Promise.resolve(p)
 				.then(() => {
 					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
@@ -286,8 +299,8 @@ export interface ObjId {
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 
-export function omit<T, P extends keyof T> (obj: T, prop: P): Omit<T, P> {
-	return _.omit(obj)
+export function omit<T, P extends keyof T> (obj: T, ...props: P[]): Omit<T, P> {
+	return _.omit(obj, ...(props as string[]))
 }
 
 export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
@@ -365,16 +378,22 @@ export function objectPathSet (obj: any, path: string, value: any) {
 export function stringifyObjects (objs: any): string {
 	if (_.isArray(objs)) {
 		return _.map(objs, (obj) => {
-			return stringifyObjects(obj)
+			if (obj !== undefined) {
+				return stringifyObjects(obj)
+			}
 		}).join(',')
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
 		let keys = _.sortBy(_.keys(objs), (k) => k)
 
-		return _.map(keys, (key) => {
-			return key + '=' + stringifyObjects(objs[key])
-		}).join(',')
+		return _.compact(_.map(keys, (key) => {
+			if (objs[key] !== undefined) {
+				return key + '=' + stringifyObjects(objs[key])
+			} else {
+				return null
+			}
+		})).join(',')
 	} else {
 		return objs + ''
 	}
@@ -426,7 +445,12 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
-export function getRank (beforeOrLast, after, i: number, count: number): number {
+export function getRank<T extends {_rank: number}> (
+	beforeOrLast: T | null | undefined,
+	after: T | null | undefined,
+	i: number,
+	count: number
+): number {
 	let newRankMax
 	let newRankMin
 
@@ -564,6 +588,35 @@ function cleanUprateLimitIgnore () {
 		}
 	}
 }
+const cacheResultCache: {
+	[name: string]: {
+		ttl: number,
+		value: any
+	}
+} = {}
+/** Cache the result of function for a limited time */
+export function cacheResult<T> (name: string, fcn: () => T, limitTime: number = 1000) {
+
+	if (Math.random() < 0.01) {
+		Meteor.setTimeout(cleanCacheResult, 10000)
+	}
+	const cache = cacheResultCache[name]
+	if (!cache || cache.ttl < Date.now()) {
+		const value = fcn()
+		cacheResultCache[name] = {
+			ttl: Date.now() + limitTime,
+			value: value
+		}
+		return value
+	} else {
+		return cache.value
+	}
+}
+function cleanCacheResult () {
+	_.each(cacheResultCache, (cache, name) => {
+		if (cache.ttl < Date.now()) delete cacheResultCache[name]
+	})
+}
 
 export function escapeHtml (text: string): string {
 	// Escape strings, so they are XML-compatible:
@@ -594,10 +647,23 @@ const ticCache = {}
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()
 }
-export function toc (name: string = 'default', logStr?: string) {
-	let t: number = Date.now() - ticCache[name]
-	if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
-	return t
+export function toc (name: string = 'default', logStr?: string | Promise<any>[]) {
+
+	if (_.isArray(logStr)) {
+		_.each(logStr, (promise, i) => {
+			promise.then((result) => {
+				toc(name, 'Promise ' + i)
+				return result
+			})
+			.catch(e => {
+				throw e
+			})
+		})
+	} else {
+		let t: number = Date.now() - ticCache[name]
+		if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
+		return t
+	}
 }
 
 export function asyncCollectionFindFetch<DocClass, DBInterface> (
@@ -703,14 +769,14 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
  *
  * creds: https://github.com/rsp/node-caught/blob/master/index.js
  */
-export const caught = (f => p => (p.catch(f), p))(() => {
+export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), p))(() => {
 	// nothing
 })
 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
+export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
 	Promise.all(ps)
 	.then((result) => {
 		cb(null, result)
@@ -812,12 +878,13 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	return ok
 }
 /**
- * Push a value into a object, and ensure the array exists
+ * Mutate a value on a object
  * @param obj Object
- * @param path Path to array in object
- * @param valueToPush Value to push onto array
+ * @param path Path to value in object
+ * @param mutator Operation to run on the object value
+ * @returns Result of the mutator
  */
-export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: Object, key: string) => T): T {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
 	let attrs = path.split('.')
@@ -837,44 +904,44 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 	})
 	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
 
-	if (!_.has(o,lastAttr)) {
-		o[lastAttr] = []
-	} else {
-		if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
-	}
-	let arr = o[lastAttr]
-
-	arr.push(valueToPush)
-	return arr
+	return mutator(o, lastAttr)
 }
 /**
  * Push a value into a object, and ensure the array exists
  * @param obj Object
  * @param path Path to array in object
  * @param valueToPush Value to push onto array
- * @returns Whether the value was changed
+ */
+export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+	let mutator = (o: Object, lastAttr: string) => {
+		if (!_.has(o,lastAttr)) {
+			o[lastAttr] = []
+		} else {
+			if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
+		}
+		let arr = o[lastAttr]
+
+		arr.push(valueToPush)
+		return arr
+	}
+	return mutatePath(obj, path, mutator)
+}
+/**
+ * Set a value into a object
+ * @param obj Object
+ * @param path Path to value in object
+ * @param valueToPush Value to set
  */
 export function setOntoPath<T> (obj: Object, path: string, valueToSet: T) {
-	if (!path) throw new Meteor.Error(500, 'parameter path missing')
-
-	let attrs = path.split('.')
-
-	let lastAttr = _.last(attrs)
-	let attrsExceptLast = attrs.slice(0, -1)
-
-	let o = obj
-	_.each(attrsExceptLast, (attr) => {
-
-		if (!_.has(o,attr)) {
-			o[attr] = {}
-		} else {
-			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
-		}
-		o = o[attr]
-	})
-	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
-
-	o[lastAttr] = valueToSet
+	mutatePath(obj, path, (parentObj: Object, key: string) => parentObj[key] = valueToSet)
+}
+/**
+ * Remove a value from a object
+ * @param obj Object
+ * @param path Path to value in object
+ */
+export function unsetPath (obj: Object, path: string) {
+	mutatePath(obj, path, (parentObj: Object, key: string) => delete parentObj[key])
 }
 /**
  * Replaces all invalid characters in order to make the path a valid one
@@ -896,6 +963,11 @@ export type RequiredPropertyNames<T> = {
 export type OptionalProperties<T> = Pick<T, OptionalPropertyNames<T>>
 export type RequiredProperties<T> = Pick<T, RequiredPropertyNames<T>>
 
+export type Diff<T, U> = T extends U ? never : T  // Remove types from T that are assignable to U
+export type KeysByType<TObj, TVal> = Diff<{
+	[K in keyof TObj]: TObj[K] extends TVal ? K : never
+}[keyof TObj], undefined>
+
 /**
  * Returns the difference between object A and B
  */
@@ -915,3 +987,5 @@ export function trimIfString<T extends any> (value: T): T {
 }
 export const firstIfArray: ((<T>(value: T | T[] | null | undefined) => T | null | undefined) | (<T>(value: T | T[]) => T) | (<T>(value: T | T[] | undefined) => T | undefined))
 	= (value) => _.isArray(value) ? _.first(value) : value
+
+export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)

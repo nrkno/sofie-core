@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 import {
-	Route
+	Route, Switch
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -12,12 +11,14 @@ import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
+import { PubSub } from '../../lib/api/pubsub'
 
 interface IProps {
-	match?: {
+	match: {
 		params?: {
 			studioId: string
 		}
+		path: string
 	}
 }
 interface ITrackedProps {
@@ -57,13 +58,13 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 
 	componentWillMount () {
-		this.subscribe('rundowns', _.extend({
+		this.subscribe(PubSub.rundowns, _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studios', {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
 		}
@@ -78,16 +79,16 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 
 	componentDidMount () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
 	componentWillUnmount () {
 		super.componentWillUnmount()
-		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
+		document.body.classList.remove('dark', 'vertical-overflow-only')
 	}
 
 	componentDidUpdate () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
 	renderMessage (message: string) {
@@ -121,7 +122,14 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 		} else {
 			if (this.props.rundown) {
-				return <RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+				return <Switch>
+							<Route path={this.props.match.path} exact>
+								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+							</Route>
+							<Route path={`${this.props.match.path}/shelf`}>
+								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} onlyShelf={true} />
+							</Route>
+						</Switch>
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {

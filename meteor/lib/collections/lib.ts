@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { stringifyObjects, getHash } from '../lib'
 import * as _ from 'underscore'
@@ -54,4 +55,42 @@ export function ObserveChangesForHash<Ta, Tb> (collection: TransformedCollection
 		const existing = collection.find().fetch()
 		_.each(existing, entry => doUpdate(entry['_id'], entry))
 	}
+}
+
+export function createMongoCollection<T> (
+	name: string,
+	options?: {
+		connection?: Object | null
+		idGeneration?: string
+		transform?: Function
+	}
+) {
+
+	// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
+
+	const overrideMethod = <C>(collection: C, key: keyof C) => {
+		const originalFcn: any = collection[key]
+
+		// @ts-ignore
+		collection[key] = (...args) => {
+			try {
+				return originalFcn.call(collection, ...args)
+			} catch (e) {
+				throw new Meteor.Error((e && e.error) || 500, (e && e.reason || e.toString()) || e || 'Unknown MongoDB Error')
+			}
+		}
+	}
+
+	const collection = new Mongo.Collection<T>(name, options)
+
+	overrideMethod(collection, 'find')
+	overrideMethod(collection, 'findOne')
+	overrideMethod(collection, 'insert')
+	overrideMethod(collection, 'update')
+	overrideMethod(collection, 'upsert')
+	overrideMethod(collection, 'remove')
+	overrideMethod(collection, '_ensureIndex')
+	overrideMethod(collection, '_dropIndex')
+
+	return collection
 }

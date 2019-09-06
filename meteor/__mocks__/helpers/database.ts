@@ -38,6 +38,7 @@ import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
 import { literal } from '../../lib/lib'
+import { TSRTimelineObjBase } from 'timeline-state-resolver-types'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -211,7 +212,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
 			studioConfigManifest: [],
 			studioMigrations: [],
-			getBaseline: (context: IStudioContext): Timeline.TimelineObject[] => {
+			getBaseline: (context: IStudioContext): TSRTimelineObjBase[] => {
 				return []
 			},
 			getShowStyleId: (context: IStudioConfigContext, showStyles: Array<IBlueprintShowStyleBase>, ingestRundown: IngestRundown): string | null => {

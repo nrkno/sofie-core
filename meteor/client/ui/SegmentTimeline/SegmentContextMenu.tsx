@@ -41,7 +41,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 									<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 								</MenuItem>
 								<MenuItem onClick={(e) => this.onPlayFromHere(part, e)} disabled={part._id === this.props.rundown.currentPartId}>
-									<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(timecode / 1000) * 1000)})
+									<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 								</MenuItem>
 							</React.Fragment> : null}
 						</React.Fragment>}

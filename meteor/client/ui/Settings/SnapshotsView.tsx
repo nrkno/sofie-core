@@ -9,11 +9,13 @@ import { Meteor } from 'meteor/meteor'
 import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
+import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { multilineText } from '../../lib/lib'
+import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { UploadButton } from '../../lib/uploadButton'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IProps {
 	match: {
@@ -51,12 +53,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 	}
 	componentWillMount () {
-		this.subscribe('snapshots', {
+		this.subscribe(PubSub.snapshots, {
 			created: {
 				$gt: getCurrentTime() - 30 * 24 * 3600 * 1000 // last 30 days
 			}
 		})
-		this.subscribe('studios', {})
+		this.subscribe(PubSub.studios, {})
 	}
 
 	onUploadFile (e) {
@@ -76,9 +78,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			doModalDialog({
 				title: t('Restore from this Snapshot file?'),
-				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
+				message: t('Are you sure you want to restore the system from the snapshot file "{{fileName}}"?', { fileName: file.name }),
 				onAccept: () => {
-					fetch('/snapshot/restore', {
+					fetchFrom('/snapshot/restore', {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {
@@ -106,7 +108,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		if (snapshot) {
 			doModalDialog({
 				title: 'Restore Snapshot',
-				message: `Do you really want to restore the Snapshot ${snapshot.name}?`,
+				message: `Do you really want to restore the snapshot ${snapshot.name}?`,
 				onAccept: () => {
 					Meteor.call(SnapshotFunctionsAPI.RESTORE_SNAPSHOT, snapshotId, (err) => {
 						if (err) {
@@ -248,12 +250,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</div>
 					<h2 className='mhn'>{t('Restore from Snapshot File')}</h2>
-					<label className='field'>
-						<div className='mdi'>
-							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
-							<span className='mdfx'></span>
-						</div>
-					</label>
+					<div className='mdi'>
+						<UploadButton accept='application/json,.json'
+							className='btn btn-secondary'
+							onChange={(e) => this.onUploadFile(e)}
+							key={this.state.uploadFileKey}>
+							<FontAwesomeIcon icon={faUpload} />
+							<span>{t('Upload Snapshot')}</span>
+						</UploadButton>
+					</div>
 					<h2 className='mhn'>{t('Restore from Stored Snapshots')}</h2>
 					<div>
 						<table className='table'>

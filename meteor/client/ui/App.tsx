@@ -23,7 +23,6 @@ import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
-import { NymansPlayground } from './NymansPlayground'
 import {
   BrowserRouter as Router,
   Route,
@@ -43,8 +42,15 @@ interface IAppState {
 
 const NullComponent = () => null
 
+const CRON_INTERVAL = 30 * 60 * 1000
+const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
+const WINDOW_START_HOUR = 3
+const WINDOW_END_HOUR = 5
+
 // App component - represents the whole app
 class App extends React.Component<InjectedI18nProps, IAppState> {
+	private lastStart = 0
+
 	constructor (props) {
 		super(props)
 
@@ -70,12 +76,31 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			developerMode: getDeveloperMode()
 		}
 
+		this.lastStart = Date.now()
+	}
+
+	cronJob = () => {
+		const now = new Date()
+		const hour = now.getHours() + (now.getMinutes() / 60)
+		// if the time is between 3 and 5
+		if ((hour >= WINDOW_START_HOUR) && (hour < WINDOW_END_HOUR) &&
+		// and the previous restart happened more than 3 hours ago
+			(Date.now() - this.lastStart > LAST_RESTART_LATENCY) &&
+		// and not in an active rundown
+			(document.querySelector('.rundown.active') === null)
+		) {
+			// forceReload is marked as deprecated, but it's still usable
+			// tslint:disable-next-line
+			setTimeout(() => window.location.reload(true))
+		}
 	}
 
 	componentDidMount () {
 		const { i18n } = this.props
 
 		m.locale(i18n.language)
+		document.documentElement.lang = i18n.language
+		setInterval(this.cronJob, CRON_INTERVAL)
 	}
 
 	render () {
@@ -103,7 +128,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
-							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />
 							<Route path='/testTools' component={TestTools} />

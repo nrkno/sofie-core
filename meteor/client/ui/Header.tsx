@@ -37,9 +37,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
-		if (!this.state.showNotifications === true) {
-			NotificationCenter.snoozeAll()
-		}
+		NotificationCenter.isOpen = !this.state.showNotifications
 
 		this.setState({
 			showNotifications: !this.state.showNotifications
@@ -101,7 +99,6 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							<nav className='links mod'>
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
 								<NavLink to='/' activeClassName='active'>{t('Rundowns')}</NavLink>
-								{ this.props.developerMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
 								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 								{ this.props.adminMode && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }

@@ -1,6 +1,6 @@
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import * as _ from 'underscore'
-import { renamePropertiesInCollection } from './lib'
+import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
@@ -26,8 +26,9 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
 import { logger } from '../../lib/logging'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
-// 0.25.0 // This is a big refactoring, with a LOT of renamings
+// 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
 
 	{
@@ -190,6 +191,7 @@ addMigrationSteps('0.25.0', [
 		Timeline,
 		'Timeline',
 		{
+			studioId: 'siId',
 			rundownId: 'roId',
 			objectType: {content: {
 				rundown: 'ro'
@@ -264,20 +266,85 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
+	{
+		id: 'peripheralDevicesTypeAndSubtype',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const devices = PeripheralDevices.find({}).fetch()
 
+			const devicesNeedFixing = _.filter(devices, (device) => {
+				// Old devices had property: type: number
+				// New devices has properties: category, type, subType
+
+				return (
+					_.has(device, 'type') &&
+					!_.has(device, 'category')
+				)
+			})
+
+			if (devicesNeedFixing.length > 0) {
+				return `PeripheralDevices contains ${devicesNeedFixing.length} devices that needs updating`
+			}
+			return false
+		},
+		migrate: () => {
+			const devices = PeripheralDevices.find({}).fetch()
+
+			_.each(devices, (device) => {
+				if (
+					_.has(device, 'type') &&
+					!_.has(device, 'category')
+				) {
+					const m: {
+						category: PeripheralDeviceAPI.DeviceCategory,
+						type: PeripheralDeviceAPI.DeviceType,
+						subType: PeripheralDeviceAPI.DeviceSubType
+					} = {
+						category: 'unknown' as any,
+						type: '' as any,
+						subType: '' as any
+					}
+					enum OLDDeviceType { // From old typings
+						MOSDEVICE = 0,
+						PLAYOUT = 1,
+						OTHER = 2, // i.e. sub-devices
+						MEDIA_MANAGER = 3,
+					}
+					const oldDeviceType = device.type as any as OLDDeviceType
+
+					if (oldDeviceType === OLDDeviceType.MOSDEVICE) {
+						m.category = PeripheralDeviceAPI.DeviceCategory.INGEST
+						m.type = PeripheralDeviceAPI.DeviceType.MOS
+						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
+
+					} else if (oldDeviceType === OLDDeviceType.PLAYOUT) {
+						m.category = PeripheralDeviceAPI.DeviceCategory.PLAYOUT
+						m.type = PeripheralDeviceAPI.DeviceType.PLAYOUT
+						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
+
+					} else if (oldDeviceType === OLDDeviceType.MEDIA_MANAGER) {
+						m.category = PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
+						m.type = PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
+						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
+
+					} else if (oldDeviceType === OLDDeviceType.OTHER) {
+						// Unknown sub-device
+					}
+					PeripheralDevices.update(device._id, { $set: m })
+				}
+			})
+		}
+	},
 	{
 		id: 'cleanUpExpectedItems',
 		canBeRunAutomatically: true,
 		validate: () => {
 			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
-			logger.error(currentRundowns)
 			const itemsCount = ExpectedMediaItems.find({
 				rundownId: {
 					$nin: currentRundowns
 				}
 			}).count()
-			logger.error(itemsCount)
-
 			if (itemsCount > 0) {
 				return `ExpectedMediaItems contains ${itemsCount} orphaned media-items`
 			}
@@ -292,16 +359,7 @@ addMigrationSteps('0.25.0', [
 			})
 		}
 	},
-
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
+	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^0.20.0'),
+	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^0.8.0'),
+	setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^0.2.0'),
 ])

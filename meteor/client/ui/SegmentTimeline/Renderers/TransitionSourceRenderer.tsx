@@ -1,6 +1,6 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
+import { getElementWidth } from '../../../utils/dimensions'
 
 import { TransitionContent } from 'tv-automation-sofie-blueprints-integration'
 
@@ -27,7 +27,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, 0)
 	}
@@ -60,19 +60,19 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	render () {
 		const content = this.props.piece.content as TransitionContent
 		return <React.Fragment>
-					<span className='segment-timeline__piece__label with-overflow' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						{this.props.piece.name}
-						{content && content.icon && !this.state.iconFailed &&
-							<img src={'/transition-icons/' + content.icon + '.svg'} className='segment-timeline__piece__label__transition-icon' onError={this.iconFailed} />
-						}
-					</span>
-					<FloatingInspector shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}>
-						{content && content.icon &&
-							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
-								<img src={'/transition-icons/preview/' + content.icon + '.png'} className='thumbnail' />
-							</div>
-						}
-					</FloatingInspector>
-				</React.Fragment>
+			<span className='segment-timeline__piece__label with-overflow' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+				{this.props.piece.name}
+				{content && content.icon && !this.state.iconFailed &&
+					<img src={'/transition-icons/' + content.icon + '.svg'} className='segment-timeline__piece__label__transition-icon' onError={this.iconFailed} />
+				}
+			</span>
+			<FloatingInspector shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}>
+				{content && content.icon &&
+					<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
+						<img src={'/transition-icons/preview/' + content.icon + '.png'} className='thumbnail' />
+					</div>
+				}
+			</FloatingInspector>
+		</React.Fragment>
 	}
 }

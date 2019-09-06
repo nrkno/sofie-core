@@ -6,9 +6,9 @@ import { NotificationCenter, NotificationList, NotifierHandle, Notification, Not
 import { RundownAPI } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Parts } from '../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../lib/lib'
@@ -24,6 +24,8 @@ import { doUserAction } from '../../lib/userAction'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
+import { PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { handleRundownReloadResponse } from '../RundownView'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -159,14 +161,20 @@ class RundownViewNotifier extends WithManagedTracker {
 						true,
 						[
 							{
-								label: t('Re-sync'),
+								label: t('Re-Sync'),
 								type: 'primary',
 								action: () => {
 									doModalDialog({
-										title: t('Re-sync Rundown'),
-										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output.)'),
+										title: t('Re-Sync Rundown'),
+										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output)'),
+										yes: t('Re-Sync'),
+										no: t('Cancel'),
 										onAccept: (event) => {
-											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId])
+											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId], (err, response) => {
+												if (!err && response) {
+													handleRundownReloadResponse(t, rundown, response.result)
+												}
+											})
 										}
 									})
 								}
@@ -195,7 +203,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						const newNotification = new Notification(
 							rundownNoteId,
 							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							rundown.notes,
+							note.message,
 							'Rundown',
 							getCurrentTime(),
 							true,
@@ -221,6 +229,8 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePeripheralDeviceStatus (studioId: string | undefined) {
+		const t = i18nTranslator
+
 		let oldDevItemIds: Array<string> = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
 		if (studioId) {
@@ -235,8 +245,39 @@ class RundownViewNotifier extends WithManagedTracker {
 			devices.forEach((item) => {
 				let newNotification: Notification | undefined = undefined
 
+				const parent = devices.find(i => i._id === item.parentDeviceId)
+
 				if (item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD || !item.connected) {
-					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true, undefined, -1)
+					newNotification = new Notification(
+						item._id,
+						this.convertDeviceStatus(item),
+						this.makeDeviceMessage(item),
+						'Devices',
+						getCurrentTime(),
+						true,
+						parent && parent.connected ? [
+							{
+								label: t('Restart'),
+								type: 'primary',
+								action: () => {
+									doModalDialog({
+										title: t('Restart {{device}}', { device: parent.name }),
+										message: t('Fixing this problem requires a restart to the host device. Are you sure you want to restart {{device}}?\n(This might affect output)', { device: parent.name }),
+										yes: t('Restart'),
+										no: t('Cancel'),
+										onAccept: (e) => {
+											PeripheralDevicesAPI.restartDevice(parent, e)
+											.then(() => {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: parent.name }), 'RundownNotifier'))
+											}).catch((err) => {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: parent.name, errorMessage: err + '' }), 'RundownNotifier'))
+											})
+										}
+									})
+								}
+							}
+						] : undefined,
+						-1)
 				}
 				if (newNotification && !Notification.isEqual(this._deviceStatus[item._id], newNotification)) {
 					this._deviceStatus[item._id] = newNotification
@@ -318,7 +359,13 @@ class RundownViewNotifier extends WithManagedTracker {
 				if (sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
-						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.config)
+						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
+						if (mediaId) {
+							this.subscribe(PubSub.mediaObjects, studio._id, {
+								mediaId: mediaId.toUpperCase()
+							})
+						}
+						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(piece._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + piece.partId, getCurrentTime(), true, [

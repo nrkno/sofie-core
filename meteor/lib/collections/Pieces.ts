@@ -1,17 +1,16 @@
-import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../api/rundown'
-import { TimelineTransition } from 'timeline-state-resolver-types'
+import { TimelineTransition, Timeline } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
 import { PartTimings } from './Parts'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceGeneric,
-	IBlueprintPiece,
+	IBlueprintPieceDB,
 	PieceLifespan,
-	Timeline,
 	BaseContent,
 } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 /** A Single item in a "line": script, VT, cameras */
 export interface PieceGeneric extends IBlueprintPieceGeneric {
@@ -24,8 +23,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
-	/** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
-	duration?: number
 	/** A flag to signal a given Piece has been deactivated manually */
 	disabled?: boolean
 	/** A flag to signal that a given Piece should be hidden from the UI */
@@ -39,7 +36,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 		/** The out transition for the piece */
 		outTransition?: TimelineTransition
 	}
-	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
+	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: string
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: string
@@ -49,26 +46,25 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartTimings
+	/** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
+	playoutDuration?: number
 
 	isTransition?: boolean
 	extendOnHold?: boolean
 }
 
-export interface Piece extends PieceGeneric, IBlueprintPiece {
+export interface Piece extends PieceGeneric, IBlueprintPieceDB {
 	// -----------------------------------------------------------------------
 
 	partId: string
-	expectedDuration: number | string
-	/** This is a backup of the original expectedDuration of the piece, so that the normal field can be modified during playback and restored afterwards */
-	originalExpectedDuration?: number | string
 	/** This is set when an piece's duration needs to be overriden */
-	durationOverride?: number
+	userDuration?: Pick<Timeline.TimelineEnable, 'duration' | 'end'>
 	/** This is set when the piece is infinite, to deduplicate the contents on the timeline, while allowing out of order */
 	infiniteMode?: PieceLifespan
 	/** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */
 	originalInfiniteMode?: PieceLifespan
-	/** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
-	infiniteId?: string
+	// /** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
+	// infiniteId?: string
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece
@@ -83,7 +79,7 @@ export interface Piece extends PieceGeneric, IBlueprintPiece {
 }
 
 export const Pieces: TransformedCollection<Piece, Piece>
-	= new Mongo.Collection<Piece>('pieces')
+	= createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

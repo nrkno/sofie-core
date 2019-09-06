@@ -1,7 +1,8 @@
 import * as _ from 'underscore'
-import { Rundown } from '../../../../lib/collections/Rundowns'
-import { ServerPlayoutAPI } from '../../playout/playout'
-import { fetchAfter } from '../../../../lib/lib'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { ServerPlayoutAPI } from '../playout/playout'
+import { fetchAfter } from '../../../lib/lib'
+import { moveNext } from '../userActions'
 
 function getRundownValidParts (rundown: Rundown) {
 	return rundown.getParts({
@@ -15,7 +16,7 @@ function getRundownValidParts (rundown: Rundown) {
 export namespace UpdateNext {
 	export function ensureNextPartIsValid (rundown: Rundown) {
 		// Ensure the next-id is still valid
-		if (rundown.nextPartId) {
+		if (rundown && rundown.active && rundown.nextPartId) {
 			const allValidParts = getRundownValidParts(rundown)
 
 			const currentPart = allValidParts.find(part => part._id === rundown.currentPartId)
@@ -43,27 +44,37 @@ export namespace UpdateNext {
 		}
 	}
 	export function afterInsertParts (rundown: Rundown, newPartExternalIds: string[], removePrevious: boolean) {
-		// If manually chosen, and could have been removed then special case handling
-		if (rundown.nextPartManual && removePrevious) {
-			const allValidParts = getRundownValidParts(rundown)
+		if (rundown && rundown.active) {
 
-			// If the manually chosen part does not exist, assume it was the one that was removed
-			const currentNextPart = allValidParts.find(part => part._id === rundown.nextPartId)
-			if (!currentNextPart) {
-				// Set to the first of the inserted parts
-				const firstNewPart = allValidParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1)
-				if (firstNewPart) {
-					// Matched a part that replaced the old, so set to it
-					ServerPlayoutAPI.setNextPartInner(rundown, firstNewPart)
+			if (!rundown.nextPartId && rundown.currentPartId) {
+				// The playhead is probably at the end of the rundown
 
-				} else {
-					// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
-					UpdateNext.ensureNextPartIsValid(rundown)
+				// Set Next forward
+				moveNext(rundown._id, 1, 0, false)
+
+			} else if (rundown.nextPartManual && removePrevious) {
+				// If a part was manually chosen as Next, that could have been removed by a Replacement
+
+				const allValidParts = getRundownValidParts(rundown)
+
+				// If the manually chosen part does not exist, assume it was the one that was removed
+				const currentNextPart = allValidParts.find(part => part._id === rundown.nextPartId)
+				if (!currentNextPart) {
+					// Set to the first of the inserted parts
+					const firstNewPart = allValidParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1)
+					if (firstNewPart) {
+						// Matched a part that replaced the old, so set to it
+						ServerPlayoutAPI.setNextPartInner(rundown, firstNewPart)
+
+					} else {
+						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
+						UpdateNext.ensureNextPartIsValid(rundown)
+					}
 				}
+			} else {
+				// Ensure next is valid
+				UpdateNext.ensureNextPartIsValid(rundown)
 			}
-		} else {
-			// Ensure next is valid
-			UpdateNext.ensureNextPartIsValid(rundown)
 		}
 	}
 }

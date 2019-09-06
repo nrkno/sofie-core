@@ -1,7 +1,6 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import {
 	Studio,
@@ -9,23 +8,18 @@ import {
 	MappingExt
 } from '../../../lib/collections/Studios'
 import {
-	MappingCasparCG,
-	MappingAtem,
-	MappingLawo,
-	MappingHyperdeck,
 	MappingAtemType,
 	MappingLawoType,
 	MappingPanasonicPtzType,
-	MappingPanasonicPtz,
 	MappingHyperdeckType,
 	DeviceType as PlayoutDeviceType,
-	ChannelFormat
+	ChannelFormat,
+	QuantelControlMode
 } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
@@ -39,194 +33,24 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { IConfigItem, LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../../../lib/logging'
-import { ConfigManifestSettings, ObjectWithConfig, collectConfigs } from './ConfigManifestSettings'
+import { LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { PlayoutAPI } from '../../../lib/api/playout'
-
-interface IConfigSettingsProps {
-	item: ObjectWithConfig
-}
-interface IConfigSettingsState {
-	editedItems: Array<string>
-}
-
-export const ConfigSettings = translate()(class ConfigSettings extends React.Component<Translated<IConfigSettingsProps>, IConfigSettingsState> {
-	constructor (props: Translated<IConfigSettingsProps>) {
-		super(props)
-
-		this.state = {
-			editedItems: []
-		}
-	}
-
-	isItemEdited = (item: IConfigItem) => {
-		return this.state.editedItems.indexOf(item._id) >= 0
-	}
-
-	finishEditItem = (item: IConfigItem) => {
-		let index = this.state.editedItems.indexOf(item._id)
-		if (index >= 0) {
-			this.state.editedItems.splice(index, 1)
-			this.setState({
-				editedItems: this.state.editedItems
-			})
-		}
-	}
-
-	editItem = (item: IConfigItem) => {
-		if (this.state.editedItems.indexOf(item._id) < 0) {
-			this.state.editedItems.push(item._id)
-			this.setState({
-				editedItems: this.state.editedItems
-			})
-		}
-	}
-	confirmDelete = (item: IConfigItem) => {
-		const { t } = this.props
-		doModalDialog({
-			title: t('Delete this item?'),
-			yes: t('Delete'),
-			no: t('Cancel'),
-			onAccept: () => {
-				this.onDeleteConfigItem(item)
-			},
-			message: <React.Fragment>
-				<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (item && item._id) })}</p>
-				<p>{t('Please note: This action is irreversible!')}</p>
-			</React.Fragment>
-		})
-	}
-	onDeleteConfigItem = (item: IConfigItem) => {
-		this.getCollection().update(this.props.item._id, {
-			$pull: {
-				config: {
-					_id: item._id
-				}
-			}
-		})
-	}
-	onAddConfigItem = () => {
-		const { t } = this.props
-
-		const newItem = literal<IConfigItem>({
-			_id: t('new_config_item'),
-			value: ''
-		})
-
-		if (this.props.item) {
-			this.getCollection().update(this.props.item._id, {
-				$push: {
-					config: newItem
-				}
-			})
-		}
-	}
-	getCollection (): Mongo.Collection<any> {
-		if (this.props.item instanceof Studio) {
-			return Studios
-		} else if (this.props.item instanceof ShowStyleBase) {
-			return ShowStyleBases
-		} else if (this.props.item instanceof ShowStyleVariant) {
-			return ShowStyleVariants
-		} else {
-			logger.error('collectConfigs: unknown item type', this.props.item)
-			throw new Meteor.Error('collectConfigs: unknown item type')
-		}
-	}
-
-	renderItems () {
-		const { t } = this.props
-
-		let manifestEntries = collectConfigs(this.props.item)
-
-		const excludeIds = manifestEntries.map(c => c.id)
-		return (
-			(this.props.item.config || []).map((item, index) => {
-				// Don't show if part of the config manifest
-				if (excludeIds.indexOf(item._id) !== -1) return null
-
-				return <React.Fragment key={item._id}>
-					<tr key={index} className={ClassNames({
-						'hl': this.isItemEdited(item)
-					})}>
-						<th className='settings-studio-custom-config-table__name c2'>
-							{item._id}
-						</th>
-						<td className='settings-studio-custom-config-table__value c3'>
-							{item.value}
-						</td>
-						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-								<FontAwesomeIcon icon={faTrash} />
-							</button>
-						</td>
-					</tr>
-					{this.isItemEdited(item) &&
-						<tr className='expando-details hl'>
-							<td colSpan={4}>
-								<div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('ID')}
-												<EditAttribute
-													modifiedClassName='bghl'
-													attribute={'config.' + index + '._id'}
-													obj={this.props.item}
-													type='text'
-													collection={this.getCollection()}
-													className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Value')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'config.' + index + '.value'}
-												obj={this.props.item}
-												type='text'
-												collection={this.getCollection()}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-								</div>
-								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					}
-				</React.Fragment>
-			})
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		return (
-			<div>
-				<h2 className='mhn'>{t('Custom Configuration')}</h2>
-				<table className='expando settings-studio-custom-config-table'>
-					<tbody>
-						{this.renderItems()}
-					</tbody>
-				</table>
-				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.onAddConfigItem}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-				</div>
-			</div>
-		)
-	}
-})
+import {
+	mappingIsAbstract,
+	mappingIsCasparCG,
+	mappingIsAtem,
+	mappingIsLawo,
+	mappingIsPanasonicPtz,
+	mappingIsHTTPSend,
+	mappingIsHyperdeck,
+	mappingIsPharos,
+	mappingIsOSC,
+	mappingIsQuantel,
+	mappingIsSisyfos,
+	mappingIsTCPSend
+} from '../../../lib/api/studios'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -366,6 +190,8 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			this.setState({
 				editedMappings: this.state.editedMappings
 			})
+		} else {
+			this.finishEditItem(layerId)
 		}
 	}
 	confirmRemove = (mappingId: string) => {
@@ -433,13 +259,13 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		this.editItem(newLayerId)
 	}
 
-	renderCaparCGMappingSettings (layerId: string) {
+	renderCasparCGMappingSettings (layerId: string) {
 		const { t } = this.props
 		return (
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('channel')}
+						{t('CasparCG Channel')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.channel'}
@@ -447,11 +273,12 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							type='int'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
+						<i>{t('The CasparCG channel to use (1 is the first)')}</i>
 					</label>
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('layer')}
+						{t('CasparCG Layer')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.layer'}
@@ -459,6 +286,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							type='int'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
+						<i>{t('The layer in a channel to use')}</i>
 					</label>
 				</div>
 			</React.Fragment>
@@ -471,7 +299,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -485,7 +313,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('index')}
+						{t('Index')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.index'}
@@ -504,7 +332,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -537,7 +365,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -552,6 +380,13 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			</React.Fragment>
 		)
 	}
+	renderTCPSendSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+			</React.Fragment>
+		)
+	}
 
 	renderHyperdeckMappingSettings (layerId: string) {
 		const { t } = this.props
@@ -559,7 +394,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('mappingType')}
+						{t('Mapping type')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
@@ -578,6 +413,74 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		return (
 			<React.Fragment>
 				<div></div>
+			</React.Fragment>
+		)
+	}
+	renderSisyfosMappingSettings (layerId: string) {
+		const { t } = this.props
+
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('QuanSisyfos Channel')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.channel'}
+							obj={this.props.studio}
+							type='int'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
+	renderQuantelMappingSettings (layerId: string) {
+		const { t } = this.props
+
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Quantel Port ID')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.portId'}
+							obj={this.props.studio}
+							type='text'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+						<i>{t('The name you\'d like the port to have')}</i>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Quantel Channel ID')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.channelId'}
+							obj={this.props.studio}
+							type='int'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+						<i>{t('The channel to use for output (0 is the first one)')}</i>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Mode')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mode'}
+							obj={this.props.studio}
+							type='dropdown'
+							options={QuantelControlMode}
+							optionsAreNumbers={false}
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
 			</React.Fragment>
 		)
 	}
@@ -606,49 +509,57 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<td className='settings-studio-device__id c4'>
 						{
 							(
-								mapping.device === PlayoutDeviceType.ABSTRACT && (
+								mappingIsAbstract(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.CASPARCG && (
-								<span>{ (mapping as MappingCasparCG).channel } - { (mapping as MappingCasparCG).layer }</span>
+								mappingIsCasparCG(mapping) && (
+								<span>{ mapping.channel } - { mapping.layer }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.ATEM && (
-								<span>{ MappingAtemType[(mapping as MappingAtem & MappingExt).mappingType] } { (mapping as MappingAtem & MappingExt).index }</span>
+								mappingIsAtem(mapping) && (
+								<span>{ MappingAtemType[mapping.mappingType] } { mapping.index }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo & MappingExt).identifier }</span>
+								mappingIsLawo(mapping) && (
+								<span>{ MappingLawoType[mapping.mappingType] } { mapping.identifier }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+								mappingIsPanasonicPtz(mapping) && (
 									<span>{
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
+										mapping.mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
+										mapping.mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
+										mapping.mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
+										mapping.mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
 										t('Unknown Mapping')
 									}</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.HTTPSEND && (
+								mappingIsHTTPSend(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.HYPERDECK && (
-								<span>{ (mapping as MappingHyperdeck & MappingExt).mappingType }</span>
+								mappingIsHyperdeck(mapping) && (
+								<span>{ mapping.mappingType }</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.PHAROS && (
+								mappingIsPharos(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								mapping.device === PlayoutDeviceType.OSC && (
+								mappingIsOSC(mapping) && (
 								<span>-</span>
 							)) ||
 							(
-								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
+								mappingIsSisyfos(mapping) && (
+									<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
+							)) ||
+							(
+								mappingIsQuantel(mapping) && (
+									<span>{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}</span>
+							)) ||
+							(
+								<span>{t('Unknown device type: {{device}}', { device: PlayoutDeviceType[mapping.device] }) } </span>
 							)
 						}
 						</td>
@@ -678,6 +589,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												collection={Studios}
 												updateFunction={this.updateLayerId}
 												className='input text-input input-l'></EditAttribute>
+											<i>{t('ID of the timeline-layer to map to some output')}</i>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -692,6 +604,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												optionsAreNumbers={true}
 												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
+											<i>{t('The type of device to use for the output')}</i>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -704,6 +617,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												type='text'
 												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
+											<i>{t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}</i>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -720,31 +634,26 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
-									{(
-										mapping.device === PlayoutDeviceType.CASPARCG && (
-											this.renderCaparCGMappingSettings(layerId)
-										) ||
-										(
-										mapping.device === PlayoutDeviceType.ATEM && (
-											this.renderAtemMappingSettings(layerId)
-										))
-										) ||
-										(
-										mapping.device === PlayoutDeviceType.LAWO && (
-											this.renderLawoMappingSettings(layerId)
-										)) ||
-										(
-										mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
-											this.renderPanasonicPTZSettings(layerId)
-										)) ||
-										(
-										mapping.device === PlayoutDeviceType.HYPERDECK && (
-											this.renderHyperdeckMappingSettings(layerId)
-										)) ||
-										(
-										mapping.device === PlayoutDeviceType.PHAROS && (
-											this.renderPharosMappingSettings(layerId)
-										))
+									{
+										mappingIsCasparCG(mapping) ?
+											this.renderCasparCGMappingSettings(layerId) :
+										mappingIsAtem(mapping) ?
+											this.renderAtemMappingSettings(layerId) :
+										mappingIsLawo(mapping) ?
+											this.renderLawoMappingSettings(layerId) :
+										mappingIsPanasonicPtz(mapping) ?
+											this.renderPanasonicPTZSettings(layerId) :
+										mappingIsTCPSend(mapping) ?
+											this.renderTCPSendSettings(layerId) :
+										mappingIsHyperdeck(mapping) ?
+											this.renderHyperdeckMappingSettings(layerId) :
+										mappingIsPharos(mapping) ?
+											this.renderPharosMappingSettings(layerId) :
+										mappingIsSisyfos(mapping) ?
+											this.renderSisyfosMappingSettings(layerId) :
+										mappingIsQuantel(mapping) ?
+											this.renderQuantelMappingSettings(layerId) :
+										null
 									}
 								</div>
 								<div className='mod alright'>
@@ -909,7 +818,7 @@ interface IStudioBaselineStatusState {
 class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaselineStatusProps>, IStudioBaselineStatusState> {
 	private updateInterval: number | undefined = undefined
 
-	constructor (props: Translated<IConfigSettingsProps>) {
+	constructor (props: Translated<IStudioBaselineStatusProps>) {
 		super(props)
 
 		this.state = {
@@ -928,10 +837,6 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 			Meteor.clearInterval(this.updateInterval)
 			this.updateInterval = undefined
 		}
-	}
-
-	componentDidUpdate () {
-		this.updateStatus(this.props)
 	}
 
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
@@ -1113,6 +1018,45 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<label className='field'>
+						{t('Slack Webhook URLs')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.slackEvaluationUrls'
+								obj={this.props.studio}
+								type='text'
+								collection={Studios}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					<label className='field'>
+						{t('Supported Media Formats')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.supportedMediaFormats'
+								obj={this.props.studio}
+								type='text'
+								collection={Studios}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					<label className='field'>
+						{t('Supported Audio Formats')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.supportedAudioStreams'
+								obj={this.props.studio}
+								type='text'
+								collection={Studios}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
@@ -1130,12 +1074,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studio)} object={this.props.studio} />
-					</div>
-				</div>
-				<div className='row'>
-					<div className='col c12 r1-c12'>
-						<ConfigSettings item={this.props.studio}/>
+						<ConfigManifestSettings
+							t={this.props.t}
+							manifest={collectConfigs(this.props.studio)}
+							object={this.props.studio}
+							collection={Studios}
+							configPath={'config'}
+							/>
 					</div>
 				</div>
 				<div className='row'>

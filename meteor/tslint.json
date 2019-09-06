@@ -18,14 +18,20 @@
 		"space-before-function-paren": true,
 		"no-trailing-whitespace": true,
 		"eofline": true,
-		"max-line-length": [true, 120],
-		"linebreak-style": [true, "CRLF"],
+		// "max-line-length": [true, 120],
 		"no-consecutive-blank-lines": [true, 2],
 		"new-parens": true,
 		"number-literal-format": true,
 		"prefer-while": true,
 		"prefer-method-signature": false,
 		"no-reference-import": true,
-		"class-name": true
+		"class-name": true,
+		"no-unnecessary-type-assertion": false, // @todo For some reason, TSLint picks up the wrong typings for Collection.findOne
+		"no-unnecessary-qualifier": false
+	},
+	"linterOptions": {
+		"exclude": [
+			"public/**"
+		]
 	}
 }

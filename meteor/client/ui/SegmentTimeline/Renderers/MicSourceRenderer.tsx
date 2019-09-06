@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
@@ -8,6 +7,9 @@ import Moment from 'react-moment'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import * as _ from 'underscore'
+
+import { getElementWidth } from '../../../utils/dimensions'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
@@ -21,7 +23,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	itemPosition: number
 	itemWidth: number
 	itemElement: HTMLElement | null
-	lineItem: JQuery<HTMLElement>
+	lineItem: HTMLElement
 	linePosition: number
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -35,19 +37,19 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	}
 
 	repositionLine = () => {
-		this.lineItem.css('left', this.linePosition + 'px')
+		this.lineItem.style.left = this.linePosition + 'px'
 	}
 
 	refreshLine = () => {
 		if (this.itemElement) {
-			this.itemPosition = $(this.itemElement).position().left || 0
+			this.itemPosition = this.itemElement.offsetLeft
 			const content = this.props.piece.content as ScriptContent
 			let scriptReadTime = 0
 			if (content && content.sourceDuration) {
 				scriptReadTime = content.sourceDuration * this.props.timeScale
 				this.readTime = content.sourceDuration
 			} else {
-				scriptReadTime = $(this.itemElement).width() || 0
+				scriptReadTime = getElementWidth(this.itemElement)
 			}
 
 			if (this.itemPosition + scriptReadTime !== this.linePosition) {
@@ -67,18 +69,20 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	componentDidMount () {
 		// Create line element
-		this.lineItem = $('<div class="segment-timeline__piece-appendage script-line"></div>')
+		this.lineItem = document.createElement('div')
+		this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line')
 		this.updateAnchoredElsWidths()
 		if (this.props.itemElement) {
 			this.itemElement = this.props.itemElement
-			$(this.itemElement).parent().parent().append(this.lineItem)
+			this.itemElement.parentNode && this.itemElement.parentNode.parentNode &&
+				this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
 			this.refreshLine()
 		}
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -93,9 +97,10 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		if ((prevProps.partDuration !== this.props.partDuration) ||
 			(prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
 			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
-			(prevProps.piece.duration !== this.props.piece.duration) ||
-			(prevProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
-			(prevProps.piece.trigger !== this.props.piece.trigger)) {
+			(prevProps.piece.playoutDuration !== this.props.piece.playoutDuration) ||
+			!_.isEqual(prevProps.piece.userDuration, this.props.piece.userDuration) ||
+			!_.isEqual(prevProps.piece.enable, this.props.piece.enable)
+		) {
 			_forceSizingRecheck = true
 		}
 
@@ -106,7 +111,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 			this.itemElement = this.props.itemElement
 			if (this.itemElement) {
-				$(this.itemElement).parent().parent().append(this.lineItem)
+				this.itemElement.parentNode && this.itemElement.parentNode.parentNode
+					&& this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
 				this._forceSizingRecheck = true
 			}
 		}

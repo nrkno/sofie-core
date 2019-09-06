@@ -12,7 +12,9 @@ import {
 import { RecordingsList, RecordingsStudioSelect } from './RecordingsList'
 import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { RecordingView } from './RecordingView'
+import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IStatusMenuProps {
 	match?: any
@@ -38,6 +40,12 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 					to={'/testTools/timeline'}>
 					<h3>{t('Timeline')}</h3>
 				</NavLink>
+				<NavLink
+					activeClassName='selectable-selected'
+					className='testTools-menu__testTools-menu-item selectable clickable'
+					to={'/testTools/userlogplayer'}>
+					<h3>{t('User Log Player')}</h3>
+				</NavLink>
 			</div>
 		)
 	}
@@ -50,9 +58,9 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this.subscribe('studios', {})
-		this.subscribe('showStyleBases', {})
-		this.subscribe('showStyleVariants', {})
+		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.showStyleBases, {})
+		this.subscribe(PubSub.showStyleVariants, {})
 	}
 	render () {
 
@@ -78,6 +86,8 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path='/testTools/recordings/:studioId/:recordingId' component={RecordingView} />
 								<Route path='/testTools/recordings/:studioId' component={RecordingsList} />
 								<Route path='/testTools/recordings' component={RecordingsStudioSelect} />
+								<Route path='/testTools/userlogplayer/:rundownId' component={UserLogPlayerPage} />
+								<Route path='/testTools/userlogplayer' component={UserLogRundownSelect} />
 								<Redirect to='/testTools/recordings' />
 							</Switch>
 						</div>

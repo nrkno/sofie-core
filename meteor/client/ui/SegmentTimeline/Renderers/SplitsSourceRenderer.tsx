@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as $ from 'jquery'
+import { getElementWidth } from '../../../utils/dimensions'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -56,8 +56,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -134,13 +134,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 									'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
 								}
 							)}
-							key={item._id + '-preview'}
-							style={{
-								'left': ((item.content && item.content.x) * 100).toString() + '%',
-								'top': ((item.content && item.content.y) * 100).toString() + '%',
-								'width': ((item.content && item.content.scale) * 100).toString() + '%',
-								'height': ((item.content && item.content.scale) * 100).toString() + '%'
-							}}>
+								key={item._id + '-preview'}
+								style={{
+									'left': ((item.content && item.content.x) * 100).toString() + '%',
+									'top': ((item.content && item.content.y) * 100).toString() + '%',
+									'width': ((item.content && item.content.scale) * 100).toString() + '%',
+									'height': ((item.content && item.content.scale) * 100).toString() + '%'
+								}}>
 								{item.role === SplitRole.BOX && (
 									<div className='video-preview__label'>{item.label}</div>
 								)}

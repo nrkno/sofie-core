@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureStudioConfig } from './lib'
+import { ensureCollectionProperty } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
@@ -41,11 +41,6 @@ addMigrationSteps('0.1.0', [
 		'Enter the Name of the Studio "$id"'),
 	ensureCollectionProperty('Studios', {}, 'mappings', {}),
 	ensureCollectionProperty('Studios', {}, 'config', []),
-
-	ensureStudioConfig('atemSSrcBackground', null, 'text', 'Studio $id config: atemSSrcBackground',
-		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"', undefined, 'studio exists'),
-	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
-		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"', undefined, 'studio exists'),
 
 	{
 		id: 'Playout-gateway exists',

@@ -36,7 +36,7 @@ export function ensureCollectionProperty<T = any> (
 
 	return {
 		id: `${collectionName}.${property}`,
-		canBeRunAutomatically: (_.isNull(value) ? false : true),
+		canBeRunAutomatically: !_.isNull(value),
 		validate: () => {
 			let objects = collection.find(selector).fetch()
 			let propertyMissing: string | boolean = false
@@ -98,95 +98,6 @@ export function ensureCollectionProperty<T = any> (
 		dependOnResultFrom: dependOnResultFrom
 	}
 }
-export function ensureStudioConfig (
-	configName: string,
-	value: any | null, // null if manual
-	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
-	label?: string,
-	description?: string,
-	defaultValue?: any,
-	dependOnResultFrom?: string
-): MigrationStepBase {
-
-	return {
-		id: `studioConfig.${configName}`,
-		canBeRunAutomatically: (_.isNull(value) ? false : true),
-		dependOnResultFrom: dependOnResultFrom,
-		validate: () => {
-			let studios = Studios.find().fetch()
-			let configMissing: string | boolean = false
-			_.each(studios, (studio: Studio) => {
-				let config = _.find(studio.config, (c) => {
-					return c._id === configName
-				})
-				if (!config) {
-					configMissing = `${configName} is missing on ${studio._id}`
-				}
-			})
-
-			return configMissing
-		},
-		input: () => {
-			let studios = Studios.find().fetch()
-
-			let inputs: Array<MigrationStepInput> = []
-			_.each(studios, (studio: Studio) => {
-				let config = _.find(studio.config, (c) => {
-					return c._id === configName
-				})
-
-				let localLabel = (label + '').replace(/\$id/g, studio._id)
-				let localDescription = (description + '').replace(/\$id/g, studio._id)
-				if (inputType && !studio[configName]) {
-					inputs.push({
-						label: localLabel,
-						description: localDescription,
-						inputType: inputType,
-						attribute: studio._id,
-						defaultValue: config && config.value ? config.value : defaultValue
-					})
-				}
-			})
-			return inputs
-		},
-		migrate: (input: MigrationStepInputFilteredResult) => {
-
-			let studios = Studios.find().fetch()
-			_.each(studios, (studio: Studio) => {
-				let value2: any = undefined
-				if (!_.isNull(value)) {
-					value2 = value
-				} else {
-					value2 = input[studio._id]
-				}
-				if (!_.isUndefined(value2)) {
-					let config = _.find(studio.config, (c) => {
-						return c._id === configName
-					})
-					let doUpdate: boolean = false
-					if (config) {
-						if (config.value !== value2) {
-							doUpdate = true
-							config.value = value2
-						}
-					} else {
-						doUpdate = true
-						studio.config.push({
-							_id: configName,
-							value: value2
-						})
-					}
-					if (doUpdate) {
-						logger.info(`Migration: Setting Studio config "${configName}" to ${value2}`)
-						Studios.update(studio._id,{$set: {
-							config: studio.config
-						}})
-					}
-				}
-			})
-		}
-	}
-}
 
 export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string): MigrationStepBase {
 	return {
@@ -202,7 +113,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 				let device = devices[i]
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
 
 				if (expectedVersion) {
 					try {
@@ -222,7 +133,7 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 			_.each(devices, (device) => {
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
 				if (!expectedVersion || semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr

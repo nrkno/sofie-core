@@ -7,7 +7,6 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 // import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
 // import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
 // import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as $ from 'jquery'
 import * as classNames from 'classnames'
 
 export interface IProps {
@@ -59,8 +58,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	}
 
 	videoMouseMove = (e: MouseEvent) => {
-		const pos = $(this.videoEl).offset()
-		if (this.state.isMouseDown && pos) {
+		if (this.state.isMouseDown && this.videoEl) {
 			e.preventDefault()
 
 			if (this.videoEl.readyState <= 2) { // we are moving around the video, but the player is stuck

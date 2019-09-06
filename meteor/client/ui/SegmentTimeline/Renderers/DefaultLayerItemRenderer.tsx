@@ -1,11 +1,12 @@
 import * as React from 'react'
-import * as $ from 'jquery'
+import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 }
+
 export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -27,8 +28,8 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 	}
 
 	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.leftLabel).width() || 0
-		let rightLabelWidth = $(this.rightLabel).width() || 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}

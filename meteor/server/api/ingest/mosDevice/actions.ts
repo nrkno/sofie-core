@@ -8,16 +8,25 @@ import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { parseMosString } from './lib'
+import { IngestActions } from '../actions'
+import { WrapAsyncCallback } from '../../../../lib/lib'
+import * as _ from 'underscore'
+import { UserActionAPI } from '../../../../lib/api/userActions'
 
 export namespace MOSDeviceActions {
-	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => void = Meteor.wrapAsync(
-		function reloadRundown (peripheralDevice: PeripheralDevice, rundown: Rundown, cb: (err: Error | null) => void) {
+	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => UserActionAPI.ReloadRundownResponse = Meteor.wrapAsync(
+		function reloadRundown (peripheralDevice: PeripheralDevice, rundown: Rundown, cb: WrapAsyncCallback<UserActionAPI.ReloadRundownResponse>): void {
 			logger.info('reloadRundown ' + rundown._id)
 
-			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, mosRunningOrder: MOS.IMOSRunningOrder) => {
+			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
 				if (err) {
-					logger.error(err)
-					cb(err)
+					if (_.isString(err) && err.match(/rundown does not exist/i)) {
+						// Don't throw an error, instead return MISSING value
+						cb(null, UserActionAPI.ReloadRundownResponse.MISSING)
+					} else {
+						logger.error('Error in MOSDeviceActions.reloadRundown', err)
+						cb(err)
+					}
 				} else {
 					try {
 						logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID)
@@ -28,7 +37,9 @@ export namespace MOSDeviceActions {
 						}
 
 						handleMosRundownData(peripheralDevice, mosRunningOrder, false)
-						cb(null)
+
+						// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
+						cb(null, UserActionAPI.ReloadRundownResponse.WORKING)
 					} catch (e) {
 						cb(e)
 					}
@@ -45,11 +56,11 @@ export namespace MOSDeviceActions {
 
 		if (oldPlayingPartExternalId) {
 			setStoryStatus(peripheralDevice._id, rundown, oldPlayingPartExternalId, MOS.IMOSObjectStatus.STOP)
-			.catch(e => logger.error(e))
+			.catch(e => logger.error('Error in setStoryStatus', e))
 		}
 		if (newPlayingPartExternalId) {
 			setStoryStatus(peripheralDevice._id, rundown, newPlayingPartExternalId, MOS.IMOSObjectStatus.PLAY)
-			.catch(e => logger.error(e))
+			.catch(e => logger.error('Error in setStoryStatus', e))
 		}
 	}
 	function setStoryStatus (deviceId: string, rundown: Rundown, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {

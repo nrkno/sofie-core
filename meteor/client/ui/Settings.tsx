@@ -317,11 +317,11 @@ interface ISettingsProps {
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe('peripheralDevices', {})
-		this.subscribe('studios', {})
-		this.subscribe('showStyleBases', {})
-		this.subscribe('showStyleVariants', {})
-		this.subscribe('blueprints', {})
+		this.subscribe(PubSub.peripheralDevices, {})
+		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.showStyleBases, {})
+		this.subscribe(PubSub.showStyleVariants, {})
+		this.subscribe(PubSub.blueprints, {})
 	}
 	render () {
 		const { t } = this.props

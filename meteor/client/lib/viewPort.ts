@@ -1,59 +1,100 @@
-import * as $ from 'jquery'
 import * as _ from 'underscore'
-import { SegmentTimelineElementId } from '../ui/SegmentTimeline/SegmentTimeline'
+import * as Velocity from 'velocity-animate'
+
+import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts } from '../../lib/collections/Parts'
 
-export function scrollToPart (partId: string): boolean {
-	// TODO: do scrolling within segment as well?
+let focusInterval: NodeJS.Timer | undefined
+let _dontClearInterval: boolean = false
 
+export function maintainFocusOnPart (partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
+	let startTime = Date.now()
+	const focus = () => {
+		// console.log("focus");
+		if (Date.now() - startTime < timeWindow) {
+			_dontClearInterval = true
+			scrollToPart(partId, forceScroll, noAnimation).then(() => {
+				_dontClearInterval = false
+			}).catch(() => {
+				_dontClearInterval = false
+			})
+		} else {
+			quitFocusOnPart()
+		}
+	}
+	focusInterval = setInterval(focus, 500)
+	focus()
+}
+
+export function isMaintainingFocus (): boolean {
+	return !!focusInterval
+}
+
+function quitFocusOnPart () {
+	if (!_dontClearInterval && focusInterval) {
+		// console.log("quitFocusOnPart")
+		clearInterval(focusInterval)
+		focusInterval = undefined
+	}
+}
+
+export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+	// TODO: do scrolling within segment as well?
+	quitFocusOnPart()
 	let part = Parts.findOne(partId)
 	if (part) {
-		return scrollToSegment(part.segmentId)
+		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
 	}
-	return false
+	return Promise.reject('Could not find part')
 }
 
 const HEADER_HEIGHT = 175
 
-export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string, forceScroll?: boolean): boolean {
-
-	let elementToScrollTo: HTMLElement | JQuery<HTMLElement> = (
+export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+	let elementToScrollTo: HTMLElement | null = (
 		_.isString(elementToScrollToOrSegmentId) ?
-		$('#' + SegmentTimelineElementId + elementToScrollToOrSegmentId) :
-		elementToScrollToOrSegmentId
+			document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId) :
+			elementToScrollToOrSegmentId
 	)
-	const elementPosition = $(elementToScrollTo).offset()
-	const elementHeight = $(elementToScrollTo).height() || 0
-	let scrollTop: number | null = null
+
+	if (!elementToScrollTo) {
+		return Promise.reject('Could not find segment element')
+	}
+
+	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
+	top += window.scrollY
+	bottom += window.scrollY
 
 	// check if the item is in viewport
-	if (elementPosition && ((
-		(elementPosition.top + elementHeight > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
-		(elementPosition.top < ($('html,body').scrollTop() || 0))
-	) || forceScroll)) {
-		scrollTop = elementPosition.top
+	if (forceScroll ||
+		bottom > window.scrollY + window.innerHeight ||
+		top < window.scrollY + HEADER_HEIGHT) {
+
+		return scrollToPosition(top, noAnimation).then(() => true)
 	}
-	if (scrollTop !== null) {
-		scrollToPosition(scrollTop)
-		return true
-	}
-	return false
+
+	return Promise.resolve(false)
 }
 
-export function scrollToPosition (scrollPosition: number): void {
-	$(document.body).addClass('auto-scrolling')
-	const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
-	$(document.body).data('auto-scrolling', autoScrolling)
-	$('html,body').animate({
-		scrollTop: Math.max(0, scrollPosition - HEADER_HEIGHT)
-	}, 400).promise().then(() => {
-		// delay until next frame, so that the scroll handler can fire
-		setTimeout(function () {
-			const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) - 1
-			$(document.body).data('auto-scrolling', autoScrolling)
-			if (autoScrolling <= 0) {
-				$(document.body).removeClass('auto-scrolling')
-			}
+export function scrollToPosition (scrollPosition: number, noAnimation?: boolean): Promise<void> {
+	if (noAnimation) {
+		return new Promise((resolve, reject) => {
+			window.scroll({
+				top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+				left: 0
+			})
+			resolve()
 		})
-	})
+	} else {
+		return new Promise((resolve, reject) => {
+			window.requestIdleCallback(() => {
+				window.scroll({
+					top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+					left: 0,
+					behavior: 'smooth'
+				})
+				resolve()
+			}, { timeout: 250 })
+		})
+	}
 }

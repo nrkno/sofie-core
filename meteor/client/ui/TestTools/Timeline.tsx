@@ -1,102 +1,16 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, Time } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
-
-/**
- * Note: this is a temporary function, which converts a timelineObject of the OLD type to the new (v2)
- * @param obj
- */
-function convertTimelineObject (obj: any): any {
-	const newObj: any = {
-		id: obj.id,
-		enable: {
-		},
-		layer: obj.LLayer,
-		// children?: Array<TimelineObject>
-		// keyframes?: Array<TimelineKeyframe>
-		classes: obj.classes,
-		disabled: obj.disabled,
-		isGroup: obj.isGroup,
-		priority: obj.priority,
-		content: obj.content
-	}
-
-	if (obj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-		newObj.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.TIME_RELATIVE) {
-		newObj.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.LOGICAL) {
-		newObj.enable.while = obj.trigger.value
-		// if (newObj.enable.while === '1') {
-		// 	newObj.enable.while = 'true'
-		// } else if (newObj.enable.while === '0') {
-		// 	newObj.enable.while = 'false'
-		// }
-	}
-	if (obj.duration) {
-		newObj.enable.duration = obj.duration
-	}
-	// @ts-ignore
-	if (obj.legacyRepeatingTime) {
-		// @ts-ignore
-		newObj.enable.repeating = obj.legacyRepeatingTime
-	}
-	// @ts-ignore
-	if (obj.legacyEndTime) {
-		// @ts-ignore
-		newObj.enable.end = obj.legacyEndTime
-	}
-	if (obj.content.keyframes) {
-		newObj.keyframes = []
-		_.each(obj.content.keyframes, (kf: any) => {
-			newObj.keyframes.push(convertTimelineKeyframe(kf))
-		})
-		delete obj.content.keyframes
-	}
-	if (obj.isGroup && obj.content.objects) {
-		newObj.isGroup = true
-		newObj.children = []
-		_.each(obj.content.objects, (obj: any) => {
-			newObj.children.push(convertTimelineObject(obj))
-		})
-		delete obj.content.objects
-	}
-	if (newObj.isGroup && !newObj.children) {
-		newObj.children = []
-	}
-	return newObj
-}
-function convertTimelineKeyframe (obj: any): any {
-	const newKf: any = {
-		id: obj.id,
-		enable: {
-		},
-		// children?: Array<TimelineObject>
-		// keyframes?: Array<TimelineKeyframe>
-		classes: obj.classes,
-		// disabled: boolean
-		content: obj.content
-	}
-	if (obj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-		newKf.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.TIME_RELATIVE) {
-		newKf.enable.start = obj.trigger.value
-	} else if (obj.trigger.type === TriggerType.LOGICAL) {
-		newKf.enable.while = obj.trigger.value
-	}
-	if (obj.duration) {
-		newKf.enable.duration = obj.duration
-	}
-	return newKf
-}
+import { TimelineState, Resolver } from 'superfly-timeline'
+import { transformTimeline } from '../../../lib/timeline'
+import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
+import { makeTableOfObject } from '../../lib/utilComponents'
+import { StudioSelect } from './StudioSelect'
 
 interface ITimelineViewProps {
 	match?: {
@@ -108,9 +22,7 @@ interface ITimelineViewProps {
 interface ITimelineViewState {
 }
 const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
-	return {
-		studios: Studios.find({}).fetch()
-	}
+	return {}
 })(class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {
 
 	constructor (props: Translated<ITimelineViewProps>) {
@@ -127,7 +39,10 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 					<h1>{t('Timeline')}</h1>
 				</header>
 				<div className='mod mvl'>
-					{this.props.match && this.props.match.params && <TimelineVisualizerInStudio studioId={this.props.match.params.studioId}/>}
+					{this.props.match && this.props.match.params && <div>
+						<TimelineVisualizerInStudio studioId={this.props.match.params.studioId} />
+						<ComponentTimelineSimulate studioId={this.props.match.params.studioId} />
+					</div>}
 				</div>
 			</div>
 		)
@@ -141,6 +56,7 @@ interface ITimelineVisualizerInStudioState {
 	scriptLoaded?: boolean
 	scriptError?: boolean
 	showDetails: any
+	errorMsg?: string
 }
 interface ITimelineVisualizerInStudioTrackedProps {
 	timeline: Array<TimelineObjGeneric>
@@ -203,15 +119,28 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 				})
 			}
 			if (this.newTimeline) {
-				this.visualizer.updateTimeline(this.newTimeline, {
-
-				})
-				this.newTimeline = null
+				try {
+					this.visualizer.updateTimeline(this.newTimeline, {})
+					this.newTimeline = null
+					if (this.state.errorMsg) {
+						this.setState({
+							errorMsg: undefined
+						})
+					}
+				} catch (e) {
+					const msg = `Failed to update timeline:\n${e}`
+					this.newTimeline = null
+					if (msg !== this.state.errorMsg) {
+						this.setState({
+							errorMsg: msg
+						})
+					}
+				}
 			}
 		}
 	}
 	triggerLoadScript () {
-		loadScript('/scripts/timeline-visualizer.min.js', (err) => {
+		loadScript('/scripts/timeline-visualizer.js', (err) => {
 			this.setState({
 				scriptLoaded: !err,
 				scriptError: !!err
@@ -231,9 +160,9 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 			let o = _.clone(obj)
 			delete o._id
 
-			if (o.trigger.value === 'now') o.trigger.value = getCurrentTime() // tmp
+			if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
 
-			if (o.id) return convertTimelineObject(o) // Note: this is a temporary conversion. When we've moved to timeline v2 this can be removed.
+			return o
 		}))
 
 		this.newTimeline = timeline
@@ -251,6 +180,7 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 				{/* <script src='/script/timeline-visualizer.js'></script> */}
 				<div>Studio: {this.props.studioId}</div>
 				<div>Timeline objects: {this.props.timeline.length}</div>
+				{ this.state.errorMsg ? <div>{this.state.errorMsg}</div> : '' }
 				<div className='timeline'>
 					{
 						this.state.scriptLoaded ?
@@ -276,48 +206,93 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 	}
 })
 
-interface IStudioSelectProps {
+interface ITimelineSimulateProps {
+	studioId: string
 }
-interface IStudioSelectState {
+interface ITimelineSimulateState {
+	errorMsg?: string
+	state?: TimelineState
+	now: Time
 }
-interface IStudioSelectTrackedProps {
-	studios: Studio[]
-}
-const TimelineStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>((props: IStudioSelectProps) => {
-	return {
-		studios: Studios.find({}, {
-			sort: {
-				_id: 1
-			}
-		}).fetch()
+export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {}, ITimelineSimulateState>((props: ITimelineSimulateProps) => {
+	let now = getCurrentTimeReactive()
+
+	try {
+		// These properties will be exposed under this.props
+		// Note that these properties are reactively recalculated
+		let timeline = transformTimeline(
+			Timeline.find({
+				studioId: props.studioId
+			}, { sort: { _id: 1 } }).fetch()
+		)
+
+		// console.log('rerun')
+
+		// TODO - dont repeat unless changed
+		let tl = Resolver.resolveTimeline(timeline, { time: now })
+		let allStates = Resolver.resolveAllStates(tl)
+
+		let state = Resolver.getState(allStates, now)
+
+		return {
+			now: now,
+			state: state
+		}
+	} catch (e) {
+		return {
+			now: now,
+			errorMsg: `Failed to update timeline:\n${e}`
+		}
 	}
-})(class StudioSelection extends MeteorReactComponent<Translated<IStudioSelectProps & IStudioSelectTrackedProps>, IStudioSelectState> {
+})(
+class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
+	renderTimelineState (state: TimelineState) {
+		return _.map(_.sortBy(_.values(state.layers), o => o.layer), o => (
+			<tr key={o.layer}>
+				<td>{o.layer}</td>
+				<td>{o.id}</td>
+				<td>{makeTableOfObject(o.enable)}</td>
+				<td>{o.instance.end ? (o.instance.end - o.instance.start) : ''}</td>
+				<td>{o.content.type}</td>
+				<td>{makeTableOfObject(o.classes || [])}</td>
+				<td>{makeTableOfObject(o.content)}</td>
+			</tr>
+		))
+	}
 	render () {
-		const { t } = this.props
-
 		return (
-			<div className='mhl gutter recordings-studio-select'>
-				<header className='mbs'>
-					<h1>{t('Timeline')}</h1>
-				</header>
-				<div className='mod mvl'>
-					<strong>Studio</strong>
-					<ul>
-
-						{
-							_.map(this.props.studios, (studio) => {
-								return (
-									<li key={studio._id}>
-										<Link to={`timeline/${studio._id}`}>{studio.name}</Link>
-									</li>
-								)
-							})
-						}
-					</ul>
+			<div>
+				<h2>Timeline state</h2>
+				<div>
+					Time: {this.props.now}
+					{
+						this.props.errorMsg
+						? <p>{this.props.errorMsg}</p>
+						: <div>
+							<table><tbody>
+								<tr>
+									<th>Layer</th>
+									<th>id</th>
+									<th>Enable</th>
+									<th>Duration</th>
+									<th>type</th>
+									<th>classes</th>
+									<th>content</th>
+								</tr>
+								{ this.props.state ? this.renderTimelineState(this.props.state) : ''}
+							</tbody></table>
+						</div>
+					}
 				</div>
 			</div>
 		)
 	}
 })
+
+class TimelineStudioSelect extends React.Component<{}, {}> {
+	render () {
+		return <StudioSelect path='timeline' title='Timeline' />
+	}
+}
 
 export { TimelineView, TimelineStudioSelect }

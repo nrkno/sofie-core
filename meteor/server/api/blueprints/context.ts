@@ -26,7 +26,7 @@ import {
 	IngestPart
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig } from './config'
+import { ConfigRef, compileStudioconfig } from './config'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
@@ -168,7 +168,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return studio
 	}
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		return compileStudioConfig(this.getStudio())
+		return compileStudioconfig(this.getStudio())
 	}
 	getStudioConfigRef (configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -195,6 +195,13 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		this.showStyleBaseId = showStyleBaseId
 		this.showStyleVariantId = showStyleVariantId
 		this.notes = new NotesContext(contextName || studio.name, rundownId || '', segmentId, partId)
+	}
+
+	get handleNotesExternally () {
+		return this.notes.handleNotesExternally
+	}
+	set handleNotesExternally (val: boolean) {
+		this.notes.handleNotesExternally = val
 	}
 
 	getShowStyleBase (): ShowStyleBase {

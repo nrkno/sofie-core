@@ -5,7 +5,9 @@ import {
 	getPartFirstObjectId,
 	TimelineObjectCoreExt,
 	getPieceGroupId,
-	TimelineObjHoldMode
+	TimelineObjHoldMode,
+	OnGenerateTimelineObj,
+	PlayoutTimelinePrefixes
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import {
@@ -16,7 +18,6 @@ import {
 	TimelineObjType,
 	TimelineContentTypeOther,
 	TimelineObjRecording,
-	TimelineObjGroup,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
 	getTimelineId,
@@ -40,82 +41,114 @@ import {
 	asyncCollectionUpsert,
 	extendMandadory,
 	literal,
+	clone,
 	omit
 } from '../../../lib/lib'
 import { Rundowns, RundownData, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import {
-	TimelineContentTypeLawo,
-	TimelineObjLawo,
-	TimelineContentTypeHttp,
-	TimelineObjHTTPRequest,
-	Timeline as TimelineTypes
+	Timeline as TimelineTypes,
+	DeviceType,
+	TSRTimelineObjBase
 } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
-import { TriggerType } from 'superfly-timeline'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
-import { StudioContext, RundownContext } from '../blueprints/context'
+import { loadStudioBlueprints, getBlueprintOfRundown, getBlueprintOfRundownAsync } from '../blueprints/cache'
+import { StudioContext, RundownContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from '../testTools'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { prefixAllObjectIds } from './lib'
-import { createPieceGroup, createPieceGroupFirstObject } from './pieces'
+import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-let clone = require('fast-clone')
+import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export const updateTimeline: (studioId: string, forceNowToTime?: Time) => void
-= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time) {
+export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownData | null) => void
+= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownData | null) {
 	logger.debug('updateTimeline running...')
 	let timelineObjs: Array<TimelineObjGeneric> = []
+	const pStudio = asyncCollectionFindOne(Studios, studioId)
 
-	let studio = Studios.findOne(studioId) as Studio
+	let activeRundownData: RundownData | null = null
+
+	if (activeRundownData0 === undefined) {
+		// When activeRundownData0 is not provided:
+
+		const activeRundown = waitForPromise(getActiveRundown(studioId))
+		if (activeRundown) {
+			activeRundownData = activeRundown.fetchAllData()
+		}
+	} else {
+		activeRundownData = activeRundownData0
+	}
+
+	const activeRundown = activeRundownData && activeRundownData.rundown
+
+	let studio = waitForPromise(pStudio)
+
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
 
 	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
 		timelineObjs = timelineObjs.concat(_timelineObjs)
 	}
 
-	waitForPromiseAll([
-		caught(getTimelineRundown(studio).then(applyTimelineObjs)),
-		caught(getTimelineRecording(studio).then(applyTimelineObjs))
-	])
+	let ps: Promise<any>[] = []
+
+	if (activeRundown) {
+		 // remove anything not related to active rundown
+		ps.push(caught(asyncCollectionRemove(Timeline, {
+			studioId: studio._id,
+			rundownId: {
+				$not: {
+					$eq: activeRundown._id
+				}
+			}
+		})))
+	}
+
+	ps.push(caught(getTimelineRundown(studio, activeRundownData).then(applyTimelineObjs)))
+	ps.push(caught(getTimelineRecording(studio).then(applyTimelineObjs)))
+
+	waitForPromiseAll(ps)
+
 
 	processTimelineObjects(studio, timelineObjs)
+
 
 	if (forceNowToTime) { // used when autoNexting
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	const ps: Promise<any>[] = []
-
-	ps.push(makePromise(() => {
-		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
-			studioId: studio._id,
-			statObject: { $ne: true }
-		}, timelineObjs, {
-			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
-				// do not overwrite trigger when the trigger has been denowified
-				if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
-					o.trigger.type = oldO.trigger.type
-					o.trigger.value = oldO.trigger.value
-				}
-				return o
+	let savedTimelineObjs: TimelineObjGeneric[] = []
+	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
+		studioId: studio._id,
+		objectType: { $ne: TimelineObjType.STAT }
+	}, timelineObjs, {
+		beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
+			// do not overwrite enable when the enable has been denowified
+			if (o.enable.start === 'now' && oldO.enable.setFromNow) {
+				o.enable.start = oldO.enable.start
+				o.enable.setFromNow = true
 			}
-		})
-	}))
+			savedTimelineObjs.push(o)
+			return o
+		},
+		afterInsert: (o: TimelineObjGeneric) => {
+			savedTimelineObjs.push(o)
+		},
+		unchanged: (o: TimelineObjGeneric) => {
+			savedTimelineObjs.push(o)
+		}
+	})
 
-	ps.push(makePromise(() => {
-		afterUpdateTimeline(studio, timelineObjs)
-	}))
-	waitForPromiseAll(ps)
+	afterUpdateTimeline(studio, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
 })
@@ -130,14 +163,14 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	if (!timelineObjs) {
 		timelineObjs = Timeline.find({
 			studioId: studio._id,
-			statObject: { $ne: true }
+			objectType: { $ne: TimelineObjType.STAT }
 		}).fetch()
 	}
 
 	// Number of objects
 	let objCount = timelineObjs.length
 	// Hash of all objects
-	timelineObjs = timelineObjs.sort((a, b) => {
+	timelineObjs.sort((a, b) => {
 		if (a._id < b._id) return 1
 		if (a._id > b._id) return -1
 		return 0
@@ -150,93 +183,94 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 		_id: '', // set later
 		studioId: studio._id,
 		objectType: TimelineObjType.STAT,
-		statObject: true,
 		content: {
+			deviceType: DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.NOTHING,
 			modified: getCurrentTime(),
 			objCount: objCount,
 			objHash: objHash
 		},
-		trigger: {
-			type: TriggerType.TIME_ABSOLUTE,
-			value: 0 // never
-		},
-		duration: 0,
-		isAbstract: true,
-		LLayer: '__stat'
+		enable: { start: 0 },
+		layer: '__stat'
 	}
 	statObj._id = getTimelineId(statObj)
 
 	waitForPromise(asyncCollectionUpsert(Timeline, statObj._id, { $set: statObj }))
 }
+function getActiveRundown (studioId: string): Promise<Rundown | undefined> {
+	return asyncCollectionFindOne(Rundowns, {
+		studioId: studioId,
+		active: true
+	})
+}
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
+function getTimelineRundown (studio: Studio, activeRundownData: RundownData | null): Promise<TimelineObjRundown[]> {
 
 	return new Promise((resolve, reject) => {
 		try {
-			let timelineObjs: Array<TimelineObjGeneric> = []
+			let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
-			const promiseActiveRundown = asyncCollectionFindOne(Rundowns, {
-				studioId: studio._id,
-				active: true
-			})
-			// let promiseStudio = asyncCollectionFindOne(Studios, studio._id)
-			let activeRundown = waitForPromise(promiseActiveRundown)
-
+			const activeRundown = activeRundownData ? activeRundownData.rundown : undefined
 			if (activeRundown) {
 
-				// remove anything not related to active rundown:
-				let promiseClearTimeline: Promise<void> = asyncCollectionRemove(Timeline, {
-					studioId: studio._id,
-					rundownId: {
-						$not: {
-							$eq: activeRundown._id
-						}
-					}
-				})
+				const rundownData = activeRundownData as RundownData
 				// Start with fetching stuff from database:
+
+				// Fetch showstyle blueprint:
+				const pshowStyleBlueprint = getBlueprintOfRundownAsync(activeRundown)
+
+				// Fetch baseline
 				let promiseBaselineItems: Promise<Array<RundownBaselineObj>> = asyncCollectionFindFetch(RundownBaselineObjs, {
 					rundownId: activeRundown._id
 				})
-				let rundownData: RundownData = activeRundown.fetchAllData()
 
 				// Default timelineobjects:
 				let baselineItems = waitForPromise(promiseBaselineItems)
 
 				timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(rundownData, baselineItems))
 
+
 				// next (on pvw (or on pgm if first))
 				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studio))
 
-				const showStyleBlueprint = getBlueprintOfRundown(activeRundown).blueprint
-				if (showStyleBlueprint.onTimelineGenerate) {
 
-					const context = new RundownContext(activeRundown, studio)
-					timelineObjs = _.map(waitForPromise(showStyleBlueprint.onTimelineGenerate(context, timelineObjs)), (object: TimelineTypes.TimelineObject) => {
-						return literal<TimelineObjGeneric>({
+				const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint)
+				const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
+
+
+				if (showStyleBlueprintManifest.onTimelineGenerate && rundownData.rundown.currentPartId) {
+					const currentPart = rundownData.partsMap[rundownData.rundown.currentPartId]
+					const context = new PartEventContext(activeRundown, studio, currentPart)
+					// const resolvedPieces = getResolvedPieces(currentPart)
+					const resolvedPieces = getResolvedPiecesFromFullTimeline(rundownData, timelineObjs)
+					const tlGenRes = waitForPromise(showStyleBlueprintManifest.onTimelineGenerate(context, timelineObjs, rundownData.rundown.previousPersistentState, currentPart.previousPartEndState, resolvedPieces.pieces))
+					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
+						return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
 							...object,
 							_id: '', // set later
 							objectType: TimelineObjType.RUNDOWN,
 							studioId: studio._id
 						})
 					})
+					// TODO - is this the best place for this save?
+					if (tlGenRes.persistentState) {
+						Rundowns.update(rundownData.rundown._id, {
+							$set: {
+								previousPersistentState: tlGenRes.persistentState
+							}
+						})
+					}
 				}
 
-				// TODO: Specific implementations, to be refactored into Blueprints:
-				setLawoObjectsTriggerValue(timelineObjs, activeRundown.currentPartId || undefined)
-				timelineObjs = validateNoraPreload(timelineObjs)
-
-				waitForPromise(promiseClearTimeline)
-
 				resolve(
-					_.map<TimelineObjGeneric, TimelineObjRundown>(timelineObjs, (timelineObj) => {
-
-						return extendMandadory<TimelineObjGeneric, TimelineObjRundown>(timelineObj, {
+					_.map<TimelineObjGeneric & OnGenerateTimelineObj, TimelineObjRundown>(timelineObjs, (timelineObj) => {
+						return {
+							...omit(timelineObj, 'pieceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
 							rundownId: activeRundown._id,
 							objectType: TimelineObjType.RUNDOWN
-						})
+						}
 					})
 				)
 			} else {
@@ -255,17 +289,18 @@ function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 						studioId: '', // set later
 						rundownId: '',
 						objectType: TimelineObjType.RUNDOWN,
-						trigger: { type: 0, value: 0 },
-						duration: 0,
-						LLayer: id,
-						isAbstract: true,
-						content: {
+						enable: { start: 0 },
+						layer: id,
+						metadata: {
 							versions: {
 								core: PackageInfo.version,
 								blueprintId: studio.blueprintId,
 								blueprintVersion: blueprint.blueprintVersion,
 								studio: studio._rundownVersionHash,
 							}
+						},
+						content: {
+							deviceType: DeviceType.ABSTRACT
 						}
 					}))
 				}
@@ -319,9 +354,9 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 	// first, split out any grouped objects, to make the timeline shallow:
 	let fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
-		if (o.isGroup && o.content && o.content.objects && o.content.objects.length) {
+		if (o.isGroup && o.children && o.children.length) {
 
-			_.each(o.content.objects, (child: TimelineTypes.TimelineObject) => {
+			_.each(o.children, (child: TSRTimelineObjBase) => {
 
 				let childFixed: TimelineObjGeneric = {
 					...child,
@@ -336,7 +371,13 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 
 				fixObjectChildren(childFixed)
 			})
-			delete o.content.objects
+			delete o.children
+		}
+
+		if (o.keyframes) {
+			_.each(o.keyframes, (kf, i) => {
+				kf.id = `${o.id}_keyframe_${i}`
+			})
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
@@ -352,17 +393,16 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
  */
 function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Time): void {
 	_.each(timelineObjs, (o) => {
-		if (o.trigger.type === TriggerType.TIME_ABSOLUTE &&
-			o.trigger.value === 'now'
+		if (o.enable.start === 'now'
 		) {
-			o.trigger.value = now
-			o.trigger.setFromNow = true
+			o.enable.start = now
+			o.enable.setFromNow = true
 		}
 	})
 }
 
-function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: RundownBaselineObj[]): TimelineObjRundown[] {
-	let timelineObjs: Array<TimelineObjRundown> = []
+function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 	let currentPartGroup: TimelineObjRundown | undefined
 	let previousPartGroup: TimelineObjRundown | undefined
 
@@ -380,13 +420,11 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		studioId: '', // set later
 		objectType: TimelineObjType.RUNDOWN,
 		rundownId: rundownData.rundown._id,
-		trigger: {
-			type: TriggerType.LOGICAL,
-			value: '1'
+		enable: { while: 1 },
+		layer: 'rundown_status',
+		content: {
+			deviceType: DeviceType.ABSTRACT
 		},
-		LLayer: 'rundown_status',
-		isAbstract: true,
-		content: {},
 		classes: [activeRundown.rehearsal ? 'rundown_rehersal' : 'rundown_active']
 	}))
 
@@ -425,12 +463,16 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 			if (previousPart.getLastStartedPlayback()) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(previousPart, currentPart, true)
-				previousPartGroup = createPartGroup(previousPart, `#${getPartGroupId(currentPart)}.start + ${prevPartOverlapDuration} - #.start`)
+				const previousPartGroupEnable = {
+					start: previousPart.getLastStartedPlayback() || 0,
+					end: `#${getPartGroupId(currentPart)}.start + ${prevPartOverlapDuration}`
+				}
+				// If autonext with an overlap, keep the previous line alive for the specified overlap
+				if (previousPart.autoNext && previousPart.autoNextOverlap) {
+					previousPartGroupEnable.end = `#${getPartGroupId(currentPart)}.start + ${previousPart.autoNextOverlap || 0}`
+				}
+				previousPartGroup = createPartGroup(previousPart, previousPartGroupEnable)
 				previousPartGroup.priority = -1
-				previousPartGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
-					type: TriggerType.TIME_ABSOLUTE,
-					value: previousPart.getLastStartedPlayback() || 0
-				})
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
 				const skipIds = currentInfinitePieces.map(l => l.infiniteId || '')
@@ -439,14 +481,9 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: TimelineObjRundown[] = [previousPartGroup]
 				prevObjs = prevObjs.concat(
-					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activeRundown.holdState, undefined))
+					transformPartIntoTimeline(rundownData.rundown, previousPieces, groupClasses, previousPartGroup, undefined, activeRundown.holdState))
 
-				prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
-
-				// If autonext with an overlap, keep the previous line alive for the specified overlap
-				if (previousPart.autoNext && previousPart.autoNextOverlap) {
-					previousPartGroup.duration = `#${getPartGroupId(currentPart)}.start + ${previousPart.autoNextOverlap || 0} - #.start`
-				}
+				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
 
 				timelineObjs = timelineObjs.concat(prevObjs)
 			}
@@ -455,18 +492,17 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// fetch pieces
 		// fetch the timelineobjs in pieces
 		const isFollowed = nextPart && currentPart.autoNext
-		const currentPartDuration = !isFollowed ? 0 : calcPartTargetDuration(previousPart, currentPart)
-		currentPartGroup = createPartGroup(currentPart, currentPartDuration)
+		const currentPartEnable = literal<TimelineTypes.TimelineEnable>({
+			duration: !isFollowed ? undefined : calcPartTargetDuration(previousPart, currentPart)
+		})
 		if (currentPart.startedPlayback && currentPart.getLastStartedPlayback()) { // If we are recalculating the currentPart, then ensure it doesnt think it is starting now
-			currentPartGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
-				type: TriggerType.TIME_ABSOLUTE,
-				value: currentPart.getLastStartedPlayback() || 0
-			})
+			currentPartEnable.start = currentPart.getLastStartedPlayback() || 0
 		}
+		currentPartGroup = createPartGroup(currentPart, currentPartEnable)
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
-			const infiniteGroup = createPartGroup(currentPart, piece.expectedDuration || 0)
+			const infiniteGroup = createPartGroup(currentPart, { duration: piece.enable.duration || undefined })
 			infiniteGroup.id = getPartGroupId(piece._id) + '_infinite'
 			infiniteGroup.priority = 1
 
@@ -477,20 +513,21 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 			}
 
 			if (piece.infiniteId) {
-				const originalItem = _.find(rundownData.pieces, (piece => piece._id === piece.infiniteId))
+				const originalItem = _.find(rundownData.pieces, (p => p._id === piece.infiniteId))
 
 				// If we are a continuation, set the same start point to ensure that anything timed is correct
 				if (originalItem && originalItem.startedPlayback) {
-					infiniteGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
-						type: TriggerType.TIME_ABSOLUTE,
-						value: originalItem.startedPlayback
-					})
+					infiniteGroup.enable = { start: originalItem.startedPlayback }
 
 					// If an absolute time has been set by a hotkey, then update the duration to be correct
 					const partStartedPlayback = currentPart.getLastStartedPlayback()
-					if (piece.durationOverride && partStartedPlayback) {
-						const originalEndTime = partStartedPlayback + piece.durationOverride
-						infiniteGroup.duration = originalEndTime - originalItem.startedPlayback
+					if (piece.userDuration && partStartedPlayback) {
+						const previousPartsDuration = (partStartedPlayback - originalItem.startedPlayback)
+						if (piece.userDuration.end) {
+							infiniteGroup.enable.end = piece.userDuration.end
+						} else {
+							infiniteGroup.enable.duration = offsetTimelineEnableExpression(piece.userDuration.duration, previousPartsDuration)
+						}
 					}
 				}
 			}
@@ -509,7 +546,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		}
 		timelineObjs = timelineObjs.concat(
 			currentPartGroup,
-			transformPartIntoTimeline(rundownData.rundown, currentNormalItems, groupClasses, currentPartGroup, transProps, activeRundown.holdState, undefined)
+			transformPartIntoTimeline(rundownData.rundown, currentNormalItems, groupClasses, currentPartGroup, transProps, activeRundown.holdState)
 		)
 
 		timelineObjs.push(createPartGroupFirstObject(currentPart, currentPartGroup, previousPart))
@@ -517,16 +554,13 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextPart && currentPart.autoNext) {
 			// console.log('This part will autonext')
-			let nextPieceGroup = createPartGroup(nextPart, 0)
+			let nextPartGroup = createPartGroup(nextPart, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(currentPart, nextPart)
 
-				nextPieceGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
-					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentPartGroup.id}.end - ${overlapDuration}`
-				})
-				if (typeof currentPartGroup.duration === 'number') {
-					currentPartGroup.duration += currentPart.autoNextOverlap || 0
+				nextPartGroup.enable = {
+					start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
+					duration: nextPartGroup.enable.duration
 				}
 			}
 
@@ -543,10 +577,10 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 				transitionKeepalive: nextPart.transitionKeepaliveDuration
 			}
 			timelineObjs = timelineObjs.concat(
-				nextPieceGroup,
-				transformPartIntoTimeline(rundownData.rundown, nextItems, groupClasses, nextPieceGroup, transProps)
+				nextPartGroup,
+				transformPartIntoTimeline(rundownData.rundown, nextItems, groupClasses, nextPartGroup, transProps)
 			)
-			timelineObjs.push(createPartGroupFirstObject(nextPart, nextPieceGroup, currentPart))
+			timelineObjs.push(createPartGroupFirstObject(nextPart, nextPartGroup, currentPart))
 		}
 	}
 
@@ -557,27 +591,26 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 	return timelineObjs
 }
-function createPartGroup (part: Part, duration: number | string): TimelineObjGroupPart & TimelineObjRundown {
-	let partGrp = literal<TimelineObjGroupPart & TimelineObjRundown>({
+function createPartGroup (part: Part, enable: TimelineTypes.TimelineEnable): TimelineObjGroupPart & TimelineObjRundown {
+	if (!enable.start) { // TODO - is this loose enough?
+		enable.start = 'now'
+	}
+	let partGrp = literal<TimelineObjGroupPart>({
 		id: getPartGroupId(part),
 		_id: '', // set later
 		studioId: '', // set later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
-		trigger: {
-			type: TriggerType.TIME_ABSOLUTE,
-			value: 'now'
-		},
-		duration: duration,
+		enable: enable,
 		priority: 5,
-		LLayer: 'core_abstract',
+		layer: '', // These should coexist
 		content: {
-			type: TimelineContentTypeOther.GROUP,
-			objects: []
+			deviceType: DeviceType.ABSTRACT,
+			type: TimelineContentTypeOther.GROUP
 		},
+		children: [],
 		isGroup: true,
 		isPartGroup: true,
-		// partId: part._id
 	})
 
 	return partGrp
@@ -593,56 +626,24 @@ function createPartGroupFirstObject (
 		studioId: '', // set later
 		rundownId: part.rundownId,
 		objectType: TimelineObjType.RUNDOWN,
-		trigger: {
-			type: TriggerType.TIME_ABSOLUTE,
-			value: 0
-		},
-		duration: 0,
-		LLayer: 'core_abstract',
-		isAbstract: true,
+		enable: { start: 0 },
+		layer: 'group_first_object',
 		content: {
-			type: TimelineContentTypeOther.NOTHING,
+			deviceType: DeviceType.ABSTRACT,
+			type: 'callback',
+			// Will cause the playout-gateway to run a callback, when the object starts playing:
+			callBack: 'partPlaybackStarted',
+			callBackData: {
+				rundownId: part.rundownId,
+				partId: part._id
+			},
+			callBackStopped: 'partPlaybackStopped' // Will cause a callback to be called, when the object stops playing:
 		},
-		// isGroup: true,
 		inGroup: partGroup.id,
-		partId: part._id,
 		classes: (part.classes || []).concat(previousPart ? previousPart.classesForNext || [] : [])
 	})
 }
 
-// TODO: Move this functionality to a blueprint?
-function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObjGeneric>, currentPartId: string | undefined) {
-
-	_.each(timelineObjs, (obj) => {
-		if (obj.content.type === TimelineContentTypeLawo.SOURCE) {
-			let lawoObj = obj as TimelineObjLawo & TimelineObjGeneric
-
-			_.each(lawoObj.content.attributes, (val, key) => {
-				// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
-				lawoObj.content.attributes[key].triggerValue = currentPartId || ''
-			})
-		}
-	})
-}
-
-function validateNoraPreload (timelineObjs: Array<TimelineObjGeneric>) {
-	const toRemoveIds: Array<string> = []
-	_.each(timelineObjs, obj => {
-		// ignore normal objects
-		if (obj.content.type !== TimelineContentTypeHttp.POST) return
-		if (!obj.isBackground) return
-
-		const obj2 = obj as TimelineObjHTTPRequest & TimelineObjGeneric
-		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template).event === 'take') {
-			(obj2.content.params.template).event = 'cue'
-		} else {
-			// something we don't understand, so dont lookahead on it
-			toRemoveIds.push(obj._id)
-		}
-	})
-
-	return timelineObjs.filter(o => toRemoveIds.indexOf(o._id) === -1)
-}
 function transformBaselineItemsIntoTimeline (rundown: Rundown, objs: RundownBaselineObj[]): Array<TimelineObjRundown> {
 	let timelineObjs: Array<TimelineObjRundown> = []
 	_.each(objs, (obj: RundownBaselineObj) => {
@@ -673,8 +674,8 @@ function transformPartIntoTimeline (
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
-): Array<TimelineObjRundown> {
-	let timelineObjs: Array<TimelineObjRundown> = []
+): Array<TimelineObjRundown & OnGenerateTimelineObj> {
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition = transitionProps && transitionProps.allowed && !isHold && holdState !== RundownHoldState.COMPLETE
@@ -699,20 +700,18 @@ function transformPartIntoTimeline (
 			let tos: TimelineObjectCoreExt[] = piece.content.timelineObjects
 
 			const isInfiniteContinuation = piece.infiniteId && piece.infiniteId !== piece._id
-			if (piece.trigger.type === TriggerType.TIME_ABSOLUTE && piece.trigger.value === 0 && !isInfiniteContinuation) {
+			if (piece.enable.start === 0 && !isInfiniteContinuation) {
 				// If timed absolute and there is a transition delay, then apply delay
 				if (!piece.isTransition && allowTransition && transition && !piece.adLibSourceId) {
 					const transitionContentsDelayStr = transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
-					piece.trigger.type = TriggerType.TIME_RELATIVE
-					piece.trigger.value = `#${getPieceGroupId(transition)}.start ${transitionContentsDelayStr}`
+					piece.enable.start = `#${getPieceGroupId(transition)}.start ${transitionContentsDelayStr}`
 				} else if (piece.isTransition && transitionPieceDelay) {
-					piece.trigger.type = TriggerType.TIME_ABSOLUTE
-					piece.trigger.value = Math.max(0, transitionPieceDelay)
+					piece.enable.start = Math.max(0, transitionPieceDelay)
 				}
 			}
 
 			// create a piece group for the pieces and then place all of them there
-			const pieceGroup = createPieceGroup(piece, piece.durationOverride || piece.duration || piece.expectedDuration || 0, partGroup)
+			const pieceGroup = createPieceGroup(piece, partGroup)
 			timelineObjs.push(pieceGroup)
 
 			if (!piece.virtual) {
@@ -742,7 +741,9 @@ function transformPartIntoTimeline (
 						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup.id : undefined,
 						rundownId: rundown._id,
-						objectType: TimelineObjType.RUNDOWN
+						objectType: TimelineObjType.RUNDOWN,
+						pieceId: piece._id,
+						infinitePieceId: piece.infiniteId
 					})
 				})
 			}
@@ -782,14 +783,14 @@ function calcPartTargetDuration (prevPart: Part | undefined, currentPart: Part):
 	const maxPreroll = Math.max(currentPart.transitionPrerollDuration ? currentPart.transitionPrerollDuration : 0, currentPart.prerollDuration || 0)
 	const maxKeepalive = Math.max(currentPart.transitionKeepaliveDuration ? currentPart.transitionKeepaliveDuration : 0, currentPart.prerollDuration || 0)
 	const lengthAdjustment = maxPreroll - maxKeepalive
-	const rawExpectedDuration = (currentPart.expectedDuration || 0) - lengthAdjustment
+	const rawExpectedDuration = (currentPart.expectedDuration || 0) - lengthAdjustment + (currentPart.autoNextOverlap || 0)
 
 	if (!prevPart || prevPart.disableOutTransition) {
 		return rawExpectedDuration + (currentPart.prerollDuration || 0)
 	}
 
 	let prerollDuration = (currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0)
-	return rawExpectedDuration + (prevPart.autoNextOverlap || 0) + prerollDuration
+	return rawExpectedDuration + prerollDuration
 }
 function calcPartOverlapDuration (fromPart: Part, toPart: Part): number {
 	const allowTransition: boolean = !fromPart.disableOutTransition

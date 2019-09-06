@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as VelocityReact from 'velocity-react'
 
 import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
@@ -108,18 +107,18 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 	}
 
 	componentDidMount () {
-		$(window).on('resize', this.throttledRefreshFullScreenState)
+		window.addEventListener('resize', this.throttledRefreshFullScreenState)
 	}
 
 	componentWillUnmount () {
-		$(window).off('resize', this.throttledRefreshFullScreenState)
+		window.removeEventListener('resize', this.throttledRefreshFullScreenState)
 	}
 
 	checkFullScreen () {
 		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 		return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen ||
-				(Math.abs(screen.height - window.innerHeight) < 10) ||
-				false // This will return true or false depending on if it's full screen or not.
+			(Math.abs(screen.height - window.innerHeight) < 10) ||
+			false // This will return true or false depending on if it's full screen or not.
 	}
 
 	refreshFullScreenState = () => {

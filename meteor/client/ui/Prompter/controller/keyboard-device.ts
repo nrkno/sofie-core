@@ -1,6 +1,5 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
 import { PrompterViewInner } from '../PrompterView'
-import * as $ from 'jquery'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
@@ -15,7 +14,7 @@ export class KeyboardController extends ControllerAbstract {
 	private _mode: Mode = Mode.NORMAL
 	private _destroyed: boolean = false
 
-	private _keyDown: {[button: string]: number} = {}
+	private _keyDown: { [button: string]: number } = {}
 
 	private _prompterView: PrompterViewInner
 
@@ -51,7 +50,7 @@ export class KeyboardController extends ControllerAbstract {
 
 		if (this._mode === Mode.NORMAL) {
 			const scrollBy = Math.round(window.innerHeight * 0.66)
-			const scrollPosition = this._prompterView.getScrollPosition()
+			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
 				if (
 					e.code === 'ArrowLeft' ||
@@ -83,7 +82,7 @@ export class KeyboardController extends ControllerAbstract {
 		const timeSincePress = Date.now() - this._keyDown[e.code]
 
 		if (this._mode === Mode.NORMAL) {
-			const scrollPosition = this._prompterView.getScrollPosition()
+			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
 				if (
 					e.code === 'ArrowLeft' || // left
@@ -151,13 +150,13 @@ export class KeyboardController extends ControllerAbstract {
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
 
-		const scrollPosition = this._prompterView.getScrollPosition()
+		const scrollPosition = window.scrollY
 		if (scrollPosition !== undefined) {
 			this._currentPosition = scrollPosition
 			let dp = (
 				this._continousScrolling ?
-				99999 * this._continousScrolling :
-				this._targetPosition - this._currentPosition
+					99999 * this._continousScrolling :
+					this._targetPosition - this._currentPosition
 			)
 			if (dp !== 0) {
 
@@ -198,7 +197,7 @@ export class KeyboardController extends ControllerAbstract {
 					window.scrollBy(0, speed)
 				}
 
-				const scrollPosition = this._prompterView.getScrollPosition()
+				const scrollPosition = window.scrollY
 
 				if (scrollPosition !== undefined) {
 					// Reached end-of-scroll:

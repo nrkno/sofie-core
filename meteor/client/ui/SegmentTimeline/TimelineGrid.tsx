@@ -1,11 +1,11 @@
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 
 import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
+import { getElementWidth, getElementHeight } from '../../utils/dimensions'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -25,6 +25,9 @@ interface ITimelineGridProps {
 	scrollLeft: number
 	onResize: (size: number[]) => void
 }
+
+let gridFont: any | undefined = undefined
+let gridFontAvailable: boolean = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	canvasElement: HTMLCanvasElement
@@ -48,15 +51,15 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.pixelRatio = devicePixelRatio / backingStoreRatio
 
-			this.width = ($(this.canvasElement).innerWidth() || 0) * this.pixelRatio
-			this.height = ($(this.canvasElement).innerHeight() || 0) * this.pixelRatio
+			this.width = (this.canvasElement.scrollWidth || 0) * this.pixelRatio
+			this.height = (this.canvasElement.scrollHeight || 0) * this.pixelRatio
 			this.canvasElement.width = this.width
 			this.canvasElement.height = this.height
 
 			this.repaint()
 		}
 		if (this.props.onResize) {
-			this.props.onResize([$(this.parentElement).width() || 1, $(this.parentElement).height() || 1])
+			this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
 		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
@@ -68,7 +71,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.canvasElement = element
 	}
 
-	onCanvasResize = (event: JQuery.Event) => {
+	onCanvasResize = (event: Event) => {
 		this.contextResize()
 	}
 
@@ -202,27 +205,31 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// $(window).on('resize', this.onCanvasResize)
 			elementResizeEvent(this.parentElement, this.onCanvasResize)
 
-			if (typeof FontFace !== 'undefined') {
+			if (!gridFont && typeof FontFace !== 'undefined') {
 
-				let gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
+				gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
 					style: 'normal',
 					weight: 100
 				})
 				gridFont.load()
 				gridFont.loaded.then((fontFace) => {
 					// console.log('Grid font loaded: ' + fontFace.status)
+					gridFontAvailable = true
 					window.requestAnimationFrame(() => {
 						this.repaint()
 					})
-				}, (fontFace) => {
-					// console.log('Grid font failed to load: ' + fontFace.status)
-				})
-				.catch(err => console.log(err))
+				}).catch(err => console.log(err))
 				document['fonts'].add(gridFont)
+			} else if (gridFont && !gridFontAvailable) {
+				gridFont.loaded.then((fontFace) => {
+					window.requestAnimationFrame(() => {
+						this.repaint()
+					})
+				})
 			}
 
 			if (this.props.onResize) {
-				this.props.onResize([$(this.parentElement).width() || 1, $(this.parentElement).height() || 1])
+				this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
 			}
 		}
 	}

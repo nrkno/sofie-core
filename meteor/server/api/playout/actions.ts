@@ -4,7 +4,6 @@ import { IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Parts } from '../../../lib/collections/Parts'
-import { ServerPlayoutAPI } from './playout'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -13,8 +12,6 @@ import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
 import { setNextPart, onPartHasStoppedPlaying } from './lib'
 import { updateTimeline } from './timeline'
-import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { IngestActions } from '../ingest/actions'
 import { areThereActiveRundownsInStudio } from './studio'
 
@@ -35,7 +32,7 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
-		throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
+		throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id), _.map(anyOtherActiveRundowns, rundown => rundown._id).join(','))
 	}
 
 	let m = {
@@ -93,15 +90,6 @@ export function deactivateRundown (rundown: Rundown) {
 			}
 		})
 	}
-
-	// clean up all runtime baseline objects
-	RundownBaselineObjs.remove({
-		rundownId: rundown._id
-	})
-
-	RundownBaselineAdLibPieces.remove({
-		rundownId: rundown._id
-	})
 
 	updateTimeline(rundown.studioId)
 

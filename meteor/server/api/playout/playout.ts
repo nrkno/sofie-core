@@ -13,9 +13,11 @@ import { getCurrentTime,
 	asyncCollectionInsert,
 	asyncCollectionUpsert,
 	waitForPromise,
-	makePromise} from '../../../lib/lib'
-import { Timeline, getTimelineId } from '../../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
+	makePromise,
+	clone,
+	literal,
+	asyncCollectionRemove} from '../../../lib/lib'
+import { Timeline, getTimelineId, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -23,11 +25,11 @@ import { logger } from '../../logging'
 import {
 	PieceLifespan,
 	PartHoldMode,
-	VTContent
+	VTContent,
+	PartEndState
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios } from '../../../lib/collections/Studios'
 import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
-let clone = require('fast-clone')
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -38,7 +40,7 @@ import {
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { getBlueprintOfRundown } from '../blueprints/cache'
-import { PartEventContext } from '../blueprints/context'
+import { PartEventContext, PartContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
@@ -53,12 +55,14 @@ import {
 	activateRundown as libActivateRundown,
 	deactivateRundown as libDeactivateRundown
 } from './actions'
-import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece } from './pieces'
+import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece, resolveActivePieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { areThereActiveRundownsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
+import { transformTimeline } from '../../../lib/timeline'
+import * as SuperTimeline from 'superfly-timeline'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -104,7 +108,7 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundown, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function resetAndActivateRundown (rundownId: string) {
+	export function resetAndActivateRundown (rundownId: string, rehearsal?: boolean) {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -112,7 +116,7 @@ export namespace ServerPlayoutAPI {
 
 			libResetRundown(rundown)
 
-			return libActivateRundown(rundown, false) // Activate rundown
+			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
 		})
 	}
 	/**
@@ -158,7 +162,6 @@ export namespace ServerPlayoutAPI {
 	 */
 	export function takeNextPart (rundownId: string): ClientAPI.ClientResponse {
 		let now = getCurrentTime()
-
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			let rundown = Rundowns.findOne(rundownId) as Rundown
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -169,6 +172,8 @@ export namespace ServerPlayoutAPI {
 
 			let firstTake = !rundown.startedPlayback
 			let rundownData = rundown.fetchAllData()
+
+			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
 			if (currentPart && currentPart.transitionDuration) {
@@ -192,29 +197,30 @@ export namespace ServerPlayoutAPI {
 				})
 			// If hold is active, then this take is to clear it
 			} else if (rundown.holdState === RundownHoldState.ACTIVE) {
-				Rundowns.update(rundown._id, {
+				const ps: Promise<any>[] = []
+				ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 					$set: {
 						holdState: RundownHoldState.COMPLETE
 					}
-				})
+				}))
 
 				if (rundown.currentPartId) {
 					const currentPart = rundownData.partsMap[rundown.currentPartId]
 					if (!currentPart) throw new Meteor.Error(404, 'currentPart not found!')
 
 					// Remove the current extension line
-					Pieces.remove({
+					ps.push(asyncCollectionRemove(Pieces, {
 						partId: currentPart._id,
 						extendOnHold: true,
 						dynamicallyInserted: true
-					})
+					}))
 				}
 				if (rundown.previousPartId) {
 					const previousPart = rundownData.partsMap[rundown.previousPartId]
 					if (!previousPart) throw new Meteor.Error(404, 'previousPart not found!')
 
 					// Clear the extended mark on the original
-					Pieces.update({
+					ps.push(asyncCollectionUpdate(Pieces, {
 						partId: previousPart._id,
 						extendOnHold: true,
 						dynamicallyInserted: false
@@ -223,13 +229,12 @@ export namespace ServerPlayoutAPI {
 							infiniteId: 0,
 							infiniteMode: 0,
 						}
-					}, { multi: true })
+					}, { multi: true }))
 				}
-
+				waitForPromiseAll(ps)
 				updateTimeline(rundown.studioId)
 				return ClientAPI.responseSuccess()
 			}
-			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			let previousPart = (rundown.currentPartId ?
 				rundownData.partsMap[rundown.currentPartId]
@@ -248,6 +253,7 @@ export namespace ServerPlayoutAPI {
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
 
+
 			const { blueprint } = waitForPromise(pBlueprint)
 			if (blueprint.onPreTake) {
 				try {
@@ -259,9 +265,18 @@ export namespace ServerPlayoutAPI {
 					logger.error(e)
 				}
 			}
+			// TODO - the state could change after this sampling point. This should be handled properly
+			let previousPartEndState: PartEndState | undefined = undefined
+			if (blueprint.getEndStateForPart && previousPart) {
+				const time = getCurrentTime()
+				const resolvedPieces = getResolvedPieces(previousPart)
 
+				const context = new RundownContext(rundown)
+				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
+				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+			}
 			let ps: Array<Promise<any>> = []
-			let m = {
+			let m: Partial<Rundown> = {
 				previousPartId: rundown.currentPartId,
 				currentPartId: takePart._id,
 				holdState: !rundown.holdState || rundown.holdState === RundownHoldState.COMPLETE ? RundownHoldState.NONE : rundown.holdState + 1,
@@ -269,12 +284,23 @@ export namespace ServerPlayoutAPI {
 			ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 				$set: m
 			}))
-			ps.push(asyncCollectionUpdate(Parts, takePart._id, {
+
+			let partM = {
 				$push: {
 					'timings.take': now,
 					'timings.playOffset': timeOffset || 0
 				}
-			}))
+			}
+			if (previousPartEndState) {
+				partM['$set'] = literal<Partial<Part>>({
+					previousPartEndState: previousPartEndState
+				})
+			} else {
+				partM['$unset'] = {
+					previousPartEndState: 1
+				}
+			}
+			ps.push(asyncCollectionUpdate(Parts, takePart._id, partM))
 			if (m.previousPartId) {
 				ps.push(asyncCollectionUpdate(Parts, m.previousPartId, {
 					$push: {
@@ -286,7 +312,6 @@ export namespace ServerPlayoutAPI {
 
 			libSetNextPart(rundown, nextPart)
 			waitForPromiseAll(ps)
-
 			ps = []
 
 			// Setup the parts for the HOLD we are starting
@@ -308,9 +333,9 @@ export namespace ServerPlayoutAPI {
 					}))
 
 					// make the extension
-					const newPiece = clone(piece) as Piece
-					newPiece.partId = m.currentPartId
-					newPiece.expectedDuration = 0
+					const newPiece: Piece = clone(piece)
+					newPiece.partId = takePart._id
+					newPiece.enable = { start: 0 }
 					const content = newPiece.content as VTContent
 					if (content.fileName && content.sourceDuration && piece.startedPlayback) {
 						content.seek = Math.min(content.sourceDuration, getCurrentTime() - piece.startedPlayback)
@@ -325,27 +350,31 @@ export namespace ServerPlayoutAPI {
 				})
 			}
 			waitForPromiseAll(ps)
-			afterTake(rundown, takePart, timeOffset)
+			afterTake(rundownData, takePart, timeOffset)
 
-			// last:
-			Parts.update(takePart._id, {
-				$push: {
-					'timings.takeDone': getCurrentTime()
-				}
-			})
-
+			// Last:
+			const takeDoneTime = getCurrentTime()
 			Meteor.defer(() => {
+				Parts.update(takePart._id, {
+					$push: {
+						'timings.takeDone': takeDoneTime
+					}
+				})
 				// let bp = getBlueprintOfRundown(rundown)
 				if (firstTake) {
 					if (blueprint.onRundownFirstTake) {
-						Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(rundown, undefined, takePart)))
-						.catch(logger.error)
+						waitForPromise(
+							Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(rundown, undefined, takePart)))
+							.catch(logger.error)
+						)
 					}
 				}
 
 				if (blueprint.onPostTake) {
-					Promise.resolve(blueprint.onPostTake(new PartEventContext(rundown, undefined, takePart)))
-					.catch(logger.error)
+					waitForPromise(
+						Promise.resolve(blueprint.onPostTake(new PartEventContext(rundown, undefined, takePart)))
+						.catch(logger.error)
+					)
 				}
 			})
 
@@ -399,9 +428,8 @@ export namespace ServerPlayoutAPI {
 		rundownId: string,
 		horisontalDelta: number,
 		verticalDelta: number,
-		setManually: boolean,
-		currentNextPieceId?: string
-	): string {
+		setManually: boolean
+	): string | null {
 		check(rundownId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -409,82 +437,106 @@ export namespace ServerPlayoutAPI {
 		if (!horisontalDelta && !verticalDelta) throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horisontalDelta}, ${verticalDelta})`)
 
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
+			return moveNextPartInner(
+				rundownId,
+				horisontalDelta,
+				verticalDelta,
+				setManually
+			)
+		})
+	}
+	function moveNextPartInner (
+		rundownId: string,
+		horisontalDelta: number,
+		verticalDelta: number,
+		setManually: boolean,
+		nextPartId0?: string
+	): string | null {
 
-			if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
-			let currentNextPiece: Part
-			if (currentNextPieceId) {
-				currentNextPiece = Parts.findOne(currentNextPieceId) as Part
+		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
+
+		let nextPartId: string = ''
+		if (nextPartId0) {
+			nextPartId = nextPartId0
+		} else {
+			if (!rundown.nextPartId) {
+				if (!rundown.currentPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next and no current part!`)
+				nextPartId = rundown.currentPartId
 			} else {
-				if (!rundown.nextPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next part!`)
-				currentNextPiece = Parts.findOne(rundown.nextPartId) as Part
+				nextPartId = rundown.nextPartId
 			}
+		}
+		let currentNextPart: Part = Parts.findOne(nextPartId) as Part
+		if (!currentNextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
-			if (!currentNextPiece) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
+		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
+		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
-			let currentNextSegment = Segments.findOne(currentNextPiece.segmentId) as Segment
-			if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPiece.segmentId}" not found!`)
+		let parts = rundown.getParts()
+		let segments = rundown.getSegments()
 
-			let parts = rundown.getParts()
-			let segments = rundown.getSegments()
+		let partIndex: number = -1
+		_.find(parts, (part, i) => {
+			if (part._id === currentNextPart._id) {
+				partIndex = i
+				return true
+			}
+		})
+		let segmentIndex: number = -1
+		_.find(segments, (s, i) => {
+			if (s._id === currentNextSegment._id) {
+				segmentIndex = i
+				return true
+			}
+		})
+		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
+		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+		if (verticalDelta !== 0) {
+			segmentIndex += verticalDelta
 
-			let partIndex: number = -1
-			_.find(parts, (part, i) => {
-				if (part._id === currentNextPiece._id) {
+			let segment = segments[segmentIndex]
+
+			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
+
+			let partsInSegment = segment.getParts()
+			let part = _.first(partsInSegment) as Part
+			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
+
+			partIndex = -1
+			_.find(parts, (p, i) => {
+				if (p._id === part._id) {
 					partIndex = i
 					return true
 				}
 			})
-			let segmentIndex: number = -1
-			_.find(segments, (s, i) => {
-				if (s._id === currentNextSegment._id) {
-					segmentIndex = i
-					return true
-				}
-			})
-			if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
-			if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+			if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
+		}
+		partIndex += horisontalDelta
 
-			if (verticalDelta !== 0) {
-				segmentIndex += verticalDelta
+		partIndex = Math.max(0, Math.min(parts.length - 1, partIndex))
 
-				let segment = segments[segmentIndex]
+		let part = parts[partIndex]
+		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-				if (!segment) throw new Meteor.Error(404, `No Segment found!`)
-
-				let partsInSegment = segment.getParts()
-				let part = _.first(partsInSegment) as Part
-				if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
-
-				partIndex = -1
-				_.find(parts, (part, i) => {
-					if (part._id === part._id) {
-						partIndex = i
-						return true
-					}
-				})
-				if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
-			}
-
-			partIndex += horisontalDelta
-
-			partIndex = Math.max(0, Math.min(parts.length - 1, partIndex))
-
-			let part = parts[partIndex]
-			if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
-
-			if ((part._id === rundown.currentPartId && !currentNextPieceId) || part.invalid) {
-				// Whoops, we're not allowed to next to that.
-				// Skip it, then (ie run the whole thing again)
-				return moveNextPart(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+		if ((part._id === rundown.currentPartId && !nextPartId0) || part.invalid) {
+			// Whoops, we're not allowed to next to that.
+			// Skip it, then (ie run the whole thing again)
+			if (part._id !== nextPartId0) {
+				return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
 			} else {
-				setNextPartInner(rundown, part, setManually)
-				return part._id
+				// Calling ourselves again at this point would result in an infinite loop
+				// There probably isn't any Part available to Next then...
+				setNextPartInner(rundown, null, setManually)
+				return null
 			}
-		})
+		} else {
+			setNextPartInner(rundown, part, setManually)
+			return part._id
+		}
 	}
 	export function activateHold (rundownId: string) {
 		check(rundownId, String)
@@ -718,13 +770,14 @@ export namespace ServerPlayoutAPI {
 				if (!isPlaying) {
 					logger.info(`Playout reports part "${partId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
-					let rundown = Rundowns.findOne(rundownId)
+					let rundown = Rundowns.findOne(rundownId) as Rundown
 					if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 					if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
-					const currentPart = (rundown.currentPartId ?
-						Parts.findOne(rundown.currentPartId)
-						: null
+					const currentPart = (
+						rundown.currentPartId ?
+						Parts.findOne(rundown.currentPartId) :
+						null
 					)
 
 					if (rundown.currentPartId === partId) {
@@ -761,6 +814,8 @@ export namespace ServerPlayoutAPI {
 								$gt: playingPart._rank,
 							},
 							_id: { $ne: playingPart._id }
+						}, {
+							limit: 1
 						})
 
 						let nextPart: Part | null = _.first(partsAfter) || null
@@ -807,7 +862,9 @@ export namespace ServerPlayoutAPI {
 
 					reportPartHasStarted(playingPart, startedPlayback)
 
-					afterTake(rundown, playingPart)
+					const rundownData = rundown.fetchAllData()
+
+					afterTake(rundownData, playingPart)
 				}
 			} else {
 				throw new Meteor.Error(404, `Part "${partId}" in rundown "${rundownId}" not found!`)
@@ -874,12 +931,12 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownId, partId, baselineAdLibPieceId, queue)
 	}
-	export function startAdLibPiece (rundownId: string, partId: string, pieceId: string) {
+	export function stopAdLibPiece (rundownId: string, partId: string, pieceId: string) {
 		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
 
-		return ServerPlayoutAdLibAPI.startAdLibPiece(rundownId, partId, pieceId)
+		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownId, partId, pieceId)
 	}
 	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
 		check(rundownId, String)
@@ -949,29 +1006,38 @@ export namespace ServerPlayoutAPI {
 			const relativeNow = now - (part.getLastStartedPlayback() || 0)
 			const orderedPieces = getResolvedPieces(part)
 
-			orderedPieces.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
-				if (!i.durationOverride) {
-					let newExpectedDuration: number | undefined = undefined
+			orderedPieces.forEach((piece) => {
+				if (piece.sourceLayerId === sourceLayerId) {
+					if (!piece.userDuration) {
+						let newExpectedDuration: number | undefined = undefined
 
-					if (i.infiniteId && i.infiniteId !== i._id && part) {
-						const partStarted = part.getLastStartedPlayback()
-						if (partStarted) {
-							newExpectedDuration = now - partStarted
-						}
-					} else if (i.startedPlayback && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
-						newExpectedDuration = now - i.startedPlayback
-					}
-
-					if (newExpectedDuration !== undefined) {
-						console.log(`Cropping piece "${i._id}" at ${newExpectedDuration}`)
-
-						Pieces.update({
-							_id: i._id
-						}, {
-							$set: {
-								durationOverride: newExpectedDuration
+						if (piece.infiniteId && piece.infiniteId !== piece._id && part) {
+							const partStarted = part.getLastStartedPlayback()
+							if (partStarted) {
+								newExpectedDuration = now - partStarted
 							}
-						})
+						} else if (
+							piece.startedPlayback && // currently playing
+							_.isNumber(piece.enable.start) &&
+							(piece.enable.start || 0) < relativeNow && // is relative, and has started
+							!piece.stoppedPlayback // and not yet stopped
+						) {
+							newExpectedDuration = now - piece.startedPlayback
+						}
+
+						if (newExpectedDuration !== undefined) {
+							console.log(`Cropping piece "${piece._id}" at ${newExpectedDuration}`)
+
+							Pieces.update({
+								_id: piece._id
+							}, {
+								$set: {
+									userDuration: {
+										duration: newExpectedDuration
+									}
+								}
+							})
+						}
 					}
 				}
 			})
@@ -1038,23 +1104,18 @@ export namespace ServerPlayoutAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObjId: string, time: number) {
-		check(timelineObjId, String)
+	export function timelineTriggerTimeUpdateCallback (studioId: string, timelineObj: TimelineObjGeneric, time: number) {
+		check(timelineObj, Object)
 		check(time, Number)
 
-		const tObj = Timeline.findOne(getTimelineId(studioId, timelineObjId))
-		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
-
-		if (tObj.metadata && tObj.metadata.pieceId) {
-			logger.debug('Update piece: ', tObj.metadata.pieceId, (new Date(time)).toTimeString())
+		// TODO - this is a destructive action... It needs to either backup the original, or only run on dynamically inserted
+		if (timelineObj.metadata && timelineObj.metadata.pieceId) {
+			logger.debug('Update piece: ', timelineObj.metadata.pieceId, (new Date(time)).toTimeString())
 			Pieces.update({
-				_id: tObj.metadata.pieceId
+				_id: timelineObj.metadata.pieceId
 			}, {
 				$set: {
-					trigger: {
-						type: TriggerType.TIME_ABSOLUTE,
-						value: time
-					}
+					'enable.start': time
 				}
 			})
 		}
@@ -1085,7 +1146,7 @@ export namespace ServerPlayoutAPI {
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
 
-			const versionsContent = markerObject.content.versions || {}
+			const versionsContent = (markerObject.metadata || {}).versions || {}
 
 			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
 
@@ -1118,23 +1179,24 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 		let ps: Array<Promise<any>> = []
 		const currentPieces = currentPart.getAllPieces()
 		currentPieces.forEach((piece) => {
-			if (piece.overflows && typeof piece.expectedDuration === 'number' && piece.expectedDuration > 0 && piece.duration === undefined && piece.durationOverride === undefined) {
-				// Clone an overflowing piece
-				let overflowedItem = _.extend({
-					_id: Random.id(),
-					partId: nextPart._id,
-					trigger: {
-						type: TriggerType.TIME_ABSOLUTE,
-						value: 0
-					},
-					dynamicallyInserted: true,
-					continuesRefId: piece._id,
+			if (piece.overflows && typeof piece.enable.duration === 'number' && piece.enable.duration > 0 && piece.playoutDuration === undefined && piece.userDuration === undefined) {
+				// Subtract the amount played from the duration
+				const remainingDuration = Math.max(0, piece.enable.duration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
 
-					// Subtract the amount played from the expected duration
-					expectedDuration: Math.max(0, piece.expectedDuration - ((piece.startedPlayback || currentPart.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
-				}, _.omit(clone(piece) as Piece, 'startedPlayback', 'duration', 'overflows'))
+				if (remainingDuration > 0) {
+					// Clone an overflowing piece
+					let overflowedItem = literal<Piece>({
+						..._.omit(piece, 'startedPlayback', 'duration', 'overflows'),
+						_id: Random.id(),
+						partId: nextPart._id,
+						enable: {
+							start: 0,
+							duration: remainingDuration,
+						},
+						dynamicallyInserted: true,
+						continuesRefId: piece._id,
+					})
 
-				if (overflowedItem.expectedDuration > 0) {
 					ps.push(asyncCollectionInsert(Pieces, overflowedItem))
 					rundownData.pieces.push(overflowedItem) // update the cache
 				}
@@ -1145,7 +1207,7 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 }
 
 function afterTake (
-	rundown: Rundown,
+	rundownData: RundownData,
 	takePart: Part,
 	timeOffset: number | null = null
 ) {
@@ -1156,12 +1218,12 @@ function afterTake (
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(rundown.studioId, forceNowTime)
+	updateTimeline(rundownData.rundown.studioId, forceNowTime, rundownData)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
-		if (takePart.updateStoryStatus) {
-			IngestActions.notifyCurrentPlayingPart(rundown, takePart)
+		if (takePart.shouldNotifyCurrentPlayingPart) {
+			IngestActions.notifyCurrentPlayingPart(rundownData.rundown, takePart)
 
 		}
 	}, 40)
