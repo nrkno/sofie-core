@@ -8,6 +8,12 @@ First, install Meteor:
 
 * [Meteor Installation Guide](https://www.meteor.com/install)
 
+
+Be aware that Sofie runs on Node version 8.xx so check your node version:
+```
+node -v
+```
+
 Then, clone the repository and install all dependencies:
 (Make sure your NODE_ENV is NOT set to production!)
 
