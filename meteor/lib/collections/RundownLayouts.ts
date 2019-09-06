@@ -66,6 +66,9 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	height: number
 	enableSearch: boolean
 
+	buttonWidthScale: number
+	buttonHeightScale: number
+
 	includeClearInRundownBaseline: boolean
 }
 
