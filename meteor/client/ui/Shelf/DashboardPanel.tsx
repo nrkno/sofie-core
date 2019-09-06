@@ -377,8 +377,10 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
-						<AdLibPanelToolbar
-							onFilterChange={this.onFilterChange} />
+						{ filter.enableSearch &&
+							<AdLibPanelToolbar
+								onFilterChange={this.onFilterChange} />
+						}
 						<div className='dashboard-panel__panel'>
 							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
 								.concat(this.props.rundownBaselineAdLibs)
