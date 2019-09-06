@@ -96,8 +96,8 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 
 		return (
 			<div className='studio-edit mod mhl mvn'>
-				<div>
-					<div className='row'>
+				<div className='row'>
+					<div className='col c12 rl-c6'>
 						<h2 className='mhn mtn'>
 							{t('Generic Properties')}
 						</h2>
@@ -120,21 +120,21 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 									className='mdinput'></EditAttribute>
 								<span className='mdfx'></span>
 							</div>
-							<div className='col c12 rl-c6 alright'>
-								<div className='mbs'>
-									<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
-										{t('Restart Device')}
-									</button>
-								</div>
-								<div className='mbs'>
-									<PeripheralDeviceStatus device={device}/>
-								</div>
-							</div>
 						</label>
 					</div>
-
-					{this.renderSpecifics()}
+					<div className='col c12 rl-c6 alright'>
+						<div className='mbs'>
+							<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
+								{t('Restart Device')}
+							</button>
+						</div>
+						<div className='mbs'>
+							<PeripheralDeviceStatus device={device}/>
+						</div>
+					</div>
 				</div>
+
+				{this.renderSpecifics()}
 			</div>
 		)
 	}
