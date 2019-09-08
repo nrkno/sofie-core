@@ -319,6 +319,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
+							{t('Enable search toolbar')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.enableSearch`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
 							{t('Only Display AdLibs from Current Segment')}
 							<EditAttribute
 								modifiedClassName='bghl'

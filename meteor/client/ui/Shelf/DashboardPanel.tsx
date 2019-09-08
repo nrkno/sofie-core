@@ -30,7 +30,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter } from './AdLibPanel'
+import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
@@ -42,13 +42,15 @@ interface IState {
 	}
 	sourceLayers: {
 		[key: string]: ISourceLayer
-	}
+	},
+	searchFilter: string | undefined
 }
 
 const BUTTON_GRID_WIDTH = 1
 const BUTTON_GRID_HEIGHT = 0.61803
 
 interface IDashboardPanelProps {
+	searchFilter?: string | undefined
 	mediaPreviewUrl?: string
 }
 
@@ -94,7 +96,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 		this.state = {
 			outputLayers: {},
-			sourceLayers: {}
+			sourceLayers: {},
+			searchFilter: undefined
 		}
 	}
 
@@ -326,6 +329,12 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
+	onFilterChange = (filter: string) => {
+		this.setState({
+			searchFilter: filter
+		})
+	}
+
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -366,11 +375,15 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
+						{ filter.enableSearch &&
+							<AdLibPanelToolbar
+								onFilterChange={this.onFilterChange} />
+						}
 						<div className='dashboard-panel__panel'>
 							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
 								.concat(this.props.rundownBaselineAdLibs)
 								.sort((a, b) => a._rank - b._rank)
-								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))
+								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton
 												key={item._id}
