@@ -53,7 +53,8 @@ import {
 import {
 	prepareStudioForBroadcast,
 	activateRundown as libActivateRundown,
-	deactivateRundown as libDeactivateRundown
+	deactivateRundown as libDeactivateRundown,
+	deactivateRundownInner
 } from './actions'
 import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece, resolveActivePieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
@@ -117,6 +118,41 @@ export namespace ServerPlayoutAPI {
 			libResetRundown(rundown)
 
 			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
+		})
+	}
+	/**
+	 * Activate the rundown, decativate any other running rundowns
+	 */
+	export function forceResetAndActivateRundown (rundownId: string, rehearsal: boolean) {
+		check(rehearsal, Boolean)
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+			let anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+			let error: any
+			_.each(anyOtherActiveRundowns, (otherRundown) => {
+				try {
+					deactivateRundownInner(otherRundown)
+				} catch (e) {
+					error = e
+				}
+			})
+			if (error) {
+				// Ok, something went wrong, but check if the active rundowns where deactivated?
+				anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+				if (anyOtherActiveRundowns.length) {
+					// No they weren't, we can't continue..
+					throw error
+				} else {
+					// They where deactivated, log the error and continue
+					logger.error(error)
+				}
+			}
+
+			libResetRundown(rundown)
+
+			return libActivateRundown(rundown, rehearsal)
 		})
 	}
 	/**
