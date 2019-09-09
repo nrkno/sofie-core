@@ -609,7 +609,6 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	handleAnotherRundownActive = (
-		originalMethod: UserActionAPI.methods.activate | UserActionAPI.methods.prepareForBroadcast,
 		rundownId: string,
 		rehersal: boolean,
 		err: ClientAPI.ClientResponseError,
@@ -693,7 +692,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleAnotherRundownActive(UserActionAPI.methods.activate, this.props.rundown._id, false, err, () => {
+							this.handleAnotherRundownActive(this.props.rundown._id, false, err, () => {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							})
 							return false
@@ -713,7 +712,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
 								if (err.error === 409) {
-									this.handleAnotherRundownActive(UserActionAPI.methods.activate, this.props.rundown._id, false, err, onSuccess)
+									this.handleAnotherRundownActive(this.props.rundown._id, false, err, onSuccess)
 									return false
 								}
 							}
@@ -758,7 +757,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						onSuccess()
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleAnotherRundownActive(UserActionAPI.methods.activate, this.props.rundown._id, true, err, onSuccess)
+							this.handleAnotherRundownActive(this.props.rundown._id, true, err, onSuccess)
 							return false
 						}
 					}
@@ -773,7 +772,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
 							if (err.error === 409) {
-								this.handleAnotherRundownActive(UserActionAPI.methods.prepareForBroadcast, this.props.rundown._id, false, err, onSuccess)
+								this.handleAnotherRundownActive(this.props.rundown._id, true, err, onSuccess)
 								return false
 							}
 						}
