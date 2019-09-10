@@ -160,6 +160,17 @@ export function resetAndActivate (rundownId: string, rehearsal?: boolean): Clien
 		ServerPlayoutAPI.resetAndActivateRundown(rundownId, rehearsal)
 	)
 }
+export function forceResetAndActivate (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	// Reset and activates a rundown, automatically deactivates any other running rundowns
+
+	check(rehearsal, Boolean)
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.forceResetAndActivateRundown(rundownId, rehearsal)
+	)
+}
 export function activate (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 	check(rehearsal, Boolean)
 	let rundown = Rundowns.findOne(rundownId)
@@ -489,6 +500,9 @@ methods[UserActionAPI.methods.activate] = function (rundownId: string, rehearsal
 }
 methods[UserActionAPI.methods.deactivate] = function (rundownId: string): ClientAPI.ClientResponse {
 	return deactivate.call(this, rundownId)
+}
+methods[UserActionAPI.methods.forceResetAndActivate] = function (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	return forceResetAndActivate.call(this, rundownId, rehearsal)
 }
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)

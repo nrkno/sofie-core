@@ -608,44 +608,62 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0) + (this.props.rundown.expectedDuration || 0)
 	}
 
-	handleActivationError = (originalMethod: UserActionAPI.methods, originalParams: any[], err: ClientAPI.ClientResponseError, clb?: Function) => {
+	handleAnotherRundownActive = (
+		rundownId: string,
+		rehersal: boolean,
+		err: ClientAPI.ClientResponseError,
+		clb?: Function
+	) => {
 		const { t } = this.props
 
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
 			title: t('Another Rundown is Already Active!'),
-			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', {
+				rundownName: otherRundowns.map(i => i.name).join(', ')
+			}),
 			yes: t('Activate Anyway'),
 			no: t('Cancel'),
-			warning: true,
-			onAccept: (le: any) => {
-				Promise.all(otherRundowns.map(r => {
-					return new Promise((resolve, reject) => {
-						doUserAction(t, le, UserActionAPI.methods.deactivate, [r._id], (err, res) => {
+			actions: [
+				{
+					label: t('Activate anyway (GO ON AIR)'),
+					classNames: 'btn-primary',
+					on: (e) => {
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], (err, response) => {
 							if (!err) {
-								resolve()
-								return
+								if (typeof clb === 'function') clb()
+							} else {
+								console.error(err)
+								doModalDialog({
+									title: t('Failed to activate'),
+									message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+									acceptOnly: true,
+									warning: true,
+									yes: t('OK'),
+									onAccept: (le: any) => { console.log() }
+								})
 							}
-							reject(err)
 						})
-					})
-				})).then((res) => {
-					doUserAction(t, le, originalMethod, originalParams, (err, response) => {
-						if (!err) {
-							if (typeof clb === 'function') clb()
-						}
-					})
-				}, (err) => {
-					console.error(err)
-					doModalDialog({
-						title: t('Failed to deactivate'),
-						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
-						acceptOnly: true,
-						warning: true,
-						yes: t('OK'),
-						onAccept: (le: any) => { console.log() }
-					})
-				}).catch(console.error)
+					}
+				}
+			],
+			warning: true,
+			onAccept: (e) => {
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], (err, response) => {
+					if (!err) {
+						if (typeof clb === 'function') clb()
+					} else {
+						console.error(err)
+						doModalDialog({
+							title: t('Failed to activate'),
+							message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+							acceptOnly: true,
+							warning: true,
+							yes: t('OK'),
+							onAccept: (le: any) => { console.log() }
+						})
+					}
+				})
 			}
 		})
 	}
@@ -674,7 +692,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, () => {
+							this.handleAnotherRundownActive(this.props.rundown._id, false, err, () => {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							})
 							return false
@@ -694,7 +712,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
 								if (err.error === 409) {
-									this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, onSuccess)
+									this.handleAnotherRundownActive(this.props.rundown._id, false, err, onSuccess)
 									return false
 								}
 							}
@@ -739,7 +757,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						onSuccess()
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, true], err, onSuccess)
+							this.handleAnotherRundownActive(this.props.rundown._id, true, err, onSuccess)
 							return false
 						}
 					}
@@ -754,7 +772,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
 							if (err.error === 409) {
-								this.handleActivationError(UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], err, onSuccess)
+								this.handleAnotherRundownActive(this.props.rundown._id, true, err, onSuccess)
 								return false
 							}
 						}

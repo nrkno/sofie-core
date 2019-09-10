@@ -11,6 +11,7 @@ export namespace UserActionAPI {
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
 		'resetRundown' 							= 'userAction.resetRundown',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
+		'forceResetAndActivate' 				= 'userAction.forceResetAndActivate',
 		'activate' 								= 'userAction.activate',
 		'deactivate' 							= 'userAction.deactivate',
 		'reloadData' 							= 'userAction.reloadData',
