@@ -7,6 +7,7 @@ import { MediaManagerDeviceSettings } from './PeripheralDeviceSettings/mediaMana
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { MosDeviceSettings } from './PeripheralDeviceSettings/mosDevice'
 import { SpreadsheetDeviceSettings, SpreadsheetDeviceSecretSettings } from './PeripheralDeviceSettings/spreadsheet'
+import { INewsDeviceSettings } from './PeripheralDeviceSettings/iNews'
 import { createMongoCollection } from './lib'
 
 export interface PeripheralDevice {
@@ -40,7 +41,7 @@ export interface PeripheralDevice {
 
 	token: string
 
-	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings
+	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings | INewsDeviceSettings
 
 	secretSettings?: any | SpreadsheetDeviceSecretSettings
 }
@@ -74,6 +75,12 @@ export interface SpreadsheetDevice extends PeripheralDevice {
 	settings?: SpreadsheetDeviceSettings
 	secretSettings?: SpreadsheetDeviceSecretSettings
 	accessTokenUrl?: string
+}
+export interface INewsDevice extends PeripheralDevice {
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
+	type: PeripheralDeviceAPI.DeviceType.INEWS,
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	settings?: INewsDeviceSettings
 }
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
