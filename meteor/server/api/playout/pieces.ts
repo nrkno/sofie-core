@@ -38,6 +38,8 @@ export interface PieceResolved extends Piece {
 }
 export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	const pieces = part.getAllPieces()
+	const now = getCurrentTime()
+	const partStarted = part.getLastStartedPlayback()
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(i => itemMap[i._id] = i)
@@ -45,13 +47,16 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
 		const obj = clone(createPieceGroup(piece))
 
-		if (obj.enable.start === 0 || obj.enable.start === 'now') {
+		if (obj.enable.start === 0) {
 			if (piece.infiniteId && piece.infiniteId !== piece._id) {
 				// Infinite coninuation, needs to start earlier otherwise it will likely end up being unresolved
 				obj.enable.start = 0
 			} else {
-				obj.enable.start = 100 // TODO: write a motivation for this. perhaps because absolute 0 with no group has(had?) issues?
+				obj.enable.start = 100 // TODO: write a motivation for this. perhaps to try and avoid unresolved pieces, due to them never having length?
 			}
+		} else if (obj.enable.start === 'now') {
+			obj.enable.start = (partStarted ? now - partStarted : 0) + 100
+			// I think this is + 100 as 'now' will at the earliest happen in 100ms from now, so we are trying to compensate?
 		}
 
 		return obj

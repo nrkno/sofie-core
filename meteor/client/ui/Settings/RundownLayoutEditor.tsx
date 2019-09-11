@@ -135,7 +135,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	downloadItem = (item: RundownLayoutBase) => {
-		window.location.replace(`/shelfLayouts/${item._id}`)
+		window.location.replace(`/shelfLayouts/download/${item._id}`)
 	}
 
 	finishEditItem = (item: RundownLayoutBase) => {
@@ -150,11 +150,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	onDeleteLayout = (e: any, item: RundownLayoutBase) => {
-		callMethod(
-			e,
-			RundownLayoutsAPI.methods.removeRundownLayout,
-			item._id
-		)
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Delete layout?'),
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
+			onAccept: () => {
+				callMethod(
+					e,
+					RundownLayoutsAPI.methods.removeRundownLayout,
+					item._id
+				)
+			}
+
+		})
 	}
 
 	renderFilters (item: RundownLayoutBase) {
@@ -265,6 +276,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										className='input text-input input-l' />
 								</label>
 							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button width scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonWidthScale`}
+										obj={item}
+										options={RundownLayoutType}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button height scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonHeightScale`}
+										obj={item}
+										options={RundownLayoutType}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
 						</React.Fragment>
 					}
 					<div className='mod mvs mhs'>
@@ -278,6 +315,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								type='float'
 								collection={RundownLayouts}
 								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Enable search toolbar')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.enableSearch`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
 						</label>
 					</div>
 					<div className='mod mvs mhs'>
@@ -521,8 +570,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			let uploadFileContents = (e2.target as any).result
 
 			doModalDialog({
-				title: t('Update Blueprints?'),
-				yes: t('Update'),
+				title: t('Upload Layout?'),
+				yes: t('Upload'),
 				no: t('Cancel'),
 				message: <React.Fragment>
 					<p>{t('Are you sure you want to upload the shelf layout from the file "{{fileName}}"?',
@@ -530,7 +579,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents) {
-						fetchFrom('/shelfLayouts', {
+						fetchFrom(`/shelfLayouts/upload/${this.props.showStyleBase._id}`, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {

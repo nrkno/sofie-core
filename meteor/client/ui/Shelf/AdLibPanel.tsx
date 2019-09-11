@@ -267,7 +267,7 @@ interface IToolbarStateHader {
 	searchInputValue: string
 }
 
-const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
+export const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
 	constructor (props: Translated<IToolbarPropsHeader>) {
