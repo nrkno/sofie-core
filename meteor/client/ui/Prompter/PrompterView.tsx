@@ -17,6 +17,7 @@ import { Segments } from '../../../lib/collections/Segments'
 import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
 import { Meteor } from 'meteor/meteor'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -67,7 +68,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	private checkWindowScroll: number | null = null
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 		this.state = {
 			subsReady: false
@@ -93,14 +94,14 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	componentWillMount() {
-		this.subscribe('rundowns', _.extend({
+	componentWillMount () {
+		this.subscribe(PubSub.rundowns, _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studios', {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
 		}
@@ -114,12 +115,12 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		})
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate () {
 		document.body.classList.add('dark', 'xdark', 'vertical-overflow-only')
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
-	checkScrollToCurrent() {
+	checkScrollToCurrent () {
 		let rundownId = this.props.rundown && this.props.rundown._id
 		let rundown = Rundowns.findOne(rundownId || '')
 		if (this.configOptions.followTake) {
@@ -133,7 +134,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}
 		}
 	}
-	scrollToCurrent() {
+	scrollToCurrent () {
 		const current = document.querySelector('.prompter .current')
 
 		if (current) {
@@ -144,7 +145,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}, 300)
 		}
 	}
-	scrollToNext() {
+	scrollToNext () {
 		const next = document.querySelector('.prompter .next')
 
 		if (next) {
@@ -155,9 +156,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}, 300)
 		}
 	}
-	findAnchorPosition(startY: number, endY: number, sortDirection: number = 1): number | null {
+	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
 		let foundPositions: number[] = []
-		const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
 		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
 			const { top } = anchor.getBoundingClientRect()
@@ -201,7 +202,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 			for (let index = 0; index < anchors.length; index++) {
 				const current = anchors[index]
-				const next = index + 1 < anchors.length ? anchors[index + 1] : null;
+				const next = index + 1 < anchors.length ? anchors[index + 1] : null
 
 				if (rundown.currentPartId && current.classList.contains(`part-${rundown.currentPartId}`)) {
 					currentPartElement = current
@@ -244,7 +245,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		document.body.classList.add('dark', 'vertical-overflow-only')
 		window.addEventListener('scroll', this.onWindowScroll)
 		this.isMounted0 = true
@@ -252,7 +253,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
-	componentWillUnmount() {
+	componentWillUnmount () {
 		super.componentWillUnmount()
 
 		document.body.classList.remove('dark', 'vertical-overflow-only')
@@ -260,7 +261,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.isMounted0 = false
 	}
 
-	renderMessage(message: string) {
+	renderMessage (message: string) {
 		const { t } = this.props
 
 		return (
@@ -281,7 +282,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		)
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		return <React.Fragment>
@@ -315,8 +316,8 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
-			studioId: studioId
-		}))
+		studioId: studioId
+	}))
 
 	return {
 		rundown,
@@ -353,25 +354,25 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 		this.state = {
 			subsReady: false
 		}
 	}
-	componentWillUnmount() {
+	componentWillUnmount () {
 		super.componentWillUnmount()
 	}
-	componentWillMount() {
+	componentWillMount () {
 
-		this.subscribe('rundowns', { _id: this.props.rundownId })
-		this.subscribe('segments', { rundownId: this.props.rundownId })
-		this.subscribe('parts', { rundownId: this.props.rundownId })
-		this.subscribe('pieces', { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
+		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownId })
 
 	}
 
-	renderPrompterData(prompterData: PrompterData) {
+	renderPrompterData (prompterData: PrompterData) {
 
 		let divs: any[] = []
 		let previousSegmentId = ''
@@ -440,7 +441,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		})
 		return divs
 	}
-	render() {
+	render () {
 		const { t } = this.props
 
 		if (this.props.prompterData && this.props.rundown) {

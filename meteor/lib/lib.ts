@@ -69,6 +69,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	insert?: (o: DBInterface) => void
 	update?: (id: string, o: DBInterface,) => void
 	remove?: (o: DBInterface) => void
+	unchanged?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
@@ -134,9 +135,9 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		if (oldObj) {
 
 			const o2 = (options.beforeDiff ? options.beforeDiff(o, oldObj) : o)
-			const diff = compareObjs(oldObj,o2)
+			const eql = compareObjs(oldObj, o2)
 
-			if (!diff) {
+			if (!eql) {
 				let p: Promise<any> | undefined
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
 				if (options.update) {
@@ -153,6 +154,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 				if (p) ps.push(p)
 				change.updated++
+			} else {
+				if (options.unchanged) options.unchanged(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
@@ -186,7 +189,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			}
 
 			if (options.afterRemove) {
-				p = Promise.resolve(p)
+				Promise.resolve(p)
 				.then(() => {
 					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
@@ -442,7 +445,12 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
-export function getRank (beforeOrLast, after, i: number, count: number): number {
+export function getRank<T extends {_rank: number}> (
+	beforeOrLast: T | null | undefined,
+	after: T | null | undefined,
+	i: number,
+	count: number
+): number {
 	let newRankMax
 	let newRankMin
 
@@ -580,6 +588,35 @@ function cleanUprateLimitIgnore () {
 		}
 	}
 }
+const cacheResultCache: {
+	[name: string]: {
+		ttl: number,
+		value: any
+	}
+} = {}
+/** Cache the result of function for a limited time */
+export function cacheResult<T> (name: string, fcn: () => T, limitTime: number = 1000) {
+
+	if (Math.random() < 0.01) {
+		Meteor.setTimeout(cleanCacheResult, 10000)
+	}
+	const cache = cacheResultCache[name]
+	if (!cache || cache.ttl < Date.now()) {
+		const value = fcn()
+		cacheResultCache[name] = {
+			ttl: Date.now() + limitTime,
+			value: value
+		}
+		return value
+	} else {
+		return cache.value
+	}
+}
+function cleanCacheResult () {
+	_.each(cacheResultCache, (cache, name) => {
+		if (cache.ttl < Date.now()) delete cacheResultCache[name]
+	})
+}
 
 export function escapeHtml (text: string): string {
 	// Escape strings, so they are XML-compatible:
@@ -610,10 +647,23 @@ const ticCache = {}
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()
 }
-export function toc (name: string = 'default', logStr?: string) {
-	let t: number = Date.now() - ticCache[name]
-	if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
-	return t
+export function toc (name: string = 'default', logStr?: string | Promise<any>[]) {
+
+	if (_.isArray(logStr)) {
+		_.each(logStr, (promise, i) => {
+			promise.then((result) => {
+				toc(name, 'Promise ' + i)
+				return result
+			})
+			.catch(e => {
+				throw e
+			})
+		})
+	} else {
+		let t: number = Date.now() - ticCache[name]
+		if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
+		return t
+	}
 }
 
 export function asyncCollectionFindFetch<DocClass, DBInterface> (
@@ -719,14 +769,14 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
  *
  * creds: https://github.com/rsp/node-caught/blob/master/index.js
  */
-export const caught = (f => p => (p.catch(f), p))(() => {
+export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), p))(() => {
 	// nothing
 })
 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
+export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
 	Promise.all(ps)
 	.then((result) => {
 		cb(null, result)
@@ -912,6 +962,11 @@ export type RequiredPropertyNames<T> = {
 }[keyof T]
 export type OptionalProperties<T> = Pick<T, OptionalPropertyNames<T>>
 export type RequiredProperties<T> = Pick<T, RequiredPropertyNames<T>>
+
+export type Diff<T, U> = T extends U ? never : T  // Remove types from T that are assignable to U
+export type KeysByType<TObj, TVal> = Diff<{
+	[K in keyof TObj]: TObj[K] extends TVal ? K : never
+}[keyof TObj], undefined>
 
 /**
  * Returns the difference between object A and B

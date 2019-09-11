@@ -1,8 +1,8 @@
-import { Mongo } from 'meteor/mongo'
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 /**
  * The view targeted by this layout:
@@ -64,6 +64,12 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	y: number
 	width: number
 	height: number
+	enableSearch: boolean
+
+	buttonWidthScale: number
+	buttonHeightScale: number
+
+	includeClearInRundownBaseline: boolean
 }
 
 export interface RundownLayoutBase {
@@ -72,7 +78,7 @@ export interface RundownLayoutBase {
 	blueprintId?: string
 	userId?: string
 	name: string
-	type: RundownLayoutType
+	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutFilterBase[]
 }
 
@@ -112,7 +118,7 @@ export interface DashboardLayout extends RundownLayoutBase {
 }
 
 export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>
-	= new Mongo.Collection<RundownLayoutBase>('rundownLayouts')
+	= createMongoCollection<RundownLayoutBase>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

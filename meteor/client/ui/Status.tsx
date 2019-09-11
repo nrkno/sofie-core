@@ -17,6 +17,7 @@ import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'
 import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { PubSub } from '../../lib/api/pubsub'
 
 class WelcomeToStatus extends React.Component {
 	render () {
@@ -77,13 +78,13 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this.subscribe('peripheralDevices', {})
-		this.subscribe('studios', {})
-		this.subscribe('showStyleBases', {})
-		this.subscribe('showStyleVariants', {})
+		this.subscribe(PubSub.peripheralDevices, {})
+		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.showStyleBases, {})
+		this.subscribe(PubSub.showStyleVariants, {})
 	}
 	render () {
-		const { t } = this.props
+		// const { t } = this.props
 
 		return (
 			<div className='mtl gutter has-statusbar'>

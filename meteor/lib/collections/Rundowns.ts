@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
@@ -10,12 +9,13 @@ import { Meteor } from 'meteor/meteor'
 import { AdLibPieces } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
+import { createMongoCollection } from './lib'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -83,6 +83,9 @@ export interface DBRundown extends IBlueprintRundownDB {
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
+
+	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
+	previousPersistentState?: TimelinePersistentState
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
@@ -119,6 +122,8 @@ export class Rundown implements DBRundown {
 	public holdState?: RundownHoldState
 	public dataSource: string
 	public notes?: Array<RundownNote>
+	public previousPersistentState?: TimelinePersistentState
+	_: any
 
 	constructor (document: DBRundown) {
 		_.each(_.keys(document), (key) => {
@@ -279,9 +284,9 @@ export interface RundownData {
 	pieces: Array<Piece>
 }
 
-// export const Rundowns = new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
+// export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
 export const Rundowns: TransformedCollection<Rundown, DBRundown>
-	= new Mongo.Collection<Rundown>('rundowns', { transform: (doc) => applyClassToDocument(Rundown, doc) })
+	= createMongoCollection<Rundown>('rundowns', { transform: (doc) => applyClassToDocument(Rundown, doc) })
 registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

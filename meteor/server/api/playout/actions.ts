@@ -32,7 +32,7 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
-		throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
+		throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id), _.map(anyOtherActiveRundowns, rundown => rundown._id).join(','))
 	}
 
 	let m = {
@@ -65,9 +65,23 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	})
 }
 export function deactivateRundown (rundown: Rundown) {
+
+	deactivateRundownInner(rundown)
+
+	updateTimeline(rundown.studioId)
+
+	Meteor.defer(() => {
+		const { blueprint } = getBlueprintOfRundown(rundown)
+		if (blueprint.onRundownDeActivate) {
+			Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
+			.catch(logger.error)
+		}
+	})
+}
+export function deactivateRundownInner (rundown: Rundown) {
 	logger.info('Deactivating rundown ' + rundown._id)
 
-	let previousPart = (rundown.currentPartId ?
+	const previousPart = (rundown.currentPartId ?
 		Parts.findOne(rundown.currentPartId)
 		: null
 	)
@@ -83,6 +97,7 @@ export function deactivateRundown (rundown: Rundown) {
 		}
 	})
 	setNextPart(rundown, null)
+
 	if (rundown.currentPartId) {
 		Parts.update(rundown.currentPartId, {
 			$push: {
@@ -91,17 +106,7 @@ export function deactivateRundown (rundown: Rundown) {
 		})
 	}
 
-	updateTimeline(rundown.studioId)
-
 	IngestActions.notifyCurrentPlayingPart(rundown, null)
-
-	Meteor.defer(() => {
-		const { blueprint } = getBlueprintOfRundown(rundown)
-		if (blueprint.onRundownDeActivate) {
-			Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
-			.catch(logger.error)
-		}
-	})
 }
 export function prepareStudioForBroadcast (studio: Studio) {
 	logger.info('prepareStudioForBroadcast ' + studio._id)

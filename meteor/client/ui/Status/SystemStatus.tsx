@@ -17,6 +17,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { getAdminMode } from '../../lib/localStorage'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -53,18 +55,6 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			showDeleteDeviceConfirm: null,
 			showKillDeviceConfirm: null
 		}
-	}
-	statusCodeString () {
-		let t = this.props.t
-		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not Connected')
-	}
-	statusMessages () {
-		let messages = ((this.props.device || {}).status || {}).messages || []
-		return (
-			messages.length ?
-			'"' + messages.join(', ') + '"' :
-			''
-		)
 	}
 	deviceTypeString () {
 		let t = this.props.t
@@ -160,50 +150,35 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		})
 	}
 
+	onFormatHyperdeck (device: PeripheralDevice) {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Format HyperDeck disks'),
+			message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
+			onAccept: (event: any) => {
+
+				callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck', (err, result) => {
+					if (err) {
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to HyperDecks on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
+					} else {
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Formatting HyperDeck disks on device "{{deviceName}}"...', { deviceName: device.name }), 'SystemStatus'))
+					}
+				})
+			},
+		})
+	}
+
 	render () {
 		const { t } = this.props
-		// let statusClassNames = ClassNames({
-		// 	'device-item__device-status': true,
-		// 	'device-item__device-status--unknown': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN,
-		// 	'device-item__device-status--good': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD,
-		// 	'device-item__device-status--minor-warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-		// 	'device-item__device-status--warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-		// 	'device-item__device-status--bad': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD,
-		// 	'device-item__device-status--fatal': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL
-		// })
-		let statusClassNames = [
-			'device-item__device-status',
-			(
-				(
-					this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
-					|| !this.props.device.connected
-				) ?
-					'device-item__device-status--unknown' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
-					'device-item__device-status--good' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
-					'device-item__device-status--minor-warning' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
-					'device-item__device-status--warning' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
-					'device-item__device-status--bad' :
-				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
-					'device-item__device-status--fatal' :
-				''
-			)
-		].join(' ')
 
 		return (
 			<div key={this.props.device._id} className='device-item'>
 				<div className='status-container'>
-					<div className={statusClassNames}>
-						<div className='value'>
-							<span className='pill device-item__device-status__label'>
-								{this.statusCodeString()}
-							</span>
-						</div>
-						<div><i>{this.statusMessages()}</i></div>
-					</div>
+					<PeripheralDeviceStatus device={this.props.device} />
+
 					<div className='device-item__last-seen'>
 						<label>{t('Last seen')}: </label>
 						<div className='value'>
@@ -212,7 +187,10 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div>
+					{getAdminMode() ?
+						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
+						<div className='value'>{this.props.device.name}</div>
+					}
 				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
@@ -239,6 +217,20 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 								}>
 									{t('Restart')}
 									{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
+								</button>
+							</React.Fragment> : null
+						)}
+						{(
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.subType === TSR_DeviceType.HYPERDECK ? <React.Fragment>
+								<button className='btn btn-secondary' onClick={
+									(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										this.onFormatHyperdeck(this.props.device)
+									}
+								}>
+									{t('Format disks')}
 								</button>
 							</React.Fragment> : null
 						)}
@@ -312,7 +304,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 })(class SystemStatus extends MeteorReactComponent<Translated<ISystemStatusProps & ISystemStatusTrackedProps>, ISystemStatusState> {
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe('peripheralDevices', {})
+		this.subscribe(PubSub.peripheralDevices, {})
 	}
 	renderPeripheralDevices () {
 
@@ -378,6 +370,66 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				<div className='mod mvl'>
 					{this.renderPeripheralDevices()}
 				</div>
+			</div>
+		)
+	}
+})
+
+interface PeripheralDeviceStatusProps {
+	device: PeripheralDevice
+}
+interface PeripheralDeviceStatusState {
+
+}
+export const PeripheralDeviceStatus = i18next.translate()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & i18next.InjectedTranslateProps, PeripheralDeviceStatusState> {
+	constructor (props: PeripheralDeviceStatusProps & i18next.InjectedTranslateProps) {
+		super(props)
+
+	}
+	statusCodeString () {
+		const { t } = this.props
+
+		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not Connected')
+	}
+	statusMessages () {
+		let messages = ((this.props.device || {}).status || {}).messages || []
+		return (
+			messages.length ?
+			'"' + messages.join(', ') + '"' :
+			''
+		)
+	}
+	render () {
+
+		const statusClassNames = [
+			'device-status',
+			(
+				(
+					this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
+					|| !this.props.device.connected
+				) ?
+					'device-status--unknown' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
+					'device-status--good' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
+					'device-status--minor-warning' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
+					'device-status--warning' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
+					'device-status--bad' :
+				(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
+					'device-status--fatal' :
+				''
+			)
+		].join(' ')
+		return (
+			<div className={statusClassNames}>
+				<div className='value'>
+					<span className='pill device-status__label'>
+						{this.statusCodeString()}
+					</span>
+				</div>
+				<div><i>{this.statusMessages()}</i></div>
 			</div>
 		)
 	}

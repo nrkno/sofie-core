@@ -55,21 +55,25 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 0.21.0: Release 6   (never released)
  * 0.22.0: Release 7   (2019-03-15)
  * 0.23.0: Release 8   (2019-04-08)
- * 0.24.0: Release 9   (TBD)
- * 0.25.0: Release 10  (TBD)
+ * 0.24.0: Release 9   (2019-05-16)
+ * 0.25.0: Release 10  (2019-07-05)
  * 0.26.0: Release 11  (TBD)
+ * 1.0.0: Release 12  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.26.0'
+export const CURRENT_SYSTEM_VERSION = '1.0.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
+ * This means that things like snaphots from older versions cannot be restored from
  */
 export const UNSUPPORTED_VERSIONS = [
 	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
 	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
 	'<=0.18',
-	// 0.24.0 to 0.25.0: Major refactoring, Renamin of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
+	// 0.24.0 to 0.25.0: Major refactoring, Renaming of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
 	'<=0.24',
+	// 0.26.0 to 1.0.0: Adding of RundownPlaylist and support for multiple, concurrent rundowns in a show
+	'<=0.26',
 ]
 
 export function isVersionSupported (version: Version) {

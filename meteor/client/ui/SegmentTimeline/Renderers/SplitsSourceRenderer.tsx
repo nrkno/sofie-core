@@ -33,13 +33,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 
 		this.subItems = this.rebuildSubItems()
 	}
 
-	componentWillUpdate() {
+	componentWillUpdate () {
 		this.subItems = this.rebuildSubItems()
 	}
 
@@ -51,7 +51,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.updateAnchoredElsWidths()
 	}
 
@@ -62,7 +62,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -102,7 +102,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		return []
 	}
 
-	renderSubItems() {
+	renderSubItems () {
 		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item, index, array) => {
 			return (
 				<div key={'item-' + item._id}
@@ -118,7 +118,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		})
 	}
 
-	renderSplitPreview() {
+	renderSplitPreview () {
 		return (
 			<div className='video-preview'>
 				{
@@ -152,7 +152,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		)
 	}
 
-	render() {
+	render () {
 		let labelItems = this.props.piece.name.split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''

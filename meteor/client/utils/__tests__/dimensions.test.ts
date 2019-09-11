@@ -16,8 +16,8 @@ describe('client/utils/dimensions', () => {
 
 	describe('getElementWidth', () => {
 		test('returns width from getComputedStyle when it has a numeric value', () => {
-			const expected = 20;
-			const element = document.createElement('div');
+			const expected = 20
+			const element = document.createElement('div')
 			getComputedStyle.withArgs(element).returns({ width: expected })
 
 			const actual = getElementWidth(element)
@@ -31,7 +31,7 @@ describe('client/utils/dimensions', () => {
 			const offsetWidth = 63
 			const expected = offsetWidth - paddingLeft - paddingRight
 
-			const element = document.createElement('div');
+			const element = document.createElement('div')
 			Object.defineProperty(element, 'offsetWidth', { value: offsetWidth })
 			getComputedStyle.withArgs(element).returns({ width: 'auto', paddingLeft, paddingRight })
 
@@ -43,8 +43,8 @@ describe('client/utils/dimensions', () => {
 
 	describe('getElementHeight', () => {
 		test('returns height from getComputedStyle when it has a numeric value', () => {
-			const expected = 20;
-			const element = document.createElement('div');
+			const expected = 20
+			const element = document.createElement('div')
 			getComputedStyle.withArgs(element).returns({ height: expected })
 
 			const actual = getElementHeight(element)
@@ -58,7 +58,7 @@ describe('client/utils/dimensions', () => {
 			const scrollHeight = 37
 			const expected = scrollHeight - paddingTop - paddingBottom
 
-			const element = document.createElement('div');
+			const element = document.createElement('div')
 			Object.defineProperty(element, 'scrollHeight', { value: scrollHeight })
 			getComputedStyle.withArgs(element).returns({ height: 'auto', paddingTop, paddingBottom })
 

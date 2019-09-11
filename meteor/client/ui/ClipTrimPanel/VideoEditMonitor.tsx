@@ -27,7 +27,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	private internalTime: number = 0
 	private lastPosition: number
 
-	constructor(props: Translated<IProps>) {
+	constructor (props: Translated<IProps>) {
 		super(props)
 
 		this.internalTime = props.currentTime || 0
@@ -117,11 +117,11 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 		// TODO
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		this.cleanUpListeners()
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate () {
 		if (this.videoEl) {
 			if (this.videoEl.src !== this.props.src) {
 				this.videoEl.src = this.props.src || ''
@@ -131,7 +131,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<div className='video-edit-monitor'>
 				<div className={classNames('video-edit-monitor__monitor', {

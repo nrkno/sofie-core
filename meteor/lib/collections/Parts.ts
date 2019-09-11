@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { Rundowns } from './Rundowns'
@@ -17,6 +16,7 @@ import {
 	PartEndState,
 } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
+import { createMongoCollection } from './lib'
 
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends IBlueprintPartDB {
@@ -188,7 +188,7 @@ export class Part implements DBPart {
 
 				if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 					const part = partLookup[piece.sourceLayerId]
-					const st = checkPieceContentStatus(piece, part, studio ? studio.config : [])
+					const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
 					if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
@@ -224,7 +224,7 @@ export class Part implements DBPart {
 }
 
 export const Parts: TransformedCollection<Part, DBPart>
-	= new Mongo.Collection<Part>('parts', { transform: (doc) => applyClassToDocument(Part, doc) })
+	= createMongoCollection<Part>('parts', { transform: (doc) => applyClassToDocument(Part, doc) })
 registerCollection('Parts', Parts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

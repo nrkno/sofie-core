@@ -1,10 +1,6 @@
 import * as React from 'react'
 import * as CoreIcons from '@nrk/core-icons'
-import * as faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
-import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faStopCircle from '@fortawesome/fontawesome-free-solid/faStopCircle'
-import * as faRedo from '@fortawesome/fontawesome-free-solid/faRedo'
+import { faChevronDown, faChevronRight, faCheck, faStopCircle, faRedo, faFlag } from '@fortawesome/fontawesome-free-solid'
 import * as VelocityReact from 'velocity-react'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as ClassNames from 'classnames'
@@ -81,6 +77,7 @@ interface IItemProps {
 	toggleExpanded: (id: string) => void
 	actionRestart: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
 	actionAbort: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
+	actionPrioritize: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
 }
 
 const iconEnterAnimation = {
@@ -258,6 +255,13 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 						<FontAwesomeIcon icon={faStopCircle} />
 					</button>
 				</Tooltip>
+				<Tooltip overlay={t('Prioritize')} placement='top'>
+					<button className={ClassNames('action-btn', {
+						'prioritized': i.priority > 1
+					})} disabled={i.finished} onClick={(e) => props.actionPrioritize(e, i)}>
+						<FontAwesomeIcon icon={faFlag} />
+					</button>
+				</Tooltip>
 			</div>
 		</div>
 		<VelocityReact.VelocityTransitionGroup enter={{
@@ -329,11 +333,22 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
 		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortWorkflow, [workflow._id])
 	}
+	actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
+		doUserAction(this.props.t, event, UserActionAPI.methods.mediaPrioritizeWorkflow, [workflow._id])
+	}
+	actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
+		doUserAction(this.props.t, event, UserActionAPI.methods.mediaRestartAllWorkflows, [])
+	}
+	actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
+		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortAllWorkflows, [])
+	}
 
 	renderWorkFlows () {
 		const { t } = this.props
 
-		return this.props.workFlows.sort((a, b) => b.created - a.created).map(i => {
+		return this.props.workFlows
+		.sort((a, b) => b.created - a.created)
+		.sort((a, b) => b.priority - a.priority).map(i => {
 			return <MediaManagerWorkFlowItem
 				expanded={this.state.expanded}
 				item={i}
@@ -342,6 +357,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 				toggleExpanded={this.toggleExpanded}
 				actionRestart={this.actionRestart}
 				actionAbort={this.actionAbort}
+				actionPrioritize={this.actionPrioritize}
 			/>
 		})
 	}
@@ -354,6 +370,10 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 				<header className='mbs'>
 					<h1>{t('Media Transfer Status')}</h1>
 				</header>
+				<div className='mod mvl alright'>
+					<button className='btn btn-secondary mls' onClick={this.actionAbortAll}>{t('Abort All')}</button>
+					<button className='btn btn-secondary mls' onClick={this.actionRestartAll}>{t('Restart All')}</button>
+				</div>
 				<div className='mod mvl'>
 					{this.renderWorkFlows()}
 				</div>

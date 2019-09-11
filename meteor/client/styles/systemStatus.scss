@@ -70,55 +70,6 @@
 	.device-item__connected {
 		font-weight: bold;
 	}
-	.device-item__device-status {
-		> .value {
-			> .pill {
-				margin-right: 0;
-			}
-		}
-
-		&.device-item__device-status--good {
-			.pill {
-				background: $color-status-good;
-				border: $color-status-good;
-			}
-		}
-
-		&.device-item__device-status--minor-warning {
-			.pill {
-				background: $color-status-minor-warning;
-				border: $color-status-minor-warning;
-			}
-		}
-
-		&.device-item__device-status--warning {
-			.pill {
-				background: $color-status-warning;
-				border: $color-status-warning;
-			}
-		}
-
-		&.device-item__device-status--bad {
-			.pill {
-				background: $color-status-bad;
-				border: $color-status-bad;
-			}
-		}
-
-		&.device-item__device-status--fatal {
-			.pill {
-				background: $color-status-fatal;
-				border: $color-status-fatal;
-			}
-		}
-
-		&.device-item__device-status--unknown {
-			.pill {
-				background: $color-status-unknown;
-				border: $color-status-unknown;
-			}
-		}
-	}
 
 	.device-item__actions {
 		> .action-btn {
@@ -128,6 +79,66 @@
 
 		> .btn {
 			margin-left: 0.3em;
+		}
+	}
+}
+
+.device-status {
+	line-height: 1.5em;
+
+	> .value {
+		> .pill {
+			margin-right: 0;
+		}
+	}
+	
+	&.device-item__device-status--minor-warning {
+		.pill {
+			background: $color-status-minor-warning;
+			border: $color-status-minor-warning;
+			color: $color-status-minor-warning-text;
+		}
+	}
+
+	&.device-status--good {
+		.pill {
+			background: $color-status-good;
+			border: $color-status-good;
+		}
+	}
+
+	&.device-status--minor-warning {
+		.pill {
+			background: $color-status-minor-warning;
+			border: $color-status-minor-warning;
+		}
+	}
+
+	&.device-status--warning {
+		.pill {
+			background: $color-status-warning;
+			border: $color-status-warning;
+		}
+	}
+
+	&.device-status--bad {
+		.pill {
+			background: $color-status-bad;
+			border: $color-status-bad;
+		}
+	}
+
+	&.device-status--fatal {
+		.pill {
+			background: $color-status-fatal;
+			border: $color-status-fatal;
+		}
+	}
+
+	&.device-status--unknown {
+		.pill {
+			background: $color-status-unknown;
+			border: $color-status-unknown;
 		}
 	}
 }
@@ -262,9 +273,13 @@
 				flex-wrap: wrap;	
 				flex: 0 0;
 				margin-left: 0.5em;
-				min-width: 3em;
+				min-width: 4em;
 				align-items: flex-start;
 				justify-content: space-around;
+
+				> .action-btn.prioritized {
+					color: #dc143c;
+				}
 			}
 
 			.workflow__header__expand {

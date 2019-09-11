@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	Route
+	Route, Switch
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -11,12 +11,14 @@ import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
+import { PubSub } from '../../lib/api/pubsub'
 
 interface IProps {
-	match?: {
+	match: {
 		params?: {
 			studioId: string
 		}
+		path: string
 	}
 }
 interface ITrackedProps {
@@ -38,8 +40,8 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
-			studioId: studioId
-		}))
+		studioId: studioId
+	}))
 
 	return {
 		rundown,
@@ -48,21 +50,21 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 })(class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
-	constructor(props) {
+	constructor (props) {
 		super(props)
 		this.state = {
 			subsReady: false
 		}
 	}
 
-	componentWillMount() {
-		this.subscribe('rundowns', _.extend({
+	componentWillMount () {
+		this.subscribe(PubSub.rundowns, _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studios', {
+			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
 		}
@@ -76,20 +78,20 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		})
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		super.componentWillUnmount()
 		document.body.classList.remove('dark', 'vertical-overflow-only')
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate () {
 		document.body.classList.add('dark', 'vertical-overflow-only')
 	}
 
-	renderMessage(message: string) {
+	renderMessage (message: string) {
 		const { t } = this.props
 
 		return (
@@ -110,7 +112,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		)
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		if (!this.state.subsReady) {
 			return (
@@ -120,7 +122,14 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 		} else {
 			if (this.props.rundown) {
-				return <RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+				return <Switch>
+							<Route path={this.props.match.path} exact>
+								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+							</Route>
+							<Route path={`${this.props.match.path}/shelf`}>
+								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} onlyShelf={true} />
+							</Route>
+						</Switch>
 			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {

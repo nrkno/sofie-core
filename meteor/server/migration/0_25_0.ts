@@ -25,7 +25,8 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { logger } from '../../lib/logging'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [

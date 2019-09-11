@@ -166,7 +166,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(showStyleBase)} object={showStyleBase} />
+						<ConfigManifestSettings
+							t={this.props.t}
+							manifest={collectConfigs(showStyleBase)}
+							object={showStyleBase}
+							collection={ShowStyleBases}
+							configPath={'config'}
+							/>
 					</div>
 				</div>
 				<div className='row'>
@@ -226,6 +232,8 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 	onDeleteROArgument = (item: IBlueprintRuntimeArgumentsItem) => {
@@ -405,6 +413,8 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			this.setState({
 				editedSources: this.state.editedSources
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -830,6 +840,8 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 			this.setState({
 				editedOutputs: this.state.editedOutputs
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -1033,6 +1045,8 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -1179,6 +1193,8 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			this.setState({
 				editedMappings: this.state.editedMappings
 			})
+		} else {
+			this.finishEditItem(layerId)
 		}
 	}
 	onAddShowStyleVariant = () => {
@@ -1242,6 +1258,8 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 										<ConfigManifestSettings
 											t={this.props.t}
 											manifest={collectConfigs(showStyleVariant)}
+											collection={ShowStyleVariants}
+											configPath={'config'}
 											object={showStyleVariant}
 											subPanel={true} />
 									</div>

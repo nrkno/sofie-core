@@ -149,6 +149,16 @@ $segment-layer-background-guest: #008a92;
 	}
 }
 
+@mixin invalid-overlay {
+	&.invalid {
+		opacity: 0.5;
+		background-color: #333;
+		background-image:
+			repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
+			repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+	}
+}
+
 @mixin missing-overlay {
 	
 	&.source-broken, &.source-missing {

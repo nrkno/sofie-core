@@ -1,7 +1,7 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
 
 export interface MediaObject0 {
 	// Media object file path relative to playout server
@@ -34,9 +34,9 @@ export interface MediaObject0 {
 	_rev: string
 }
 export interface MediaObject extends MediaObject0 {
-	studioId: string,
+	studioId: string
 	// the Id of the MediaObject database this object has been imported from - essentially CasparCG Device Id this file is on
-	collectionId: string,
+	collectionId: string // Note: To be renamed to storageId
 	// the Id in the MediaObject in the source database
 	objId: string
 	// the CasparCG clip name
@@ -126,7 +126,7 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
-	= new Mongo.Collection<MediaObject>('mediaObjects')
+	= createMongoCollection<MediaObject>('mediaObjects')
 registerCollection('MediaObjects', MediaObjects)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

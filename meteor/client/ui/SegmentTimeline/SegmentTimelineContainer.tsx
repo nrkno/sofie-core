@@ -6,8 +6,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import { getCurrentTime } from '../../../lib/lib'
-import { RundownTiming, computeSegmentDuration } from '../RundownView/RundownTiming'
+import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
@@ -22,6 +21,8 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
+import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
+import { PubSub } from '../../../lib/api/pubsub'
 
 const SPEAK_ADVANCE = 500
 
@@ -51,6 +52,7 @@ export interface PieceUi extends PieceExtended {
 	message?: string | null
 }
 interface IProps {
+	id: string
 	segmentId: string,
 	studio: Studio,
 	showStyleBase: ShowStyleBase,
@@ -155,10 +157,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				props.rundown.currentPartId !== nextProps.rundown.currentPartId ||
 				props.rundown.nextPartId !== nextProps.rundown.nextPartId
 			) && (
-				(data.parts && (
+				data.parts &&
+				(
 					data.parts.find(i => (i._id === props.rundown.currentPartId) || (i._id === nextProps.rundown.currentPartId)) ||
 					data.parts.find(i => (i._id === props.rundown.nextPartId) || (i._id === nextProps.rundown.nextPartId))
-					)
 				)
 			)
 		)
@@ -169,6 +171,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	// We also could investigate just skipping this and requiring a full reload if the studio installation is changed
 	if (
 		(typeof props.studio !== typeof nextProps.studio) ||
+		!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
 		!_.isEqual(props.studio.config, nextProps.studio.config) ||
 		!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 		!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
@@ -184,8 +187,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	isLiveSegment: boolean
+	isVisible: boolean
 	rundownCurrentSegmentId: string | null
 	timelineDiv: HTMLDivElement
+	intersectionObserver: IntersectionObserver | undefined
+	mountedTime: number
 
 	private _prevDisplayTime: number
 
@@ -202,13 +208,14 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
+		this.isVisible = false
 	}
 
 	componentWillMount () {
-		this.subscribe('segment', {
+		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
 		})
-		this.subscribe('parts', {
+		this.subscribe(PubSub.parts, {
 			segmentId: this.props.segmentId
 		})
 		SpeechSynthesiser.init()
@@ -218,9 +225,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
-			this.startOnAirLine()
+			this.startLive()
 		}
 		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		window.requestAnimationFrame(() => {
+			this.mountedTime = Date.now()
+			if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
+				scrollToSegment(this.props.segmentId, true).catch(console.error)
+			}
+		})
 	}
 
 	componentDidUpdate (prevProps) {
@@ -228,11 +241,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
-			this.startOnAirLine()
+			this.startLive()
 		}
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
-			this.stopOnAirLine()
+			this.stopLive()
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
@@ -256,13 +269,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	componentWillUnmount () {
 		this._cleanUp()
-		this.stopOnAirLine()
+		if (this.intersectionObserver && this.props.isLiveSegment && this.props.followLiveSegments) {
+			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+		}
+		this.stopLive()
 		window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = { ...this.state.collapsedOutputs }
-		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
+		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] !== true
 		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, `segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
@@ -287,7 +303,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	onAirLineRefresh = () => {
+	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
@@ -299,7 +315,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
 			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-				(getCurrentTime() - lastStartedPlayback + partOffset + lastPlayOffset) :
+				(e.detail.currentTime - lastStartedPlayback + partOffset + lastPlayOffset) :
 				partOffset
 
 			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
@@ -310,7 +326,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.setState(_.extend({
 				livePosition: newLivePosition,
 				displayTimecode: this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-					(getCurrentTime() - (lastStartedPlayback + onAirPartDuration)) :
+					(e.detail.currentTime - (lastStartedPlayback + onAirPartDuration)) :
 					(onAirPartDuration * -1)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
@@ -318,12 +334,36 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	startOnAirLine = () => {
-		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+	visibleChanged = (entries: IntersectionObserverEntry[]) => {
+		if ((entries[0].intersectionRatio < 0.99) && !isMaintainingFocus() && (Date.now() - this.mountedTime > 2000)) {
+			// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
+			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+			this.isVisible = false
+		} else {
+			this.isVisible = true
+		}
 	}
 
-	stopOnAirLine = () => {
+	startLive = () => {
+		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		// calculate the browser viewport zoom factor. Works perfectly in Chrome on Windows.
+		const zoomFactor = window.outerWidth / window.innerWidth
+		this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
+			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
+			// is viewport. This seems like an implementation bug and IntersectionObserver is
+			// an Experimental Feature in Chrome, so this might change in the future.
+			rootMargin: `-${150 * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
+			threshold: [0, 0.25, 0.5, 0.75, 0.98]
+		})
+		this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
+	}
+
+	stopLive = () => {
 		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+		if (this.intersectionObserver) {
+			this.intersectionObserver.disconnect()
+			this.intersectionObserver = undefined
+		}
 	}
 
 	onFollowLiveLine = (state: boolean, event: any) => {
@@ -402,6 +442,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
+				id={this.props.id}
 				segmentRef={this.segmentRef}
 				key={this.props.segmentui._id}
 				segment={this.props.segmentui}

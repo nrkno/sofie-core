@@ -15,6 +15,7 @@ import { MediaManagerSettingsComponent } from './components/MediaManagerSettings
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -58,6 +59,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 					return <MediaManagerSettingsComponent
 						device={this.props.device}
+						subDevices={this.props.subDevices}
 					/>
 				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
 					return <SpreadsheetSettingsComponent
@@ -87,31 +89,42 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 		})
 	}
 
-	renderEditForm () {
+	renderEditForm (device: PeripheralDevice) {
 		const { t } = this.props
 
 		return (
 			<div className='studio-edit mod mhl mvn'>
 				<div>
-					<button className='btn btn-secondary btn-tight right' onClick={(e) => this.props.device && this.restartDevice(this.props.device)}>
-						{t('Restart Device')}
-					</button>
-					<h2 className='mhn mtn'>
-						{t('Generic Properties')}
-					</h2>
-					<label className='field'>
-						{t('Device Name')}
-						<div className='mdi'>
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='name'
-								obj={this.props.device}
-								type='text'
-								collection={PeripheralDevices}
-								className='mdinput'></EditAttribute>
-							<span className='mdfx'></span>
+					<div className='row'>
+						<div className='col c12 rl-c6'>
+							<h2 className='mhn mtn'>
+								{t('Generic Properties')}
+							</h2>
+							<label className='field'>
+								{t('Device Name')}
+								<div className='mdi'>
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute='name'
+										obj={device}
+										type='text'
+										collection={PeripheralDevices}
+										className='mdinput'></EditAttribute>
+									<span className='mdfx'></span>
+								</div>
+							</label>
 						</div>
-					</label>
+						<div className='col c12 rl-c6 alright'>
+							<div className='mbs'>
+								<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
+									{t('Restart Device')}
+								</button>
+							</div>
+							<div className='mbs'>
+								<PeripheralDeviceStatus device={device}/>
+							</div>
+						</div>
+					</div>
 
 					{this.renderSpecifics()}
 				</div>
@@ -122,7 +135,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 	render () {
 
 		if (this.props.device) {
-			return this.renderEditForm()
+			return this.renderEditForm(this.props.device)
 		} else {
 			return <Spinner />
 		}

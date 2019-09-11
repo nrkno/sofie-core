@@ -1,6 +1,6 @@
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import { ClientAPI } from '../../lib/api/client'
 import { setMeteorMethods, Methods } from '../methods'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
@@ -12,7 +12,7 @@ import { logger } from '../logging'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 export function createRundownLayout (
 	name: string,
@@ -41,26 +41,31 @@ postJsRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postJsRoute.route('/rundownLayouts', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
+
+	const showStyleBaseId = params.showStyleBaseId
+
+	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+	if (!showStyleBase) {
+		throw new Error(`ShowStylebase "${showStyleBaseId}" not found`)
+	}
 
 	let content = ''
 	try {
 		const body = (req as any).body
-		if (!body) throw new Meteor.Error(400, 'Restore Rundown Layout: Missing request body')
+		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Rundown Layout: Invalid request body')
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
 
 		const layout = JSON.parse(body) as RundownLayoutBase
-		check(layout._id, String)
+		check(layout._id, Match.Optional(String))
 		check(layout.name, String)
 		check(layout.filters, Array)
 		check(layout.showStyleBaseId, String)
 		check(layout.type, String)
 
-		if (ShowStyleBases.findOne(layout.showStyleBaseId) === undefined) {
-			throw new Error(`Unsupported showStyleBase: ${layout.showStyleBaseId}`)
-		}
+		layout.showStyleBaseId = showStyleBase._id
 
 		RundownLayouts.upsert(layout._id, layout)
 
@@ -68,14 +73,14 @@ postJsRoute.route('/rundownLayouts', (params, req: IncomingMessage, res: ServerR
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.error('Rundown Layout restore failed: ' + e)
+		logger.error('Shlf Layout restore failed: ' + e)
 	}
 
 	res.end(content)
 })
 
 const getJsRoute = Picker.filter((req, res) => req.method === 'GET')
-getJsRoute.route('/rundownLayouts/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
+getJsRoute.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	let layoutId = params.id
 
 	check(layoutId, String)
@@ -84,7 +89,7 @@ getJsRoute.route('/rundownLayouts/:id', (params, req: IncomingMessage, res: Serv
 	const layout = RundownLayouts.findOne(layoutId)
 	if (!layout) {
 		res.statusCode = 404
-		content = 'Rundown Layout not found'
+		content = 'Shelf Layout not found'
 		res.end(content)
 		return
 	}
@@ -97,7 +102,7 @@ getJsRoute.route('/rundownLayouts/:id', (params, req: IncomingMessage, res: Serv
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.error('Rundown layout restore failed: ' + e)
+		logger.error('Shelf layout restore failed: ' + e)
 	}
 
 	res.end(content)

@@ -48,5 +48,5 @@ export function ingestMOSRundown (studioId: string, ingestRundown: any) {
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
 	if (existingDbRundown && existingDbRundown.dataSource !== 'http') throw new Meteor.Error(403, `Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`)
 
-	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http', undefined)
+	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http')
 }

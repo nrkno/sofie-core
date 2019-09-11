@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time } from '../lib'
+import { createMongoCollection } from './lib'
 
 export interface ExpectedMediaItem {
 	_id: string
@@ -38,7 +38,7 @@ export interface ExpectedMediaItem {
 }
 
 export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem>
-	= new Mongo.Collection<ExpectedMediaItem>('expectedMediaItems')
+	= createMongoCollection<ExpectedMediaItem>('expectedMediaItems')
 registerCollection('ExpectedMediaItems', ExpectedMediaItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

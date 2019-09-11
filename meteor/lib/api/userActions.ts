@@ -11,6 +11,7 @@ export namespace UserActionAPI {
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
 		'resetRundown' 							= 'userAction.resetRundown',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
+		'forceResetAndActivate' 				= 'userAction.forceResetAndActivate',
 		'activate' 								= 'userAction.activate',
 		'deactivate' 							= 'userAction.deactivate',
 		'reloadData' 							= 'userAction.reloadData',
@@ -46,6 +47,9 @@ export namespace UserActionAPI {
 
 		'mediaRestartWorkflow'					= 'userAction.mediamanager.restartWorkflow',
 		'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow',
+		'mediaRestartAllWorkflows'				= 'userAction.mediamanager.restartAllWorkflows',
+		'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
+		'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
 
 		'regenerateRundown'					= 'userAction.ingest.regenerateRundown'
 	}

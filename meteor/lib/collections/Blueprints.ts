@@ -1,9 +1,9 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 import { ConfigManifestEntry, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { createMongoCollection } from './lib'
 
 export interface Blueprint {
 	_id: string
@@ -33,7 +33,7 @@ export interface Blueprint {
 }
 
 export const Blueprints: TransformedCollection<Blueprint, Blueprint>
-	= new Mongo.Collection<Blueprint>('blueprints')
+	= createMongoCollection<Blueprint>('blueprints')
 registerCollection('Blueprints', Blueprints)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

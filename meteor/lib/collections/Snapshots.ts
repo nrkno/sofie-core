@@ -1,7 +1,8 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { createMongoCollection } from './lib'
+
 
 export enum SnapshotType {
 	RUNDOWN = 'rundown',
@@ -40,7 +41,7 @@ export interface SnapshotDebug extends SnapshotBase {
 }
 
 export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem>
-	= new Mongo.Collection<SnapshotItem>('snapshots')
+	= createMongoCollection<SnapshotItem>('snapshots')
 registerCollection('Snapshots', Snapshots)
 
 Meteor.startup(() => {

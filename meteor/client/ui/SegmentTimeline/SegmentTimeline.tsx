@@ -39,6 +39,7 @@ import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 
 interface IProps {
+	id: string
 	key: string
 	segment: SegmentUi
 	rundown: Rundown,
@@ -93,19 +94,19 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		durations: PropTypes.object.isRequired
 	}
 
-	constructor(props, context) {
+	constructor (props, context) {
 		super(props, context)
 		this.state = {
 			totalSegmentDuration: 10
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.checkTimingChange()
 		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount () {
 		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
 	}
 
@@ -124,7 +125,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		}
 	}
 
-	calculateSegmentDuration(): number {
+	calculateSegmentDuration (): number {
 		let total = 0
 		if (this.context && this.context.durations) {
 			const durations = this.context.durations as RundownTiming.RundownTimingContext
@@ -139,11 +140,11 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		return total
 	}
 
-	getSegmentDuration(): number {
+	getSegmentDuration (): number {
 		return this.props.isLiveSegment ? this.calculateSegmentDuration() : this.state.totalSegmentDuration
 	}
 
-	renderZoomTimeline() {
+	renderZoomTimeline () {
 		return this.props.parts.map((part, index, array) => {
 			return (
 				<SegmentTimelinePart key={part._id}
@@ -168,7 +169,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		})
 	}
 
-	renderMiniLiveLine() {
+	renderMiniLiveLine () {
 		if (this.props.isLiveSegment) {
 			let lineStyle = {
 				'left': (this.props.livePosition / this.getSegmentDuration() * 100).toString() + '%'
@@ -182,7 +183,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<div className='segment-timeline__zoom-area-container'>
 				<div className='segment-timeline__zoom-area'
@@ -205,7 +206,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 }
 
 class SegmentTimelineZoomButtons extends React.Component<IProps> {
-	constructor(props: IProps) {
+	constructor (props: IProps) {
 		super(props)
 	}
 
@@ -221,7 +222,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 		this.props.onZoomChange(0.03, e)
 	}
 
-	render() {
+	render () {
 		return (
 			<div className='segment-timeline__timeline-zoom-buttons'>
 				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
@@ -241,7 +242,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 }
 
-export const SegmentTimelineElementId = 'rundown__segment__'
+export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
@@ -253,7 +254,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		clientY: number
 	} | undefined = undefined
 
-	constructor(props: Translated<IProps>) {
+	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
 			timelineWidth: 1
@@ -279,14 +280,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (this.props.onShowEntireSegment) {
 			this.props.onShowEntireSegment(e)
 		}
-	}
-
-	componentDidMount() {
-		setTimeout((function () {
-			if (this.props.isLiveSegment === true && this.props.followLiveSegments === true) {
-				this.scrollToMe()
-			}
-		}).bind(this), 1000)
 	}
 
 	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
@@ -354,19 +347,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	scrollToMe() {
-		if (scrollToSegment(this.segmentBlock, true)) {
-			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
-		}
-	}
-
-	componentDidUpdate(prevProps: IProps) {
-		if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
-			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
-			this.scrollToMe()
-		}
-	}
-
 	getSegmentContext = (props) => {
 		const ctx = {
 			segment: this.props.segment,
@@ -380,18 +360,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return ctx
 	}
 
-	getSegmentDuration() {
+	getSegmentDuration () {
 		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) || 0
 	}
 
-	timelineStyle() {
+	timelineStyle () {
 		return {
 			'transform': 'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
 			'willChange': 'transform'
 		}
 	}
 
-	renderLiveLine() {
+	renderLiveLine () {
 		const { t } = this.props
 
 		if (this.props.isLiveSegment) {
@@ -435,7 +415,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	renderTimeline() {
+	renderTimeline () {
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
 				return (
@@ -453,11 +433,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		</React.Fragment>
 	}
 
-	renderEndOfSegment() {
+	renderEndOfSegment () {
 		return <div className='segment-timeline__part segment-timeline__part--end-of-segment'></div>
 	}
 
-	renderOutputLayerControls() {
+	renderOutputLayerControls () {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.values(this.props.segment.outputLayers).sort((a, b) => {
 				return a._rank - b._rank
@@ -492,7 +472,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	render() {
+	render () {
 		let notes: Array<PartNote> = this.props.segmentNotes
 
 		const { t } = this.props
@@ -507,7 +487,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}, 0)
 
 		return (
-			<div id={SegmentTimelineElementId + this.props.segment._id}
+			<div id={this.props.id}
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 

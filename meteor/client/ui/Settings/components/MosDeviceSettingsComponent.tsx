@@ -50,6 +50,8 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 			this.setState({
 				editedDevices: this.state.editedDevices
 			})
+		} else {
+			this.finishEditItem(deviceId)
 		}
 	}
 

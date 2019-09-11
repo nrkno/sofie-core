@@ -11,7 +11,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import * as faCut from '@fortawesome/fontawesome-free-solid/faCut'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
-import { Position } from '../../../utils/positions';
+import { Position } from '../../../utils/positions'
 
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
@@ -41,7 +41,7 @@ export interface ISourceLayerItemState {
 }
 
 export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IState extends ISourceLayerItemState> extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	getItemLabelOffsetLeft(): { [key: string]: string } {
+	getItemLabelOffsetLeft (): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
 		} else {
@@ -49,7 +49,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getItemLabelOffsetRight(): { [key: string]: string } {
+	getItemLabelOffsetRight (): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {
@@ -57,7 +57,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getFloatingInspectorStyle(): {
+	getFloatingInspectorStyle (): {
 		[key: string]: string
 	} {
 		return {
@@ -66,20 +66,20 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getItemDuration(): number {
+	getItemDuration (): number {
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration()
 		}
 		return this.props.partDuration
 	}
 
-	setAnchoredElsWidths(leftAnchoredWidth: number, rightAnchoredWidth: number): void {
+	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {
 		if (this.props.setAnchoredElsWidths && typeof this.props.setAnchoredElsWidths === 'function') {
 			return this.props.setAnchoredElsWidths(leftAnchoredWidth, rightAnchoredWidth)
 		}
 	}
 
-	renderOverflowTimeLabel() {
+	renderOverflowTimeLabel () {
 		const vtContent = this.props.piece.content as VTContent
 		if (!this.props.piece.playoutDuration && this.props.piece.content && vtContent.sourceDuration && ((this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration) > (this.props.partDuration || 0)) {
 			let time = (this.props.piece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
@@ -92,7 +92,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	renderInfiniteItemContentEnded() {
+	renderInfiniteItemContentEnded () {
 		const content = this.props.piece.content as VTContent
 		const seek = content && content.seek ? content.seek : 0
 		if (this.props.piece.infiniteMode && content && content.sourceDuration && (this.props.piece.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.partDuration || 0)) {
@@ -112,7 +112,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			: null
 	}
 
-	renderContentTrimmed() {
+	renderContentTrimmed () {
 		const vtContent = this.props.piece.content as VTContent
 		const duration = this.props.partDuration
 
@@ -123,7 +123,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			: null
 	}
 
-	render() {
+	render () {
 		return this.props.children
 	}
 }

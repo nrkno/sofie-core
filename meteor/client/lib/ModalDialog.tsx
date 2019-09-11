@@ -23,6 +23,8 @@ interface IModalDialogAttributes {
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	inputs?: {[attribute: string]: ModalInput}
+	warning?: boolean
+	actions?: ModalAction[]
 }
 interface ModalInput {
 	type: EditAttributeType
@@ -31,6 +33,12 @@ interface ModalInput {
 	text?: string
 	defaultValue?: any
 }
+interface ModalAction {
+	label: string
+	on: OnAction
+	classNames?: string
+}
+type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = {[attribute: string]: any}
 export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
@@ -104,6 +112,11 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 			this.props.onSecondary(e, this.inputResult)
 		}
 	}
+	handleAction = (e: SomeEvent, on: OnAction) => {
+		if (on && typeof on === 'function') {
+			on(e, this.inputResult)
+		}
+	}
 
 	handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
@@ -126,7 +139,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 										opacity: [1, 0]
 									}, easing: 'spring', duration: 250 }} runOnMount={true}>
 										<dialog open={true} className='border-box overlay-m'>
-											<div className='flex-row info vertical-align-stretch tight-s'>
+											<div className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}>
 												<div className='flex-col c12'>
 													<h2>
 														{this.props.title}
@@ -173,6 +186,22 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 													this.props.secondaryText &&
 													<button className='btn btn-secondary' onClick={this.handleSecondary}>{this.props.secondaryText}</button>
 												}
+												{
+													_.compact(_.map(this.props.actions || [], (action: ModalAction, i) => {
+														if (action) {
+															return <button
+																key={i}
+																className={ClassNames('btn right', {
+																	'btn-secondary': !(action.classNames || '').match(/btn-/)
+																}, action.classNames)}
+																onClick={e => this.handleAction(e, action.on)}
+															>
+																{action.label}
+															</button>
+														}
+														return undefined
+													}))
+												}
 												<button className={ClassNames('btn btn-primary', {
 													'right': this.props.secondaryText !== undefined
 												})} onClick={this.handleAccept}>{this.props.acceptText}</button>
@@ -211,6 +240,10 @@ export interface ModalDialogQueueItem {
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	/** Customomize input fields */
 	inputs?: {[attribute: string]: ModalInput}
+	actions?: ModalAction[]
+	/** Is a critical decition/information */
+	warning?: boolean
+
 }
 interface IModalDialogGlobalContainerProps {
 }
@@ -268,6 +301,14 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			}
 		}
 	}
+	onAction = (e: SomeEvent, inputResult: ModalInputResult, on: OnAction) => {
+		let queue = this.state.queue
+		let onQueue = queue.pop()
+		if (onQueue) {
+			this.setState({ queue })
+			on(e, inputResult)
+		}
+	}
 	renderString = (str: string) => {
 		let lines = (str || '').split('\n')
 
@@ -284,6 +325,12 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let onQueue = _.first(this.state.queue)
 
 		if (onQueue) {
+			let actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
+				return {
+					...action,
+					on: (e, inputResult) => this.onAction(e, inputResult, action.on)
+				}
+			})
 			return (
 			<ModalDialog title	= {onQueue.title}
 				acceptText		= {onQueue.yes || t('Yes')}
@@ -292,7 +339,9 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 				onDiscard		= {this.onDiscard}
 				onSecondary		= {this.onSecondary}
 				inputs			= {onQueue.inputs}
+				actions			= {actions}
 				show			= {true}
+				warning			= {onQueue.warning}
 			>
 				{
 					_.isString(onQueue.message) ?
