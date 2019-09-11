@@ -14,6 +14,7 @@ import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettin
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
+import { INewsSettingsComponent } from './components/INewsSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 
@@ -63,6 +64,10 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					/>
 				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
 					return <SpreadsheetSettingsComponent
+						device={this.props.device}
+					/>
+				case PeripheralDeviceAPI.DeviceType.INEWS:
+					return <INewsSettingsComponent
 						device={this.props.device}
 					/>
 			}
