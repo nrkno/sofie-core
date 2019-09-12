@@ -124,7 +124,8 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<tr>
 					<th>{t('Device id')}</th>
 					<th>{t('Type')}</th>
-					<th>{t('Disable')}</th>
+					<th className='alc'>{t('Disable')}</th>
+					<th></th>
 				</tr>
 				{_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
 					return <React.Fragment key={deviceId}>
@@ -137,7 +138,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 							<td className='settings-studio-device__id c4'>
 								{PlayoutDeviceType[subDevice.type]}
 							</td>
-							<td className='settings-studio-device__id c4'>
+							<td className='settings-studio-device__id c2 alc'>
 								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.disable'} obj={this.props.device} type='checkbox' options={PlayoutDeviceType} collection={PeripheralDevices} className='input'></EditAttribute>
 							</td>
 							<td className='settings-studio-device__actions table-item-actions c3'>
