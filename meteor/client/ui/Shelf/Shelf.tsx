@@ -315,21 +315,29 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
 			</div>
 			<div className='rundown-view__shelf__panel super-dark'>
-				<AdLibPanel
-					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
-					registerHotkeys={true}
-					{...this.props}></AdLibPanel>
-				{rundownLayout && rundownLayout.filters.map(f =>
+				<ErrorBoundary>
 					<AdLibPanel
-						key={f._id}
-						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`}
-						includeGlobalAdLibs={true}
-						filter={f}
-						{...this.props}
-						/>
-				)}
-				<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
-				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
+						registerHotkeys={true}
+						{...this.props}></AdLibPanel>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					{rundownLayout && rundownLayout.filters.map(f =>
+						<AdLibPanel
+							key={f._id}
+							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`}
+							includeGlobalAdLibs={true}
+							filter={f}
+							{...this.props}
+							/>
+					)}
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+				</ErrorBoundary>
 			</div>
 		</React.Fragment>
 	}
