@@ -280,8 +280,8 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 			<div className='mod mvs mhs'>
 				<label className='field'>
-					{t('Ramp Function Path')}
-					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.rampMotorFunctionPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+					{t('Priority')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.priority'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>
