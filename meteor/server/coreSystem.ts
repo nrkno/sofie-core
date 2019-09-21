@@ -56,10 +56,6 @@ function initializeCoreSystem () {
 		}
 	}
 
-	if(system && !system.serviceMessages) {
-		CoreSystem.update(system._id, { $set: { serviceMessages: {} } })
-	}
-
 	// Monitor database changes:
 	let systemCursor = getCoreSystemCursor()
 	systemCursor.observeChanges({
