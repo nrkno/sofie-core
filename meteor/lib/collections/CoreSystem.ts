@@ -7,6 +7,30 @@ import * as semver from 'semver'
 import { createMongoCollection } from './lib'
 
 export const SYSTEM_ID = 'core'
+
+/**
+ * Criticality level for service messages.
+ *
+ * @export
+ * @enum {number}
+ */
+export enum Criticality {
+	/** Subject matter will affect operations. */
+	CRITICAL = 1,
+	/** Operations will not be affected, but non-critical functions may be affected or the result may be undesirable. */
+	WARNING = 2,
+	/** General information */
+	NOTIFICATION = 3
+}
+
+export interface ServiceMessage {
+	id: string
+	criticality: Criticality
+	message: string
+	sender?: string
+	timestamp: Date
+}
+
 export interface ICoreSystem {
 	_id: 'core'
 	/** Timestamp of creation, (ie the time the database was created) */
@@ -36,6 +60,11 @@ export interface ICoreSystem {
 
 	/** A user-defined name for the installation */
 	name?: string
+
+	/** Service messages currently valid for this instance */
+	serviceMessages: {
+		[index: string]: ServiceMessage
+	}
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.

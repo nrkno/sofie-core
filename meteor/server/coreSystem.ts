@@ -40,7 +40,8 @@ function initializeCoreSystem () {
 			modified: getCurrentTime(),
 			version: version,
 			previousVersion: null,
-			storePath: '' // to be filled in later
+			storePath: '', // to be filled in later
+			serviceMessages: {}
 		})
 
 		// Check what migration has to provide:
@@ -53,6 +54,10 @@ function initializeCoreSystem () {
 			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
 			runMigration(migration.chunks, migration.hash, [])
 		}
+	}
+
+	if(system && !system.serviceMessages) {
+		CoreSystem.update(system._id, { $set: { serviceMessages: {} } })
 	}
 
 	// Monitor database changes:
