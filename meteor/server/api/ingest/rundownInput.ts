@@ -28,7 +28,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, produceRundownPlaylistInfo } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -47,6 +47,8 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
+import { RundownPlaylists, RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists';
+import { Mongo } from 'meteor/mongo';
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -257,8 +259,26 @@ function updateRundownFromIngestData (
 		}
 	})
 
+	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
+
+	let playlistChanges = saveIntoDb(RundownPlaylists, {
+		_id: rundownPlaylistInfo.rundownPlaylist._id
+	}, [rundownPlaylistInfo.rundownPlaylist], {
+		beforeInsert: (o) => {
+			o.created = getCurrentTime()
+			o.modified = getCurrentTime()
+			return o
+		},
+		beforeUpdate: (o) => {
+			o.modified = getCurrentTime()
+			return o
+		}
+	})
+
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
+
+	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
 
 	// Save the baseline
 	const blueprintRundownContext = new RundownContext(dbRundown, studio)
@@ -307,6 +327,7 @@ function updateRundownFromIngestData (
 
 	changes = sumChanges(
 		changes,
+		playlistChanges,
 		// Save the baseline
 		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs, {
 			rundownId: dbRundown._id,
@@ -380,6 +401,34 @@ function updateRundownFromIngestData (
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
+}
+
+function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
+	let rundowns: DBRundown[] = []
+	let selector: Mongo.Selector<DBRundown> = {}
+	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
+		selector = { playlistExternalId: currentRundown.playlistExternalId }
+		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+	} else if (!currentRundown.playlistExternalId) {
+		selector = { _id: currentRundown._id }
+		rundowns = [ currentRundown ]
+	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
+		throw new Meteor.Error(501, `Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`)
+	} else {
+		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
+	}
+
+	const updated = rundowns.map(r => {
+		if (order[r._id] !== undefined) {
+			r.playlistId = playlist._id
+			r._rank = order[r._id]
+		} else {
+			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+		}
+		return r
+	})
+
+	saveIntoDb(Rundowns, selector, updated)
 }
 
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {

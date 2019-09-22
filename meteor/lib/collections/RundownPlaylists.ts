@@ -17,6 +17,7 @@ export interface DBRundownPlaylist {
 	peripheralDeviceId: string
 	name: string
 	created: Time
+	modified: Time
 	expectedStart?: Time
 	expectedDuration?: number
 	rehearsal?: boolean
@@ -56,6 +57,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public peripheralDeviceId: string
 	public name: string
 	public created: Time
+	public modified: Time
 	public startedPlayback?: Time
 	public expectedStart?: Time
 	public expectedDuration?: number

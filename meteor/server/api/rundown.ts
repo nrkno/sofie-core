@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns, DBRundown } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Pieces } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -11,7 +11,10 @@ import {
 	getRank,
 	getCurrentTime,
 	asyncCollectionUpdate,
-	waitForPromiseAll
+	waitForPromiseAll,
+	extendMandadory,
+	getHash,
+	literal
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -23,13 +26,15 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowS
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IBlueprintRundownPlaylistInfo } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { UpdateNext } from './ingest/updateNext'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
+import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists';
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices';
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -77,6 +82,95 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 		return {
 			variant: showStyleVariant,
 			base: showStyleBase
+		}
+	}
+}
+
+export interface RundownPlaylistAndOrder {
+	rundownPlaylist: DBRundownPlaylist
+	order: {
+		[ key: string ]: number
+	}
+}
+
+export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
+	const context = new StudioConfigContext(studio)
+
+	const studioBlueprint = loadStudioBlueprints(studio)
+	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
+
+	if (currentRundown.playlistExternalId && studioBlueprint.blueprint.getRundownPlaylistInfo) {
+		const allRundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(allRundowns)
+
+		const playlistId = getHash(playlistInfo.playlist.externalId)
+
+		const existingPlaylist = RundownPlaylists.findOne(playlistId)
+
+		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
+			_id: playlistId,
+			externalId: playlistInfo.playlist.externalId,
+			studioId: studio._id,
+			name: playlistInfo.playlist.name,
+			expectedStart: playlistInfo.playlist.expectedStart,
+			expectedDuration: playlistInfo.playlist.expectedDuration,
+
+			created: 0,
+			modified: 0,
+
+			peripheralDeviceId: '',
+
+			currentPartId: null,
+			nextPartId: null,
+			previousPartId: null
+		}), [ 'currentPartId', 'nextPartId', 'previousPartId', 'created', 'modified' ])) as DBRundownPlaylist
+
+		if (peripheralDevice) {
+			playlist.peripheralDeviceId = peripheralDevice._id
+		}
+
+		let order = playlistInfo.order
+		if (!order) {
+			const allRundowns = Rundowns.find({
+				playlistExternalId: playlist.externalId
+			}, {
+				sort: {
+					name: 1
+				}
+			}).fetch()
+			order = _.object(allRundowns.map((i, index) => [i._id, index + 1]))
+		}
+
+		return {
+			rundownPlaylist: playlist,
+			order: order
+		}
+	} else {
+		const playlistId = getHash(currentRundown._id)
+
+		const existingPlaylist = RundownPlaylists.findOne(playlistId)
+
+		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
+			_id: playlistId,
+			externalId: currentRundown._id,
+			studioId: studio._id,
+			name: currentRundown.name,
+			expectedStart: currentRundown.expectedStart,
+			expectedDuration: currentRundown.expectedDuration,
+
+			created: 0,
+			modified: 0,
+
+			peripheralDeviceId: '',
+
+			currentPartId: null,
+			nextPartId: null,
+			previousPartId: null
+		}), [ 'currentPartId', 'nextPartId', 'previousPartId', 'created', 'modified' ])) as DBRundownPlaylist
+
+		return {
+			rundownPlaylist: playlist,
+			order: _.object([[currentRundown._id, 1]])
 		}
 	}
 }
