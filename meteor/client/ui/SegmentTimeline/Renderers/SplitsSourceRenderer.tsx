@@ -137,7 +137,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 									'top': ((item.content && item.content.y) * 100).toString() + '%',
 									'width': ((item.content && item.content.scale) * 100).toString() + '%',
 									'height': ((item.content && item.content.scale) * 100).toString() + '%',
-									'clipPath': item.content.crop ? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop.bottom * 100}% ${item.content.crop.left * 100}%)` : undefined
+									'clipPath': (item.content && item.content.crop) ? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop.bottom * 100}% ${item.content.crop.left * 100}%)` : undefined
 								}}>
 								{item.role === SplitRole.BOX && (
 									<div className='video-preview__label'>{item.label}</div>
