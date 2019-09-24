@@ -316,7 +316,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
 				(e.detail.currentTime - lastStartedPlayback + partOffset + lastPlayOffset) :
-				partOffset
+				(partOffset + lastPlayOffset)
 
 			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
 			if (this.props.currentLivePart.displayDurationGroup && !this.props.currentLivePart.displayDuration) {

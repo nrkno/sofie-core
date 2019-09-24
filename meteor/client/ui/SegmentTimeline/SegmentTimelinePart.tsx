@@ -343,13 +343,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	getPartDuration (): number {
 		// const part = this.props.part
 
-		const playOffset = this.props.part.timings ? (_.last(this.props.part.timings.playOffset) || 0) : 0
-
 		return Math.max(
 			this.state.liveDuration,
 			(this.props.part.duration ||
 				this.props.timingDurations.partDisplayDurations && this.props.timingDurations.partDisplayDurations[this.props.part._id] ||
-				this.props.part.renderedDuration || 0) + playOffset
+				this.props.part.renderedDuration || 0)
 		)
 
 		/* return part.duration !== undefined ? part.duration : Math.max(

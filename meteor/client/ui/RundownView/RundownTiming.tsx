@@ -285,9 +285,9 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					!part.duration &&
 					lastStartedPlayback + (part.expectedDuration || 0) < now
 				) {
-					asPlayedRundownDuration += (now - lastStartedPlayback) - playOffset
+					asPlayedRundownDuration += (now - lastStartedPlayback)
 				} else {
-					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0) - playOffset
+					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0)
 				}
 
 				let partDuration = 0
@@ -328,11 +328,11 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 							displayDurationFromGroup :
 							part.expectedDuration) ||
 						this.props.defaultDuration || 3000),
-						(now - lastStartedPlayback)) + playOffset
+						(now - lastStartedPlayback)) - playOffset
 					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
 				} else {
 					partDuration = part.duration || part.expectedDuration || 0
-					partDisplayDuration = Math.max(0, part.duration && part.duration + playOffset
+					partDisplayDuration = Math.max(0, part.duration && (part.duration + playOffset)
 						|| displayDurationFromGroup
 						|| part.expectedDuration
 						|| this.props.defaultDuration || 3000)

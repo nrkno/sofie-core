@@ -24,32 +24,48 @@ interface SplitSubItem {
 	role: SplitRole
 	content?: any
 }
+
 interface IProps extends ICustomLayerItemProps {
 }
+
 interface IState {
 	subItems: Array<SplitSubItem>
 }
+
+const DEFAULT_POSITIONS = [
+	{
+		x: 0.25,
+		y: 0.5,
+		scale: 0.5
+	},
+	{
+		x: 0.75,
+		y: 0.5,
+		scale: 0.5
+	}
+]
+
 export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
 	constructor (props) {
 		super(props)
+		this.state = {
+			subItems: _.map((props.piece.content as SplitsContent).boxSourceConfiguration, (item, index) => {
+				return literal<SplitSubItem>({
+					_id: item.studioLabel + '_' + index,
+					type: item.type,
+					label: item.studioLabel,
+					role: SplitRole.BOX,
+					content: item.geometry || DEFAULT_POSITIONS[index]
+				})
+			})
+		}
 	}
 
 	static getDerivedStateFromProps(props: IProps): IState {
-		const positions = [
-			{
-				x: 0.25,
-				y: 0.5,
-				scale: 0.5
-			},
-			{
-				x: 0.75,
-				y: 0.5,
-				scale: 0.5
-			}
-		]
+		
 
 		let subItems: Array<SplitSubItem> = []
 		if (props.piece.content) {
@@ -60,7 +76,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 					type: item.type,
 					label: item.studioLabel,
 					role: SplitRole.BOX,
-					content: item.geometry || positions[index]
+					content: item.geometry || DEFAULT_POSITIONS[index]
 				})
 			})
 		}

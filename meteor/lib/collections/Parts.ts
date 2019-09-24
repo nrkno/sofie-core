@@ -207,6 +207,13 @@ export class Part implements DBPart {
 		}
 		return notes
 	}
+	getLastTake () {
+		if (!this.timings) return undefined
+
+		if (!this.timings.take || this.timings.take.length === 0) return undefined
+
+		return this.timings.take[this.timings.take.length - 1]
+	}
 	getLastStartedPlayback () {
 		if (!this.timings) return undefined
 
