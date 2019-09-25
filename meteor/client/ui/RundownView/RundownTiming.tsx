@@ -320,18 +320,18 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 							displayDurationFromGroup :
 							part.expectedDuration) ||
 						0)
-						- (now - lastStartedPlayback)) + playOffset
+						- (now - lastStartedPlayback))
 					partDuration = Math.max((part.duration || part.expectedDuration || 0),
-						(now - lastStartedPlayback))
+						(now - lastStartedPlayback)) - playOffset
 					partDisplayDuration = Math.max((part.duration ||
 						(memberOfDisplayDurationGroup ?
 							displayDurationFromGroup :
 							part.expectedDuration) ||
 						this.props.defaultDuration || 3000),
-						(now - lastStartedPlayback)) - playOffset
-					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
+						(now - lastStartedPlayback))
+					this.partPlayed[part._id] = (now - lastStartedPlayback)
 				} else {
-					partDuration = part.duration || part.expectedDuration || 0
+					partDuration = (part.duration || part.expectedDuration || 0) - playOffset
 					partDisplayDuration = Math.max(0, part.duration && (part.duration + playOffset)
 						|| displayDurationFromGroup
 						|| part.expectedDuration
