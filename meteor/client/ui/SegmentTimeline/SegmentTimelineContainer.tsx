@@ -18,7 +18,7 @@ import { getResolvedSegment,
 import { RundownViewEvents } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { getSpeakingMode } from '../../lib/localStorage'
+import { getAllowSpeaking } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
@@ -415,7 +415,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 			let text = '' // Say nothing
 
-			if (getSpeakingMode()) {
+			if (getAllowSpeaking()) {
 				switch (displayTime) {
 					case -1: text = 'One'; break
 					case -2: text = 'Two'; break

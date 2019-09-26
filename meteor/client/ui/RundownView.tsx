@@ -36,7 +36,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -1153,7 +1153,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.state = {
 			timeScale: 0.03,
-			studioMode: getStudioMode(),
+			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
@@ -1319,7 +1319,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			(this.props.rundown || { _id: '' })._id !== (prevProps.rundown || { _id: '' })._id ||
 			(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
 			this.state.studioMode !== prevState.studioMode) {
-			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
+			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getAllowDeveloper()) {
 				window.addEventListener('beforeunload', this.onBeforeUnload)
 			} else {
 				window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -1659,7 +1659,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
-		if (!getDeveloperMode()) {
+		if (!getAllowDeveloper()) {
 			e.preventDefault()
 			e.stopPropagation()
 		}

@@ -18,7 +18,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { getAdminMode, getDeveloperMode } from '../../lib/localStorage'
+import { getAllowConfigure, getAllowDeveloper } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import * as ClassNames from 'classnames'
 
@@ -197,7 +197,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					{getAdminMode() ?
+					{getAllowConfigure() ?
 						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
 						<div className='value'>{this.props.device.name}</div>
 					}
@@ -251,7 +251,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t('Are you sure you want to delete this device: "{{deviceId}}"?', { deviceId: this.state.showDeleteDeviceConfirm && (this.state.showDeleteDeviceConfirm.name || this.state.showDeleteDeviceConfirm._id) })}</p>
 						</ModalDialog>
-						{getDeveloperMode() && <button key='button-ignore' className={ClassNames('btn btn-secondary', {
+						{getAllowDeveloper() && <button key='button-ignore' className={ClassNames('btn btn-secondary', {
 							'warn': this.props.device.ignore
 						})} onClick={
 							(e) => {
