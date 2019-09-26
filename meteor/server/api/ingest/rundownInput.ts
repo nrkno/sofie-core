@@ -38,7 +38,7 @@ import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
+import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
 import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -57,6 +57,18 @@ export function rundownSyncFunction<T extends Function> (rundownId: string, prio
 }
 
 export namespace RundownInput {
+	// Get info on the current rundowns from this device:
+	export function dataRundownList (self: any, deviceId: string, deviceToken: string) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRundownList')
+		return listIngestRundowns(peripheralDevice)
+	}
+	export function dataRundownGet (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRundownGet', rundownExternalId)
+		check(rundownExternalId, String)
+		return getIngestRundown(peripheralDevice, rundownExternalId)
+	}
 	// Delete, Create & Update Rundown (and it's contents):
 	export function dataRundownDelete (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
@@ -123,6 +135,25 @@ export namespace RundownInput {
 		check(ingestPart, Object)
 		handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
 	}
+}
+
+function getIngestRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
+	const rundown = Rundowns.findOne({
+		peripheralDeviceId: peripheralDevice._id,
+		externalId: rundownExternalId
+	})
+	if (!rundown) {
+		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+	}
+
+	return loadCachedRundownData(rundown._id, rundown.externalId)
+}
+function listIngestRundowns (peripheralDevice: PeripheralDevice): string[] {
+	const rundowns = Rundowns.find({
+		peripheralDeviceId: peripheralDevice._id
+	}).fetch()
+
+	return rundowns.map(r => r.externalId)
 }
 
 export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
