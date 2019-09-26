@@ -270,7 +270,6 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
 			_.each(runtimeArguments, p => {
 				if (p.runtimeArguments) {
-					// TODO - what about collisions from virtuals?
 					existingRuntimeArguments[p.externalId] = p.runtimeArguments
 				}
 			})

@@ -640,25 +640,9 @@ function generateSegmentContents (
 	}))
 
 	// Ensure all parts have a valid externalId set on them
-	const expectedPartIds = ingestSegment.parts.map(p => p.externalId)
-	const unknownParts = blueprintRes.parts.filter(p => expectedPartIds.indexOf(p.part.externalId) === -1)
-	const knownParts = blueprintRes.parts.filter(p => expectedPartIds.indexOf(p.part.externalId) !== -1)
+	const knownPartIds = blueprintRes.parts.map(p => p.part.externalId)
 
-	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || expectedPartIds.indexOf(note.origin.partId) === -1)
-
-	if (unknownParts.length > 0) {
-		const unknownIds = unknownParts.map(p => p.part.externalId).join(', ')
-		logger.warn(`Dropping some parts with unknown externalId: ${unknownIds}`)
-		segmentNotes.push({
-			type: NoteType.WARNING,
-			message: `Dropping parts with unknown externalId: ${unknownIds}`,
-			origin: {
-				name: 'ingest',
-				rundownId: rundownId,
-				segmentId: segmentId,
-			}
-		})
-	}
+	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || knownPartIds.indexOf(note.origin.partId) === -1)
 
 	const newSegment = literal<DBSegment>({
 		...(existingSegment || {}),
@@ -675,10 +659,8 @@ function generateSegmentContents (
 	const adlibPieces: AdLibPiece[] = []
 
 	// Parts
-	for (let blueprintPart of knownParts) {
+	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
-		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
-		// TODO - this loop needs to handle virtual parts properly
 
 		const notes = _.filter(allNotes, note => note.origin.partId === blueprintPart.part.externalId)
 		_.each(notes, note => note.origin.partId = partId)
@@ -690,7 +672,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank, // This gets updated to a rundown unique rank as a later step
+			_rank: i, // This gets updated to a rundown unique rank as a later step
 			notes: notes,
 		})
 		parts.push(part)
@@ -701,7 +683,7 @@ function generateSegmentContents (
 
 		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
 		adlibPieces.push(...adlibs)
-	}
+	})
 
 	return {
 		newSegment,
