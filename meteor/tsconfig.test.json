@@ -3,5 +3,6 @@
 	"exclude": [
 		"node_modules",
 		"**/.coverage/**/*"
-	]
+	],
+	"include": ["node_modules/@types"]
 }
