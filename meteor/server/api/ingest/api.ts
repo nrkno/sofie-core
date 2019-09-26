@@ -7,6 +7,12 @@ import { RundownInput } from './rundownInput'
 
 let methods: Methods = {}
 
+methods[PeripheralDeviceAPI.methods.dataRundownList] = (deviceId: string, deviceToken: string) => {
+	return RundownInput.dataRundownList(this, deviceId, deviceToken)
+}
+methods[PeripheralDeviceAPI.methods.dataRundownGet] = (deviceId: string, deviceToken: string, rundownExternalId: string) => {
+	return RundownInput.dataRundownGet(this, deviceId, deviceToken, rundownExternalId)
+}
 methods[PeripheralDeviceAPI.methods.dataRundownDelete] = (deviceId: string, deviceToken: string, rundownExternalId: string) => {
 	return RundownInput.dataRundownDelete(this, deviceId, deviceToken, rundownExternalId)
 }
