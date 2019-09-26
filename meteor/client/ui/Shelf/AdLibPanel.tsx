@@ -30,6 +30,8 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import {ShelfInspector} from './Inspector/ShelfInspector'
+import { Piece } from '../../../lib/collections/Pieces';
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -243,6 +245,8 @@ const AdLibListView = translate()(class extends React.Component<
 	}
 
 	render () {
+		const selected = this.props.selectedPart
+
 		return (
 			<div className={ClassNames('adlib-panel__list-view__list', {
 				'adlib-panel__list-view__list--no-segments': this.props.noSegments
@@ -253,6 +257,7 @@ const AdLibListView = translate()(class extends React.Component<
 					{this.renderRundownAdLibs()}
 					{this.renderSegments()}
 				</table>
+				<ShelfInspector selected={selected} />
 			</div>
 		)
 	}
