@@ -10,12 +10,8 @@ import {
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
@@ -25,6 +21,9 @@ import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteo
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import { Random } from 'meteor/random'
+import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fortawesome/fontawesome-free-solid'
+import { UploadButton } from '../../lib/uploadButton'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
 	manifest: ConfigManifestEntry[]
@@ -41,6 +40,7 @@ interface IConfigManifestSettingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmItem: ConfigManifestEntry | undefined
 	editedItems: Array<string>
+	uploadFileKey: number // Used to force clear the input after use
 }
 
 export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
@@ -54,7 +54,8 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 			addItemId: undefined,
 			showDeleteConfirm: false,
 			deleteConfirmItem: undefined,
-			editedItems: []
+			editedItems: [],
+			uploadFileKey: Date.now()
 		}
 	}
 
@@ -238,8 +239,10 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 				<div>
 					<table>
 						<thead>
-							{ _.map(item2.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
-							<th>&nbsp;</th>
+							<tr>
+								{ _.map(item2.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+								<th>&nbsp;</th>
+							</tr>
 						</thead>
 						<tbody>
 						{
@@ -278,8 +281,82 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 						this.updateObject(this.props.object, { $push: m })
 					}}>
 						<FontAwesomeIcon icon={faPlus} />
+						{ ' ' }
 						{ t('Row') }
 					</button>
+					{ ' ' }
+					<button className={ClassNames('btn btn-primary', {
+						'btn-tight': this.props.subPanel
+					})} onClick={() => {
+						const jsonStr = JSON.stringify(vals, undefined, 4)
+
+						const element = document.createElement('a')
+						element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+						element.download = `${this.props.object._id}_config_${item.id}.json`
+
+						document.body.appendChild(element) // Required for this to work in FireFox
+						element.click()
+						document.body.removeChild(element) // Required for this to work in FireFox
+					}}>
+						<FontAwesomeIcon icon={faDownload} />
+						{ ' ' }
+						{ t('Export') }
+					</button>
+					{ ' ' }
+					<UploadButton className='btn btn-primary' accept='application/json,.json' onChange={e => {
+						const { t } = this.props
+
+						const file = e.target.files ? e.target.files[0] : null
+						if (!file) {
+							return
+						}
+
+						const reader = new FileReader()
+						reader.onload = (e2) => {
+							// On file upload
+
+							this.setState({
+								uploadFileKey: Date.now()
+							})
+
+							const uploadFileContents = (e2.target as any).result
+
+							// Parse the config
+							let newConfig: TableConfigItemValue = []
+							try {
+								newConfig = JSON.parse(uploadFileContents)
+								if (!_.isArray(newConfig)) {
+									throw new Error('Not an array')
+								}
+							} catch (err) {
+								NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }), 'ConfigManifestSettings'))
+								return
+							}
+
+							// Validate the config
+							const conformedConfig: TableConfigItemValue = []
+							_.forEach(newConfig, entry => {
+								const newEntry: TableConfigItemValue[0] = {
+									_id: entry._id || Random.id()
+								}
+
+								// Ensure all fields are defined
+								_.forEach(item2.columns, col => {
+									newEntry[col.id] = entry[col.id] !== undefined ? entry[col.id] : col.defaultVal
+								})
+								conformedConfig.push(newEntry)
+							})
+
+							const m: any = {}
+							m[baseAttribute] = conformedConfig
+							this.updateObject(this.props.object, { $set: m })
+						}
+						reader.readAsText(file)
+					}} key={this.state.uploadFileKey}>
+						<FontAwesomeIcon icon={faUpload} />
+						{ ' ' }
+						{ t('Import') }
+					</UploadButton>
 				</div>
 			)
 		} else {
