@@ -1,3 +1,4 @@
+import * as objectPath from 'object-path'
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
@@ -15,7 +16,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -23,6 +24,7 @@ import { logger } from '../../../lib/logging'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
+import { Random } from 'meteor/random'
 
 interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
 	manifest: ConfigManifestEntry[]
@@ -167,6 +169,129 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 		})
 	}
 
+	getEditAttribute (item: BasicConfigManifestEntry, attribute: string) {
+		switch (item.type) {
+			case ConfigManifestEntryType.STRING:
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={this.props.object}
+					type='text'
+					collection={this.props.collection}
+					className='input text-input input-l' />
+			case ConfigManifestEntryType.NUMBER:
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={this.props.object}
+					type='int'
+					collection={this.props.collection}
+					className='input text-input input-l' />
+			case ConfigManifestEntryType.BOOLEAN:
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={this.props.object}
+					type='checkbox'
+					collection={this.props.collection}
+					className='input' />
+			case ConfigManifestEntryType.ENUM:
+				const item2 = item as ConfigManifestEntryEnum
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={this.props.object}
+					type='dropdown'
+					options={item2.options || []}
+					collection={this.props.collection}
+					className='input text-input input-l' />
+			default:
+				return null
+		}
+	}
+	renderConfigValue (item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
+		const { t } = this.props
+
+		const value = rawValue === undefined ? item.defaultVal : rawValue
+
+		switch (item.type) {
+			case ConfigManifestEntryType.BOOLEAN:
+				return value ? t('true') : t('false')
+			case ConfigManifestEntryType.TABLE:
+				return `${(rawValue as any[] || []).length} ${t('rows')}`
+			default:
+				return value
+		}
+	}
+
+	// renderTable (item: ConfigManifestEntry) {
+
+	// }
+
+	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
+		const baseAttribute = `config.${valIndex}.value`
+		const { t } = this.props
+		if (item.type === ConfigManifestEntryType.TABLE) {
+			const item2 = item as ConfigManifestEntryTable
+			const vals: TableConfigItemValue = objectPath.get(this.props.object, baseAttribute) || []
+			return (
+				<div>
+					<table>
+						<thead>
+							{ _.map(item2.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+							<th>&nbsp;</th>
+						</thead>
+						<tbody>
+						{
+							_.map(vals, (val, i) => <tr key={i}>
+								{ _.map(item2.columns, col => <td key={col.id}>{
+									this.getEditAttribute(col, `${baseAttribute}.${i}.${col.id}`)
+								}</td>) }
+								<td>
+									<button className={ClassNames('btn btn-danger', {
+										'btn-tight': this.props.subPanel
+									})} onClick={() => {
+										const m: any = {}
+										m[baseAttribute] = {
+											_id: val._id
+										}
+										this.updateObject(this.props.object, { $pull: m })
+									}}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+								</td>
+							</tr>)
+						}
+						</tbody>
+					</table>
+
+					<button className={ClassNames('btn btn-primary', {
+						'btn-tight': this.props.subPanel
+					})} onClick={() => {
+						const rowDefault: any = {
+							_id: Random.id()
+						}
+						_.each(item2.columns, col => rowDefault[col.id] = col.defaultVal)
+
+						const m: any = {}
+						m[baseAttribute] = rowDefault
+						this.updateObject(this.props.object, { $push: m })
+					}}>
+						<FontAwesomeIcon icon={faPlus} />
+						{ t('Row') }
+					</button>
+				</div>
+			)
+		} else {
+			return (
+				<label className='field'>
+					{t('Value')}
+					{ this.getEditAttribute(item as BasicConfigManifestEntry, baseAttribute) }
+				</label>
+			)
+		}
+	}
+
 	renderItems () {
 		const { t } = this.props
 
@@ -186,12 +311,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 							{item.name}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
-							{configItem && configItem.value !== undefined ? (
-								(item.type === ConfigManifestEntryType.BOOLEAN && (
-									configItem.value ? t('true') : t('false')
-								))
-								|| configItem.value
-							) : item.defaultVal}
+							{ this.renderConfigValue(item, configItem ? configItem.value : undefined)}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
 							{
@@ -226,48 +346,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Value')}
-											{
-												(item.type === ConfigManifestEntryType.STRING && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='text'
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-												|| (item.type === ConfigManifestEntryType.NUMBER && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='int'
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-												|| (item.type === ConfigManifestEntryType.BOOLEAN && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='checkbox'
-														collection={this.props.collection}
-														className='input' />
-												))
-												|| (item.type === ConfigManifestEntryType.ENUM && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='dropdown'
-														options={item.options || []}
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-											}
-										</label>
+										{ this.renderEditableArea(item, valIndex) }
 									</div>
 								</div>
 								<div className='mod alright'>
