@@ -36,7 +36,7 @@ import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { callMethod } from '../lib/clientAPI'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
-import { getDeveloperMode } from '../lib/localStorage'
+// import { getAllowDeveloper } from '../lib/localStorage'
 import * as i18next from 'i18next'
 import { StudiosAPI } from '../../lib/api/studios'
 

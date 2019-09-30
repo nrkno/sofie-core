@@ -48,7 +48,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 				const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
 				// Start with previous piece
-				const startOffset = prevHasDelayFlag ? 1000 : 0
+				const startOffset = prevHasDelayFlag ? 2000 : 0
 				enable.start = `#${prevObj.id}.start + ${startOffset}`
 			}
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')

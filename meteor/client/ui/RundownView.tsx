@@ -36,7 +36,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -60,6 +60,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
+import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -207,6 +208,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'f12',
 	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
 	RUNDOWN_HOLD = 'h',
+	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
 	RUNDOWN_ACTIVATE2 = '\\',
 	RUNDOWN_ACTIVATE3 = '|',
@@ -311,6 +313,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						}
 					</React.Fragment>)
 				}
+				<NoraPreviewRenderer />
 			</div>
 		)
 	}
@@ -364,6 +367,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
 					up: this.keyHold,
 					label: t('Hold')
+				},{
+					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
+					up: this.keyHoldUndo,
+					label: t('Undo Hold')
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 					up: this.keyActivate,
@@ -510,6 +517,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	keyHold = (e: ExtendedKeyboardEvent) => {
 		this.hold(e)
 	}
+	keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		this.holdUndo(e)
+	}
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate(e)
 	}
@@ -598,9 +608,17 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	hold = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode && this.props.rundown.active) {
-			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id])
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, false])
 		}
 	}
+	
+	holdUndo = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode && this.props.rundown.active && this.props.rundown.holdState === RundownHoldState.PENDING) {
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, true])
+		}
+	}
+
 	rundownShouldHaveStarted () {
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0)
 	}
@@ -608,44 +626,62 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0) + (this.props.rundown.expectedDuration || 0)
 	}
 
-	handleActivationError = (originalMethod: UserActionAPI.methods, originalParams: any[], err: ClientAPI.ClientResponseError, clb?: Function) => {
+	handleAnotherRundownActive = (
+		rundownId: string,
+		rehersal: boolean,
+		err: ClientAPI.ClientResponseError,
+		clb?: Function
+	) => {
 		const { t } = this.props
 
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
 			title: t('Another Rundown is Already Active!'),
-			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', {
+				rundownName: otherRundowns.map(i => i.name).join(', ')
+			}),
 			yes: t('Activate Anyway'),
 			no: t('Cancel'),
-			warning: true,
-			onAccept: (le: any) => {
-				Promise.all(otherRundowns.map(r => {
-					return new Promise((resolve, reject) => {
-						doUserAction(t, le, UserActionAPI.methods.deactivate, [r._id], (err, res) => {
+			actions: [
+				{
+					label: t('Activate anyway (GO ON AIR)'),
+					classNames: 'btn-primary',
+					on: (e) => {
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], (err, response) => {
 							if (!err) {
-								resolve()
-								return
+								if (typeof clb === 'function') clb()
+							} else {
+								console.error(err)
+								doModalDialog({
+									title: t('Failed to activate'),
+									message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+									acceptOnly: true,
+									warning: true,
+									yes: t('OK'),
+									onAccept: (le: any) => { console.log() }
+								})
 							}
-							reject(err)
 						})
-					})
-				})).then((res) => {
-					doUserAction(t, le, originalMethod, originalParams, (err, response) => {
-						if (!err) {
-							if (typeof clb === 'function') clb()
-						}
-					})
-				}, (err) => {
-					console.error(err)
-					doModalDialog({
-						title: t('Failed to deactivate'),
-						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
-						acceptOnly: true,
-						warning: true,
-						yes: t('OK'),
-						onAccept: (le: any) => { console.log() }
-					})
-				}).catch(console.error)
+					}
+				}
+			],
+			warning: true,
+			onAccept: (e) => {
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], (err, response) => {
+					if (!err) {
+						if (typeof clb === 'function') clb()
+					} else {
+						console.error(err)
+						doModalDialog({
+							title: t('Failed to activate'),
+							message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+							acceptOnly: true,
+							warning: true,
+							yes: t('OK'),
+							onAccept: (le: any) => { console.log() }
+						})
+					}
+				})
 			}
 		})
 	}
@@ -674,7 +710,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, () => {
+							this.handleAnotherRundownActive(this.props.rundown._id, false, err, () => {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							})
 							return false
@@ -694,7 +730,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
 								if (err.error === 409) {
-									this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, false], err, onSuccess)
+									this.handleAnotherRundownActive(this.props.rundown._id, false, err, onSuccess)
 									return false
 								}
 							}
@@ -739,7 +775,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						onSuccess()
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleActivationError(UserActionAPI.methods.activate, [this.props.rundown._id, true], err, onSuccess)
+							this.handleAnotherRundownActive(this.props.rundown._id, true, err, onSuccess)
 							return false
 						}
 					}
@@ -754,7 +790,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
 							if (err.error === 409) {
-								this.handleActivationError(UserActionAPI.methods.prepareForBroadcast, [this.props.rundown._id], err, onSuccess)
+								this.handleAnotherRundownActive(this.props.rundown._id, true, err, onSuccess)
 								return false
 							}
 						}
@@ -1133,7 +1169,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.state = {
 			timeScale: 0.03,
-			studioMode: getStudioMode(),
+			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
@@ -1299,7 +1335,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			(this.props.rundown || { _id: '' })._id !== (prevProps.rundown || { _id: '' })._id ||
 			(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
 			this.state.studioMode !== prevState.studioMode) {
-			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
+			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getAllowDeveloper()) {
 				window.addEventListener('beforeunload', this.onBeforeUnload)
 			} else {
 				window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -1639,7 +1675,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
-		if (!getDeveloperMode()) {
+		if (!getAllowDeveloper()) {
 			e.preventDefault()
 			e.stopPropagation()
 		}

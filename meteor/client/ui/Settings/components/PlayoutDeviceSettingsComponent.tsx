@@ -39,11 +39,14 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 		}
 	}
 	editItem = (deviceId: string) => {
-		if (this.state.editedDevices.indexOf(deviceId) < 0) {
+		const index = this.state.editedDevices.indexOf(deviceId)
+		if (index < 0) {
 			this.state.editedDevices.push(deviceId)
 			this.setState({
 				editedDevices: this.state.editedDevices
 			})
+		} else {
+			this.finishEditItem(deviceId)
 		}
 	}
 	handleConfirmRemoveCancel = (e) => {
@@ -121,7 +124,8 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<tr>
 					<th>{t('Device id')}</th>
 					<th>{t('Type')}</th>
-					<th>{t('Disable')}</th>
+					<th className='alc'>{t('Disable')}</th>
+					<th></th>
 				</tr>
 				{_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
 					return <React.Fragment key={deviceId}>
@@ -134,7 +138,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 							<td className='settings-studio-device__id c4'>
 								{PlayoutDeviceType[subDevice.type]}
 							</td>
-							<td className='settings-studio-device__id c4'>
+							<td className='settings-studio-device__id c2 alc'>
 								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.disable'} obj={this.props.device} type='checkbox' options={PlayoutDeviceType} collection={PeripheralDevices} className='input'></EditAttribute>
 							</td>
 							<td className='settings-studio-device__actions table-item-actions c3'>
@@ -496,6 +500,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<label className='field'>
 					{t('Activate Multi-Threaded Timeline Resolving')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.multiThreadedResolver'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute><i>{t('(Restart to apply)')}</i>
+				</label>
+			</div>
+			<div>
+				<label className='field'>
+					{t('Report command timings on all commangs')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.reportAllCommands'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
 

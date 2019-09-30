@@ -12,9 +12,9 @@ import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMe
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 
 interface IPropsHeader {
-	adminMode?: boolean
-	testingMode?: boolean
-	developerMode?: boolean
+	allowConfigure?: boolean
+	allowTesting?: boolean
+	allowDeveloper?: boolean
 }
 
 interface ITrackedPropsHeader {
@@ -99,9 +99,9 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							<nav className='links mod'>
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
 								<NavLink to='/' activeClassName='active'>{t('Rundowns')}</NavLink>
-								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
+								{ this.props.allowTesting && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
-								{ this.props.adminMode && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
+								{ this.props.allowConfigure && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
 							</nav>
 						</div>
 					</div>

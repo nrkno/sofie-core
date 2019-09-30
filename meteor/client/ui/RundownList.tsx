@@ -17,7 +17,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
-import { getDeveloperMode, getAdminMode } from '../lib/localStorage'
+import { getAllowDeveloper, getAllowConfigure, getAllowService } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
@@ -107,14 +107,14 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					</th>
 					<td className='rundown-list-item__studio'>
 						{
-							getAdminMode() ?
+							getAllowConfigure() ?
 							<Link to={this.getStudioLink(this.props.rundown.studioId)}>{this.props.rundown.studioName}</Link> :
 							this.props.rundown.studioName
 						}
 					</td>
 					<td className='rundown-list-item__showStyle'>
 						{
-							getAdminMode() ?
+							getAllowConfigure() ?
 							<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyleBaseId)}>{`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`}</Link> :
 							`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`
 						}
@@ -140,7 +140,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					</td>
 					<td className='rundown-list-item__actions'>
 						{
-							this.props.rundown.unsynced || getAdminMode() ?
+							(this.props.rundown.unsynced || getAllowConfigure() || getAllowService()) ?
 							<Tooltip overlay={t('Delete')} placement='top'>
 								<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.rundown)}>
 									<FontAwesomeIcon icon={faTrash} />
@@ -382,7 +382,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 					}
 				</div>
 				{
-					getDeveloperMode() ?
+					getAllowDeveloper() ?
 					<ManualPlayout></ManualPlayout> : null
 				}
 			</div>

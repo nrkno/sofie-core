@@ -10,6 +10,7 @@ import Moment from 'react-moment'
 import { getCurrentTime } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as faEye from '@fortawesome/fontawesome-free-solid/faEye'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
@@ -17,8 +18,9 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { getAdminMode } from '../../lib/localStorage'
+import { getAllowConfigure, getAllowDeveloper } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
+import * as ClassNames from 'classnames'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -129,6 +131,14 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		})
 	}
 
+	onToggleIgnore (device: PeripheralDevice) {
+		PeripheralDevices.update(device._id, {
+			$set: {
+				'ignore': !device.ignore
+			}
+		})
+	}
+
 	onRestartCasparCG (device: PeripheralDevice) {
 		const { t } = this.props
 
@@ -187,7 +197,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					{getAdminMode() ?
+					{getAllowConfigure() ?
 						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
 						<div className='value'>{this.props.device.name}</div>
 					}
@@ -241,6 +251,17 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t('Are you sure you want to delete this device: "{{deviceId}}"?', { deviceId: this.state.showDeleteDeviceConfirm && (this.state.showDeleteDeviceConfirm.name || this.state.showDeleteDeviceConfirm._id) })}</p>
 						</ModalDialog>
+						{getAllowDeveloper() && <button key='button-ignore' className={ClassNames('btn btn-secondary', {
+							'warn': this.props.device.ignore
+						})} onClick={
+							(e) => {
+								e.preventDefault()
+								e.stopPropagation()
+								this.onToggleIgnore(this.props.device)
+							}
+						}>
+							<FontAwesomeIcon icon={faEye} />
+						</button>}
 						{this.props.showRemoveButtons && <button key='button-device' className='btn btn-primary' onClick={
 							(e) => {
 								e.preventDefault()

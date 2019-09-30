@@ -242,7 +242,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
 
-			devices.forEach((item) => {
+			devices.filter(i => !i.ignore).forEach((item) => {
 				let newNotification: Notification | undefined = undefined
 
 				const parent = devices.find(i => i._id === item.parentDeviceId)

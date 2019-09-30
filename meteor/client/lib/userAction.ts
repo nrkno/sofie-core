@@ -31,7 +31,11 @@ export function doUserAction (
 			// cancel progress message:
 			Meteor.clearTimeout(timeout)
 		} else {
-			timeoutMessage.drop()
+			try {
+				timeoutMessage.drop()
+			} catch (e) {
+				// message was already dropped, that's fine
+			}
 		}
 
 		if (err) {

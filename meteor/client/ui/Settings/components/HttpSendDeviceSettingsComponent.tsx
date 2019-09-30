@@ -44,6 +44,8 @@ export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceS
 			this.setState({
 				editedMakeReady: this.state.editedMakeReady
 			})
+		} else {
+			this.finishEditItem(rowId)
 		}
 	}
 	handleConfirmRemoveCancel = (e) => {

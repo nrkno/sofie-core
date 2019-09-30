@@ -252,9 +252,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 			TSRVersion: TSR_VERSION,
 			minimumCoreVersion: CORE_VERSION,
 
-			studioConfigManifest: [],
 			showStyleConfigManifest: [],
-			studioMigrations: [],
 			showStyleMigrations: [],
 			getShowStyleVariantId: (
 				context: IStudioConfigContext,
