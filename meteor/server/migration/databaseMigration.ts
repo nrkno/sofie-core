@@ -173,13 +173,9 @@ export function prepareMigration (returnAllChunks?: boolean) {
 				const bp = rawBlueprint as ShowStyleBlueprintManifest
 
 				// Find all showStyles that uses this blueprint:
-				let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
-				let studioIds: {[studioId: string]: true} = {}
 				ShowStyleBases.find({
 					blueprintId: blueprint._id
 				}).forEach((showStyleBase) => {
-					showStyleBaseIds[showStyleBase._id] = true
-
 					let chunk: MigrationChunk = {
 						sourceType:				MigrationStepType.SHOWSTYLE,
 						sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
@@ -206,43 +202,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 							_rank: 					rank++,
 							chunk: 					chunk
 						}))
-					})
-
-					// Find all studios that supports this showStyle
-					Studios.find({
-						supportedShowStyleBase: showStyleBase._id
-					}).forEach((studio) => {
-						if (!studioIds[studio._id]) { // only run once per blueprint and studio
-							studioIds[studio._id] = true
-
-							let chunk: MigrationChunk = {
-								sourceType:				MigrationStepType.STUDIO,
-								sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
-								blueprintId: 			blueprint._id,
-								sourceId: 				studio._id,
-								_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0').toString(),
-								_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
-								_steps:					[]
-							}
-							migrationChunks.push(chunk)
-							// Add studio migration steps from blueprint:
-							_.each(bp.studioMigrations, (step) => {
-								allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
-									id:						step.id,
-									overrideSteps:			step.overrideSteps,
-									validate:				step.validate,
-									canBeRunAutomatically:	step.canBeRunAutomatically,
-									migrate:				step.migrate,
-									input:					step.input,
-									dependOnResultFrom:		step.dependOnResultFrom,
-									version: 				step.version,
-									_version: 				parseVersion(step.version),
-									_validateResult: 		false, // to be set later
-									_rank: 					rank++,
-									chunk: 					chunk
-								}))
-							})
-						}
 					})
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
