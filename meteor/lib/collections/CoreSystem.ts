@@ -9,7 +9,9 @@ import { createMongoCollection } from './lib'
 export const SYSTEM_ID = 'core'
 
 /**
- * Criticality level for service messages.
+ * Criticality level for service messages. Specification of criticality in server
+ * messages from sofie-monitor: 
+ * https://github.com/nrkno/tv-automation-sofie-monitor/blob/master/src/data/serviceMessages/ServiceMessage.ts
  *
  * @export
  * @enum {number}
