@@ -56,7 +56,7 @@ function initializeCoreSystem () {
 		}
 	}
 
-	if(system && !system.serviceMessages) {
+	if (system && !system.serviceMessages) {
 		CoreSystem.update(system._id, { $set: { serviceMessages: {} } })
 	}
 
