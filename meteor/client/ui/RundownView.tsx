@@ -208,6 +208,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'f12',
 	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
 	RUNDOWN_HOLD = 'h',
+	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
 	RUNDOWN_ACTIVATE2 = '\\',
 	RUNDOWN_ACTIVATE3 = '|',
@@ -367,6 +368,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					up: this.keyHold,
 					label: t('Hold')
 				},{
+					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
+					up: this.keyHoldUndo,
+					label: t('Undo Hold')
+				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 					up: this.keyActivate,
 					label: t('Activate'),
@@ -512,6 +517,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	keyHold = (e: ExtendedKeyboardEvent) => {
 		this.hold(e)
 	}
+	keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		this.holdUndo(e)
+	}
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate(e)
 	}
@@ -600,9 +608,17 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	hold = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode && this.props.rundown.active) {
-			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id])
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, false])
 		}
 	}
+	
+	holdUndo = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode && this.props.rundown.active && this.props.rundown.holdState === RundownHoldState.PENDING) {
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, true])
+		}
+	}
+
 	rundownShouldHaveStarted () {
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0)
 	}
