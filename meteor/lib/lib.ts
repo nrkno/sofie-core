@@ -189,12 +189,13 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			}
 
 			if (options.afterRemove) {
-				Promise.resolve(p)
+				p = Promise.resolve(p)
 				.then(() => {
 					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
 				})
 			}
+			if (p) ps.push(p)
 			change.removed++
 
 		}
