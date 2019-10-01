@@ -250,19 +250,19 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					</span>
 				}
 				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
-					this.props.rundown.expectedStart &&
+					(this.props.rundown.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.rundown.startedPlayback - this.props.rundown.expectedStart, true, false, true, true, true)}
-						</span>
+						</span>) || undefined
 					:
-					this.props.rundown.expectedStart &&
+					(this.props.rundown.expectedStart &&
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundown.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundown.expectedStart, true, false, true, true, true)}
-						</span>
+						</span>) || undefined
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
