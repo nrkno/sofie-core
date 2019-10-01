@@ -154,7 +154,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			})
 
 			it('should accept a valid value as a string', () => {
-				const alsoValid:any = {...validInput}
+				const alsoValid: any = { ...validInput }
 				alsoValid.criticality = `${validInput.criticality}`
 				mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 
@@ -285,7 +285,7 @@ describe('ServiceMessages API POST endpoint', () => {
 
 		it('should call API writeMessage with the given criticality when criticality is a string', () => {
 			const expected = Number(validInput.criticality)
-			const alsoValid:any = {...validInput}
+			const alsoValid: any = { ...validInput }
 			alsoValid.criticality = `${validInput.criticality}`
 			mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 

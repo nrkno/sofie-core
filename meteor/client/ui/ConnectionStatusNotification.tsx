@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import {DDP} from 'meteor/ddp'
+import { DDP } from 'meteor/ddp'
 import { Random } from 'meteor/random'
 import * as React from 'react'
 import * as _ from 'underscore'
@@ -13,7 +13,7 @@ import { TranslationFunction, translate } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
 import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
-import { notDeepEqual } from 'assert';
+import { notDeepEqual } from 'assert'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -54,9 +54,9 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			}
 
 			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
-			
+
 			let systemNotification: Notification | undefined = createSystemNotification(cs)
-			let newNotification =  this.createNewStatusNotification(meteorStatus)
+			let newNotification = this.createNewStatusNotification(meteorStatus)
 
 			if (newNotification.persistent) {
 				this._notificationList.set(_.compact([newNotification, systemNotification]))
@@ -93,14 +93,14 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 	}
 
-	private getNoticeLevelForCriticality(criticality:Criticality) {
-		switch(criticality) {
+	private getNoticeLevelForCriticality (criticality: Criticality) {
+		switch (criticality) {
 			case Criticality.CRITICAL:
 				return NoticeLevel.CRITICAL
-			
+
 			case Criticality.WARNING:
 				return NoticeLevel.WARNING
-			
+
 			case Criticality.NOTIFICATION:
 			default:
 				return NoticeLevel.NOTIFICATION
@@ -128,8 +128,8 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		return null
 	}
 
-	private createNewStatusNotification(meteorStatus:DDP.DDPStatus):Notification {
-		const {status, reason, retryTime, connected} = meteorStatus
+	private createNewStatusNotification (meteorStatus: DDP.DDPStatus): Notification {
+		const { status, reason, retryTime, connected } = meteorStatus
 		const notification = new Notification(
 			Random.id(),
 			this.getNoticeLevel(status),
@@ -143,31 +143,31 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 					label: 'Reconnect now',
 					type: 'primary',
 					icon: 'icon-retry',
-					action: () => {Meteor.reconnect()}
+					action: () => { Meteor.reconnect() }
 				}
-		] : undefined,
+			] : undefined,
 			-100)
-		
+
 		return notification
 	}
 
-	private updateServiceMessages(serviceMessages: {[index: string]: ServiceMessage}):void {
+	private updateServiceMessages (serviceMessages: {[index: string]: ServiceMessage}): void {
 		const systemMessageIds = Object.keys(serviceMessages)
-		
+
 		// remove from internal list where ids not in active list
 		Object.keys(this._serviceMessageRegistry).filter(id => systemMessageIds.indexOf(id) < 0)
 			.forEach(idToRemove => {
 				delete this._serviceMessageRegistry[idToRemove]
 				NotificationCenter.drop(idToRemove)
 			})
-		
+
 		const localMessagesId = Object.keys(this._serviceMessageRegistry)
 		// add ids not found in internal list
 		systemMessageIds.filter(id => localMessagesId.indexOf(id) < 0)
 			.forEach(id => {
 				const newMessage = serviceMessages[id]
 				this._serviceMessageRegistry[id] = newMessage
-				
+
 				const notification = this.createNotificationFromServiceMessage(newMessage)
 				NotificationCenter.push(notification)
 			})
@@ -186,7 +186,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 
 	}
 
-	private createNotificationFromServiceMessage(message: ServiceMessage):Notification {
+	private createNotificationFromServiceMessage (message: ServiceMessage): Notification {
 		return new Notification(
 			message.id,
 			this.getNoticeLevelForCriticality(message.criticality),
@@ -198,7 +198,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 	}
 }
 
-function createSystemNotification(cs:ICoreSystem|undefined):Notification | undefined {
+function createSystemNotification (cs: ICoreSystem | undefined): Notification | undefined {
 	if (cs && cs.systemInfo && cs.systemInfo.enabled) {
 		return new Notification(
 			Random.id(),
