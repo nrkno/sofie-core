@@ -285,7 +285,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 										this.onRestartQuantel(this.props.device)
 									}
 								}>
-									{t('Restart Gateway')}
+									{t('Restart Quantel Gateway')}
 								</button>
 							</React.Fragment> : null
 						)}
