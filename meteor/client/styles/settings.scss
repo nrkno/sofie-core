@@ -1,3 +1,5 @@
+@import 'colorScheme';
+
 .settings-menu {
 	.settings-menu__settings-menu-item {
 		display: block;
@@ -19,6 +21,12 @@
 		> button.action-btn {
 			padding: 0 5px;
 			margin-top: 0.6em;
+		}
+	}
+
+	.error-notice {
+		.svg-inline--fa {
+			color: $color-status-warning;
 		}
 	}
 }
@@ -133,5 +141,20 @@
 
 	.star {
 		color: gold;
+	}
+
+	.error-notice {
+		&.inline {
+			float: right;
+
+			.svg-inline--fa {
+				float: right;
+				margin-left: 0.4em;
+			}
+		}
+
+		.svg-inline--fa {
+			color: $color-status-warning;
+		}
 	}
 }

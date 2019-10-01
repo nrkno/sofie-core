@@ -39,6 +39,7 @@ import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 // import { getAllowDeveloper } from '../lib/localStorage'
 import * as i18next from 'i18next'
 import { StudiosAPI } from '../../lib/api/studios'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -97,6 +98,37 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			case PeripheralDeviceAPI.StatusCode.FATAL:
 				return t('Fatal')
 		}
+	}
+
+	studioHasError (studio: Studio) {
+		if(!studio.name) return true
+		if (!studio.supportedShowStyleBase.length) return true
+		if (!studio.blueprintId) return true
+		const peripherals = this.props.peripheralDevices
+			.filter(device => device.studioId === studio._id)
+		if (!peripherals.length) return true
+		if (!peripherals.filter(device => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT).length) return true
+		return false
+	}
+
+	showStyleHasError (showstyle: ShowStyleBase) {
+		if (!showstyle.sourceLayers) return true
+		if (!showstyle.outputLayers) return true
+		if (!showstyle.sourceLayers.length) return true
+		if (!showstyle.outputLayers.length) return true
+		if (!showstyle.outputLayers.filter(l => l.isPGM).length) return true
+		return false
+	}
+
+	blueprintHasError (blueprint: Blueprint) {
+		if (!blueprint.name) return true
+		if (!blueprint.blueprintType) return true
+		return false
+	}
+
+	peripheralDeviceHasError (device: PeripheralDevice) {
+		if (!device.name) return true
+		return false
 	}
 
 	connectedString (connected: boolean) {
@@ -213,8 +245,15 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
 								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteStudio(studio) }}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+								{
+									this.studioHasError(studio) ?
+									<button className='action-btn right error-notice'>
+										<FontAwesomeIcon icon={faExclamationTriangle} />
+									</button> :
+									null
+								}
 								<div className='selectable clickable'>
 									<h3>{studio.name || t('Unnamed Studio')}</h3>
 								</div>
@@ -238,6 +277,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
+									{
+										this.showStyleHasError(showStyleBase) ?
+										<button className='action-btn right error-notice'>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
+										</button> :
+										null
+									}
 									<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
 									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
 										<p>
@@ -265,6 +311,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
+									{
+										this.blueprintHasError(blueprint) ?
+										<button className='action-btn right error-notice'>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
+										</button> :
+										null
+									}
 									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
 									<p>{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}</p>
 									<p>{t('Version')} {blueprint.blueprintVersion}</p>
@@ -287,6 +340,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(item) }}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
+								{
+									this.peripheralDeviceHasError(item) ?
+									<button className='action-btn right error-notice'>
+										<FontAwesomeIcon icon={faExclamationTriangle} />
+									</button> :
+									null
+								}
 								<h3>{item.name}</h3>
 								<p>
 									{item.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(item.status.statusCode)}
