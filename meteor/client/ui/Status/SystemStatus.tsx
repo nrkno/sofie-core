@@ -163,6 +163,27 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		})
 	}
 
+	onRestartQuantel (device: PeripheralDevice) {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Restart Quantel Gateway'),
+			message: t('Do you want to restart Quantel Gateway?'),
+			onAccept: (event: any) => {
+
+				callPeripheralDeviceFunction(event, device._id, 'restartQuantel', (err, result) => {
+					if (err) {
+						// console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart Quantel Gateway: {{errorMessage}}', { errorMessage: err + '' }), 'SystemStatus'))
+					} else {
+						// console.log(result)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Quantel Gateway restarting...'), 'SystemStatus'))
+					}
+				})
+			},
+		})
+	}
+
 	onFormatHyperdeck (device: PeripheralDevice) {
 		const { t } = this.props
 
@@ -251,6 +272,20 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 									}
 								}>
 									{t('Format disks')}
+								</button>
+							</React.Fragment> : null
+						)}
+						{(
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.subType === TSR_DeviceType.QUANTEL ? <React.Fragment>
+								<button className='btn btn-secondary' onClick={
+									(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										this.onRestartQuantel(this.props.device)
+									}
+								}>
+									{t('Restart Gateway')}
 								</button>
 							</React.Fragment> : null
 						)}
