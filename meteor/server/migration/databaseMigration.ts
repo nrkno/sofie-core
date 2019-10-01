@@ -57,8 +57,8 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 0.23.0: Release 8   (2019-04-08)
  * 0.24.0: Release 9   (2019-05-16)
  * 0.25.0: Release 10  (2019-07-05)
- * 0.26.0: Release 11  (TBD)
- * 1.0.0: Release 12  (TBD)
+ * 0.26.0: Release 11  -
+ * 1.0.0: Release 12  (2019-09-11)
  */
 export const CURRENT_SYSTEM_VERSION = '1.0.0'
 
