@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { CoreSystem } from '../../lib/collections/CoreSystem';
 
 // 1.0.0 (Release 12)
 addMigrationSteps('1.0.0', [
@@ -141,4 +142,25 @@ addMigrationSteps('1.0.0', [
 	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+	{ // add support for service messages to coreSystem
+		id: 'add coreSystem.serviceMessages if not existing',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const system = CoreSystem.findOne()
+
+			if (!system || !system.serviceMessages) {
+				return true
+			}
+
+			return false
+		},
+		migrate: () => {
+			const system = CoreSystem.findOne()
+			if (system) {
+				CoreSystem.update(system._id, { $set: { serviceMessages: {} } })
+			}
+
+		}
+
+	}
 ])
