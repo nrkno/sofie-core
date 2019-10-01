@@ -13,6 +13,7 @@ import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
+const Tooltip = require('rc-tooltip')
 import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -36,7 +37,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getAllowStudio, getAllowDeveloper } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -611,7 +612,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, false])
 		}
 	}
-	
+
 	holdUndo = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode && this.props.rundown.active && this.props.rundown.holdState === RundownHoldState.PENDING) {
@@ -1016,7 +1017,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					<div className='row first-row super-dark'>
 						<div className='flex-col left horizontal-align-left'>
 							<div className='badge mod'>
-								<div className='media-elem mrs sofie-logo' />
+								<Tooltip overlay={t('Add ?studio=1 to the URL to enter studio mode')} visible={getHelpMode() && !getAllowStudio()} placement='bottom'>
+									<div className='media-elem mrs sofie-logo' />
+								</Tooltip>
 								<div className='bd mls'><span className='logo-text'></span></div>
 							</div>
 						</div>

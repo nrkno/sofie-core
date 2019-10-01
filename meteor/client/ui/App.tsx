@@ -15,7 +15,8 @@ import {
 	getAllowDeveloper,
 	setAllowSpeaking,
 	setAllowService,
-	getAllowService
+	getAllowService,
+	setHelpMode
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -65,6 +66,8 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['testing']) setAllowTesting(params['testing'] === '1')
 		if (params['speak']) setAllowSpeaking(params['speak'] === '1')
 		if (params['service']) setAllowService(params['service'] === '1')
+		if (params['help']) setHelpMode(params['help'] === '1')
+
 		if (params['admin']) {
 			const val = params['admin'] === '1'
 			setAllowStudio(val)

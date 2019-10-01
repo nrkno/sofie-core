@@ -9,6 +9,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { getCurrentTime } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
+const Tooltip = require('rc-tooltip')
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faEye from '@fortawesome/fontawesome-free-solid/faEye'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -18,7 +19,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { getAllowConfigure, getAllowDeveloper } from '../../lib/localStorage'
+import { getAllowConfigure, getAllowDeveloper, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import * as ClassNames from 'classnames'
 
@@ -26,6 +27,8 @@ interface IDeviceItemProps {
 	// key: string,
 	device: PeripheralDevice
 	showRemoveButtons?: boolean
+	toplevel?: boolean
+	hasChildren?: boolean
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
@@ -197,10 +200,17 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					</div>
 				</div>
 				<div className='device-item__id'>
-					{getAllowConfigure() ?
-						<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
-						<div className='value'>{this.props.device.name}</div>
-					}
+					<Tooltip
+						overlay={t('Connect some devices to the playout gateway')}
+						visible={getHelpMode() &&
+						this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+						this.props.toplevel === true &&
+						(!this.props.hasChildren && this.props.hasChildren !== undefined)} placement='right'>
+						{getAllowConfigure() ?
+							<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div> :
+							<div className='value'>{this.props.device.name}</div>
+						}
+					</Tooltip>
 				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
@@ -356,14 +366,14 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			}
 		})
 
-		let getDeviceContent = (d: DeviceInHierarchy): JSX.Element => {
+		let getDeviceContent = (d: DeviceInHierarchy, toplevel: boolean): JSX.Element => {
 			let content: JSX.Element[] = [
-				<DeviceItem key={'device' + d.device._id } device={d.device} />
+				<DeviceItem key={'device' + d.device._id } device={d.device} toplevel={toplevel} hasChildren={d.children.length !== 0} />
 			]
 			if (d.children.length) {
 				let children: JSX.Element[] = []
 				_.each(d.children, (child: DeviceInHierarchy) => (
-					children.push(getDeviceContent(child))
+					children.push(getDeviceContent(child, false))
 				))
 				content.push(
 					<div key={d.device._id + '_children'} className='children'>
@@ -377,7 +387,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				</div>
 			)
 		}
-		return _.map(devices, (d) => getDeviceContent(d))
+		return _.map(devices, (d) => getDeviceContent(d, true))
 	}
 
 	render () {

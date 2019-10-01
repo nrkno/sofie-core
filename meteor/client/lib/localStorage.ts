@@ -48,3 +48,11 @@ export function setAllowSpeaking (speakingMode: boolean) {
 export function getAllowSpeaking (): boolean {
 	return localStorage.getItem(UiAllowAccess.SPEAKING) === '1'
 }
+
+export function setHelpMode (helpMode: boolean) {
+	localStorage.setItem('helpMode', (helpMode ? '1' : '0'))
+}
+
+export function getHelpMode (): boolean {
+	return localStorage.getItem('helpMode') === '1'
+}

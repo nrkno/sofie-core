@@ -2,6 +2,7 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
@@ -53,6 +54,7 @@ import {
 } from '../../../lib/api/studios'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { getHelpMode } from '../../lib/localStorage'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -136,7 +138,14 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Attached Devices')}</h2>&nbsp;
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Devices are needed to control your studio hardware')}
+						visible={getHelpMode() && !this.props.studioDevices.length}
+						placement='right'>
+						<span>{t('Attached Devices')}</span>
+					</Tooltip>
+				</h2>&nbsp;
 				{
 					!this.props.studioDevices.length ?
 					<div className='error-notice'>
@@ -902,7 +911,13 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		return <div>
 			<p className='mhn'>
 				{t('Studio Baseline needs update: ')}&nbsp;
-				{needsUpdate ? t('Yes') : t('No')}
+				{
+					needsUpdate ?
+					<Tooltip overlay={t('Baseline needs reload, this studio may not work until reloaded')} visible={getHelpMode()} placement='right'>
+						<span>{t('Yes')}</span>
+					</Tooltip> :
+					t('No')
+				}
 				{
 					needsUpdate ?
 					<span className='error-notice inline'>

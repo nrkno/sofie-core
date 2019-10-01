@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
+const Tooltip = require('rc-tooltip')
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -27,6 +28,7 @@ import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { getHelpMode } from '../../lib/localStorage'
 
 interface IProps {
 	match: {
@@ -803,7 +805,14 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Source Layers')}</h2>
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Add some source layers (e.g. Graphics) for your ENPS data to appear in rundowns')}
+						visible={getHelpMode() && !this.props.showStyleBase.sourceLayers.length}
+						placement='bottom'>
+						<span>{t('Source Layers')}</span>
+					</Tooltip>
+				</h2>
 				{
 					(!this.props.showStyleBase || !this.props.showStyleBase.sourceLayers || !this.props.showStyleBase.sourceLayers.length) ?
 					<div className='error-notice'>
@@ -1021,7 +1030,14 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Output channels')}</h2>
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Output channels are required for your studio to work')}
+						visible={getHelpMode() && !this.props.showStyleBase.outputLayers.length}
+						placement='top'>
+						<span>{t('Output channels')}</span>
+					</Tooltip>
+				</h2>
 				{
 					(!this.props.showStyleBase || !this.props.showStyleBase.outputLayers || !this.props.showStyleBase.outputLayers.length) ?
 					<div className='error-notice'>
