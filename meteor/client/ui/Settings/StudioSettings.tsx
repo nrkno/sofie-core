@@ -1009,7 +1009,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				}
 			})
 		}
-		return ( buttons )
+		return (buttons)
 	}
 
 	renderEditForm () {
