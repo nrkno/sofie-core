@@ -357,8 +357,11 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 					if (allowTransition) {
 						transitionKF = _.find(obj.keyframes || [], kf => kf.enable.while === '.is_transition')
 
-						if (!transitionKF && _.find(classesFromPreviousPart || [], c => c === 'prev_clip_full')) {
-							transitionKF = _.find(obj.keyframes || [], kf => kf.enable.while === '.is_transition & .prev_clip_full')
+						// TODO - this keyframe matching is a hack, and is very fragile
+
+						if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
+							// Check if the keyframe also uses a class to match. This handles a specific edge case
+							transitionKF = _.find(obj.keyframes || [], kf => _.any(classesFromPreviousPart, cl => kf.enable.while === `.is_transition & .${cl}`))
 						}
 					}
 					const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
