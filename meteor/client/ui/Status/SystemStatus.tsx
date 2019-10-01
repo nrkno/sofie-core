@@ -373,11 +373,17 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			if (d.children.length) {
 				let children: JSX.Element[] = []
 				_.each(d.children, (child: DeviceInHierarchy) => (
-					children.push(getDeviceContent(child, false))
+					children.push(
+						<li key={'childdevice' + child.device._id} className='child-device-li'>
+							{getDeviceContent(child, false)}
+						</li>
+					)
 				))
 				content.push(
 					<div key={d.device._id + '_children'} className='children'>
-						{children}
+						<ul className='childlist'>
+							{children}
+						</ul>
 					</div>
 				)
 			}
@@ -460,7 +466,7 @@ export const PeripheralDeviceStatus = i18next.translate()(class PeripheralDevice
 						{this.statusCodeString()}
 					</span>
 				</div>
-				<div><i>{this.statusMessages()}</i></div>
+				<div className='device-item__device-status-message'><i>{this.statusMessages()}</i></div>
 			</div>
 		)
 	}
