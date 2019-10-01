@@ -1,16 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when finalizing the release)
- *
- * **************************************************************************************
-*/
-// x.x.x (Release X)
+// 1.1.0 (Release 13)
 addMigrationSteps('1.1.0', [
 	// add steps here:
 	// {
