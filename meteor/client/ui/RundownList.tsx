@@ -241,7 +241,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 			synced.length === 0 &&
 			unsynced.length === 0
 		) {
-			if (getAdminMode()) {
+			if (getAllowConfigure()) {
 				return ToolTipStep.TOOLTIP_RUN_MIGRATIONS
 			} else {
 				return ToolTipStep.TOOLTIP_START_HERE
