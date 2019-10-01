@@ -67,10 +67,10 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 							_valid: false
 						},
 						'timing': {
-							duration: "00:05",
-							in: "auto",
-							out: "auto",
-							timeIn: "00:00"
+							duration: '00:05',
+							in: 'auto',
+							out: 'auto',
+							timeIn: '00:00'
 						}
 					}
 				}, '*')
@@ -115,10 +115,10 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 							_valid: false
 						},
 						'timing': {
-							duration: "00:05",
-							in: "auto",
-							out: "auto",
-							timeIn: "00:00"
+							duration: '00:05',
+							in: 'auto',
+							out: 'auto',
+							timeIn: '00:00'
 						}
 					}
 				}, '*')
@@ -137,7 +137,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 			<Escape to='document'>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics' style={style}>
 					<div className='preview'>
-						<img width="100%" src="../images/previewBG.png" alt=""/>
+						<img width='100%' src='../images/previewBG.png' alt=''/>
 						<iframe
 							sandbox='allow-scripts'
 							src={this.state.noraContent.previewRenderer as string}

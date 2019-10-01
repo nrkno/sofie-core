@@ -11,7 +11,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { translate, InjectedTranslateProps } from 'react-i18next'
-import { NoraPreviewController } from './NoraPreviewRenderer';
+import { NoraPreviewController } from './NoraPreviewRenderer'
 
 type KeyValue = { key: string, value: string }
 interface IProps extends ICustomLayerItemProps {
@@ -109,7 +109,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 					</span>
 					<FloatingInspector key={this.props.piece._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{ noraContent && noraContent.payload && noraContent.previewRenderer ?
-						<NoraPreviewController noraContent={noraContent}  style={this.getFloatingInspectorStyle()} />
+						<NoraPreviewController noraContent={noraContent} style={this.getFloatingInspectorStyle()} />
 						 :
 						<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 							{ templateName && <div className='mini-inspector__header'>{templateName}{

@@ -101,7 +101,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 
 	studioHasError (studio: Studio) {
-		if(!studio.name) return true
+		if (!studio.name) return true
 		if (!studio.supportedShowStyleBase.length) return true
 		if (!studio.blueprintId) return true
 		const peripherals = this.props.peripheralDevices

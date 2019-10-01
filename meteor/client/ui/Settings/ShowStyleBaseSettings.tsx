@@ -851,7 +851,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		}
 	}
 
-	isPGMChannelSet() {
+	isPGMChannelSet () {
 		if (!this.props.showStyleBase.outputLayers) return false
 		return this.props.showStyleBase.outputLayers.filter(layer => layer.isPGM).length > 0
 	}

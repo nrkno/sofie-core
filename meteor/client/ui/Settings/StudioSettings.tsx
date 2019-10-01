@@ -127,7 +127,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 	}
 
 	isPlayoutConnected () {
-		let connected = false;
+		let connected = false
 		this.props.studioDevices.map(device => {
 			if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) connected = true
 		})

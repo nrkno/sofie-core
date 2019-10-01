@@ -64,8 +64,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		}
 	}
 
-	static getDerivedStateFromProps(props: IProps): IState {
-		
+	static getDerivedStateFromProps (props: IProps): IState {
+
 
 		let subItems: Array<SplitSubItem> = []
 		if (props.piece.content) {

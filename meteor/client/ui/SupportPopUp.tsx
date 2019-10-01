@@ -79,7 +79,7 @@ export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 }
 
 export const DocumentationLink = translate()(class DocumentationLink extends React.Component {
-	render() {
+	render () {
 		return (
 			<div>
 				{
@@ -95,7 +95,7 @@ export const DocumentationLink = translate()(class DocumentationLink extends Rea
 						<a href='?help=1'>
 							?help=1
 						</a>
-					</div> 
+					</div>
 				}
 				More documentation available at:&nbsp;
 				<a href='https://github.com/nrkno/Sofie-TV-automation/'>
