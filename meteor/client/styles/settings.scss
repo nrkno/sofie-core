@@ -37,7 +37,7 @@
 			padding: 0px 8px;
 			margin: -6px 0 -1px;
 		}
-		
+
 		.table-item-actions {
 			text-align: right;
 			min-width: 4em;
@@ -87,7 +87,7 @@
 		> tbody > tr {
 			> .actions {
 				text-align: right;
-	
+
 				> .action-btn {
 					padding: 0 0.4em;
 				}
@@ -157,4 +157,9 @@
 			color: $color-status-warning;
 		}
 	}
+}
+
+.btn-add-new {
+	width: 20%;
+	margin: 1em 1em 1em 0 !important;
 }

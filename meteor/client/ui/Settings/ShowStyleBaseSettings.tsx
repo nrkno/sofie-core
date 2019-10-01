@@ -29,6 +29,7 @@ import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
 
 interface IProps {
 	match: {
@@ -67,7 +68,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		super(props)
 		this.state = {
 			uploadFileKey: Date.now(),
-			showUploadConfirm: false,
+			showUploadConfirm: false
 		}
 	}
 
@@ -143,6 +144,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={this.getOptionBlueprints()}
 								collection={ShowStyleBases}
 								className='mdinput'></EditAttribute>
+							<SettingsNavigation
+								attribute='blueprintId'
+								obj={this.props.showStyleBase}
+								type='blueprint'></SettingsNavigation>
 							<span className='mdfx'></span>
 						</div>
 					</label>
