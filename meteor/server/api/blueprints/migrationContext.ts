@@ -46,6 +46,10 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	}
 	updateMapping (mappingId: string, mapping: Partial<BlueprintMapping>): void {
 		check(mappingId, String)
+		if (!this.studio.mappings[mappingId]) {
+			throw new Meteor.Error(404, `Mapping ${mappingId} cannot be updated as it does not exist`)
+		}
+
 		let m: any = {}
 		m['mappings.' + mappingId] = _.extend(this.studio.mappings[mappingId], mapping)
 		Studios.update(this.studio._id, { $set: m })
