@@ -174,7 +174,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 				callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck', (err, result) => {
 					if (err) {
 						// console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to HyperDecks on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to format HyperDecks on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 					} else {
 						// console.log(result)
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Formatting HyperDeck disks on device "{{deviceName}}"...', { deviceName: device.name }), 'SystemStatus'))
