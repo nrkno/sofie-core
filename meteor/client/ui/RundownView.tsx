@@ -314,7 +314,6 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						}
 					</React.Fragment>)
 				}
-				<NoraPreviewRenderer />
 			</div>
 		)
 	}
@@ -1868,6 +1867,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
 									inActiveRundownView={this.props.inActiveRundownView} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu
