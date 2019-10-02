@@ -399,12 +399,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
