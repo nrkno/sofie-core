@@ -163,7 +163,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Another Rundown is Already Active!"
 msgid "This rundown is currently active"
-msgstr "En annen kjøreplan er allerede aktiv!"
+msgstr "Denne kjøreplanen er allerede aktiv!"
 
 msgid "Re-sync with MOS"
 msgstr "Synkroniser med MOS"
@@ -174,7 +174,7 @@ msgstr ""
 #, fuzzy
 #| msgid "System messages"
 msgid "Check system status messages.\n"
-msgstr "Systemmeldinger"
+msgstr "Sjekk systemmeldinger"
 
 msgid "Getting Started"
 msgstr "Kom i gang"
@@ -241,7 +241,7 @@ msgid "System Status"
 msgstr "Systemstatus"
 
 msgid "System has issues which need to be resolved"
-msgstr ""
+msgstr "Systemet har problemer som må fikses"
 
 msgid "Status Messages:"
 msgstr "Statusmeldinger:"
@@ -283,10 +283,8 @@ msgstr "Forventet slutt"
 msgid "Take"
 msgstr "Take"
 
-#, fuzzy
-#| msgid "Hold"
 msgid "Undo Hold"
-msgstr "Hold"
+msgstr "Angre hold"
 
 msgid "Activate"
 msgstr "Aktiver"
@@ -351,7 +349,7 @@ msgstr "Kunne ikke deaktivere"
 msgid ""
 "Something went wrong, please contact the system administrator if the problem "
 "persists."
-msgstr ""
+msgstr "Noe gikk galt, kontakt systemadministrator hvis problemet fortsetter"
 
 msgid "Do you want to activate this Rundown?"
 msgstr "Vil du aktivere denne kjøreplanen?"
@@ -811,7 +809,7 @@ msgstr "Blueprint-type"
 #, fuzzy
 #| msgid "Upload Blueprints"
 msgid "Upload a new blueprint"
-msgstr "Last opp blueprints"
+msgstr "Last opp blueprint"
 
 msgid "Last modified"
 msgstr "Sist endret"
