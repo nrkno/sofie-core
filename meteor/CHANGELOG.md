@@ -1,6 +1,76 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [1.1.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.0.0...v1.1.0-0) (2019-10-01)
+
+
+### Bug Fixes
+
+* Add documentation for service message criticality origin ([0ee22e3](https://github.com/nrkno/tv-automation-server-core/commit/0ee22e3))
+* allow marking a local folder as a network share ([1778c31](https://github.com/nrkno/tv-automation-server-core/commit/1778c31))
+* Check sourceLayers and outputLayers exist ([48d090e](https://github.com/nrkno/tv-automation-server-core/commit/48d090e))
+* Checking if PGM outputs set ([4400ed4](https://github.com/nrkno/tv-automation-server-core/commit/4400ed4))
+* correctly import DDP namespace in ConnectionStatusNotification module ([f2d3eea](https://github.com/nrkno/tv-automation-server-core/commit/f2d3eea))
+* disable switch UI visuals ([08866f5](https://github.com/nrkno/tv-automation-server-core/commit/08866f5))
+* Display warning when array has been emptied by deletion ([507af75](https://github.com/nrkno/tv-automation-server-core/commit/507af75))
+* Do not require hasChildren ([83803b8](https://github.com/nrkno/tv-automation-server-core/commit/83803b8))
+* don't store criticalities as strings when adding from REST API ([d713f8d](https://github.com/nrkno/tv-automation-server-core/commit/d713f8d))
+* ensure CoreSystem.serviceMessages is available for systems with existing databases ([2bd35b2](https://github.com/nrkno/tv-automation-server-core/commit/2bd35b2))
+* Handle empty array of sources/outputs ([b8e9db4](https://github.com/nrkno/tv-automation-server-core/commit/b8e9db4))
+* handle promise, and wait for it as it should ([ffbb8cb](https://github.com/nrkno/tv-automation-server-core/commit/ffbb8cb))
+* Hide playout gateway hint if it has connected devices ([986fa0c](https://github.com/nrkno/tv-automation-server-core/commit/986fa0c))
+* linting errors ([8c945a9](https://github.com/nrkno/tv-automation-server-core/commit/8c945a9))
+* Log error message if serviceMessages datastore isn't available when listing service messages from the API ([f77f901](https://github.com/nrkno/tv-automation-server-core/commit/f77f901))
+* play with offset ([8b9925f](https://github.com/nrkno/tv-automation-server-core/commit/8b9925f))
+* resolve issues PlayFromAnywhere in GUI ([fcb86b7](https://github.com/nrkno/tv-automation-server-core/commit/fcb86b7))
+* ServiceMessages API refused Criticality values when provided as strings ([110f074](https://github.com/nrkno/tv-automation-server-core/commit/110f074))
+* Settings layout ([631fe23](https://github.com/nrkno/tv-automation-server-core/commit/631fe23))
+* **ui:** undefined property crop in split renderer ([8253a75](https://github.com/nrkno/tv-automation-server-core/commit/8253a75))
+* Show 'add child devices' hint only on parent devices ([ba5a66d](https://github.com/nrkno/tv-automation-server-core/commit/ba5a66d))
+* Show configure tooltip ([b0f70b6](https://github.com/nrkno/tv-automation-server-core/commit/b0f70b6))
+* tests ([41fc5d1](https://github.com/nrkno/tv-automation-server-core/commit/41fc5d1))
+* time labels in TimelineGrid would show incorrect time at certain zoom levels ([1f2dc63](https://github.com/nrkno/tv-automation-server-core/commit/1f2dc63))
+* Translate 'add child devices' tooltip ([0018dd3](https://github.com/nrkno/tv-automation-server-core/commit/0018dd3))
+* Translate reload hint ([231c173](https://github.com/nrkno/tv-automation-server-core/commit/231c173))
+* update nora preview with new data ([cd22bdd](https://github.com/nrkno/tv-automation-server-core/commit/cd22bdd))
+* updated database mock with coreSystem.serviceMessages field ([61d24ee](https://github.com/nrkno/tv-automation-server-core/commit/61d24ee))
+* updated failing tests for service messages posthandler ([5de4520](https://github.com/nrkno/tv-automation-server-core/commit/5de4520))
+
+
+### Features
+
+* Add blueprint navigation buttons to show style settings ([fdc5349](https://github.com/nrkno/tv-automation-server-core/commit/fdc5349))
+* Add help hints for rundown list ([6cef90f](https://github.com/nrkno/tv-automation-server-core/commit/6cef90f))
+* Add hint if playout gateway has no devices connected ([3f34a01](https://github.com/nrkno/tv-automation-server-core/commit/3f34a01))
+* Add hint to attach devices ([4c6aa21](https://github.com/nrkno/tv-automation-server-core/commit/4c6aa21))
+* Add hint to reload baseline ([1fed4fc](https://github.com/nrkno/tv-automation-server-core/commit/1fed4fc))
+* Add new blueprint and redirect user ([5d081bb](https://github.com/nrkno/tv-automation-server-core/commit/5d081bb))
+* Add new showstyle and redirect ([3ca3cac](https://github.com/nrkno/tv-automation-server-core/commit/3ca3cac))
+* Add rundown tips ([2305b02](https://github.com/nrkno/tv-automation-server-core/commit/2305b02))
+* Add tooltip for source layers and output channels ([bf3e67c](https://github.com/nrkno/tv-automation-server-core/commit/bf3e67c))
+* allow for blueprint-specific Box placement and crops ([f82fa46](https://github.com/nrkno/tv-automation-server-core/commit/f82fa46))
+* client api method to deactivate a pending hold ([25cc7bf](https://github.com/nrkno/tv-automation-server-core/commit/25cc7bf))
+* Device hierarchy restructuring ([08e41f4](https://github.com/nrkno/tv-automation-server-core/commit/08e41f4))
+* Hint for blueprint configuration ([ac9c402](https://github.com/nrkno/tv-automation-server-core/commit/ac9c402))
+* introduce service access area ([56dc796](https://github.com/nrkno/tv-automation-server-core/commit/56dc796))
+* Move navigation buttons to components ([42c8903](https://github.com/nrkno/tv-automation-server-core/commit/42c8903))
+* nora previews ([9638a5f](https://github.com/nrkno/tv-automation-server-core/commit/9638a5f))
+* Provide buttons directing user to edit blueprint / show style ([27f38be](https://github.com/nrkno/tv-automation-server-core/commit/27f38be))
+* quantel restart button ([84789b1](https://github.com/nrkno/tv-automation-server-core/commit/84789b1))
+* Set blueprint to new blueprint ([ccaa817](https://github.com/nrkno/tv-automation-server-core/commit/ccaa817))
+* Show 'add child devices' hint on playout gateway settings ([f710816](https://github.com/nrkno/tv-automation-server-core/commit/f710816))
+* show "ignore" toggle buttons in DeviceStatus component when in develop mode ([405b655](https://github.com/nrkno/tv-automation-server-core/commit/405b655))
+* Show hint if spreadsheet folder is missing ([f7b036d](https://github.com/nrkno/tv-automation-server-core/commit/f7b036d))
+* Show warning icon on menu entry for studio ([0885db4](https://github.com/nrkno/tv-automation-server-core/commit/0885db4))
+* undo Hold ([612bf68](https://github.com/nrkno/tv-automation-server-core/commit/612bf68))
+* update blueprints-integration ([636b7cd](https://github.com/nrkno/tv-automation-server-core/commit/636b7cd))
+* Warning icons for show styles ([89c0553](https://github.com/nrkno/tv-automation-server-core/commit/89c0553))
+* Warning icons on studio settings ([0c9e601](https://github.com/nrkno/tv-automation-server-core/commit/0c9e601))
+* Warning if peripheral device has no name ([9f09ba9](https://github.com/nrkno/tv-automation-server-core/commit/9f09ba9))
+* Warnings for blueprints ([c34c39f](https://github.com/nrkno/tv-automation-server-core/commit/c34c39f))
+
+
 
 <a name="1.0.0"></a>
 # [1.0.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.26.0...v1.0.0) (2019-09-11)

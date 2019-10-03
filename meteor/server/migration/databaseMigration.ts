@@ -59,8 +59,9 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 0.25.0: Release 10  (2019-07-05)
  * 0.26.0: Release 11  -
  * 1.0.0: Release 12  (2019-09-11)
+ * 1.1.0: Release 13  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.0.0'
+export const CURRENT_SYSTEM_VERSION = '1.1.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -71,9 +72,7 @@ export const UNSUPPORTED_VERSIONS = [
 	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
 	'<=0.18',
 	// 0.24.0 to 0.25.0: Major refactoring, Renaming of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
-	'<=0.24',
-	// 0.26.0 to 1.0.0: Adding of RundownPlaylist and support for multiple, concurrent rundowns in a show
-	'<=0.26',
+	'<=0.24'
 ]
 
 export function isVersionSupported (version: Version) {

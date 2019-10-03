@@ -288,6 +288,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.rampMotorFunctionPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Priority')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.priority'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
 		</React.Fragment>
 	}
 	renderHTTPSendDeviceSettings (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {

@@ -312,9 +312,11 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 			const orderedItems = getOrderedPiece(startingPartOnLayer.part)
 
 			let allowTransition = false
+			let classesFromPreviousPart: string[] = []
 			if (startingPartOnLayerIndex >= 1 && activeRundown.currentPartId) {
 				const prevPieceGroup = timeOrderedPartsWithPieces[startingPartOnLayerIndex - 1]
 				allowTransition = !prevPieceGroup.part.disableOutTransition
+				classesFromPreviousPart = prevPieceGroup.part.classesForNext || []
 			}
 
 			const transObj = orderedItems.find(i => !!i.isTransition)
@@ -354,6 +356,13 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 					let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
 					if (allowTransition) {
 						transitionKF = _.find(obj.keyframes || [], kf => kf.enable.while === '.is_transition')
+
+						// TODO - this keyframe matching is a hack, and is very fragile
+
+						if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
+							// Check if the keyframe also uses a class to match. This handles a specific edge case
+							transitionKF = _.find(obj.keyframes || [], kf => _.any(classesFromPreviousPart, cl => kf.enable.while === `.is_transition & .${cl}`))
+						}
 					}
 					const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
 

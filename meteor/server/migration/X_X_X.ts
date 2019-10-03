@@ -11,7 +11,7 @@ import { ensureCollectionProperty } from './lib'
  * **************************************************************************************
 */
 // x.x.x (Release X)
-addMigrationSteps('1.1.0', [
+addMigrationSteps('1.2.0', [
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',
@@ -23,6 +23,4 @@ addMigrationSteps('1.1.0', [
 	// 		//
 	// 	}
 	// },
-
-	ensureCollectionProperty('CoreSystem', {}, 'serviceMessages', {})
 ])
