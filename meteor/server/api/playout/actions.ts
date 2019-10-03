@@ -81,12 +81,49 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 	})
 }
 export function deactivateRundownPlaylist (rundownPlaylist: RundownPlaylist) {
+
+	const rundown = deactivateRundownPlaylistInner(rundownPlaylist)
+
+	updateTimeline(rundownPlaylist.studioId)
+
+
+	Meteor.defer(() => {
+		if (rundown) {
+			const { blueprint } = getBlueprintOfRundown(rundown)
+			if (blueprint.onRundownDeActivate) {
+				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
+				.catch(logger.error)
+			}
+		}
+	})
+}
+export function deactivateRundownPlaylistInner (rundownPlaylist: RundownPlaylist): Rundown | undefined {
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
-	let previousPart = (rundownPlaylist.currentPartId ?
+	const previousPart = (rundownPlaylist.currentPartId ?
 		Parts.findOne(rundownPlaylist.currentPartId)
 		: null
 	)
+	let rundown: Rundown | undefined
+	if (previousPart) {
+		rundown = Rundowns.findOne(previousPart.rundownId)
+
+		if (rundown) {
+			IngestActions.notifyCurrentPlayingPart(rundown, null)
+		} else {
+			logger.error(`Could not find owner rundown "${previousPart.rundownId}" of part "${previousPart._id}"`)
+		}
+	} else {
+		let nextPart = (
+			rundownPlaylist.nextPartId ?
+			Parts.findOne(rundownPlaylist.nextPartId)
+			: null
+		)
+
+		if (nextPart) {
+			rundown = Rundowns.findOne(nextPart.rundownId)
+		}
+	}
 
 	if (previousPart) onPartHasStoppedPlaying(previousPart, getCurrentTime())
 
@@ -99,6 +136,7 @@ export function deactivateRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 		}
 	})
 	setNextPart(rundownPlaylist, null)
+
 	if (rundownPlaylist.currentPartId) {
 		Parts.update(rundownPlaylist.currentPartId, {
 			$push: {
@@ -106,41 +144,7 @@ export function deactivateRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 			}
 		})
 	}
-
-	updateTimeline(rundownPlaylist.studioId)
-
-	let rundown: Rundown | undefined
-	if (previousPart) {
-		rundown = Rundowns.findOne(previousPart.rundownId)
-
-		if (rundown) {
-			IngestActions.notifyCurrentPlayingPart(rundown, null)
-		} else {
-			logger.error(`Could not find owner rundown "${previousPart.rundownId}" of part "${previousPart._id}"`)
-		}
-
-	}
-
-	if (!previousPart) {
-		let nextPart = (rundownPlaylist.nextPartId ?
-			Parts.findOne(rundownPlaylist.nextPartId)
-			: null
-		)
-
-		if (nextPart) {
-			rundown = Rundowns.findOne(nextPart.rundownId)
-		}
-	}
-
-	Meteor.defer(() => {
-		if (rundown) {
-			const { blueprint } = getBlueprintOfRundown(rundown)
-			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
-				.catch(logger.error)
-			}
-		}
-	})
+	return rundown
 }
 export function prepareStudioForBroadcast (studio: Studio) {
 	logger.info('prepareStudioForBroadcast ' + studio._id)

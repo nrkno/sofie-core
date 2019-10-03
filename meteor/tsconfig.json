@@ -7,14 +7,15 @@
 		"sourceMap": true,
 		"allowJs": true,
 		"jsx": "react",
-		"types": [
-			"node",
-			"jest"
-		]
+		"plugins": [
+			{
+				"name": "typescript-tslint-plugin"
+			}
+		],
+		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object"]
 	},
 	"exclude": [
 		"node_modules",
-		"**/__tests__/**/*",
 		"**/__mocks__/**/*",
 		"**/.coverage/**/*"
 	]

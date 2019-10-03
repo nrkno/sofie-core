@@ -30,7 +30,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter } from './AdLibPanel'
+import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
@@ -42,15 +42,15 @@ interface IState {
 	}
 	sourceLayers: {
 		[key: string]: ISourceLayer
-	}
+	},
+	searchFilter: string | undefined
 }
 
-const BUTTON_GRID_WIDTH = 30
-const BUTTON_GRID_HEIGHT = 26
-const PANEL_MARGIN_WIDTH = 15
-const PANEL_MARGIN_HEIGHT = 44
+const BUTTON_GRID_WIDTH = 1
+const BUTTON_GRID_HEIGHT = 0.61803
 
 interface IDashboardPanelProps {
+	searchFilter?: string | undefined
 	mediaPreviewUrl?: string
 }
 
@@ -87,7 +87,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
+})(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -95,7 +95,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 		this.state = {
 			outputLayers: {},
-			sourceLayers: {}
+			sourceLayers: {},
+			searchFilter: undefined
 		}
 	}
 
@@ -346,6 +347,12 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
+	onFilterChange = (filter: string) => {
+		this.setState({
+			searchFilter: filter
+		})
+	}
+
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -356,41 +363,45 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 					<div className='dashboard-panel'
 						style={{
 							width: filter.width >= 0 ?
-								(filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH :
+								(filter.width * BUTTON_GRID_WIDTH) + 'vw' :
 								undefined,
 							height: filter.height >= 0 ?
-								(filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT :
+								(filter.height * BUTTON_GRID_HEIGHT) + 'vw' :
 								undefined,
 							left: filter.x >= 0 ?
-								(filter.x * BUTTON_GRID_WIDTH) :
+								(filter.x * BUTTON_GRID_WIDTH) + 'vw' :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
 									undefined,
 							top: filter.y >= 0 ?
-								(filter.y * BUTTON_GRID_HEIGHT) :
+								(filter.y * BUTTON_GRID_HEIGHT) + 'vw' :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
 									undefined,
 							right: filter.x < 0 ?
-								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) :
+								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) + 'vw' :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
 									undefined,
 							bottom: filter.y < 0 ?
-								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) :
+								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
 									undefined
 						}}
 					>
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
+						{ filter.enableSearch &&
+							<AdLibPanelToolbar
+								onFilterChange={this.onFilterChange} />
+						}
 						<div className='dashboard-panel__panel'>
 							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
 								.concat(this.props.rundownBaselineAdLibs)
 								.sort((a, b) => a._rank - b._rank)
-								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))
+								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton
 												key={item._id}
@@ -401,6 +412,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												playlist={this.props.playlist}
 												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+												widthScale={filter.buttonWidthScale}
+												heightScale={filter.buttonHeightScale}
 											>
 												{item.name}
 									</DashboardPieceButton>

@@ -344,13 +344,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	getPartDuration (): number {
 		// const part = this.props.part
 
-		const playOffset = this.props.part.timings ? (_.last(this.props.part.timings.playOffset) || 0) : 0
-
 		return Math.max(
 			this.state.liveDuration,
 			(this.props.part.duration ||
 				this.props.timingDurations.partDisplayDurations && this.props.timingDurations.partDisplayDurations[this.props.part._id] ||
-				this.props.part.renderedDuration || 0) + playOffset
+				this.props.part.renderedDuration || 0)
 		)
 
 		/* return part.duration !== undefined ? part.duration : Math.max(
@@ -443,7 +441,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					{this.props.part.invalid ? <div className='segment-timeline__part__invalid-cover'></div> : null}
 
 					<div className={ClassNames('segment-timeline__part__nextline', { // This is the base, basic line
-						'auto-next': this.props.part.willProbablyAutoNext,
+						'auto-next': ((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)),
 						'invalid': this.props.part.invalid,
 						'offset': !!this.props.playlist.nextTimeOffset
 					})}>
@@ -453,10 +451,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							{(
 								this.props.part.invalid ?
 									t('Invalid') :
-								[
-									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' ',
-									this.state.isNext && t('Next')
-								]
+									<React.Fragment>
+										{((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)) && t('Auto') + ' '}
+										{this.state.isNext && t('Next')}
+									</React.Fragment>
 							)}
 						</div>
 					</div>

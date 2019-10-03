@@ -13,6 +13,7 @@ import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
+const Tooltip = require('rc-tooltip')
 import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
@@ -37,7 +38,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -61,6 +62,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
+import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -206,6 +208,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'f12',
 	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
 	RUNDOWN_HOLD = 'h',
+	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
 	RUNDOWN_ACTIVATE2 = '\\',
 	RUNDOWN_ACTIVATE3 = '|',
@@ -248,23 +251,23 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						<Moment interval={0} format='HH:mm:ss' date={this.props.rundownPlaylist.expectedStart} />
 					</span>
 				}
-				{this.props.rundownPlaylist.startedPlayback && (
+				{ this.props.rundownPlaylist.startedPlayback && (
 					this.props.rundownPlaylist.active &&
 					!this.props.rundownPlaylist.rehearsal
 				) ?
-					this.props.rundownPlaylist.expectedStart &&
+					(this.props.rundownPlaylist.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
 						<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.rundownPlaylist.startedPlayback - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
-						</span>
+						</span>) || undefined
 					:
-					this.props.rundownPlaylist.expectedStart &&
+					(this.props.rundownPlaylist.expectedStart &&
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundownPlaylist.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
 						{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
-						</span>
+						</span>) || undefined
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
@@ -371,6 +374,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					up: this.keyHold,
 					label: t('Hold')
 				},{
+					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
+					up: this.keyHoldUndo,
+					label: t('Undo Hold')
+				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 					up: this.keyActivate,
 					label: t('Activate'),
@@ -398,12 +405,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
@@ -516,6 +523,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	keyHold = (e: ExtendedKeyboardEvent) => {
 		this.hold(e)
 	}
+	keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		this.holdUndo(e)
+	}
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate(e)
 	}
@@ -604,9 +614,17 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	hold = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode && this.props.playlist.active) {
-			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.playlist._id])
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.playlist._id, false])
 		}
 	}
+
+	holdUndo = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode && this.props.playlist.active && this.props.playlist.holdState === RundownHoldState.PENDING) {
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.playlist._id, true])
+		}
+	}
+
 	rundownShouldHaveStarted () {
 		return getCurrentTime() > (this.props.playlist.expectedStart || 0)
 	}
@@ -614,44 +632,62 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		return getCurrentTime() > (this.props.playlist.expectedStart || 0) + (this.props.playlist.expectedDuration || 0)
 	}
 
-	handleActivationError = (originalMethod: UserActionAPI.methods, originalParams: any[], err: ClientAPI.ClientResponseError, clb?: Function) => {
+	handleAnotherPlaylistActive = (
+		rundownId: string,
+		rehersal: boolean,
+		err: ClientAPI.ClientResponseError,
+		clb?: Function
+	) => {
 		const { t } = this.props
 
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
 			title: t('Another Rundown is Already Active!'),
-			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', { rundownName: otherRundowns.map(i => i.name).join(', ') }),
+			message: t('The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?', {
+				rundownName: otherRundowns.map(i => i.name).join(', ')
+			}),
 			yes: t('Activate Anyway'),
 			no: t('Cancel'),
-			warning: true,
-			onAccept: (le: any) => {
-				Promise.all(otherRundowns.map(r => {
-					return new Promise((resolve, reject) => {
-						doUserAction(t, le, UserActionAPI.methods.deactivate, [r._id], (err, res) => {
+			actions: [
+				{
+					label: t('Activate anyway (GO ON AIR)'),
+					classNames: 'btn-primary',
+					on: (e) => {
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], (err, response) => {
 							if (!err) {
-								resolve()
-								return
+								if (typeof clb === 'function') clb()
+							} else {
+								console.error(err)
+								doModalDialog({
+									title: t('Failed to activate'),
+									message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+									acceptOnly: true,
+									warning: true,
+									yes: t('OK'),
+									onAccept: (le: any) => { console.log() }
+								})
 							}
-							reject(err)
 						})
-					})
-				})).then((res) => {
-					doUserAction(t, le, originalMethod, originalParams, (err, response) => {
-						if (!err) {
-							if (typeof clb === 'function') clb()
-						}
-					})
-				}, (err) => {
-					console.error(err)
-					doModalDialog({
-						title: t('Failed to deactivate'),
-						message: t('System was unable to deactivate existing rundowns. Please contact the system administrator.'),
-						acceptOnly: true,
-						warning: true,
-						yes: t('OK'),
-						onAccept: (le: any) => { console.log() }
-					})
-				}).catch(console.error)
+					}
+				}
+			],
+			warning: true,
+			onAccept: (e) => {
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], (err, response) => {
+					if (!err) {
+						if (typeof clb === 'function') clb()
+					} else {
+						console.error(err)
+						doModalDialog({
+							title: t('Failed to activate'),
+							message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+							acceptOnly: true,
+							warning: true,
+							yes: t('OK'),
+							onAccept: (le: any) => { console.log() }
+						})
+					}
+				})
 			}
 		})
 	}
@@ -680,7 +716,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleActivationError(UserActionAPI.methods.activate, [this.props.playlist._id, false], err, () => {
+							this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, () => {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							})
 							return false
@@ -700,7 +736,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
 								if (err.error === 409) {
-									this.handleActivationError(UserActionAPI.methods.activate, [this.props.playlist._id, false], err, onSuccess)
+									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, onSuccess)
 									return false
 								}
 							}
@@ -745,7 +781,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						onSuccess()
 					} else if (ClientAPI.isClientResponseError(err)) {
 						if (err.error === 409) {
-							this.handleActivationError(UserActionAPI.methods.activate, [this.props.playlist._id, true], err, onSuccess)
+							this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
 							return false
 						}
 					}
@@ -760,7 +796,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
 							if (err.error === 409) {
-								this.handleActivationError(UserActionAPI.methods.prepareForBroadcast, [this.props.playlist._id], err, onSuccess)
+								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
 								return false
 							}
 						}
@@ -986,7 +1022,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					<div className='row first-row super-dark'>
 						<div className='flex-col left horizontal-align-left'>
 							<div className='badge mod'>
-								<div className='media-elem mrs sofie-logo' />
+								<Tooltip overlay={t('Add ?studio=1 to the URL to enter studio mode')} visible={getHelpMode() && !getAllowStudio()} placement='bottom'>
+									<div className='media-elem mrs sofie-logo' />
+								</Tooltip>
 								<div className='bd mls'><span className='logo-text'></span></div>
 							</div>
 						</div>
@@ -1146,7 +1184,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.state = {
 			timeScale: 0.03,
-			studioMode: getStudioMode(),
+			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
@@ -1335,11 +1373,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			maintainFocusOnPart(this.props.playlist.currentPartId, 7000, true, true)
 		}
 
-		if (typeof this.props.playlist !== typeof this.props.playlist ||
+		if (typeof this.props.playlist !== typeof prevProps.playlist ||
 			(this.props.playlist || { _id: '' })._id !== (prevProps.playlist || { _id: '' })._id ||
 			(this.props.playlist || { active: false }).active !== (prevProps.playlist || { active: false }).active ||
 			this.state.studioMode !== prevState.studioMode) {
-			if (this.props.playlist && this.props.playlist.active && this.state.studioMode && !getDeveloperMode()) {
+			if (this.props.playlist && this.props.playlist.active && this.state.studioMode && !getAllowDeveloper()) {
 				window.addEventListener('beforeunload', this.onBeforeUnload)
 			} else {
 				window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -1670,7 +1708,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
-		if (!getDeveloperMode()) {
+		if (!getAllowDeveloper()) {
 			e.preventDefault()
 			e.stopPropagation()
 		}
@@ -1861,6 +1899,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
 									inActiveRundownView={this.props.inActiveRundownView} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu

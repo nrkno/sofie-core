@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
+const Tooltip = require('rc-tooltip')
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -26,6 +27,9 @@ import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { getHelpMode } from '../../lib/localStorage'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
 
 interface IProps {
 	match: {
@@ -64,7 +68,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		super(props)
 		this.state = {
 			uploadFileKey: Date.now(),
-			showUploadConfirm: false,
+			showUploadConfirm: false
 		}
 	}
 
@@ -104,6 +108,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div>
 					<label className='field'>
 						{t('Show Style Base Name')}
+						{
+							!(this.props.showStyleBase && this.props.showStyleBase.name) ?
+							<div className='error-notice inline'>
+								<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No name set')}
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -117,6 +128,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 					<label className='field'>
 						{t('Blueprint')}
+						{
+							!(this.props.showStyleBase && this.props.showStyleBase.blueprintId) ?
+							<div className='error-notice inline'>
+								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -126,6 +144,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={this.getOptionBlueprints()}
 								collection={ShowStyleBases}
 								className='mdinput'></EditAttribute>
+							<SettingsNavigation
+								attribute='blueprintId'
+								obj={this.props.showStyleBase}
+								type='blueprint'></SettingsNavigation>
 							<span className='mdfx'></span>
 						</div>
 					</label>
@@ -232,6 +254,8 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 	onDeleteROArgument = (item: IBlueprintRuntimeArgumentsItem) => {
@@ -411,6 +435,8 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			this.setState({
 				editedSources: this.state.editedSources
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -784,7 +810,21 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Source Layers')}</h2>
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Add some source layers (e.g. Graphics) for your ENPS data to appear in rundowns')}
+						visible={getHelpMode() && !this.props.showStyleBase.sourceLayers.length}
+						placement='bottom'>
+						<span>{t('Source Layers')}</span>
+					</Tooltip>
+				</h2>
+				{
+					(!this.props.showStyleBase || !this.props.showStyleBase.sourceLayers || !this.props.showStyleBase.sourceLayers.length) ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
+					</div> :
+					null
+				}
 				<table className='expando settings-studio-source-table'>
 					<tbody>
 						{this.renderInputSources()}
@@ -816,6 +856,11 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		}
 	}
 
+	isPGMChannelSet () {
+		if (!this.props.showStyleBase.outputLayers) return false
+		return this.props.showStyleBase.outputLayers.filter(layer => layer.isPGM).length > 0
+	}
+
 	isItemEdited = (item: IOutputLayer) => {
 		return this.state.editedOutputs.indexOf(item._id) >= 0
 	}
@@ -836,6 +881,8 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 			this.setState({
 				editedOutputs: this.state.editedOutputs
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -988,7 +1035,28 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Output channels')}</h2>
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Output channels are required for your studio to work')}
+						visible={getHelpMode() && !this.props.showStyleBase.outputLayers.length}
+						placement='top'>
+						<span>{t('Output channels')}</span>
+					</Tooltip>
+				</h2>
+				{
+					(!this.props.showStyleBase || !this.props.showStyleBase.outputLayers || !this.props.showStyleBase.outputLayers.length) ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
+					</div> :
+					null
+				}
+				{
+					!this.isPGMChannelSet() ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No PGM output')}
+					</div> :
+					null
+				}
 				<table className='expando settings-studio-output-table'>
 					<tbody>
 						{this.renderOutputs()}
@@ -1039,6 +1107,8 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
@@ -1185,6 +1255,8 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			this.setState({
 				editedMappings: this.state.editedMappings
 			})
+		} else {
+			this.finishEditItem(layerId)
 		}
 	}
 	onAddShowStyleVariant = () => {

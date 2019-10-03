@@ -4,6 +4,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { fetchAfter } from '../../../lib/lib'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { moveNext } from '../userActions'
 
 function getRundownValidParts (rundown: Rundown) {
 	return rundown.getParts({
@@ -49,11 +50,17 @@ export namespace UpdateNext {
 	}
 	export function afterInsertParts (rundown: Rundown, newPartExternalIds: string[], removePrevious: boolean) {
 		const playlist = RundownPlaylists.findOne(rundown.playlistId)
-		if (!playlist) throw new Meteor.Error(501, `Orphaned playlist: "${rundown._id}"`)
+		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
 
 		if (rundown && playlist.active) {
 			// If manually chosen, and could have been removed then special case handling
-			if (playlist.nextPartManual && removePrevious) {
+			if (!playlist.nextPartId && playlist.currentPartId) {
+				// The playhead is probably at the end of the rundown
+
+				// Set Next forward
+				moveNext(rundown._id, 1, 0, false)
+
+			} else if (playlist.nextPartManual && removePrevious) {
 				const allValidParts = getRundownValidParts(rundown)
 
 				// If the manually chosen part does not exist, assume it was the one that was removed

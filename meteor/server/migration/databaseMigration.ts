@@ -57,8 +57,9 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 0.23.0: Release 8   (2019-04-08)
  * 0.24.0: Release 9   (2019-05-16)
  * 0.25.0: Release 10  (2019-07-05)
- * 0.26.0: Release 11  (TBD)
- * 1.0.0: Release 12  (TBD)
+ * 0.26.0: Release 11  -
+ * 1.0.0: Release 12  (2019-09-11)
+ * 1.1.0: Release 13  (TBD)
  */
 export const CURRENT_SYSTEM_VERSION = '1.1.0'
 
@@ -71,9 +72,7 @@ export const UNSUPPORTED_VERSIONS = [
 	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
 	'<=0.18',
 	// 0.24.0 to 0.25.0: Major refactoring, Renaming of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
-	'<=0.24',
-	// 0.26.0 to 1.0.0: Adding of RundownPlaylist and support for multiple, concurrent rundowns in a show
-	'<=0.26',
+	'<=0.24'
 ]
 
 export function isVersionSupported (version: Version) {
@@ -173,13 +172,9 @@ export function prepareMigration (returnAllChunks?: boolean) {
 				const bp = rawBlueprint as ShowStyleBlueprintManifest
 
 				// Find all showStyles that uses this blueprint:
-				let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
-				let studioIds: {[studioId: string]: true} = {}
 				ShowStyleBases.find({
 					blueprintId: blueprint._id
 				}).forEach((showStyleBase) => {
-					showStyleBaseIds[showStyleBase._id] = true
-
 					let chunk: MigrationChunk = {
 						sourceType:				MigrationStepType.SHOWSTYLE,
 						sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
@@ -206,43 +201,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 							_rank: 					rank++,
 							chunk: 					chunk
 						}))
-					})
-
-					// Find all studios that supports this showStyle
-					Studios.find({
-						supportedShowStyleBase: showStyleBase._id
-					}).forEach((studio) => {
-						if (!studioIds[studio._id]) { // only run once per blueprint and studio
-							studioIds[studio._id] = true
-
-							let chunk: MigrationChunk = {
-								sourceType:				MigrationStepType.STUDIO,
-								sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
-								blueprintId: 			blueprint._id,
-								sourceId: 				studio._id,
-								_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0').toString(),
-								_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
-								_steps:					[]
-							}
-							migrationChunks.push(chunk)
-							// Add studio migration steps from blueprint:
-							_.each(bp.studioMigrations, (step) => {
-								allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
-									id:						step.id,
-									overrideSteps:			step.overrideSteps,
-									validate:				step.validate,
-									canBeRunAutomatically:	step.canBeRunAutomatically,
-									migrate:				step.migrate,
-									input:					step.input,
-									dependOnResultFrom:		step.dependOnResultFrom,
-									version: 				step.version,
-									_version: 				parseVersion(step.version),
-									_validateResult: 		false, // to be set later
-									_rank: 					rank++,
-									chunk: 					chunk
-								}))
-							})
-						}
 					})
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {

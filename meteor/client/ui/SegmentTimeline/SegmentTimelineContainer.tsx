@@ -20,7 +20,7 @@ import { getResolvedSegment,
 import { RundownViewEvents } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { getSpeakingMode } from '../../lib/localStorage'
+import { getAllowSpeaking } from '../../lib/localStorage'
 import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
@@ -165,6 +165,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					)
 				)
 			)
+		) ||
+		(
+			props.rundown.holdState !== nextProps.rundown.holdState
 		)
 	) {
 		return true
@@ -317,8 +320,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
 			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-				(e.detail.currentTime - lastStartedPlayback + partOffset + lastPlayOffset) :
-				partOffset
+				(e.detail.currentTime - lastStartedPlayback + partOffset) :
+				(partOffset + lastPlayOffset)
 
 			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
 			if (this.props.currentLivePart.displayDurationGroup && !this.props.currentLivePart.displayDuration) {
@@ -417,7 +420,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 			let text = '' // Say nothing
 
-			if (getSpeakingMode()) {
+			if (getAllowSpeaking()) {
 				switch (displayTime) {
 					case -1: text = 'One'; break
 					case -2: text = 'Two'; break

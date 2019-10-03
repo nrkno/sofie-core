@@ -353,6 +353,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						includeGlobalAdLibs={true}
 						filter={f}
 						visible={true}
+						registerHotkeys={true}
 						{...this.props}
 						/>
 			)}

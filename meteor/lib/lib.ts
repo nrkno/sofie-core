@@ -189,12 +189,13 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			}
 
 			if (options.afterRemove) {
-				Promise.resolve(p)
+				p = Promise.resolve(p)
 				.then(() => {
 					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
 				})
 			}
+			if (p) ps.push(p)
 			change.removed++
 
 		}
@@ -445,10 +446,12 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
-export interface IRanked {
-	_rank: number
-}
-export function getRank (beforeOrLast: null | undefined | IRanked, after, i: number, count: number): number {
+export function getRank<T extends {_rank: number}> (
+	beforeOrLast: T | null | undefined,
+	after: T | null | undefined,
+	i: number,
+	count: number
+): number {
 	let newRankMax
 	let newRankMin
 

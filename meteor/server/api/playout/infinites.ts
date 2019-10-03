@@ -70,11 +70,12 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
 	   psPopulateCache.push(new Promise((resolve, reject) => {
-		   try {
-			   let currentItems = orderPieces(allPieces.filter(p => p.partId === part._id), part._id)
+			try {
+				const partStarted = part.getLastStartedPlayback()
+				let currentItems = orderPieces(allPieces.filter(p => p.partId === part._id), part._id, partStarted)
 
-			   currentItemsCache[part._id] = currentItems
-			   resolve()
+				currentItemsCache[part._id] = currentItems
+				resolve()
 		   } catch (e) {
 			   reject(e)
 		   }

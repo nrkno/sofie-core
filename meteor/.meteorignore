@@ -1,0 +1,4 @@
+coverage
+**/.coverage/
+**/__mocks__/
+**/__tests__/

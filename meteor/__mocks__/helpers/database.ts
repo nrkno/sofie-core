@@ -90,6 +90,7 @@ export function setupMockCore (doc?: Partial<ICoreSystem>): ICoreSystem {
 		version: '0.0.0',
 		previousVersion: '0.0.0',
 		storePath: '',
+		serviceMessages: {}
 	}
 	const coreSystem = _.extend(defaultCore, doc)
 	CoreSystem.remove(SYSTEM_ID)
@@ -251,9 +252,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 			TSRVersion: TSR_VERSION,
 			minimumCoreVersion: CORE_VERSION,
 
-			studioConfigManifest: [],
 			showStyleConfigManifest: [],
-			studioMigrations: [],
 			showStyleMigrations: [],
 			getShowStyleVariantId: (
 				context: IStudioConfigContext,

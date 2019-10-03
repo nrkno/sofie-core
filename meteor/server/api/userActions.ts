@@ -101,8 +101,7 @@ export function moveNext (
 	rundownPlaylistId: string,
 	horisontalDelta: number,
 	verticalDelta: number,
-	setManually: boolean,
-	currentNextPieceId?: string
+	setManually: boolean
 ): ClientAPI.ClientResponse {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -111,19 +110,16 @@ export function moveNext (
 	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed during a Hold!')
 	}
-
-	if (!currentNextPieceId) {
-		if (!playlist.nextPartId) {
-			return ClientAPI.responseError('Rundown has no next part!')
-		}
+	if (!playlist.nextPartId && !playlist.currentPartId) {
+		return ClientAPI.responseError('RundownPlaylist has no next and no current part!')
 	}
+
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.moveNextPart(
 			rundownPlaylistId,
 			horisontalDelta,
 			verticalDelta,
-			setManually,
-			currentNextPieceId
+			setManually
 		)
 	)
 }
@@ -166,6 +162,17 @@ export function resetAndActivate(rundownPlaylistId: string, rehearsal?: boolean)
 
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.resetAndActivateRundown(rundownPlaylistId, rehearsal)
+	)
+}
+export function forceResetAndActivate (rundownPlaylistId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	// Reset and activates a rundown, automatically deactivates any other running rundowns
+
+	check(rehearsal, Boolean)
+	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(rundownPlaylistId, rehearsal)
 	)
 }
 export function activate (rundownPlaylistId: string, rehearsal: boolean): ClientAPI.ClientResponse {
@@ -343,7 +350,7 @@ export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLa
 		ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownPlaylistId, sourceLayerId)
 	)
 }
-export function activateHold (rundownPlaylistId: string) {
+export function activateHold (rundownPlaylistId: string, undo?: boolean) {
 	check(rundownPlaylistId, String)
 
 	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
@@ -356,13 +363,22 @@ export function activateHold (rundownPlaylistId: string) {
 	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
 	let nextPart = Parts.findOne({ _id: rundown.nextPartId })
 	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
-	if (rundown.holdState) {
+	if (!undo && rundown.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
 	}
+	if (undo && rundown.holdState !== RundownHoldState.PENDING) {
+		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[rundown.holdState || 0]}`)
+	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.activateHold(rundownPlaylistId)
-	)
+	if (undo) {
+		return ClientAPI.responseSuccess(
+			ServerPlayoutAPI.deactivateHold(rundownPlaylistId)
+		)
+	} else {
+		return ClientAPI.responseSuccess(
+			ServerPlayoutAPI.activateHold(rundownPlaylistId)
+		)
+	}
 }
 export function userSaveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return ClientAPI.responseSuccess(
@@ -500,6 +516,9 @@ methods[UserActionAPI.methods.activate] = function (rundownPlaylistId: string, r
 methods[UserActionAPI.methods.deactivate] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
 	return deactivate.call(this, rundownPlaylistId)
 }
+methods[UserActionAPI.methods.forceResetAndActivate] = function (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	return forceResetAndActivate.call(this, rundownId, rehearsal)
+}
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)
 }
@@ -533,8 +552,8 @@ methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownPlaylist
 methods[UserActionAPI.methods.sourceLayerStickyPieceStart] = function (rundownPlaylistId: string, sourceLayerId: string) {
 	return sourceLayerStickyPieceStart.call(this, rundownPlaylistId, sourceLayerId)
 }
-methods[UserActionAPI.methods.activateHold] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
-	return activateHold.call(this, rundownPlaylistId)
+methods[UserActionAPI.methods.activateHold] = function (rundownPlaylistId: string, undo?: boolean): ClientAPI.ClientResponse {
+	return activateHold.call(this, rundownPlaylistId, undo)
 }
 methods[UserActionAPI.methods.saveEvaluation] = function (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return userSaveEvaluation.call(this, evaluation)

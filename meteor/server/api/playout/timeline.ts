@@ -570,9 +570,6 @@ function buildTimelineObjsForRundown (rundownData: RundownPlaylistData, baseline
 					start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
 					duration: nextPartGroup.enable.duration
 				}
-				if (typeof nextPartGroup.enable.duration === 'number') {
-					nextPartGroup.enable.duration += currentPart.autoNextOverlap || 0
-				}
 			}
 
 			let toSkipIds = currentPieces.filter(i => i.infiniteId).map(i => i.infiniteId)
@@ -804,14 +801,14 @@ function calcPartTargetDuration (prevPart: Part | undefined, currentPart: Part):
 	const maxPreroll = Math.max(currentPart.transitionPrerollDuration ? currentPart.transitionPrerollDuration : 0, currentPart.prerollDuration || 0)
 	const maxKeepalive = Math.max(currentPart.transitionKeepaliveDuration ? currentPart.transitionKeepaliveDuration : 0, currentPart.prerollDuration || 0)
 	const lengthAdjustment = maxPreroll - maxKeepalive
-	const rawExpectedDuration = (currentPart.expectedDuration || 0) - lengthAdjustment
+	const rawExpectedDuration = (currentPart.expectedDuration || 0) - lengthAdjustment + (currentPart.autoNextOverlap || 0)
 
 	if (!prevPart || prevPart.disableOutTransition) {
 		return rawExpectedDuration + (currentPart.prerollDuration || 0)
 	}
 
 	let prerollDuration = (currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0)
-	return rawExpectedDuration + (prevPart.autoNextOverlap || 0) + prerollDuration
+	return rawExpectedDuration + prerollDuration
 }
 function calcPartOverlapDuration (fromPart: Part, toPart: Part): number {
 	const allowTransition: boolean = !fromPart.disableOutTransition

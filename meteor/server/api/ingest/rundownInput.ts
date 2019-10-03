@@ -134,10 +134,16 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		if (rundown) {
-			logger.info('Removing rundown ' + rundown._id)
 
 			if (canBeUpdated(rundown)) {
-				rundown.remove()
+				if (rundown.active) {
+					// Don't allow removing currently playing rundowns:
+					logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
+					ServerRundownAPI.unsyncRundown(rundown._id)
+				} else {
+					logger.info(`Removing rundown "${rundown._id}"`)
+					rundown.remove()
+				}
 			} else {
 				logger.info(`Rundown "${rundown._id}" cannot be updated`)
 				if (!rundown.unsynced) {
@@ -455,21 +461,40 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		if (!canBeUpdated(rundown, segmentId)) return
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (updatedSegmentId) {
+			afterIngestChangedData(rundown, [updatedSegmentId])
+		}
 	})
+}
+export function updateSegmentsFromIngestData (
+	studio: Studio,
+	rundown: Rundown,
+	ingestSegments: IngestSegment[]
+) {
+	const changedSegmentIds: string[] = []
+	for (let ingestSegment of ingestSegments) {
+		const segmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (segmentId !== null) {
+			changedSegmentIds.push(segmentId)
+		}
+	}
+	if (changedSegmentIds.length > 0) {
+		afterIngestChangedData(rundown, changedSegmentIds)
+	}
 }
 /**
  * Run ingestData through blueprints and update the Segment
  * @param studio
  * @param rundown
  * @param ingestSegment
- * @returns true if data has changed
+ * @returns a segmentId if data has changed, null otherwise
  */
-export function updateSegmentFromIngestData (
+function updateSegmentFromIngestData (
 	studio: Studio,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): boolean {
+): string | null {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = getBlueprintOfRundown(rundown)
 
@@ -538,14 +563,9 @@ export function updateSegmentFromIngestData (
 			}
 		})
 	)
-
-	const didChange = anythingChanged(changes)
-	if (didChange) {
-		afterIngestChangedData(rundown, [segmentId])
-	}
-	return didChange
+	return anythingChanged(changes) ? segmentId : null
 }
-function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+export function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updatePartRanks(rundown._id)
@@ -577,7 +597,11 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+
+		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (updatedSegmentId) {
+			afterIngestChangedData(rundown, [updatedSegmentId])
+		}
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
@@ -602,7 +626,10 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	ingestSegment.parts.push(ingestPart)
 
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	if (updatedSegmentId) {
+		afterIngestChangedData(rundown, [updatedSegmentId])
+	}
 }
 
 function generateSegmentContents (

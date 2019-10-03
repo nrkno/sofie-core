@@ -1,3 +1,5 @@
+@import 'colorScheme';
+
 .settings-menu {
 	.settings-menu__settings-menu-item {
 		display: block;
@@ -21,6 +23,12 @@
 			margin-top: 0.6em;
 		}
 	}
+
+	.error-notice {
+		.svg-inline--fa {
+			color: $color-status-warning;
+		}
+	}
 }
 
 .settings-dialog {
@@ -29,7 +37,7 @@
 			padding: 0px 8px;
 			margin: -6px 0 -1px;
 		}
-		
+
 		.table-item-actions {
 			text-align: right;
 			min-width: 4em;
@@ -79,7 +87,7 @@
 		> tbody > tr {
 			> .actions {
 				text-align: right;
-	
+
 				> .action-btn {
 					padding: 0 0.4em;
 				}
@@ -134,4 +142,24 @@
 	.star {
 		color: gold;
 	}
+
+	.error-notice {
+		&.inline {
+			float: right;
+
+			.svg-inline--fa {
+				float: right;
+				margin-left: 0.4em;
+			}
+		}
+
+		.svg-inline--fa {
+			color: $color-status-warning;
+		}
+	}
+}
+
+.btn-add-new {
+	width: 20%;
+	margin: 1em 1em 1em 0 !important;
 }

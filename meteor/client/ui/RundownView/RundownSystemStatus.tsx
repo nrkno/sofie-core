@@ -130,7 +130,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		ingest,
 		playout
 	] = _.map([ingestDevices, playoutDevices], (devices) => {
-		const status = _.reduce(devices, (memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+		const status = _.reduce(devices.filter(i => !i.ignore), (memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
 			if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
 				return device.status.statusCode
 			} else if (!device.connected) {

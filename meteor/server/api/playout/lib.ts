@@ -18,7 +18,7 @@ import {
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
-import { updateSegmentFromIngestData } from '../ingest/rundownInput'
+import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
@@ -271,7 +271,7 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)
 	const rundown = new Rundown(dbRundown)
 
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	updateSegmentsFromIngestData(studio, rundown, [ingestSegment])
 
 	const segment = Segments.findOne(dbPart.segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
