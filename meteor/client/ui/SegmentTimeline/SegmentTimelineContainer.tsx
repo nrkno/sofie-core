@@ -163,6 +163,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					data.parts.find(i => (i._id === props.rundown.nextPartId) || (i._id === nextProps.rundown.nextPartId))
 				)
 			)
+		) ||
+		(
+			props.rundown.holdState !== nextProps.rundown.holdState
 		)
 	) {
 		return true

@@ -314,7 +314,6 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						}
 					</React.Fragment>)
 				}
-				<NoraPreviewRenderer />
 			</div>
 		)
 	}
@@ -400,12 +399,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
@@ -1868,6 +1867,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
 									inActiveRundownView={this.props.inActiveRundownView} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu

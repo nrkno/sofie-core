@@ -147,7 +147,6 @@ const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavig
 
 	renderButton () {
 		if (this.props.obj && this.props.attribute) {
-			console.log(this.props.obj[this.props.attribute])
 			return (
 				<button key={'button-navigate-' + this.props.obj[this.props.attribute]}
 					className='btn btn-primary btn-add-new'
