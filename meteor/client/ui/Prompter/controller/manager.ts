@@ -1,7 +1,7 @@
 import { PrompterViewInner } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { ControllerAbstract } from './lib'
-import { KeyboardController } from './keyboard-device'
+import { ShuttleKeyboardController } from './shuttle-keyboard-device'
 import * as _ from 'underscore'
 
 export class PrompterControlManager {
@@ -19,7 +19,7 @@ export class PrompterControlManager {
 
 		// tmp, activate some default controllers:
 		this._controllers.push(new MouseIshController(this._view))
-		this._controllers.push(new KeyboardController(this._view))
+		this._controllers.push(new ShuttleKeyboardController(this._view))
 	}
 	destroy () {
 		window.removeEventListener('keydown', this._onKeyDown)

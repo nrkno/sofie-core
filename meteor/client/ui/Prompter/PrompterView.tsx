@@ -128,7 +128,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
 					this.autoScrollPreviousPartId = rundown.currentPartId
-
+					
 					this.scrollToCurrent()
 				}
 			}
@@ -136,24 +136,16 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToCurrent () {
 		const current = document.querySelector('.prompter .current')
-
+		
 		if (current) {
-			const { top } = current.getBoundingClientRect()
-
-			Velocity(document.body, {
-				scrollTop: Math.max(0, top)
-			}, 300)
+			Velocity(current, "scroll", { duration: 400, easing: "ease-in" })
 		}
 	}
 	scrollToNext () {
 		const next = document.querySelector('.prompter .next')
-
+		
 		if (next) {
-			const { top } = next.getBoundingClientRect()
-
-			Velocity(document.body, {
-				scrollTop: Math.max(0, top)
-			}, 300)
+			Velocity(next, "scroll", { duration: 400, easing: "ease-in" })
 		}
 	}
 	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
