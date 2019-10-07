@@ -30,16 +30,6 @@ Meteor.startup(() => {
 			lastNightlyCronjob = getCurrentTime()
 			logger.info('Nightly cronjob: starting...')
 
-			// remove old Rundowns:
-			let rundownCount = 0
-			Rundowns.find({
-				created: { $lt: getCurrentTime() - 60 * 24 * 3600 * 1000 } // older than 60 days
-			}).forEach(rundown => {
-				rundown.remove()
-				rundownCount++
-			})
-			if (rundownCount) logger.info('Cronjob: Removed ' + rundownCount + ' old rundowns')
-
 			// Clean up Rundown data cache:
 			// Remove caches not related to rundowns:
 			let rundownCacheCount = 0
