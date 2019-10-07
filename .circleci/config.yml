@@ -60,21 +60,21 @@ jobs:
            name: Publish Docker Image to Docker Hub
            command: |
              if [ -z "$DOCKERHUB_PASS" ]; then
+               echo "Skipping"
+             else
                echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
                docker tag server-core:$CIRCLE_TAG $DOCKERHUB_IMAGE:$CIRCLE_TAG
                docker push $DOCKERHUB_IMAGE:$CIRCLE_TAG
-             else
-               echo "Skipping"
              fi
       - run:
            name: Publish Docker Image to Github Package Registry
            command: |
              if [ -z "$GITHUB_PASS" ]; then
+               echo "Skipping"
+             else
                echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
                docker tag server-core:$CIRCLE_TAG docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
                docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
-             else
-               echo "Skipping"
              fi
   publish-branch:
     docker:
@@ -92,21 +92,21 @@ jobs:
            name: Publish Docker Image to Docker Hub
            command: |
              if [ -z "$DOCKERHUB_PASS" ]; then
+               echo "Skipping"
+             else
                echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
                docker tag server-core:$CIRCLE_BRANCH $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
                docker push $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
-             else
-               echo "Skipping"
              fi
       - run:
            name: Publish Docker Image to Github Package Registry
            command: |
              if [ -z "$GITHUB_PASS" ]; then
+               echo "Skipping"
+             else
                echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
                docker tag server-core:$CIRCLE_BRANCH docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
                docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
-             else
-               echo "Skipping"
              fi
 
 workflows:
