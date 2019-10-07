@@ -87,14 +87,14 @@ jobs:
           at: .
       - run:
           name: Build Docker Image
-          command: docker build -f Dockerfile.circle . -t server-core:$CIRCLE_TAG
+          command: docker build -f Dockerfile.circle . -t server-core:$CIRCLE_BRANCH
       - run:
            name: Publish Docker Image to Docker Hub
            command: |
              if [ -z "$DOCKERHUB_PASS" ]; then
                echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-               docker tag server-core:$CIRCLE_TAG $DOCKERHUB_IMAGE:$CIRCLE_TAG
-               docker push $DOCKERHUB_IMAGE:$CIRCLE_TAG
+               docker tag server-core:$CIRCLE_BRANCH $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
+               docker push $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
              else
                echo "Skipping"
              fi
@@ -103,8 +103,8 @@ jobs:
            command: |
              if [ -z "$GITHUB_PASS" ]; then
                echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
-               docker tag server-core:$CIRCLE_TAG docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
-               docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
+               docker tag server-core:$CIRCLE_BRANCH docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
+               docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
              else
                echo "Skipping"
              fi
