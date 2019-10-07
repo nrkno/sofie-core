@@ -39,7 +39,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../l
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
@@ -133,22 +133,30 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown) {
+		const playlist = getRundownPlaylist(rundown)
 
-			if (canBeUpdated(rundown)) {
-				if (rundown.active) {
-					// Don't allow removing currently playing rundowns:
-					logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
-					ServerRundownAPI.unsyncRundown(rundown._id)
-				} else {
-					logger.info(`Removing rundown "${rundown._id}"`)
-					rundown.remove()
+		if (canBeUpdated(rundown)) {
+			let okToRemove: boolean = true
+			if (playlist.active) {
+				if (playlist.currentPartId) {
+					const part = Parts.findOne(playlist.currentPartId)
+					if (part && part.rundownId === rundown._id) {
+						okToRemove = false
+					}
 				}
+			}
+			if (okToRemove) {
+				logger.info(`Removing rundown "${rundown._id}"`)
+				rundown.remove()
 			} else {
-				logger.info(`Rundown "${rundown._id}" cannot be updated`)
-				if (!rundown.unsynced) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
-				}
+				// Don't allow removing currently playing rundown playlists:
+				logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			}
+		 } else {
+			logger.info(`Rundown "${rundown._id}" cannot be updated`)
+			if (!rundown.unsynced) {
+				ServerRundownAPI.unsyncRundown(rundown._id)
 			}
 		}
 	})
