@@ -167,7 +167,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			)
 		) ||
 		(
-			props.rundown.holdState !== nextProps.rundown.holdState
+			props.playlist.holdState !== nextProps.playlist.holdState
 		)
 	) {
 		return true

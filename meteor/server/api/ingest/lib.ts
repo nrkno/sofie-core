@@ -5,6 +5,7 @@ import { PeripheralDevice, PeripheralDevices, getStudioIdFromDevice } from '../.
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export function getRundownId (studio: Studio, rundownExternalId: string) {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
@@ -32,6 +33,12 @@ export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
 	return studio
+}
+export function getRundownPlaylist (rundown: Rundown): RundownPlaylist {
+	const playlist = RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
+
+	return playlist
 }
 export function getRundown (rundownId: string, externalRundownId: string): Rundown {
 	const rundown = Rundowns.findOne(rundownId)

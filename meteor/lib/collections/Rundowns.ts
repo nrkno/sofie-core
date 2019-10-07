@@ -52,7 +52,7 @@ export interface DBRundown extends IBlueprintRundownDB {
 	status?: string
 	airStatus?: string
 	// There should be something like a Owner user here somewhere?
-	
+
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 
@@ -69,6 +69,13 @@ export interface DBRundown extends IBlueprintRundownDB {
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
+
+	/** External id of the Rundown Playlist to put this rundown in */
+	playlistExternalId?: string
+	/** The id of the Rundown Playlist this rundown is in */
+	playlistId: string
+	/** Rank of the Rundown inside of its Rundown Playlist */
+	_rank: number
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState

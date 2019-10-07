@@ -233,12 +233,15 @@ function updateRundownFromIngestData (
 				core: PackageInfo.version,
 			},
 
-			// omit the below fields
+			// omit the below fields:
 			created: 0,
 			modified: 0,
 
 			peripheralDeviceId: '', // added later
-			dataSource: '' // added later
+			dataSource: '', // added later
+
+			playlistId: '', // added later
+			_rank: 0 // added later
 		}), ['created', 'modified', 'peripheralDeviceId', 'dataSource'])
 	)
 	if (peripheralDevice) {

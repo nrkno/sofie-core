@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId } from '../lib'
+import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId, getRundownPlaylist } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -35,6 +35,7 @@ import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -239,6 +240,8 @@ export function handleMosDeleteStory (
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
+		const playlist = getRundownPlaylist(rundown)
+
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 		const ingestPartIds = _.map(ingestParts, part => part.externalId)
@@ -255,7 +258,7 @@ export function handleMosDeleteStory (
 		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
 		if (filteredParts.length === ingestParts.length) return // Nothing was removed
 
-		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
+		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
 
 		UpdateNext.ensureNextPartIsValid(rundown)
 	})
@@ -292,6 +295,8 @@ export function handleInsertParts (
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
+		const playlist = getRundownPlaylist(rundown)
+
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
@@ -326,7 +331,7 @@ export function handleInsertParts (
 		// Update parts list
 		ingestParts.splice(insertIndex, 0, ...newParts)
 
-		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
+		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
 
 		UpdateNext.afterInsertParts(rundown, newPartIds, removePrevious)
 	})
@@ -353,6 +358,8 @@ export function handleSwapStories (
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
+		const playlist = getRundownPlaylist(rundown)
+
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
@@ -369,7 +376,7 @@ export function handleSwapStories (
 		ingestParts[story0Index] = ingestParts[story1Index]
 		ingestParts[story1Index] = tmp
 
-		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
+		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
 
 		UpdateNext.ensureNextPartIsValid(rundown)
 	})
@@ -386,6 +393,8 @@ export function handleMoveStories (
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
+
+		const playlist = getRundownPlaylist(rundown)
 
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
@@ -422,7 +431,7 @@ export function handleMoveStories (
 		// Reinsert parts
 		filteredParts.splice(insertIndex, 0, ...movingParts)
 
-		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
+		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
 
 		UpdateNext.ensureNextPartIsValid(rundown)
 	})
@@ -430,6 +439,7 @@ export function handleMoveStories (
 
 function diffAndApplyChanges (
 	studio: Studio,
+	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestRundown: IngestRundown,
 	ingestParts: AnnotatedIngestPart[]
@@ -443,14 +453,14 @@ function diffAndApplyChanges (
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
 
 	// Check if operation affect currently playing Part:
-	if (rundown.active && rundown.currentPartId) {
+	if (playlist.active && playlist.currentPartId) {
 		const currentPart = _.find(ingestParts, (ingestPart) => {
 			const partId = getPartId(rundown._id, ingestPart.externalId)
-			return partId === rundown.currentPartId
+			return partId === playlist.currentPartId
 		})
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
-			logger.warn(`Currently playing part "${rundown.currentPartId}" was removed during ingestData. Unsyncing the rundown!`)
+			logger.warn(`Currently playing part "${playlist.currentPartId}" was removed during ingestData. Unsyncing the rundown!`)
 			ServerRundownAPI.unsyncRundown(rundown._id)
 			return
 		} else {

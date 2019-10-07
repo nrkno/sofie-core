@@ -585,7 +585,7 @@ export namespace ServerPlayoutAPI {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			if (part._id !== nextPartId0) {
-				return moveNextPartInner(rundownId, horizontalDelta, verticalDelta, setManually, part._id)
+				return moveNextPartInner(rundownPlaylistId, horizontalDelta, verticalDelta, setManually, part._id)
 			} else {
 				// Calling ourselves again at this point would result in an infinite loop
 				// There probably isn't any Part available to Next then...
@@ -850,7 +850,7 @@ export namespace ServerPlayoutAPI {
 
 					const rundown = Rundowns.findOne(rundownId)
 					if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-					const playlist = rundown.getRundownPlaylist()
+					let playlist = rundown.getRundownPlaylist()
 					if (!playlist.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
 					const currentPart = (
@@ -899,16 +899,16 @@ export namespace ServerPlayoutAPI {
 
 						let nextPart: Part | null = _.first(partsAfter) || null
 
-						const rundownChange = {
+						const playlistChange = {
 							previousPartId: playlist.currentPartId,
 							currentPartId: playingPart._id,
 							holdState: RundownHoldState.NONE,
 						}
 
 						RundownPlaylists.update(playlist._id, {
-							$set: rundownChange
+							$set: playlistChange
 						})
-						_.extend(playlist, rundownChange) as RundownPlaylist
+						playlist = _.extend(playlist, playlistChange) as RundownPlaylist
 
 						libSetNextPart(playlist, nextPart)
 					} else {
