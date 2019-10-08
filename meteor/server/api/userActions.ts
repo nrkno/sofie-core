@@ -262,7 +262,7 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	}
 	const partCache = IngestDataCache.findOne({
 		rundownId: rundown._id,
-		partId: part.externalId,
+		partId: part._id,
 		type: IngestCacheType.PART
 	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
