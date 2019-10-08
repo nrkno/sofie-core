@@ -4,6 +4,7 @@ import { addMigrationSteps } from './databaseMigration'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
+import { Random } from 'meteor/random'
 
 /*
  * **************************************************************************************
