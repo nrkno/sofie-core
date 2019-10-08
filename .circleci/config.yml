@@ -41,8 +41,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run Meteor Tests
-          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci 
+          name: Run tests and send coverage
+          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci
           no_output_timeout: 60m
   publish-tag:
     docker:
