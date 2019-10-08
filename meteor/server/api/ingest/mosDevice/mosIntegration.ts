@@ -73,7 +73,7 @@ export namespace MosIntegration {
 	}
 	export function mosRoStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info(`mosRoStoryInsert after "${Action.StoryID}"`)
+		logger.info(`mosRoStoryInsert after "${Action.StoryID}" Stories: ${Stories}`)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
@@ -81,7 +81,7 @@ export namespace MosIntegration {
 	}
 	export function mosRoStoryReplace (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info(`mosRoStoryReplace "${Action.StoryID}"`)
+		logger.info(`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories}`)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
@@ -89,13 +89,13 @@ export namespace MosIntegration {
 	}
 	export function mosRoStoryMove (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info(`mosRoStoryMove "${Action.StoryID}"`)
+		logger.info(`mosRoStoryMove "${Action.StoryID}" Stories: ${Stories}`)
 
 		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 	}
 	export function mosRoStoryDelete (id: string, token: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info(`mosRoStoryDelete "${Action.RunningOrderID}"`)
+		logger.info(`mosRoStoryDelete "${Action.RunningOrderID}" Stories: ${Stories}`)
 
 		handleMosDeleteStory(peripheralDevice, Action.RunningOrderID, Stories)
 	}
