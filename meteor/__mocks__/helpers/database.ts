@@ -354,7 +354,7 @@ export function setupDefaultStudioEnvironment () {
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId]
 	})
-	const device = setupMockPeripheralDevice(
+	const ingestDevice = setupMockPeripheralDevice(
 		PeripheralDeviceAPI.DeviceCategory.INGEST,
 		PeripheralDeviceAPI.DeviceType.MOS,
 		PeripheralDeviceAPI.SUBTYPE_PROCESS,
@@ -370,7 +370,7 @@ export function setupDefaultStudioEnvironment () {
 		showStyleVariant,
 		studio,
 		core,
-		device
+		ingestDevice
 	}
 }
 
