@@ -177,4 +177,98 @@ describe('codeControl', () => {
 
 		expect(toc()).toBeFuzzy(700, TIME_FUZZY)
 	})
+	testInFiber('syncFunction, anonymous', () => {
+
+		// Make sure that anonymous syncFunctions work
+		const fcn0 = syncFunction(() => {
+			waitTime(95)
+			return 'a'
+		})
+		const fcn1 = syncFunction(() => {
+			waitTime(95)
+			return 'b'
+		})
+		const res: any[] = []
+		tic()
+		const ps = [
+			makePromise(() => res.push(fcn0())),
+			makePromise(() => res.push(fcn0())),
+			makePromise(() => res.push(fcn1())),
+			makePromise(() => res.push(fcn1())),
+		]
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
+		expect(res).toHaveLength(0)
+
+		waitForPromiseAll(ps)
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(res).toMatchObject([
+			'a',
+			'b',
+			'a',
+			'b'
+		])
+	})
+	testInFiber('syncFunction, anonymous with arguments', () => {
+
+		const fcn = syncFunction((a: number) => {
+			waitTime(95)
+			return a
+		})
+		const res: any[] = []
+		tic()
+		const ps = [
+			makePromise(() => res.push(fcn(1))),
+			makePromise(() => res.push(fcn(1))),
+			makePromise(() => res.push(fcn(2))),
+			makePromise(() => res.push(fcn(3))),
+		]
+		// ^ This should cause 3 queueus to run, the longest queue being 200 ms
+
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
+		expect(res).toHaveLength(0)
+
+		waitForPromiseAll(ps)
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(res).toMatchObject([
+			1,
+			2,
+			3,
+			1
+		])
+	})
+	testInFiber('syncFunction, too long running', () => {
+
+		const neverEnding = syncFunction(() => {
+			waitTime(1000) // 10s, is too long and should cause a timeout
+			return 'a'
+		}, undefined, 500) // a timeout of 1000 ms
+
+		const res: any[] = []
+		tic()
+
+		let a0 = ''
+		let a1 = ''
+		let error = ''
+		try {
+			Meteor.setTimeout(() => {
+				a1 = neverEnding() // when calling this, it should trace an error that the  and still start this one
+			}, 550)
+			a0 = neverEnding()
+		} catch (e) {
+			error = e
+		}
+
+		expect(toc()).toBeFuzzy(1000, TIME_FUZZY)
+
+		expect(a0).toEqual('a')
+		expect(a1).toEqual('')
+		expect(error).toEqual('')
+
+
+		waitTime(1000)
+
+		expect(a0).toEqual('a')
+		expect(a1).toEqual('a')
+		expect(error).toEqual('')
+	})
 })
