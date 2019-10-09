@@ -254,7 +254,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 														obj={this.props.object}
 														type='checkbox'
 														collection={this.props.collection}
-														className='input text-input input-l' />
+														className='input' />
 												))
 												|| (item.type === ConfigManifestEntryType.ENUM && (
 													<EditAttribute
