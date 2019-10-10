@@ -19,9 +19,9 @@ export function fixSnapshot (
 		let o = clone(data)
 		if (isTimelineObj(o)) {
 			delete o['modified']
-			delete o['objHash']
 			if (o.content) {
 				delete o.content['modified']
+				delete o.content['objHash']
 
 			}
 		} else if (isRundown(o)) {
