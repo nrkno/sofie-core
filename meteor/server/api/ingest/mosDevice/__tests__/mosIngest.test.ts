@@ -5,16 +5,20 @@ import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { Segments, DBSegment } from '../../../../../lib/collections/Segments'
-import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
+import { Segments as _Segments, DBSegment, Segment } from '../../../../../lib/collections/Segments'
+import { Parts as _Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
 import { UpdateNext } from '../../updateNext'
+import { mockupCollection } from '../../../../../__mocks__/helpers/lib'
 jest.mock('../../updateNext')
 
 require('../api.ts') // include in order to create the Meteor methods needed
+
+const Segments = mockupCollection(_Segments)
+const Parts = mockupCollection(_Parts)
 
 function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = _.sortBy(parts, p => p._rank)
@@ -455,6 +459,60 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[1].parts.push(...partMap[3].parts)
 		partMap.splice(2, 2)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+	})
+	testInFiber('mosRoStoryDelete: Remove first story in segment', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const partExternalId = 'ro1;s1;p1'
+
+		// console.log(rundown.getParts())
+
+		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
+		expect(partToBeRemoved).toBeTruthy()
+
+		Parts.update({
+			segmentId: partToBeRemoved.segmentId
+		}, {$set: {
+			'aCheckToSeeThatThePartHasNotBeenRemoved': true
+		}})
+
+		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
+		expect(partsInSegmentBefore).toHaveLength(3)
+
+		expect(partsInSegmentBefore[1]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
+		expect(partsInSegmentBefore[2]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+
+		Segments.mockClear()
+		Parts.mockClear()
+
+		// This should only remove the first part in the segment. No other parts should be affected
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryDelete, device._id, device.token, action, [partExternalId])
+
+		expect(Segments.remove).toHaveBeenCalled()
+		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()
+
+		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part
+		expect(partAfter).toBeTruthy()
+
+		const partsInSegmentAfter = rundown.getParts({ segmentId: partAfter.segmentId })
+		expect(partsInSegmentAfter).toHaveLength(2)
+
+		// The other parts in the segment should not not have changed:
+		expect(partsInSegmentAfter[0]).toMatchObject(
+			_.omit(partsInSegmentBefore[1], ['segmentId', '_rank'])
+		)
+
+		expect(partsInSegmentAfter[1]).toMatchObject(
+			_.omit(partsInSegmentBefore[2], ['segmentId', '_rank'])
+		)
 	})
 
 	testInFiber('mosRoStoryDelete: Remove invalid id', () => {
