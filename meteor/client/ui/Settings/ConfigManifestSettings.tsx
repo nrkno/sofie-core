@@ -122,7 +122,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 
 		return (
 			<div>
-				<table>
+				<table style={{ width: '100%' }}>
 					<thead>
 						<tr>
 							{ _.map(item2.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
