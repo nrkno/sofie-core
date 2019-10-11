@@ -2,12 +2,15 @@ import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
+import { mockupCollection } from '../../../../__mocks__/helpers/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundown } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
-import { Timeline } from '../../../../lib/collections/Timeline'
+import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { deactivate } from '../../userActions'
+
+const Timeline = mockupCollection(OrgTimeline)
 
 describe('Playout API', () => {
 	let env: DefaultEnvironment
@@ -28,6 +31,10 @@ describe('Playout API', () => {
 			rehearsal: false
 		})
 
+		expect(Timeline.insert).not.toHaveBeenCalled()
+		expect(Timeline.upsert).not.toHaveBeenCalled()
+		expect(Timeline.update).not.toHaveBeenCalled()
+
 		// Prepare and activate in rehersal:
 		ServerPlayoutAPI.activateRundown(rundownId0, false)
 		expect(getRundown0()).toMatchObject({
@@ -37,6 +44,11 @@ describe('Playout API', () => {
 			nextPartId: parts[0]._id,
 		})
 
+		expect(Timeline.insert).toHaveBeenCalled()
+		expect(Timeline.upsert).toHaveBeenCalled()
+		expect(Timeline.update).toHaveBeenCalled()
+		Timeline.mockClear()
+
 		// Take the first Part:
 		ServerPlayoutAPI.takeNextPart(rundownId0)
 		expect(getRundown0()).toMatchObject({
@@ -44,8 +56,14 @@ describe('Playout API', () => {
 			nextPartId: parts[1]._id,
 		})
 
+		expect(Timeline.insert).toHaveBeenCalled()
+		expect(Timeline.upsert).toHaveBeenCalled()
+		expect(Timeline.update).toHaveBeenCalled()
+		Timeline.mockClear()
+
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
+
 
 		// Deactivate rundown:
 		ServerPlayoutAPI.deactivateRundown(rundownId0)
@@ -57,5 +75,9 @@ describe('Playout API', () => {
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
+
+		expect(Timeline.insert).toHaveBeenCalled()
+		expect(Timeline.upsert).toHaveBeenCalled()
+		expect(Timeline.update).toHaveBeenCalled()
 	})
 })
