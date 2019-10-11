@@ -34,7 +34,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 	let device: PeripheralDevice
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 	})
 
 	testInFiber('mosRoCreate', () => {

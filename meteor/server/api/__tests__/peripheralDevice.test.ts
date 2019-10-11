@@ -20,7 +20,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	let device: PeripheralDevice
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 		let rundownID = 'rundown0'
 		Rundowns.insert({
 			_id: rundownID,
@@ -308,7 +308,7 @@ describe('test peripheralDevice general API methods', () => {
 		Meteor.call(PeripheralDeviceAPI.methods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 		expect(PeripheralDevices.findOne()).toBeTruthy()
 	})
 
