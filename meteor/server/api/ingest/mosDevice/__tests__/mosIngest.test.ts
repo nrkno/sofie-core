@@ -508,60 +508,6 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch())).toMatchSnapshot()
 		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch())).toMatchSnapshot()
 	})
-	testInFiber('mosRoStoryDelete: Remove first story in segment', () => {
-		// Reset RO
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
-
-		const rundown = Rundowns.findOne() as Rundown
-		expect(rundown).toBeTruthy()
-
-		const partExternalId = 'ro1;s1;p1'
-
-		// console.log(rundown.getParts())
-
-		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
-		expect(partToBeRemoved).toBeTruthy()
-
-		Parts.update({
-			segmentId: partToBeRemoved.segmentId
-		}, {$set: {
-			'aCheckToSeeThatThePartHasNotBeenRemoved': true
-		}})
-
-		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
-		expect(partsInSegmentBefore).toHaveLength(3)
-
-		expect(partsInSegmentBefore[1]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
-		expect(partsInSegmentBefore[2]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
-
-		const action = literal<MOS.IMOSROAction>({
-			RunningOrderID: new MOS.MosString128(rundown.externalId),
-		})
-
-		Segments.mockClear()
-		Parts.mockClear()
-
-		// This should only remove the first part in the segment. No other parts should be affected
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryDelete, device._id, device.token, action, [partExternalId])
-
-		expect(Segments.remove).toHaveBeenCalled()
-		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()
-
-		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part
-		expect(partAfter).toBeTruthy()
-
-		const partsInSegmentAfter = rundown.getParts({ segmentId: partAfter.segmentId })
-		expect(partsInSegmentAfter).toHaveLength(2)
-
-		// The other parts in the segment should not not have changed:
-		expect(partsInSegmentAfter[0]).toMatchObject(
-			_.omit(partsInSegmentBefore[1], ['segmentId', '_rank'])
-		)
-
-		expect(partsInSegmentAfter[1]).toMatchObject(
-			_.omit(partsInSegmentBefore[2], ['segmentId', '_rank'])
-		)
-	})
 
 	testInFiber('mosRoStoryDelete: Remove invalid id', () => {
 		const rundown = Rundowns.findOne() as Rundown
@@ -943,6 +889,61 @@ describe('Test recieved mos ingest payloads', () => {
 		} catch (e) {
 			expect(e.message).toBe(`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`)
 		}
+	})
+
+	testInFiber('mosRoStoryDelete: Remove first story in segment', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const partExternalId = 'ro1;s1;p1'
+
+		// console.log(rundown.getParts())
+
+		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
+		expect(partToBeRemoved).toBeTruthy()
+
+		Parts.update({
+			segmentId: partToBeRemoved.segmentId
+		}, {$set: {
+			'aCheckToSeeThatThePartHasNotBeenRemoved': true
+		}})
+
+		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
+		expect(partsInSegmentBefore).toHaveLength(3)
+
+		expect(partsInSegmentBefore[1]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
+		expect(partsInSegmentBefore[2]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+
+		Segments.mockClear()
+		Parts.mockClear()
+
+		// This should only remove the first part in the segment. No other parts should be affected
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryDelete, device._id, device.token, action, [partExternalId])
+
+		expect(Segments.remove).toHaveBeenCalled()
+		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()
+
+		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part
+		expect(partAfter).toBeTruthy()
+
+		const partsInSegmentAfter = rundown.getParts({ segmentId: partAfter.segmentId })
+		expect(partsInSegmentAfter).toHaveLength(2)
+
+		// The other parts in the segment should not not have changed:
+		expect(partsInSegmentAfter[0]).toMatchObject(
+			_.omit(partsInSegmentBefore[1], ['segmentId', '_rank'])
+		)
+
+		expect(partsInSegmentAfter[1]).toMatchObject(
+			_.omit(partsInSegmentBefore[2], ['segmentId', '_rank'])
+		)
 	})
 
 
