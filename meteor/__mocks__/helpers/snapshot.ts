@@ -14,10 +14,31 @@ type Data = undefined | TimelineObjGeneric | DBRundown | DBSegment | Part | Piec
  * @param data
  */
 export function fixSnapshot (
-	data: Data | Array<Data>
+	data: Data | Array<Data>,
+	sortData?: boolean
 ) {
 	if (_.isArray(data)) {
-		return _.map(data, fixSnapshot)
+		let dataArray = _.map(data, fixSnapshot)
+		if (sortData) {
+			dataArray.sort((a: Data, b: Data) => {
+				if (!a && b) return 1
+				if (a && !b) return -1
+
+				if (!a || !b) return 0
+
+				if (a['rank'] < b['rank']) return 1
+				if (a['rank'] > b['rank']) return -1
+
+				if (a['_id'] < b['_id']) return 1
+				if (a['_id'] > b['_id']) return -1
+
+				if (a['id'] < b['id']) return 1
+				if (a['id'] > b['id']) return -1
+
+				return 0
+			})
+		}
+		return dataArray
 	} else {
 		let o = clone(data)
 		if (!o) return o
