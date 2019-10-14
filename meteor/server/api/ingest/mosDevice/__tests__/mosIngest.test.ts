@@ -890,7 +890,7 @@ describe('Test recieved mos ingest payloads', () => {
 			expect(e.message).toBe(`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`)
 		}
 	})
-	/*
+
 	testInFiber('mosRoStoryDelete: Remove first story in segment', () => {
 		// Reset RO
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
@@ -945,6 +945,6 @@ describe('Test recieved mos ingest payloads', () => {
 			_.omit(partsInSegmentBefore[2], ['segmentId', '_rank'])
 		)
 	})
-	*/
+
 
 })
