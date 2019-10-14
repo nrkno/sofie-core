@@ -22,7 +22,10 @@ import {
 	literal,
 	sumChanges,
 	anythingChanged,
-	ReturnType
+	ReturnType,
+	asyncCollectionUpsert,
+	asyncCollectionUpdate,
+	waitForPromise
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -482,10 +485,24 @@ function updateSegmentFromIngestData (
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
 
-	Segments.upsert({
-		_id: segmentId,
-		rundownId: rundown._id
-	}, newSegment)
+	waitForPromise(Promise.all([
+
+		// Update segment info:
+		asyncCollectionUpsert(Segments, {
+			_id: segmentId,
+			rundownId: rundown._id
+		}, newSegment),
+
+		// Move over parts from other segments:
+		asyncCollectionUpdate(Parts, {
+			rundownId: rundown._id,
+			segmentId: { $ne: segmentId },
+			dynamicallyInserted: { $ne: true },
+			_id: { $in: _.pluck(parts, '_id') }
+		}, { $set: {
+			segmentId: segmentId
+		}})
+	]))
 
 	const changes = sumChanges(
 		saveIntoDb<Part, DBPart>(Parts, {
