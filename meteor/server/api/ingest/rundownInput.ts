@@ -256,8 +256,11 @@ function updateRundownFromIngestData (
 		_id: dbRundownData._id
 	}, [dbRundownData], {
 		beforeInsert: (o) => {
-			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
+			o.created = getCurrentTime()
+			o.previousPartId = null
+			o.currentPartId = null
+			o.nextPartId = null
 			return o
 		},
 		beforeUpdate: (o) => {
