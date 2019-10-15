@@ -31,8 +31,11 @@ import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 
-const MINIMUM_TAKE_SPAN = 1000
-
+let MINIMUM_TAKE_SPAN = 1000
+export function setMinimumTakeSpan (span: number) {
+	// Used in tests
+	MINIMUM_TAKE_SPAN = span
+}
 /*
 	The functions in this file are used to provide a pre-check, before calling the real functions.
 	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.
@@ -262,7 +265,7 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	}
 	const partCache = IngestDataCache.findOne({
 		rundownId: rundown._id,
-		partId: part.externalId,
+		partId: part._id,
 		type: IngestCacheType.PART
 	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
@@ -344,7 +347,7 @@ export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: s
 		ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownId, sourceLayerId)
 	)
 }
-export function activateHold (rundownId: string) {
+export function activateHold (rundownId: string, undo?: boolean) {
 	check(rundownId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -357,13 +360,22 @@ export function activateHold (rundownId: string) {
 	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
 	let nextPart = Parts.findOne({ _id: rundown.nextPartId })
 	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
-	if (rundown.holdState) {
+	if (!undo && rundown.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
 	}
+	if (undo && rundown.holdState !== RundownHoldState.PENDING) {
+		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[rundown.holdState || 0]}`)
+	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.activateHold(rundownId)
-	)
+	if (undo) {
+		return ClientAPI.responseSuccess(
+			ServerPlayoutAPI.deactivateHold(rundownId)
+		)
+	} else {
+		return ClientAPI.responseSuccess(
+			ServerPlayoutAPI.activateHold(rundownId)
+		)
+	}
 }
 export function userSaveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return ClientAPI.responseSuccess(
@@ -537,8 +549,8 @@ methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownId: stri
 methods[UserActionAPI.methods.sourceLayerStickyPieceStart] = function (rundownId: string, sourceLayerId: string) {
 	return sourceLayerStickyPieceStart.call(this, rundownId, sourceLayerId)
 }
-methods[UserActionAPI.methods.activateHold] = function (rundownId: string): ClientAPI.ClientResponse {
-	return activateHold.call(this, rundownId)
+methods[UserActionAPI.methods.activateHold] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
+	return activateHold.call(this, rundownId, undo)
 }
 methods[UserActionAPI.methods.saveEvaluation] = function (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return userSaveEvaluation.call(this, evaluation)

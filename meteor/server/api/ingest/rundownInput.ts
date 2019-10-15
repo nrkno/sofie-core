@@ -377,6 +377,15 @@ function updateRundownFromIngestData (
 		saveIntoDb<Part, DBPart>(Parts, {
 			rundownId: rundownId,
 		}, parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundownId, parts)
 			}
@@ -512,6 +521,15 @@ function updateSegmentFromIngestData (
 			segmentId: segmentId,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted parts (such as adLib parts)
 		}, parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundown._id, parts)
 			}

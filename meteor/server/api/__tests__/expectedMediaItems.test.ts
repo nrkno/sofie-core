@@ -53,7 +53,7 @@ describe('Expected Media Items', () => {
 			modified: 0,
 			name: 'Mock Rundown',
 			nextPartId: '',
-			peripheralDeviceId: env.device._id,
+			peripheralDeviceId: env.ingestDevice._id,
 			currentPartId: '',
 			previousPartId: '',
 			showStyleBaseId: env.showStyleBaseId,

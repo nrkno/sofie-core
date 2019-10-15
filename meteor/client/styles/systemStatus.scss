@@ -7,23 +7,60 @@
 .system-status {
 
 	.device-item-container {
-		background: #f0f0f0;
-    	border-top: 1px solid #ddd;
-    	padding: 9px 5px 8px 10px;
-		margin-bottom: 0.3em;
-
-		&:hover {
-			background: #fff;
-		}
-
 		.children {
 			margin-top: 0.3em;
-			padding-left: 0.5em;
-			padding-right: 0.5em;
 
 			> .device-item-container {
 				margin-bottom: 0;
 				margin-top: 0;
+			}
+
+			.childlist {
+				margin-right: 0;
+			}
+
+			ul, li {
+				position: relative;
+			}
+
+			ul {
+				margin-top: 0;
+				list-style: none;
+				padding-left: 2.4em;
+			}
+
+			li::before, li::after {
+				content: "";
+				position: absolute;
+				left: -2.4em;
+			}
+
+			li::before {
+				border-top: 3px solid #d8cccc;
+				top: 1.2em;
+				width: 2em;
+				height: 0;
+			}
+
+			li::after {
+				border-left: 3px solid #d8cccc;
+				height: 100%;
+				width: 0px;
+				top: 0.1em;
+			}
+
+			ul > li:last-child::after {
+				height: 1.2em;
+			}
+
+			.child-device-li {
+				.device-item-container {
+					padding-bottom: 0.3em;
+
+					.device-item {
+						margin-bottom: 0px;
+					}
+				}
 			}
 		}
 	}
@@ -40,6 +77,9 @@
 }
 
 .device-item {
+	background: #f0f0f0;
+	padding: 15px 5px 8px 10px;
+	margin-bottom: 0.3em;
 	line-height: 1.5em;
 	clear: both;
 
@@ -50,12 +90,14 @@
 	.status-container {
 		float: right;
 		text-align: right;
+		padding-right: 0.3em;
 	}
 	.actions-container {
-		margin-top: 0.5em;
+		margin-top: 2.3em;
 		display: block;
 		text-align: right;
 		clear: both;
+		padding-right: 0.3em;
 	}
 
 	label {
@@ -80,6 +122,10 @@
 		> .btn {
 			margin-left: 0.3em;
 		}
+	}
+
+	&:hover {
+		background: #fff;
 	}
 }
 
@@ -127,6 +173,10 @@
 			border: $color-status-bad;
 		}
 	}
+	
+	.device-item__device-status-message {
+		margin-top: 0.4em;
+	}
 
 	&.device-status--fatal {
 		.pill {
@@ -140,6 +190,10 @@
 			background: $color-status-unknown;
 			border: $color-status-unknown;
 		}
+	}
+
+	&:hover {
+		background: #f0f0f0aa;
 	}
 }
 

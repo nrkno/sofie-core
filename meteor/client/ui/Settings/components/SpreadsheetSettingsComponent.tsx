@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { translate } from 'react-i18next'
+const Tooltip = require('rc-tooltip')
 import {
 	PeripheralDevice,
 	PeripheralDevices,
@@ -12,6 +13,7 @@ import { SpreadsheetDeviceSettings } from '../../../../lib/collections/Periphera
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { fetchFrom } from '../../../lib/lib'
+import { getHelpMode } from '../../../lib/localStorage'
 interface ISpreadsheetSettingsComponentState {
 }
 interface ISpreadsheetSettingsComponentProps {
@@ -158,14 +160,19 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 				<label className='field'>
 					{t('Drive folder name')}
 					<div className='mdi'>
-						<EditAttribute
-							modifiedClassName='bghl'
-							attribute='settings.folderPath'
-							obj={this.props.device}
-							type='text'
-							collection={PeripheralDevices}
-							className='mdinput'
-						></EditAttribute>
+						<Tooltip
+							overlay={t('Provide the name of the folder to download rundowns from')}
+							visible={getHelpMode() && (!this.props.device.settings || !this.props.device.settings['folderPath'])}
+							placement='top'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.folderPath'
+								obj={this.props.device}
+								type='text'
+								collection={PeripheralDevices}
+								className='mdinput'
+							></EditAttribute>
+						</Tooltip>
 					</div>
 				</label>
 				<label className='field'>

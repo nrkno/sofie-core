@@ -2,6 +2,7 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
@@ -51,6 +52,10 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend
 } from '../../../lib/api/studios'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { getHelpMode } from '../../lib/localStorage'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -122,11 +127,40 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		})
 	}
 
+	isPlayoutConnected () {
+		let connected = false
+		this.props.studioDevices.map(device => {
+			if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) connected = true
+		})
+		return connected
+	}
+
 	render () {
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Attached Devices')}</h2>
+				<h2 className='mhn'>
+					<Tooltip
+						overlay={t('Devices are needed to control your studio hardware')}
+						visible={getHelpMode() && !this.props.studioDevices.length}
+						placement='right'>
+						<span>{t('Attached Devices')}</span>
+					</Tooltip>
+				</h2>&nbsp;
+				{
+					!this.props.studioDevices.length ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No devices connected')}
+					</div> :
+					null
+				}
+				{
+					!this.isPlayoutConnected() ?
+					<div className='error-notice'>
+						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('Playout gateway not connected')}
+					</div> :
+					null
+				}
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
@@ -352,6 +386,18 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.identifier'}
 							obj={this.props.studio}
 							type='text'
+							collection={Studios}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Priority')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.priority'}
+							obj={this.props.studio}
+							type='int'
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
@@ -790,7 +836,6 @@ interface IStudioSettingsProps {
 	}
 }
 interface IStudioSettingsState {
-
 }
 interface IStudioSettingsTrackedProps {
 	studio?: Studio
@@ -822,7 +867,7 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		super(props)
 
 		this.state = {
-			needsUpdate: false
+			needsUpdate: false,
 		}
 	}
 
@@ -876,7 +921,23 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 		const { needsUpdate } = this.state
 
 		return <div>
-			<p className='mhn'>{t('Studio Baseline needs update: ')} {needsUpdate ? t('Yes') : t('No')}</p>
+			<p className='mhn'>
+				{t('Studio Baseline needs update: ')}&nbsp;
+				{
+					needsUpdate ?
+					<Tooltip overlay={t('Baseline needs reload, this studio may not work until reloaded')} visible={getHelpMode()} placement='right'>
+						<span>{t('Yes')}</span>
+					</Tooltip> :
+					t('No')
+				}
+				{
+					needsUpdate ?
+					<span className='error-notice inline'>
+						{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
+					</span> :
+					null
+				}
+			</p>
 			<p className='mhn'><button className='btn btn-primary' onClick={(e) => this.reloadBaseline()}>{t('Reload Baseline')}</button></p>
 		</div>
 	}
@@ -943,6 +1004,26 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		return options
 	}
 
+	renderShowStyleEditButtons () {
+		const { t } = this.props
+		let buttons: JSX.Element[] = []
+		if (this.props.studio) {
+			this.props.studio.supportedShowStyleBase.map(style => {
+				let base = this.props.availableShowStyleBases.find(base => base.showStyleBase._id === style)
+				if (base) {
+					buttons.push(
+						<SettingsNavigation
+							key={'settings-nevigation-' + base.showStyleBase.name}
+							attribute='name'
+							obj={base.showStyleBase}
+							type='showstyle'></SettingsNavigation>
+					)
+				}
+			})
+		}
+		return (buttons)
+	}
+
 	renderEditForm () {
 		const { t } = this.props
 
@@ -953,6 +1034,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<h2 className='mhn mtn'>{t('Generic Properties')}</h2>
 					<label className='field'>
 						{t('Studio Name')}
+						{
+							!this.props.studio.name ?
+							<div className='error-notice inline'>
+								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -966,6 +1054,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					</label>
 					<label className='field'>
 						{t('Blueprint')}
+						{
+							!this.props.studio.blueprintId ?
+							<div className='error-notice inline'>
+								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -977,11 +1072,22 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								mutateUpdateValue={v => v === '' ? undefined : v}
 								collection={Studios}
 								className='mdinput'></EditAttribute>
+								<SettingsNavigation
+									attribute='blueprintId'
+									obj={this.props.studio}
+									type='blueprint'></SettingsNavigation>
 							<span className='mdfx'></span>
 						</div>
 					</label>
 					<div className='field'>
 						{t('Select Compatible Show Styles')}
+						{
+							!this.props.studio.supportedShowStyleBase.length ?
+							<div className='error-notice inline'>
+								{t('Show style not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								attribute='supportedShowStyleBase'
@@ -990,6 +1096,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								label={t('Click to show available Show Styles')}
 								type='multiselect'
 								collection={Studios}></EditAttribute>
+								{
+									this.renderShowStyleEditButtons()
+								}
+								<SettingsNavigation type='newshowstyle' />
 						</div>
 					</div>
 					<label className='field'>
@@ -1121,6 +1231,7 @@ export function setProperty (studio: Studio, property: string, value: any) {
 }
 
 export function findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
+	if (!array) return null
 	let max: { _rank: number } | null = null
 
 	array.forEach((value, index) => {

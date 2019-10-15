@@ -34,22 +34,28 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 		timelineObjs.push(obj)
 	}
 
+	const calculateStartAfterPreviousObj = (prevObj: TimelineObjRundown): TimelineTypes.TimelineEnable => {
+		const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
+
+		// Start with previous piece
+		const startOffset = prevHasDelayFlag ? 2000 : 0
+		return {
+			start: `#${prevObj.id}.start + ${startOffset}`
+		}
+	}
+
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
 		const lookaheadDepth = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead, lookaheadDepth)
 
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
-			const enable: TimelineTypes.TimelineEnable = {
+			let enable: TimelineTypes.TimelineEnable = {
 				start: 1 // Absolute 0 without a group doesnt work
 			}
 			if (i !== 0) {
 				const prevObj = lookaheadObjs.timed[i - 1].obj
-				const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
-
-				// Start with previous piece
-				const startOffset = prevHasDelayFlag ? 2000 : 0
-				enable.start = `#${prevObj.id}.start + ${startOffset}`
+				enable = calculateStartAfterPreviousObj(prevObj)
 			}
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
@@ -65,11 +71,20 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 		_.each(lookaheadObjs.future, (entry, i) => {
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			// Prioritise so that the earlier ones are higher, decreasing within the range 'reserved' for lookahead
-			const priority = futurePriorityScale * (futureObjCount - i)
-			mutateAndPushObject(entry.obj, `future${i}`, { while: '1' }, mapping, priority)
+			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
+			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR
+			if (singleFutureObj && i !== 0) {
+				return
+			}
+
+			const lastTimedObj = _.last(lookaheadObjs.timed)
+			const enable = singleFutureObj && lastTimedObj ? calculateStartAfterPreviousObj(lastTimedObj.obj) : { while: '1' }
 			// We use while: 1 for the enabler, as any time before it should be active will be filled by either a playing object, or a timed lookahead.
 			// And this allows multiple futures to be timed in a way that allows them to co-exist
+
+			// Prioritise so that the earlier ones are higher, decreasing within the range 'reserved' for lookahead
+			const priority = singleFutureObj ? LOOKAHEAD_OBJ_PRIORITY : futurePriorityScale * (futureObjCount - i)
+			mutateAndPushObject(entry.obj, `future${i}`, enable, mapping, priority)
 		})
 	})
 	return timelineObjs
@@ -312,9 +327,11 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 			const orderedItems = getOrderedPiece(startingPartOnLayer.part)
 
 			let allowTransition = false
+			let classesFromPreviousPart: string[] = []
 			if (startingPartOnLayerIndex >= 1 && activeRundown.currentPartId) {
 				const prevPieceGroup = timeOrderedPartsWithPieces[startingPartOnLayerIndex - 1]
 				allowTransition = !prevPieceGroup.part.disableOutTransition
+				classesFromPreviousPart = prevPieceGroup.part.classesForNext || []
 			}
 
 			const transObj = orderedItems.find(i => !!i.isTransition)
@@ -354,6 +371,13 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 					let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
 					if (allowTransition) {
 						transitionKF = _.find(obj.keyframes || [], kf => kf.enable.while === '.is_transition')
+
+						// TODO - this keyframe matching is a hack, and is very fragile
+
+						if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
+							// Check if the keyframe also uses a class to match. This handles a specific edge case
+							transitionKF = _.find(obj.keyframes || [], kf => _.any(classesFromPreviousPart, cl => kf.enable.while === `.is_transition & .${cl}`))
+						}
 					}
 					const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
 

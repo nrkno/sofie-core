@@ -44,6 +44,9 @@ export interface PeripheralDevice {
 	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings | INewsDeviceSettings
 
 	secretSettings?: any | SpreadsheetDeviceSecretSettings
+
+	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
+	ignore?: boolean
 }
 
 export interface MosParentDevice extends PeripheralDevice {

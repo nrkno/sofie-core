@@ -14,8 +14,8 @@ export interface Blueprint {
 
 	blueprintType?: BlueprintManifestType
 
-	studioConfigManifest: ConfigManifestEntry[]
-	showStyleConfigManifest: ConfigManifestEntry[]
+	studioConfigManifest?: ConfigManifestEntry[]
+	showStyleConfigManifest?: ConfigManifestEntry[]
 
 	databaseVersion: {
 		showStyle: {

@@ -286,6 +286,12 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.mediaPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Base path is a network share')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.usePolling'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
+											</label>
+										</div>
 									</React.Fragment>))))}
 							</div>
 							<div className='mod alright'>

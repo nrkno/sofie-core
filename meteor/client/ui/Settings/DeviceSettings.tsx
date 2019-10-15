@@ -17,6 +17,8 @@ import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsCo
 import { INewsSettingsComponent } from './components/INewsSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -99,40 +101,45 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 
 		return (
 			<div className='studio-edit mod mhl mvn'>
-				<div>
-					<div className='row'>
-						<div className='col c12 rl-c6'>
-							<h2 className='mhn mtn'>
-								{t('Generic Properties')}
-							</h2>
-							<label className='field'>
-								{t('Device Name')}
-								<div className='mdi'>
-									<EditAttribute
-										modifiedClassName='bghl'
-										attribute='name'
-										obj={device}
-										type='text'
-										collection={PeripheralDevices}
-										className='mdinput'></EditAttribute>
-									<span className='mdfx'></span>
-								</div>
-							</label>
+				<div className='row'>
+					<div className='col c12 rl-c6'>
+						<h2 className='mhn mtn'>
+							{t('Generic Properties')}
+						</h2>
+						<label className='field'>
+							{t('Device Name')}
+							{
+								!(this.props.device && this.props.device.name) ?
+								<div className='error-notice inline'>
+									{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+								</div> :
+								null
+							}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='name'
+									obj={this.props.device}
+									type='text'
+									collection={PeripheralDevices}
+									className='mdinput'></EditAttribute>
+								<span className='mdfx'></span>
+							</div>
+						</label>
+					</div>
+					<div className='col c12 rl-c6 alright'>
+						<div className='mbs'>
+							<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
+								{t('Restart Device')}
+							</button>
 						</div>
-						<div className='col c12 rl-c6 alright'>
-							<div className='mbs'>
-								<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
-									{t('Restart Device')}
-								</button>
-							</div>
-							<div className='mbs'>
-								<PeripheralDeviceStatus device={device}/>
-							</div>
+						<div className='mbs'>
+							<PeripheralDeviceStatus device={device}/>
 						</div>
 					</div>
-
-					{this.renderSpecifics()}
 				</div>
+
+				{this.renderSpecifics()}
 			</div>
 		)
 	}
