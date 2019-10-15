@@ -531,13 +531,7 @@ function diffAndApplyChanges (
 }
 
 export interface SegmentEntries {
-	[segmentExternalId: string]: SegmentEntry
-}
-export interface SegmentEntry extends IngestSegment {
-	// id: string
-	// name: string
-	// rank: number // QUESTION: or NOT?
-	// parts: string[]
+	[segmentExternalId: string]: IngestSegment
 }
 export function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntries {
 	let segmentEntries: SegmentEntries = {}
@@ -546,22 +540,16 @@ export function compileSegmentEntries (ingestSegments: IngestSegment[]): Segment
 		if (segmentEntries[ingestSegment.externalId]) {
 			throw new Meteor.Error(500, `compileSegmentEntries: Non-unique segment external ID: "${ingestSegment.externalId}"`)
 		}
-		segmentEntries[ingestSegment.externalId] = {
-			// id: ingestSegment.externalId,
-			// name: ingestSegment.name,
-			...ingestSegment,
-			// rank: rank // QUESTION: use rank or ingestSegment.rank?
-			// parts: _.map(ingestSegment.parts, p => p.externalId)
-		}
+		segmentEntries[ingestSegment.externalId] = _.clone(ingestSegment)
 	})
 
 	return segmentEntries
 }
 export interface DiffSegmentEntries {
-	added: {[segmentExternalId: string]: SegmentEntry}
-	changed: {[segmentExternalId: string]: SegmentEntry}
-	removed: {[segmentExternalId: string]: SegmentEntry}
-	unchanged: {[segmentExternalId: string]: SegmentEntry}
+	added: {[segmentExternalId: string]: IngestSegment}
+	changed: {[segmentExternalId: string]: IngestSegment}
+	removed: {[segmentExternalId: string]: IngestSegment}
+	unchanged: {[segmentExternalId: string]: IngestSegment}
 
 	// The objects present below are also present in the collections above
 	/** Reference to segments which only had their ranks updated */
@@ -583,7 +571,7 @@ export function diffSegmentEntries (
 		onlyExternalIdChanged: {},
 	}
 	_.each(newSegmentEntries, (newSegmentEntry, segmentExternalId) => {
-		const oldSegmentEntry = oldSegmentEntries[segmentExternalId] as SegmentEntry | undefined
+		const oldSegmentEntry = oldSegmentEntries[segmentExternalId] as IngestSegment | undefined
 		if (oldSegmentEntry) {
 
 			// Deep compare
@@ -614,7 +602,7 @@ export function diffSegmentEntries (
 	})
 
 	_.each(oldSegmentEntries, (oldSegmentEntry, segmentExternalId) => {
-		const newSegmentEntry = newSegmentEntries[segmentExternalId] as SegmentEntry | undefined
+		const newSegmentEntry = newSegmentEntries[segmentExternalId] as IngestSegment | undefined
 		if (!newSegmentEntry) {
 			diff.removed[segmentExternalId] = oldSegmentEntry
 		}

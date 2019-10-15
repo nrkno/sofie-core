@@ -1,9 +1,7 @@
 import * as _ from 'underscore'
 
 import {
-	SegmentEntry,
 	diffSegmentEntries,
-	SegmentEntries,
 	compileSegmentEntries
 } from '../ingest'
 import { IngestSegment } from 'tv-automation-sofie-blueprints-integration'
