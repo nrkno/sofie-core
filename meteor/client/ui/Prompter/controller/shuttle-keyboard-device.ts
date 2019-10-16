@@ -102,6 +102,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 						this._prompterView.scrollToNext()
 						return
 						break
+				}
 			}
 		}
 
