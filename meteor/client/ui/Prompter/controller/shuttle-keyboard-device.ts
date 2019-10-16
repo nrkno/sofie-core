@@ -16,7 +16,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	private _destroyed: boolean = false
 	private _prompterView: PrompterViewInner
 
-	private readonly _speedMap = [0, 1, 2, 3, 7, 9, 12, 30]
+	private readonly _speedMap = [0, 1, 3, 5, 7, 9, 12, 30]
 	
 	private _updateSpeedHandle: number|null = null
 	private _lastSpeed = 0
