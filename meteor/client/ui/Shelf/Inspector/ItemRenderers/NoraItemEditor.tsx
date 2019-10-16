@@ -1,10 +1,12 @@
 import { NoraPayload } from "tv-automation-sofie-blueprints-integration";
 import * as React from "react";
 import { createMosObjectXmlStringFromPayload } from "../../../../lib/data/nora/browser-plugin-data";
+import { mosXmlString2Js } from "../../../../lib/parsers/mos/mosXml2Js";
 
 //TODO: figure out what the origin should be
-const origin = 'http://localhost:3000'
-const MODULE_BROWSER_URL = `https://nora.nrk.no/module/browser?origin=${origin}&logging=true&dev=true`
+const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
+const MODULE_BROWSER_URL = new URL(`https://nora.nrk.no/module/browser?origin=${LOCAL_ORIGIN}&logging=true&dev=true`)
+const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_BROWSER_URL.host}`
 
 export { NoraItemEditor }
 
@@ -16,13 +18,15 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	iframe: HTMLIFrameElement
 
 	componentDidMount () {
-		console.log('ComponentDidMount')
-		this.setUpEventListeners()
+		this.setUpEventListeners(window)
 	}
 
 	componentDidUpdate (prevProps: INoraEditorProps) {
 		console.log('componentDidUpdate')
-		this.setUpEventListeners()
+		if (this.iframe && this.iframe.contentWindow) {
+			this.setUpEventListeners(this.iframe.contentWindow)
+		}
+		this.setUpEventListeners(window)
 
 		// if (JSON.stringify(prevProps.payload) !== JSON.stringify(this.props.payload)) {
 		// 	this.postIframePayload()
@@ -35,50 +39,49 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		return false
 	}
 
-	postIframePayload () {
-		if (this.iframe && this.iframe.contentWindow) {
+	postPayload (target: Window | null) {
+		console.log('Posting payload', target)
+		if (target) {
 			const payloadXmlString = createMosObjectXmlStringFromPayload(this.props.payload)
-			this.iframe.contentWindow.postMessage(payloadXmlString, origin)
-			console.log('Sent message', payloadXmlString)
+			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
+			console.log('Sent message', payloadXmlString, target)
 		}
 	}
 
-	setUpEventListeners () {
-		console.log('setUpEventListeners')
-		if (this.iframe && this.iframe.contentWindow) {
-			this.iframe.contentWindow.addEventListener('load', (e) => { console.log('iframe window load', e) })
-			this.iframe.contentWindow.addEventListener('DOMContentLoaded ', (e) => { console.log('iframe window DOMContentLoaded', e) })
-			this.iframe.contentWindow.addEventListener('unload', (e) => { console.log('iframe window unload', e) })
-
-			console.log('Registering iframe content window event listener...')
-			this.iframe.contentWindow.addEventListener('message', (event) => {
-				console.log('Got message', event.origin, event.data)
-				this.handlePluginMessages(event)
-			})
-			console.log('Done.')
-		}
-
+	setUpEventListeners (target: Window) {
+		target.addEventListener('message', (event) => {
+			this.handleMessage(event)
+		})
 	}
 
-	handlePluginMessages (event: MessageEvent) {
-		console.log('handlePluginMessage', event)
-	}
-
-	createReference (element: HTMLElement | null) {
-		console.log('createReference')
-		if (!element) {
-			console.log('createReference got no element, this should never happen')
+	handleMessage (event: MessageEvent) {
+		if (event.origin !== MODULE_BROWSER_ORIGIN) {
+			console.log(`Origin rejected (wanted ${MODULE_BROWSER_ORIGIN}, got ${event.origin})`)
 			return
 		}
 
-		this.iframe = element as HTMLIFrameElement
+		console.log('Received message', event)
+		const data: any = event.data && mosXmlString2Js(event.data)
+		console.log('Message data', data)
+
+		if (data.mos) {
+			return this.handleMosMessage(data.mos)
+		}
+
+		console.log('Unknown message', data)
+	}
+
+	handleMosMessage (mos: any) {
+		if (mos.ncsReqAppInfo) {
+			this.postPayload(this.iframe.contentWindow)
+		}
 	}
 
 	render () {
 		console.log('Item editor render')
 		return React.createElement('iframe', {
-			ref: (event) => { this.createReference(event) },
-			src: MODULE_BROWSER_URL,
+			ref: (element) => { this.iframe = element as HTMLIFrameElement },
+			src: MODULE_BROWSER_URL.href,
 			style: {
 				border: 0,
 				height: 720,
