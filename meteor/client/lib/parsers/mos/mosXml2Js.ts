@@ -16,13 +16,13 @@ import * as _ from 'underscore'
 const domparser = new DOMParser()
 
 /** Copied from mos-gateway */
-export function fixMosData (o: any): any {
+export function fixMosData(o: any): any {
 	if (
 		_.isObject(o) && (
-		o instanceof MosTime ||
-		o instanceof MosDuration ||
-		o instanceof MosString128
-	)) {
+			o instanceof MosTime ||
+			o instanceof MosDuration ||
+			o instanceof MosString128
+		)) {
 		return o.toString()
 	}
 	if (_.isArray(o)) {
