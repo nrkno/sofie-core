@@ -89,19 +89,16 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 						this._lastSpeed = this._speedMap[0]
 						window.scrollTo(0, 0)
 						return
-						break
 					case 'F11':
 						// jump to live
 						this._lastSpeed = this._speedMap[0]
 						this._prompterView.scrollToCurrent()
 						return
-						break
 					case 'F12':
 						// jump to next	
 						this._lastSpeed = this._speedMap[0]
 						this._prompterView.scrollToNext()
 						return
-						break
 				}
 			}
 		}

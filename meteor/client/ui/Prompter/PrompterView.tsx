@@ -400,6 +400,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				let part = Parts.findOne(line.partId)
 				let title: string = part ? part.title : 'N/A'
+				if (part && part.typeVariant && part.typeVariant.toString && part.typeVariant.toString().toLowerCase().trim() === 'full') {
+					title = 'FULL'
+				}
 				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
 				divs.push(
