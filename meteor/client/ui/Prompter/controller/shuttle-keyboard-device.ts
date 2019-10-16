@@ -36,9 +36,10 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 
 		// special case of filtering out missing center/stop-message
 		// by looking for numlock and seeing if the last value was 10 or -10
-		if (e.key === 'NumLock' && Math.abs(this._lastSpeed) === this._speedMap[1]) {
-			speed = 0
-		}
+		// if (e.key === 'NumLock' && Math.abs(this._lastSpeed) === this._speedMap[1]) {
+		// 	console.log('numyo')
+		// 	speed = 0
+		// }
 
 		// contour mode needs ctrl + alt + number to work
 		// filter on ctrl and alt, fail early
