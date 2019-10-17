@@ -121,111 +121,107 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 			case SourceLayerType.LIVE_SPEAK:
 				const fileName = getMediaObjectMediaId(piece, sourceLayer)
 				const displayName = piece.name
-				if (fileName) {
-					// If the fileName is not set...
-					if (!fileName) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-						message = t('Source is not set')
+				const messages: Array<string> = []
+				// If the fileName is not set...
+				if (!fileName) {
+					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+					messages.push(t('Source is not set'))
+				} else {
+					const mediaObject = MediaObjects.findOne({
+						mediaId: fileName.toUpperCase()
+					})
+					// If media object not found, then...
+					if (!mediaObject) {
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+						messages.push(t('Source is missing', { fileName: displayName }))
+						// All VT content should have at least two streams
 					} else {
-						const mediaObject = MediaObjects.findOne({
-							mediaId: fileName.toUpperCase()
-						})
-						// If media object not found, then...
-						if (!mediaObject) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							message = t('Source is missing: {{fileName}}', { fileName: displayName })
-							// All VT content should have at least two streams
-						} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-							message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: displayName })
-						}
-						if (mediaObject) {
-							if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
-							const messages: Array<string> = []
+						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
 
-							// Do a format check:
-							if (mediaObject.mediainfo) {
-								const formats = getAcceptedFormats(settings)
-								const audioConfig = settings ? settings.supportedAudioStreams : ''
-								const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
+						// Do a format check:
+						if (mediaObject.mediainfo) {
+							if (mediaObject.mediainfo.streams.length < 2) {
+								newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+								messages.push(t('Source doesn\'t have audio & video', { fileName: displayName }))
+							}
 
-								let timebase
-								let audioStreams = 0
-								let isStereo = false
+							const formats = getAcceptedFormats(settings)
+							const audioConfig = settings ? settings.supportedAudioStreams : ''
+							const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
 
-								// check the streams for resolution info
-								for (const stream of mediaObject.mediainfo.streams) {
-									if (stream.width && stream.height) {
-										if (stream.codec.time_base) {
-											const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-											timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
-										}
+							let timebase
+							let audioStreams = 0
+							let isStereo = false
 
-										const format = buildFormatString(mediaObject.mediainfo, stream)
-										if (!acceptFormat(format, formats)) {
-											messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
-										}
-									} else if (stream.codec.type === 'audio') {
-										// this is the first (and hopefully last) track of audio, and has 2 channels
-										if (audioStreams === 0 && stream.channels === 2) {
-											isStereo = true
-										}
-										audioStreams++
+							// check the streams for resolution info
+							for (const stream of mediaObject.mediainfo.streams) {
+								if (stream.width && stream.height) {
+									if (stream.codec.time_base) {
+										const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
+										timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
 									}
-								}
 
-								if (timebase) {
-									mediaObject.mediainfo.timebase = timebase
+									const format = buildFormatString(mediaObject.mediainfo, stream)
+									if (!acceptFormat(format, formats)) {
+										messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
+									}
+								} else if (stream.codec.type === 'audio') {
+									// this is the first (and hopefully last) track of audio, and has 2 channels
+									if (audioStreams === 0 && stream.channels === 2) {
+										isStereo = true
+									}
+									audioStreams++
 								}
+							}
 
-								if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
-									messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
-								}
+							if (timebase) {
+								mediaObject.mediainfo.timebase = timebase
+							}
 
-								// check for black/freeze frames
-								const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
-									if (arr.length === 1) {
-										const frames = Math.round(arr[0].duration * 1000 / timebase)
-										if (arr[0].start === 0) {
-											messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
-										} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
-											messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
-										} else {
-											messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
-										}
+							if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
+								messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
+							}
+
+							// check for black/freeze frames
+							const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
+								if (arr.length === 1) {
+									const frames = Math.round(arr[0].duration * 1000 / timebase)
+									if (arr[0].start === 0) {
+										messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
+									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
+										messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
 									} else {
-										const dur = arr
-											.map(b => b.duration)
-											.reduce((a, b) => a + b, 0)
-										const frames = Math.round(dur * 1000 / timebase)
 										messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
 									}
-								}
-
-								if (mediaObject.mediainfo.blacks) {
-									addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
-								}
-								if (mediaObject.mediainfo.freezes) {
-									addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
-								}
-							} else {
-								messages.push(t('Clip is being ingested: {{fileName}}', { fileName: displayName }))
-							}
-
-							if (messages.length) {
-								if (newStatus === RundownAPI.PieceStatusCode.OK) {
-									newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-									message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
 								} else {
-									message += ', ' + messages.join(', ')
+									const dur = arr
+										.map(b => b.duration)
+										.reduce((a, b) => a + b, 0)
+									const frames = Math.round(dur * 1000 / timebase)
+									messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
 								}
 							}
+
+							if (mediaObject.mediainfo.blacks) {
+								addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
+							}
+							if (mediaObject.mediainfo.freezes) {
+								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
+							}
+						} else {
+							messages.push(t('Clip is being ingested', { fileName: displayName }))
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 						}
 
-						if (mediaObject) {
-							metadata = mediaObject
-						}
+						metadata = mediaObject
 					}
+				}
+
+				if (messages.length) {
+					if (newStatus === RundownAPI.PieceStatusCode.OK) {
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+					}
+					message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
 				}
 				break
 		}
