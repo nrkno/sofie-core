@@ -34,7 +34,7 @@ import {
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineObjRundown } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
@@ -44,7 +44,7 @@ import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
+import { AudioContent, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -52,6 +52,8 @@ import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/Inges
 import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { TimelineEnable } from 'timeline-state-resolver-types/dist/superfly-timeline'
+import { substituteObjectIds } from './playout/lib'
 
 interface RundownSnapshot {
 	version: string
@@ -412,10 +414,16 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	snapshot.rundown.notifiedCurrentPlayingPartExternalId = undefined
 
 	const studios = Studios.find().fetch()
-	if (studios.length >= 1) snapshot.rundown.studioId = studios[0]._id
+	const snapshotStudioExists = studios.find(studio => studio._id === snapshot.rundown.studioId)
+	if (studios.length >= 1 && !snapshotStudioExists) {
+		// TODO Choose better than just the fist
+		snapshot.rundown.studioId = studios[0]._id
+	}
 
 	const showStyleVariants = ShowStyleVariants.find().fetch()
-	if (showStyleVariants.length >= 1) {
+	const snapshotShowStyleVariantExists = showStyleVariants.find(variant => variant._id === snapshot.rundown.showStyleVariantId && variant.showStyleBaseId === snapshot.rundown.showStyleBaseId)
+	if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
+		// TODO Choose better than just the fist
 		snapshot.rundown.showStyleBaseId = showStyleVariants[0].showStyleBaseId
 		snapshot.rundown.showStyleVariantId = showStyleVariants[0]._id
 	}
@@ -431,9 +439,20 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 		const oldId = segment._id
 		segmentIdMap[oldId] = segment._id = Random.id()
 	})
+	const pieceIdMap: { [key: string]: string } = {}
+	_.each(snapshot.pieces, piece => {
+		const oldId = piece._id
+		pieceIdMap[oldId] = piece._id = Random.id()
+	})
+
+	const enableIdMap: { [key: string]: string | undefined } = {}
+	_.each(pieceIdMap, (newId, oldId) => {
+		enableIdMap[getPieceGroupId(oldId)] = getPieceGroupId(newId)
+		enableIdMap[getPieceFirstObjectId(oldId)] = getPieceFirstObjectId(newId)
+	})
 
 	// Apply the updates of any properties to any document
-	function updateItemIds<T extends { _id: string, rundownId: string, partId?: string, segmentId?: string }> (objs: T[], updateId: boolean): T[] {
+	function updateItemIds<T extends { _id: string, rundownId: string, partId?: string, segmentId?: string, infiniteId?: string, enable?: TimelineEnable }> (objs: T[], updateId: boolean): T[] {
 		return objs.map(obj => {
 			if (obj.rundownId) {
 				obj.rundownId = rundownId
@@ -445,10 +464,25 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 			if (obj.segmentId) {
 				obj.segmentId = segmentIdMap[obj.segmentId]
 			}
+			if (obj.infiniteId) {
+				obj.infiniteId = pieceIdMap[obj.infiniteId]
+			}
+
+			if (obj.enable) {
+				obj.enable = substituteObjectIds(obj.enable, enableIdMap)
+			}
 
 			if (updateId) {
 				obj._id = Random.id()
 			}
+
+			// Find any timeline objects
+			const content = (obj as any).content as Piece['content']
+			const tlObjects: TimelineObjRundown[] = content ? content.timelineObjects || [] : (obj as any).objects
+			_.each(tlObjects, (tlObj: TimelineObjRundown) => {
+				tlObj.rundownId = rundownId
+				tlObj.enable = substituteObjectIds(tlObj.enable, enableIdMap)
+			})
 
 			return obj
 		})
@@ -461,7 +495,7 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.baselineAdlibs, true))
 	saveIntoDb(Segments, { rundownId: rundownId }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: rundownId }, updateItemIds(snapshot.parts, false))
-	saveIntoDb(Pieces, { rundownId: rundownId }, updateItemIds(snapshot.pieces, true))
+	saveIntoDb(Pieces, { rundownId: rundownId }, updateItemIds(snapshot.pieces, false))
 	saveIntoDb(AdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, updateItemIds(snapshot.expectedMediaItems, true))
 
