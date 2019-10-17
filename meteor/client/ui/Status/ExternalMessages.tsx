@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
-import { getAdminMode } from '../../lib/localStorage'
+import { getAllowConfigure } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
@@ -231,7 +231,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 			<tr key={msg._id} className={ClassNames(classes)}>
 				<td className='c2'>
 					{
-						getAdminMode() ? <React.Fragment>
+						getAllowConfigure() ? <React.Fragment>
 							<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>

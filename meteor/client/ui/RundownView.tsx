@@ -13,6 +13,7 @@ import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
+const Tooltip = require('rc-tooltip')
 import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -36,7 +37,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -60,6 +61,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
+import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -207,6 +209,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'f12',
 	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
 	RUNDOWN_HOLD = 'h',
+	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
 	RUNDOWN_ACTIVATE2 = '\\',
 	RUNDOWN_ACTIVATE3 = '|',
@@ -247,19 +250,19 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					</span>
 				}
 				{ this.props.rundown.startedPlayback && (this.props.rundown.active && !this.props.rundown.rehearsal) ?
-					this.props.rundown.expectedStart &&
+					(this.props.rundown.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.rundown.startedPlayback - this.props.rundown.expectedStart, true, false, true, true, true)}
-						</span>
+						</span>) || undefined
 					:
-					this.props.rundown.expectedStart &&
+					(this.props.rundown.expectedStart &&
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundown.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundown.expectedStart, true, false, true, true, true)}
-						</span>
+						</span>) || undefined
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
@@ -365,6 +368,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					up: this.keyHold,
 					label: t('Hold')
 				},{
+					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
+					up: this.keyHoldUndo,
+					label: t('Undo Hold')
+				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 					up: this.keyActivate,
 					label: t('Activate'),
@@ -392,12 +399,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 					up: this.keyResetRundown,
-					label: t('Reload Rundown'),
+					label: t('Reset Rundown'),
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
@@ -510,6 +517,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	keyHold = (e: ExtendedKeyboardEvent) => {
 		this.hold(e)
 	}
+	keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		this.holdUndo(e)
+	}
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate(e)
 	}
@@ -598,9 +608,17 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	hold = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode && this.props.rundown.active) {
-			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id])
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, false])
 		}
 	}
+
+	holdUndo = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode && this.props.rundown.active && this.props.rundown.holdState === RundownHoldState.PENDING) {
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.rundown._id, true])
+		}
+	}
+
 	rundownShouldHaveStarted () {
 		return getCurrentTime() > (this.props.rundown.expectedStart || 0)
 	}
@@ -998,7 +1016,9 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					<div className='row first-row super-dark'>
 						<div className='flex-col left horizontal-align-left'>
 							<div className='badge mod'>
-								<div className='media-elem mrs sofie-logo' />
+								<Tooltip overlay={t('Add ?studio=1 to the URL to enter studio mode')} visible={getHelpMode() && !getAllowStudio()} placement='bottom'>
+									<div className='media-elem mrs sofie-logo' />
+								</Tooltip>
 								<div className='bd mls'><span className='logo-text'></span></div>
 							</div>
 						</div>
@@ -1151,7 +1171,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.state = {
 			timeScale: 0.03,
-			studioMode: getStudioMode(),
+			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
@@ -1317,7 +1337,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			(this.props.rundown || { _id: '' })._id !== (prevProps.rundown || { _id: '' })._id ||
 			(this.props.rundown || { active: false }).active !== (prevProps.rundown || { active: false }).active ||
 			this.state.studioMode !== prevState.studioMode) {
-			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getDeveloperMode()) {
+			if (this.props.rundown && this.props.rundown.active && this.state.studioMode && !getAllowDeveloper()) {
 				window.addEventListener('beforeunload', this.onBeforeUnload)
 			} else {
 				window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -1657,7 +1677,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
-		if (!getDeveloperMode()) {
+		if (!getAllowDeveloper()) {
 			e.preventDefault()
 			e.stopPropagation()
 		}
@@ -1847,6 +1867,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
 									inActiveRundownView={this.props.inActiveRundownView} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu

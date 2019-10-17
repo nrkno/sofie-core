@@ -5,6 +5,8 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faQuestion from '@fortawesome/fontawesome-free-solid/faQuestion'
+import { translate } from 'react-i18next'
+import { getHelpMode } from '../lib/localStorage'
 
 interface IProps {
 
@@ -40,6 +42,7 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 				{this.props.children && <div className='support-pop-up-panel__actions'>
 					{this.props.children}
 				</div>}
+				{!this.props.support.message && <DocumentationLink></DocumentationLink>}
 			</div>
 		)
 	}
@@ -51,13 +54,55 @@ interface IToggleProps {
 }
 
 export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
+	getMessages () {
+		const core = CoreSystem.findOne()
+		if (!core) {
+			return ''
+		}
+
+		if (!core.support) {
+			return ''
+		}
+
+		return core.support.message
+	}
 	render () {
 		return <React.Fragment>
 			<button className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
 				'status-bar__controls__button--open': this.props.isOpen,
+				'status-bar__controls__button--has-messages': this.getMessages() !== ''
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<FontAwesomeIcon icon={faQuestion} />
 			</button>
 		</React.Fragment>
 	}
 }
+
+export const DocumentationLink = translate()(class DocumentationLink extends React.Component {
+	render () {
+		return (
+			<div>
+				{
+					getHelpMode() ?
+					<div>
+						Disable hints by adding this to the URL:&nbsp;
+						<a href='?help=0'>
+							?help=0
+						</a>
+					</div> :
+					<div>
+						Enable hints by adding this to the URL:&nbsp;
+						<a href='?help=1'>
+							?help=1
+						</a>
+					</div>
+				}
+				More documentation available at:&nbsp;
+				<a href='https://github.com/nrkno/Sofie-TV-automation/'>
+					https://github.com/nrkno/Sofie-TV-automation/
+				</a>
+			</div>
+		)
+	}
+})
+

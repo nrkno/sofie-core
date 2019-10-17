@@ -605,6 +605,23 @@ export namespace ServerPlayoutAPI {
 			return ClientAPI.responseSuccess()
 		})
 	}
+	export function deactivateHold (rundownId: string) {
+		check(rundownId, String)
+		logger.debug('rundownDeactivateHold')
+
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+			if (rundown.holdState !== RundownHoldState.PENDING) throw new Meteor.Error(400, `Rundown "${rundownId}" is not pending a hold!`)
+
+			Rundowns.update(rundownId, { $set: { holdState: RundownHoldState.NONE } })
+
+			updateTimeline(rundown.studioId)
+
+			return ClientAPI.responseSuccess()
+		})
+	}
 	export function disableNextPiece (rundownId: string, undo?: boolean) {
 		check(rundownId, String)
 

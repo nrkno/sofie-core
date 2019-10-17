@@ -1,7 +1,11 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Studio } from '../../../lib/collections/Studios'
+const Tooltip = require('rc-tooltip')
+import {
+	Studio,
+	Studios
+} from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -18,13 +22,10 @@ import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
-
-interface ConfigManifestEntryExt extends ConfigManifestEntry {
-	source: string
-}
+import { getHelpMode } from '../../lib/localStorage'
 
 interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
-	manifest: ConfigManifestEntryExt[]
+	manifest: ConfigManifestEntry[]
 
 	collection: TCol
 	object: TObj
@@ -177,7 +178,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 
 				const configItem = values[valIndex]
 
-				return <React.Fragment key={`${item.source}_${item.id}`}>
+				return <React.Fragment key={`${item.id}`}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
@@ -334,7 +335,9 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 					<button className={ClassNames('btn btn-primary', {
 						'btn-tight': this.props.subPanel
 					})} onClick={this.addConfigItem}>
-						<FontAwesomeIcon icon={faPlus} />
+						<Tooltip overlay={t('More settings specific to this studio can be found here')} visible={getHelpMode()} placement='right'>
+							<FontAwesomeIcon icon={faPlus} />
+						</Tooltip>
 					</button>
 				</div>
 			</div>
@@ -342,56 +345,35 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 	}
 }
 
-export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntryExt[] {
-	let blueprintIds: Array<string | undefined> = []
-
-	let blueprints: Blueprint[] = []
-
+export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntry[] {
 	if (item instanceof Studio) {
-		// Studio blueprint
-		blueprintIds.push(item.blueprintId)
-
-		// All showStyles that the studio is supposed to support:
-		ShowStyleBases.find({
-			_id: { $in: item.supportedShowStyleBase || [] }
-		}).forEach(showStyleBase => {
-			blueprintIds.push(showStyleBase.blueprintId)
-		})
 		if (item.blueprintId) {
-			const studioBlueprint = Blueprints.findOne(item.blueprintId)
-			if (studioBlueprint) blueprints.push(studioBlueprint)
+			const blueprint = Blueprints.findOne(item.blueprintId)
+			if (blueprint) {
+				return blueprint.studioConfigManifest || []
+			}
 		}
 	} else if (item instanceof ShowStyleBase) {
-		blueprintIds.push(item.blueprintId)
+		if (item.blueprintId) {
+			const blueprint = Blueprints.findOne(item.blueprintId)
+			if (blueprint) {
+				return blueprint.showStyleConfigManifest || []
+			}
+		}
 	} else if (item instanceof ShowStyleVariant) {
-		ShowStyleBases.find({
+		const showStyleBase = ShowStyleBases.findOne({
 			_id: item.showStyleBaseId
-		}).forEach(showStyleBase => {
-			blueprintIds.push(showStyleBase.blueprintId)
 		})
+
+		if (showStyleBase && showStyleBase.blueprintId) {
+			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
+			if (blueprint) {
+				return blueprint.showStyleConfigManifest || []
+			}
+		}
 	} else {
 		logger.error('collectConfigs: unknown item type', item)
 	}
 
-	// By extension, all blueprints that the studio is supposed to support:
-
-	Blueprints.find({
-		_id: {
-			$in: _.compact(blueprintIds)
-		}
-	}).forEach(bp => blueprints.push(bp))
-
-	blueprints = _.uniq(blueprints, false, bp => bp._id)
-
-	let manifestEntries: Array<ConfigManifestEntryExt> = []
-	_.each(blueprints, (blueprint: Blueprint) => {
-		const entries = item instanceof Studio ? blueprint.studioConfigManifest : blueprint.showStyleConfigManifest
-		_.each(entries, (entry: ConfigManifestEntry) => {
-			manifestEntries.push({
-				...entry,
-				source: blueprint._id
-			})
-		})
-	})
-	return manifestEntries
+	return []
 }

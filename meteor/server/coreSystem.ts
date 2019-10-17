@@ -40,7 +40,8 @@ function initializeCoreSystem () {
 			modified: getCurrentTime(),
 			version: version,
 			previousVersion: null,
-			storePath: '' // to be filled in later
+			storePath: '', // to be filled in later
+			serviceMessages: {}
 		})
 
 		// Check what migration has to provide:

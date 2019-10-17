@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-08-13T12:29:55.324Z\n"
-"PO-Revision-Date: 2019-08-14 16:56+0200\n"
+"POT-Creation-Date: 2019-10-02T09:58:48.132Z\n"
+"PO-Revision-Date: 2019-10-02 12:04+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 
 msgid "Return to list"
 msgstr "Gå tilbake til listen"
@@ -56,7 +56,7 @@ msgid "Something went wrong, and it affected the output"
 msgstr "Noe gikk galt, og det påvirket sendingen"
 
 msgid "Trim \"{{name}}\""
-msgstr ""
+msgstr "Trim \"{{name}}\""
 
 msgid "OK"
 msgstr "OK"
@@ -65,19 +65,19 @@ msgid "Cancel"
 msgstr "Avbryt"
 
 msgid "In"
-msgstr ""
+msgstr "Inn"
 
 msgid "Duration"
 msgstr "Varighet"
 
 msgid "Out"
-msgstr ""
-
-msgid "Sofie Automation Server"
-msgstr "Sofie"
+msgstr "Ut"
 
 msgid "Connecting to the"
 msgstr "Kobler til"
+
+msgid "Sofie Automation Server"
+msgstr "Sofie"
 
 msgid "Cannot connect to the"
 msgstr "Kan ikke koble til"
@@ -95,7 +95,7 @@ msgid "Connected to the"
 msgstr "Tilkoblet til"
 
 msgid "Could not get system status. Please consult system administrator."
-msgstr ""
+msgstr "Kan ikke innhente status for systemet. Kontakt systemadministrator"
 
 msgid "Welcome to the Sofie Automation system"
 msgstr "Velkommen til Sofie"
@@ -134,7 +134,7 @@ msgid "Switching operating mode to {{mode}}"
 msgstr ""
 
 msgid "End of script"
-msgstr ""
+msgstr "Slutt på manus"
 
 msgid "Delete this Item?"
 msgstr "Slett dette elementet?"
@@ -160,8 +160,21 @@ msgstr ""
 "Er du sikker på at du vil synkronisere kjøreplanen \"{{rundownSlug}}\" med "
 "MOS?"
 
+#, fuzzy
+#| msgid "Another Rundown is Already Active!"
+msgid "This rundown is currently active"
+msgstr "Denne kjøreplanen er allerede aktiv!"
+
 msgid "Re-sync with MOS"
 msgstr "Synkroniser med MOS"
+
+msgid "Add rundowns by connecting a gateway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "System messages"
+msgid "Check system status messages.\n"
+msgstr "Sjekk systemmeldinger"
 
 msgid "Getting Started"
 msgstr "Kom i gang"
@@ -169,22 +182,42 @@ msgstr "Kom i gang"
 msgid ""
 "Start with giving this browser configuration permissions by adding this to "
 "the URL: "
-msgstr ""
+msgstr "Først må du gå i konfigurasjonsmodus ved å legge dette til URLen: "
+
+#, fuzzy
+#| msgid "Started"
+msgid "Start Here!"
+msgstr "Startet"
 
 msgid "Then, run the migrations script:"
-msgstr ""
+msgstr "Kjør så migreringsprosedyren"
+
+#, fuzzy
+#| msgid "Run Migration Procedure"
+msgid "Run Migrations to get set up"
+msgstr "Kjør migreringsprosedyre"
 
 msgid "Migrations"
 msgstr "Migration"
 
 msgid "Documentation is available at"
+msgstr "Dokumentasjon er tilgjengelig på"
+
+msgid "Click on a rundown to control your studio"
 msgstr ""
 
 msgid "Rundown"
 msgstr "Kjøreplan"
 
-msgid "ID"
-msgstr "ID"
+#, fuzzy
+#| msgid "Studios"
+msgid "Studio"
+msgstr "Studio"
+
+#, fuzzy
+#| msgid "Show Styles"
+msgid "Show style"
+msgstr "Showstyle"
 
 msgid "Created"
 msgstr "Opprettet"
@@ -196,7 +229,7 @@ msgid "Air Status"
 msgstr "Sendingsstatus"
 
 msgid "Unsynced from MOS"
-msgstr ""
+msgstr "Ikke synkronisert med MOS"
 
 msgid "Sofie Automation"
 msgstr "Sofie"
@@ -204,8 +237,11 @@ msgstr "Sofie"
 msgid "version"
 msgstr "versjon"
 
-msgid "status"
-msgstr "status"
+msgid "System Status"
+msgstr "Systemstatus"
+
+msgid "System has issues which need to be resolved"
+msgstr "Systemet har problemer som må fikses"
 
 msgid "Status Messages:"
 msgstr "Statusmeldinger:"
@@ -246,6 +282,9 @@ msgstr "Forventet slutt"
 
 msgid "Take"
 msgstr "Take"
+
+msgid "Undo Hold"
+msgstr "Angre hold"
 
 msgid "Activate"
 msgstr "Aktiver"
@@ -289,17 +328,28 @@ msgid ""
 "\n"
 "Are you sure you want to activate this one anyway?"
 msgstr ""
+"Kjøreplanen \"{{rundownName}}\" må deaktiveres for å aktivere denne "
+"kjøreplanen.\n"
+"\n"
+"Er du sikker på at du ønsker å aktivere?"
 
 msgid "Activate Anyway"
 msgstr "Aktiver allikevel"
 
-msgid "Failed to deactivate"
+#, fuzzy
+#| msgid "Activate Anyway"
+msgid "Activate anyway (GO ON AIR)"
+msgstr "Aktiver allikevel"
+
+#, fuzzy
+#| msgid "Failed to deactivate"
+msgid "Failed to activate"
 msgstr "Kunne ikke deaktivere"
 
 msgid ""
-"System was unable to deactivate existing rundowns. Please contact the system "
-"administrator."
-msgstr ""
+"Something went wrong, please contact the system administrator if the problem "
+"persists."
+msgstr "Noe gikk galt, kontakt systemadministrator hvis problemet fortsetter"
 
 msgid "Do you want to activate this Rundown?"
 msgstr "Vil du aktivere denne kjøreplanen?"
@@ -327,6 +377,7 @@ msgstr "En aktivert kjøreplan kan ikke tilbakestilles"
 msgid ""
 "A snapshot of the current Running Order has been created for troubleshooting."
 msgstr ""
+"En snapshot av den gjeldende kjøreplanen har blitt opprettet for feilsøking"
 
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr "Forbered studio og aktiver testmodus"
@@ -342,6 +393,9 @@ msgstr "Lagre snapshot"
 
 msgid "No actions available"
 msgstr "Ingen kjøreplanvalg tilgjengelige i påsynsmodus"
+
+msgid "Add ?studio=1 to the URL to enter studio mode"
+msgstr ""
 
 msgid "Error"
 msgstr "Feil"
@@ -365,12 +419,16 @@ msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
 "contact the system administrator to start the Playout Gateway."
 msgstr ""
+"Dette studioet har ingen tilkoblede gateways for playout. Kontakt "
+"systemadministrator for å starte den."
 
+#, fuzzy
+#| msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting..."
 msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
-msgstr ""
+msgstr "Playout Gateway \"{{playoutDeviceName}}\" starter på nytt..."
 
 msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
-msgstr ""
+msgstr "Playout gateway \"{{playoutDeviceName}}\" kunne ikke startes på nytt"
 
 msgid "Restart CasparCG Server"
 msgstr "Restart Caspar"
@@ -380,10 +438,10 @@ msgstr "Er du sikker på at du vil restarte CasparCG Server \"{{device}}\"?"
 
 msgid ""
 "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
-msgstr ""
+msgstr "Omstart av CasparCG på \"{{deviceName}}\" feilet: {{errorMessage}}"
 
 msgid "CasparCG on device \"{{deviceName}}\" restarting..."
-msgstr ""
+msgstr "CasparCG på \"{{deviceName}}\" starter på nytt..."
 
 msgid "Show Hotkeys"
 msgstr "Vise hurtigtaster"
@@ -392,7 +450,7 @@ msgid "Take a Snapshot"
 msgstr "Lagre et snapshot"
 
 msgid "Restart Playout"
-msgstr ""
+msgstr "Start avspilling på nytt"
 
 msgid "Restart {{device}}"
 msgstr "Start {{device}} på nytt"
@@ -401,19 +459,19 @@ msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
 
 msgid "Error: The studio of this Rundown was not found."
-msgstr ""
+msgstr "Feil: Kan ikke finne studioet for denne kjøreplanen."
 
 msgid "Error: The ShowStyle of this Rundown was not found."
-msgstr ""
+msgstr "Feil: Kan ikke finne showstyle for denne kjøreplanen"
 
 msgid "Unknown error"
-msgstr ""
+msgstr "Ukjent feil"
 
 msgid "Rundown {{rundownName}} is missing, what do you want to do?"
-msgstr ""
+msgstr "Kjøreplan {{rundownName}} finnes ikke. Hva vil du gjøre?"
 
 msgid "Mark rundown as unsynced"
-msgstr ""
+msgstr "Marker kjøreplan som usynkronisert"
 
 msgid "Remove rundown"
 msgstr "Fjern kjøreplan"
@@ -429,6 +487,8 @@ msgid ""
 "The Rundown has been UNSYNCED from ENPS! No data updates will currently come "
 "through."
 msgstr ""
+"Kjøreplanen er ikke synkronisert med ENPS! Ingen oppdateringer fra ENPS vil "
+"hentes inn."
 
 msgid "Re-Sync Rundown"
 msgstr "Synkroniser kjøreplanen med ENPS på nytt"
@@ -449,29 +509,34 @@ msgid ""
 "want to restart {{device}}?\n"
 "(This might affect output)"
 msgstr ""
+"Feilretting krever en omstart av {{device}}. Er du sikker på at du ønsker å "
+"starte enheten på nytt?(Dette kan påvirke gjennomføring av en pågående "
+"sending)"
 
 msgid "Device \"{{deviceName}}\" restarting..."
-msgstr ""
+msgstr "\"{{deviceName}}\" starter på nytt..."
 
 msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
-msgstr ""
+msgstr "Kunne ikke starte \"{{deviceName}}\" på nytt: {{errorMessage}}"
 
 msgid "Show issue"
-msgstr ""
+msgstr "Vis problem"
 
 msgid "External message queue has unsent messages."
-msgstr ""
+msgstr "Ekstern meldingskø har meldinger som ikke er sendt."
 
 msgid "Unable to check the system configuration for changes"
-msgstr ""
+msgstr "Kan ikke kontrollere endringer i systemoppsettet"
 
 msgid ""
 "The system configuration has been changed since importing this rundown. It "
 "might not run correctly"
 msgstr ""
+"Systemoppsettet har blitt endret etter at denne kjøreplanen ble importert. "
+"Kjøreplanen kan spilles av med feil."
 
 msgid "Device {{deviceName}} is disconnected"
-msgstr ""
+msgstr "{{deviceName}} er koblet fra"
 
 msgid "Just now"
 msgstr "Nå"
@@ -501,25 +566,25 @@ msgid "More than a day ago"
 msgstr "Over en dag siden"
 
 msgid "MOS Connection"
-msgstr ""
+msgstr "MOS-tilkobling"
 
 msgid "Last update"
-msgstr ""
+msgstr "Nyeste oppdatering"
 
 msgid "Off-line devices"
-msgstr ""
+msgstr "Frakoblede enheter"
 
 msgid "Devices with issues"
-msgstr ""
+msgstr "Enheter med problemer"
 
 msgid "All connections working correctly"
-msgstr ""
+msgstr "Alle tilkoblinger er OK"
 
 msgid "Play-out"
-msgstr ""
+msgstr "Avspilling"
 
 msgid "All devices working correctly"
-msgstr ""
+msgstr "Alle enheter fungerer som de skal"
 
 msgid "Until next take"
 msgstr "Til neste Take"
@@ -540,16 +605,20 @@ msgid "File name"
 msgstr "Filnavn"
 
 msgid "Set this part as <strong>Next</strong>"
-msgstr ""
+msgstr "Sett dette punktet som <strong>neste</strong>"
 
+#, fuzzy
+#| msgid "Set <strong>Next</strong> here"
 msgid "Set <strong>Next</strong> Here"
-msgstr ""
+msgstr "Sett <strong>Neste</strong> here"
 
+#, fuzzy
+#| msgid "Play from here"
 msgid "Play from Here"
-msgstr ""
+msgstr "Spill av herfra"
 
 msgid "Set segment as <strong>Next</strong>"
-msgstr ""
+msgstr "Sett denne tittelen som <strong>Neste</strong>"
 
 msgid "On Air"
 msgstr "On Air"
@@ -561,7 +630,7 @@ msgid "Warnings"
 msgstr "Advarsler"
 
 msgid "Invalid"
-msgstr ""
+msgstr "Ugyldig"
 
 msgid "Auto"
 msgstr "Auto"
@@ -679,7 +748,7 @@ msgid "System Messages"
 msgstr "Systemmeldinger"
 
 msgid "Upgrade Database"
-msgstr ""
+msgstr "Oppgrader databasen"
 
 msgid "Manage Snapshots"
 msgstr "Behandle snapshots"
@@ -691,7 +760,7 @@ msgid "Update Blueprints?"
 msgstr "Oppdater blueprints?"
 
 msgid "Update"
-msgstr ""
+msgstr "Oppdater"
 
 msgid ""
 "Are you sure you want to update the blueprints from the file "
@@ -703,25 +772,25 @@ msgid "Blueprints updated successfully."
 msgstr "Blueprints ble oppdatert."
 
 msgid "Failed to update blueprints: {{errorMessage}}"
-msgstr ""
+msgstr "Oppdatering av blueprints feilet: {{errorMessage}}"
 
 msgid "Assigned Show Styles:"
-msgstr ""
+msgstr "Tilordnede showstyles:"
 
 msgid "This Blueprint is not being used by any Show Style"
-msgstr ""
+msgstr "Denne blueprinten er ikke i bruk av noen showstyles"
 
 msgid "Assigned Studios:"
-msgstr ""
+msgstr "Tilordnede studio"
 
 msgid "This Blueprint is not compatible with any Studio"
-msgstr ""
+msgstr "Denne blueprienten er ikke kompatibel med noe studio"
 
 msgid "Unassign"
-msgstr ""
+msgstr "Fjern tilordning"
 
 msgid "Assign"
-msgstr ""
+msgstr "Tilordne"
 
 msgid "Blueprint ID"
 msgstr "Blueprint-id"
@@ -729,8 +798,18 @@ msgstr "Blueprint-id"
 msgid "Blueprint Name"
 msgstr "Blueprintnavn"
 
+#, fuzzy
+#| msgid "Your name"
+msgid "No name set"
+msgstr "Ditt navn"
+
 msgid "Blueprint Type"
-msgstr ""
+msgstr "Blueprint-type"
+
+#, fuzzy
+#| msgid "Upload Blueprints"
+msgid "Upload a new blueprint"
+msgstr "Last opp blueprint"
 
 msgid "Last modified"
 msgstr "Sist endret"
@@ -760,25 +839,25 @@ msgid "Are you sure you want to remove this command?"
 msgstr "Er du sikker på at du vil fjerne denne kommandoen?"
 
 msgid "Storage ID"
-msgstr ""
+msgstr "Storage ID"
 
 msgid "Storage Type"
-msgstr ""
+msgstr "Storage Type"
 
 msgid "Allow Read"
-msgstr ""
+msgstr "Allow Read"
 
 msgid "Allow Write"
-msgstr ""
+msgstr "Allow Write"
 
 msgid "Base Path"
-msgstr ""
+msgstr "Base Path"
 
 msgid "Media Path"
-msgstr ""
+msgstr "Media Path"
 
 msgid "Mapped Networked Drive"
-msgstr ""
+msgstr "Mapped Networked Drive"
 
 msgid "Username"
 msgstr "Brukernavn"
@@ -787,55 +866,60 @@ msgid "Password"
 msgstr "Passord"
 
 msgid "Don't Scan Entire Storage"
+msgstr "Don't Scan Entire Storage"
+
+msgid "Base path is a network share"
 msgstr ""
 
 msgid "Media Flow ID"
-msgstr ""
+msgstr "Media Flow ID"
 
 msgid "Media Flow Type"
-msgstr ""
+msgstr "Media Flow Type"
 
 msgid "Source Storage"
-msgstr ""
+msgstr "Source Storage"
 
 msgid "Target Storage"
-msgstr ""
+msgstr "Target Storage"
 
 msgid "Delete this Monitor?"
-msgstr "Slett denne monitoren?"
+msgstr "Delete this Monitor?"
 
 msgid "Are you sure you want to delete the monitor \"{{monitorId}}\"?"
-msgstr "Er du sikker på at du vil slette monitoren \"{{monitorId}}\"?"
+msgstr "Are you sure you want to delete the monitor \"{{monitorId}}\"?"
 
 msgid "ID already exists"
-msgstr ""
+msgstr "ID already exists"
 
 msgid "The ID {{monitorId}} already exists!"
-msgstr ""
+msgstr "The ID {{monitorId}} already exists!"
 
 msgid "Monitor ID"
-msgstr ""
+msgstr "Monitor ID"
 
+#, fuzzy
+#| msgid "Monitor type"
 msgid "Monitor Type"
-msgstr "Monitortype"
+msgstr "Monitor type"
 
 msgid "Media Scanner Host"
-msgstr "Media Scanner-vert"
+msgstr "Media Scanner Host"
 
 msgid "Media Scanner Port"
-msgstr "Media Scanner-port"
+msgstr "Media Scanner Port"
 
 msgid "Quantel Gateway URL"
-msgstr ""
+msgstr "Quantel Gateway URL"
 
 msgid "Quantel ISA URL"
-msgstr ""
+msgstr "Quantel ISA URL"
 
 msgid "Zone ID (leave blank for default)"
-msgstr ""
+msgstr "Zone ID (leave blank for default)"
 
 msgid "Quantel Server ID"
-msgstr ""
+msgstr "Quantel Server ID"
 
 msgid "No. of Available Workers"
 msgstr ""
@@ -850,7 +934,7 @@ msgid "Cron-Job Interval Time"
 msgstr ""
 
 msgid "Activate Debug Logging"
-msgstr "Aktiver debug-logging"
+msgstr "Activate Debug Logging"
 
 msgid "Remove this storage?"
 msgstr ""
@@ -871,13 +955,13 @@ msgid "Media Flows"
 msgstr ""
 
 msgid "Monitors"
-msgstr ""
+msgstr "Monitors"
 
 msgid "Attached Subdevices"
-msgstr "Tilkoblede underenheter"
+msgstr "Attached Subdevices"
 
 msgid "Device ID"
-msgstr "Enhets-id"
+msgstr "Device ID"
 
 msgid "Primary ID (Newsroom System MOS ID)"
 msgstr "Primary ID (News Room System MOS ID)"
@@ -900,23 +984,29 @@ msgstr "Fjern denne enheten?"
 msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
 msgstr "Er du sikker på at du vil fjerne enheten \"{{deviceId}}\"?"
 
+msgid "Device ID"
+msgstr "Device ID"
+
+msgid "Disable"
+msgstr ""
+
 msgid "Device Type"
-msgstr "Enhetstype"
+msgstr ""
 
 msgid "Thread Usage"
 msgstr ""
 
 msgid "Host"
-msgstr "Vert"
+msgstr ""
 
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 msgid "CasparCG Launcher Host"
-msgstr "CasparCG Launcher-vert"
+msgstr ""
 
 msgid "CasparCG Launcher Port"
-msgstr "CasparCG Launcher-port"
+msgstr ""
 
 msgid "Sources Path"
 msgstr ""
@@ -927,8 +1017,11 @@ msgstr ""
 msgid "Buffer Encoding"
 msgstr ""
 
+msgid "Minimum recording time"
+msgstr ""
+
 msgid "Enable SSL"
-msgstr "Aktiver SSL"
+msgstr ""
 
 msgid "URI"
 msgstr ""
@@ -946,7 +1039,7 @@ msgid "Interval"
 msgstr ""
 
 msgid "Gateway URL"
-msgstr "Gateway-URL"
+msgstr ""
 
 msgid "ISA URL"
 msgstr ""
@@ -961,6 +1054,12 @@ msgid "Activate Multi-Threaded Timeline Resolving"
 msgstr ""
 
 msgid "(Restart to apply)"
+msgstr ""
+
+msgid "Report command timings on all commangs"
+msgstr ""
+
+msgid "Connect some devices to the playout gateway"
 msgstr ""
 
 msgid "Spreadsheet credentials succesfully uploaded."
@@ -992,8 +1091,11 @@ msgstr ""
 msgid "Drive folder name"
 msgstr ""
 
+msgid "Provide the name of the folder to download rundowns from"
+msgstr ""
+
 msgid "Debug logging"
-msgstr "Aktiver debug-logging"
+msgstr ""
 
 msgid "true"
 msgstr ""
@@ -1025,6 +1127,9 @@ msgstr ""
 
 msgid "Blueprint Configuration"
 msgstr "Blueprintkonfigurasjon"
+
+msgid "More settings specific to this studio can be found here"
+msgstr ""
 
 msgid "Are you sure you want to restart this device?"
 msgstr "Er du sikker på at du vil starte denne enheten på nytt?"
@@ -1069,6 +1174,9 @@ msgstr "Nullstill versjon til"
 
 msgid "Reset All Versions"
 msgstr "Nullstill alle versjoner"
+
+msgid "Migrate database"
+msgstr ""
 
 msgid "All steps"
 msgstr ""
@@ -1141,8 +1249,14 @@ msgstr ""
 msgid "New Item"
 msgstr "Nytt element"
 
+msgid "Delete layout?"
+msgstr ""
+
+msgid "Are you sure you want to delete the shelf layout \"{{name}}\"?"
+msgstr ""
+
 msgid "Only Match Global AdLibs"
-msgstr "Inkluder bare hurtigtaster"
+msgstr ""
 
 msgid "Tabs"
 msgstr ""
@@ -1165,20 +1279,32 @@ msgstr ""
 msgid "Height"
 msgstr ""
 
+msgid "Button width scale factor"
+msgstr ""
+
+msgid "Button height scale factor"
+msgstr ""
+
 msgid "Display Rank"
+msgstr ""
+
+msgid "Enable search toolbar"
 msgstr ""
 
 msgid "Only Display AdLibs from Current Segment"
 msgstr ""
 
 msgid "Include Global AdLibs"
-msgstr "Inkluder hurtigtaster"
+msgstr ""
 
 msgid "Filter Disabled"
 msgstr ""
 
+msgid "Include Clear Source Layer in Ad-Libs"
+msgstr ""
+
 msgid "Source Layer Types"
-msgstr "Kildelagstyper"
+msgstr ""
 
 msgid "Filter disabled"
 msgstr ""
@@ -1189,29 +1315,37 @@ msgstr ""
 msgid "Default Layout"
 msgstr "Standardlayout"
 
+msgid "Upload Layout?"
+msgstr ""
+
+msgid "Upload"
+msgstr ""
+
 msgid ""
-"Are you sure you want to upload the rundown layout from the file "
+"Are you sure you want to upload the shelf layout from the file "
 "\"{{fileName}}\"?"
 msgstr ""
-"Er du sikker på at du vil laste opp kjøreplanlayout fra \"{{fileName}}\"?"
 
-msgid "Rundown layout uploaded successfully."
+msgid "Shelf layout uploaded successfully."
 msgstr ""
 
-msgid "Failed to upload rundown layout: {{errorMessage}}"
+msgid "Failed to upload shelf layout: {{errorMessage}}"
 msgstr ""
 
-msgid "Rundown Layouts"
-msgstr "Skuffoppsett"
+msgid "Shelf Layouts"
+msgstr ""
 
 msgid "Show Style Base Name"
 msgstr ""
 
 msgid "Blueprint"
-msgstr "Blueprint"
+msgstr ""
+
+msgid "Blueprint not set"
+msgstr ""
 
 msgid "Compatible Studios:"
-msgstr "Kompatible studio:"
+msgstr ""
 
 msgid "This Show Style is not compatible with any Studio"
 msgstr ""
@@ -1335,6 +1469,14 @@ msgstr ""
 msgid "Exclusivity group"
 msgstr ""
 
+msgid ""
+"Add some source layers (e.g. Graphics) for your ENPS data to appear in "
+"rundowns"
+msgstr ""
+
+msgid "No source layers set"
+msgstr ""
+
 msgid "Delete this output?"
 msgstr "Slett denne utgangen?"
 
@@ -1350,8 +1492,17 @@ msgstr "Kanalnavn"
 msgid "Is PGM Output"
 msgstr "Ligger på program"
 
+msgid "Output channels are required for your studio to work"
+msgstr ""
+
 msgid "Output channels"
 msgstr "Utgangskanal"
+
+msgid "No output channels set"
+msgstr ""
+
+msgid "No PGM output"
+msgstr ""
 
 msgid "Key"
 msgstr "Key"
@@ -1430,8 +1581,17 @@ msgstr "Gjenopprett"
 msgid "Show \"Remove snapshots\"-buttons"
 msgstr "Vis \"Fjern snapshots\"-knappene"
 
+msgid "Devices are needed to control your studio hardware"
+msgstr ""
+
 msgid "Attached Devices"
 msgstr "Tilkoblede enheter"
+
+msgid "No devices connected"
+msgstr "Ingen enheter tilkoblet"
+
+msgid "Playout gateway not connected"
+msgstr ""
 
 msgid "Remove this mapping?"
 msgstr ""
@@ -1540,6 +1700,9 @@ msgstr "Format for Decklink-inngang"
 msgid "Studio Baseline needs update: "
 msgstr ""
 
+msgid "Baseline needs reload, this studio may not work until reloaded"
+msgstr ""
+
 msgid "Reload Baseline"
 msgstr ""
 
@@ -1551,6 +1714,9 @@ msgstr "Studionavn"
 
 msgid "Select Compatible Show Styles"
 msgstr "Velg kompatibel showstyles"
+
+msgid "Show style not set"
+msgstr ""
 
 msgid "Click to show available Show Styles"
 msgstr "Klikk for å vise tilgjengelige showstyles"
@@ -1594,17 +1760,20 @@ msgstr ""
 msgid "Search..."
 msgstr "Søk..."
 
-msgid "Last "
-msgstr "Sist "
+msgid "Last {{layerName}}"
+msgstr ""
+
+msgid "Clear {{layerName}}"
+msgstr ""
 
 msgid "Invalid AdLib"
-msgstr ""
+msgstr "Ugyldig manuelt element"
 
 msgid "Cannot play this AdLib because it is marked as Invalid"
-msgstr ""
+msgstr "Kan ikke spille av manuelt element (markert som ugyldig)"
 
 msgid "Cannot play this AdLib becasue it is marked as Invalid"
-msgstr ""
+msgstr "Kan ikke spille av manuelt element (markert som ugyldig)"
 
 msgid "Toggle Shelf"
 msgstr "Skuff"
@@ -1625,7 +1794,7 @@ msgid "System"
 msgstr "System"
 
 msgid "Media"
-msgstr ""
+msgstr "Media"
 
 msgid "Messages"
 msgstr "Meldinger"
@@ -1655,43 +1824,46 @@ msgid "Sent Messages"
 msgstr "Sendte meldinger"
 
 msgid "File Copy"
-msgstr ""
+msgstr "Kopier fil"
 
 msgid "File Delete"
-msgstr ""
+msgstr "Slett fil"
+
+msgid "Check file size"
+msgstr "Sjekk filstørrelse"
 
 msgid "Scan File"
-msgstr ""
+msgstr "Scan fil"
 
 msgid "Generate Thumbnail"
-msgstr ""
+msgstr "Generer miniatyrbilder"
 
 msgid "Generate Preview"
-msgstr ""
+msgstr "Generer forhåndsvisning"
 
 msgid "Unknown action: {{action}}"
-msgstr ""
+msgstr "Ukjent handling: {{action}}"
 
 msgid "Done"
-msgstr ""
+msgstr "Utført"
 
 msgid "Failed"
-msgstr ""
+msgstr "Mislykket"
 
 msgid "Working, Media Available"
-msgstr ""
+msgstr "Jobber, media er tilgjengelig"
 
 msgid "Working"
-msgstr ""
+msgstr "Jobber"
 
 msgid "Pending"
-msgstr ""
+msgstr "Venter"
 
 msgid "Blocked"
-msgstr ""
+msgstr "Blokkert"
 
 msgid "Canceled"
-msgstr ""
+msgstr "Avbrutt"
 
 msgid "Idle"
 msgstr ""
@@ -1703,46 +1875,60 @@ msgid "Step progress: {{progress}}"
 msgstr ""
 
 msgid "Processing"
-msgstr ""
+msgstr "Prosesserer"
 
 msgid "Unknown: {{status}}"
-msgstr ""
+msgstr "Ukjent: {{status}}"
 
 msgid "Collapse"
-msgstr ""
+msgstr "Minimer"
 
 msgid "Details"
-msgstr ""
+msgstr "Detaljer"
 
 msgid "Abort"
-msgstr ""
+msgstr "Avbryt"
 
 msgid "Prioritize"
-msgstr ""
+msgstr "Prioriter"
 
 msgid "Media Transfer Status"
 msgstr ""
 
 msgid "Abort All"
-msgstr ""
+msgstr "Avbryt alle"
 
 msgid "Restart All"
-msgstr "Restart alt"
+msgstr "Start alle på nytt"
 
 msgid "Do you want to restart CasparCG Server?"
 msgstr "Er du sikker på at du vil restarte Caspar?"
 
+msgid "Format HyperDeck disks"
+msgstr ""
+
+msgid ""
+"Do you want to format the HyperDeck disks? This is a destructive action and "
+"cannot be undone."
+msgstr ""
+
+msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
+msgstr "Formatering av HyperDecks på \"{{deviceName}}\" feilet: {{errorMessage}}"
+
+msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
+msgstr "Formaterer HyperDecks på \"{{deviceName}}\"..."
+
 msgid "Last seen"
 msgstr "Sist sett"
+
+msgid "Format disks"
+msgstr ""
 
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
 msgstr "Er du sikker på at du vil fjerne enheten \"{{deviceId}}\"?"
 
 msgid "Restart this device?"
 msgstr "Start denne enheten på nytt?"
-
-msgid "System Status"
-msgstr "Systemstatus"
 
 msgid "Not Connected"
 msgstr "Ikke tilkoblet"
@@ -1804,6 +1990,25 @@ msgstr "Nettleseren støtter ikke videoavspilling"
 msgid "Recording still in progress"
 msgstr "Opptak pågår fremdeles"
 
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "status"
+#~ msgstr "status"
+
+#~ msgid ""
+#~ "System was unable to deactivate existing rundowns. Please contact the "
+#~ "system administrator."
+#~ msgstr ""
+#~ "System klarte ikke å deaktivere eksisterende kjøreplaner. Kontakt "
+#~ "systemadministrator."
+
+#~ msgid "Rundown Layouts"
+#~ msgstr "Skuffoppsett"
+
+#~ msgid "Last "
+#~ msgstr "Sist "
+
 #, fuzzy
 #~ msgid "Media-Scanner host"
 #~ msgstr "Media Scanner-vert"
@@ -1848,12 +2053,6 @@ msgstr "Opptak pågår fremdeles"
 
 #~ msgid "Are you sure you want to delete this device?"
 #~ msgstr "Er du sikker på at du vil slette denne enheten?"
-
-#~ msgid "Source layers"
-#~ msgstr "Kildelag"
-
-#~ msgid "System messages"
-#~ msgstr "Systemmeldinger"
 
 #~ msgid ""
 #~ "Only a single Rundown can be active in a studio at the same time. Please "
@@ -1988,11 +2187,6 @@ msgstr "Opptak pågår fremdeles"
 #~| msgid "Devices"
 #~ msgid "Mos-devices"
 #~ msgstr "Devices"
-
-#, fuzzy
-#~| msgid "Device ID"
-#~ msgid "Device Id"
-#~ msgstr "Device ID"
 
 #~ msgid "Connecting to Sofie Automation Server..."
 #~ msgstr "Kobler til Sofie-serveren..."

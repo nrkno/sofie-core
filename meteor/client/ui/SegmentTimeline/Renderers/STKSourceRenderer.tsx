@@ -56,11 +56,11 @@ export const STKSourceRenderer = translate()(class extends VTSourceRendererBase 
 			{this.state.freezes &&
 				this.state.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker' key={i.start}
-						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(i.duration, itemDuration - i.start + seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 			{this.state.blacks &&
 				this.state.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
-						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(i.duration, itemDuration - i.start + seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				<span className={ClassNames('segment-timeline__piece__label', {
 					'overflow-label': this.end !== ''

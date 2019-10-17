@@ -65,6 +65,7 @@ namespace MediaManagerAPI {
 	export enum WorkStepAction {
 		COPY = 'copy',
 		DELETE = 'delete',
+		SCAN = 'scan',
 		GENERATE_PREVIEW = 'generate_preview',
 		GENERATE_THUMBNAIL = 'generate_thumbnail',
 		GENERATE_METADATA = 'generate_metadata'
@@ -105,6 +106,8 @@ function actionLabel (t: TFunc, action: string): string {
 			return t('File Copy')
 		case MediaManagerAPI.WorkStepAction.DELETE:
 			return t('File Delete')
+		case MediaManagerAPI.WorkStepAction.SCAN:
+			return t('Check file size')
 		case MediaManagerAPI.WorkStepAction.GENERATE_METADATA:
 			return t('Scan File')
 		case MediaManagerAPI.WorkStepAction.GENERATE_THUMBNAIL:

@@ -97,7 +97,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
 	}
-	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE || blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+	if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
 	}
 

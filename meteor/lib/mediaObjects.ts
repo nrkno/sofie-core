@@ -115,16 +115,17 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
-	switch (sourceLayer.type) {
-		case SourceLayerType.VT:
-		case SourceLayerType.LIVE_SPEAK:
-			const fileName = getMediaObjectMediaId(piece, sourceLayer)
-			const displayName = piece.name
-			if (fileName) {
+	if (sourceLayer) {
+		switch (sourceLayer.type) {
+			case SourceLayerType.VT:
+			case SourceLayerType.LIVE_SPEAK:
+				const fileName = getMediaObjectMediaId(piece, sourceLayer)
+				const displayName = piece.name
+				const messages: Array<string> = []
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-					message = t('Source is not set')
+					messages.push(t('Source is not set'))
 				} else {
 					const mediaObject = MediaObjects.findOne({
 						mediaId: fileName.toUpperCase()
@@ -132,18 +133,18 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 					// If media object not found, then...
 					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-						message = t('Source is missing: {{fileName}}', { fileName: displayName })
+						messages.push(t('Source is missing', { fileName: displayName }))
 						// All VT content should have at least two streams
-					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						message = t('Source doesn\'t have audio & video: {{fileName}}', { fileName: displayName })
-					}
-					if (mediaObject) {
+					} else {
 						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
-						const messages: Array<string> = []
 
 						// Do a format check:
 						if (mediaObject.mediainfo) {
+							if (mediaObject.mediainfo.streams.length < 2) {
+								newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+								messages.push(t('Source doesn\'t have audio & video', { fileName: displayName }))
+							}
+
 							const formats = getAcceptedFormats(settings)
 							const audioConfig = settings ? settings.supportedAudioStreams : ''
 							const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
@@ -192,7 +193,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 									} else {
 										messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
 									}
-								} else {
+								} else if (arr.length > 0) {
 									const dur = arr
 										.map(b => b.duration)
 										.reduce((a, b) => a + b, 0)
@@ -208,25 +209,22 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 							}
 						} else {
-							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: displayName }))
+							messages.push(t('Clip is being ingested', { fileName: displayName }))
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 						}
 
-						if (messages.length) {
-							if (newStatus === RundownAPI.PieceStatusCode.OK) {
-								newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-								message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
-							} else {
-								message += ', ' + messages.join(', ')
-							}
-						}
-					}
-
-					if (mediaObject) {
 						metadata = mediaObject
 					}
 				}
-			}
-			break
+
+				if (messages.length) {
+					if (newStatus === RundownAPI.PieceStatusCode.OK) {
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+					}
+					message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
+				}
+				break
+		}
 	}
 
 	return {
