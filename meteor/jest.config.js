@@ -1,7 +1,6 @@
 const commonConfig = {
 	modulePaths: [
 		'<rootDir>/node_modules/',
-		'<rootDir>/node_modules/jest-meteor-stubs/lib/',
 	],
 	moduleNameMapper: {
 	},
