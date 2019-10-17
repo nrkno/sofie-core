@@ -193,7 +193,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 									} else {
 										messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
 									}
-								} else {
+								} else if (arr.length > 0) {
 									const dur = arr
 										.map(b => b.duration)
 										.reduce((a, b) => a + b, 0)
