@@ -245,6 +245,9 @@ export function handleMosDeleteStory (
 		const ingestPartIds = _.map(ingestParts, part => part.externalId)
 
 		const storyIds = _.map(stories, parseMosString)
+
+		logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
+
 		const missingIds = _.filter(storyIds, id => ingestPartIds.indexOf(id) === -1)
 		if (missingIds.length > 0) {
 			throw new Meteor.Error(
@@ -255,6 +258,8 @@ export function handleMosDeleteStory (
 
 		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
 		if (filteredParts.length === ingestParts.length) return // Nothing was removed
+
+		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
 

@@ -10,7 +10,7 @@ export function loadCachedRundownData (rundownId: string, rundownExternalId: str
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
-	if (!baseEntry) throw new Meteor.Error(404, `Rundown ${rundownExternalId} has no cached ingest data`)
+	if (!baseEntry) throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
 
 	const ingestRundown = baseEntry.data as IngestRundown
 
