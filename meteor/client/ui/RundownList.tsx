@@ -8,7 +8,7 @@ import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, literal } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
@@ -21,11 +21,13 @@ import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } fr
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../lib/collections/CoreSystem'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { Studios } from '../../lib/collections/Studios'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PubSub } from '../../lib/api/pubsub'
+import { ReactNotification } from '../lib/notifications/ReactNotification'
+import { Spinner } from '../lib/Spinner'
 
 const PackageInfo = require('../../package.json')
 
@@ -184,11 +186,6 @@ enum ToolTipStep {
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS'
 }
 
-enum HelpMessages {
-	HELP_CONFIGURE = 'Please add ?configure=1 to the address bar.\n',
-	HELP_MIGRATIONS = 'Please run migrations.\n'
-}
-
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
 	rundowns: Array<RundownUI>
@@ -196,6 +193,7 @@ interface IRundownsListProps {
 
 interface IRundownsListState {
 	systemStatus?: StatusResponse
+	subsReady: boolean
 }
 
 export const RundownList = translateWithTracker(() => {
@@ -228,7 +226,9 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 	constructor (props) {
 		super(props)
 
-		this.state = {}
+		this.state = {
+			subsReady: false
+		}
 	}
 
 	tooltipStep () {
@@ -264,51 +264,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				systemStatus: systemStatus
 			})
 		})
-	}
 
-	registerHelp (core: ICoreSystem) {
-		const { t } = this.props
-
-		if (core.support) {
-			let m = {
-				support: {
-					message: ''
-				}
-			}
-
-			switch (this.tooltipStep()) {
-				case ToolTipStep.TOOLTIP_START_HERE:
-					m.support.message += t(HelpMessages.HELP_CONFIGURE)
-					m.support.message += t(HelpMessages.HELP_MIGRATIONS)
-					break
-				case ToolTipStep.TOOLTIP_RUN_MIGRATIONS:
-					m.support.message += t(HelpMessages.HELP_MIGRATIONS)
-					break
-			}
-
-			if (!this.props.rundowns.length) {
-				m.support.message += t('Add rundowns by connecting a gateway.\n')
-			}
-
-			if (this.state.systemStatus) {
-				if (this.state.systemStatus.status === 'FAIL') {
-					m.support.message += t('Check system status messages.\n')
-				}
-			}
-
-			CoreSystem.update(core._id, { $set: m })
-		}
-	}
-
-	renderRundowns (list: RundownUI[]) {
-		return list.map((rundown) => (
-			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
-		))
-	}
-
-	componentWillMount () {
-		// Subscribe to data:
-		// TODO: make something clever here, to not load ALL the rundowns
 		this.subscribe(PubSub.rundowns, {})
 		this.subscribe(PubSub.studios, {})
 
@@ -323,6 +279,68 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				_id: { $in: showStyleVariantIds }
 			})
 		})
+
+		this.autorun(() => {
+			let subsReady = this.subscriptionsReady()
+			if (subsReady !== this.state.subsReady) {
+				this.setState({
+					subsReady: subsReady
+				})
+			}
+		})
+	}
+
+	registerHelp (core: ICoreSystem) {
+		const { t } = this.props
+
+		const step = this.tooltipStep()
+
+		return <React.Fragment>
+			{ step === ToolTipStep.TOOLTIP_START_HERE ?
+				<ReactNotification actions={[
+					literal<NotificationAction>({
+						label: 'Enable',
+						action: () => {
+							window.location.assign('/?configure=1')
+						},
+						type: 'button'
+					})
+				]}>{t('Enable configuration mode by adding ?configure=1 to the address bar.')}</ReactNotification>
+				: undefined 
+			}
+			{ step === ToolTipStep.TOOLTIP_START_HERE || step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS ?
+				<ReactNotification actions={[
+					literal<NotificationAction>({
+						label: 'Go to migrations',
+						action: () => {
+							window.location.assign('/settings/tools/migration')
+						},
+						type: 'button'
+					})
+				]}>{t('You need to run migrations to set the system up for operation.')}</ReactNotification>
+				: undefined 
+			}
+			{/* !this.props.rundowns.length ?
+				<ReactNotification>{t('Add rundowns by connecting a gateway.')}</ReactNotification>
+				: undefined
+			*/}
+			{/* this.state.systemStatus && this.state.systemStatus.status === 'FAIL' ?
+				<ReactNotification>{t('Check system status messages.')}</ReactNotification>
+				: undefined
+			*/}
+		</React.Fragment>
+	}
+
+	renderRundowns (list: RundownUI[]) {
+		const { t } = this.props
+
+		return list.length > 0 ?
+			list.map((rundown) => (
+				<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
+			)) :
+			<tr>
+				<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>
+			</tr>
 	}
 
 	render () {
@@ -375,59 +393,62 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				<header className='mvs'>
 					<h1>{t('Rundowns')}</h1>
 				</header>
-				<div className='mod mvl'>
-					<table className='table system-status-table expando expando-tight'>
-						<thead>
-							<tr className='hl'>
-								<th className='c3'>
-									<Tooltip
-										overlay={t('Click on a rundown to control your studio')}
-										visible={getHelpMode()}
-										placement='top'>
-										<span>{t('Rundown')}</span>
-									</Tooltip>
-								</th>
-								<th className='c2'>
-									{t('Studio')}
-								</th>
-								<th className='c2'>
-									{t('Show style')}
-								</th>
-								<th className='c2'>
-									{t('Created')}
-								</th>
-								<th className='c2'>
-									{t('On Air Start Time')}
-								</th>
-								<th className='c1'>
-									{t('Duration')}
-								</th>
-								<th className='c1'>
-									{t('Status')}
-								</th>
-								<th className='c1'>
-									{t('Air Status')}
-								</th>
-								<th className='c1'>
-									&nbsp;
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.renderRundowns(synced)}
-						</tbody>
-						{unsynced.length > 0 && <tbody>
-							<tr className='hl'>
-								<th colSpan={8} className='pvn phn'>
-									<h2 className='mtm mbs mhn'>{t('Unsynced from MOS')}</h2>
-								</th>
-							</tr>
-						</tbody>}
-						<tbody>
-							{this.renderRundowns(unsynced)}
-						</tbody>
-					</table>
-				</div>
+				{ this.state.subsReady ?
+					<div className='mod mvl'>
+						<table className='table system-status-table expando expando-tight'>
+							<thead>
+								<tr className='hl'>
+									<th className='c3'>
+										<Tooltip
+											overlay={t('Click on a rundown to control your studio')}
+											visible={getHelpMode()}
+											placement='top'>
+											<span>{t('Rundown')}</span>
+										</Tooltip>
+									</th>
+									<th className='c2'>
+										{t('Studio')}
+									</th>
+									<th className='c2'>
+										{t('Show style')}
+									</th>
+									<th className='c2'>
+										{t('Created')}
+									</th>
+									<th className='c2'>
+										{t('On Air Start Time')}
+									</th>
+									<th className='c1'>
+										{t('Duration')}
+									</th>
+									<th className='c1'>
+										{t('Status')}
+									</th>
+									<th className='c1'>
+										{t('Air Status')}
+									</th>
+									<th className='c1'>
+										&nbsp;
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{this.renderRundowns(synced)}
+							</tbody>
+							{unsynced.length > 0 && <tbody>
+								<tr className='hl'>
+									<th colSpan={8} className='pvn phn'>
+										<h2 className='mtm mbs mhn'>{t('Unsynced from MOS')}</h2>
+									</th>
+								</tr>
+							</tbody>}
+							{unsynced.length > 0 && <tbody>
+								{this.renderRundowns(unsynced)}
+							</tbody>}
+						</table>
+					</div> :
+					<Spinner />
+				}
 			</div>
 			<div className='mtl gutter version-info'>
 				<p>
