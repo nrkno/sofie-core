@@ -126,7 +126,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 	scrollToCurrent () {
-		const current = document.querySelector('.prompter .current')
+		const current = document.querySelector('.prompter .current') || document.querySelector('.prompter .next')
 		
 		if (current) {
 			Velocity(current, "scroll", { duration: 400, easing: "ease-in" })
