@@ -143,7 +143,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const anchors = this.listAnchorPositions(-1, 10)
 
 		const target = anchors[anchors.length - 2] || anchors[0]
-		console.log(target)
 
 		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
 	}
@@ -151,7 +150,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const anchors = this.listAnchorPositions(0, -1)
 
 		const target = anchors[1]
-		console.log(target)
 
 		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
 	}

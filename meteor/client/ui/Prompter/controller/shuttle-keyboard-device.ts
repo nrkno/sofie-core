@@ -77,8 +77,6 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					break
 			}
 
-			console.log(e.code)
-
 			// buttons
 			if (e.shiftKey) {
 				switch (e.code) {
