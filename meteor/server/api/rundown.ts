@@ -89,6 +89,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
  * @param segmentIds The Segment ids to be removed
  */
 export function removeSegments (rundownId: string, segmentIds: string[]): number {
+	logger.debug('removeSegments', rundownId, segmentIds)
 	const count = Segments.remove({
 		_id: { $in: segmentIds },
 		rundownId: rundownId
