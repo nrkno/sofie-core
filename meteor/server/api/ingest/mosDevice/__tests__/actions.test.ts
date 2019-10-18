@@ -22,7 +22,7 @@ describe('Test sending mos actions', () => { // TODO - these tests are strangely
 	let device: PeripheralDevice
 	let observer: Meteor.LiveQueryHandle | null = null
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 	})
 	afterEach(() => {
 		if (observer != null) {

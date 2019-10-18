@@ -17,7 +17,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	let externalId = 'abcde'
 	let segExternalId = 'zyxwv'
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 	})
 
 	testInFiber('dataRundownCreate', () => {

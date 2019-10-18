@@ -33,8 +33,11 @@ import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
-const MINIMUM_TAKE_SPAN = 1000
-
+let MINIMUM_TAKE_SPAN = 1000
+export function setMinimumTakeSpan (span: number) {
+	// Used in tests
+	MINIMUM_TAKE_SPAN = span
+}
 /*
 	The functions in this file are used to provide a pre-check, before calling the real functions.
 	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.
@@ -267,7 +270,7 @@ export function pieceSetInOutPoints (rundownPlaylistId: string, partId: string, 
 
 	const partCache = IngestDataCache.findOne({
 		rundownId: rundown._id,
-		partId: part.externalId,
+		partId: part._id,
 		type: IngestCacheType.PART
 	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)

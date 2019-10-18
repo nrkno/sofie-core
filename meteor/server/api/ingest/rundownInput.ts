@@ -22,7 +22,10 @@ import {
 	literal,
 	sumChanges,
 	anythingChanged,
-	ReturnType
+	ReturnType,
+	asyncCollectionUpsert,
+	asyncCollectionUpdate,
+	waitForPromise
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -38,7 +41,7 @@ import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
+import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
 import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -59,6 +62,18 @@ export function rundownSyncFunction<T extends Function> (rundownId: string, prio
 }
 
 export namespace RundownInput {
+	// Get info on the current rundowns from this device:
+	export function dataRundownList (self: any, deviceId: string, deviceToken: string) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRundownList')
+		return listIngestRundowns(peripheralDevice)
+	}
+	export function dataRundownGet (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRundownGet', rundownExternalId)
+		check(rundownExternalId, String)
+		return getIngestRundown(peripheralDevice, rundownExternalId)
+	}
 	// Delete, Create & Update Rundown (and it's contents):
 	export function dataRundownDelete (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
@@ -125,6 +140,25 @@ export namespace RundownInput {
 		check(ingestPart, Object)
 		handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
 	}
+}
+
+function getIngestRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
+	const rundown = Rundowns.findOne({
+		peripheralDeviceId: peripheralDevice._id,
+		externalId: rundownExternalId
+	})
+	if (!rundown) {
+		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+	}
+
+	return loadCachedRundownData(rundown._id, rundown.externalId)
+}
+function listIngestRundowns (peripheralDevice: PeripheralDevice): string[] {
+	const rundowns = Rundowns.find({
+		peripheralDeviceId: peripheralDevice._id
+	}).fetch()
+
+	return rundowns.map(r => r.externalId)
 }
 
 export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
@@ -266,8 +300,11 @@ function updateRundownFromIngestData (
 		_id: dbRundownData._id
 	}, [dbRundownData], {
 		beforeInsert: (o) => {
-			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
+			o.created = getCurrentTime()
+			o.previousPartId = null
+			o.currentPartId = null
+			o.nextPartId = null
 			return o
 		},
 		beforeUpdate: (o) => {
@@ -375,6 +412,15 @@ function updateRundownFromIngestData (
 		saveIntoDb<Part, DBPart>(Parts, {
 			rundownId: rundownId,
 		}, parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundownId, parts)
 			}
@@ -527,10 +573,24 @@ function updateSegmentFromIngestData (
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
 
-	Segments.upsert({
-		_id: segmentId,
-		rundownId: rundown._id
-	}, newSegment)
+	waitForPromise(Promise.all([
+
+		// Update segment info:
+		asyncCollectionUpsert(Segments, {
+			_id: segmentId,
+			rundownId: rundown._id
+		}, newSegment),
+
+		// Move over parts from other segments:
+		asyncCollectionUpdate(Parts, {
+			rundownId: rundown._id,
+			segmentId: { $ne: segmentId },
+			dynamicallyInserted: { $ne: true },
+			_id: { $in: _.pluck(parts, '_id') }
+		}, { $set: {
+			segmentId: segmentId
+		}})
+	]))
 
 	const changes = sumChanges(
 		saveIntoDb<Part, DBPart>(Parts, {
@@ -538,6 +598,15 @@ function updateSegmentFromIngestData (
 			segmentId: segmentId,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted parts (such as adLib parts)
 		}, parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundown._id, parts)
 			}
@@ -567,10 +636,10 @@ function updateSegmentFromIngestData (
 				logger.debug(adLibPiece)
 			},
 			afterUpdate (adLibPiece) {
-				logger.debug('updated piece ' + adLibPiece._id)
+				logger.debug('updated adLibPiece ' + adLibPiece._id)
 			},
 			afterRemove (adLibPiece) {
-				logger.debug('deleted piece ' + adLibPiece._id)
+				logger.debug('deleted adLibPiece ' + adLibPiece._id)
 			}
 		})
 	)
@@ -666,25 +735,9 @@ function generateSegmentContents (
 	}))
 
 	// Ensure all parts have a valid externalId set on them
-	const expectedPartIds = ingestSegment.parts.map(p => p.externalId)
-	const unknownParts = blueprintRes.parts.filter(p => expectedPartIds.indexOf(p.part.externalId) === -1)
-	const knownParts = blueprintRes.parts.filter(p => expectedPartIds.indexOf(p.part.externalId) !== -1)
+	const knownPartIds = blueprintRes.parts.map(p => p.part.externalId)
 
-	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || expectedPartIds.indexOf(note.origin.partId) === -1)
-
-	if (unknownParts.length > 0) {
-		const unknownIds = unknownParts.map(p => p.part.externalId).join(', ')
-		logger.warn(`Dropping some parts with unknown externalId: ${unknownIds}`)
-		segmentNotes.push({
-			type: NoteType.WARNING,
-			message: `Dropping parts with unknown externalId: ${unknownIds}`,
-			origin: {
-				name: 'ingest',
-				rundownId: rundownId,
-				segmentId: segmentId,
-			}
-		})
-	}
+	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || knownPartIds.indexOf(note.origin.partId) === -1)
 
 	const newSegment = literal<DBSegment>({
 		...(existingSegment || {}),
@@ -701,10 +754,8 @@ function generateSegmentContents (
 	const adlibPieces: AdLibPiece[] = []
 
 	// Parts
-	for (let blueprintPart of knownParts) {
+	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
-		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
-		// TODO - this loop needs to handle virtual parts properly
 
 		const notes = _.filter(allNotes, note => note.origin.partId === blueprintPart.part.externalId)
 		_.each(notes, note => note.origin.partId = partId)
@@ -716,7 +767,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank, // This gets updated to a rundown unique rank as a later step
+			_rank: i, // This gets updated to a rundown unique rank as a later step
 			notes: notes,
 		})
 		parts.push(part)
@@ -727,7 +778,7 @@ function generateSegmentContents (
 
 		const adlibs = postProcessAdLibPieces(context.rundown.playlistId, context, blueprintPart.adLibPieces, blueprintId, part._id)
 		adlibPieces.push(...adlibs)
-	}
+	})
 
 	return {
 		newSegment,

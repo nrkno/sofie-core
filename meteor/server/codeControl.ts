@@ -61,9 +61,10 @@ function getFunctionName<T extends Function> (parent: Function, fcn: T): string 
  * @param timeout (Optional)
  */
 export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout: number = 10000, priority: number = 1): T {
-
 	let id1 = Random.id()
-
+	return syncFunctionInner(id1, fcn, id0, timeout, priority)
+}
+function syncFunctionInner<T extends Function> (id1: string, fcn: T, id0?: string, timeout: number = 10000, priority: number = 1): T {
 	return Meteor.wrapAsync((...args0: any[]) => {
 
 		let args = args0.slice(0,-1)
@@ -82,7 +83,6 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 		)
 		const name = getFunctionName(this, fcn)
 		logger.debug(`syncFunction: ${id} (${name})`)
-
 		syncFunctionFcns.push({
 			id: id,
 			fcn: fcn,
@@ -160,21 +160,24 @@ function isFunctionQueued (id: string): boolean {
 	return !!queued
 }
 /**
- * like syncFunction, but ignores subsequent, if there is a function queued to be executed already
+ * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already
  * @param fcn
  * @param timeout
  */
+export function syncFunctionIgnore<A> (fcn: (a: A) => any, id0?: string, timeout?: number): (a: A) => void
+export function syncFunctionIgnore<A, B> (fcn: (a: A, b: B) => any, id0?: string, timeout?: number): (a: A, b: B) => void
+export function syncFunctionIgnore<A, B, C> (fcn: (a: A, b: B, c: C) => any, id0?: string, timeout?: number): (a: A, b: B, c: C) => void
+export function syncFunctionIgnore<A, B, C, D> (fcn: (a: A, b: B, c: C, d: D) => any, id0?: string, timeout?: number): (a: A, b: B, c: C, d: D) => void
 export function syncFunctionIgnore<T extends Function> (fcn: T, id0?: string, timeout: number = 10000): () => void {
 	let id1 = Random.id()
 
-	let syncFcn = syncFunction(fcn, id0, timeout)
+	let syncFcn = syncFunctionInner(id1, fcn, id0, timeout)
 
 	return (...args) => {
 		let id = (id0 ?
 			getId(id0, args) :
 			getHash(id1 + JSON.stringify(args.join()))
 		)
-
 		if (isFunctionQueued(id)) {
 			// If it's queued, its going to be run some time in the future
 			// Do nothing then...

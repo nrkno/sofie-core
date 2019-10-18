@@ -181,6 +181,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
  * @param segmentIds The Segment ids to be removed
  */
 export function removeSegments (rundownId: string, segmentIds: string[]): number {
+	logger.debug('removeSegments', rundownId, segmentIds)
 	const count = Segments.remove({
 		_id: { $in: segmentIds },
 		rundownId: rundownId

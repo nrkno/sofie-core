@@ -35,6 +35,9 @@ methods[PlayoutAPI.methods.rundownTogglePartArgument] = (rundownId: string, part
 methods[PlayoutAPI.methods.rundownSetNext] = (rundownId: string, partId: string, timeOffset?: number | undefined) => {
 	return ServerPlayoutAPI.setNextPart(rundownId, partId, true, timeOffset)
 }
+methods[PlayoutAPI.methods.rundownMoveNext] = (rundownId: string, horisontalDelta: number, verticalDelta: number) => {
+	return ServerPlayoutAPI.moveNextPart(rundownId, horisontalDelta, verticalDelta, true)
+}
 methods[PlayoutAPI.methods.rundownActivateHold] = (rundownId: string) => {
 	return ServerPlayoutAPI.activateHold(rundownId)
 }

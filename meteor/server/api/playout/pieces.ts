@@ -37,7 +37,6 @@ export interface PieceResolved extends Piece {
 	resolved: boolean
 }
 export function orderPieces (pieces: Piece[], partId: string, partStarted?: number): Array<PieceResolved> {
-	const now = getCurrentTime()
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(i => itemMap[i._id] = i)
@@ -108,6 +107,10 @@ export function orderPieces (pieces: Piece[], partId: string, partStarted?: numb
 
 	return resolvedPieces
 }
+/**
+ * Returns a list of the pieces in a Part, ordered in the order they will be played
+ * @param part
+ */
 export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	const pieces = part.getAllPieces()
 	const partStarted = part.getLastStartedPlayback()

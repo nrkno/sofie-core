@@ -37,8 +37,13 @@ import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
-import { literal } from '../../lib/lib'
+import { literal, getCurrentTime } from '../../lib/lib'
 import { TSRTimelineObjBase } from 'timeline-state-resolver-types'
+import { Rundown, DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { DBSegment, Segments } from '../../lib/collections/Segments'
+import { DBPart, Parts } from '../../lib/collections/Parts'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
+import { RundownAPI } from '../../lib/api/rundown'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -336,8 +341,19 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 
 	return uploadBlueprint(blueprintId, code, blueprintName)
 }
+export interface DefaultEnvironment {
+	showStyleBaseId: string
+	showStyleVariantId: string
+	studioBlueprint: Blueprint
+	showStyleBlueprint: Blueprint
+	showStyleBase: ShowStyleBase
+	showStyleVariant: ShowStyleVariant
+	studio: Studio
+	core: ICoreSystem
 
-export function setupDefaultStudioEnvironment () {
+	ingestDevice: PeripheralDevice
+}
+export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 
 	const core = setupMockCore({})
 
@@ -354,7 +370,7 @@ export function setupDefaultStudioEnvironment () {
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId]
 	})
-	const device = setupMockPeripheralDevice(
+	const ingestDevice = setupMockPeripheralDevice(
 		PeripheralDeviceAPI.DeviceCategory.INGEST,
 		PeripheralDeviceAPI.DeviceType.MOS,
 		PeripheralDeviceAPI.SUBTYPE_PROCESS,
@@ -370,8 +386,173 @@ export function setupDefaultStudioEnvironment () {
 		showStyleVariant,
 		studio,
 		core,
-		device
+		ingestDevice
 	}
+}
+export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: string): string {
+	const rundown: DBRundown = {
+
+		peripheralDeviceId: env.ingestDevice._id,
+		studioId: env.studio._id,
+		showStyleBaseId: env.showStyleBase._id,
+		showStyleVariantId: env.showStyleVariant._id,
+
+
+		_id: rundownId0 || Random.id(),
+		externalId: 'MOCK_EXTERNAL_ID',
+		name: 'Default Rundown',
+
+		created: getCurrentTime(),
+		modified: getCurrentTime(),
+		importVersions: {
+			studio: '',
+			showStyleBase: '',
+			showStyleVariant: '',
+			blueprint: '',
+			core: ''
+		},
+
+		active: false,
+		rehearsal: false,
+		currentPartId: null,
+		nextPartId: null,
+		previousPartId: null,
+
+		dataSource: 'mock'
+	}
+	const rundownId = Rundowns.insert(rundown)
+
+	const segment0: DBSegment = {
+		_id: rundownId + '_segment0',
+		_rank: 0,
+		externalId: 'MOCK_SEGMENT_0',
+		rundownId: rundown._id,
+		name: 'Segment 0'
+	}
+	Segments.insert(segment0)
+	/* tslint:disable:ter-indent*/
+	//
+		const part00: DBPart = {
+			_id: rundownId + '_part0_0',
+			segmentId: segment0._id,
+			rundownId: rundown._id,
+			_rank: 0,
+			externalId: 'MOCK_PART_0_0',
+			title: 'Part 0 0',
+			typeVariant: '',
+
+			duration: 20
+		}
+		Parts.insert(part00)
+
+			const piece000: Piece = {
+				_id: rundownId + '_piece000',
+				externalId: 'MOCK_PIECE_000',
+				rundownId: rundown._id,
+				partId: part00._id,
+				name: 'Piece 000',
+				status: RundownAPI.PieceStatusCode.OK,
+				enable: {
+					start: 0
+				},
+				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+				outputLayerId: env.showStyleBase.outputLayers[0]._id
+			}
+			Pieces.insert(piece000)
+
+			const piece001: Piece = {
+				_id: rundownId + '_piece001',
+				externalId: 'MOCK_PIECE_001',
+				rundownId: rundown._id,
+				partId: part00._id,
+				name: 'Piece 001',
+				status: RundownAPI.PieceStatusCode.OK,
+				enable: {
+					start: 0
+				},
+				sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+				outputLayerId: env.showStyleBase.outputLayers[0]._id
+			}
+			Pieces.insert(piece001)
+
+		const part01: DBPart = {
+			_id: rundownId + '_part0_1',
+			segmentId: segment0._id,
+			rundownId: segment0.rundownId,
+			_rank: 1,
+			externalId: 'MOCK_PART_0_1',
+			title: 'Part 0 1',
+			typeVariant: ''
+		}
+		Parts.insert(part01)
+
+			const piece010: Piece = {
+				_id: rundownId + '_piece010',
+				externalId: 'MOCK_PIECE_010',
+				rundownId: rundown._id,
+				partId: part00._id,
+				name: 'Piece 010',
+				status: RundownAPI.PieceStatusCode.OK,
+				enable: {
+					start: 0
+				},
+				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+				outputLayerId: env.showStyleBase.outputLayers[0]._id
+			}
+			Pieces.insert(piece010)
+
+	const segment1: DBSegment = {
+		_id: rundownId + '_segment1',
+		_rank: 1,
+		externalId: 'MOCK_SEGMENT_2',
+		rundownId: rundown._id,
+		name: 'Segment 1'
+	}
+	Segments.insert(segment1)
+
+		const part10: DBPart = {
+			_id: rundownId + '_part1_0',
+			segmentId: segment0._id,
+			rundownId: segment0.rundownId,
+			_rank: 10,
+			externalId: 'MOCK_PART_1_0',
+			title: 'Part 1 0',
+			typeVariant: ''
+		}
+		Parts.insert(part10)
+
+		const part11: DBPart = {
+			_id: rundownId + '_part1_1',
+			segmentId: segment0._id,
+			rundownId: segment0.rundownId,
+			_rank: 11,
+			externalId: 'MOCK_PART_1_1',
+			title: 'Part 1 1',
+			typeVariant: ''
+		}
+		Parts.insert(part11)
+
+		const part12: DBPart = {
+			_id: rundownId + '_part1_2',
+			segmentId: segment0._id,
+			rundownId: segment0.rundownId,
+			_rank: 12,
+			externalId: 'MOCK_PART_1_2',
+			title: 'Part 1 2',
+			typeVariant: ''
+		}
+		Parts.insert(part12)
+
+	const segment2: DBSegment = {
+		_id: rundownId + '_segment2',
+		_rank: 2,
+		externalId: 'MOCK_SEGMENT_2',
+		rundownId: rundown._id,
+		name: 'Segment 2'
+	}
+	Segments.insert(segment2)
+
+	return rundownId
 }
 
 // const studioBlueprint
