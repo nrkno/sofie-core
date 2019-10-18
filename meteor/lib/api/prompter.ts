@@ -33,17 +33,22 @@ export namespace PrompterAPI {
 			lines: []
 		}
 
+		const piecesIncluded: string[] = []
+
 		_.each(parts, (part: Part) => {
 			let hasSentInThisLine = false
 
 			_.each(part.getAllPieces(), (piece) => {
 
 				if (
-					piece.content &&
-					piece.content.fullScript
+					piece.content
 				) {
 					const content = piece.content as ScriptContent
 					if (content.fullScript) {
+						if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
+							return // piece already included in prompter script
+						}
+						piecesIncluded.push(piece.continuesRefId || piece._id)
 						data.lines.push({
 							text: content.fullScript,
 							segmentId: part.segmentId,
