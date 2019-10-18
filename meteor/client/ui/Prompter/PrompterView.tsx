@@ -151,6 +151,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		const target = anchors[1]
 
+
 		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
 	}
 	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
@@ -349,6 +350,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		prompterData
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
+	private _scrollAnchor: [number, Element] | undefined
 
 	constructor (props) {
 		super(props)
@@ -366,6 +368,38 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
 		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownId })
 
+	}
+
+	UNSAFE_componentWillUpdate () {
+		// TODO: find an element to anchor to
+
+		let foundPositions: [number, Element][] = []
+		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+
+		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
+			const { top } = anchor.getBoundingClientRect()
+			if (top <= 10) foundPositions.push([top, anchor])
+		})
+
+		foundPositions = _.sortBy(foundPositions, v => 1 * v[0])
+
+		if (foundPositions.length > 0) {
+			this._scrollAnchor = foundPositions[foundPositions.length - 1]
+		}
+	}
+
+	componentDidUpdate () {
+		// TODO: Restore element's position
+
+		if (this._scrollAnchor) {
+			const { top } = this._scrollAnchor[1].getBoundingClientRect()
+			
+			window.scrollBy({
+				top: top - this._scrollAnchor[0]
+			})
+
+			this._scrollAnchor = undefined
+		}
 	}
 
 	renderPrompterData (prompterData: PrompterData) {
