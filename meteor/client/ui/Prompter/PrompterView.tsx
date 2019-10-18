@@ -49,16 +49,7 @@ interface IState {
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	isMounted0: boolean = false
-	animatePreviousTime: number = 0
-
-	scrollDirection: number = 0
-	scrollSpeed: number = window.innerHeight * 2 // px per second
-	scrollSpeedMultiplier: number = 1
-
 	autoScrollPreviousPartId: string | null = null
-
-	scrollDirection2: number = 0
 
 	autorun0: Tracker.Computation | undefined
 
@@ -148,21 +139,40 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			Velocity(next, "scroll", { duration: 400, easing: "ease-in" })
 		}
 	}
-	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
-		let foundPositions: number[] = []
+	scrollToPrevious () {
+		const anchors = this.listAnchorPositions(-1, 10)
+
+		const target = anchors[anchors.length - 2] || anchors[0]
+		console.log(target)
+
+		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
+	}
+	scrollToFollowing () {
+		const anchors = this.listAnchorPositions(0, -1)
+
+		const target = anchors[1]
+		console.log(target)
+
+		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
+	}
+	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
+		let foundPositions: [number, Element][] = []
 		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
 		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
 			const { top } = anchor.getBoundingClientRect()
 			if ((startY === -1 || top > startY) &&
 				(endY === -1 || top <= endY)) {
-				foundPositions.push(top)
+				foundPositions.push([top, anchor])
 			}
 		})
 
-		foundPositions = _.sortBy(foundPositions, v => sortDirection * v)
+		foundPositions = _.sortBy(foundPositions, v => sortDirection * v[0])
 
-		return foundPositions[0] || null
+		return foundPositions
+	}
+	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
+		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
 	}
 	onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
@@ -240,7 +250,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	componentDidMount () {
 		document.body.classList.add('dark', 'vertical-overflow-only')
 		window.addEventListener('scroll', this.onWindowScroll)
-		this.isMounted0 = true
 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
@@ -250,7 +259,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		document.body.classList.remove('dark', 'vertical-overflow-only')
 		window.removeEventListener('scroll', this.onWindowScroll)
-		this.isMounted0 = false
 	}
 
 	renderMessage (message: string) {
@@ -278,8 +286,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const { t } = this.props
 
 		return <React.Fragment>
-			{/* <NotificationCenterPanel /> */}
-
 			{
 				!this.state.subsReady ?
 					<div className='rundown-view rundown-view--loading' >

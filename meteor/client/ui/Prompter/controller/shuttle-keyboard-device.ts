@@ -77,13 +77,20 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					break
 			}
 
+			console.log(e.code)
+
 			// buttons
 			if (e.shiftKey) {
 				switch (e.code) {
-				case 'F9':
+					case 'PageUp':
+					case 'F9':
 						// jump to previous segment
 						speed = this._speedMap[0]
-						// @todo jan find the previous segment (if any) and jump there
+						this._prompterView.scrollToPrevious()
+						break
+					case 'PageDown':
+						speed = this._speedMap[0]
+						this._prompterView.scrollToFollowing()
 						break
 					case 'F10':
 						// jump to top
