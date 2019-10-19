@@ -15,12 +15,12 @@
 	background: rgba(0, 0, 0, 0.2);
 	border: 1px solid rgba(0,0,0,0.1);
 	border-radius: 5px;
-	padding: 10px;
-	margin: 10px;
+	padding: 0.625rem;
+	margin: 0.625rem;
 	user-select: none;
 
 	.dashboard-panel__header {
-		margin: 0 0 10px;
+		margin: 0 0 0.625rem;
 		padding: 0;
 		white-space: nowrap;
 		overflow: hidden;
@@ -37,11 +37,11 @@
 		}
 
 		display: flex;
-		padding: 10px 5px;
+		padding: 0.625rem 0.313rem;
 
 		> .adlib-panel__list-view__toolbar__filter {
 			flex: 2 2;
-			max-width: 25em;
+			max-width: 25rem;
 			position: relative;
 
 			> .adlib-panel__list-view__toolbar__filter__input {
@@ -101,14 +101,15 @@
   		align-items: flex-end;
 		position: relative;
 		background: #000;
+		border: none;
 		border-radius: 3px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: normal;
 		line-break: loose;
 		word-break: break-all;
-		width: 82px;
-		height: 72px;
+		width: 6.40625em;
+		height: 5.625em;
 		border: none;
 		margin: 4px;
 		vertical-align: top;
@@ -146,6 +147,11 @@
 				z-index: 10;
 				// animation: 2s button-flash normal infinite;
 			}
+		}
+
+		&:focus {
+			outline: none;
+			box-shadow: none;
 		}
 
 		&:active {

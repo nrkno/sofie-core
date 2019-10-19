@@ -46,8 +46,10 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-const BUTTON_GRID_WIDTH = 1
-const BUTTON_GRID_HEIGHT = 0.61803
+const BUTTON_GRID_WIDTH = 1.875
+const BUTTON_GRID_HEIGHT = 1.625
+const PANEL_MARGIN_WIDTH = 0.938
+const PANEL_MARGIN_HEIGHT = 2.750
 
 interface IDashboardPanelProps {
 	searchFilter?: string | undefined
@@ -345,30 +347,30 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 					<div className='dashboard-panel'
 						style={{
 							width: filter.width >= 0 ?
-								(filter.width * BUTTON_GRID_WIDTH) + 'vw' :
+								((filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH) + 'em' :
 								undefined,
 							height: filter.height >= 0 ?
-								(filter.height * BUTTON_GRID_HEIGHT) + 'vw' :
+								((filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT) + 'em' :
 								undefined,
 							left: filter.x >= 0 ?
-								(filter.x * BUTTON_GRID_WIDTH) + 'vw' :
+								(filter.x * BUTTON_GRID_WIDTH) + 'em' :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'em' :
 									undefined,
 							top: filter.y >= 0 ?
-								(filter.y * BUTTON_GRID_HEIGHT) + 'vw' :
+								(filter.y * BUTTON_GRID_HEIGHT) + 'em' :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'em' :
 									undefined,
 							right: filter.x < 0 ?
-								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) + 'em' :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'em' :
 									undefined,
 							bottom: filter.y < 0 ?
-								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) + 'em' :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'em' :
 									undefined
 						}}
 					>
