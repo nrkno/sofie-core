@@ -50,8 +50,8 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
-import { RundownPlaylists, RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists';
-import { Mongo } from 'meteor/mongo';
+import { RundownPlaylists, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Mongo } from 'meteor/mongo'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -302,9 +302,6 @@ function updateRundownFromIngestData (
 		beforeInsert: (o) => {
 			o.modified = getCurrentTime()
 			o.created = getCurrentTime()
-			o.previousPartId = null
-			o.currentPartId = null
-			o.nextPartId = null
 			return o
 		},
 		beforeUpdate: (o) => {
@@ -321,6 +318,9 @@ function updateRundownFromIngestData (
 		beforeInsert: (o) => {
 			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
+			o.previousPartId = null
+			o.currentPartId = null
+			o.nextPartId = null
 			return o
 		},
 		beforeUpdate: (o) => {
