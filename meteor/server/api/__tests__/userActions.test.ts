@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundown } from '../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { setMinimumTakeSpan } from '../userActions'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 namespace UserActionAPI { // Using our own method definition, to catch external API changes
 	export enum methods {
@@ -62,35 +63,47 @@ describe('User Actions', () => {
 		setMinimumTakeSpan(0)
 	})
 	testInFiber('Basic rundown control', () => {
-		const rundownId0 = setupDefaultRundown(env)
-		const rundownId1 = setupDefaultRundown(env)
+		const {
+			rundownId: rundownId0,
+			playlistId: playlistId0
+		} = setupDefaultRundownPlaylist(env)
+		const {
+			rundownId: rundownId1,
+			playlistId: playlistId1
+		} = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()
 		expect(rundownId1).toBeTruthy()
+		expect(playlistId0).toBeTruthy()
+		expect(playlistId1).toBeTruthy()
 
 
 		const getRundown0 = () => {
 			return Rundowns.findOne(rundownId0) as Rundown
+		}
+		const getPlaylist0 = () => {
+			return RundownPlaylists.findOne(playlistId0)
 		}
 		const getRundown1 = () => {
 			return Rundowns.findOne(rundownId1) as Rundown
 		}
 
 		expect(getRundown0()).toBeTruthy()
+		expect(getPlaylist0()).toBeTruthy()
 		expect(getRundown1()).toBeTruthy()
 		expect(getRundown0()._id).not.toEqual(getRundown1()._id)
 
 		const parts = getRundown0().getParts()
 
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			active: false,
 			rehearsal: false
 		})
 
 		// Prepare and activate in rehersal:
 		expect(
-			Meteor.call(UserActionAPI.methods.prepareForBroadcast, rundownId0)
+			Meteor.call(UserActionAPI.methods.prepareForBroadcast, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			active: true,
 			rehearsal: true,
 			currentPartId: null,
@@ -98,7 +111,7 @@ describe('User Actions', () => {
 		})
 		// Activate a second rundown (this should throw an error)
 		expect(
-			Meteor.call(UserActionAPI.methods.activate, rundownId1)
+			Meteor.call(UserActionAPI.methods.activate, playlistId1)
 		).toMatchObject({
 			error: 409,
 			message: expect.stringMatching(/only one rundown/i)
@@ -107,88 +120,88 @@ describe('User Actions', () => {
 
 		// Take the first Part:
 		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
+			Meteor.call(UserActionAPI.methods.take, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[0]._id,
 			nextPartId: parts[1]._id,
 		})
 
 		// Take the second Part:
 		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
+			Meteor.call(UserActionAPI.methods.take, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[1]._id,
 			nextPartId: parts[2]._id,
 		})
 		// Reset rundown:
 		expect(
-			Meteor.call(UserActionAPI.methods.resetRundown, rundownId0)
+			Meteor.call(UserActionAPI.methods.resetRundown, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: null,
 			nextPartId: parts[0]._id,
 		})
 
 		// Set Part as next:
 		expect(
-			Meteor.call(UserActionAPI.methods.setNext, rundownId0, parts[parts.length - 2]._id)
+			Meteor.call(UserActionAPI.methods.setNext, playlistId0, parts[parts.length - 2]._id)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: null,
 			nextPartId: parts[parts.length - 2]._id,
 		})
 
 		// Take the Nexted Part:
 		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
+			Meteor.call(UserActionAPI.methods.take, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[parts.length - 2]._id,
 			nextPartId: parts[parts.length - 1]._id,
 		})
-
+		console.log('-------------------')
 		// Take the last Part:
 		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
+			Meteor.call(UserActionAPI.methods.take, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[parts.length - 1]._id,
 			nextPartId: null
 		})
 
 		// Move the next-point backwards:
 		expect(
-			Meteor.call(UserActionAPI.methods.moveNext, rundownId0, -1, 0)
+			Meteor.call(UserActionAPI.methods.moveNext, playlistId0, -1, 0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[parts.length - 1]._id,
 			nextPartId: parts[parts.length - 2]._id
 		})
 		// Move the next-point backwards:
 		expect(
-			Meteor.call(UserActionAPI.methods.moveNext, rundownId0, -1, 0)
+			Meteor.call(UserActionAPI.methods.moveNext, playlistId0, -1, 0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[parts.length - 1]._id,
 			nextPartId: parts[parts.length - 3]._id
 		})
 
 		// Take the nexted Part:
 		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
+			Meteor.call(UserActionAPI.methods.take, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			currentPartId: parts[parts.length - 3]._id,
 			nextPartId: parts[parts.length - 2]._id,
 		})
 
 		// Deactivate rundown:
 		expect(
-			Meteor.call(UserActionAPI.methods.deactivate, rundownId0)
+			Meteor.call(UserActionAPI.methods.deactivate, playlistId0)
 		).toMatchObject({ success: 200 })
-		expect(getRundown0()).toMatchObject({
+		expect(getPlaylist0()).toMatchObject({
 			active: false,
 			currentPartId: null,
 			nextPartId: null

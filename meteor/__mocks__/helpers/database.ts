@@ -44,6 +44,7 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
+import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -389,7 +390,30 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 		ingestDevice
 	}
 }
-export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: string): string {
+export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0?: string): { rundownId: string, playlistId: string } {
+
+	const rundownId = rundownId0 || Random.id()
+
+	const playlist: DBRundownPlaylist = {
+
+		_id: 'playlist_' + rundownId,
+
+		externalId: 'MOCK_RUNDOWNPLAYLIST',
+		peripheralDeviceId: env.ingestDevice._id,
+		studioId: env.studio._id,
+
+		name: 'Default RundownPlaylist',
+		created: getCurrentTime(),
+		modified: getCurrentTime(),
+
+		active: false,
+		rehearsal: false,
+		currentPartId: null,
+		nextPartId: null,
+		previousPartId: null,
+	}
+	const playlistId = RundownPlaylists.insert(playlist)
+
 	const rundown: DBRundown = {
 
 		peripheralDeviceId: env.ingestDevice._id,
@@ -397,9 +421,12 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
 
+		playlistId: playlistId,
+		_rank: 0,
 
-		_id: rundownId0 || Random.id(),
-		externalId: 'MOCK_EXTERNAL_ID',
+
+		_id: rundownId,
+		externalId: 'MOCK_RUNDOWN',
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),
@@ -412,15 +439,9 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 			core: ''
 		},
 
-		active: false,
-		rehearsal: false,
-		currentPartId: null,
-		nextPartId: null,
-		previousPartId: null,
-
 		dataSource: 'mock'
 	}
-	const rundownId = Rundowns.insert(rundown)
+	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {
 		_id: rundownId + '_segment0',
@@ -552,7 +573,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 	}
 	Segments.insert(segment2)
 
-	return rundownId
+	return { rundownId, playlistId }
 }
 
 // const studioBlueprint

@@ -15,6 +15,7 @@ import { UpdateNext } from '../../updateNext'
 import { mockupCollection } from '../../../../../__mocks__/helpers/lib'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
+import { RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 jest.mock('../../updateNext')
 
 require('../api.ts') // include in order to create the Meteor methods needed
@@ -43,7 +44,7 @@ describe('Test recieved mos ingest payloads', () => {
 		device = setupDefaultStudioEnvironment().ingestDevice
 	})
 
-	testInFiber('mosRoCreate', () => {
+	testInFiberOnly('mosRoCreate', () => {
 		// setLoggerLevel('debug')
 
 		expect(Rundowns.findOne()).toBeFalsy()
@@ -61,6 +62,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(getPartIdMap(segments, parts)).toEqual(mockRO.segmentIdMap())
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -91,6 +93,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(getPartIdMap(segments, parts)).toEqual(partMap2)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -105,6 +108,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(Rundowns.findOne()).toBeFalsy()
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -144,6 +148,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 		expect(rundown.status).toEqual(newStatus.toString())
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -187,6 +192,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 		expect(rundown.airStatus).toEqual(newStatus.toString())
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -234,6 +240,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(part).toBeTruthy()
 		expect(part.status).toEqual(newStatus.toString())
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -310,6 +317,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts.splice(2, 0, newPartData.ID.toString())
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -346,6 +354,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[4].segment = 'XF9ZBDI5IouvkmTbounEfoJ6ijY_'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -447,6 +456,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[1] = newPartData.ID.toString()
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -503,6 +513,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap.splice(2, 2)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -548,6 +559,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(part).toBeTruthy()
 		expect(part.metaData).toEqual(story)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -615,6 +627,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[2] = 'ro1;s1;p2'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -647,6 +660,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[2] = 'ro1;s1;p1'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -722,6 +736,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap.splice(3, 1)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -747,6 +762,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		// Don't care about the result here, just making sure there isnt an exception while updating the db
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -778,6 +794,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[2] = 'ro1;s1;p2'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
@@ -813,6 +830,7 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap.splice(3, 0, ...old)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
+		// expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
 		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
