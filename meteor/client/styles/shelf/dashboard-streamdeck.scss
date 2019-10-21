@@ -4,6 +4,11 @@
 	   screen and (width: 768px) and (height: 384px),
 	   /** Stream Deck Mini, button size 80px */
 	   screen and (width: 240px) and (height: 160px) {
+
+	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport {
+		background: #000;
+	}
+
 	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport > .dashboard {
 		top: 0;
 		left: 0;
@@ -14,6 +19,7 @@
 		.dashboard-panel {
 			padding: 0;
 			margin: 0;
+			background: #252627;
 			
 			.dashboard-panel__header {
 				display: none;
