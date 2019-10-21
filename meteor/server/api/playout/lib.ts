@@ -23,7 +23,7 @@ import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { MongoSelector } from '../../../lib/typings/meteor';
+import { MongoSelector } from '../../../lib/typings/meteor'
 
 /**
  * Reset the rundown:
@@ -46,15 +46,15 @@ export function resetRundown (rundown: Rundown) {
 	Parts.update({
 		rundownId: rundown._id
 	}, {
-			$unset: {
-				duration: 1,
-				previousPartEndState: 1,
-				startedPlayback: 1,
-				timings: 1,
-				runtimeArguments: 1,
-				stoppedPlayback: 1
-			}
-		}, { multi: true })
+		$unset: {
+			duration: 1,
+			previousPartEndState: 1,
+			startedPlayback: 1,
+			timings: 1,
+			runtimeArguments: 1,
+			stoppedPlayback: 1
+		}
+	}, { multi: true })
 
 	const dirtyParts = Parts.find({
 		rundownId: rundown._id,

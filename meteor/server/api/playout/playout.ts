@@ -308,9 +308,7 @@ export namespace ServerPlayoutAPI {
 			)
 
 			let nextPart: DBPart | null = partAfter || null
-			// const rundown = rundownData.rundownsMap[takePart.rundownId]
 
-			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
 
 
@@ -926,15 +924,15 @@ export namespace ServerPlayoutAPI {
 
 						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						const rundownChange = {
+						const playlistChange = {
 							previousPartId: null,
 							currentPartId: playingPart._id,
 						}
 
 						RundownPlaylists.update(playlist._id, {
-							$set: rundownChange
+							$set: playlistChange
 						})
-						_.extend(playlist, rundownChange) as Rundown
+						playlist = _.extend(playlist, playlistChange)
 						libSetNextPart(playlist, nextPart)
 
 						logger.error(`Part "${playingPart._id}" has started playback by the playout gateway, but has not been selected for playback!`)
@@ -1253,7 +1251,7 @@ export namespace ServerPlayoutAPI {
 	}
 }
 
-function beforeTake(rundownData: RundownPlaylistData, currentPart: Part | null, nextPart: Part) {
+function beforeTake (rundownData: RundownPlaylistData, currentPart: Part | null, nextPart: Part) {
 	if (currentPart) {
 		const adjacentPart = _.find(rundownData.parts, (part) => {
 			return (
