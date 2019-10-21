@@ -293,46 +293,6 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		})
 	}
 
-	renderRundowns (list: RundownPlaylistUi[]) {
-		return list.map((rundown) => (
-			<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
-		))
-	}
-
-	registerHelp (core: ICoreSystem) {
-		const { t } = this.props
-
-		if (core.support) {
-			let m = {
-				support: {
-					message: ''
-				}
-			}
-
-			switch (this.tooltipStep()) {
-				case ToolTipStep.TOOLTIP_START_HERE:
-					m.support.message += t(HelpMessages.HELP_CONFIGURE)
-					m.support.message += t(HelpMessages.HELP_MIGRATIONS)
-					break
-				case ToolTipStep.TOOLTIP_RUN_MIGRATIONS:
-					m.support.message += t(HelpMessages.HELP_MIGRATIONS)
-					break
-			}
-
-			if (!this.props.rundowns.length) {
-				m.support.message += t('Add rundowns by connecting a gateway.\n')
-			}
-
-			if (this.state.systemStatus) {
-				if (this.state.systemStatus.status === 'FAIL') {
-					m.support.message += t('Check system status messages.\n')
-				}
-			}
-
-			CoreSystem.update(core._id, { $set: m })
-		}
-	}
-
 	componentWillMount () {
 		// Subscribe to data:
 		// TODO: make something clever here, to not load ALL the rundowns
@@ -406,7 +366,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		</React.Fragment>
 	}
 
-	renderRundowns (list: RundownUI[]) {
+	renderRundowns (list: RundownPlaylistUi[]) {
 		const { t } = this.props
 
 		return list.length > 0 ?
