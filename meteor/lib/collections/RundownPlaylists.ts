@@ -5,10 +5,10 @@ import * as _ from 'underscore'
 import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, waitForPromiseAll } from '../lib'
 import { RundownHoldState, Rundowns, Rundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
-import { Segments, Segment } from './Segments';
-import { Parts, Part } from './Parts';
-import { Pieces, Piece } from './Pieces';
-import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration';
+import { Segments, Segment } from './Segments'
+import { Parts, Part } from './Parts'
+import { Pieces, Piece } from './Pieces'
+import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 
 export interface DBRundownPlaylist {
 	_id: string
@@ -73,11 +73,11 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPersistentState?: TimelinePersistentState
 
 	constructor (document: DBRundownPlaylist) {
-		_.each(_.keys(document), (key: keyof DBRundownPlaylist) => {
+		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
-	getRundowns(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
+	getRundowns (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
 		return Rundowns.find(
 			_.extend({
 				playlistId: this._id
@@ -90,14 +90,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}, options)
 		).fetch()
 	}
-	getRundownIDs(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): string[] {
+	getRundownIDs (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): string[] {
 		return Rundowns.find(
 			_.extend({
 				playlistId: this._id
 			}, selector),
 			_.extend({
-				sort: { 
-					_rank: 1 
+				sort: {
+					_rank: 1
 				},
 				fields: {
 					_rank: 1,
@@ -106,7 +106,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}, options)
 		).fetch().map(i => i._id)
 	}
-	getRundownsMap(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
+	getRundownsMap (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
 	}
 	remove () {
@@ -195,39 +195,39 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			Promise<Piece[]>,
 			Promise<{ rundowns: Rundown[], rundownsMap: any }>
 		] = [
-				makePromise(() => {
-					let segments = Segments.find({ rundownId: { $in: rundownIds } }).fetch()
-					let segmentsMap = normalizeArray(segments, '_id')
-					return { segments, segmentsMap }
-				}),
-				// makePromise(() => {
-				// 	let parts = _.map(Parts.find({ rundownId: { $in: rundownIds } }).fetch(), (part) => {
-				// 		// Override member function to use cached data instead:
-				// 		part.getAllPieces = () => {
-				// 			return _.map(_.filter(pieces, (piece) => {
-				// 				return (
-				// 					piece.partId === part._id
-				// 				)
-				// 			}), (part) => {
-				// 				return _.clone(part)
-				// 			})
-				// 		}
-				// 		part.getRundown = () => {
-				// 			return rundowns[part.rundownId]
-				// 		}
-				// 		return part
+			makePromise(() => {
+				let segments = Segments.find({ rundownId: { $in: rundownIds } }).fetch()
+				let segmentsMap = normalizeArray(segments, '_id')
+				return { segments, segmentsMap }
+			}),
+			// makePromise(() => {
+			// 	let parts = _.map(Parts.find({ rundownId: { $in: rundownIds } }).fetch(), (part) => {
+			// 		// Override member function to use cached data instead:
+			// 		part.getAllPieces = () => {
+			// 			return _.map(_.filter(pieces, (piece) => {
+			// 				return (
+			// 					piece.partId === part._id
+			// 				)
+			// 			}), (part) => {
+			// 				return _.clone(part)
+			// 			})
+			// 		}
+			// 		part.getRundown = () => {
+			// 			return rundowns[part.rundownId]
+			// 		}
+			// 		return part
 
-				// 	})
-				// 	let partsMap = normalizeArray(parts, '_id')
-				// 	return { parts, partsMap }
-				// }),
-				makePromise(() => {
-					return Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
-				}),
-				makePromise(() => {
-					return { rundowns, rundownsMap: normalizeArray(rundowns, '_id') }
-				})
-			]
+			// 	})
+			// 	let partsMap = normalizeArray(parts, '_id')
+			// 	return { parts, partsMap }
+			// }),
+			makePromise(() => {
+				return Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
+			}),
+			makePromise(() => {
+				return { rundowns, rundownsMap: normalizeArray(rundowns, '_id') }
+			})
+		]
 		const r = waitForPromiseAll(ps as any) as any[]
 		const segments: Segment[] = r[0].segments
 		const segmentsMap: { [key: string]: Segment } = r[0].segmentsMap
