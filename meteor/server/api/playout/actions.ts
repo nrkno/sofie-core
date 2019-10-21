@@ -106,13 +106,17 @@ export function deactivateRundownPlaylistInner (rundownPlaylist: RundownPlaylist
 	)
 	let rundown: Rundown | undefined
 	if (previousPart) {
-		rundown = Rundowns.findOne(previousPart.rundownId)
 
-		if (rundown) {
-			IngestActions.notifyCurrentPlayingPart(rundown, null)
-		} else {
-			logger.error(`Could not find owner rundown "${previousPart.rundownId}" of part "${previousPart._id}"`)
-		}
+		// defer so that an error won't prevent deactivate
+		Meteor.setTimeout(() => {
+			rundown = Rundowns.findOne(previousPart.rundownId)
+
+			if (rundown) {
+				IngestActions.notifyCurrentPlayingPart(rundown, null)
+			} else {
+				logger.error(`Could not find owner rundown "${previousPart.rundownId}" of part "${previousPart._id}"`)
+			}
+		}, 40)
 	} else {
 		let nextPart = (
 			rundownPlaylist.nextPartId ?
