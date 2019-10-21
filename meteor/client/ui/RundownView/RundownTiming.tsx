@@ -424,9 +424,11 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 	}
 })
 
+export type TimingFilterFunction = (durations: RundownTiming.RundownTimingContext) => any
+
 export interface WithTimingOptions {
 	isHighResolution?: boolean
-	filter?: string | any[]
+	filter?: TimingFilterFunction | string | any[]
 }
 export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & { children?: React.ReactNode }
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState)
@@ -468,7 +470,9 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 					expandedOptions = _.extend(expandedOptions, options(this.props))
 				}
 
-				if (expandedOptions.filter) {
+				if (typeof expandedOptions.filter === 'function') {
+					this.filterGetter = expandedOptions.filter
+				} else {
 					this.filterGetter = _.property(expandedOptions.filter as string)
 				}
 			}
@@ -494,7 +498,7 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 					this.forceUpdate()
 				} else {
 					const buf = this.filterGetter(this.context.durations || {})
-					if (buf !== this.previousValue) {
+					if (!_.isEqual(buf, this.previousValue)) {
 						this.previousValue = buf
 						this.forceUpdate()
 					}
