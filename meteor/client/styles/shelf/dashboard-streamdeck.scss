@@ -5,6 +5,36 @@
 	   /** Stream Deck Mini, button size 80px */
 	   screen and (width: 240px) and (height: 160px) {
 
+	#render-target > .container-fluid > .rundown-view {
+		background: #000;
+
+		> .rundown-view__label {
+			> p {
+				display: none;
+			}
+		}
+
+		&.rundown-view--unpublished {
+			> .rundown-view__label {
+				&::before {
+					display: block;
+					position: absolute;
+					content: '...';
+					color: #fff;
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+				}
+			}
+		}
+
+		&.rundown-view--loading {
+			> .mod.mhl.mvl.alc {
+				transform: translate(-160%, -135%);
+			}
+		}
+	}
+
 	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport {
 		background: #000;
 	}
