@@ -466,12 +466,16 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		return o
 	})
 }
-export function fetchAfterInPlaylist(parts: Mongo.Collection<Part> | Array<Part>, selector: MongoSelector<Part>, playlist: RundownPlaylist, partRundown: Rundown | undefined, part: Part | undefined): Part | undefined {
+export function fetchAfterInPlaylist (
+	parts: Mongo.Collection<Part> | Array<Part>,
+	selector: MongoSelector<Part>,
+	playlist: RundownPlaylist,
+	partRundown: Rundown,
+	part: Part | undefined
+): Part | undefined {
 	let rank: number
 	let rundownId: string
-	if (!partRundown) {
-		partRundown = playlist.getRundowns({}, { limit: 1 })[0]
-	}
+
 	rundownId = partRundown._id
 	if (part === undefined) {
 		rank = Number.NEGATIVE_INFINITY

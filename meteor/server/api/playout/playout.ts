@@ -292,9 +292,10 @@ export namespace ServerPlayoutAPI {
 				: null
 			)
 			let takePart = rundownData.partsMap[playlist.nextPartId]
-			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
-			let takeRundown = rundownData.rundownsMap[takePart.rundownId]
-			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
+			if (!takePart) throw new Meteor.Error(404, `takePart not found! ("${playlist.nextPartId}")`)
+			const takeRundown: Rundown | undefined = rundownData.rundownsMap[takePart.rundownId]
+			if (!takeRundown) throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePart.rundownId}")`)
+
 			let partAfter = fetchAfterInPlaylist(
 				rundownData.parts,
 				{
