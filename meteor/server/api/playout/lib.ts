@@ -505,21 +505,25 @@ export function fetchAfterInPlaylist (
 	if (result) {
 		return result
 	} else {
+		const nextRundown: Rundown | undefined = playlist.getRundowns({
+			_rank: {
+				$gt: partRundown._rank
+			}
+		}, {
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			limit: 1
+		})[0]
+
+		if (!nextRundown) return undefined // If there's no rundown after this, theres no part after either
+
 		return fetchAfterInPlaylist(
 			parts,
 			selector,
 			playlist,
-			playlist.getRundowns({
-				_rank: {
-					$gt: partRundown._rank
-				}
-			}, {
-				sort: {
-					_rank: 1,
-					_id: 1
-				},
-				limit: 1
-			})[0],
+			nextRundown,
 			undefined
 		)
 	}
