@@ -37,6 +37,7 @@ export interface PieceResolved extends Piece {
 	resolved: boolean
 }
 export function orderPieces (pieces: Piece[], partId: string, partStarted?: number): Array<PieceResolved> {
+	const now = getCurrentTime()
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(i => itemMap[i._id] = i)
