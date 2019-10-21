@@ -26,15 +26,15 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowS
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown, IBlueprintRundownPlaylistInfo } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultRundownPlaylist } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { UpdateNext } from './ingest/updateNext'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
-import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists';
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices';
+import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -100,8 +100,16 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (currentRundown.playlistExternalId && studioBlueprint.blueprint.getRundownPlaylistInfo) {
+
+		// Note: We have to use the ExternalId of the playlist here, since we actually don't know the id of the playlist yet
 		const allRundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
-		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(allRundowns)
+
+		if (!_.find(allRundowns, (rd => rd._id === currentRundown._id))) throw new Meteor.Error(500, `produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in collection!`)
+
+		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(
+			allRundowns
+		)
+		if (!playlistInfo) throw new Meteor.Error(500, `blueprint.getRundownPlaylistInfo() returned null for externalId "${currentRundown.playlistExternalId}"`)
 
 		const playlistId = getHash(playlistInfo.playlist.externalId)
 
@@ -115,8 +123,8 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
 
-			created: 0,
-			modified: 0,
+			created: getCurrentTime(),
+			modified: getCurrentTime(),
 
 			peripheralDeviceId: '',
 
