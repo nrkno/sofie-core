@@ -33,6 +33,12 @@
 				margin: 0 -2px 0 0;
 				max-height: 100%;
 				overflow: hidden;
+
+				> .dashboard-panel__panel__button {
+					> .dashboard-panel__panel__button__label {
+						top: 4px;
+					}
+				}
 			}
 		}
 	}
