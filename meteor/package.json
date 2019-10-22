@@ -52,7 +52,7 @@
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",
-    "element-resize-event": "^2.0.9",
+    "element-resize-event": "^3.0.3",
     "fast-clone": "^1.5.3",
     "html-entities": "^1.2.1",
     "i18next": "^11.2.3",
