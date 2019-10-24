@@ -16,7 +16,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	private _destroyed: boolean = false
 	private _prompterView: PrompterViewInner
 
-	private readonly _speedMap = [0, 1, 3, 5, 7, 9, 12, 30]
+	private readonly _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
 	
 	private _updateSpeedHandle: number|null = null
 	private _lastSpeed = 0
@@ -72,25 +72,22 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 				case 'F7':
 					speed = this._speedMap[7]
 					break
-				case 'F8':
-					// jump to next segment
-					speed = this._speedMap[0]
-					// @todo jan find the next segment (if any) and jump there
-					break
 			}
 
 			// buttons
 			if (e.shiftKey) {
 				switch (e.code) {
+					case 'PageDown':
+					case 'F8':
+						// jump to next segment
+						speed = this._speedMap[0]
+						this._prompterView.scrollToFollowing()
+						break
 					case 'PageUp':
 					case 'F9':
 						// jump to previous segment
 						speed = this._speedMap[0]
 						this._prompterView.scrollToPrevious()
-						break
-					case 'PageDown':
-						speed = this._speedMap[0]
-						this._prompterView.scrollToFollowing()
 						break
 					case 'F10':
 						// jump to top

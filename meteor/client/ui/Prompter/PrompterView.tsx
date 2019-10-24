@@ -129,23 +129,25 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const current = document.querySelector('.prompter .current') || document.querySelector('.prompter .next')
 		
 		if (current) {
-			Velocity(current, "scroll", { duration: 400, easing: "ease-in" })
+			Velocity(document.body, "finish")
+			Velocity(current, "scroll", { duration: 400, easing: "ease-out" })
 		}
 	}
 	scrollToNext () {
 		const next = document.querySelector('.prompter .next')
 		
 		if (next) {
-			Velocity(next, "scroll", { duration: 400, easing: "ease-in" })
+			Velocity(document.body, "finish")
+			Velocity(next, "scroll", { duration: 400, easing: "ease-out" })
 		}
 	}
 	scrollToPrevious () {
 		const anchors = this.listAnchorPositions(-1, 10)
 
-		const target = anchors[anchors.length - 2] || anchors[0]
+		const target = anchors[anchors.length - 1] || anchors[0]
 
 		Velocity(document.body, "finish")
-		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
+		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-out" })
 	}
 	scrollToFollowing () {
 		const anchors = this.listAnchorPositions(0, -1)
@@ -153,7 +155,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const target = anchors[1]
 
 		Velocity(document.body, "finish")
-		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-in" })
+		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-ot" })
 	}
 	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
 		let foundPositions: [number, Element][] = []
