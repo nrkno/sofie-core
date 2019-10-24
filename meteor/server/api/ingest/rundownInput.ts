@@ -306,7 +306,7 @@ function updateRundownFromIngestData (
 				showStyleBase: showStyle.base._rundownVersionHash,
 				showStyleVariant: showStyle.variant._rundownVersionHash,
 				blueprint: showStyleBlueprintDb.blueprintVersion,
-				core: PackageInfo.version,
+				core: PackageInfo.versionExtended || PackageInfo.version,
 			},
 
 			// omit the below fields:

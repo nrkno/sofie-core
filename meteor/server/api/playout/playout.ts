@@ -1359,7 +1359,7 @@ export namespace ServerPlayoutAPI {
 
 			const versionsContent = (markerObject.metaData || {}).versions || {}
 
-			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
+			if (versionsContent.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
 			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
