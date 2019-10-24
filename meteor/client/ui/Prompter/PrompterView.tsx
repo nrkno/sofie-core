@@ -150,9 +150,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 200, easing: "ease-out" })
 	}
 	scrollToFollowing () {
-		const anchors = this.listAnchorPositions(0, -1)
+		const anchors = this.listAnchorPositions(40, -1)
 
-		const target = anchors[1]
+		const target = anchors[0]
 
 		Velocity(document.body, "finish")
 		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 200, easing: "ease-ot" })
