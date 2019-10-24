@@ -147,7 +147,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const target = anchors[anchors.length - 1] || anchors[0]
 
 		Velocity(document.body, "finish")
-		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-out" })
+		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 200, easing: "ease-out" })
 	}
 	scrollToFollowing () {
 		const anchors = this.listAnchorPositions(0, -1)
@@ -155,7 +155,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const target = anchors[1]
 
 		Velocity(document.body, "finish")
-		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 400, easing: "ease-ot" })
+		Velocity(document.body, "scroll", { offset: target[0] + window.scrollY, duration: 200, easing: "ease-ot" })
 	}
 	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
 		let foundPositions: [number, Element][] = []
