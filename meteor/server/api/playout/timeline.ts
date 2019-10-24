@@ -293,7 +293,7 @@ function getTimelineRundown (studio: Studio, activeRundownData: RundownData | nu
 						layer: id,
 						metadata: {
 							versions: {
-								core: PackageInfo.version,
+								core: PackageInfo.versionExtended || PackageInfo.version,
 								blueprintId: studio.blueprintId,
 								blueprintVersion: blueprint.blueprintVersion,
 								studio: studio._rundownVersionHash,

@@ -452,7 +452,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 			</div>
 			<div className='mtl gutter version-info'>
 				<p>
-					{t('Sofie Automation')} {t('version')}: {PackageInfo.version || 'UNSTABLE'}
+					{t('Sofie Automation')} {t('version')}: {PackageInfo.versionExtended || PackageInfo.version || 'UNSTABLE'}
 				</p>
 				<div>
 					{

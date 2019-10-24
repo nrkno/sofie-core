@@ -314,7 +314,7 @@ export namespace ClientRundownAPI {
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 		if (!rundown.importVersions) return 'unknown'
 
-		if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
+		if (rundown.importVersions.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
 		const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
 		if (!showStyleVariant) return 'missing showStyleVariant'

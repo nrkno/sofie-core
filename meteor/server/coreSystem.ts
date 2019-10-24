@@ -382,7 +382,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 		_.each(names, (name) => {
 			versions[name] = sanitizeVersion(dependencies[name])
 		})
-		versions['core'] = PackageInfo.version // package version
+		versions['core'] = PackageInfo.versionExtended || PackageInfo.version // package version
 
 	} else logger.error(`Core package dependencies missing`)
 	return versions
@@ -395,7 +395,7 @@ function startupMessage () {
 	logger.info(`Core starting up`)
 	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
 
-	logger.info(`Core package version: "${PackageInfo.version}"`)
+	logger.info(`Core package version: "${PackageInfo.versionExtended || PackageInfo.version}"`)
 
 	const versions = getRelevantSystemVersions()
 	_.each(versions, (version, name) => {
