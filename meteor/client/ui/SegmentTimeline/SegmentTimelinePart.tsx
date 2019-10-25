@@ -248,7 +248,9 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			return [
 				((durations || {})['partDurations'] || {})[props.part._id],
 				((durations || {})['partDisplayStartsAt'] || {})[props.part._id],
-				((durations || {})['partDisplayDurations'] || {})[props.part._id]
+				((durations || {})['partDisplayDurations'] || {})[props.part._id],
+				props.firstPartInSegment ? ((durations || {})['partDisplayStartsAt'] || {})[props.firstPartInSegment._id] : undefined,
+				props.firstPartInSegment ? ((durations || {})['partDisplayDurations'] || {})[props.firstPartInSegment._id] : undefined
 			]
 		}
 	}
