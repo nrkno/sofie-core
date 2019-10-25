@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.1.0...v1.2.0-1) (2019-10-25)
+
+
+### Bug Fixes
+
+* Better UI state tracking ([d270b1f](https://github.com/nrkno/tv-automation-server-core/commit/d270b1f))
+* blueprint config table formatting ([6cc086c](https://github.com/nrkno/tv-automation-server-core/commit/6cc086c))
+* check if sourceLayer is defined ([4e19348](https://github.com/nrkno/tv-automation-server-core/commit/4e19348))
+* cleanup migrations GUI ([8c0e778](https://github.com/nrkno/tv-automation-server-core/commit/8c0e778))
+* codeControl: stronger typings and bug fix in syncFunctionIgnore ([16b3733](https://github.com/nrkno/tv-automation-server-core/commit/16b3733))
+* Don't enforce part externalIds to be from ingestParts ([1446cc2](https://github.com/nrkno/tv-automation-server-core/commit/1446cc2))
+* don't remove old rundowns automatically ([e642267](https://github.com/nrkno/tv-automation-server-core/commit/e642267))
+* fixed-width buttons look weird ([4f1947f](https://github.com/nrkno/tv-automation-server-core/commit/4f1947f))
+* Hide auth settings after auth is complete ([4c642a3](https://github.com/nrkno/tv-automation-server-core/commit/4c642a3))
+* in some unusual cases, the progress bar in RundownList would be replaced withn 0. ([feac183](https://github.com/nrkno/tv-automation-server-core/commit/feac183))
+* incorrectly using CIRCLE_TAG instead of CIRCLE_BRANCH ([90e5fe0](https://github.com/nrkno/tv-automation-server-core/commit/90e5fe0))
+* inverted if statement ([83fd6a1](https://github.com/nrkno/tv-automation-server-core/commit/83fd6a1))
+* issue with a dissapearing part when updating some part durations from MOS ([ceb5618](https://github.com/nrkno/tv-automation-server-core/commit/ceb5618))
+* lookahead showing the wrong clip type in mp1next ([8b23d0a](https://github.com/nrkno/tv-automation-server-core/commit/8b23d0a))
+* make a check of user input before setting system.storePath. ([34a693f](https://github.com/nrkno/tv-automation-server-core/commit/34a693f)), closes [#91](https://github.com/nrkno/tv-automation-server-core/issues/91)
+* make sure nully properties of Rundown are inserted into db, so typings are correct. ([08e6e69](https://github.com/nrkno/tv-automation-server-core/commit/08e6e69))
+* only add warnings when more than 0 frames detected ([491fec7](https://github.com/nrkno/tv-automation-server-core/commit/491fec7))
+* Playout-API removed unimplemented methods from the API, and added missing implementation to it ([b68f2b9](https://github.com/nrkno/tv-automation-server-core/commit/b68f2b9))
+* Refactor of diffSegmentEntries and fix for issue when removing the first part from a segment ([1f22afe](https://github.com/nrkno/tv-automation-server-core/commit/1f22afe))
+* remove border around checkboxes in Blueprint Configuration in Studio settings ([9e05020](https://github.com/nrkno/tv-automation-server-core/commit/9e05020))
+* rework mediaObject status reporting ([778ac44](https://github.com/nrkno/tv-automation-server-core/commit/778ac44))
+* SplitSourceRenderer drawing preview boxes in reverse order ([d841ca5](https://github.com/nrkno/tv-automation-server-core/commit/d841ca5))
+* STK timeline artifacts trim to Piece length ([22cd01c](https://github.com/nrkno/tv-automation-server-core/commit/22cd01c))
+* support message being overwritten ([7972042](https://github.com/nrkno/tv-automation-server-core/commit/7972042))
+* Typo ([863164e](https://github.com/nrkno/tv-automation-server-core/commit/863164e))
+* **in-out points:** search in IngestDataCache should use internal IDs ([9ae04af](https://github.com/nrkno/tv-automation-server-core/commit/9ae04af))
+* **timing:** allow a custom function to filter the timing info for refreshing the durations ([4496931](https://github.com/nrkno/tv-automation-server-core/commit/4496931))
+* **timing:** allow a custom function to filter the timing info for refreshing the durations ([954bd3a](https://github.com/nrkno/tv-automation-server-core/commit/954bd3a))
+* **ui:** loop icon ([47b0b42](https://github.com/nrkno/tv-automation-server-core/commit/47b0b42))
+
+
+### Features
+
+* add peripheralDevice methods to list and get known rundowns ([f9e8e67](https://github.com/nrkno/tv-automation-server-core/commit/f9e8e67))
+* config table import & export ([477fabe](https://github.com/nrkno/tv-automation-server-core/commit/477fabe))
+* only push docker image if platform credentials are defined ([9f31fb6](https://github.com/nrkno/tv-automation-server-core/commit/9f31fb6))
+* Support config table type ([c1f24d9](https://github.com/nrkno/tv-automation-server-core/commit/c1f24d9))
+* **streamdeck:** add three dots to signify "panel empty" on stream decks ([081d021](https://github.com/nrkno/tv-automation-server-core/commit/081d021))
+* **streamdeck:** hide the toolbar, if enabled ([f72fc98](https://github.com/nrkno/tv-automation-server-core/commit/f72fc98))
+* **streamdeck:** make streamdeck mode background black ([23f9829](https://github.com/nrkno/tv-automation-server-core/commit/23f9829))
+* **streamdeck:** move all dashboard constants to CSS to allow responsive overloading ([81f5d2e](https://github.com/nrkno/tv-automation-server-core/commit/81f5d2e))
+* **streamdeck:** Move labels on streamdeck to top of button ([7becd9f](https://github.com/nrkno/tv-automation-server-core/commit/7becd9f))
+* **streamdeck:** responsive styling for streamdeck devices ([e38fd2e](https://github.com/nrkno/tv-automation-server-core/commit/e38fd2e))
+
+
+
 ## [1.2.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.0.0...v1.2.0-0) (2019-10-25)
 
 
