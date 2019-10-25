@@ -344,7 +344,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 						|| this.props.defaultDuration || DEFAULT_DURATION)
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
-				
+
 				// Handle invalid parts by overriding the values to preset values for Invalid parts
 				if (part.invalid) {
 					currentRemaining = 0
