@@ -1,48 +1,55 @@
-import { NoraPayload, NoraContent } from 'tv-automation-sofie-blueprints-integration'
-import { PieceGeneric } from '../../../../lib/collections/Pieces'
-import { generateMosPluginItemXml } from '../../parsers/mos/mosXml2Js'
+import { NoraPayload, IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { isArray } from 'util';
 
-export { createMosObjectXmlStringNoraBluePrintPiece, createMosObjectXmlStringFromPayload }
+export { createMosObjectXmlStringNoraBluePrintPiece }
 
-function createMosObjectXmlStringNoraBluePrintPiece(piece: PieceGeneric): string {
+function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneric): string {
 	if (!piece.content || !piece.content.payload) {
 		throw new Error('Not a Nora blueprint piece')
 	}
-	const noraContent = piece.content as NoraContent
 
-	return generateMosPluginItemXml(noraContent.externalPayload)
-}
+	const noraPayload = piece.content.payload as NoraPayload
 
-function createMosObjectXmlStringFromPayload(payload: NoraPayload): string {
 	const doc = objectToXML({
 		ncsItem: {
 			item: {
 				itemSlug: null,
-				mosExternalMetadata: {
+				objID: piece.externalId,
+				mosExternalMetadata: [{
 					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/content',
 					mosPayload: {
 						metadata: {
 							selection: {
 								design: {
-									id: payload.manifest
+									id: noraPayload.manifest
 								},
 								type: {
-									id: payload.template.layer
+									id: noraPayload.template.layer
 								},
 								mal: {
-									id: payload.template.name
+									id: noraPayload.template.name
 								}
 							},
-							type: payload.template.layer,
+							type: noraPayload.template.layer,
 							userContext: {}
 						},
+						template: {
+							name: noraPayload.template.name,
+							layer: noraPayload.template.layer
+						},
 						content: {
-							navn: payload.content.navn,
-							tittel: payload.content.tittel,
-							_valid: payload.content._valid
+							navn: noraPayload.content.navn,
+							tittel: noraPayload.content.tittel,
+							_valid: noraPayload.content._valid
 						}
 					}
-				}
+				}, {
+					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/timing',
+					mosPayload: {
+						timeIn: 0,
+						duration: piece.content.sourceDuration
+					}
+				}]
 			},
 		}
 	}, 'mos'
@@ -65,14 +72,26 @@ function addNodes(obj: object, rootNode: Node): void {
 	const doc = rootNode.ownerDocument
 
 	for (const name of Object.keys(obj)) {
-		const node = doc.createElement(name)
-		rootNode.appendChild(node)
-
 		const value = obj[name]
-		if (typeof value === 'object' && value !== null) {
-			addNodes(value, node)
+
+		if (isArray(value)) {
+			value.forEach((element) => {
+				rootNode.appendChild(createNode(name, element, doc))
+			})
 		} else {
-			node.textContent = value
+			rootNode.appendChild(createNode(name, value, doc))
 		}
 	}
+}
+
+function createNode(name: string, value: any, doc: Document) {
+	const node = doc.createElement(name)
+
+	if (typeof value === 'object' && value !== null) {
+		addNodes(value, node)
+	} else {
+		node.textContent = value
+	}
+
+	return node
 }
