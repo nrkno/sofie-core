@@ -465,7 +465,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			divs.push(
 				<div
-					key={i}
+					key={'line_' + line.partId + "_" + line.segmentId + "_" + line.id}
 					className={ClassNames(
 						'prompter-line',
 						(!line.text ? 'empty' : undefined)

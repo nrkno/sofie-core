@@ -10,6 +10,7 @@ export enum PrompterMethods {
 }
 
 export interface PrompterDataLine {
+	id: string
 	text: string
 	segmentId: string
 	partId: string
@@ -50,6 +51,7 @@ export namespace PrompterAPI {
 						}
 						piecesIncluded.push(piece.continuesRefId || piece._id)
 						data.lines.push({
+							id: piece._id,
 							text: content.fullScript,
 							segmentId: part.segmentId,
 							partId: part._id
