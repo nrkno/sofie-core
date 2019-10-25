@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration';
 
-export default function DefaultItemRenderer (props: {item:IBlueprintPieceGeneric}):JSX.Element {
-	const {externalId, name, partId, sourceLayerId, outputLayerId, metaData} = props.item
+export default function DefaultItemRenderer (props: { piece: IBlueprintPieceGeneric }): JSX.Element {
+	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.piece
 
 	return (
 		<dl>

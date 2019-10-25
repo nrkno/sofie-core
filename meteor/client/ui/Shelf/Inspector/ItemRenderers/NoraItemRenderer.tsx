@@ -6,7 +6,7 @@ import { NoraItemEditor } from './NoraItemEditor';
 export { NoraItemRenderer, isNoraItem }
 
 interface INoraSuperRendererProps {
-	item: IBlueprintPieceGeneric
+	piece: IBlueprintPieceGeneric
 }
 
 interface INoraSuperRendererState {
@@ -14,7 +14,7 @@ interface INoraSuperRendererState {
 }
 
 class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSuperRendererState> {
-	constructor (props: INoraSuperRendererProps) {
+	constructor(props: INoraSuperRendererProps) {
 		super(props)
 
 		this.state = {
@@ -23,16 +23,14 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 	}
 
 	setEditMode (enabled: boolean) {
-		this.setState({editMode: enabled === true})
+		this.setState({ editMode: enabled === true })
 	}
 
 	render () {
-		const {item} = this.props;
-		const content = item.content as NoraContent
-		const payload = content && content.payload
+		const { piece } = this.props
 
 		const modalProps: IModalAttributes = {
-			title: item ? item.name : '',
+			title: piece.name,
 			show: this.state.editMode,
 			onDiscard: () => {
 				this.setEditMode(false)
@@ -41,22 +39,22 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 
 		return (
 			<div className="shelf-inspector">
-				<h2>{item.name}</h2>
-				<button className="btn btn-primary" disabled={!item} onClick={() => {this.setEditMode(true)}}>Edit</button>
+				<h2>{this.props.piece.name}</h2>
+				<button className="btn btn-primary" disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>Edit</button>
 				<Modal {...modalProps}>
-					<NoraItemEditor payload={payload} />
+					<NoraItemEditor piece={this.props.piece} />
 				</Modal>
 			</div>
 		)
 	}
 }
 
-function isNoraItem(item: IBlueprintPieceGeneric):boolean {
+function isNoraItem (item: IBlueprintPieceGeneric): boolean {
 	const content = item.content as NoraContent
 
 	if (!content || !content.payload || !content.payload.template) {
 		return false
 	}
 
-	return ['super', 'bakskjerm'].indexOf(content.payload.template.layer) > -1
+	return [ 'super', 'bakskjerm' ].indexOf(content.payload.template.layer) > -1
 }

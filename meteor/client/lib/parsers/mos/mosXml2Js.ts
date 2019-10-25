@@ -46,7 +46,7 @@ function nodeToObj (node:Node):object|string|null {
 				case '#text':
 					const {textContent} = n
 					if (textContent && textContent.trim() !== '') {
-						return n.textContent
+						return textContent
 					}
 					break
 				default:

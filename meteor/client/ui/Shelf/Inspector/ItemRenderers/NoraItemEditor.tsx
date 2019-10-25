@@ -1,6 +1,6 @@
-import { NoraPayload } from "tv-automation-sofie-blueprints-integration";
+import { NoraPayload, IBlueprintPieceGeneric } from "tv-automation-sofie-blueprints-integration";
 import * as React from "react";
-import { createMosObjectXmlStringFromPayload } from "../../../../lib/data/nora/browser-plugin-data";
+import { createMosObjectXmlStringNoraBluePrintPiece, createMosAppInfoXmlString } from "../../../../lib/data/nora/browser-plugin-data";
 import { mosXmlString2Js } from "../../../../lib/parsers/mos/mosXml2Js";
 
 //TODO: figure out what the origin should be
@@ -11,7 +11,7 @@ const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_BROWSER_
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	payload: NoraPayload
+	piece: IBlueprintPieceGeneric
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {
@@ -42,7 +42,7 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	postPayload (target: Window | null) {
 		console.log('Posting payload', target)
 		if (target) {
-			const payloadXmlString = createMosObjectXmlStringFromPayload(this.props.payload)
+			const payloadXmlString = createMosObjectXmlStringNoraBluePrintPiece(this.props.piece)
 			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
 			console.log('Sent message', payloadXmlString, target)
 		}
@@ -73,7 +73,21 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 	handleMosMessage (mos: any) {
 		if (mos.ncsReqAppInfo) {
-			this.postPayload(this.iframe.contentWindow)
+			this.sendAppInfo(this.iframe.contentWindow)
+
+			// delay to send in order
+			setTimeout(() => {
+				this.postPayload(this.iframe.contentWindow)
+			}, 1)
+		}
+	}
+
+	sendAppInfo (target: Window | null) {
+		console.log('sendAppInfo')
+		if (target) {
+			const payloadXmlString = createMosAppInfoXmlString()
+			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
+			console.log('sent app info', payloadXmlString)
 		}
 	}
 
