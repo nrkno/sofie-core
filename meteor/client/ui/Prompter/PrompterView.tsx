@@ -425,7 +425,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				divs.push(
 					<div
-						key={'segment_' + i}
+						key={'segment_' + line.segmentId}
 						className={ClassNames(
 							'prompter-segment',
 							'scroll-anchor',
@@ -448,7 +448,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				divs.push(
 					<div
-						key={'part_' + i}
+						key={'part_' + line.partId}
 						className={ClassNames(
 							'prompter-part',
 							'scroll-anchor',
