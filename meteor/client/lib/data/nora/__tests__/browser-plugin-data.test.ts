@@ -1,35 +1,68 @@
-import {createMosObjectXmlStringFromPayload} from '../browser-plugin-data'
+import {createMosObjectXmlStringNoraBluePrintPiece, createMosAppInfoXmlString} from '../browser-plugin-data'
 import * as parser from 'xml2json'
+import { NoraPayload, IBlueprintPieceGeneric, NoraContent } from 'tv-automation-sofie-blueprints-integration';
 
-const superPayload =   {
-    "manifest": "nyheter",
-    "template": {
-      "layer": "super",
-      "name": "01_navn",
-      "event": "take"
-    },
-    "metadata": {
-      "templateName": "01 navn",
-      "templateVariant": "Ett navn"
-    },
-    "content": {
-      "navn": "Petter Blomkvist",
-      "tittel": "regiondirektør, Entreprenørforeningen",
-      "_valid": true
-    }
-  }
+const superPayload:NoraPayload = {
+	"manifest": "nyheter",
+	"template": {
+		"layer": "super",
+		"name": "01_navn",
+		"event": "take"
+	},
+	"metadata": {
+		"templateName": "01 navn",
+		"templateVariant": "Ett navn"
+	},
+	"content": {
+		"navn": "Petter Blomkvist",
+		"tittel": "regiondirektør, Entreprenørforeningen",
+		"_valid": true
+	}
+}
 
+const superContent:NoraContent = {
+	sourceDuration: 5000,
+	payload: superPayload,
+	timelineObjects: []
+}
 
-describe('createMosObjectXmlStringFromPayload', () => {
-	const result = createMosObjectXmlStringFromPayload(superPayload)
+const noraPiece:IBlueprintPieceGeneric = {
+	externalId: 'bb19514d-44d7-4521-ad17-ea658b12e149',
+	name: 'names doesnt matter',
+	sourceLayerId: 'dont know if this matters yet',
+	outputLayerId: 'dont know if this matters yet either',
+	content: superContent
+}
+
+describe('createMosObjectXmlStringNoraBluePrintPiece', () => {
+	const xmlString = createMosObjectXmlStringNoraBluePrintPiece(noraPiece)
+
+	it('should throw when piece doesnt have content', () => {
+		const piece = Object.assign({}, noraPiece)
+		delete piece.content
+
+		expect(() => {
+			createMosObjectXmlStringNoraBluePrintPiece(piece)
+		}).toThrow()
+	})
+
+	it('should throw when piece content doesnt have a payload', () => {
+		const piece = Object.assign({}, noraPiece, {
+			content: {}
+		})
+
+		expect(() => {
+			createMosObjectXmlStringNoraBluePrintPiece(piece)
+		}).toThrow()
+	})
 
 	it('should return a string that is a valid XML document', () => {
-		expect(typeof result).toEqual('string')
-		parser.toJson(result) // will throw if invalid
+		expect(typeof xmlString).toEqual('string')
+		parser.toJson(xmlString) // will throw if invalid
 	})
 
 	describe('basic XML document structure', () => {
-		const doc:any = parser.toJson(result, {object: true})
+		const doc:any = parser.toJson(xmlString, {object: true})
 
 		it('the root node should be named mos', () => {
 			const nodeNames = Object.keys(doc)
@@ -54,7 +87,7 @@ describe('createMosObjectXmlStringFromPayload', () => {
 	})
 
 	describe('item node', () => {
-		const doc:any = parser.toJson(result, {object: true})
+		const doc:any = parser.toJson(xmlString, {object: true})
 		const itemNode = doc.mos.ncsItem.item
 
 		test.todo('itemID node should contain the ENPS item id')
@@ -65,8 +98,17 @@ describe('createMosObjectXmlStringFromPayload', () => {
 			expect(itemSlugNode).toEqual({})
 		})
 
-		describe('mosExternalMetadata node ()', () => {
-			const mosExternalMetadata = itemNode.mosExternalMetadata
+		it('objID should containg the external id from the piece', () => {
+			const expected = noraPiece.externalId
+
+			const actual = itemNode.objID
+
+			expect(actual).toEqual(expected)
+		})
+		
+
+		describe('mosExternalMetadata node 0 (content)', () => {
+			const mosExternalMetadata = itemNode.mosExternalMetadata[0]
 
 			it('mosSchema node should use URL for Nora content', () => {
 				const expected = 'http://nora.core.mesosint.nrk.no/mos/content'
@@ -139,6 +181,25 @@ describe('createMosObjectXmlStringFromPayload', () => {
 					})
 				})
 
+				describe('template node', () => {
+					const template = mosPayload.template
+
+					it('name node should equal payload template name ', () => {
+						const expected = superPayload.template.name
+
+						const actual = template.name
+
+						expect(actual).toEqual(expected)
+					})
+
+					it('layer node should equal payload template layer ', () => {
+						const expected = superPayload.template.layer
+
+						const actual = template.layer
+
+						expect(actual).toEqual(expected)
+					})
+				}),
 				describe('content node', () => {
 					const content = mosPayload.content
 
@@ -169,5 +230,91 @@ describe('createMosObjectXmlStringFromPayload', () => {
 				})
 			})
 		})
+
+		describe('mosExternalMetadata node 1 (timing)', () => {
+			const mosExternalMetadata = itemNode.mosExternalMetadata[1]
+
+			it('mosSchema should use URL for Nora timing', () => {
+				const expected = 'http://nora.core.mesosint.nrk.no/mos/timing'
+
+				const actual = mosExternalMetadata.mosSchema
+
+				expect(actual).toEqual(expected)
+			})
+
+			describe('mosPayload', () => {
+				const mosPayload = mosExternalMetadata.mosPayload
+
+				it('should set timeIn to 0', () => {
+					const expected = String(0) // XML content will always be a string
+					
+					const actual = mosPayload.timeIn
+
+					expect(actual).toEqual(expected)
+				})
+
+				it('should set duration to value of piece.content.sourceDuration', () => {
+					const expected = String(superContent.sourceDuration) // XML content will always be a string
+
+					const actual = mosPayload.duration
+
+					expect(actual).toEqual(expected)
+				})
+			})
+		})
 	})
+})
+
+describe('createMosAppInfoXmlString', () => {
+	const xmlString = createMosAppInfoXmlString()
+
+	it('should return a string that is a valid XML document', () => {
+		expect(typeof xmlString).toEqual('string')
+		parser.toJson(xmlString) // will throw if invalid
+	})
+
+	describe('XML document', () => {
+		const doc:any = parser.toJson(xmlString, {object: true})
+
+		it('the root node should be named mos', () => {
+			const nodeNames = Object.keys(doc)
+
+			expect(nodeNames.length).toEqual(1)
+			expect(nodeNames[0]).toEqual('mos')
+		})
+
+		describe('mos node contents', () => {
+			const mos = doc.mos
+
+			//TODO: this should either be the official Sofie name or possibly the instance name?
+			it('node ncsID should be sofie-core', () => {
+				const expected = 'sofie-core'
+
+				const actual = mos.ncsID
+
+				expect(actual).toEqual(expected)
+			})
+
+			//TODO: this is completely bogus. The Nora plugin doesn't actually check the values
+			describe('node ncsAppInfo', () => {
+				const ncsAppInfo = mos.ncsAppInfo
+				describe('node ncsInformation', () => {
+					const ncsInformation = ncsAppInfo.ncsInformation
+
+					it('node userID should contain something', () => {
+						const actual = ncsInformation.userID
+
+						expect(actual).toEqual(expect.anything())
+					})
+
+					it('node software should contain something', () => {
+						const actual = ncsInformation.software
+
+						expect(actual).toEqual(expect.anything())
+					})
+				})
+			})
+		})
+	})
+
 })

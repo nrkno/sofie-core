@@ -1,7 +1,8 @@
 import { NoraPayload } from "tv-automation-sofie-blueprints-integration";
 import * as React from "react";
-import { createMosObjectXmlStringFromPayload } from "../../../../lib/data/nora/browser-plugin-data";
+import { createMosObjectXmlStringNoraBluePrintPiece, createMosAppInfoXmlString } from "../../../../lib/data/nora/browser-plugin-data";
 import { mosXmlString2Js } from "../../../../lib/parsers/mos/mosXml2Js";
+import { InternalIBlueprintPieceGeneric } from "../../../../../lib/collections/Pieces"
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
@@ -11,17 +12,17 @@ const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_BROWSER_
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	payload: NoraPayload
+	piece: InternalIBlueprintPieceGeneric
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {
 	iframe: HTMLIFrameElement
 
-	componentDidMount () {
+	componentDidMount() {
 		this.setUpEventListeners(window)
 	}
 
-	componentDidUpdate (prevProps: INoraEditorProps) {
+	componentDidUpdate(prevProps: INoraEditorProps) {
 		console.log('componentDidUpdate')
 		if (this.iframe && this.iframe.contentWindow) {
 			this.setUpEventListeners(this.iframe.contentWindow)
@@ -33,28 +34,28 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		// }
 	}
 
-	shouldComponentUpdate () {
+	shouldComponentUpdate() {
 		console.log('shouldComponentUpdate')
 
 		return false
 	}
 
-	postPayload (target: Window | null) {
+	postPayload(target: Window | null) {
 		console.log('Posting payload', target)
 		if (target) {
-			const payloadXmlString = createMosObjectXmlStringFromPayload(this.props.payload)
+			const payloadXmlString = createMosObjectXmlStringNoraBluePrintPiece(this.props.piece)
 			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
 			console.log('Sent message', payloadXmlString, target)
 		}
 	}
 
-	setUpEventListeners (target: Window) {
+	setUpEventListeners(target: Window) {
 		target.addEventListener('message', (event) => {
 			this.handleMessage(event)
 		})
 	}
 
-	handleMessage (event: MessageEvent) {
+	handleMessage(event: MessageEvent) {
 		if (event.origin !== MODULE_BROWSER_ORIGIN) {
 			console.log(`Origin rejected (wanted ${MODULE_BROWSER_ORIGIN}, got ${event.origin})`)
 			return
@@ -71,13 +72,27 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		console.log('Unknown message', data)
 	}
 
-	handleMosMessage (mos: any) {
+	handleMosMessage(mos: any) {
 		if (mos.ncsReqAppInfo) {
-			this.postPayload(this.iframe.contentWindow)
+			this.sendAppInfo(this.iframe.contentWindow)
+
+			// delay to send in order
+			setTimeout(() => {
+				this.postPayload(this.iframe.contentWindow)
+			}, 1)
 		}
 	}
 
-	render () {
+	sendAppInfo(target: Window | null) {
+		console.log('sendAppInfo')
+		if (target) {
+			const payloadXmlString = createMosAppInfoXmlString()
+			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
+			console.log('sent app info', payloadXmlString)
+		}
+	}
+
+	render() {
 		console.log('Item editor render')
 		return React.createElement('iframe', {
 			ref: (element) => { this.iframe = element as HTMLIFrameElement },

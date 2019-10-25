@@ -7,7 +7,7 @@ import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/P
 export { NoraItemRenderer, isNoraItem }
 
 interface INoraSuperRendererProps {
-	item: InternalIBlueprintPieceGeneric
+	piece: InternalIBlueprintPieceGeneric
 }
 
 interface INoraSuperRendererState {
@@ -28,12 +28,10 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 	}
 
 	render() {
-		const { item } = this.props
-		const content = item.content as NoraContent
-		const payload = content && content.payload
+		const { piece } = this.props
 
 		const modalProps: IModalAttributes = {
-			title: item ? item.name : '',
+			title: piece.name,
 			show: this.state.editMode,
 			onDiscard: () => {
 				this.setEditMode(false)
@@ -42,10 +40,10 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 
 		return (
 			<div className='shelf-inspector'>
-				<h2>{item.name}</h2>
-				<button className='btn btn-primary' disabled={!item} onClick={() => { this.setEditMode(true) }}>Edit</button>
+				<h2>{this.props.piece.name}</h2>
+				<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>Edit</button>
 				<Modal {...modalProps}>
-					<NoraItemEditor payload={payload} />
+					<NoraItemEditor piece={this.props.piece} />
 				</Modal>
 			</div>
 		)
