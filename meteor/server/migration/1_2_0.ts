@@ -1,6 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
-import { ensureCollectionProperty } from './lib'
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 1.2.0 (Release 14)
 addMigrationSteps('1.2.0', [
@@ -22,4 +23,6 @@ addMigrationSteps('1.2.0', [
 			}
 		}
 	},
+	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.2.0'),
+	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.1')
 ])
