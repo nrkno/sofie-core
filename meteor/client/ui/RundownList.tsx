@@ -306,7 +306,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 						type: 'button'
 					})
 				]}>{t('Enable configuration mode by adding ?configure=1 to the address bar.')}</ReactNotification>
-				: undefined 
+				: undefined
 			}
 			{ step === ToolTipStep.TOOLTIP_START_HERE || step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS ?
 				<ReactNotification actions={[
@@ -318,7 +318,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 						type: 'button'
 					})
 				]}>{t('You need to run migrations to set the system up for operation.')}</ReactNotification>
-				: undefined 
+				: undefined
 			}
 			{/* !this.props.rundowns.length ?
 				<ReactNotification>{t('Add rundowns by connecting a gateway.')}</ReactNotification>

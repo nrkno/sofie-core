@@ -35,8 +35,8 @@ interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 }
-const DEFAULT_BUTTON_WIDTH = 82
-const DEFAULT_BUTTON_HEIGHT = 72
+const DEFAULT_BUTTON_WIDTH = 6.40625
+const DEFAULT_BUTTON_HEIGHT = 5.625
 
 interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
@@ -121,8 +121,12 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'live': this.props.isOnAir
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
-					width: (this.props.widthScale || 1) * DEFAULT_BUTTON_WIDTH,
-					height: (this.props.heightScale || 1) * DEFAULT_BUTTON_HEIGHT
+					width: this.props.widthScale ?
+						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
+						undefined,
+					height: this.props.heightScale ?
+						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
+						undefined
 				}}
 				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
 				data-obj-id={this.props.item._id}

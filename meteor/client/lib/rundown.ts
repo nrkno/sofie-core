@@ -103,8 +103,7 @@ export namespace RundownUtils {
 		scrollLeft: number,
 		scrollWidth: number,
 		part: PartUi,
-		partStartsAt:
-		number | undefined,
+		partStartsAt: number | undefined,
 		partDuration: number | undefined,
 		piece?: PieceUi
 	) {
