@@ -5,6 +5,7 @@ export enum PubSub {
 	blueprints = 'blueprints',
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',
+	expectedPlayoutItems = 'expectedPlayoutItems',
 	expectedMediaItems = 'expectedMediaItems',
 	externalMessageQueue = 'externalMessageQueue',
 	mediaObjects = 'mediaObjects',
