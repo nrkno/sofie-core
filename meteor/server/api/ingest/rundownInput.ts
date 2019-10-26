@@ -31,7 +31,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, afterRemovePieces } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -410,6 +410,9 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (piece) {
 				logger.debug('deleted piece ' + piece._id)
+			},
+			afterRemoveAll (pieces) {
+				afterRemovePieces(rundownId, pieces)
 			}
 		}),
 
@@ -425,6 +428,9 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (adLibPiece) {
 				logger.debug('deleted piece ' + adLibPiece._id)
+			},
+			afterRemoveAll (pieces) {
+				afterRemovePieces(rundownId, pieces)
 			}
 		})
 	)
