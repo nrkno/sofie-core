@@ -268,7 +268,7 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 			break
 		}
 
-		continuations.forEach(i => Pieces.remove(i))
+		continuations.forEach(i => Pieces.remove(i._id))
 	}
 
 	// ensure adlib is extended correctly if infinite
