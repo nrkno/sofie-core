@@ -424,7 +424,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
 			const { top } = anchor.getBoundingClientRect()
-			if ((top + readPosition) <= 10) foundPositions.push([top, anchor.className])
+			if ((top + readPosition) <= 10) foundPositions.push([top, '.' + anchor.className.replace(/\s/g, '.')])
 		})
 
 		foundPositions = _.sortBy(foundPositions, v => 1 * v[0])
@@ -438,7 +438,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		// TODO: Restore element's position
 
 		if (this._scrollAnchor) {
-			const anchor = document.querySelector('.' + this._scrollAnchor[1].split(' ').join('.'))
+			const anchor = document.querySelector(this._scrollAnchor[1])
 			if (anchor) {
 				const { top } = anchor.getBoundingClientRect()
 				
