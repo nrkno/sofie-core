@@ -4,17 +4,7 @@ import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 
-export interface ExpectedPlayoutItem {
-	_id: string
-
-	/** The studio installation this ExpectedPlayoutItem was generated in */
-	studioId: string
-	/** The rundown id that is the source of this PlayoutItem */
-	rundownId: string
-	/** The part id that is the source of this Playout Item */
-	partId: string
-	/** The piece id that is the source of this Playout Item */
-	pieceId: string
+export interface ExpectedPlayoutItemGeneric { // TMP! This is to be moved into the blueprint definitions!
 
 	/** What type of playout device this item should be handled by */
 	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
@@ -30,6 +20,21 @@ export interface ExpectedPlayoutItemContentVizMSE { // TODO: This is a temporary
 	elementName: string | number // if number, it's a vizPilot element
 	dataFields: string[]
 }
+
+export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
+	/** Globally unique id of the item */
+	_id: string
+
+	/** The studio installation this ExpectedPlayoutItem was generated in */
+	studioId: string
+	/** The rundown id that is the source of this PlayoutItem */
+	rundownId: string
+	/** The part id that is the source of this Playout Item */
+	partId?: string
+	/** The piece id that is the source of this Playout Item */
+	pieceId: string
+}
+
 
 export const ExpectedPlayoutItems: TransformedCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
 	= createMongoCollection<ExpectedPlayoutItem>('expectedPlayoutItems')

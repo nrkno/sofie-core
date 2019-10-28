@@ -28,7 +28,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, afterRemovePieces } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -47,6 +47,8 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
+import { extractExpectedPlayoutItems } from './expectedPlayoutItems'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -314,6 +316,11 @@ function updateRundownFromIngestData (
 		adlibPieces.push(...segmentContents.adlibPieces)
 	})
 
+	const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(dbRundown, [
+		...segmentPieces,
+		...adlibPieces
+	])
+
 	changes = sumChanges(
 		changes,
 		// Save the baseline
@@ -364,9 +371,6 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (piece) {
 				logger.debug('deleted piece ' + piece._id)
-			},
-			afterRemoveAll (pieces) {
-				afterRemovePieces(rundownId, pieces)
 			}
 		}),
 
@@ -382,12 +386,13 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (adLibPiece) {
 				logger.debug('deleted piece ' + adLibPiece._id)
-			},
-			afterRemoveAll (pieces) {
-				afterRemovePieces(rundownId, pieces)
 			}
-		})
+		}),
+		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
+			rundownId: rundownId,
+		}, expectedPlayoutItems)
 	)
+
 	const didChange = anythingChanged(changes)
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
