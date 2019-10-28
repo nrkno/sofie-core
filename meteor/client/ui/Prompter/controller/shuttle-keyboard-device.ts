@@ -97,7 +97,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					case 'F11':
 						// jump to live
 						this._lastSpeed = this._speedMap[0]
-						this._prompterView.scrollToCurrent()
+						this._prompterView.scrollToLive()
 						return
 					case 'F12':
 						// jump to next	
