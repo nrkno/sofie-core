@@ -2,6 +2,9 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
 import * as ClassNames from 'classnames'
+import { Meteor } from 'meteor/meteor'
+import { Tracker } from 'meteor/tracker'
+import { Random } from 'meteor/random'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -14,9 +17,7 @@ import { objectPathGet, firstIfArray } from '../../../lib/lib'
 import { Parts } from '../../../lib/collections/Parts'
 import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import { Segments } from '../../../lib/collections/Segments'
-import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
-import { Meteor } from 'meteor/meteor'
 import { PubSub } from '../../../lib/api/pubsub'
 
 interface PrompterConfig {
@@ -50,8 +51,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	usedHotkeys: Array<string> = []
 
 	autoScrollPreviousPartId: string | null = null
-
-	autorun0: Tracker.Computation | undefined
 
 	configOptions: PrompterConfig
 
@@ -407,7 +406,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	renderPrompterData (prompterData: PrompterData) {
 
-		let divs: any[] = []
+		let lines: React.ReactNode[] = []
 		let previousSegmentId = ''
 		let previousPartId = ''
 		_.each(prompterData.lines, (line, i: number) => {
@@ -423,9 +422,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			if (line.segmentId !== previousSegmentId) {
 				let segment = Segments.findOne(line.segmentId)
 
-				divs.push(
+				lines.push(
 					<div
-						key={'segment_' + line.segmentId}
+						key={'segment_' + line.segmentId + "_" + Random.id()}
 						className={ClassNames(
 							'prompter-segment',
 							'scroll-anchor',
@@ -446,9 +445,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				}
 				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
-				divs.push(
+				lines.push(
 					<div
-						key={'part_' + line.partId}
+						key={'part_' + line.partId + "_" + Random.id()}
 						className={ClassNames(
 							'prompter-part',
 							'scroll-anchor',
@@ -463,7 +462,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			previousSegmentId = line.segmentId
 			previousPartId = line.partId
 
-			divs.push(
+			lines.push(
 				<div
 					key={'line_' + line.partId + "_" + line.segmentId + "_" + line.id}
 					className={ClassNames(
@@ -475,7 +474,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				</div>
 			)
 		})
-		return divs
+
+		console.log(lines)
+
+		return lines
 	}
 	render () {
 		const { t } = this.props

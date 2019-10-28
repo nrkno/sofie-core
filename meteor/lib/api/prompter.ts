@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
@@ -64,6 +65,7 @@ export namespace PrompterAPI {
 			if (!hasSentInThisLine) {
 				// insert an empty line
 				data.lines.push({
+					id: Random.id(),
 					text: '',
 					segmentId: part.segmentId,
 					partId: part._id
