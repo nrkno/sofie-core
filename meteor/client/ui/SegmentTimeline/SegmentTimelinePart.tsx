@@ -244,7 +244,15 @@ const LIVE_LINE_TIME_PADDING = 150
 export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props: IProps) => {
 	return {
 		isHighResolution: false,
-		filter: ['partDurations', props.part._id]
+		filter: (durations: RundownTiming.RundownTimingContext) => {
+			return [
+				((durations || {})['partDurations'] || {})[props.part._id],
+				((durations || {})['partDisplayStartsAt'] || {})[props.part._id],
+				((durations || {})['partDisplayDurations'] || {})[props.part._id],
+				props.firstPartInSegment ? ((durations || {})['partDisplayStartsAt'] || {})[props.firstPartInSegment._id] : undefined,
+				props.firstPartInSegment ? ((durations || {})['partDisplayDurations'] || {})[props.firstPartInSegment._id] : undefined
+			]
+		}
 	}
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	private _configValueMemo: { [key: string]: ConfigItemValue } = {}
