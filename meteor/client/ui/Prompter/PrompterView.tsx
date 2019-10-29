@@ -110,7 +110,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentDidMount () {
-		document.body.classList.add('dark', 'xdark',
+		document.body.classList.add('dark', 'xdark', 'prompter-scrollbar',
 			this.configOptions.showScroll ?
 				'vertical-overflow-only' :
 				'no-overflow')
@@ -123,7 +123,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	componentWillUnmount () {
 		super.componentWillUnmount()
 
-		document.body.classList.remove('dark', 'xdark', 
+		document.body.classList.remove('dark', 'xdark', 'prompter-scrollbar',
 			this.configOptions.showScroll ?
 				'vertical-overflow-only' :
 				'no-overflow')
