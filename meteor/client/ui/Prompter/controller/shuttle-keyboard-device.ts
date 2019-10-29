@@ -17,16 +17,19 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	private _prompterView: PrompterViewInner
 
 	private readonly _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
+	private readonly _speedStepMap = [...this._speedMap.slice(1).reverse().map(i => i * -1), ...this._speedMap.slice()]
 	
 	private _updateSpeedHandle: number|null = null
 	private _lastSpeed = 0
+	private readonly SPEEDMAP_NEUTRAL_POSITION = 7
+	private _lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 	private _currentPosition = 0
-
+	
 	private _lastTick: number | undefined
-
+	
 	constructor (view: PrompterViewInner) {
 		super(view)
-
+		
 		this._prompterView = view
 	}
 	public destroy () {
@@ -34,14 +37,8 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	}
 	public onKeyDown (e: KeyboardEvent) {
 		let speed = -1
+		let newSpeedStep = this._lastSpeedMapPosition
 		let inverse = false
-
-		// special case of filtering out missing center/stop-message
-		// by looking for numlock and seeing if the last value was 10 or -10
-		// if (e.key === 'NumLock' && Math.abs(this._lastSpeed) === this._speedMap[1]) {
-		// 	console.log('numyo')
-		// 	speed = 0
-		// }
 
 		// contour mode needs ctrl + alt + number to work
 		// filter on ctrl and alt, fail early
@@ -73,6 +70,28 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					speed = this._speedMap[7]
 					break
 			}
+			switch (e.key) {
+				case '-':
+					newSpeedStep--
+					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this._speedStepMap.length - 1))
+					this._lastSpeedMapPosition = newSpeedStep
+					speed = this._speedStepMap[this._lastSpeedMapPosition]
+					if (speed < 0) {
+						inverse = true
+					}
+					speed = Math.abs(speed)
+					break
+				case '+':
+					newSpeedStep++
+					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this._speedStepMap.length - 1))
+					this._lastSpeedMapPosition = newSpeedStep
+					speed = this._speedStepMap[this._lastSpeedMapPosition]
+					if (speed < 0) {
+						inverse = true
+					}
+					speed = Math.abs(speed)
+					break
+			}
 
 			// buttons
 			if (e.shiftKey) {
@@ -80,28 +99,33 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					case 'PageDown':
 					case 'F8':
 						// jump to next segment
-						speed = this._speedMap[0]
+						this._lastSpeed = 0
+						this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 						this._prompterView.scrollToFollowing()
-						break
+						return
 					case 'PageUp':
 					case 'F9':
 						// jump to previous segment
-						speed = this._speedMap[0]
+						this._lastSpeed = 0
+						this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 						this._prompterView.scrollToPrevious()
-						break
+						return
 					case 'F10':
 						// jump to top
-						this._lastSpeed = this._speedMap[0]
+						this._lastSpeed = 0
+						this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 						window.scrollTo(0, 0)
 						return
 					case 'F11':
 						// jump to live
-						this._lastSpeed = this._speedMap[0]
+						this._lastSpeed = 0
+						this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 						this._prompterView.scrollToLive()
 						return
 					case 'F12':
 						// jump to next	
-						this._lastSpeed = this._speedMap[0]
+						this._lastSpeed = 0
+						this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 						this._prompterView.scrollToNext()
 						return
 				}
@@ -152,6 +176,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			// We tried to move, but haven't
 			if (this._currentPosition === scrollPosition) {
 				this._lastSpeed = 0
+				this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 			}
 			this._currentPosition = scrollPosition
 		}
