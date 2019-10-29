@@ -875,10 +875,10 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
  * Mutate a value on a object
  * @param obj Object
  * @param path Path to value in object
+ * @param substitutions Object any query values to use instead of $
  * @param mutator Operation to run on the object value
- * @returns Result of the mutator
  */
-export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: Object, key: string) => T): T {
+export function mutatePath<T> (obj: Object, path: string, substitutions: Object, mutator: (parentObj: Object, key: string) => T): void {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
 	let attrs = path.split('.')
@@ -886,19 +886,73 @@ export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: O
 	let lastAttr = _.last(attrs)
 	let attrsExceptLast = attrs.slice(0, -1)
 
-	let o = obj
-	_.each(attrsExceptLast, (attr) => {
-
-		if (!_.has(o,attr)) {
-			o[attr] = {}
-		} else {
-			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+	const generateWildcardAttrInfo = () => {
+		const keys = _.filter(_.keys(substitutions), k => k.indexOf(currentPath) === 0)
+		if (keys.length === 0) {
+			// This might be a bad assumption, but as this is for tests, lets go with it for now
+			throw new Meteor.Error(500, `missing parameters for $ in "${path}"`)
 		}
-		o = o[attr]
-	})
+
+		const query: any = {}
+		const trimmedSubstitutions: any = {}
+		_.each(keys, key => {
+			// Create a mini 'query' and new substitutions with trimmed keys
+			const remainingKey = key.substr(currentPath.length)
+			if (remainingKey.indexOf('$') === -1) {
+				query[remainingKey] = substitutions[key]
+			} else {
+				trimmedSubstitutions[remainingKey] = substitutions[key]
+			}
+		})
+
+		return {
+			query,
+			trimmedSubstitutions
+		}
+	}
+
+	let o = obj
+	let currentPath = ''
+	for (const attr of attrsExceptLast) {
+		if (attr === '$') {
+			if (!_.isArray(o)) throw new Meteor.Error(500, 'Object at "' + currentPath + '" is not an array ("' + o + '") (in path "' + path + '")')
+
+			const info = generateWildcardAttrInfo()
+			for (const obj of o) {
+				// mutate any objects which match
+				if (_.isMatch(obj, info.query)) {
+					mutatePath(obj, path.substr(currentPath.length + 2), info.trimmedSubstitutions, mutator)
+				}
+			}
+
+			// Break the outer loop, as it gets handled with the for loop above
+			break
+
+		} else {
+			if (!_.has(o,attr)) {
+				o[attr] = {}
+			} else {
+				if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+			}
+			o = o[attr]
+		}
+		currentPath += `${attr}.`
+	}
 	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
 
-	return mutator(o, lastAttr)
+	if (lastAttr === '$') {
+		if (!_.isArray(o)) throw new Meteor.Error(500, 'Object at "' + currentPath + '" is not an array ("' + o + '") (in path "' + path + '")')
+
+		const info = generateWildcardAttrInfo()
+		for (const childPath in o) {
+			// mutate any objects which match
+			if (_.isMatch(o[childPath], info.query)) {
+				mutator(o, childPath)
+			}
+		}
+	} else {
+		mutator(o, lastAttr)
+	}
 }
 /**
  * Push a value into a object, and ensure the array exists
@@ -906,7 +960,7 @@ export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: O
  * @param path Path to array in object
  * @param valueToPush Value to push onto array
  */
-export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T) {
 	let mutator = (o: Object, lastAttr: string) => {
 		if (!_.has(o,lastAttr)) {
 			o[lastAttr] = []
@@ -918,24 +972,42 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 		arr.push(valueToPush)
 		return arr
 	}
-	return mutatePath(obj, path, mutator)
+	mutatePath(obj, path, {}, mutator)
+}
+/**
+ * Push a value from a object, when the value matches
+ * @param obj Object
+ * @param path Path to array in object
+ * @param valueToPush Value to push onto array
+ */
+export function pullFromPath<T> (obj: Object, path: string, matchValue: T) {
+	let mutator = (o: Object, lastAttr: string) => {
+		if (_.has(o, lastAttr)) {
+			if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
+
+			return o[lastAttr] = _.filter(o[lastAttr], (entry: T) => !_.isMatch(entry, matchValue))
+		}
+	}
+	mutatePath(obj, path, {}, mutator)
 }
 /**
  * Set a value into a object
  * @param obj Object
  * @param path Path to value in object
+ * @param substitutions Object any query values to use instead of $
  * @param valueToPush Value to set
  */
-export function setOntoPath<T> (obj: Object, path: string, valueToSet: T) {
-	mutatePath(obj, path, (parentObj: Object, key: string) => parentObj[key] = valueToSet)
+export function setOntoPath<T> (obj: Object, path: string, substitutions: Object, valueToSet: T) {
+	mutatePath(obj, path, substitutions, (parentObj: Object, key: string) => parentObj[key] = valueToSet)
 }
 /**
  * Remove a value from a object
  * @param obj Object
  * @param path Path to value in object
+ * @param substitutions Object any query values to use instead of $
  */
-export function unsetPath (obj: Object, path: string) {
-	mutatePath(obj, path, (parentObj: Object, key: string) => delete parentObj[key])
+export function unsetPath (obj: Object, path: string, substitutions: Object) {
+	mutatePath(obj, path, substitutions, (parentObj: Object, key: string) => delete parentObj[key])
 }
 /**
  * Replaces all invalid characters in order to make the path a valid one

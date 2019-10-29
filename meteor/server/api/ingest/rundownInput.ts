@@ -37,7 +37,7 @@ import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
-import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -314,7 +314,7 @@ function updateRundownFromIngestData (
 	const baselineObj: RundownBaselineObj = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
-		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
+		objects: postProcessRundownBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)

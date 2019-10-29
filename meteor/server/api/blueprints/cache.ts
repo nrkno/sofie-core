@@ -78,9 +78,9 @@ export function getBlueprintOfRundownAsync (rundown: Rundown): Promise<WrappedSh
 export function getBlueprintOfRundown (rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
 
 	const fcn = () => {
-		if (!rundown.showStyleBaseId) throw new Meteor.Error(400, `Rundown is missing showStyleBaseId!`)
+		if (!rundown.showStyleBaseId) throw new Meteor.Error(400, `Rundown "${rundown._id}" is missing showStyleBaseId!`)
 		let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
+		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`)
 		return loadShowStyleBlueprints(showStyleBase)
 	}
 
@@ -92,6 +92,10 @@ export function getBlueprintOfRundown (rundown: Rundown, noCache?: boolean): Wra
 }
 
 export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
+	if (!showStyleBase.blueprintId) {
+		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
+	}
+
 	const blueprint = loadBlueprintsById(showStyleBase.blueprintId)
 	if (!blueprint) {
 		throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
