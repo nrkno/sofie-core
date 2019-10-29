@@ -148,6 +148,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		
 		// update flag for comparison on next iteration
 		this._lastSpeed = speed
+		console.log(this._lastSpeed)
 		this._updateScrollPosition()
 	}
 	public onKeyUp (e: KeyboardEvent) {
@@ -175,8 +176,9 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		if (scrollPosition !== undefined) {
 			// We tried to move, but haven't
 			if (this._currentPosition === scrollPosition) {
-				this._lastSpeed = 0
-				this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
+				// this._lastSpeed = 0
+				// this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
+				console.log('failed')
 			}
 			this._currentPosition = scrollPosition
 		}
