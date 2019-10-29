@@ -168,23 +168,27 @@ const AdLibListView = translate()(class extends React.Component<
 		return <tbody className='adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline'>
 			{
 				this.props.rundownAdLibs && this.props.rundownAdLibs.
-					filter((item) => {
-						return matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.props.searchFilter)
-					}).
-					map((item: AdLibPieceUi) => {
-						return (
-							<AdLibListItem
-								key={item._id}
-								item={item}
-								selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-								layer={this.state.sourceLayers[item.sourceLayerId]}
-								outputLayer={this.state.outputLayers[item.outputLayerId]}
-								onToggleAdLib={this.props.onToggleAdLib}
-								onSelectAdLib={this.props.onSelectAdLib}
-								rundown={this.props.rundown}
-							/>
+					filter((item) => 
+						matchFilter(
+							item,
+							this.props.showStyleBase,
+							this.props.uiSegments,
+							this.props.filter,
+							this.props.searchFilter
 						)
-					})
+					).
+					map((item: AdLibPieceUi) => 
+						<AdLibListItem
+							key={item._id}
+							item={item}
+							selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+							layer={this.state.sourceLayers[item.sourceLayerId]}
+							outputLayer={this.state.outputLayers[item.outputLayerId]}
+							onToggleAdLib={this.props.onToggleAdLib}
+							onSelectAdLib={this.props.onSelectAdLib}
+							rundown={this.props.rundown}
+						/>
+					)
 			}
 		</tbody>
 	}
@@ -216,22 +220,27 @@ const AdLibListView = translate()(class extends React.Component<
 						</tr>
 						{
 							seg.pieces && seg.pieces.
-								sort((a, b) => a._rank - b._rank).
-								filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.props.searchFilter)).
-								map((item: AdLibPieceUi) => {
-									return (
-										<AdLibListItem
-											key={item._id}
-											item={item}
-											selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-											layer={this.state.sourceLayers[item.sourceLayerId]}
-											outputLayer={this.state.outputLayers[item.outputLayerId]}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											rundown={this.props.rundown}
-											/>
+								filter((item) =>
+									matchFilter(
+										item,
+										this.props.showStyleBase,
+										this.props.uiSegments,
+										this.props.filter,
+										this.props.searchFilter
 									)
-								})
+								).
+								map((item: AdLibPieceUi) =>
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+										layer={this.state.sourceLayers[item.sourceLayerId]}
+										outputLayer={this.state.outputLayers[item.outputLayerId]}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+										rundown={this.props.rundown}
+										/>
+								)
 						}
 					</tbody>
 				)
@@ -429,8 +438,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		let rundownAdLibItems = RundownBaselineAdLibPieces.find({
 			rundownId: props.rundown._id
 		}, {
-				sort: { sourceLayerId: 1, _rank: 1 }
-			}).fetch()
+			sort: { sourceLayerId: 1, _rank: 1, name: 1 }
+		}).fetch()
 		rundownBaselineAdLibs = rundownAdLibItems.map((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: AdLibPieceUi = _.clone(item)
@@ -458,6 +467,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			return uiAdLib
 		}).
 			concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
+				sort((a, b) => a._rank - b._rank).
 				map(layer => literal<AdLibPieceUi>({
 					_id: `sticky_${layer._id}`,
 					hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
@@ -480,7 +490,9 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		}
 
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
-			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(props.showStyleBase.sourceLayers.filter(i => !!i.clearKeyboardHotkey).
+			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(props.showStyleBase.sourceLayers.
+				filter(i => !!i.clearKeyboardHotkey).
+				sort((a, b) => a._rank - b._rank).
 				map(layer => literal<AdLibPieceUi>({
 					_id: `clear_${layer._id}`,
 					hotkey: layer.clearKeyboardHotkey ? layer.clearKeyboardHotkey.split(',')[0] : '',
