@@ -43,6 +43,9 @@ const commonConfig = {
 		"!**/*.{tsx}",
 		"!**/client/main.js",
 		"!.meteor/**/*.*",
+		"!**/__tests__/**",
+		"!**/__mocks__/**",
+		'!**/node_modules/**'
 	],
 	collectCoverage: false,
 	watchPathIgnorePatterns: [
