@@ -5,6 +5,7 @@
 
 const { Meteor } = require('meteor/meteor');
 const util = require('util')
+const EJSON = require('ejson')
 
 Meteor.makeErrorType = function (name, constructor) {
 	var errorClass = function (/*arguments*/) {

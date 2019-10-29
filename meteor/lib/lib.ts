@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions } from './typings/meteor'
+import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions, FindOptions } from './typings/meteor'
 import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
@@ -670,14 +670,7 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 export function asyncCollectionFindFetch<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
-	options?: {
-		sort?: Mongo.SortSpecifier
-		skip?: number
-		limit?: number
-		fields?: Mongo.FieldSpecifier
-		reactive?: boolean
-		transform?: Function
-	}
+	options?: FindOptions
 ): Promise<Array<DocClass>> {
 	return new Promise((resolve, reject) => {
 		let results = collection.find(selector, options).fetch()
