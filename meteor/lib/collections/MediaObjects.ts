@@ -4,24 +4,25 @@ import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 
 export interface MediaObject0 {
-	// Media object file path relative to playout server
+	/** Media object file path relative to playout server */
 	mediaPath: string
-	// Media object size in bytes
+	/** Media object size in bytes */
 	mediaSize: number
-	// Timestamp when the media object was last updated
+	/** Timestamp when the media object was last updated */
 	mediaTime: number
+	/** Info about media content. If undefined: inficates that the media is NOT playable (could be transferring, or a placeholder)  */
 	mediainfo?: MediaInfo
 
-	// Thumbnail file size in bytes
+	/** Thumbnail file size in bytes */
 	thumbSize: number
-	// Thumbnail last updated timestamp
+	/** Thumbnail last updated timestamp */
 	thumbTime: number
 
-	// Preview file size in bytes
+	/** Preview file size in bytes */
 	previewSize?: number
-	// Thumbnail last updated timestamp
+	/** Thumbnail last updated timestamp */
 	previewTime?: number
-	// Preview location
+	/** Preview location */
 	previewPath?: string
 
 	cinf: string // useless to us
@@ -34,12 +35,13 @@ export interface MediaObject0 {
 	_rev: string
 }
 export interface MediaObject extends MediaObject0 {
+	/** The studio this Mediaobject resides in */
 	studioId: string
-	// the Id of the MediaObject database this object has been imported from - essentially CasparCG Device Id this file is on
+	/** the Id of the MediaObject database this object has been imported from - essentially CasparCG Device Id this file is on */
 	collectionId: string // Note: To be renamed to storageId
-	// the Id in the MediaObject in the source database
+	/** the Id in the MediaObject in the source database */
 	objId: string
-	// the CasparCG clip name
+	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
 	mediaId: string
 }
 
@@ -88,13 +90,13 @@ export enum FieldOrder {
 
 export interface MediaInfo {
 	name: string
-	field_order: FieldOrder
-	scenes: number[]
-	blacks: Array<Anomaly>
-	freezes: Array<Anomaly>
-	streams: MediaStream[]
-	format: MediaFormat
-	timebase: number
+	field_order?: FieldOrder
+	scenes?: number[]
+	blacks?: Array<Anomaly>
+	freezes?: Array<Anomaly>
+	streams?: MediaStream[]
+	format?: MediaFormat
+	timebase?: number
 }
 
 export interface Anomaly {
