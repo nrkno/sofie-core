@@ -175,7 +175,8 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		const scrollPosition = window.scrollY
 		if (scrollPosition !== undefined) {
 			// We tried to move, but haven't
-			if (Math.abs(this._currentPosition - scrollPosition) < 1) {
+			console.log(`diff: ${Math.abs(this._currentPosition - scrollPosition)}`)
+			if (Math.abs(this._currentPosition - scrollPosition) < 2) {
 				this._lastSpeed = 0
 				this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 				console.log('failed')
