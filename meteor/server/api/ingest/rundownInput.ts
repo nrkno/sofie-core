@@ -532,7 +532,9 @@ function updateSegmentFromIngestData (
 			_id: { $in: _.pluck(parts, '_id') }
 		}, { $set: {
 			segmentId: segmentId
-		}})
+		}}, {
+			multi: true
+		})
 	]))
 
 	const changes = sumChanges(

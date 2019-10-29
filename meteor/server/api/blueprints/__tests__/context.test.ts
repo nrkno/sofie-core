@@ -909,7 +909,9 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			expect(context.formatDateAsTimecode(0)).toEqual('00:00:00:00')
-			expect(context.formatDateAsTimecode(1571679214880)).toEqual('18:33:34:22')
+
+			const d = new Date('2019-01-01 18:33:34:896')
+			expect(context.formatDateAsTimecode(d.getTime())).toEqual('18:33:34:22')
 		})
 
 		test('formatDurationAsTimecode', () => {
