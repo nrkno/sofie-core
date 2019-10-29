@@ -578,7 +578,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						{
 							this.props.prompterData.lines.length ?
 								<div className='prompter-break end'>
-									-{t('End of script')}-
+									—{t('End of script')}—
 							</div> : null
 						}
 					</div>
