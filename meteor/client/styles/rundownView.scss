@@ -131,6 +131,11 @@ body.vertical-overflow-only {
     overflow-y: auto;
 }
 
+body.no-overflow {
+	overflow-x: hidden;
+    overflow-y: hidden;
+}
+
 .rundown-view__focus-lost-frame {
 	position: fixed;
 	top: 0;

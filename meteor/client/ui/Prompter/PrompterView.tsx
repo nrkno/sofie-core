@@ -31,6 +31,7 @@ interface PrompterConfig {
 
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
+	showScroll: boolean
 }
 interface IProps {
 	match?: {
@@ -80,7 +81,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
 
 			marker: firstIfArray(queryParams['marker']) as any || undefined,
-			showMarker: (queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1')
+			showMarker: (queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1'),
+			showScroll: (queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1')
 		}
 
 		this._controller = new PrompterControlManager(this)
@@ -108,7 +110,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentDidMount () {
-		document.body.classList.add('dark', 'vertical-overflow-only')
+		document.body.classList.add('dark', 'xdark',
+			this.configOptions.showScroll ?
+				'vertical-overflow-only' :
+				'no-overflow')
 		window.addEventListener('scroll', this.onWindowScroll)
 
 		this.triggerCheckCurrentTakeMarkers()
@@ -118,12 +123,14 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	componentWillUnmount () {
 		super.componentWillUnmount()
 
-		document.body.classList.remove('dark', 'vertical-overflow-only')
+		document.body.classList.remove('dark', 'xdark', 
+			this.configOptions.showScroll ?
+				'vertical-overflow-only' :
+				'no-overflow')
 		window.removeEventListener('scroll', this.onWindowScroll)
 	}
 
 	componentDidUpdate () {
-		document.body.classList.add('dark', 'xdark', 'vertical-overflow-only')
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}

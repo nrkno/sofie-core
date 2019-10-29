@@ -33,21 +33,21 @@ npm link mos-connection
 
 In order for the system to work properly, it may be neccessary to set up several system properties. These can be set through environement variables - if not present, default values will be used.
 
-|Setting         |Use                                                       |Default value      |
-|----------------|----------------------------------------------------------|-------------------|
-|`NTP_SERVERS`   |Comma separated list of time servers to sync the system to|`0.se.pool.ntp.org`|
-|`FRAME_RATE`    |Framerate to be used when displaying time with frame accuracy|`25`            |
+| Setting       | Use                                                           | Default value       |
+| ------------- | ------------------------------------------------------------- | ------------------- |
+| `NTP_SERVERS` | Comma separated list of time servers to sync the system to    | `0.se.pool.ntp.org` |
+| `FRAME_RATE`  | Framerate to be used when displaying time with frame accuracy | `25`                |
 
 
 ## Additional views
 
 For the purpose of running the system in a studio environment, there are additional endpoints, unavailable from the menu structure.
 
-|Path     |Function     |
-|---------|-------------|
-|`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
-|`/activeRundown/:studioId`|Redirects to the rundown currently active in a given studio|
-|`/prompter/:studioId`|A simple prompter for the studio presenter|
+| Path                              | Function                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter |
+| `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio              |
+| `/prompter/:studioId`             | A simple prompter for the studio presenter                               |
 
 ## Studio mode
 
@@ -85,15 +85,17 @@ To cycle between operating modes, press *both mouse keys* simultaneously.
 
 The prompter can be configured using URL parameters:
 
-| Query parameter | Type    | Description                                                                                     | Default  |
-|-----------------|---------|-------------------------------------------------------------------------------------------------|----------|
-| mirror          | string  | Mirror the display horisontally                                                                 |          |
-| vmirror         | string  | Mirror the display vertically                                                                   |          |
-| mode            | string  | Restrict the operating mode. Possible values: "normal", "speed", "smoothscroll"                 |          |
-| followtake      | 0 / 1   | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it | 1        |
-| fontsize        | number  | Set a custom font size of the text. 20 will fit in 5 lines of text, 14 will fit 7 lines etc..   | 14       |
-| marker          | string  | Set position of the read-marker. Possible values: "center", "top", "bottom", "hide"             | "hide"   |
-| margin          | number  | Set margin of screen (used on monitors with overscan), in %.                                    | 0        |
+| Query parameter | Type   | Description                                                                                     | Default |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------- | ------- |
+| `mirror`        | string | Mirror the display horisontally                                                                 |         |
+| `vmirror`       | string | Mirror the display vertically                                                                   |         |
+| `mode`          | string | Restrict the operating mode. Possible values: "normal", "speed", "smoothscroll"                 |         |
+| `followtake`    | 0 / 1  | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it | 1       |
+| `fontsize`      | number | Set a custom font size of the text. 20 will fit in 5 lines of text, 14 will fit 7 lines etc..   | 14      |
+| `marker`        | string | Set position of the read-marker. Possible values: "center", "top", "bottom", "hide"             | "hide"  |
+| `margin`        | number | Set margin of screen (used on monitors with overscan), in %.                                    | 0       |
+| `showmarker`    | 0 / 1  | If the marker is not set to "hide", control if the marker is hidden or not                      | 1       |
+| `showscroll`    | 0 / 1  | Whether the scroll bar should be shown                                                          | 1       |
 
 Example: http://mySofie/prompter/studio0/?mode=smoothscroll&followTake=0&fontsize=20
 
