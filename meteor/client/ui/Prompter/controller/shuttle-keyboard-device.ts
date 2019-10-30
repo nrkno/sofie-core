@@ -164,10 +164,17 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private _updateScrollPosition () {
+	private _updateScrollPosition (time?: number) {
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
 
+		let factor = 1
+		// calculate the length of the frame and how it should affect the amount scrolled
+		if (time && this._lastTick) {
+			factor = (time - this._lastTick) / 16.66 // 1000 ms / 60 f = 16.66 ms/f
+		}
+		this._lastTick = time
+		
 		// update scroll position
 		window.scrollBy(0, this._lastSpeed)
 
@@ -186,9 +193,9 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 
 		// create recursive loop
 		if (this._lastSpeed !== 0) {
-			this._updateSpeedHandle = window.requestAnimationFrame(() => {
+			this._updateSpeedHandle = window.requestAnimationFrame((time) => {
 				this._updateSpeedHandle = null
-				this._updateScrollPosition()
+				this._updateScrollPosition(time)
 			})
 		} else {
 			this._lastTick = undefined
