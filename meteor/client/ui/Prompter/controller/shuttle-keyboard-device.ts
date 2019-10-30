@@ -171,12 +171,12 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		let factor = 1
 		// calculate the length of the frame and how it should affect the amount scrolled
 		if (time && this._lastTick) {
-			factor = (time - this._lastTick) / (1000 / 16) //16.66 -> 1000 ms / 60 f = 16.66 ms/f
+			factor = (time - this._lastTick) / (1000 / 60) //16.66 -> 1000 ms / 60 f = 16.66 ms/f
 		}
 		this._lastTick = time
 		
 		// update scroll position
-		console.log(`factor: ${factor}, actual speed: ${this._lastSpeed * factor}`)
+		console.log(`factor: ${factor.toFixed(4)}, actual speed: ${(this._lastSpeed * factor).toFixed(4)}`)
 		window.scrollBy(0, this._lastSpeed * factor)
 
 		// check for reached end-of-scroll:
