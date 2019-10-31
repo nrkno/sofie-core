@@ -487,7 +487,7 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 
 				if (typeof expandedOptions.filter === 'function') {
 					this.filterGetter = expandedOptions.filter
-				} else {
+				} else if (expandedOptions.filter) {
 					this.filterGetter = _.property(expandedOptions.filter as string)
 				}
 			}
