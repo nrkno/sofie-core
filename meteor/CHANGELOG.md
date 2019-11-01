@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.2"></a>
+## [1.1.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.1.1...v1.1.2) (2019-11-01)
+
+
+### Bug Fixes
+
+* **timing:** fix an issue with undefined timing filter causing the child element to never refresh ([a1faf9f](https://github.com/nrkno/tv-automation-server-core/commit/a1faf9f))
+
+
+
 <a name="1.1.1"></a>
 ## [1.1.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.1.0...v1.1.1) (2019-10-30)
 
