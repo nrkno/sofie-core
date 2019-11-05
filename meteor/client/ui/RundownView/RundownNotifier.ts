@@ -466,7 +466,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			} else if (versionMismatch) {
 				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), 'rundown_' + rundownId, getCurrentTime(), true, [
 					{
-						label: t('Reload ENPS Data'),
+						label: t('Reload iNews Data'),
 						type: 'primary',
 						action: (e) => {
 							const reloadFunc = reloadRundownClick.get()
