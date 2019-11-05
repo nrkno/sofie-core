@@ -33,15 +33,8 @@ function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneri
 							type: noraPayload.template.layer,
 							userContext: {}
 						},
-						template: {
-							name: noraPayload.template.name,
-							layer: noraPayload.template.layer
-						},
-						content: {
-							navn: noraPayload.content.navn,
-							tittel: noraPayload.content.tittel,
-							_valid: noraPayload.content._valid
-						}
+						template: noraPayload.template,
+						content: noraPayload.content
 					}
 				}, {
 					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/timing',
