@@ -984,7 +984,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 										null
 								}
 								<MenuItem onClick={(e) => this.reloadRundown(e)}>
-									{t('Reload ENPS Data')}
+									{t('Reload iNews Data')}
 								</MenuItem>
 								<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>
 									{t('Store Snapshot')}
