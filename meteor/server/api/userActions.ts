@@ -31,8 +31,11 @@ import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 
-const MINIMUM_TAKE_SPAN = 1000
-
+let MINIMUM_TAKE_SPAN = 1000
+export function setMinimumTakeSpan (span: number) {
+	// Used in tests
+	MINIMUM_TAKE_SPAN = span
+}
 /*
 	The functions in this file are used to provide a pre-check, before calling the real functions.
 	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.

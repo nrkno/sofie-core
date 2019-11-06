@@ -1,29 +1,20 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../lib/logging'
-import { syncFunction, Callback, waitTime } from '../codeControl'
-import { rundownSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import '../../__mocks__/_extendJest'
 import { testInFiber } from '../../__mocks__/helpers/jest'
+import { syncFunction, Callback, waitTime, syncFunctionIgnore } from '../codeControl'
+import { RundownSyncFunctionPriority, rundownSyncFunction } from '../api/ingest/rundownInput'
+import { tic, toc, waitForPromise, makePromise, waitForPromiseAll } from '../../lib/lib'
 
-function assertTimecloseTo (start: number, target: number) {
-	let deltaTime = Date.now() - start
-	let diff = Math.abs(deltaTime - target)
-
-	if (diff > 50) {
-		throw new Meteor.Error(500, `Assert: time too far from ${target} (${deltaTime}) `)
-	}
-}
-
-describe('codeControl', () => {
-	jest.useFakeTimers()
-
-	let takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {
-		// console.log('fcn start ' + name)
-		setTimeout(() => {
-			// console.log('fcn end')
-			cb(null, 'result yo ' + name)
-		}, 100)
+const TIME_FUZZY = 50
+const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {
+	setTimeout(() => {
+		cb(null, 'result yo ' + name)
+	}, 100 - 5) // subtract to account for slowness in Jest
+})
+describe('codeControl rundown', () => {
+	beforeEach(() => {
+		jest.useFakeTimers()
 	})
-
 	testInFiber('rundownSyncFunction', () => {
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
 			return rundownSyncFunction('ro1', priority, () => takesALongTimeInner(name))
@@ -31,164 +22,253 @@ describe('codeControl', () => {
 
 		let res: any[] = []
 		Meteor.setTimeout(() => {
-			res.push(sync1('abc', RundownSyncFunctionPriority.Ingest))
+			res.push(sync1('ingest0', RundownSyncFunctionPriority.Ingest))
+		}, 10)
+		Meteor.setTimeout(() => {
+			res.push(sync1('ingest1', RundownSyncFunctionPriority.Ingest))
 		}, 30)
 		Meteor.setTimeout(() => {
-			res.push(sync1('zzz', RundownSyncFunctionPriority.Playout))
+			res.push(sync1('playout0', RundownSyncFunctionPriority.Playout))
 		}, 50)
-		Meteor.setTimeout(() => {
-			res.push(sync1('def', RundownSyncFunctionPriority.Ingest))
-		}, 10)
 
 		jest.runTimersToTime(120)
 		expect(res).toEqual([
-			'result yo def',
+			'result yo ingest0',
 		])
 
 		jest.runTimersToTime(100)
 		expect(res).toEqual([
-			'result yo def', // Pushed to queue first
-			'result yo zzz', // High priority bumps it above abc
+			'result yo ingest0', // Pushed to queue first
+			'result yo playout0', // High priority bumps it above ingest1
 		])
 
 		jest.runTimersToTime(100)
+
 		expect(res).toEqual([
-			'result yo def', // Pushed to queue first
-			'result yo zzz', // High priority bumps it above abc
-			'result yo abc',
+			'result yo ingest0', // Pushed to queue first
+			'result yo playout0', // High priority bumps it above ingest1
+			'result yo ingest1',
 		])
 	})
+})
+describe('codeControl', () => {
+	beforeEach(() => {
+		jest.useRealTimers()
+	})
 
-	// testInFiber('syncFunction', () => { // TODO - what does this test do?
-	// 	let takesALongTime = syncFunction((name: string) => {
-	// 		return takesALongTimeInner(name)
-	// 	})
+	const takesALongTime = syncFunction((name: string) => {
+		return takesALongTimeInner(name)
+	})
+	const takesALongTimeIgnore = syncFunctionIgnore((name: string) => {
+		const a = takesALongTimeInner(name)
+		return a
+	})
+	const takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name: string, name2: string, cb: Callback) {
+		Meteor.setTimeout(() => {
+			cb(null, 'result yo ' + name + name2)
+		}, 100)
+	})
+	const takesALongTime3 = syncFunction((name: string, name2: string) => {
+		return takesALongTimeInner3(name, name2)
+	}, 'aa$0')
 
-	// 	let takesALongTime2 = syncFunction((name: string) => {
-	// 		return takesALongTimeInner(name)
-	// 	}, 'asdf')
+	testInFiber('syncFunction, 1 queue', () => {
+		// Running a syncFunction in a queue
 
-	// 	let takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name: string, name2: string, cb: Callback) {
-	// 		logger.info('fcn start ' + name + name2)
-	// 		Meteor.setTimeout(() => {
-	// 			logger.info('fcn end')
-	// 			cb(null, 'result yo ' + name + name2)
-	// 		}, 100)
-	// 	})
+		const res: any[] = []
+		tic()
 
-	// 	let takesALongTime3 = syncFunction((name: string, name2: string) => {
-	// 		return takesALongTimeInner3(name, name2)
-	// 	}, 'aa$0')
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
 
-	// 	Meteor.setTimeout(() => {
-	// 		// test the function
-	// 		let start = Date.now()
-	// 		logger.info('')
-	// 		logger.info('')
-	// 		logger.info('')
-	// 		logger.info('==================================================')
-	// 		logger.info('DEBUG: testing deferAndRateLimit')
+		res.push(takesALongTime('run0'))
 
-	// 		logger.info('Running first round of functions...')
-	// 		let res: any[] = []
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
-	// 		assertTimecloseTo(start, 100)
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
-	// 		logger.info('Done first runs')
-	// 		logger.info('results: ' + res)
+		expect(toc()).toBeFuzzy(100, TIME_FUZZY)
 
-	// 		assertTimecloseTo(start, 200)
-	// 		start = Date.now()
+		res.push(takesALongTime('run0'))
 
-	// 		logger.info('Running second round of functions...')
-	// 		res = []
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+	})
 
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
+	testInFiber('syncFunction, 2 queues', () => {
+		// Running in two parallel queues, run0 and run1:
 
-	// 		assertTimecloseTo(start, 100)
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run1'))
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run1'))
-	// 		logger.info('Done second round')
-	// 		logger.info('results: ' + res)
+		const res: any[] = []
+		tic()
+		// First, just run them sequentially
+		res.push(takesALongTime('run0'))
+		res.push(takesALongTime('run0'))
 
-	// 		assertTimecloseTo(start, 500)
-	// 		start = Date.now()
+		res.push(takesALongTime('run1'))
+		res.push(takesALongTime('run1'))
 
-	// 		logger.info('Running third round of functions...')
-	// 		res = []
+		expect(toc()).toBeFuzzy(400, TIME_FUZZY)
 
-	// 		Meteor.setTimeout(() => {
-	// 			logger.info('Run fcn from timeout...')
-	// 			takesALongTime('run0')
-	// 		}, 10)
+		// Run them in parallell, the 2 queues should kick in now:
+		res.splice(0, 99)
+		tic()
 
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
-	// 		logger.info('Run fcn...')
-	// 		res.push(takesALongTime('run0'))
+		const ps = [
+			makePromise(() => res.push(takesALongTime('run0'))),
+			makePromise(() => res.push(takesALongTime('run0'))),
+			makePromise(() => res.push(takesALongTime('run1'))),
+			makePromise(() => res.push(takesALongTime('run1'))),
+		]
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
+		expect(res).toHaveLength(0)
 
-	// 		logger.info('Done third round')
-	// 		logger.info('results: ' + res)
+		waitForPromiseAll(ps)
 
-	// 		assertTimecloseTo(start, 300)
-	// 		start = Date.now()
-	// 		// test syncFunction id argument:
-	// 		logger.info('Running 4th round of functions...')
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(res).toMatchObject([
+			'result yo run0',
+			'result yo run1',
+			'result yo run0',
+			'result yo run1'
+		])
+	})
+	testInFiber('takesALongTimeIgnore, 2 queues', () => {
+		// Running in two parallel queues, run0 and run1:
 
-	// 		Meteor.setTimeout(() => {
-	// 			logger.info('Run fcn from timeout...')
-	// 			takesALongTime2('run0')
-	// 			logger.info('Run fcn from timeout...')
-	// 			takesALongTime2('run1')
-	// 		}, 10)
+		const res: any[] = []
+		tic()
+		// First, just run them sequentially
+		res.push(takesALongTimeIgnore('run0'))
+		res.push(takesALongTimeIgnore('run0'))
 
-	// 		logger.info('Run fcn...')
-	// 		takesALongTime2('aaa')
-	// 		logger.info('Run fcn...')
-	// 		takesALongTime2('run0')
-	// 		logger.info('Run fcn...')
-	// 		takesALongTime2('run1')
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		tic()
 
-	// 		assertTimecloseTo(start, 500)
-	// 		start = Date.now()
+		res.push(takesALongTimeIgnore('run1'))
+		res.push(takesALongTimeIgnore('run1'))
 
-	// 		logger.info('Running 5th round of functions...')
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
 
-	// 		Meteor.setTimeout(() => {
-	// 			logger.info('Run fcn from timeout...')
-	// 			takesALongTime3('run0', '3')
-	// 		}, 10)
-	// 		Meteor.setTimeout(() => {
-	// 			logger.info('Run fcn from timeout...')
-	// 			takesALongTime3('run1', '2')
-	// 		}, 10)
+		// Run them in parallell, the 2 queues should kick in now:
+		res.splice(0, 99)
+		tic()
 
-	// 		logger.info('Run fcn...')
-	// 		takesALongTime3('run0', '1')
-	// 		logger.info('Run fcn...')
-	// 		takesALongTime3('run1', '4')
+		const ps = [
+			makePromise(() => res.push(takesALongTimeIgnore('run0'))),
+			makePromise(() => res.push(takesALongTimeIgnore('run0'))),
+			makePromise(() => res.push(takesALongTimeIgnore('run0'))),
+			makePromise(() => res.push(takesALongTimeIgnore('run1'))),
+			makePromise(() => res.push(takesALongTimeIgnore('run1'))),
+			makePromise(() => res.push(takesALongTimeIgnore('run1'))),
+		]
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
+		expect(res).toHaveLength(0)
 
-	// 		assertTimecloseTo(start, 200)
+		waitForPromiseAll(ps)
 
-	// 		logger.info('Run fcn...')
-	// 		takesALongTime3('run0', '5')
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(res).toMatchObject([
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined
+		])
+	})
+	testInFiber('waitTime', () => {
+		tic()
 
-	// 		assertTimecloseTo(start, 300)
+		waitTime(700)
 
-	// 		start = Date.now()
+		expect(toc()).toBeFuzzy(700, TIME_FUZZY)
+	})
+	testInFiber('syncFunction, anonymous', () => {
 
-	// 		logger.info('Run all tests successfully!')
-	// 	}, 10)
+		// Make sure that anonymous syncFunctions work
+		const fcn0 = syncFunction(() => {
+			waitTime(95)
+			return 'a'
+		})
+		const fcn1 = syncFunction(() => {
+			waitTime(95)
+			return 'b'
+		})
+		const res: any[] = []
+		tic()
+		const ps = [
+			makePromise(() => res.push(fcn0())),
+			makePromise(() => res.push(fcn0())),
+			makePromise(() => res.push(fcn1())),
+			makePromise(() => res.push(fcn1())),
+		]
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
+		expect(res).toHaveLength(0)
 
-	// 	waitTime(2500)
-	// })
+		waitForPromiseAll(ps)
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(res).toMatchObject([
+			'a',
+			'b',
+			'a',
+			'b'
+		])
+	})
+	testInFiber('syncFunction, anonymous with arguments', () => {
+
+		const fcn = syncFunction((a: number) => {
+			waitTime(95)
+			return a
+		})
+		const res: any[] = []
+		tic()
+		const ps = [
+			makePromise(() => res.push(fcn(1))),
+			makePromise(() => res.push(fcn(1))),
+			makePromise(() => res.push(fcn(2))),
+			makePromise(() => res.push(fcn(3))),
+		]
+		// ^ This should cause 3 queueus to run, the longest queue being 200 ms
+
+		expect(toc()).toBeFuzzy(0, TIME_FUZZY)
+		expect(res).toHaveLength(0)
+
+		waitForPromiseAll(ps)
+		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(res).toMatchObject([
+			1,
+			2,
+			3,
+			1
+		])
+	})
+	testInFiber('syncFunction, too long running', () => {
+
+		const neverEnding = syncFunction(() => {
+			waitTime(1000) // 10s, is too long and should cause a timeout
+			return 'a'
+		}, undefined, 500) // a timeout of 1000 ms
+
+		const res: any[] = []
+		tic()
+
+		let a0 = ''
+		let a1 = ''
+		let error = ''
+		try {
+			Meteor.setTimeout(() => {
+				a1 = neverEnding() // when calling this, it should trace an error that the  and still start this one
+			}, 550)
+			a0 = neverEnding()
+		} catch (e) {
+			error = e
+		}
+
+		expect(toc()).toBeFuzzy(1000, TIME_FUZZY)
+
+		expect(a0).toEqual('a')
+		expect(a1).toEqual('')
+		expect(error).toEqual('')
+
+
+		waitTime(1000)
+
+		expect(a0).toEqual('a')
+		expect(a1).toEqual('a')
+		expect(error).toEqual('')
+	})
 })

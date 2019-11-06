@@ -1,5 +1,6 @@
 import { setLoggerLevel } from '../server/api/logger'
 import { runInFiber, Fiber } from './Fibers'
+import { resetRandomId } from './random'
 import { makeCompatible } from 'meteor-promise'
 
 // This file is run before all tests start.
@@ -27,4 +28,5 @@ beforeEach(() => {
 	setLoggerLevel('warning')
 	// put setLoggerLevel('info') in the beginning of your test to see logs
 
+	resetRandomId()
 })

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-10-02T09:58:48.132Z\n"
-"PO-Revision-Date: 2019-10-02T09:58:48.132Z\n"
+"POT-Creation-Date: 2019-11-05T11:44:00.251Z\n"
+"PO-Revision-Date: 2019-11-05T11:44:00.251Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -88,6 +88,9 @@ msgstr ""
 msgid "Connected to the"
 msgstr ""
 
+msgid "Reconnect now"
+msgstr ""
+
 msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
@@ -157,10 +160,19 @@ msgstr ""
 msgid "Re-sync with MOS"
 msgstr ""
 
-msgid "Add rundowns by connecting a gateway.\n"
+msgid "Enable configuration mode by adding ?configure=1 to the address bar."
 msgstr ""
 
-msgid "Check system status messages.\n"
+msgid "You need to run migrations to set the system up for operation."
+msgstr ""
+
+msgid "Add rundowns by connecting a gateway."
+msgstr ""
+
+msgid "Check system status messages."
+msgstr ""
+
+msgid "There are no rundowns ingested into Sofie."
 msgstr ""
 
 msgid "Getting Started"
@@ -272,7 +284,7 @@ msgstr ""
 msgid "Activate (Rehearsal)"
 msgstr ""
 
-msgid "Reload Rundown"
+msgid "Reset Rundown"
 msgstr ""
 
 msgid "Move Next forwards"
@@ -345,9 +357,6 @@ msgid ""
 msgstr ""
 
 msgid "Prepare Studio and Activate (Rehearsal)"
-msgstr ""
-
-msgid "Reset Rundown"
 msgstr ""
 
 msgid "Reload ENPS Data"
@@ -949,6 +958,9 @@ msgstr ""
 msgid "Ramp Function Path"
 msgstr ""
 
+msgid "Priority"
+msgstr ""
+
 msgid "Buffer Encoding"
 msgstr ""
 
@@ -1007,7 +1019,7 @@ msgid "Application credentials"
 msgstr ""
 
 msgid ""
-"Go to the url below and click on the \"Enable the Drive API button\". Then "
+"Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
 "and upload it here."
 msgstr ""
@@ -1032,16 +1044,31 @@ msgstr ""
 msgid "Debug logging"
 msgstr ""
 
+msgid "Row"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Failed to update config: {{errorMessage}}"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
 msgid "true"
 msgstr ""
 
 msgid "false"
 msgstr ""
 
-msgid "Create"
+msgid "rows"
 msgstr ""
 
 msgid "Value"
+msgstr ""
+
+msgid "Create"
 msgstr ""
 
 msgid "Add config item"
@@ -1236,6 +1263,9 @@ msgid "Filter disabled"
 msgstr ""
 
 msgid "Label contains"
+msgstr ""
+
+msgid "Register Shortcuts for this Panel"
 msgstr ""
 
 msgid "Default Layout"
@@ -1823,6 +1853,18 @@ msgstr ""
 msgid "Do you want to restart CasparCG Server?"
 msgstr ""
 
+msgid "Restart Quantel Gateway"
+msgstr ""
+
+msgid "Do you want to restart Quantel Gateway?"
+msgstr ""
+
+msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
+msgstr ""
+
+msgid "Quantel Gateway restarting..."
+msgstr ""
+
 msgid "Format HyperDeck disks"
 msgstr ""
 
@@ -1831,7 +1873,7 @@ msgid ""
 "cannot be undone."
 msgstr ""
 
-msgid "Failed to HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
+msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
@@ -1907,4 +1949,46 @@ msgid "Your browser does not support video playback"
 msgstr ""
 
 msgid "Recording still in progress"
+msgstr ""
+
+msgid "Source is not set"
+msgstr ""
+
+msgid "Source is missing"
+msgstr ""
+
+msgid "Source doesn't have audio & video"
+msgstr ""
+
+msgid "Source format ({{format}}) is not in accepted formats"
+msgstr ""
+
+msgid "Source has {{audioStreams}} audio streams"
+msgstr ""
+
+msgid "Clip starts with {{frames}} {{type}} frame"
+msgstr ""
+
+msgid "Clip ends with {{frames}} {{type}} frame"
+msgstr ""
+
+msgid "{{frames}} {{type}} frame detected in clip."
+msgstr ""
+
+msgid "Clip is being ingested"
+msgstr ""
+
+msgid "{{displayName}}: {{messages}}"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Clip ends with {{frames}} {{type}} frame°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frame detected in clip.°°°°°°"
 msgstr ""

@@ -3,18 +3,24 @@ import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { Segments, DBSegment } from '../../../../../lib/collections/Segments'
-import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
+import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
+import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
+import { Segments as _Segments, DBSegment, Segment } from '../../../../../lib/collections/Segments'
+import { Parts as _Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
 import { UpdateNext } from '../../updateNext'
+import { mockupCollection } from '../../../../../__mocks__/helpers/lib'
+import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
+import { Pieces } from '../../../../../lib/collections/Pieces'
 jest.mock('../../updateNext')
 
 require('../api.ts') // include in order to create the Meteor methods needed
+
+const Segments = mockupCollection(_Segments)
+const Parts = mockupCollection(_Parts)
 
 function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = _.sortBy(parts, p => p._rank)
@@ -34,7 +40,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 	let device: PeripheralDevice
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 	})
 
 	testInFiber('mosRoCreate', () => {
@@ -54,6 +60,10 @@ describe('Test recieved mos ingest payloads', () => {
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
 
 		expect(getPartIdMap(segments, parts)).toEqual(mockRO.segmentIdMap())
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoCreate: replace existing', () => {
@@ -80,15 +90,24 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap2.splice(3, 1)
 
 		expect(getPartIdMap(segments, parts)).toEqual(partMap2)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoDelete', () => {
 		const roData = mockRO.roCreate()
-		expect(Rundowns.findOne({ externalId: roData.ID.toString() })).toBeTruthy()
+		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
+		expect(rundown).toBeTruthy()
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, device._id, device.token, roData.ID)
 
 		expect(Rundowns.findOne()).toBeFalsy()
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoDelete: Does not exist', () => {
@@ -124,6 +143,10 @@ describe('Test recieved mos ingest payloads', () => {
 		rundown = Rundowns.findOne({ _id: rundown._id }) as Rundown
 		expect(rundown).toBeTruthy()
 		expect(rundown.status).toEqual(newStatus.toString())
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStatus: Missing ro', () => {
@@ -163,6 +186,10 @@ describe('Test recieved mos ingest payloads', () => {
 		rundown = Rundowns.findOne({ _id: rundown._id }) as Rundown
 		expect(rundown).toBeTruthy()
 		expect(rundown.airStatus).toEqual(newStatus.toString())
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoReadyToAir: Missing ro', () => {
@@ -206,6 +233,11 @@ describe('Test recieved mos ingest payloads', () => {
 		part = Parts.findOne(part._id) as Part
 		expect(part).toBeTruthy()
 		expect(part.status).toEqual(newStatus.toString())
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStatus: Wrong ro for part', () => {
@@ -277,6 +309,11 @@ describe('Test recieved mos ingest payloads', () => {
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts.splice(2, 0, newPartData.ID.toString())
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryInsert: New segment', () => {
@@ -308,6 +345,11 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[3].segment = '8GUNgE7zUulco2K3yuhJ1Fyceeo_'
 		partMap[4].segment = 'XF9ZBDI5IouvkmTbounEfoJ6ijY_'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryInsert: Invalid previous id', () => {
@@ -404,6 +446,11 @@ describe('Test recieved mos ingest payloads', () => {
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = newPartData.ID.toString()
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryReplace: Unknown ID', () => {
@@ -455,6 +502,11 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[1].parts.push(...partMap[3].parts)
 		partMap.splice(2, 2)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryDelete: Remove invalid id', () => {
@@ -495,6 +547,11 @@ describe('Test recieved mos ingest payloads', () => {
 		const part = Parts.findOne({ externalId: story.ID.toString() }) as Part
 		expect(part).toBeTruthy()
 		expect(part.metaData).toEqual(story)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoFullStory: Unknown Part', () => {
@@ -557,6 +614,11 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[1] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p2'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStorySwap: With first in same segment', () => {
@@ -584,6 +646,11 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[0] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p1'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStorySwap: Swap with self', () => {
@@ -654,6 +721,11 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[2].parts = partMap[2].parts.reverse()
 		partMap.splice(3, 1)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStorySwap: Swap across segments2', () => {
@@ -674,6 +746,11 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
 		// Don't care about the result here, just making sure there isnt an exception while updating the db
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryMove: Within segment', () => {
@@ -700,6 +777,11 @@ describe('Test recieved mos ingest payloads', () => {
 		partMap[0].parts[1] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p2'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryMove: Move whole segment to end', () => {
@@ -730,6 +812,11 @@ describe('Test recieved mos ingest payloads', () => {
 		const old = partMap.splice(0, 1)
 		partMap.splice(3, 0, ...old)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
+
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
 	testInFiber('mosRoStoryMove: Invalid before ID', () => {
@@ -802,6 +889,61 @@ describe('Test recieved mos ingest payloads', () => {
 		} catch (e) {
 			expect(e.message).toBe(`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`)
 		}
+	})
+
+	testInFiber('mosRoStoryDelete: Remove first story in segment', () => {
+		// Reset RO
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, device._id, device.token, mockRO.roCreate())
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		const partExternalId = 'ro1;s1;p1'
+
+		// console.log(rundown.getParts())
+
+		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
+		expect(partToBeRemoved).toBeTruthy()
+
+		Parts.update({
+			segmentId: partToBeRemoved.segmentId
+		}, {$set: {
+			'aCheckToSeeThatThePartHasNotBeenRemoved': true
+		}})
+
+		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
+		expect(partsInSegmentBefore).toHaveLength(3)
+
+		expect(partsInSegmentBefore[1]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
+		expect(partsInSegmentBefore[2]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
+
+		const action = literal<MOS.IMOSROAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+		})
+
+		Segments.mockClear()
+		Parts.mockClear()
+
+		// This should only remove the first part in the segment. No other parts should be affected
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryDelete, device._id, device.token, action, [partExternalId])
+
+		expect(Segments.remove).toHaveBeenCalled()
+		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()
+
+		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part
+		expect(partAfter).toBeTruthy()
+
+		const partsInSegmentAfter = rundown.getParts({ segmentId: partAfter.segmentId })
+		expect(partsInSegmentAfter).toHaveLength(2)
+
+		// The other parts in the segment should not not have changed:
+		expect(partsInSegmentAfter[0]).toMatchObject(
+			_.omit(partsInSegmentBefore[1], ['segmentId', '_rank'])
+		)
+
+		expect(partsInSegmentAfter[1]).toMatchObject(
+			_.omit(partsInSegmentBefore[2], ['segmentId', '_rank'])
+		)
 	})
 
 

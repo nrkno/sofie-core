@@ -35,6 +35,7 @@ import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
+import { Parts } from '../../../../lib/collections/Parts'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -469,109 +470,170 @@ function diffAndApplyChanges (
 	newIngestRundown.segments = ingestSegments
 	saveRundownCache(rundown._id, newIngestRundown)
 
-	// Update segment ranks
+	// Update segment ranks:
 	let ps: Array<Promise<any>> = []
-	_.each(segmentDiff.rankChanged, (rankChange) => {
+	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
 		ps.push(
 			asyncCollectionUpdate(
 				Segments,
 				{
 					rundownId: rundown._id,
-					_id: getSegmentId(rundown._id, newIngestRundown.segments[rankChange.newRank].externalId)
+					_id: getSegmentId(rundown._id, segmentExternalId)
 				},
 				{
 					$set: {
-						_rank: rankChange.newRank
+						_rank: newRank
 					}
 				}
 			)
 		)
 	})
-	// Remove old segments
-	const removedSegmentIds = _.map(segmentDiff.removed, i =>
-		getSegmentId(rundown._id, ingestRundown.segments[i].externalId)
-	)
-	removeSegments(rundown._id, removedSegmentIds)
+	// Updated segments that has had their segment.externalId changed:
+	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+		// Move over those parts to the new segmentId.
+		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
+		ps.push(
+			asyncCollectionUpdate(
+				Parts,
+				{
+					rundownId: rundown._id,
+					segmentId: getSegmentId(rundown._id, oldSegmentExternalId)
+				},
+				{
+					$set: {
+						segmentId: getSegmentId(rundown._id, newSegmentExternalId)
+					}
+				}
+			)
+		)
+	})
 
 	waitForPromiseAll(ps)
 
+	// Remove old segments
+	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
+		getSegmentId(rundown._id, segmentExternalId)
+	)
+	removeSegments(rundown._id, removedSegmentIds)
+
 	// Create/Update segments
-	updateSegmentsFromIngestData(studio, rundown, _.map(segmentDiff.changed, i => ingestSegments[i]))
+	updateSegmentsFromIngestData(
+		studio,
+		rundown,
+		_.sortBy([
+			..._.values(segmentDiff.added),
+			..._.values(segmentDiff.changed)
+		], se => se.rank)
+	)
 
-	afterIngestChangedData(rundown, _.map(segmentDiff.rankChanged, i => getSegmentId(rundown._id, newIngestRundown.segments[i.newRank].externalId)))
+	afterIngestChangedData(
+		rundown,
+		[
+			..._.keys(segmentDiff.added),
+			..._.keys(segmentDiff.changed)
+		]
+	)
 }
 
-export interface SegmentEntry {
-	id: string
-	name: string
-	parts: string[]
+export interface SegmentEntries {
+	[segmentExternalId: string]: IngestSegment
 }
-function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[] {
-	return _.map(ingestSegments, s => ({
-		id: s.externalId,
-		name: s.name,
-		parts: _.map(s.parts, p => p.externalId)
-	}))
-}
+export function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntries {
+	let segmentEntries: SegmentEntries = {}
 
-export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[]) {
-	const rankChanged: { oldRank: number, newRank: number }[] = []
-	const unchanged: number[] = [] // New index
-	const changed: number[] = [] // New index
-	const removed: number[] = [] // Old index
-
-	// Convert to object to track their original index in the arrays
-	const unusedOldSegmentEntries = _.map(oldSegmentEntries, (segmentEntry, rank) => ({ segmentEntry, rank }))
-	const unusedNewSegmentEntries = _.map(newSegmentEntries, (segmentEntry, rank) => ({ segmentEntry, rank }))
-
-	let prune: number[] = []
-
-	// Deep compare
-	_.each(newSegmentEntries, (segmentEntry, newRank) => {
-		const matching = unusedOldSegmentEntries.findIndex(old => _.isEqual(old.segmentEntry, segmentEntry))
-		if (matching !== -1) {
-			const oldRank = unusedOldSegmentEntries[matching].rank
-			if (newRank === oldRank) {
-				unchanged.push(newRank)
-			} else {
-				rankChanged.push({ oldRank, newRank })
-			}
-
-			unusedOldSegmentEntries.splice(matching, 1)
-			prune.push(newRank)
+	_.each(ingestSegments, (ingestSegment: IngestSegment, rank: number) => {
+		if (segmentEntries[ingestSegment.externalId]) {
+			throw new Meteor.Error(500, `compileSegmentEntries: Non-unique segment external ID: "${ingestSegment.externalId}"`)
 		}
+		segmentEntries[ingestSegment.externalId] = _.clone(ingestSegment)
 	})
 
-	// Remove any which were matching
-	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
-	prune = []
+	return segmentEntries
+}
+export interface DiffSegmentEntries {
+	added: {[segmentExternalId: string]: IngestSegment}
+	changed: {[segmentExternalId: string]: IngestSegment}
+	removed: {[segmentExternalId: string]: IngestSegment}
+	unchanged: {[segmentExternalId: string]: IngestSegment}
 
-	// Match any by name
-	_.each(unusedNewSegmentEntries, (unused, i) => {
-		const matching = unusedOldSegmentEntries.findIndex(old => old.segmentEntry.name === unused.segmentEntry.name)
-		if (matching !== -1) {
-			const oldItem = unusedOldSegmentEntries[matching]
-			if (unused.segmentEntry.id !== oldItem.segmentEntry.id) {
-				// If Id has changed, then the old one needs to be explicitly removed
-				removed.push(oldItem.rank)
-			}
-			changed.push(unused.rank)
-			unusedOldSegmentEntries.splice(matching, 1)
-			prune.push(i)
-		}
-	})
+	// The objects present below are also present in the collections above
+	/** Reference to segments which only had their ranks updated */
+	onlyRankChanged: {[segmentExternalId: string]: number} // contains the new rank
+	/** Reference to segments which has been REMOVED, but it looks like there is an ADDED segment that is closely related to the removed one */
+	onlyExternalIdChanged: {[segmentExternalId: string]: string} // contains the new externalId
+}
+export function diffSegmentEntries (
+	oldSegmentEntries: SegmentEntries,
+	newSegmentEntries: SegmentEntries
+): DiffSegmentEntries {
+	const diff: DiffSegmentEntries = {
+		added: {},
+		changed: {},
+		removed: {},
+		unchanged: {},
 
-	// Remove any which were matching
-	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
-	prune = []
-
-	changed.push(..._.map(unusedNewSegmentEntries, e => e.rank))
-	removed.push(..._.map(unusedOldSegmentEntries, e => e.rank))
-
-	return {
-		rankChanged,
-		unchanged,
-		removed,
-		changed
+		onlyRankChanged: {},
+		onlyExternalIdChanged: {},
 	}
+	_.each(newSegmentEntries, (newSegmentEntry, segmentExternalId) => {
+		const oldSegmentEntry = oldSegmentEntries[segmentExternalId] as IngestSegment | undefined
+		if (oldSegmentEntry) {
+
+			// Deep compare
+			if (_.isEqual(newSegmentEntry, oldSegmentEntry)) {
+				diff.unchanged[segmentExternalId] = newSegmentEntry
+			} else {
+				// The segments are not equal
+
+				// Check if it's only the rank that has changed:
+				if (
+					newSegmentEntry.rank !== oldSegmentEntry.rank &&
+					_.isEqual(
+						_.omit(newSegmentEntry, 'rank'),
+						_.omit(oldSegmentEntry, 'rank')
+					)
+				) {
+					// Only the rank changed
+					diff.onlyRankChanged[segmentExternalId] = newSegmentEntry.rank
+				}
+				diff.changed[segmentExternalId] = newSegmentEntry
+			}
+
+		} else {
+			// Segment has been added
+			diff.added[segmentExternalId] = newSegmentEntry
+
+		}
+	})
+
+	_.each(oldSegmentEntries, (oldSegmentEntry, segmentExternalId) => {
+		const newSegmentEntry = newSegmentEntries[segmentExternalId] as IngestSegment | undefined
+		if (!newSegmentEntry) {
+			diff.removed[segmentExternalId] = oldSegmentEntry
+		}
+	})
+
+	// Handle when the externalId has change
+	_.each(diff.removed, (segmentEntry, segmentExternalId) => {
+
+		// try finding "it" in the added, using name
+		let newSegmentEntry = _.find(diff.added, (se) => se.name === segmentEntry.name)
+		if (!newSegmentEntry) {
+			// second try, match with any parts:
+			newSegmentEntry = _.find(diff.added, (se) => {
+				let found = false
+				_.each(segmentEntry.parts, (part) => {
+					if (found || _.find(se.parts, p => p.externalId === part.externalId)) {
+						found = true
+					}
+				})
+				return found
+			})
+		}
+		if (newSegmentEntry) {
+			diff.onlyExternalIdChanged[segmentExternalId] = newSegmentEntry.externalId
+		}
+	})
+
+	return diff
 }

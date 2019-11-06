@@ -36,6 +36,10 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
+/**
+ * Returns a list of the pieces in a Part, ordered in the order they will be played
+ * @param part
+ */
 export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	const pieces = part.getAllPieces()
 	const now = getCurrentTime()

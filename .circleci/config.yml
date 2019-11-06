@@ -41,8 +41,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run Meteor Tests
-          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci 
+          name: Run tests and send coverage
+          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci
           no_output_timeout: 60m
   publish-tag:
     docker:
@@ -55,18 +55,27 @@ jobs:
           at: .
       - run:
           name: Build Docker Image
-          command: docker build -f Dockerfile.circle . -t sofietv/tv-automation-server-core:$CIRCLE_TAG
+          command: docker build -f Dockerfile.circle . -t server-core:$CIRCLE_TAG
       - run:
            name: Publish Docker Image to Docker Hub
            command: |
-             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-             docker push sofietv/tv-automation-server-core:$CIRCLE_TAG
+             if [ -z "$DOCKERHUB_PASS" ]; then
+               echo "Skipping"
+             else
+               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+               docker tag server-core:$CIRCLE_TAG $DOCKERHUB_IMAGE:$CIRCLE_TAG
+               docker push $DOCKERHUB_IMAGE:$CIRCLE_TAG
+             fi
       - run:
            name: Publish Docker Image to Github Package Registry
            command: |
-             echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
-             docker tag sofietv/tv-automation-server-core:$CIRCLE_TAG docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_TAG
-             docker push docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_TAG
+             if [ -z "$GITHUB_PASS" ]; then
+               echo "Skipping"
+             else
+               echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
+               docker tag server-core:$CIRCLE_TAG docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
+               docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
+             fi
   publish-branch:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -78,18 +87,27 @@ jobs:
           at: .
       - run:
           name: Build Docker Image
-          command: docker build -f Dockerfile.circle . -t sofietv/tv-automation-server-core:$CIRCLE_BRANCH
+          command: docker build -f Dockerfile.circle . -t server-core:$CIRCLE_BRANCH
       - run:
            name: Publish Docker Image to Docker Hub
            command: |
-             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-             docker push sofietv/tv-automation-server-core:$CIRCLE_BRANCH
+             if [ -z "$DOCKERHUB_PASS" ]; then
+               echo "Skipping"
+             else
+               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+               docker tag server-core:$CIRCLE_BRANCH $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
+               docker push $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
+             fi
       - run:
            name: Publish Docker Image to Github Package Registry
            command: |
-             echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
-             docker tag sofietv/tv-automation-server-core:$CIRCLE_BRANCH docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_BRANCH
-             docker push docker.pkg.github.com/nrkno/tv-automation-server-core/tv-automation-server-core:$CIRCLE_BRANCH
+             if [ -z "$GITHUB_PASS" ]; then
+               echo "Skipping"
+             else
+               echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
+               docker tag server-core:$CIRCLE_BRANCH docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
+               docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
+             fi
 
 workflows:
   version: 2

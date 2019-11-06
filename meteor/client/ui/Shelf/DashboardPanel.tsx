@@ -46,9 +46,6 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-const BUTTON_GRID_WIDTH = 1
-const BUTTON_GRID_HEIGHT = 0.61803
-
 interface IDashboardPanelProps {
 	searchFilter?: string | undefined
 	mediaPreviewUrl?: string
@@ -345,30 +342,30 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 					<div className='dashboard-panel'
 						style={{
 							width: filter.width >= 0 ?
-								(filter.width * BUTTON_GRID_WIDTH) + 'vw' :
+								`calc((${filter.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
 								undefined,
 							height: filter.height >= 0 ?
-								(filter.height * BUTTON_GRID_HEIGHT) + 'vw' :
+								`calc((${filter.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
 								undefined,
 							left: filter.x >= 0 ?
-								(filter.x * BUTTON_GRID_WIDTH) + 'vw' :
+								`calc(${filter.x} * var(--dashboard-button-grid-width))` :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
 									undefined,
 							top: filter.y >= 0 ?
-								(filter.y * BUTTON_GRID_HEIGHT) + 'vw' :
+								`calc(${filter.y} * var(--dashboard-button-grid-height))` :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
 									undefined,
 							right: filter.x < 0 ?
-								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+								`calc(${-1 * filter.x - 1} * var(--dashboard-button-grid-width))` :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
 									undefined,
 							bottom: filter.y < 0 ?
-								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+								`calc(${-1 * filter.y - 1} * var(--dashboard-button-grid-height))` :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
 									undefined
 						}}
 					>

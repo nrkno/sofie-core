@@ -1,5 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
+import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 
 /*
  * **************************************************************************************
@@ -11,7 +12,7 @@ import { ensureCollectionProperty } from './lib'
  * **************************************************************************************
 */
 // x.x.x (Release X)
-addMigrationSteps('1.2.0', [
+addMigrationSteps('1.3.0', [
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',

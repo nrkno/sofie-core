@@ -109,7 +109,7 @@ export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLaye
 	return undefined
 }
 
-export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null

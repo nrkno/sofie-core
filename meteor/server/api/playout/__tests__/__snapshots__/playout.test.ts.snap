@@ -1,0 +1,178 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Playout API Basic rundown control 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio4_randomId10002_status",
+    "classes": Array [
+      "rundown_active",
+    ],
+    "content": Object {
+      "deviceType": 0,
+    },
+    "enable": Object {
+      "while": 1,
+    },
+    "id": "randomId10002_status",
+    "layer": "rundown_status",
+    "objectType": "rundown",
+    "rundownId": "randomId10002",
+    "studioId": "mockStudio4",
+  },
+  Object {
+    "_id": "mockStudio4_part_group_randomId10002_part0_0",
+    "children": Array [],
+    "content": Object {
+      "deviceType": 0,
+      "type": "group",
+    },
+    "enable": Object {
+      "start": "now",
+    },
+    "id": "part_group_randomId10002_part0_0",
+    "isGroup": true,
+    "isPartGroup": true,
+    "layer": "",
+    "objectType": "rundown",
+    "priority": 5,
+    "rundownId": "randomId10002",
+    "studioId": "mockStudio4",
+  },
+  Object {
+    "_id": "mockStudio4_part_group_firstobject_randomId10002_part0_0",
+    "classes": Array [],
+    "content": Object {
+      "callBack": "partPlaybackStarted",
+      "callBackData": Object {
+        "partId": "randomId10002_part0_0",
+        "rundownId": "randomId10002",
+      },
+      "callBackStopped": "partPlaybackStopped",
+      "deviceType": 0,
+      "type": "callback",
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "part_group_firstobject_randomId10002_part0_0",
+    "inGroup": "part_group_randomId10002_part0_0",
+    "layer": "group_first_object",
+    "objectType": "rundown",
+    "rundownId": "randomId10002",
+    "studioId": "mockStudio4",
+  },
+  Object {
+    "_id": "mockStudio4_statObj",
+    "content": Object {
+      "deviceType": 0,
+      "objCount": 3,
+      "type": "nothing",
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "statObj",
+    "layer": "__stat",
+    "objectType": "stat",
+    "studioId": "mockStudio4",
+  },
+]
+`;
+
+exports[`Playout API Basic rundown control 2`] = `
+Object {
+  "_id": "randomId10002",
+  "active": true,
+  "currentPartId": "randomId10002_part0_0",
+  "dataSource": "mock",
+  "externalId": "MOCK_EXTERNAL_ID",
+  "holdState": 0,
+  "importVersions": Object {
+    "blueprint": "",
+    "core": "",
+    "showStyleBase": "",
+    "showStyleVariant": "",
+    "studio": "",
+  },
+  "name": "Default Rundown",
+  "nextPartId": "randomId10002_part0_1",
+  "nextPartManual": false,
+  "nextTimeOffset": null,
+  "peripheralDeviceId": "mockDevice5",
+  "previousPartId": null,
+  "rehearsal": false,
+  "showStyleBaseId": "randomId10000",
+  "showStyleVariantId": "randomId10001",
+  "studioId": "mockStudio4",
+}
+`;
+
+exports[`Playout API Basic rundown control 3`] = `
+Array [
+  Object {
+    "_id": "mockStudio4_statObj",
+    "content": Object {
+      "deviceType": 0,
+      "objCount": 1,
+      "type": "nothing",
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "statObj",
+    "layer": "__stat",
+    "objectType": "stat",
+    "studioId": "mockStudio4",
+  },
+  Object {
+    "_id": "mockStudio4_baseline_version",
+    "content": Object {
+      "deviceType": 0,
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "baseline_version",
+    "layer": "baseline_version",
+    "metadata": Object {
+      "versions": Object {
+        "blueprintId": "mockBlueprint0",
+        "blueprintVersion": "0.0.0",
+        "core": "0.0.0-test",
+        "studio": "asdf",
+      },
+    },
+    "objectType": "rundown",
+    "rundownId": "",
+    "studioId": "mockStudio4",
+  },
+]
+`;
+
+exports[`Playout API Basic rundown control 4`] = `
+Object {
+  "_id": "randomId10002",
+  "active": false,
+  "currentPartId": null,
+  "dataSource": "mock",
+  "externalId": "MOCK_EXTERNAL_ID",
+  "holdState": 0,
+  "importVersions": Object {
+    "blueprint": "",
+    "core": "",
+    "showStyleBase": "",
+    "showStyleVariant": "",
+    "studio": "",
+  },
+  "name": "Default Rundown",
+  "nextPartId": null,
+  "nextPartManual": false,
+  "nextTimeOffset": null,
+  "peripheralDeviceId": "mockDevice5",
+  "previousPartId": null,
+  "rehearsal": false,
+  "showStyleBaseId": "randomId10000",
+  "showStyleVariantId": "randomId10001",
+  "studioId": "mockStudio4",
+}
+`;

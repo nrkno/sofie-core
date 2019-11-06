@@ -273,16 +273,16 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 					{this.begin}
 				</span>
 				{(this.begin && this.end === '' && vtContent && vtContent.loop) &&
-					(<div className='segment-timeline__piece__label label-icon'>
-						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					(<div className='segment-timeline__piece__label label-icon label-loop-icon'>
+						<Lottie options={defaultOptions} width={24} height={24} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
 				}
 				{this.renderContentTrimmed()}
 			</span>
 			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 				{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
-					(<div className='segment-timeline__piece__label label-icon'>
-						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					(<div className='segment-timeline__piece__label label-icon label-loop-icon'>
+						<Lottie options={defaultOptions} width={24} height={24} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
 				}
 				{this.renderInfiniteIcon()}

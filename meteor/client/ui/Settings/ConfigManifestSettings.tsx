@@ -1,3 +1,4 @@
+import * as objectPath from 'object-path'
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
@@ -9,13 +10,9 @@ import {
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
+import { Blueprints } from '../../../lib/collections/Blueprints'
+import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -23,6 +20,51 @@ import { logger } from '../../../lib/logging'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
+import { Random } from 'meteor/random'
+import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fortawesome/fontawesome-free-solid'
+import { UploadButton } from '../../lib/uploadButton'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+
+function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2, TObj>, object: TObj, item: BasicConfigManifestEntry, attribute: string) {
+	switch (item.type) {
+		case ConfigManifestEntryType.STRING:
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type='text'
+				collection={collection}
+				className='input text-input input-l' />
+		case ConfigManifestEntryType.NUMBER:
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type='int'
+				collection={collection}
+				className='input text-input input-l' />
+		case ConfigManifestEntryType.BOOLEAN:
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type='checkbox'
+				collection={collection}
+				className='input' />
+		case ConfigManifestEntryType.ENUM:
+			const item2 = item as ConfigManifestEntryEnum
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type='dropdown'
+				options={item2.options || []}
+				collection={collection}
+				className='input text-input input-l' />
+		default:
+			return null
+	}
+}
 
 interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
 	manifest: ConfigManifestEntry[]
@@ -39,6 +81,170 @@ interface IConfigManifestSettingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmItem: ConfigManifestEntry | undefined
 	editedItems: Array<string>
+	uploadFileKey: number // Used to force clear the input after use
+}
+
+interface IConfigManifestTableProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+	item: ConfigManifestEntryTable
+	baseAttribute: string
+
+	collection: TCol
+	object: TObj
+
+	subPanel?: boolean
+}
+interface IConfigManifestTableState {
+	uploadFileKey: number // Used to force clear the input after use
+}
+
+export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
+	extends React.Component<Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>, IConfigManifestTableState> {
+
+	constructor (props: Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>) {
+		super(props)
+
+		this.state = {
+			uploadFileKey: Date.now()
+		}
+	}
+
+	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+		this.props.collection.update(obj._id, updateObj)
+	}
+
+	render () {
+		const { t } = this.props
+
+		const baseAttribute = this.props.baseAttribute
+		const vals: TableConfigItemValue = objectPath.get(this.props.object, baseAttribute) || []
+		const item2 = this.props.item
+		const item = item2
+
+		return (
+			<div>
+				<table style={{ width: '100%' }}>
+					<thead>
+						<tr>
+							{ _.map(item2.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+							<th>&nbsp;</th>
+						</tr>
+					</thead>
+					<tbody>
+					{
+						_.map(vals, (val, i) => <tr key={i}>
+							{ _.map(item2.columns, col => <td key={col.id}>{
+								getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${i}.${col.id}`)
+							}</td>) }
+							<td>
+								<button className={ClassNames('btn btn-danger', {
+									'btn-tight': this.props.subPanel
+								})} onClick={() => {
+									const m: any = {}
+									m[baseAttribute] = {
+										_id: val._id
+									}
+									this.updateObject(this.props.object, { $pull: m })
+								}}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>)
+					}
+					</tbody>
+				</table>
+
+				<button className={ClassNames('btn btn-primary', {
+					'btn-tight': this.props.subPanel
+				})} onClick={() => {
+					const rowDefault: any = {
+						_id: Random.id()
+					}
+					_.each(item2.columns, col => rowDefault[col.id] = col.defaultVal)
+
+					const m: any = {}
+					m[baseAttribute] = rowDefault
+					this.updateObject(this.props.object, { $push: m })
+				}}>
+					<FontAwesomeIcon icon={faPlus} />
+					{ ' ' }
+					{ t('Row') }
+				</button>
+				{ ' ' }
+				<button className={ClassNames('btn btn-primary', {
+					'btn-tight': this.props.subPanel
+				})} onClick={() => {
+					const jsonStr = JSON.stringify(vals, undefined, 4)
+
+					const element = document.createElement('a')
+					element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+					element.download = `${this.props.object._id}_config_${item.id}.json`
+
+					document.body.appendChild(element) // Required for this to work in FireFox
+					element.click()
+					document.body.removeChild(element) // Required for this to work in FireFox
+				}}>
+					<FontAwesomeIcon icon={faDownload} />
+					{ ' ' }
+					{ t('Export') }
+				</button>
+				{ ' ' }
+				<UploadButton className='btn btn-primary' accept='application/json,.json' onChange={e => {
+					const { t } = this.props
+
+					const file = e.target.files ? e.target.files[0] : null
+					if (!file) {
+						return
+					}
+
+					const reader = new FileReader()
+					reader.onload = (e2) => {
+						// On file upload
+
+						this.setState({
+							uploadFileKey: Date.now()
+						})
+
+						const uploadFileContents = (e2.target as any).result
+
+						// Parse the config
+						let newConfig: TableConfigItemValue = []
+						try {
+							newConfig = JSON.parse(uploadFileContents)
+							if (!_.isArray(newConfig)) {
+								throw new Error('Not an array')
+							}
+						} catch (err) {
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }), 'ConfigManifestSettings'))
+							return
+						}
+
+						// Validate the config
+						const conformedConfig: TableConfigItemValue = []
+						_.forEach(newConfig, entry => {
+							const newEntry: TableConfigItemValue[0] = {
+								_id: entry._id || Random.id()
+							}
+
+							// Ensure all fields are defined
+							_.forEach(item2.columns, col => {
+								newEntry[col.id] = entry[col.id] !== undefined ? entry[col.id] : col.defaultVal
+							})
+							conformedConfig.push(newEntry)
+						})
+
+						const m: any = {}
+						m[baseAttribute] = conformedConfig
+						this.updateObject(this.props.object, { $set: m })
+					}
+					reader.readAsText(file)
+				}} key={this.state.uploadFileKey}>
+					<FontAwesomeIcon icon={faUpload} />
+					{ ' ' }
+					{ t('Import') }
+				</UploadButton>
+			</div>
+		)
+	}
 }
 
 export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
@@ -52,7 +258,8 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 			addItemId: undefined,
 			showDeleteConfirm: false,
 			deleteConfirmItem: undefined,
-			editedItems: []
+			editedItems: [],
+			uploadFileKey: Date.now()
 		}
 	}
 
@@ -167,6 +374,37 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 		})
 	}
 
+	renderConfigValue (item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
+		const { t } = this.props
+
+		const value = rawValue === undefined ? item.defaultVal : rawValue
+
+		switch (item.type) {
+			case ConfigManifestEntryType.BOOLEAN:
+				return value ? t('true') : t('false')
+			case ConfigManifestEntryType.TABLE:
+				return `${(rawValue as any[] || []).length} ${t('rows')}`
+			default:
+				return value
+		}
+	}
+
+	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
+		const baseAttribute = `config.${valIndex}.value`
+		const { t, collection, object } = this.props
+		if (item.type === ConfigManifestEntryType.TABLE) {
+			const item2 = item as ConfigManifestEntryTable
+			return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+		} else {
+			return (
+				<label className='field'>
+					{t('Value')}
+					{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+				</label>
+			)
+		}
+	}
+
 	renderItems () {
 		const { t } = this.props
 
@@ -186,12 +424,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 							{item.name}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
-							{configItem && configItem.value !== undefined ? (
-								(item.type === ConfigManifestEntryType.BOOLEAN && (
-									configItem.value ? t('true') : t('false')
-								))
-								|| configItem.value
-							) : item.defaultVal}
+							{ this.renderConfigValue(item, configItem ? configItem.value : undefined)}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
 							{
@@ -226,48 +459,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Value')}
-											{
-												(item.type === ConfigManifestEntryType.STRING && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='text'
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-												|| (item.type === ConfigManifestEntryType.NUMBER && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='int'
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-												|| (item.type === ConfigManifestEntryType.BOOLEAN && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='checkbox'
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-												|| (item.type === ConfigManifestEntryType.ENUM && (
-													<EditAttribute
-														modifiedClassName='bghl'
-														attribute={'config.' + valIndex + '.value'}
-														obj={this.props.object}
-														type='dropdown'
-														options={item.options || []}
-														collection={this.props.collection}
-														className='input text-input input-l' />
-												))
-											}
-										</label>
+										{ this.renderEditableArea(item, valIndex) }
 									</div>
 								</div>
 								<div className='mod alright'>
