@@ -3,8 +3,8 @@ import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
-import { Pieces } from '../../lib/collections/Pieces'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { Pieces, Piece } from '../../lib/collections/Pieces'
+import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
@@ -32,6 +32,7 @@ import { PackageInfo } from '../coreSystem'
 import { UpdateNext } from './ingest/updateNext'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
+import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -139,13 +140,27 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 
 	// Clean up all the db parts that belong to the removed Parts
 	// TODO - is there anything else to remove?
-	Pieces.remove({
+
+	ExpectedPlayoutItems.remove({
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	})
-	AdLibPieces.remove({
+
+	saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
+	}, [], {
+		afterRemoveAll (pieces) {
+			afterRemovePieces(rundownId, pieces)
+		}
+	})
+	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
+		rundownId: rundownId,
+		partId: { $in: _.map(removedParts, p => p._id) }
+	}, [], {
+		afterRemoveAll (pieces) {
+			afterRemovePieces(rundownId, pieces)
+		}
 	})
 	_.each(removedParts, part => {
 		// TODO - batch?
@@ -157,6 +172,18 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		// Ensure the next-part is still valid
 		UpdateNext.ensureNextPartIsValid(rundown)
 	}
+}
+/**
+ * After Pieces have been removed, handle the contents.
+ * This will NOT trigger an update of the timeline
+ * @param rundownId Id of the Rundown
+ * @param removedPieces The pieces that have been removed
+ */
+export function afterRemovePieces (rundownId: string, removedPieces: Array<Piece | AdLibPiece>) {
+	ExpectedPlayoutItems.remove({
+		rundownId: rundownId,
+		pieceId: { $in: _.map(removedPieces, p => p._id) }
+	})
 }
 /**
  * Update the ranks of all parts.

@@ -200,6 +200,8 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 												this.renderSisyfosDeviceSettings(subDevice, deviceId) :
 											subDevice.type === PlayoutDeviceType.QUANTEL ?
 												this.renderQuantelDeviceSettings(subDevice, deviceId) :
+											subDevice.type === PlayoutDeviceType.VIZMSE ?
+											this.renderVizMSEDeviceSettings(subDevice, deviceId) :
 											null
 										}
 									</div>
@@ -473,6 +475,29 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<label className='field'>
 					{t('Quantel Server ID')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderVizMSEDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Show ID')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.showID'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Profile')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.profile'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>
