@@ -1829,7 +1829,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 # Older versions
 
-[Changelog for older versions can be found here](/CHANGELOG_0_x_x)
+[Changelog for older versions can be found here](CHANGELOG_0_x_x.md)
 
 <a name="0.26.0"></a>
 # 0.26.0 (2019-08-19)
