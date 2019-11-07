@@ -32,8 +32,13 @@ body.tv2 {
 	.header.rundown.active.rehearsal .first-row {
 		background-color: #CBCCCD;
 
+		.links > a {
+			color: #333;
+		}
+
 		.timing .timing-clock {
-			
+			color: #333;
+
 			.timing-clock-label {
 				color: #000;
 			}
