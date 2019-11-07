@@ -6,16 +6,36 @@ body.tv2 {
 		display: none;
 	}
 	.segment-timeline {
+		margin: 0.5em 1.5em;
 		grid-template-columns: [segment-name] 270px [segment-group-controls] 160px [timeline] auto [end];
 
 		.segment-timeline__zoom-area-container {
 			display: none;
 		}
 
+		.segment-timeline__timeline-grid {
+			margin-bottom: 0;
+		}
+
+		.segment-timeline__timeline-background {
+			margin-bottom: 0;
+		}
+
 		.segment-timeline__timeline-zoom-buttons {
 			grid-column: segment-group-controls / timeline;
 			grid-row: header / zoom-area;
-			align-items: flex-end;
+			align-items: flex-start;
+			padding-top: 0.2em;
+		}
+
+		.segment-timeline__output-layers, .segment-timeline__timeline {
+			padding: 2.3em 0 0em;
+		}
+
+		&.collapsed {
+			.segment-timeline__title__notes {
+				display: none;
+			}
 		}
 	}
 	.rundown-system-status {
