@@ -79,7 +79,7 @@ export const INewsSettingsComponent = translate()(class INewsSettingsComponent e
 
 		const newItem = literal<INewsHost>({
 			_id: Random.id(),
-			host: 'xx.xx.xx.xx'
+			host: ''
 		})
 
 		PeripheralDevices.update(this.props.device._id, {
@@ -92,7 +92,7 @@ export const INewsSettingsComponent = translate()(class INewsSettingsComponent e
 
 		const newItem = literal<INewsQueue>({
 			_id: Random.id(),
-			queue: 'INEWS.QUEUE.ON-AIR'
+			queue: ''
 		})
 
 		PeripheralDevices.update(this.props.device._id, {
