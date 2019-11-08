@@ -11,12 +11,12 @@ body.tv2 {
 	}
 	.segment-timeline-placeholder {
 		&::before {
-			width: 270px;
+			width: 16.875em;
 		}
 	}
 	.segment-timeline {
 		margin: 0.5em 1.5em;
-		grid-template-columns: [segment-name] 270px [segment-group-controls] 160px [timeline] auto [end];
+		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
 		grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
 
 		&::before {
