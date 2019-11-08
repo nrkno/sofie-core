@@ -398,9 +398,18 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
+
 		if (canBeUpdated(rundown, segmentId)) {
-			if (removeSegments(rundownId, [segmentId]) === 0) {
-				throw new Meteor.Error(404, `Segment ${segmentExternalId} not found`)
+			const currentPlayingPart = rundown.currentPartId && Parts.findOne(rundown.currentPartId)
+
+			if (currentPlayingPart && currentPlayingPart.segmentId === segmentId) {
+				// Don't allow removing currently playing segment
+				logger.warn(`Not allowing removal of currently playing segment "${segmentId}", making rundown unsynced instead`)
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			} else {
+				if (removeSegments(rundownId, [segmentId]) === 0) {
+					throw new Meteor.Error(404, `Segment ${segmentExternalId} not found`)
+				}
 			}
 		}
 	})
@@ -537,25 +546,35 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
 
-		if (!canBeUpdated(rundown, segmentId, partId)) return
+		
+		if (canBeUpdated(rundown, segmentId, partId)) {
+			const part = Parts.findOne({
+				_id: partId,
+				segmentId: segmentId,
+				rundownId: rundown._id
+			})
+			if (!part) throw new Meteor.Error(404, 'Part not found')
 
-		const part = Parts.findOne({
-			_id: partId,
-			segmentId: segmentId,
-			rundownId: rundown._id
-		})
-		if (!part) throw new Meteor.Error(404, 'Part not found')
-
-		// Blueprints will handle the deletion of the Part
-		const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
-		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
-
-		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-
-		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
-		if (updatedSegmentId) {
-			afterIngestChangedData(rundown, [updatedSegmentId])
+			if (rundown.currentPartId && rundown.currentPartId === part._id) {
+				// Don't allow removing currently playing part
+				logger.warn(`Not allowing removal of currently playing part "${part}", making rundown unsynced instead`)
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			} else {
+		
+				// Blueprints will handle the deletion of the Part
+				const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
+				ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
+		
+				saveSegmentCache(rundown._id, segmentId, ingestSegment)
+		
+				const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+				if (updatedSegmentId) {
+					afterIngestChangedData(rundown, [updatedSegmentId])
+				}
+			}
 		}
+
+		
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
