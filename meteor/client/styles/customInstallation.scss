@@ -1,13 +1,39 @@
 body.tv2 {
 	.rundown-view {
 		padding-top: 60px;
+		counter-reset: segment-counter;
 	}
 	.col.rundown-overview {
 		display: none;
 	}
+	.segment-timeline-placeholder, .segment-timeline {
+		counter-increment: segment-counter;
+	}
+	.segment-timeline-placeholder {
+		&::before {
+			width: 270px;
+		}
+	}
 	.segment-timeline {
 		margin: 0.5em 1.5em;
 		grid-template-columns: [segment-name] 270px [segment-group-controls] 160px [timeline] auto [end];
+		grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
+
+		&::before {
+			content: counter(segment-counter, decimal-leading-zero);
+			display: block;
+			grid-column: segment-name / segment-group-controls;
+			grid-row: header / main-view;
+			font-size: 1.4em;
+			font-weight: 400;
+			margin-left: 0.3em;
+			line-height: 1.64em;
+		}
+
+		.segment-timeline__duration {
+			padding-left: 2em;
+			margin-left: 4em;
+		}
 
 		.segment-timeline__zoom-area-container {
 			display: none;
@@ -58,8 +84,10 @@ body.tv2 {
 
 		.timing .timing-clock {
 			color: #333;
+			font-weight: 300;
 
 			.timing-clock-label {
+				font-weight: 400;
 				color: #000;
 			}
 		}
@@ -67,8 +95,12 @@ body.tv2 {
 	.header.rundown.active:not(.rehearsal) .first-row {
 		background-color: #761912;
 
-		.timing .timing-clock .timing-clock-label {
-			color: #aaa;
-		}
+		.timing .timing-clock {
+			color: #fff;
+
+			.timing-clock-label {
+				color: #ccc;
+			}
+		}	
 	}
 }
