@@ -1,13 +1,9 @@
 body.tv2 {
 	.rundown-view {
 		padding-top: 60px;
-		counter-reset: segment-counter;
 	}
 	.col.rundown-overview {
 		display: none;
-	}
-	.segment-timeline-placeholder, .segment-timeline {
-		counter-increment: segment-counter;
 	}
 	.segment-timeline-placeholder {
 		&::before {
@@ -19,8 +15,7 @@ body.tv2 {
 		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
 		grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
 
-		&::before {
-			content: counter(segment-counter, decimal-leading-zero);
+		.segment-timeline__identifier {
 			display: block;
 			grid-column: segment-name / segment-group-controls;
 			grid-row: header / main-view;
