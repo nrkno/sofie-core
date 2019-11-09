@@ -264,6 +264,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	setSegmentRef = (el: HTMLDivElement) => {
 		this.segmentBlock = el
 		if (typeof this.props.segmentRef === 'function') this.props.segmentRef(this as any, this.props.segment._id)
+
+		if (this.segmentBlock) {
+			this.segmentBlock.addEventListener('wheel', this.onTimelineWheel, { passive: false, capture: true })
+		}
 	}
 
 	setTimelineRef = (el: HTMLDivElement) => {
@@ -568,9 +572,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<TimelineGrid {...this.props}
 					onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'
-					onTouchStartCapture={this.onTimelineTouchStart}
-					onWheelCapture={this.onTimelineWheel}>
-					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
+					onTouchStartCapture={this.onTimelineTouchStart}>
+					<div className='segment-timeline__timeline'
+						key={this.props.segment._id + '-timeline'}
+						ref={this.setTimelineRef}
+						style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderEndOfSegment()}
