@@ -79,6 +79,7 @@ interface IProps {
 }
 interface IStateHeader {
 	timelineWidth: number
+	mouseGrabbed: boolean
 }
 
 interface IZoomPropsHeader {
@@ -249,7 +250,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	private _touchSize: number = 0
 	private _touchAttached: boolean = false
-	private _lastTouch: {
+	private _mouseAttached: boolean = false
+	private _lastPointer: {
 		clientX: number
 		clientY: number
 	} | undefined = undefined
@@ -257,7 +259,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
-			timelineWidth: 1
+			timelineWidth: 1,
+			mouseGrabbed: false
 		}
 	}
 
@@ -300,10 +303,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			let prop = newSize / this._touchSize
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e)
 			this._touchSize = newSize
-		} else if (e.touches.length === 1 && this._lastTouch) {
-			let scrollAmount = this._lastTouch.clientX - e.touches[0].clientX
+		} else if (e.touches.length === 1 && this._lastPointer) {
+			let scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
-			this._lastTouch = {
+			this._lastPointer = {
 				clientX: e.touches[0].clientX,
 				clientY: e.touches[0].clientY
 			}
@@ -324,10 +327,42 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				document.addEventListener('touchend', this.onTimelineTouchEnd)
 				this._touchAttached = true
 			}
-			this._lastTouch = {
+			this._lastPointer = {
 				clientX: e.touches[0].clientX,
 				clientY: e.touches[0].clientY
 			}
+		}
+	}
+
+	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
+		console.log(e)
+		let scrollAmount = (e.movementX * -1) || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
+		this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
+	}
+
+	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> & any) => {
+		document.removeEventListener('mousemove', this.onTimelineMouseMove)
+		document.removeEventListener('mouseup', this.onTimelineMouseUp)
+		this._mouseAttached = false
+		this.setState({
+			mouseGrabbed: false
+		})
+		document.exitPointerLock()
+	}
+
+	onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement> & any) => {
+		if (!this._touchAttached && !this._mouseAttached) {
+			document.addEventListener('mousemove', this.onTimelineMouseMove)
+			document.addEventListener('mouseup', this.onTimelineMouseUp)
+			this._mouseAttached = true
+			this.setState({
+				mouseGrabbed: true
+			})
+			this._lastPointer = {
+				clientX: e.clientX,
+				clientY: e.clientY
+			}
+			document.body.requestPointerLock()
 		}
 	}
 
@@ -571,7 +606,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<div className='segment-timeline__timeline-background' />
 				<TimelineGrid {...this.props}
 					onResize={this.onTimelineResize} />
-				<div className='segment-timeline__timeline-container'
+				<div className={ClassNames('segment-timeline__timeline-container', {
+						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed
+					})}
+					onMouseDownCapture={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}>
 					<div className='segment-timeline__timeline'
 						key={this.props.segment._id + '-timeline'}
