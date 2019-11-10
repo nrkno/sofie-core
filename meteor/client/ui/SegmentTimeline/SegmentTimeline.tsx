@@ -331,7 +331,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
-		console.log(e)
 		let scrollAmount = (e.movementX * -1) || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
 	}
