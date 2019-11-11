@@ -37,6 +37,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor';
 
 interface IProps {
 	id: string
@@ -337,20 +338,40 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
 		let scrollAmount = (e.movementX * -1) || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
+		if (e.movementX === 0) {
+			this._lastPointer = {
+				clientX: e.clientX,
+				clientY: e.clientY
+			}
+		}
 	}
 
 	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> & any) => {
 		document.removeEventListener('mousemove', this.onTimelineMouseMove)
 		document.removeEventListener('mouseup', this.onTimelineMouseUp)
 		this._mouseAttached = false
+		this._lastPointer = undefined
 		this.setState({
 			mouseGrabbed: false
 		})
 		document.exitPointerLock()
 	}
 
-	onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement> & any) => {
+	onTimelinePointerLockChange = (e: Event) => {
+		if (!document.pointerLockElement) {
+			hidePointerLockCursor()
+		}
+	}
+
+	onTimelinePointerError = (e: Event) => {
+		hidePointerLockCursor()
+	}
+
+	onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (!this._touchAttached && !this._mouseAttached) {
+			// if mouse down is on a piece - abort
+			if ((e.target as HTMLDivElement).classList.contains('segment-timeline__piece')) return
+
 			document.addEventListener('mousemove', this.onTimelineMouseMove)
 			document.addEventListener('mouseup', this.onTimelineMouseUp)
 			this._mouseAttached = true
@@ -361,7 +382,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				clientX: e.clientX,
 				clientY: e.clientY
 			}
+			document.addEventListener('pointerlockchange', this.onTimelinePointerLockChange)
+			document.addEventListener('pointerlockerror', this.onTimelinePointerError)
 			document.body.requestPointerLock()
+			showPointerLockCursor(this._lastPointer.clientX, this._lastPointer.clientY)
 		}
 	}
 
