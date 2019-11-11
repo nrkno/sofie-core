@@ -150,3 +150,26 @@ export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boo
 		}
 	})
 }
+/**
+ * Makes a studio "stand down" after a broadcast
+ * @param studio
+ * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
+ */
+export function standDownStudio (studio: Studio, okToDestoryStuff: boolean) {
+	logger.info('standDownStudio ' + studio._id)
+
+	let playoutDevices = PeripheralDevices.find({
+		studioId: studio._id,
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+	}).fetch()
+
+	_.each(playoutDevices, (device: PeripheralDevice) => {
+		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+			if (err) {
+				logger.error(err)
+			} else {
+				logger.info('devicesStandDown OK')
+			}
+		}, 'devicesStandDown', okToDestoryStuff)
+	})
+}

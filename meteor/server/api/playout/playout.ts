@@ -180,6 +180,8 @@ export namespace ServerPlayoutAPI {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
+			standDownStudio(rundown.getStudio(), true)
+
 			return libDeactivateRundown(rundown)
 		})
 	}
