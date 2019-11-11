@@ -77,9 +77,13 @@ body.tv2 {
 			color: #333;
 		}
 
+		.badge .sofie-logo {
+			filter: grayscale(1) brightness(0.3);
+		}
+
 		.timing .timing-clock {
 			color: #333;
-			font-weight: 300;
+			font-weight: 400;
 
 			.timing-clock-label {
 				font-weight: 400;
@@ -96,6 +100,10 @@ body.tv2 {
 			.timing-clock-label {
 				color: #ccc;
 			}
-		}	
+		}
+
+		.badge .sofie-logo {
+			filter: grayscale(1) brightness(2);
+		}
 	}
 }
