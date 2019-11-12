@@ -376,7 +376,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			<div className='mod mvs mhs'>
 				<label className='field'>
 					{t('Enable SSL')}
-					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>
@@ -490,6 +490,18 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 			<div className='mod mvs mhs'>
 				<label className='field'>
+					{t('(Optional) REST port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.restPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('(Optional) Websocket port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.wsPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
 					{t('Show ID')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.showID'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 				</label>
@@ -498,6 +510,18 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<label className='field'>
 					{t('Profile')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.profile'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('(Optional) Playlist id')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.playlistID'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Preload all elements')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.preloadAllElements'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>
