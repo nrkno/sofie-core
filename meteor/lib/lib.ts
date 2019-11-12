@@ -309,14 +309,14 @@ export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }
 export function formatDateAsTimecode (date: Date) {
-	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: date, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: date, drop_frame: !Number.isInteger(Settings.frameRate) })
 	return tc.toString()
 }
 /**
  * @param duration time in milliseconds
  */
 export function formatDurationAsTimecode (duration: Time) {
-	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: duration * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: duration * Settings.frameRate / 1000, drop_frame: !Number.isInteger(Settings.frameRate) })
 	return tc.toString()
 }
 /**
