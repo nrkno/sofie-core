@@ -434,19 +434,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPiece,
 					label: t('Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPieceUndo,
 					label: t('Undo Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
-					global: true,
 					coolDown: 1000
 				}
 			]
