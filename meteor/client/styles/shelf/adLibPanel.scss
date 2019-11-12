@@ -1,5 +1,5 @@
-@import "colorScheme";
-@import "itemTypeColors";
+@import "../colorScheme";
+@import "../itemTypeColors";
 
 $adlib-item-selected-color: #009DFF;
 
@@ -93,8 +93,14 @@ $adlib-item-selected-color: #009DFF;
 				padding: 0 1em;
 				color: #fff;
 				
-				&:hover, &:focus {
+				&:hover {
 					background: #3b3b3b;
+					transition: 0.2s background-color;
+				}
+
+				&:focus {
+					background: #fff;
+					color: #000;
 					transition: 0.2s background-color;
 				}
 			}
