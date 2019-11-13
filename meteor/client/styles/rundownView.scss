@@ -524,6 +524,11 @@ body.vertical-overflow-only {
 		display: none;
 	}
 
+	// the identifier is an installation-specific feature that needs to be supported by the blueprints. It's disabled in the UI by default.
+	.segment-timeline__identifier {
+		display: none;
+	}
+
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__duration {
 		position: relative;
@@ -860,6 +865,15 @@ body.vertical-overflow-only {
 		visibility: visible;
 		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
 					$output-layer-group-collapse-animation-duration visibility 0s;
+
+		color: rgb(175,175,175);
+
+		font-size: 15px;
+		--timeline-grid-label-top: 18px;
+		--timeline-grid-long-line-top: 25px;
+		--timeline-grid-long-line-height: 0;
+		--timeline-grid-short-line-top: 30px;
+		--timeline-grid-short-line-height: 6px;
 	}
 
 	.segment-timeline__timeline-container {

@@ -23,6 +23,7 @@ import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
+import { Settings } from '../../../lib/Settings'
 
 const SPEAK_ADVANCE = 500
 
@@ -78,6 +79,7 @@ interface IState {
 	followLiveLine: boolean,
 	livePosition: number,
 	displayTimecode: number
+	autoExpandCurrentNextSegment: boolean
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
@@ -202,12 +204,23 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		super(props)
 
 		this.state = {
-			collapsedOutputs: UIStateStorage.getItemBooleanMap(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}.outputs`, {}),
-			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}`, false),
+			collapsedOutputs:
+				UIStateStorage.getItemBooleanMap(
+					`rundownView.${this.props.rundown._id}`,
+					`segment.${props.segmentId}.outputs`,
+					{}
+				),
+			collapsed:
+				UIStateStorage.getItemBoolean(
+					`rundownView.${this.props.rundown._id}`,
+					`segment.${props.segmentId}`,
+					!!Settings.defaultToCollapsedSegments
+				),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
-			displayTimecode: 0
+			displayTimecode: 0,
+			autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -229,6 +242,19 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
 			this.startLive()
+
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: false
+				})
+			}
+		}
+		if (this.props.isNextSegment) {
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: false
+				})
+			}
 		}
 		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 		window.requestAnimationFrame(() => {
@@ -241,14 +267,53 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	componentDidUpdate (prevProps) {
 		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
+		// segment is becoming live
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
 			this.startLive()
+
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: false
+				})
+			}
 		}
+		// segment is stopping from being live
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.stopLive()
+
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: UIStateStorage.getItemBoolean(
+						`rundownView.${this.props.rundown._id}`,
+						`segment.${this.props.segmentId}`,
+						!!Settings.defaultToCollapsedSegments
+					)
+				})
+			}
+		}
+
+		// segment is becoming next
+		if (prevProps.isNextSegment === false && this.props.isNextSegment === true) {
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: false
+				})
+			}
+		}
+		// segment is stopping from becoming and it's not live either
+		if (prevProps.isNextSegment === true && this.props.isNextSegment === false && this.props.isLiveSegment === false) {
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: UIStateStorage.getItemBoolean(
+						`rundownView.${this.props.rundown._id}`,
+						`segment.${this.props.segmentId}`,
+						!!Settings.defaultToCollapsedSegments
+					)
+				})
+			}
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate

@@ -66,8 +66,12 @@ export type MongoSelector<DBInterface> = Query<T> | QueryWithModifiers<T>
 // export interface TransformedCollection<Class, DBInterface> extends Mongo.Collection<Class> {
 */
 
+export interface SortSpecifier {
+	[key: string]: -1 | 1
+}
+
 export interface FindOptions {
-	sort?: Mongo.SortSpecifier
+	sort?: SortSpecifier
 	skip?: number
 	limit?: number
 	fields?: Mongo.FieldSpecifier
@@ -101,13 +105,7 @@ export interface TransformedCollection<Class, DBInterface> {
 		transform?: Function
 	}): boolean
 	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | string, options?: FindOptions): Mongo.Cursor<Class>
-	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | string, options?: {
-		sort?: Mongo.SortSpecifier
-		skip?: number
-		fields?: Mongo.FieldSpecifier
-		reactive?: boolean
-		transform?: Function
-	}): Class | undefined
+	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | string, options?: Omit<FindOptions, 'limit'>): Class | undefined
 	insert (doc: DBInterface, callback?: Function): string
 	rawCollection (): any
 	rawDatabase (): any

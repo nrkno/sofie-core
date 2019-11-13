@@ -25,15 +25,15 @@ import {
 	IBlueprintPartDB,
 	IngestPart
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ConfigRef, compileStudioconfig } from './config'
+import { Studio } from '../../../lib/collections/Studios'
+import { ConfigRef, compileStudioConfig } from './config'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
-import { loadCachedIngestPart, loadCachedRundownData } from '../ingest/ingestCache'
+import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
 
 /** Common */
 
@@ -46,18 +46,19 @@ export class CommonContext implements ICommonContext {
 	constructor (idPrefix: string) {
 		this._idPrefix = idPrefix
 	}
-	getHashId (str?: any) {
-
+	getHashId (str: string, isNotUnique?: boolean) {
 		if (!str) str = 'hash' + (this.hashI++)
 
-		let id
-		id = getHash(
+		if (isNotUnique) {
+			str = str + '_' + this.hashI++
+		}
+
+		const id = getHash(
 			this._idPrefix + '_' +
 			str.toString()
 		)
 		this.hashed[id] = str
 		return id
-		// return Random.id()
 	}
 	unhashId (hash: string): string {
 		return this.hashed[hash] || hash
@@ -161,14 +162,11 @@ export class StudioConfigContext implements IStudioConfigContext {
 		this.studio = studio
 	}
 
-	getStudio (): Studio {
-		const studio = Studios.findOne(this.studio._id)
-		if (!studio) throw new Meteor.Error(404, 'Studio "' + this.studio._id + '" not found')
-
-		return studio
+	getStudio (): Readonly<Studio> {
+		return this.studio
 	}
-	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		return compileStudioconfig(this.getStudio())
+	getStudioConfig (): Readonly<{[key: string]: ConfigItemValue}> {
+		return compileStudioConfig(this.studio)
 	}
 	getStudioConfigRef (configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -176,7 +174,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 }
 
 export class StudioContext extends StudioConfigContext implements IStudioContext {
-	getStudioMappings (): BlueprintMappings {
+	getStudioMappings (): Readonly<BlueprintMappings> {
 		return this.studio.mappings
 	}
 }
@@ -220,9 +218,6 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		})
 		return res
 	}
-	getShowStyleRef (configKey: string): string { // to be deprecated
-		return this.getShowStyleConfigRef(configKey)
-	}
 	getShowStyleConfigRef (configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
 	}
@@ -237,8 +232,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	getNotes () {
 		return this.notes.getNotes()
 	}
-	getHashId (str?: any) {
-		return this.notes.getHashId(str)
+	getHashId (str: string, isNotUnique?: boolean) {
+		return this.notes.getHashId(str, isNotUnique)
 	}
 	unhashId (hash: string) {
 		return this.notes.unhashId(hash)
@@ -248,8 +243,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 /** Rundown */
 
 export class RundownContext extends ShowStyleContext implements IRundownContext {
-	rundownId: string
-	rundown: Rundown
+	readonly rundownId: string
+	readonly rundown: Readonly<Rundown>
 
 	constructor (rundown: Rundown, studio?: Studio, contextName?: string, segmentId?: string, partId?: string) {
 		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
@@ -259,9 +254,9 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 	}
 }
 
-export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments }
+export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments | undefined }
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	private runtimeArguments: BlueprintRuntimeArgumentsSet
+	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[]) {
 		super(rundown, studio)
@@ -285,7 +280,7 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 }
 
 export class PartContext extends RundownContext implements IPartContext {
-	private runtimeArguments: BlueprintRuntimeArguments
+	private readonly runtimeArguments: Readonly<BlueprintRuntimeArguments>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments) {
 		super(rundown, studio)
@@ -305,7 +300,7 @@ export class EventContext extends CommonContext implements IEventContext {
 }
 
 export class PartEventContext extends RundownContext implements IPartEventContext {
-	part: IBlueprintPartDB
+	readonly part: Readonly<IBlueprintPartDB>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, part: IBlueprintPartDB) {
 		super(rundown, studio)
@@ -315,8 +310,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 }
 
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
-
-	public asRunEvent: AsRunLogEvent
+	public readonly asRunEvent: Readonly<AsRunLogEvent>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
 		super(rundown, studio)
@@ -368,11 +362,19 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
 		check(part._id, String)
 
-		return loadCachedIngestPart(this.rundown._id, this.rundown.externalId, part._id, part.externalId)
+		try {
+			return loadIngestDataCachePart(this.rundown._id, this.rundown.externalId, part._id, part.externalId).data
+		} catch (e) {
+			return undefined
+		}
 	}
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown (): IngestRundown | undefined {
-		return loadCachedRundownData(this.rundown._id, this.rundown.externalId)
+		try {
+			return loadCachedRundownData(this.rundown._id, this.rundown.externalId)
+		} catch (e) {
+			return undefined
+		}
 	}
 
 	/**

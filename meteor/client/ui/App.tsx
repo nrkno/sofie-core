@@ -107,6 +107,8 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	componentDidMount () {
 		const { i18n } = this.props
 
+		document.body.classList.add('tv2')
+
 		m.locale(i18n.language)
 		document.documentElement.lang = i18n.language
 		setInterval(this.cronJob, CRON_INTERVAL)

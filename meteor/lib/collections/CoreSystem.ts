@@ -123,9 +123,15 @@ export function setCoreSystemStorePath (storePath: string | undefined): void {
 		storePath = storePath.trim().replace(/(.*)[\/\\]$/, '$1') // remove last "/" or "\"
 	}
 
-	CoreSystem.update(system._id, {$set: {
-		storePath: storePath
-	}})
+	if (!storePath) {
+		CoreSystem.update(system._id, {$unset: {
+			storePath: 1
+		}})
+	} else {
+		CoreSystem.update(system._id, {$set: {
+			storePath: storePath
+		}})
+	}
 }
 
 export type Version = string

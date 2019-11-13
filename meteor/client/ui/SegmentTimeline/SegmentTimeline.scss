@@ -15,6 +15,12 @@ $timeline-layer-height: 1em;
     position: relative;
     overflow: hidden;
 
+    cursor: grab;
+
+    &.segment-timeline__timeline-container--grabbed {
+        cursor: grabbing;
+    }
+
     .segment-timeline__timeline {
         position: absolute;
         top: 0;

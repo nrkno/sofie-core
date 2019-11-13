@@ -96,15 +96,11 @@
 
     .prompter-line {
         // font-family: Overpass, Roboto, Helvetica, Arial, sans-serif;
-        font-family: Source Serif Pro, Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Source Serif Pro', Roboto, Helvetica, Arial, sans-serif;
         font-size: 0.96em;
         letter-spacing: 0.0em;
         line-height: 1.2em;
         margin-bottom: 0.5em;
-
-        &.empty {
-
-        }
     }
 
     .overlay-fix {

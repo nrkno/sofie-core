@@ -98,7 +98,7 @@ describe('User Actions', () => {
 		})
 		// Activate a second rundown (this should throw an error)
 		expect(
-			Meteor.call(UserActionAPI.methods.activate, rundownId1)
+			Meteor.call(UserActionAPI.methods.activate, rundownId1, false)
 		).toMatchObject({
 			error: 409,
 			message: expect.stringMatching(/only one rundown/i)

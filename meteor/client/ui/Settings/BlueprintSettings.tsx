@@ -78,7 +78,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				yes: t('Update'),
 				no: t('Cancel'),
 				message: <React.Fragment>
-					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
+					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</React.Fragment>,
 				onAccept: () => {

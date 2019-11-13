@@ -70,6 +70,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	buttonHeightScale: number
 
 	includeClearInRundownBaseline: boolean
+	assignHotKeys: boolean
 }
 
 export interface RundownLayoutBase {

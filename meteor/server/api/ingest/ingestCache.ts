@@ -72,9 +72,6 @@ export function loadIngestDataCachePart (rundownId: string, rundownExternalId: s
 	if (partEntry.type !== IngestCacheType.PART) throw new Meteor.Error(500, 'Wrong type on cached part')
 	return partEntry
 }
-export function loadCachedIngestPart (rundownId: string, rundownExternalId: string, partId: string, partExternalId: string): IngestPart {
-	return loadIngestDataCachePart(rundownId, rundownExternalId, partId, partExternalId).data
-}
 
 export function saveRundownCache (rundownId: string, ingestRundown: IngestRundown) {
 	// cache the Data:

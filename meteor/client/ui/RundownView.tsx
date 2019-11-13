@@ -62,6 +62,7 @@ import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
+import { PointerLockCursor } from '../lib/PointerLockCursor';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -438,19 +439,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPiece,
 					label: t('Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPieceUndo,
 					label: t('Undo Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
-					global: true,
 					coolDown: 1000
 				}
 			]
@@ -1902,6 +1900,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
 									rundown={this.props.rundown}
 								/> }
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<PointerLockCursor />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf
