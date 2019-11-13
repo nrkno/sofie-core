@@ -15,7 +15,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	"autoExpandCurrentNextSegment": false
 }
 
-Settings = _.extend({}, DEFAULT_SETTINGS)
+Settings = _.clone(DEFAULT_SETTINGS)
 
 Meteor.startup(() => {
 	Settings = _.extend(Settings, Meteor.settings.public)
