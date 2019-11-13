@@ -1,6 +1,14 @@
 body.tv2 {
 	.rundown-view {
 		padding-top: 60px;
+
+		.badge.mod {
+			margin: 20px 20px 0px 20px;
+		}
+
+		.header.rundown .close {
+			margin: 17px 20px 9px;
+		}
 	}
 	.col.rundown-overview {
 		display: none;
@@ -11,7 +19,7 @@ body.tv2 {
 		}
 	}
 	.segment-timeline {
-		margin: 0.5em 1.5em;
+		margin: 0.25em 1.5em;
 		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
 		grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
 
