@@ -100,7 +100,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 			this.ctx.fillStyle = TIMELINE_GRID_LABEL_COLOR
 
-			const fps = Settings['frameRate']
+			const fps = Settings.frameRate
 
 			const secondTimeScale = this.props.timeScale * 1000
 
