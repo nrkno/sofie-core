@@ -74,10 +74,35 @@ body.tv2 {
 			padding: 2.3em 0 0em;
 		}
 
+		.segment-timeline__timeUntil {
+			color: #555;
+			transition: 0.3s color;
+
+			&:hover {
+				transition: 0s color;
+				color: #fff;
+			}
+		}
+
 		&.collapsed {
 			.segment-timeline__title__notes {
 				display: none;
 			}
+
+			.segment-timeline__liveline {
+				top: 2.3em;
+
+				.segment-timeline__liveline__timecode {
+					opacity: 1;
+					visibility: visible;
+				}
+			}
+		}
+	}
+	.segment-timeline.next, .segment-timeline.live {
+		.segment-timeline__timeUntil {
+			transition: 0s color;
+			color: #fff;
 		}
 	}
 	.rundown-system-status {

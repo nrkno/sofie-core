@@ -249,6 +249,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				})
 			}
 		}
+		if (this.props.isNextSegment) {
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: false
+				})
+			}
+		}
 		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 		window.requestAnimationFrame(() => {
 			this.mountedTime = Date.now()
