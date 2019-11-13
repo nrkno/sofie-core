@@ -631,7 +631,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	) => {
 		const { t } = this.props
 
-		function handleResult(err, response) {
+		function handleResult (err, response) {
 			if (!err) {
 				if (typeof clb === 'function') clb(response)
 			} else {
