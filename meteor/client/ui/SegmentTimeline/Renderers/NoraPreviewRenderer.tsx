@@ -130,7 +130,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		if (!this.state) return null
 
 		const style = { ...this.state.style }
-		style['display'] = this.state.show ? 'block' : 'none'
+		style['visibility'] = this.state.show ? 'visible' : 'hidden'
 
 
 		return <React.Fragment>
