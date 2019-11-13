@@ -367,6 +367,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (!this._touchAttached && !this._mouseAttached) {
 			// if mouse down is on a piece - abort
 			if ((e.target as HTMLDivElement).classList.contains('segment-timeline__piece')) return
+			// check that only primary button is pressed down (mask 00001b)
+			if ((e.buttons & 1) !== 1) return
+			e.preventDefault()
 
 			document.addEventListener('mousemove', this.onTimelineMouseMove)
 			document.addEventListener('mouseup', this.onTimelineMouseUp)
