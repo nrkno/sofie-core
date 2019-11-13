@@ -14,14 +14,16 @@ body.tv2 {
 		display: none;
 	}
 	.segment-timeline-placeholder {
+		margin: 0.25em 1.5em;
 		&::before {
 			width: 16.875em;
+			top: 1.8em;
 		}
 	}
 	.segment-timeline {
 		margin: 0.25em 1.5em;
 		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
-		grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
+		grid-template-rows: [header] 1.8em [main-view] auto [zoom-area] auto [end];
 
 		.segment-timeline__liveline {
 			bottom: 0;
@@ -57,6 +59,7 @@ body.tv2 {
 		.segment-timeline__duration {
 			padding-left: 2em;
 			margin-left: 4em;
+			line-height: 1.8em;
 		}
 
 		.segment-timeline__zoom-area-container {
@@ -65,6 +68,19 @@ body.tv2 {
 
 		.segment-timeline__timeline-grid {
 			margin-bottom: 0;
+
+			font-size: 15px;
+			--timeline-grid-label-top: 15px;
+			--timeline-grid-long-line-top: 18px;
+			--timeline-grid-long-line-height: 0;
+			--timeline-grid-short-line-top: 26px;
+			--timeline-grid-short-line-height: 3px;
+		}
+
+		.segment-timeline__timeline {
+			.segment-timeline__part .segment-timeline__part__nextline {
+				bottom: 0;
+			}
 		}
 
 		.segment-timeline__timeline-background {
@@ -79,17 +95,26 @@ body.tv2 {
 		}
 
 		.segment-timeline__output-layers, .segment-timeline__timeline {
-			padding: 2.3em 0 0em;
+			padding: 1.8em 0 0em;
 		}
 
 		.segment-timeline__timeUntil {
 			color: #555;
 			transition: 0.3s color;
+			line-height: 1.5em;
 
 			&:hover {
 				transition: 0s color;
 				color: #fff;
 			}
+		}
+
+		.segment-timeline__liveline-shade {
+			top: 1.8em;
+		}
+
+		.segment-timeline__liveline {
+			top: 1.8em;
 		}
 
 		&.collapsed {
@@ -98,7 +123,7 @@ body.tv2 {
 			}
 
 			.segment-timeline__liveline {
-				top: 2.3em;
+				top: 1.8em;
 
 				.segment-timeline__liveline__timecode {
 					opacity: 1;
