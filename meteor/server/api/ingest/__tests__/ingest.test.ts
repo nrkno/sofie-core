@@ -1079,14 +1079,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(segments).toHaveLength(2)
 		expect(parts).toHaveLength(3)
-		
+
 		// Activate the rundown, make data updates and verify that it gets unsynced properly
 		ServerPlayoutAPI.activateRundown(rundown._id, true)
 		expect(getRundown().unsynced).toEqual(false)
 
 		RundownInput.dataRundownDelete({}, device2._id, device2.token, rundownData.externalId)
 		expect(getRundown().unsynced).toEqual(true)
-		
+
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
@@ -1095,13 +1095,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		RundownInput.dataSegmentDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId)
 		expect(getRundown().unsynced).toEqual(true)
-		
+
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
 		RundownInput.dataPartDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId, parts[0].externalId)
 		expect(getRundown().unsynced).toEqual(true)
-		
+
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 

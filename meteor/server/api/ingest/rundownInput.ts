@@ -626,7 +626,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
 
-		
+
 		if (canBeUpdated(rundown, segmentId, partId)) {
 			const part = Parts.findOne({
 				_id: partId,
@@ -640,13 +640,13 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 				logger.warn(`Not allowing removal of currently playing part "${part}", making rundown unsynced instead`)
 				ServerRundownAPI.unsyncRundown(rundown._id)
 			} else {
-		
+
 				// Blueprints will handle the deletion of the Part
 				const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
 				ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
-		
+
 				saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		
+
 				const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
 				if (updatedSegmentId) {
 					afterIngestChangedData(rundown, [updatedSegmentId])
@@ -654,7 +654,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 			}
 		}
 
-		
+
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
