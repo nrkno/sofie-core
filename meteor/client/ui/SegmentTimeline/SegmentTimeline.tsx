@@ -453,8 +453,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					key={this.props.segment._id + '-liveline-shade'}
 					style={{
 						'width': (this.props.followLiveLine ?
-							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
-							pixelPostion.toString()
+							Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString() :
+							Math.max(0, pixelPostion).toString()
 						) + 'px'
 					}} />,
 				<div className='segment-timeline__liveline'
