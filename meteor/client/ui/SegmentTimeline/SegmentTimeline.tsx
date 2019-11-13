@@ -513,7 +513,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<h2>
 						{this.props.segment.name}
 					</h2>
-					<div className='segment-timeline__title__notes'>
+					{(criticalNotes > 0 || warningNotes > 0) && <div className='segment-timeline__title__notes'>
 						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
 							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
@@ -534,7 +534,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								</b>
 							</div>
 						</div>}
-					</div>
+					</div>}
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
