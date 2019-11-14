@@ -24,7 +24,8 @@ interface PrompterConfig {
 	mirror?: boolean
 	mirrorv?: boolean
 
-	restrictMode?: string
+	mode?: PrompterConfigMode | string
+	controlMode?: string
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
@@ -32,6 +33,11 @@ interface PrompterConfig {
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
+}
+export enum PrompterConfigMode {
+	MOUSE = 'mouse',
+	KEYBOARD = 'keyboard',
+	SHUTTLEKEYBOARD = 'shuttlekeyboard'
 }
 interface IProps {
 	match?: {
@@ -73,16 +79,17 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const queryParams = queryStringParse(location.search)
 
 		this.configOptions = {
-			mirror: firstIfArray(queryParams['mirror']) === '1',
-			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
-			restrictMode: firstIfArray(queryParams['mode']) || undefined,
-			followTake: (queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
-			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
-			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
+			mirror:				firstIfArray(queryParams['mirror']) === '1',
+			mirrorv:			firstIfArray(queryParams['mirrorv']) === '1',
+			mode:				firstIfArray(queryParams['mode']) || undefined,
+			controlMode:		firstIfArray(queryParams['controlmode']) || undefined,
+			followTake:			(queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
+			fontSize:			parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
+			margin:				parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
 
-			marker: firstIfArray(queryParams['marker']) as any || undefined,
-			showMarker: (queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1'),
-			showScroll: (queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1')
+			marker:				firstIfArray(queryParams['marker']) as any || undefined,
+			showMarker:			(queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1'),
+			showScroll:			(queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1')
 		}
 
 		this._controller = new PrompterControlManager(this)
