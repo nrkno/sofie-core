@@ -18,7 +18,7 @@ import {
 
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from 'meteor/check'
-import { DeviceOptions as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
+import { DeviceOptionsAny as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
