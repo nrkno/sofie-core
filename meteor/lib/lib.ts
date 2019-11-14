@@ -1051,7 +1051,14 @@ export function trimIfString<T extends any> (value: T): T {
 	if (_.isString(value)) return value.trim()
 	return value
 }
-export const firstIfArray: ((<T>(value: T | T[] | null | undefined) => T | null | undefined) | (<T>(value: T | T[]) => T) | (<T>(value: T | T[] | undefined) => T | undefined))
-	= (value) => _.isArray(value) ? _.first(value) : value
+
+export function firstIfArray<T> (value: T | T[] | null | undefined): T | null | undefined
+export function firstIfArray<T> (value: T | T[] | null): T | null
+export function firstIfArray<T> (value: T | T[] | undefined): T | undefined
+export function firstIfArray<T> (value: T | T[]): T
+export function firstIfArray<T> (value: any): T {
+	return _.isArray(value) ? _.first(value) : value
+}
+
 
 export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)

@@ -2,6 +2,9 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
 import * as ClassNames from 'classnames'
+import { Meteor } from 'meteor/meteor'
+import { Tracker } from 'meteor/tracker'
+import { Random } from 'meteor/random'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -14,21 +17,27 @@ import { objectPathGet, firstIfArray } from '../../../lib/lib'
 import { Parts } from '../../../lib/collections/Parts'
 import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import { Segments } from '../../../lib/collections/Segments'
-import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
-import { Meteor } from 'meteor/meteor'
 import { PubSub } from '../../../lib/api/pubsub'
 
 interface PrompterConfig {
 	mirror?: boolean
 	mirrorv?: boolean
 
-	restrictMode?: string
+	mode?: PrompterConfigMode | string
+	controlMode?: string
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
 
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
+	showMarker: boolean
+	showScroll: boolean
+}
+export enum PrompterConfigMode {
+	MOUSE = 'mouse',
+	KEYBOARD = 'keyboard',
+	SHUTTLEKEYBOARD = 'shuttlekeyboard'
 }
 interface IProps {
 	match?: {
@@ -49,18 +58,7 @@ interface IState {
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	isMounted0: boolean = false
-	animatePreviousTime: number = 0
-
-	scrollDirection: number = 0
-	scrollSpeed: number = window.innerHeight * 2 // px per second
-	scrollSpeedMultiplier: number = 1
-
 	autoScrollPreviousPartId: string | null = null
-
-	scrollDirection2: number = 0
-
-	autorun0: Tracker.Computation | undefined
 
 	configOptions: PrompterConfig
 
@@ -81,14 +79,17 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const queryParams = queryStringParse(location.search)
 
 		this.configOptions = {
-			mirror: firstIfArray(queryParams['mirror']) === '1',
-			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
-			restrictMode: firstIfArray(queryParams['mode']) || undefined,
-			followTake: (queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
-			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
-			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
+			mirror:				firstIfArray(queryParams['mirror']) === '1',
+			mirrorv:			firstIfArray(queryParams['mirrorv']) === '1',
+			mode:				firstIfArray(queryParams['mode']) || undefined,
+			controlMode:		firstIfArray(queryParams['controlmode']) || undefined,
+			followTake:			(queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
+			fontSize:			parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
+			margin:				parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
 
-			marker: firstIfArray(queryParams['marker']) as any || undefined
+			marker:				firstIfArray(queryParams['marker']) as any || undefined,
+			showMarker:			(queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1'),
+			showScroll:			(queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1')
 		}
 
 		this._controller = new PrompterControlManager(this)
@@ -115,11 +116,32 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		})
 	}
 
-	componentDidUpdate () {
-		document.body.classList.add('dark', 'xdark', 'vertical-overflow-only')
+	componentDidMount () {
+		document.body.classList.add('dark', 'xdark', 'prompter-scrollbar',
+			this.configOptions.showScroll ?
+				'vertical-overflow-only' :
+				'no-overflow')
+		window.addEventListener('scroll', this.onWindowScroll)
+
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
+
+	componentWillUnmount () {
+		super.componentWillUnmount()
+
+		document.body.classList.remove('dark', 'xdark', 'prompter-scrollbar',
+			this.configOptions.showScroll ?
+				'vertical-overflow-only' :
+				'no-overflow')
+		window.removeEventListener('scroll', this.onWindowScroll)
+	}
+
+	componentDidUpdate () {
+		this.triggerCheckCurrentTakeMarkers()
+		this.checkScrollToCurrent()
+	}
+
 	checkScrollToCurrent () {
 		let rundownId = this.props.rundown && this.props.rundown._id
 		let rundown = Rundowns.findOne(rundownId || '')
@@ -129,48 +151,89 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
 					this.autoScrollPreviousPartId = rundown.currentPartId
 
-					this.scrollToCurrent()
+					this.scrollToLive()
 				}
 			}
 		}
 	}
-	scrollToCurrent () {
-		const current = document.querySelector('.prompter .current')
+	calculateScrollPosition () {
+		let pixelMargin = this.calculateMarginPosition()
+		switch (this.configOptions.marker) {
+			case 'top':
+			case 'hide':
+				pixelMargin += 0
+				break
+			case 'center':
+				pixelMargin = window.innerHeight / 2
+				break
+			case 'bottom':
+				pixelMargin = window.innerHeight - pixelMargin
+				break
+		}
+		return pixelMargin
+	}
+	calculateMarginPosition () {
+		let pixelMargin = (this.configOptions.margin || 0) * window.innerHeight / 100
+		return pixelMargin
+	}
+	scrollToLive () {
+		const scrollMargin = this.calculateScrollPosition()
+		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
 
 		if (current) {
-			const { top } = current.getBoundingClientRect()
-
-			Velocity(document.body, {
-				scrollTop: Math.max(0, top)
-			}, 300)
+			Velocity(document.body, 'finish')
+			Velocity(current, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
 	scrollToNext () {
+		const scrollMargin = this.calculateScrollPosition()
 		const next = document.querySelector('.prompter .next')
 
 		if (next) {
-			const { top } = next.getBoundingClientRect()
-
-			Velocity(document.body, {
-				scrollTop: Math.max(0, top)
-			}, 300)
+			Velocity(document.body, 'finish')
+			Velocity(next, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
-	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
-		let foundPositions: number[] = []
+	scrollToPrevious () {
+		const scrollMargin = this.calculateScrollPosition()
+		const screenMargin = this.calculateMarginPosition()
+		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
+
+		const target = anchors[anchors.length - 2] || anchors[0]
+		if (!target) return
+
+		Velocity(document.body, 'finish')
+		Velocity(document.body, 'scroll', { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: 'ease-out' })
+	}
+	scrollToFollowing () {
+		const scrollMargin = this.calculateScrollPosition()
+		const screenMargin = this.calculateMarginPosition()
+		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
+
+		const target = anchors[0]
+		if (!target) return
+
+		Velocity(document.body, 'finish')
+		Velocity(document.body, 'scroll', { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: 'ease-out' })
+	}
+	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
+		let foundPositions: [number, Element][] = []
 		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
 		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
 			const { top } = anchor.getBoundingClientRect()
 			if ((startY === -1 || top > startY) &&
 				(endY === -1 || top <= endY)) {
-				foundPositions.push(top)
+				foundPositions.push([top, anchor])
 			}
 		})
 
-		foundPositions = _.sortBy(foundPositions, v => sortDirection * v)
+		foundPositions = _.sortBy(foundPositions, v => sortDirection * v[0])
 
-		return foundPositions[0] || null
+		return foundPositions
+	}
+	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
+		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
 	}
 	onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
@@ -245,22 +308,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 
-	componentDidMount () {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-		window.addEventListener('scroll', this.onWindowScroll)
-		this.isMounted0 = true
-
-		this.triggerCheckCurrentTakeMarkers()
-		this.checkScrollToCurrent()
-	}
-	componentWillUnmount () {
-		super.componentWillUnmount()
-
-		document.body.classList.remove('dark', 'vertical-overflow-only')
-		window.removeEventListener('scroll', this.onWindowScroll)
-		this.isMounted0 = false
-	}
-
 	renderMessage (message: string) {
 		const { t } = this.props
 
@@ -286,8 +333,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const { t } = this.props
 
 		return <React.Fragment>
-			{/* <NotificationCenterPanel /> */}
-
 			{
 				!this.state.subsReady ?
 					<div className='rundown-view rundown-view--loading' >
@@ -353,6 +398,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		prompterData
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
+	private _scrollAnchor: [number, string] | undefined
 
 	constructor (props) {
 		super(props)
@@ -372,17 +418,66 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	}
 
+	UNSAFE_componentWillUpdate () {
+		// TODO: find an element to anchor to
+		let readPosition = (this.props.config.margin || 0) * window.innerHeight / 100
+		switch (this.props.config.marker) {
+			case 'top':
+			case 'hide':
+				break
+			case 'center':
+				readPosition = window.innerHeight / 2
+				break
+			case 'bottom':
+				readPosition = window.innerHeight - readPosition
+				break
+		}
+
+		let foundPositions: [number, string][] = []
+		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+
+		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
+			const { top } = anchor.getBoundingClientRect()
+			if ((top + readPosition) <= 10) foundPositions.push([top, '.' + anchor.className.replace(/\s/g, '.')])
+		})
+
+		foundPositions = _.sortBy(foundPositions, v => 1 * v[0])
+
+		if (foundPositions.length > 0) {
+			this._scrollAnchor = foundPositions[foundPositions.length - 1]
+		}
+	}
+
+	componentDidUpdate () {
+		// TODO: Restore element's position
+
+		if (this._scrollAnchor) {
+			const anchor = document.querySelector(this._scrollAnchor[1])
+			if (anchor) {
+				const { top } = anchor.getBoundingClientRect()
+
+				window.scrollBy({
+					top: top - this._scrollAnchor[0]
+				})
+
+				this._scrollAnchor = undefined
+			} else {
+				console.warn('Read anchor could not be found: ' + this._scrollAnchor[1])
+			}
+		}
+	}
+
 	renderPrompterData (prompterData: PrompterData) {
 
-		let divs: any[] = []
+		let lines: React.ReactNode[] = []
 		let previousSegmentId = ''
 		let previousPartId = ''
 		_.each(prompterData.lines, (line, i: number) => {
 
-			let currentNextLine: 'current' | 'next' | null = null
+			let currentNextLine: 'live' | 'next' | null = null
 
 			currentNextLine = (
-				this.props.currentPartId === line.partId ? 'current' :
+				this.props.currentPartId === line.partId ? 'live' :
 					this.props.nextPartId === line.partId ? 'next' :
 						null
 			)
@@ -390,9 +485,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			if (line.segmentId !== previousSegmentId) {
 				let segment = Segments.findOne(line.segmentId)
 
-				divs.push(
+				lines.push(
 					<div
-						key={'segment_' + i}
+						key={'segment_' + line.segmentId + '_' + line.id}
 						className={ClassNames(
 							'prompter-segment',
 							'scroll-anchor',
@@ -408,11 +503,14 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				let part = Parts.findOne(line.partId)
 				let title: string = part ? part.title : 'N/A'
+				if (part && part.typeVariant && part.typeVariant.toString && part.typeVariant.toString().toLowerCase().trim() === 'full') {
+					title = 'FULL'
+				}
 				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
-				divs.push(
+				lines.push(
 					<div
-						key={'part_' + i}
+						key={'part_' + line.partId + '_' + line.id}
 						className={ClassNames(
 							'prompter-part',
 							'scroll-anchor',
@@ -427,9 +525,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			previousSegmentId = line.segmentId
 			previousPartId = line.partId
 
-			divs.push(
+			lines.push(
 				<div
-					key={i}
+					key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
 					className={ClassNames(
 						'prompter-line',
 						(!line.text ? 'empty' : undefined)
@@ -439,7 +537,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				</div>
 			)
 		})
-		return divs
+
+		return lines
 	}
 	render () {
 		const { t } = this.props
@@ -450,34 +549,46 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
 					style={{
 						fontSize: (this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined),
-						marginLeft: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
-						marginRight: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
-						marginTop: (this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
-						marginBottom: (this.props.config.margin ? this.props.config.margin + 'vh' : undefined)
 					}}
 				>
 					<div className='overlay-fix'>
-						<div className={'read-marker ' + (this.props.config.marker || 'hide')}>
-							<div className='side left'></div>
-							<div className='side right'></div>
-						</div>
+						<div className={'read-marker ' + (
+							!this.props.config.showMarker ? 'hide' : (this.props.config.marker || 'hide')
+						)}></div>
 
 						<div className='take-indicator hidden'></div>
 						<div className='next-indicator hidden'></div>
 					</div>
 
-					<div className='prompter-break begin'>
-						{this.props.rundown.name}
+					<div className='prompter-display'
+						style={{
+							paddingLeft: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
+							paddingRight: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
+							paddingTop: this.props.config.marker === 'center' ?
+											'50vh' :
+										this.props.config.marker === 'bottom' ?
+												'100vh' :
+										(this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
+							paddingBottom: this.props.config.marker === 'center' ?
+													'50vh' :
+											this.props.config.marker === 'top' ?
+													'100vh' :
+											(this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
+						}}
+					>
+						<div className='prompter-break begin'>
+							{this.props.rundown.name}
+						</div>
+
+						{this.renderPrompterData(this.props.prompterData)}
+
+						{
+							this.props.prompterData.lines.length ?
+								<div className='prompter-break end'>
+									—{t('End of script')}—
+							</div> : null
+						}
 					</div>
-
-					{this.renderPrompterData(this.props.prompterData)}
-
-					{
-						this.props.prompterData.lines.length ?
-							<div className='prompter-break end'>
-								-{t('End of script')}-
-						</div> : null
-					}
 				</div >
 			)
 		} else {

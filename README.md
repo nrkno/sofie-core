@@ -33,21 +33,21 @@ npm link mos-connection
 
 In order for the system to work properly, it may be neccessary to set up several system properties. These can be set through environement variables - if not present, default values will be used.
 
-|Setting         |Use                                                       |Default value      |
-|----------------|----------------------------------------------------------|-------------------|
-|`NTP_SERVERS`   |Comma separated list of time servers to sync the system to|`0.se.pool.ntp.org`|
-|`FRAME_RATE`    |Framerate to be used when displaying time with frame accuracy|`25`            |
+| Setting       | Use                                                           | Default value       |
+| ------------- | ------------------------------------------------------------- | ------------------- |
+| `NTP_SERVERS` | Comma separated list of time servers to sync the system to    | `0.se.pool.ntp.org` |
+| `FRAME_RATE`  | Framerate to be used when displaying time with frame accuracy | `25`                |
 
 
 ## Additional views
 
 For the purpose of running the system in a studio environment, there are additional endpoints, unavailable from the menu structure.
 
-|Path     |Function     |
-|---------|-------------|
-|`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
-|`/activeRundown/:studioId`|Redirects to the rundown currently active in a given studio|
-|`/prompter/:studioId`|A simple prompter for the studio presenter|
+| Path                              | Function                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter |
+| `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio              |
+| `/prompter/:studioId`             | A simple prompter for the studio presenter                               |
 
 ## Studio mode
 
@@ -79,40 +79,67 @@ This choice is persisted in browser's Local Storage, and the same language will 
 
 ## Operating the prompter screen
 
-The prompter has several operating modes, described further below.
+The prompter can be controlled by different types of controllers. Which mode is set by the query parameter, like so: `?mode=mouse`.
+
+| Query parameter           | Description                                                                                     |
+|---------------------------|-------------------------------------------------------------------------------------------------|
+|  Default                  | Controlled by both mouse and keyboard                                                           |
+| `?mode=mouse`             | Controlled by mouse only                                                                        |
+| `?mode=keyboard`          | Controlled by keyboard only                                                                     |
+| `?mode=shuttlekeyboard`   | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below)       |
+
+### Customize looks
+
+The prompter UI can be configured using query parameters:
+
+| Query parameter | Type   | Description                                                                                     | Default |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------- | ------- |
+| `mirror`        | string | Mirror the display horisontally                                                                 |         |
+| `vmirror`       | string | Mirror the display vertically                                                                   |         |
+| `fontsize`      | number | Set a custom font size of the text. 20 will fit in 5 lines of text, 14 will fit 7 lines etc..   | 14      |
+| `marker`        | string | Set position of the read-marker. Possible values: "center", "top", "bottom", "hide"             | "hide"  |
+| `margin`        | number | Set margin of screen (used on monitors with overscan), in %.                                    | 0       |
+| `showmarker`    | 0 / 1  | If the marker is not set to "hide", control if the marker is hidden or not                      | 1       |
+| `showscroll`    | 0 / 1  | Whether the scroll bar should be shown                                                          | 1       |
+| `followtake`    | 0 / 1  | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it | 1       |
+
+Example: http://mySofie/prompter/studio0/?mode=mouse&followTake=0&fontsize=20
+
+### Control using mouse (scroll wheel)
+
+The prompter can be controlled in multiple ways when using the scroll wheel:
+
+| Query parameter              | Description                                                                                       |
+|------------------------------|---------------------------------------------------------------------------------------------------|
+| `?controlmode=normal`        | Scrolling of the mouse works as "normal scrolling"                                                |
+| `?controlmode=speed`         | Scrolling of the mouse changes the speed of scolling. Left-click to toggle, right-click to rewind |
+| `?controlmode=smoothscroll`  | Scrolling the mouse wheel starts continous scrolling. Small speed adjustments can then be made by nudging the scroll wheel. Stop the scrolling by making a "larger scroll" on the wheel. |
+
+has several operating modes, described further below.
 All modes are intended to be controlled by a computer mouse or similar, such as a presenter tool.
-To cycle between operating modes, press *both mouse keys* simultaneously.
 
-The prompter can be configured using URL parameters:
+### Control using keyboard
 
-| Query parameter | Type    | Description                                                                                     | Default  |
-|-----------------|---------|-------------------------------------------------------------------------------------------------|----------|
-| mirror          | string  | Mirror the display horisontally                                                                 |          |
-| vmirror         | string  | Mirror the display vertically                                                                   |          |
-| mode            | string  | Restrict the operating mode. Possible values: "normal", "speed", "smoothscroll"                 |          |
-| followtake      | 0 / 1   | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it | 1        |
-| fontsize        | number  | Set a custom font size of the text. 20 will fit in 5 lines of text, 14 will fit 7 lines etc..   | 14       |
-| marker          | string  | Set position of the read-marker. Possible values: "center", "top", "bottom", "hide"             | "hide"   |
-| margin          | number  | Set margin of screen (used on monitors with overscan), in %.                                    | 0        |
+Keyboard control is intended to be used when having a "keyboard"-device, such as a presenter tool.
 
-Example: http://mySofie/prompter/studio0/?mode=smoothscroll&followTake=0&fontsize=20
+| Scroll up  | Scroll down  |
+|------------|--------------|
+| Arrow Up   | Arrow Down   |
+| Arrow Left | Arrow Right  |
+| Page Up    | Page Down    |
+|            | Space        |
 
+### Control using Contour ShuttleXpress or X-keys
 
-### Normal Scrolling
-Nothing fancy, use it like a normal web page
+This mode is intended to be used when having a Contour ShuttleXpress or X-keys device, configured to work as a keyboard device.
 
-### Speed control
-* Scrolling the mouse wheel sets the speed
-* Click Left mouse button to toggle scrolling
-* Hold Left mouse button to toggle scrolling
-* Click Right mouse button to toggle rewind scrolling
-* Hold Right mouse button to toggle rewind scrolling
+Config-files to be used in respective config software:
 
-### Smooth scrolling
-* Scrolling the mouse wheel starts continous scrolling. Small speed adjustments can then be made by nudging the scroll wheel. Stop the scrolling by making a "larger scroll" on the wheel.
+* [Contour ShuttleXpress](resources/prompter_layout_shuttlexpress.pref)
+* [X-keys](resources/prompter_layout_xkeys.mw3)
 
 
-The prompter can be operated using pressing & holding keyboard arrow keys: `Up` & `Down`. Press `Home` to enable auto-scroll mode. `Shift+Up` and `Shift+Down` scrolls in 3x speed. If the studio setup requries a mirrored-image prompter, you can append `?mirror=1` to enable mirror mode. This setting is not persisted in browser. 
+# For developers
 
 ## Translating Sofie
 
@@ -123,7 +150,7 @@ cd meteor
 npm run i18n-extract-pot
 ```
 
-Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your ISO 639-1 language code of choice as the filename.
+Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of choice as the filename.
 
 Next, modify the `package.json` scripts and create a new language compilations script:
 
