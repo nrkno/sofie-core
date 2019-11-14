@@ -1,6 +1,43 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [1.3.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.2.0...v1.3.0-0) (2019-11-14)
+
+
+### Bug Fixes
+
+* **segment notes:** don't take up space if not present ([bd5cc48](https://github.com/nrkno/tv-automation-server-core/commit/bd5cc48))
+* looped clip hoverscrub previews ([6400247](https://github.com/nrkno/tv-automation-server-core/commit/6400247))
+* **shelf:** keep a single source of sorting for adLibs ([4fcd97b](https://github.com/nrkno/tv-automation-server-core/commit/4fcd97b))
+* broken tests ([c9b2c44](https://github.com/nrkno/tv-automation-server-core/commit/c9b2c44))
+* change extend to clone ([c7efdda](https://github.com/nrkno/tv-automation-server-core/commit/c7efdda))
+* change UI settings to a Meteor-standard ([4aaa053](https://github.com/nrkno/tv-automation-server-core/commit/4aaa053))
+* correct codecov paths ([4373c48](https://github.com/nrkno/tv-automation-server-core/commit/4373c48))
+* global hotkeys ([f2bce37](https://github.com/nrkno/tv-automation-server-core/commit/f2bce37))
+* global hotkeys ([ddd292d](https://github.com/nrkno/tv-automation-server-core/commit/ddd292d))
+* guard against negative width of liveline shade ([cc58f11](https://github.com/nrkno/tv-automation-server-core/commit/cc58f11))
+* hidden type issue TMP! (to be reverted after discussion) ([b796cf7](https://github.com/nrkno/tv-automation-server-core/commit/b796cf7))
+* improve code clarity in handleAnotherRundownActive ([29d878d](https://github.com/nrkno/tv-automation-server-core/commit/29d878d))
+* looped clip hoverscrub previews ([aba8cd5](https://github.com/nrkno/tv-automation-server-core/commit/aba8cd5))
+* nora preview visibility for width calculations ([d5bfca9](https://github.com/nrkno/tv-automation-server-core/commit/d5bfca9))
+* remove jest-meteor-stubs as it provides a false sense of security ([e595283](https://github.com/nrkno/tv-automation-server-core/commit/e595283))
+* **UI:** alignment touchup ([3bf3784](https://github.com/nrkno/tv-automation-server-core/commit/3bf3784))
+* replace BG image ([baaafcb](https://github.com/nrkno/tv-automation-server-core/commit/baaafcb))
+* segment viewport manipulation using scroll wheel ([d3c8dd9](https://github.com/nrkno/tv-automation-server-core/commit/d3c8dd9))
+* update dependencies ([580ba98](https://github.com/nrkno/tv-automation-server-core/commit/580ba98))
+* update typings (after TSR update) ([0507f0e](https://github.com/nrkno/tv-automation-server-core/commit/0507f0e))
+* use an image with less contrast ([d8012ad](https://github.com/nrkno/tv-automation-server-core/commit/d8012ad))
+
+
+### Features
+
+* implement some more mocks ([768f0fd](https://github.com/nrkno/tv-automation-server-core/commit/768f0fd))
+* **tests:** Blueprint api tests ([3b3fa56](https://github.com/nrkno/tv-automation-server-core/commit/3b3fa56))
+* make the focus search bar in adLib tab more prominent ([8bc3323](https://github.com/nrkno/tv-automation-server-core/commit/8bc3323))
+* make the focus search bar in adLib tab more prominent ([e403a9c](https://github.com/nrkno/tv-automation-server-core/commit/e403a9c))
+
+
 
 <a name="1.2.0"></a>
 # [1.2.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.1.2...v1.2.0) (2019-11-06)
