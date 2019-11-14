@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-10-17T06:32:56.372Z\n"
-"PO-Revision-Date: 2019-10-17T06:32:56.372Z\n"
+"POT-Creation-Date: 2019-11-05T11:44:00.251Z\n"
+"PO-Revision-Date: 2019-11-05T11:44:00.251Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -88,6 +88,9 @@ msgstr ""
 msgid "Connected to the"
 msgstr ""
 
+msgid "Reconnect now"
+msgstr ""
+
 msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
@@ -157,10 +160,19 @@ msgstr ""
 msgid "Re-sync with MOS"
 msgstr ""
 
-msgid "Add rundowns by connecting a gateway.\n"
+msgid "Enable configuration mode by adding ?configure=1 to the address bar."
 msgstr ""
 
-msgid "Check system status messages.\n"
+msgid "You need to run migrations to set the system up for operation."
+msgstr ""
+
+msgid "Add rundowns by connecting a gateway."
+msgstr ""
+
+msgid "Check system status messages."
+msgstr ""
+
+msgid "There are no rundowns ingested into Sofie."
 msgstr ""
 
 msgid "Getting Started"
@@ -1007,7 +1019,7 @@ msgid "Application credentials"
 msgstr ""
 
 msgid ""
-"Go to the url below and click on the \"Enable the Drive API button\". Then "
+"Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
 "and upload it here."
 msgstr ""
@@ -1251,6 +1263,9 @@ msgid "Filter disabled"
 msgstr ""
 
 msgid "Label contains"
+msgstr ""
+
+msgid "Register Shortcuts for this Panel"
 msgstr ""
 
 msgid "Default Layout"

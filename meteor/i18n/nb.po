@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-10-02T09:58:48.132Z\n"
-"PO-Revision-Date: 2019-10-02 12:04+0200\n"
+"POT-Creation-Date: 2019-11-05T11:44:00.251Z\n"
+"PO-Revision-Date: 2019-11-05 18:02+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -94,6 +94,9 @@ msgstr "Din maskin er frakoblet og kan ikke koble til"
 msgid "Connected to the"
 msgstr "Tilkoblet til"
 
+msgid "Reconnect now"
+msgstr "Koble til nå"
+
 msgid "Could not get system status. Please consult system administrator."
 msgstr "Kan ikke innhente status for systemet. Kontakt systemadministrator"
 
@@ -128,10 +131,10 @@ msgid "My name is {{name}}"
 msgstr "Mitt navn er {{Name}}"
 
 msgid "Operating Mode"
-msgstr ""
+msgstr "Styringsmodus"
 
 msgid "Switching operating mode to {{mode}}"
-msgstr ""
+msgstr "Bytt til {{mode}}"
 
 msgid "End of script"
 msgstr "Slutt på manus"
@@ -160,21 +163,26 @@ msgstr ""
 "Er du sikker på at du vil synkronisere kjøreplanen \"{{rundownSlug}}\" med "
 "MOS?"
 
-#, fuzzy
-#| msgid "Another Rundown is Already Active!"
 msgid "This rundown is currently active"
-msgstr "Denne kjøreplanen er allerede aktiv!"
+msgstr "Denne kjøreplanen er allerede aktiv"
 
 msgid "Re-sync with MOS"
 msgstr "Synkroniser med MOS"
 
-msgid "Add rundowns by connecting a gateway.\n"
+msgid "Enable configuration mode by adding ?configure=1 to the address bar."
 msgstr ""
 
-#, fuzzy
-#| msgid "System messages"
-msgid "Check system status messages.\n"
-msgstr "Sjekk systemmeldinger"
+msgid "You need to run migrations to set the system up for operation."
+msgstr ""
+
+msgid "Add rundowns by connecting a gateway."
+msgstr ""
+
+msgid "Check system status messages."
+msgstr ""
+
+msgid "There are no rundowns ingested into Sofie."
+msgstr ""
 
 msgid "Getting Started"
 msgstr "Kom i gang"
@@ -184,18 +192,14 @@ msgid ""
 "the URL: "
 msgstr "Først må du gå i konfigurasjonsmodus ved å legge dette til URLen: "
 
-#, fuzzy
-#| msgid "Started"
 msgid "Start Here!"
-msgstr "Startet"
+msgstr "Start her"
 
 msgid "Then, run the migrations script:"
 msgstr "Kjør så migreringsprosedyren"
 
-#, fuzzy
-#| msgid "Run Migration Procedure"
 msgid "Run Migrations to get set up"
-msgstr "Kjør migreringsprosedyre"
+msgstr "Kjør migreringsprosedyrer for å sette opp"
 
 msgid "Migrations"
 msgstr "Migration"
@@ -204,18 +208,14 @@ msgid "Documentation is available at"
 msgstr "Dokumentasjon er tilgjengelig på"
 
 msgid "Click on a rundown to control your studio"
-msgstr ""
+msgstr "Klikk på en kjøreplan for å kontrollere studioet ditt"
 
 msgid "Rundown"
 msgstr "Kjøreplan"
 
-#, fuzzy
-#| msgid "Studios"
 msgid "Studio"
 msgstr "Studio"
 
-#, fuzzy
-#| msgid "Show Styles"
 msgid "Show style"
 msgstr "Showstyle"
 
@@ -295,8 +295,8 @@ msgstr "Deaktiver"
 msgid "Activate (Rehearsal)"
 msgstr "Aktiver testmodus"
 
-msgid "Reload Rundown"
-msgstr "Last inn kjøreplanen på nytt"
+msgid "Reset Rundown"
+msgstr "Tilbakestill kjøreplanen"
 
 msgid "Move Next forwards"
 msgstr "Skip neste"
@@ -336,15 +336,11 @@ msgstr ""
 msgid "Activate Anyway"
 msgstr "Aktiver allikevel"
 
-#, fuzzy
-#| msgid "Activate Anyway"
 msgid "Activate anyway (GO ON AIR)"
-msgstr "Aktiver allikevel"
+msgstr "Aktiver allikevel (GO ON AIR)"
 
-#, fuzzy
-#| msgid "Failed to deactivate"
 msgid "Failed to activate"
-msgstr "Kunne ikke deaktivere"
+msgstr "Kunne ikke aktivere"
 
 msgid ""
 "Something went wrong, please contact the system administrator if the problem "
@@ -381,9 +377,6 @@ msgstr ""
 
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr "Forbered studio og aktiver testmodus"
-
-msgid "Reset Rundown"
-msgstr "Tilbakestill kjøreplanen"
 
 msgid "Reload ENPS Data"
 msgstr "Last inn ENPS-data på nytt"
@@ -422,8 +415,6 @@ msgstr ""
 "Dette studioet har ingen tilkoblede gateways for playout. Kontakt "
 "systemadministrator for å starte den."
 
-#, fuzzy
-#| msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting..."
 msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
 msgstr "Playout Gateway \"{{playoutDeviceName}}\" starter på nytt..."
 
@@ -607,13 +598,9 @@ msgstr "Filnavn"
 msgid "Set this part as <strong>Next</strong>"
 msgstr "Sett dette punktet som <strong>neste</strong>"
 
-#, fuzzy
-#| msgid "Set <strong>Next</strong> here"
 msgid "Set <strong>Next</strong> Here"
-msgstr "Sett <strong>Neste</strong> here"
+msgstr "Sett <strong>Neste</strong> her"
 
-#, fuzzy
-#| msgid "Play from here"
 msgid "Play from Here"
 msgstr "Spill av herfra"
 
@@ -798,18 +785,14 @@ msgstr "Blueprint-id"
 msgid "Blueprint Name"
 msgstr "Blueprintnavn"
 
-#, fuzzy
-#| msgid "Your name"
 msgid "No name set"
-msgstr "Ditt navn"
+msgstr "Navn ikke satt"
 
 msgid "Blueprint Type"
 msgstr "Blueprint-type"
 
-#, fuzzy
-#| msgid "Upload Blueprints"
 msgid "Upload a new blueprint"
-msgstr "Last opp blueprint"
+msgstr "Last opp ny blueprint"
 
 msgid "Last modified"
 msgstr "Sist endret"
@@ -898,10 +881,8 @@ msgstr "The ID {{monitorId}} already exists!"
 msgid "Monitor ID"
 msgstr "Monitor ID"
 
-#, fuzzy
-#| msgid "Monitor type"
 msgid "Monitor Type"
-msgstr "Monitor type"
+msgstr "Monitor-type"
 
 msgid "Media Scanner Host"
 msgstr "Media Scanner Host"
@@ -984,11 +965,11 @@ msgstr "Fjern denne enheten?"
 msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
 msgstr "Er du sikker på at du vil fjerne enheten \"{{deviceId}}\"?"
 
-msgid "Device ID"
+msgid "Device id"
 msgstr "Device ID"
 
 msgid "Disable"
-msgstr ""
+msgstr "Deaktiver"
 
 msgid "Device Type"
 msgstr ""
@@ -1013,6 +994,9 @@ msgstr ""
 
 msgid "Ramp Function Path"
 msgstr ""
+
+msgid "Priority"
+msgstr "Prioritet"
 
 msgid "Buffer Encoding"
 msgstr ""
@@ -1072,7 +1056,7 @@ msgid "Application credentials"
 msgstr ""
 
 msgid ""
-"Go to the url below and click on the \"Enable the Drive API button\". Then "
+"Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
 "and upload it here."
 msgstr ""
@@ -1097,17 +1081,32 @@ msgstr ""
 msgid "Debug logging"
 msgstr ""
 
+msgid "Row"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Failed to update config: {{errorMessage}}"
+msgstr "Oppdatering av blueprints feilet: {{errorMessage}}"
+
+msgid "Import"
+msgstr ""
+
 msgid "true"
 msgstr ""
 
 msgid "false"
 msgstr ""
 
-msgid "Create"
-msgstr "Opprett"
+msgid "rows"
+msgstr ""
 
 msgid "Value"
 msgstr "Verdi"
+
+msgid "Create"
+msgstr "Opprett"
 
 msgid "Add config item"
 msgstr "Legg til konfigurasjonselement"
@@ -1312,6 +1311,9 @@ msgstr ""
 msgid "Label contains"
 msgstr ""
 
+msgid "Register Shortcuts for this Panel"
+msgstr ""
+
 msgid "Default Layout"
 msgstr "Standardlayout"
 
@@ -1383,7 +1385,7 @@ msgid "Remote Source"
 msgstr "RM"
 
 msgid "Generic Script"
-msgstr ""
+msgstr "Generisk manus"
 
 msgid "Split Screen"
 msgstr "Splitt"
@@ -1443,7 +1445,7 @@ msgid "Is hidden"
 msgstr "Er skjult"
 
 msgid "Display on Presenter's Screen"
-msgstr ""
+msgstr "Vis på presentatørskjerm"
 
 msgid "Shortcut List"
 msgstr "Liste over funksjonstaster"
@@ -1904,16 +1906,30 @@ msgstr "Start alle på nytt"
 msgid "Do you want to restart CasparCG Server?"
 msgstr "Er du sikker på at du vil restarte Caspar?"
 
+msgid "Restart Quantel Gateway"
+msgstr "Start Quantel Gateway på nytt"
+
+msgid "Do you want to restart Quantel Gateway?"
+msgstr "Vil du starte Quantel Gateway på nytt?"
+
+msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
+msgstr "Klarte ikke å restarte Quantel Gateway: {{errorMessage}}"
+
+msgid "Quantel Gateway restarting..."
+msgstr "Quantel Gateway starter på nytt..."
+
 msgid "Format HyperDeck disks"
-msgstr ""
+msgstr "Formater HyperDeck-disker"
 
 msgid ""
 "Do you want to format the HyperDeck disks? This is a destructive action and "
 "cannot be undone."
-msgstr ""
+msgstr "Er du sikker "
 
-msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
-msgstr "Formatering av HyperDecks på \"{{deviceName}}\" feilet: {{errorMessage}}"
+msgid ""
+"Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
+msgstr ""
+"Formatering av HyperDecks på \"{{deviceName}}\" feilet: {{errorMessage}}"
 
 msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
 msgstr "Formaterer HyperDecks på \"{{deviceName}}\"..."
@@ -1922,7 +1938,7 @@ msgid "Last seen"
 msgstr "Sist sett"
 
 msgid "Format disks"
-msgstr ""
+msgstr "Formater disker"
 
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
 msgstr "Er du sikker på at du vil fjerne enheten \"{{deviceId}}\"?"
@@ -1989,6 +2005,51 @@ msgstr "Nettleseren støtter ikke videoavspilling"
 
 msgid "Recording still in progress"
 msgstr "Opptak pågår fremdeles"
+
+msgid "Source is not set"
+msgstr "Kilde "
+
+msgid "Source is missing"
+msgstr "Kilde mangler"
+
+msgid "Source doesn't have audio & video"
+msgstr "Kilde har ikke lyd og bilde"
+
+msgid "Source format ({{format}}) is not in accepted formats"
+msgstr "Kilde-formatet ({{format}}) er ikke støttet"
+
+msgid "Source has {{audioStreams}} audio streams"
+msgstr "Kilde har {{audioStreams}} lydstrømmer"
+
+msgid "Clip starts with {{frames}} {{type}} frame"
+msgstr "Klipp starter med {{frames}} {{type}} frame"
+
+msgid "Clip ends with {{frames}} {{type}} frame"
+msgstr "Klipp slutter med {{frames}} {{type}} frame"
+
+msgid "{{frames}} {{type}} frame detected in clip."
+msgstr "{{frames}} {{type}} frame gjenkjent i klipp."
+
+msgid "Clip is being ingested"
+msgstr "Klippet blir prosessert"
+
+msgid "{{displayName}}: {{messages}}"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Clip ends with {{frames}} {{type}} frame°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frame detected in clip.°°°°°°"
+msgstr ""
+
+#~ msgid "Reload Rundown"
+#~ msgstr "Last inn kjøreplanen på nytt"
 
 #~ msgid "ID"
 #~ msgstr "ID"
