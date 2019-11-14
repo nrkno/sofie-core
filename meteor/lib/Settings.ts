@@ -10,9 +10,9 @@ export interface ISettings {
 export let Settings: ISettings
 
 const DEFAULT_SETTINGS: ISettings = {
-	"frameRate": 25,
-	"defaultToCollapsedSegments": false,
-	"autoExpandCurrentNextSegment": false
+	'frameRate': 25,
+	'defaultToCollapsedSegments': false,
+	'autoExpandCurrentNextSegment': false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
