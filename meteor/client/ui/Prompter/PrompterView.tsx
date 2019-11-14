@@ -143,7 +143,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
 					this.autoScrollPreviousPartId = rundown.currentPartId
-					
+
 					this.scrollToLive()
 				}
 			}
@@ -174,17 +174,17 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
 
 		if (current) {
-			Velocity(document.body, "finish")
-			Velocity(current, "scroll", { offset: -1 * scrollMargin, duration: 400, easing: "ease-out" })
+			Velocity(document.body, 'finish')
+			Velocity(current, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
 	scrollToNext () {
 		const scrollMargin = this.calculateScrollPosition()
 		const next = document.querySelector('.prompter .next')
-		
+
 		if (next) {
-			Velocity(document.body, "finish")
-			Velocity(next, "scroll", { offset: -1 * scrollMargin, duration: 400, easing: "ease-out" })
+			Velocity(document.body, 'finish')
+			Velocity(next, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
 	scrollToPrevious () {
@@ -195,8 +195,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const target = anchors[anchors.length - 2] || anchors[0]
 		if (!target) return
 
-		Velocity(document.body, "finish")
-		Velocity(document.body, "scroll", { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: "ease-out" })
+		Velocity(document.body, 'finish')
+		Velocity(document.body, 'scroll', { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: 'ease-out' })
 	}
 	scrollToFollowing () {
 		const scrollMargin = this.calculateScrollPosition()
@@ -206,8 +206,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const target = anchors[0]
 		if (!target) return
 
-		Velocity(document.body, "finish")
-		Velocity(document.body, "scroll", { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: "ease-out" })
+		Velocity(document.body, 'finish')
+		Velocity(document.body, 'scroll', { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: 'ease-out' })
 	}
 	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
 		let foundPositions: [number, Element][] = []
@@ -448,11 +448,11 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			const anchor = document.querySelector(this._scrollAnchor[1])
 			if (anchor) {
 				const { top } = anchor.getBoundingClientRect()
-				
+
 				window.scrollBy({
 					top: top - this._scrollAnchor[0]
 				})
-	
+
 				this._scrollAnchor = undefined
 			} else {
 				console.warn('Read anchor could not be found: ' + this._scrollAnchor[1])
@@ -480,7 +480,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				lines.push(
 					<div
-						key={'segment_' + line.segmentId + "_" + line.id}
+						key={'segment_' + line.segmentId + '_' + line.id}
 						className={ClassNames(
 							'prompter-segment',
 							'scroll-anchor',
@@ -503,7 +503,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				lines.push(
 					<div
-						key={'part_' + line.partId + "_" + line.id}
+						key={'part_' + line.partId + '_' + line.id}
 						className={ClassNames(
 							'prompter-part',
 							'scroll-anchor',
@@ -520,7 +520,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			lines.push(
 				<div
-					key={'line_' + line.partId + "_" + line.segmentId + "_" + line.id}
+					key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
 					className={ClassNames(
 						'prompter-line',
 						(!line.text ? 'empty' : undefined)

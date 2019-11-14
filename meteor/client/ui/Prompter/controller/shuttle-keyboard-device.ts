@@ -12,24 +12,24 @@ const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
  * Supports Page-up / Page-down keys
  */
 export class ShuttleKeyboardController extends ControllerAbstract {
-	
+
 	private _destroyed: boolean = false
 	private _prompterView: PrompterViewInner
 
 	private readonly _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
 	private readonly _speedStepMap = [...this._speedMap.slice(1).reverse().map(i => i * -1), ...this._speedMap.slice()]
-	
-	private _updateSpeedHandle: number|null = null
+
+	private _updateSpeedHandle: number | null = null
 	private _lastSpeed = 0
 	private readonly SPEEDMAP_NEUTRAL_POSITION = 7
 	private _lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 	private _currentPosition = 0
-	
+
 	private _lastTick: number | undefined
-	
+
 	constructor (view: PrompterViewInner) {
 		super(view)
-		
+
 		this._prompterView = view
 	}
 	public destroy () {
@@ -44,7 +44,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		// filter on ctrl and alt, fail early
 		if (e.ctrlKey && e.altKey) {
 			// pause if Digit9 (shuttle centred)
-			if(e.shiftKey && e.code === 'Digit9') {
+			if (e.shiftKey && e.code === 'Digit9') {
 				speed = 0
 			}
 			switch (e.code) {
@@ -123,7 +123,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 						this._prompterView.scrollToLive()
 						return
 					case 'F12':
-						// jump to next	
+						// jump to next
 						this._lastSpeed = 0
 						this._lastSpeedMapPosition = this.SPEEDMAP_NEUTRAL_POSITION
 						this._prompterView.scrollToNext()
@@ -138,14 +138,14 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		} else {
 			// handle valid key inputs
 			e.preventDefault()
-			
+
 			// reverse direction if shiftkey is pressed
-			if (e.shiftKey || inverse) {
+			if (e.shiftKey || inverse) {
 				speed *= -1
 			}
 		}
-		
-		
+
+
 		// update flag for comparison on next iteration
 		this._lastSpeed = speed
 		this._updateScrollPosition()
