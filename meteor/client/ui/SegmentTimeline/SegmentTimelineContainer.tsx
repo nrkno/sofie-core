@@ -278,7 +278,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = { ...this.state.collapsedOutputs }
-		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] !== true
+		collapsedOutputs[outputLayer._id] = (outputLayer.isDefaultCollapsed && collapsedOutputs[outputLayer._id] === undefined) ?
+			false :
+			collapsedOutputs[outputLayer._id] !== true
 		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, `segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
