@@ -30,9 +30,8 @@ import { getElementDocumentOffset } from '../../utils/positions'
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
 
-interface ISourceLayerProps {
+interface ISourceLayerPropsBase {
 	key: string
-	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
 	rundown: Rundown
 	segment: SegmentUi
@@ -58,7 +57,11 @@ interface ISourceLayerProps {
 	autoNextPart: boolean
 	onContextMenu?: (contextMenuContext: any) => void
 }
-class SourceLayer extends React.Component<ISourceLayerProps> {
+interface ISourceLayerProps extends ISourceLayerPropsBase {
+	layer: ISourceLayerUi
+}
+
+class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.Component<T> {
 	private mousePosition = {}
 
 	getPartContext = (props) => {
@@ -84,7 +87,9 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.mousePosition = { left: e.pageX, top: e.pageY }
 	}
+}
 
+class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 	renderInside () {
 		if (this.props.layer.pieces !== undefined) {
 			return _.chain(this.props.layer.pieces.filter((piece) => {
@@ -137,6 +142,64 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	}
 }
 
+interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
+	layers: ISourceLayerUi[]
+}
+class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> {
+	renderInside () {
+		return this.props.layers.map((layer) => {
+			if (layer.pieces !== undefined) {
+				return _.chain(layer.pieces.filter((piece) => {
+					// filter only pieces belonging to this part
+					return (piece.partId === this.props.part._id) ?
+						// filter only pieces, that have not been hidden from the UI
+						(piece.hidden !== true) &&
+						(piece.virtual !== true)
+						: false
+				}))
+				.sortBy((it) => it.renderedInPoint)
+				.sortBy((it) => it.infiniteMode)
+				.sortBy((it) => it.cropped)
+				.map((piece) => {
+					return (
+						<SourceLayerItemContainer key={piece._id}
+							{...this.props}
+							// The following code is fine, just withTracker HOC messing with available props
+							onClick={this.props.onPieceClick}
+							onDoubleClick={this.props.onPieceDoubleClick}
+							mediaPreviewUrl={this.props.mediaPreviewUrl}
+							piece={piece}
+							layer={layer}
+							outputLayer={this.props.outputLayer}
+							part={this.props.part}
+							partStartsAt={this.props.startsAt}
+							partDuration={this.props.duration}
+							timeScale={this.props.timeScale}
+							relative={this.props.relative}
+							autoNextPart={this.props.autoNextPart}
+							liveLinePadding={this.props.liveLinePadding}
+							scrollLeft={this.props.scrollLeft}
+							scrollWidth={this.props.scrollWidth}
+							/>
+					)
+				}).value()
+			}
+		})
+	}
+
+	render () {
+		return (
+			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
+				className: 'segment-timeline__layer segment-timeline__layer--flattened',
+				onMouseUpCapture: (e) => this.onMouseUp(e)
+			}}
+				collect={this.getPartContext}>
+				{this.renderInside()}
+			</ContextMenuTrigger>
+		)
+	}
+}
+
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	rundown: Rundown
@@ -164,39 +227,59 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
-	renderInside () {
+	renderInside (isOutputGroupCollapsed) {
 		if (this.props.layer.sourceLayers !== undefined) {
-			return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
-				.map((sourceLayer) => {
-					return <SourceLayer key={sourceLayer._id}
-						{...this.props}
-						layer={sourceLayer}
-						rundown={this.props.rundown}
-						outputLayer={this.props.layer}
-						outputGroupCollapsed={this.props.collapsedOutputs[this.props.layer._id] === true}
-						segment={this.props.segment}
-						part={this.props.part}
-						startsAt={this.props.startsAt}
-						duration={this.props.duration}
-						timeScale={this.props.timeScale}
-						autoNextPart={this.props.autoNextPart}
-						liveLinePadding={this.props.liveLinePadding} />
-				})
+			if (!this.props.layer.isFlattened) {
+				return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
+					.map((sourceLayer) => {
+						return <SourceLayer key={sourceLayer._id}
+							{...this.props}
+							layer={sourceLayer}
+							rundown={this.props.rundown}
+							outputLayer={this.props.layer}
+							outputGroupCollapsed={isOutputGroupCollapsed}
+							segment={this.props.segment}
+							part={this.props.part}
+							startsAt={this.props.startsAt}
+							duration={this.props.duration}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							liveLinePadding={this.props.liveLinePadding} />
+					})
+			} else {
+				return <FlattenedSourceLayers key={this.props.layer._id + "_flattened"}
+							{...this.props}
+							layers={this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)}
+							rundown={this.props.rundown}
+							outputLayer={this.props.layer}
+							outputGroupCollapsed={isOutputGroupCollapsed}
+							segment={this.props.segment}
+							part={this.props.part}
+							startsAt={this.props.startsAt}
+							duration={this.props.duration}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							liveLinePadding={this.props.liveLinePadding} />
+			}
 		}
 	}
 
 	render () {
+		const isCollapsed = (this.props.collapsedOutputs[this.props.layer._id] !== undefined) ?
+								(this.props.collapsedOutputs[this.props.layer._id] === true) : 
+								(this.props.layer.isDefaultCollapsed)
 		return (
 			<div className={ClassNames('segment-timeline__output-group', {
-				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1,
-				'collapsed': this.props.collapsedOutputs[this.props.layer._id] === true
+				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1 && !this.props.layer.isFlattened,
+				'collapsed': isCollapsed,
+				'flattened': this.props.layer.isFlattened
 			})}>
 				{DEBUG_MODE &&
 					<div className='segment-timeline__debug-info red'>
 						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
 					</div>
 				}
-				{this.renderInside()}
+				{this.renderInside(isCollapsed)}
 			</div>
 		)
 	}
