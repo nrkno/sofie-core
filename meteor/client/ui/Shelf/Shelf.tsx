@@ -17,13 +17,14 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { ExternalFramePanel } from './ExternalFramePanel';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -169,7 +170,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 
 	restoreDefaultTab () {
 		if (this.state.selectedTab === undefined && this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) {
-			const defaultTab = this.props.rundownLayout.filters.find(i => i.default)
+			const defaultTab = this.props.rundownLayout.filters.find(i => (i as RundownLayoutFilter).default)
 			if (defaultTab) {
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`
@@ -319,13 +320,23 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					registerHotkeys={true}
 					{...this.props}></AdLibPanel>
 				{rundownLayout && rundownLayout.filters.map(panel =>
-					<AdLibPanel
-						key={panel._id}
-						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-						includeGlobalAdLibs={true}
-						filter={panel}
-						{...this.props}
-						/>
+					RundownLayoutsAPI.isFilter(panel) ?
+						<AdLibPanel
+							key={panel._id}
+							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
+							includeGlobalAdLibs={true}
+							filter={panel}
+							{...this.props}
+							/> :
+					RundownLayoutsAPI.isExternalFrame(panel) ?
+						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
+							{...this.props}
+							/> :
+						undefined
 				)}
 				<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
 				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
@@ -338,15 +349,25 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		return <div className='dashboard'>
 			{rundownLayout.filters
 				.sort((a, b) => a.rank - b.rank)
-				.map((panel: DashboardLayoutFilter) =>
-					<DashboardPanel
-						key={panel._id}
-						includeGlobalAdLibs={true}
-						filter={panel}
-						visible={true}
-						registerHotkeys={panel.assignHotKeys}
-						{...this.props}
-						/>
+				.map((panel) =>
+					RundownLayoutsAPI.isFilter(panel) ?
+						<DashboardPanel
+							key={panel._id}
+							includeGlobalAdLibs={true}
+							filter={panel}
+							visible={true}
+							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+							{...this.props}
+							/> :
+					RundownLayoutsAPI.isExternalFrame(panel) ?
+						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={true}
+							{...this.props}
+							/> :
+						undefined
 			)}
 		</div>
 	}

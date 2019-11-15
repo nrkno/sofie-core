@@ -58,6 +58,44 @@ interface IDashboardPanelTrackedProps {
 	}
 }
 
+interface DashboardPositionableElement {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
+export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+	return {
+		width: el.width >= 0 ?
+			`calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
+			undefined,
+		height: el.height >= 0 ?
+			`calc((${el.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
+			undefined,
+		left: el.x >= 0 ?
+			`calc(${el.x} * var(--dashboard-button-grid-width))` :
+			el.width < 0 ?
+				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
+				undefined,
+		top: el.y >= 0 ?
+			`calc(${el.y} * var(--dashboard-button-grid-height))` :
+			el.height < 0 ?
+				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
+				undefined,
+		right: el.x < 0 ?
+			`calc(${-1 * el.x - 1} * var(--dashboard-button-grid-width))` :
+			el.width < 0 ?
+				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
+				undefined,
+		bottom: el.y < 0 ?
+			`calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))` :
+			el.height < 0 ?
+				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
+				undefined
+	}
+}
+
 export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
 		rundownId: props.rundown._id,
@@ -340,34 +378,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			} else {
 				return (
 					<div className='dashboard-panel'
-						style={{
-							width: filter.width >= 0 ?
-								`calc((${filter.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
-								undefined,
-							height: filter.height >= 0 ?
-								`calc((${filter.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
-								undefined,
-							left: filter.x >= 0 ?
-								`calc(${filter.x} * var(--dashboard-button-grid-width))` :
-								filter.width < 0 ?
-									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
-									undefined,
-							top: filter.y >= 0 ?
-								`calc(${filter.y} * var(--dashboard-button-grid-height))` :
-								filter.height < 0 ?
-									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
-									undefined,
-							right: filter.x < 0 ?
-								`calc(${-1 * filter.x - 1} * var(--dashboard-button-grid-width))` :
-								filter.width < 0 ?
-									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
-									undefined,
-							bottom: filter.y < 0 ?
-								`calc(${-1 * filter.y - 1} * var(--dashboard-button-grid-height))` :
-								filter.height < 0 ?
-									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
-									undefined
-						}}
+						style={dashboardElementPosition(filter)}
 					>
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
