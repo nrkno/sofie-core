@@ -139,7 +139,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 						version: PackageInfo.version,
 						rundownId: this.props.rundown._id
 					}
-				})).then((e) => {
+				}), true).then((e) => {
 					if (e.type === SofieExternalMessageType.ACK) {
 						this.initialized = true
 						this.sendCurrentState()
@@ -149,15 +149,15 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}
 	}
 
-	sendMessageAwaitReply = (message: SofieExternalMessage): Promise<SofieExternalMessage> => {
+	sendMessageAwaitReply = (message: SofieExternalMessage, uninitialized?: boolean): Promise<SofieExternalMessage> => {
 		return new Promise((resolve, reject) => {
 			this.awaitingReply[message.id] = { resolve, reject }
-			this.sendMessage(message)
+			this.sendMessage(message, uninitialized)
 		})
 	}
 
-	sendMessage = (data: SofieExternalMessage) => {
-		if (this.frame && this.frame.contentWindow && this.initialized) {
+	sendMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
+		if (this.frame && this.frame.contentWindow && (this.initialized || uninitialized)) {
 			this.frame.contentWindow.postMessage(JSON.stringify(data), "*")
 		}
 	}
