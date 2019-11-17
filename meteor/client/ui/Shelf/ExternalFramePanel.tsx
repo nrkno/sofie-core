@@ -5,6 +5,7 @@ import { RundownLayoutExternalFrame, RundownLayoutBase, DashboardLayoutExternalF
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { literal } from '../../../lib/lib'
+import { Rundown } from '../../../lib/collections/Rundowns'
 
 const PackageInfo = require('../../../package.json')
 
@@ -12,6 +13,7 @@ interface IProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutExternalFrame
 	visible: boolean
+	rundown: Rundown
 }
 
 enum SofieExternalMessageType {
@@ -19,7 +21,9 @@ enum SofieExternalMessageType {
 	WELCOME = 'welcome',
 	ACK = 'ack',
 	NAK = 'nak',
-	KEYBOARD_EVENT = 'keyboard_event'
+	KEYBOARD_EVENT = 'keyboard_event',
+	CURRENT_PART_CHANGED = 'current_part_changed',
+	NEXT_PART_CHANGED = 'next_part_changed'
 }
 
 interface SofieExternalMessage {
@@ -27,6 +31,39 @@ interface SofieExternalMessage {
 	replyToId?: string
 	type: SofieExternalMessageType
 	payload?: any
+}
+
+interface HelloSofieExternalMessage extends SofieExternalMessage {
+	type: SofieExternalMessageType.HELLO
+	payload: never
+}
+
+interface WelcomeSofieExternalMessage extends SofieExternalMessage {
+	type: SofieExternalMessageType.WELCOME
+	payload: {
+		host: string
+		version: string
+		rundownId: string
+	}
+}
+
+interface KeyboardEventSofieExternalMessage extends SofieExternalMessage {
+	type: SofieExternalMessageType.KEYBOARD_EVENT
+	payload: KeyboardEvent & {
+		currentTarget: null,
+		path: null,
+		scrElement: null,
+		target: null,
+		view: null
+	}
+}
+
+interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessage {
+	type: SofieExternalMessageType.CURRENT_PART_CHANGED | SofieExternalMessageType.NEXT_PART_CHANGED
+	payload: {
+		partId: string | null
+		prevPartId?: string | null
+	}
 }
 
 export class ExternalFramePanel extends React.Component<IProps> {
@@ -93,17 +130,19 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		switch (message.type) {
 			// perform a three-way handshake: HELLO -> WELCOME -> ACK
 			case SofieExternalMessageType.HELLO:
-				this.sendMessageAwaitReply(literal<SofieExternalMessage>({
+				this.sendMessageAwaitReply(literal<WelcomeSofieExternalMessage>({
 					id: Random.id(),
 					replyToId: message.id,
 					type: SofieExternalMessageType.WELCOME,
 					payload: {
 						host: 'Sofie Automation System',
-						version: PackageInfo.version
+						version: PackageInfo.version,
+						rundownId: this.props.rundown._id
 					}
 				})).then((e) => {
 					if (e.type === SofieExternalMessageType.ACK) {
 						this.initialized = true
+						this.sendCurrentState()
 					}
 				})
 				break;
@@ -123,6 +162,23 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}
 	}
 
+	sendCurrentState () {
+		this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+			id: Random.id(),
+			type: SofieExternalMessageType.CURRENT_PART_CHANGED,
+			payload: {
+				partId: this.props.rundown.currentPartId
+			}
+		}))
+		this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+			id: Random.id(),
+			type: SofieExternalMessageType.NEXT_PART_CHANGED,
+			payload: {
+				partId: this.props.rundown.nextPartId
+			}
+		}))
+	}
+
 	registerHandlers = () => {
 		document.addEventListener('keydown', this.onKeyEvent)
 		document.addEventListener('keyup', this.onKeyEvent)
@@ -131,6 +187,30 @@ export class ExternalFramePanel extends React.Component<IProps> {
 	unregisterHandlers = () => {
 		document.removeEventListener('keydown', this.onKeyEvent)
 		document.removeEventListener('keydown', this.onKeyEvent)
+	}
+
+	componentDidUpdate (prevProps: IProps) {
+		if (prevProps.rundown.currentPartId !== this.props.rundown.currentPartId) {
+			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+				id: Random.id(),
+				type: SofieExternalMessageType.CURRENT_PART_CHANGED,
+				payload: {
+					partId: this.props.rundown.currentPartId,
+					prevPartId: prevProps.rundown.currentPartId
+				}
+			}))
+		}
+
+		if (prevProps.rundown.nextPartId !== this.props.rundown.nextPartId) {
+			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+				id: Random.id(),
+				type: SofieExternalMessageType.NEXT_PART_CHANGED,
+				payload: {
+					partId: this.props.rundown.nextPartId,
+					prevPartId: prevProps.rundown.nextPartId
+				}
+			}))
+		}
 	}
 
 	componentDidMount () {
