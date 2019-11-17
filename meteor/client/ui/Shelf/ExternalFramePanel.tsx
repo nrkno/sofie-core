@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Random } from 'meteor/random'
+import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { RundownLayoutExternalFrame, RundownLayoutBase, DashboardLayoutExternalFrame } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -116,7 +117,10 @@ export class ExternalFramePanel extends React.Component<IProps> {
 	}
 
 	actMessage = (message: SofieExternalMessage) => {
-		if (!message.type || SofieExternalMessageType[message.type] === undefined) {
+		check(message.id, String)
+		check(message.type, String)
+
+		if (SofieExternalMessageType[message.type] === undefined) {
 			console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 			return
 		}
@@ -144,15 +148,19 @@ export class ExternalFramePanel extends React.Component<IProps> {
 						this.initialized = true
 						this.sendCurrentState()
 					}
-				})
+				}).catch(e => console.warn)
 				break;
 		}
 	}
 
 	sendMessageAwaitReply = (message: SofieExternalMessage, uninitialized?: boolean): Promise<SofieExternalMessage> => {
 		return new Promise((resolve, reject) => {
-			this.awaitingReply[message.id] = { resolve, reject }
-			this.sendMessage(message, uninitialized)
+			if (this.initialized || uninitialized) {
+				this.awaitingReply[message.id] = { resolve, reject }
+				this.sendMessage(message, uninitialized)
+			} else {
+				reject(new Error('ExternalFramePanel guest not initialized'))
+			}
 		})
 	}
 
@@ -219,7 +227,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 
 	componentWillUnmount () {
 		// reject all outstanding promises for replies
-		_.each(this.awaitingReply, (promise) => promise.reject())
+		_.each(this.awaitingReply, (promise) => promise.reject(new Error('ExternalFramePanel unmounting')))
 		this.unregisterHandlers()
 		window.removeEventListener('message', this.onReceiveMessage)
 	}
