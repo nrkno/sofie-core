@@ -1,4 +1,4 @@
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
+import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'

@@ -423,7 +423,7 @@ export function runMigration (
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
-	isFirstOfPartialMigrations = true
+	isFirstOfPartialMigrations: boolean = true
 ): RunMigrationResult {
 
 	logger.info(`Migration: Starting`)
@@ -436,7 +436,10 @@ export function runMigration (
 		return !!(manualInput.stepId && manualInput.attribute)
 	})
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
-	if (manualInputsWithUserPrompt.length !== inputResults.length) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
+
+	if (manualInputsWithUserPrompt.length !== inputResults.length) {
+		throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
+	}
 
 	// console.log('migration.chunks', migration.chunks)
 	// console.log('chunks', chunks)
@@ -546,9 +549,14 @@ export function runMigration (
 		migration.partialMigration = false
 		const s = getMigrationStatus()
 		if (s.migration.automaticStepCount > 0 || s.migration.manualStepCount > 0) {
-			const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
-			if (res.migrationCompleted) {
-				return res
+			try {
+				const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+				if (res.migrationCompleted) {
+					return res
+				}
+			} catch (e) {
+				warningMessages.push(`When running next chunk: ${e}`)
+				migration.partialMigration = true
 			}
 		}
 	}
@@ -609,7 +617,7 @@ export function updateDatabaseVersionToSystem () {
 	updateDatabaseVersion(CURRENT_SYSTEM_VERSION)
 }
 
-function getMigrationStatus (): GetMigrationStatusResult {
+export function getMigrationStatus (): GetMigrationStatusResult {
 
 	let migration = prepareMigration(true)
 
@@ -634,7 +642,7 @@ function getMigrationStatus (): GetMigrationStatusResult {
 	}
 
 }
-function forceMigration (chunks: Array<MigrationChunk>) {
+export function forceMigration (chunks: Array<MigrationChunk>) {
 	logger.info(`Force migration`)
 
 	_.each(chunks, (chunk) => {
@@ -643,7 +651,7 @@ function forceMigration (chunks: Array<MigrationChunk>) {
 
 	return completeMigration(chunks)
 }
-function resetDatabaseVersions () {
+export function resetDatabaseVersions () {
 	updateDatabaseVersion(GENESIS_SYSTEM_VERSION)
 
 	Blueprints.find().forEach((blueprint) => {
@@ -675,14 +683,3 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): IMigrationContext
 
 	return new MigrationContextShowStyle(showStyleBase)
 }
-
-let methods = {}
-methods[MigrationMethods.getMigrationStatus] = getMigrationStatus
-methods[MigrationMethods.runMigration] = runMigration
-methods[MigrationMethods.forceMigration] = forceMigration
-methods[MigrationMethods.resetDatabaseVersions] = resetDatabaseVersions
-methods['debug_setVersion'] = (version: string) => {
-	return updateDatabaseVersion(version)
-}
-
-setMeteorMethods(methods)
