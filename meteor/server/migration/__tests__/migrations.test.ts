@@ -79,16 +79,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			snapshot: expect.any(String)
 		})
 
-		const studios = Studios.find().fetch() // Created in the migration step before
-		expect(studios).toHaveLength(1)
-		const studio = studios[0]
-
 		// Connect a Playout-gateway to the system:
 		setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			PeripheralDeviceAPI.SUBTYPE_PROCESS,
-			studio
+			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 
 		// Continue with migration:
