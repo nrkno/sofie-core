@@ -114,6 +114,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
+	let contentDuration: number | undefined = undefined
 
 	if (sourceLayer) {
 		switch (sourceLayer.type) {
@@ -159,6 +160,11 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 										if (stream.codec.time_base) {
 											const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
 											timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
+										}
+
+										// found the video stream, get it's duration convert to milliseconds and send it upwards
+										if (stream.duration) {
+											contentDuration = (parseFloat(stream.duration) || 0) * 1000
 										}
 
 										const format = buildFormatString(mediaObject.mediainfo, stream)
@@ -236,6 +242,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	return {
 		status: newStatus,
 		metadata: metadata,
-		message: message
+		message: message,
+		contentDuration: contentDuration
 	}
 }
