@@ -68,7 +68,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		await super.init()
 
 		if (this.connection) {
-			await this.connection.close()
+			await this.connection.close().catch(() => null) // already closed connections will error
 		}
 
 		this.initializing = this.initConnection()
