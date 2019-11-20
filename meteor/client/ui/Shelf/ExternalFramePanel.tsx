@@ -95,24 +95,22 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			id: Random.id(),
 			type: SofieExternalMessageType.KEYBOARD_EVENT,
 			// Send the event sanitized to prevent sending huge objects
-			payload: _.extend({}, e, {
-				currentTarget: null,
-				path: null,
-				srcElement: null,
-				target: null,
-				view: null
-			})
+			payload: _.omit(_.omit(e,
+				['currentTarget',
+				'path',
+				'srcElement',
+				'target',
+				'view',
+				'sourceCapabilities']
+			), (value, key) => typeof value === 'function')
 		}))
 	}
 
 	onReceiveMessage = (e: MessageEvent) => {
-		if (e.origin === this.props.panel.url) {
-			try {
-				const data = JSON.parse(e.data || e['message'])
-				this.actMessage(data)
-			} catch (e) {
-				console.error(`ExternalFramePanel: Unable to parse data from: ${e.origin}`, e)
-			}
+		if (e.origin === "null" && this.frame && e.source === this.frame.contentWindow) {
+			const data = e.data || e['message']
+			if (!data) return
+			this.actMessage(data)
 		}
 	}
 
@@ -120,7 +118,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		check(message.id, String)
 		check(message.type, String)
 
-		if (SofieExternalMessageType[message.type] === undefined) {
+		if (_.values(SofieExternalMessageType).indexOf(message.type) < 0) {
 			console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 			return
 		}
@@ -166,7 +164,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 
 	sendMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
 		if (this.frame && this.frame.contentWindow && (this.initialized || uninitialized)) {
-			this.frame.contentWindow.postMessage(JSON.stringify(data), "*")
+			this.frame.contentWindow.postMessage(data, "*")
 		}
 	}
 
