@@ -73,7 +73,13 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 
 		this.initializing = this.initConnection()
 
-		this.connection = await this.initializing
+		try {
+			this.connection = await this.initializing
+		} catch (e) {
+			// make sure this doesn't hang around
+			delete this.initializing
+			throw new Error(e)
+		}
 		delete this.initializing
 
 		this.channelManager = new ChannelManager(this.connection)
