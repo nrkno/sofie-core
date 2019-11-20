@@ -61,7 +61,7 @@ addMigrationSteps('0.1.0', [
 
 				let missing: string | boolean = false
 				PeripheralDevices.find().forEach((device) => {
-					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id }})
+					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id } })
 				})
 			} else {
 				throw new Error(`Unable to automatically assign Peripheral-devices to a studio, since there are ${studios.length} studios. Please assign them manually`)

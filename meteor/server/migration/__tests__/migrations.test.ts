@@ -3,15 +3,21 @@ import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
-import { CURRENT_SYSTEM_VERSION } from '../databaseMigration'
+import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { CURRENT_SYSTEM_VERSION, clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { MigrationMethods, RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
 import { literal } from '../../../lib/lib'
-import { MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
+import { MigrationStepInputResult, BlueprintManifestType, MigrationStep, MigrationContextStudio, MigrationContextShowStyle } from 'tv-automation-sofie-blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { Studios } from '../../../lib/collections/Studios'
+import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Blueprints } from '../../../lib/collections/Blueprints'
+import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
+import { BlueprintAPI } from '../../../lib/api/blueprint'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 
 require('../api.ts') // include in order to create the Meteor methods needed
+require('../../api/blueprints/api.ts') // include in order to create the Meteor methods needed
 
 // Include all migration scripts:
 const normalizedPath = require('path').join(__dirname, '../')
@@ -43,7 +49,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 		}))
 	}
-
+	function getSteps (migrationStatus: GetMigrationStatusResult) {
+		const allSteps: string[] = []
+		_.each(migrationStatus.migration.chunks, chunk => {
+			_.each(chunk._steps, step => {
+				allSteps.push(step)
+			})
+		})
+		return allSteps
+	}
 	testInFiber('System migrations, initial setup', () => {
 
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
@@ -110,6 +124,302 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		expect(getSystem().version).toEqual(CURRENT_SYSTEM_VERSION)
+
+	})
+
+	testInFiber('Ensure migrations run in correct order', () => {
+
+		Meteor.call(MigrationMethods.resetDatabaseVersions)
+
+		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
+
+		clearMigrationSteps()
+
+		addMigrationSteps('0.2.0', [
+			{
+				id: 'myCoreMockStep2',
+				canBeRunAutomatically: true,
+				validate: () => {
+					if (!Studios.findOne('studioMock2')) return 'No Studio found'
+					return false
+				},
+				migrate: () => {
+					Studios.insert({
+						_id: 'studioMock2',
+						name: 'Default studio',
+						supportedShowStyleBase: [],
+						settings: {
+							mediaPreviewsUrl: '',
+							sofieUrl: ''
+						},
+						mappings: {},
+						config: [],
+						_rundownVersionHash: '',
+					})
+				}
+			}
+		])
+		addMigrationSteps('0.3.0', [
+			{
+				id: 'myCoreMockStep3',
+				canBeRunAutomatically: true,
+				validate: () => {
+					if (!Studios.findOne('studioMock3')) return 'No Studio found'
+					return false
+				},
+				migrate: () => {
+					Studios.insert({
+						_id: 'studioMock3',
+						name: 'Default studio',
+						supportedShowStyleBase: [],
+						settings: {
+							mediaPreviewsUrl: '',
+							sofieUrl: ''
+						},
+						mappings: {},
+						config: [],
+						_rundownVersionHash: '',
+					})
+				}
+			}
+		])
+		addMigrationSteps('0.1.0', [
+			{
+				id: 'myCoreMockStep1',
+				canBeRunAutomatically: true,
+				validate: () => {
+					if (!Studios.findOne('studioMock1')) return 'No Studio found'
+					return false
+				},
+				migrate: () => {
+					Studios.insert({
+						_id: 'studioMock1',
+						name: 'Default studio',
+						supportedShowStyleBase: [],
+						settings: {
+							mediaPreviewsUrl: '',
+							sofieUrl: ''
+						},
+						mappings: {},
+						config: [],
+						_rundownVersionHash: '',
+					})
+				}
+			},
+		])
+
+		let migration: PreparedMigration
+
+		migration = prepareMigration(true)
+		expect(migration.migrationNeeded).toEqual(true)
+		expect(migration.automaticStepCount).toEqual(3)
+
+		expect(_.find(migration.steps, s => s.id.match(/myCoreMockStep1/))).toBeTruthy()
+		expect(_.find(migration.steps, s => s.id.match(/myCoreMockStep2/))).toBeTruthy()
+		expect(_.find(migration.steps, s => s.id.match(/myCoreMockStep3/))).toBeTruthy()
+
+		const studio = Studios.findOne() as Studio
+		expect(studio).toBeTruthy()
+
+		const studioManifest = () => ({
+			blueprintType: 'studio' as BlueprintManifestType.STUDIO,
+			blueprintVersion: '1.0.0',
+			integrationVersion: '0.0.0',
+			TSRVersion: '0.0.0',
+			minimumCoreVersion: '0.0.0',
+
+			studioConfigManifest: [],
+			studioMigrations: [
+				{
+					version: '0.2.0',
+					id: 'myStudioMockStep2',
+					validate: (context: MigrationContextStudio) => {
+						if (!context.getConfig('mocktest2')) return `mocktest2 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextStudio) => {
+						if (!context.getConfig('mocktest2')) {
+							context.setConfig('mocktest2', true)
+						}
+					}
+				},
+				{
+					version: '0.3.0',
+					id: 'myStudioMockStep3',
+					validate: (context: MigrationContextStudio) => {
+						if (!context.getConfig('mocktest3')) return `mocktest3 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextStudio) => {
+						if (!context.getConfig('mocktest3')) {
+							context.setConfig('mocktest3', true)
+						}
+					}
+				},
+				{
+					version: '0.1.0',
+					id: 'myStudioMockStep1',
+					validate: (context: MigrationContextStudio) => {
+						if (!context.getConfig('mocktest1')) return `mocktest1 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextStudio) => {
+						if (!context.getConfig('mocktest1')) {
+							context.setConfig('mocktest1', true)
+						}
+					}
+				}
+			],
+			getBaseline: () => [],
+			getShowStyleId: () => null
+		})
+
+		const showStyleManifest = () => ({
+			blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
+			blueprintVersion: '1.0.0',
+			integrationVersion: '0.0.0',
+			TSRVersion: '0.0.0',
+			minimumCoreVersion: '0.0.0',
+
+			showStyleConfigManifest: [],
+			showStyleMigrations: [
+				{
+					version: '0.2.0',
+					id: 'myShowStyleMockStep2',
+					validate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest2')) return `mocktest2 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest2')) {
+							context.setBaseConfig('mocktest2', true)
+						}
+					}
+				},
+				{
+					version: '0.3.0',
+					id: 'myShowStyleMockStep3',
+					validate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest3')) return `mocktest3 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest3')) {
+							context.setBaseConfig('mocktest3', true)
+						}
+					}
+				},
+				{
+					version: '0.1.0',
+					id: 'myShowStyleMockStep1',
+					validate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest1')) return `mocktest1 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest1')) {
+							context.setBaseConfig('mocktest1', true)
+						}
+					}
+				}
+			],
+			getBaseline: () => [],
+			getShowStyleId: () => null,
+			getShowStyleVariantId: () => null,
+			getRundown: () => ({
+				rundown: {
+					externalId: '',
+					name: ''
+				},
+				globalAdLibPieces: [],
+				baseline: []
+			}),
+			getSegment: () => ({
+				segment: { name: '' },
+				parts: []
+			})
+		})
+
+		Blueprints.insert(generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest))
+
+		ShowStyleBases.insert({
+			_id: 'showStyle0',
+			name: '',
+			blueprintId: 'showStyle0',
+			outputLayers: [],
+			sourceLayers: [],
+			hotkeyLegend: [],
+			config: [],
+			_rundownVersionHash: '',
+		})
+
+		ShowStyleVariants.insert({
+			_id: 'variant0',
+			name: '',
+			showStyleBaseId: 'showStyle0',
+			config: [],
+			_rundownVersionHash: '',
+		})
+
+		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
+		Studios.update(studio._id, { $set: {
+			blueprintId: 'studio0'
+		}})
+
+		// migrationStatus = Meteor.call(MigrationMethods.getMigrationStatus)
+
+		migration = prepareMigration(true)
+
+		expect(migration.migrationNeeded).toEqual(true)
+		expect(migration.automaticStepCount).toEqual(3 + 6)
+
+		const steps = migration.steps as MigrationStep[]
+
+
+		const myCoreMockStep1 = _.find(steps, s => s.id.match(/myCoreMockStep1/)) as MigrationStep
+		const myCoreMockStep2 = _.find(steps, s => s.id.match(/myCoreMockStep2/)) as MigrationStep
+		const myCoreMockStep3 = _.find(steps, s => s.id.match(/myCoreMockStep3/)) as MigrationStep
+		const myStudioMockStep1 = _.find(steps, s => s.id.match(/myStudioMockStep1/)) as MigrationStep
+		const myStudioMockStep2 = _.find(steps, s => s.id.match(/myStudioMockStep2/)) as MigrationStep
+		const myStudioMockStep3 = _.find(steps, s => s.id.match(/myStudioMockStep3/)) as MigrationStep
+		const myShowStyleMockStep1 = _.find(steps, s => s.id.match(/myShowStyleMockStep1/)) as MigrationStep
+		const myShowStyleMockStep2 = _.find(steps, s => s.id.match(/myShowStyleMockStep2/)) as MigrationStep
+		const myShowStyleMockStep3 = _.find(steps, s => s.id.match(/myShowStyleMockStep3/)) as MigrationStep
+
+		expect(myCoreMockStep1).toBeTruthy()
+		expect(myCoreMockStep2).toBeTruthy()
+		expect(myCoreMockStep3).toBeTruthy()
+		expect(myStudioMockStep1).toBeTruthy()
+		expect(myStudioMockStep2).toBeTruthy()
+		expect(myStudioMockStep3).toBeTruthy()
+		expect(myShowStyleMockStep1).toBeTruthy()
+		expect(myShowStyleMockStep2).toBeTruthy()
+		expect(myShowStyleMockStep3).toBeTruthy()
+
+		// Check that the steps are in the correct order:
+
+		// First, the Core migration steps:
+		expect(steps.indexOf(myCoreMockStep1)).toEqual(0)
+		expect(steps.indexOf(myCoreMockStep2)).toEqual(1)
+		expect(steps.indexOf(myCoreMockStep3)).toEqual(2)
+		// Then, the System-blueprints migration steps:
+		// Todo: to-be-implemented..
+
+		// Then, the Studio-blueprints migration steps:
+		expect(steps.indexOf(myStudioMockStep1)).toEqual(3)
+		expect(steps.indexOf(myStudioMockStep2)).toEqual(4)
+		expect(steps.indexOf(myStudioMockStep3)).toEqual(5)
+
+		// Then, the ShowStyle-blueprints migration steps:
+		expect(steps.indexOf(myShowStyleMockStep1)).toEqual(6)
+		expect(steps.indexOf(myShowStyleMockStep2)).toEqual(7)
+		expect(steps.indexOf(myShowStyleMockStep3)).toEqual(8)
 
 	})
 })

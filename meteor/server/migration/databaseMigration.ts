@@ -115,8 +115,23 @@ export function addMigrationSteps (version: string, steps: Array<MigrationStepBa
 		}))
 	})
 }
+/** Removes all migration steps (used in tests) */
+export function clearMigrationSteps () {
+	coreMigrationSteps.splice(0, 99999)
+}
 
-export function prepareMigration (returnAllChunks?: boolean) {
+export interface PreparedMigration {
+	hash: string
+	chunks: MigrationChunk[]
+	steps: MigrationStepInternal[]
+	migrationNeeded: boolean
+	automaticStepCount: number
+	manualStepCount: number
+	ignoredStepCount: number
+	manualInputs: MigrationStepInput[]
+	partialMigration: boolean
+}
+export function prepareMigration (returnAllChunks?: boolean): PreparedMigration {
 
 	let databaseSystem = getCoreSystem()
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
@@ -248,16 +263,28 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
 
+		// First, sort by type:
+		if (a.chunk.sourceType === MigrationStepType.CORE && b.chunk.sourceType !== MigrationStepType.CORE) return -1
+		if (a.chunk.sourceType !== MigrationStepType.CORE && b.chunk.sourceType === MigrationStepType.CORE) return 1
+
+		// if (a.chunk.sourceType === MigrationStepType.SYSTEM && b.chunk.sourceType !== MigrationStepType.SYSTEM) return -1
+		// if (a.chunk.sourceType !== MigrationStepType.SYSTEM && b.chunk.sourceType === MigrationStepType.SYSTEM) return 1
+
+		if (a.chunk.sourceType === MigrationStepType.STUDIO && b.chunk.sourceType !== MigrationStepType.STUDIO) return -1
+		if (a.chunk.sourceType !== MigrationStepType.STUDIO && b.chunk.sourceType === MigrationStepType.STUDIO) return 1
+
+		if (a.chunk.sourceType === MigrationStepType.SHOWSTYLE && b.chunk.sourceType !== MigrationStepType.SHOWSTYLE) return -1
+		if (a.chunk.sourceType !== MigrationStepType.SHOWSTYLE && b.chunk.sourceType === MigrationStepType.SHOWSTYLE) return 1
+
+		// Then, sort by version:
 		if (semver.gt(a._version, b._version)) return 1
 		if (semver.lt(a._version, b._version)) return -1
 
-		// Keep ranking within version:
+		// Lastly, keep ranking:
 		if (a._rank > b._rank) return 1
 		if (a._rank < b._rank) return -1
 		return 0
 	})
-
-	// console.log('allMigrationSteps', allMigrationSteps)
 
 	let automaticStepCount: number = 0
 	let manualStepCount: number = 0
@@ -327,7 +354,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			// Step is not applicable
 		}
 	})
-	// console.log('migrationSteps', migrationSteps)
 
 	// check if there are any manual steps:
 	// (this makes an automatic migration impossible)
@@ -440,9 +466,6 @@ export function runMigration (
 	if (manualInputsWithUserPrompt.length !== inputResults.length) {
 		throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 	}
-
-	// console.log('migration.chunks', migration.chunks)
-	// console.log('chunks', chunks)
 
 	// Check that chunks match:
 	let unmatchedChunk = _.find(migration.chunks, (migrationChunk) => {
