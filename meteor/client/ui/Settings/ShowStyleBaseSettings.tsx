@@ -591,30 +591,6 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 										<label className='field'>
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.unlimited'}
-												obj={this.props.showStyleBase}
-												type='checkbox'
-												collection={ShowStyleBases}
-												className=''></EditAttribute>
-											{t('Is unlimited')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.onPGMClean'}
-												obj={this.props.showStyleBase}
-												type='checkbox'
-												collection={ShowStyleBases}
-												className=''></EditAttribute>
-											{t('Is on clean PGM')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.isRemoteInput'}
 												obj={this.props.showStyleBase}
 												type='checkbox'
