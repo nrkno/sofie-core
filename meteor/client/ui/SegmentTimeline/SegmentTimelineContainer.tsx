@@ -23,6 +23,7 @@ import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
+import { literal } from '../../../lib/lib';
 
 const SPEAK_ADVANCE = 500
 
@@ -117,7 +118,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let o = getResolvedSegment(props.showStyleBase, props.rundown, segment)
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part) => {
-		notes = notes.concat(part.getNotes(true))
+		notes = notes.concat(part.getNotes(true), part.getInvalidReasonNotes())
 	})
 	notes = notes.concat(segment.notes || [])
 

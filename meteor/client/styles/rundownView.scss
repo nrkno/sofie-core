@@ -827,8 +827,8 @@ body.vertical-overflow-only {
 		.segment-timeline__part {
 			.segment-timeline__part__invalid-cover {
 				background-image:
-					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
-					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
+					repeating-linear-gradient(45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px),
+					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px) !important;
 			}
 		}
 	}
@@ -996,11 +996,14 @@ body.vertical-overflow-only {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
-		// Part is an element grouping all parts
+		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
 			z-index: 1;
 			transform-style: preserve-3d;
+
+			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
+			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
 
 			* {
 				backface-visibility: hidden;
@@ -1111,8 +1114,8 @@ body.vertical-overflow-only {
 				z-index: 1;
 				pointer-events: none;
 				background-image:
-					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
-					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+					repeating-linear-gradient(45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 5px, var(--invalid-reason-color-opaque) 5px, var(--invalid-reason-color-opaque) 10px),
+					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 5px, var(--invalid-reason-color-opaque) 5px, var(--invalid-reason-color-opaque) 10px);
 
 			}
 
