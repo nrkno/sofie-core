@@ -269,7 +269,7 @@ body.vertical-overflow-only {
 
 				&.light {
 					color: $general-fast-color;
-					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
+					text-shadow: 0px 0px 6px var(--general-fast-color--shadow);
 					background: none;
 				}
 			}
