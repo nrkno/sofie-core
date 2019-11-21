@@ -25,6 +25,7 @@ import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ExternalFramePanel } from './ExternalFramePanel';
+import { TimelineDashboardPanel } from './TimelineDashboardPanel';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -351,14 +352,23 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				.sort((a, b) => a.rank - b.rank)
 				.map((panel) =>
 					RundownLayoutsAPI.isFilter(panel) ?
-						<DashboardPanel
-							key={panel._id}
-							includeGlobalAdLibs={true}
-							filter={panel}
-							visible={true}
-							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-							{...this.props}
-							/> :
+						(panel as DashboardLayoutFilter).showAsTimeline ?
+							<TimelineDashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={true}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								{...this.props}
+								/> :
+							<DashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={true}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								{...this.props}
+								/> :
 					RundownLayoutsAPI.isExternalFrame(panel) ?
 						<ExternalFramePanel
 							key={panel._id}

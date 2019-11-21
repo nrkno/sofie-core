@@ -101,6 +101,34 @@
     	max-height: calc(100% - 12px);
 	}
 
+	.dashboard-panel__panel__group {
+		display: contents;
+
+		.dashboard-panel__panel__group__liveline {
+			display: inline-block;
+			position: relative;
+			margin-right: -2px;
+			width: 2px;
+			height: 6em;
+			margin-bottom: -1em;
+			background: var(--general-live-color);
+			transform: translate(-1px, 0);
+			z-index: 2;
+
+			&::before {
+				content: ' ';
+				display: block;
+				position: absolute;
+				top: 0;
+				left: 2px;
+				border-left: 10px solid var(--general-live-color);
+				border-bottom: 10px solid transparent;
+				border-top: 10px solid transparent;
+				border-right: 10px solid transparent;
+			}
+		}
+	}
+
 	.dashboard-panel__panel__button {
 		display: inline-flex;
   		align-items: flex-end;
