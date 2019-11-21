@@ -220,4 +220,15 @@ body.tv2 {
 			filter: grayscale(1) brightness(2);
 		}
 	}
+	.dashboard-panel__panel__button {
+		&.source-broken, &.source-missing {
+			&::after {
+				border-radius: 3px;
+				top: 4px;
+				left: 4px;
+				right: 4px;
+				bottom: 4px;
+			}
+		}
+	}
 }
