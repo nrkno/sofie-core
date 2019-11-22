@@ -492,7 +492,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 	render () {
 		const { t } = this.props
 		const divStyle: React.CSSProperties = {
-			overflow: 'scroll'
+			overflowX: 'scroll'
 		}
 		return (
 			<div style={divStyle}>
