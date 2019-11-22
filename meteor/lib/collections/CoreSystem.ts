@@ -145,7 +145,7 @@ export function stripVersion (v: string): string {
 	}
 }
 export function parseRange (r: string | VersionRange): VersionRange {
-	if ((r + '').match(/git:\/\//)) {
+	if ((r + '').match(/git:\/\//) || (r + '').match(/git\+https:\/\//)) {
 		return '^0.0.0' // anything goes..
 	}
 	const range = semver.validRange(r)
