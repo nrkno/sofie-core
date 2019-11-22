@@ -26,12 +26,8 @@ export namespace INewsDeviceActions {
 						logger.info('triggerGetRunningOrder reply ' + iNewsRunningOrder.externalId)
 						logger.debug(iNewsRunningOrder)
 
-						if (iNewsRunningOrder.length !== 1) {
+						if (!iNewsRunningOrder.length) {
 							throw new Meteor.Error(401, iNewsRunningOrder)
-						}
-
-						if (iNewsRunningOrder[0].externalId !== rundown.externalId) {
-							throw new Meteor.Error(401, `Expected triggerGetRunningOrder reply for ${rundown.externalId} but got ${iNewsRunningOrder[0].externalId}`)
 						}
 
 						// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
