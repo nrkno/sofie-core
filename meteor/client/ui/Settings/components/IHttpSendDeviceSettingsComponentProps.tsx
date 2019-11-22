@@ -1,5 +1,5 @@
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { DeviceOptions as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
+import { DeviceOptionsAny as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 export interface IHttpSendDeviceSettingsComponentProps {
 	parentDevice: PeripheralDevice
 	deviceId: string

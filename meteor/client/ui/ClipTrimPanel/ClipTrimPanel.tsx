@@ -45,7 +45,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			mediaId: (piece.content as VTContent).fileName.toUpperCase()
 		}) : undefined,
 		studio: studio,
-		maxDuration: piece ? (piece.content as VTContent).sourceDuration : 0
+		maxDuration: piece ? (piece.content as VTContent).sourceDuration || 0 : 0
 	}
 })(class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 	private fps = Settings['frameRate']
