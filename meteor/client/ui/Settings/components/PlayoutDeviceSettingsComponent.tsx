@@ -10,7 +10,7 @@ const Tooltip = require('rc-tooltip')
 import { translate } from 'react-i18next'
 import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { DeviceType as PlayoutDeviceType, DeviceOptions as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
+import { DeviceType as PlayoutDeviceType, DeviceOptionsAny as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
