@@ -35,7 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { DashboardPanel, DashboardPanelInner } from './DashboardPanel';
+import { DashboardPanel, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel';
 
 interface IState {
 	outputLayers: {
@@ -48,52 +48,12 @@ interface IState {
 }
 
 interface IDashboardPanelProps {
-	searchFilter?: string | undefined
-	mediaPreviewUrl?: string
 }
 
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieces: {
 		[key: string]: Piece[]
-	}
-}
-
-interface DashboardPositionableElement {
-	x: number
-	y: number
-	width: number
-	height: number
-}
-
-export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
-	return {
-		width: el.width >= 0 ?
-			`calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
-			undefined,
-		height: el.height >= 0 ?
-			`calc((${el.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
-			undefined,
-		left: el.x >= 0 ?
-			`calc(${el.x} * var(--dashboard-button-grid-width))` :
-			el.width < 0 ?
-				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
-				undefined,
-		top: el.y >= 0 ?
-			`calc(${el.y} * var(--dashboard-button-grid-height))` :
-			el.height < 0 ?
-				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
-				undefined,
-		right: el.x < 0 ?
-			`calc(${-1 * el.x - 1} * var(--dashboard-button-grid-width))` :
-			el.width < 0 ?
-				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
-				undefined,
-		bottom: el.y < 0 ?
-			`calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))` :
-			el.height < 0 ?
-				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
-				undefined
 	}
 }
 
@@ -142,7 +102,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 			this.liveLine.scrollIntoView({
 				behavior: 'smooth',
 				block: 'start',
-				inline: 'nearest'
+				inline: 'start'
 			})
 		}
 	}
@@ -165,7 +125,9 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
-						<div className='dashboard-panel__panel'>
+						<div className={ClassNames('dashboard-panel__panel', {
+							'dashboard-panel__panel--horizontal': filter.overflowHorizontally
+						})}>
 							{filteredRudownBaselineAdLibs.length > 0 &&
 								<div className='dashboard-panel__panel__group'>
 									{filteredRudownBaselineAdLibs.map((item: AdLibPieceUi) => {

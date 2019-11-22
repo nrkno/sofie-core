@@ -93,6 +93,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 
 	includeClearInRundownBaseline: boolean
 	assignHotKeys: boolean
+	overflowHorizontally?: boolean
 	showAsTimeline?: boolean
 }
 

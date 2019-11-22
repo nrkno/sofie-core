@@ -47,8 +47,6 @@ interface IState {
 }
 
 interface IDashboardPanelProps {
-	searchFilter?: string | undefined
-	mediaPreviewUrl?: string
 }
 
 interface IDashboardPanelTrackedProps {
@@ -360,7 +358,9 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
-						<div className='dashboard-panel__panel'>
+						<div className={ClassNames('dashboard-panel__panel', {
+							'dashboard-panel__panel--horizontal': filter.overflowHorizontally
+						})}>
 							{this.props.rundownBaselineAdLibs
 								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
