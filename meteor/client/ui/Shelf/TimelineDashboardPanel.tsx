@@ -86,8 +86,10 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 	return !_.isEqual(props, nextProps)
 })(class TimelineDashboardPanel extends DashboardPanelInner {
 	liveLine: HTMLDivElement
+	scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 	setRef = (el: HTMLDivElement) => {
 		this.liveLine = el
+		this.ensureLiveLineVisible()
 	}
 	componentDidUpdate (prevProps) {
 		super.componentDidUpdate(prevProps)
@@ -97,15 +99,16 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 		super.componentDidMount()
 		this.ensureLiveLineVisible()
 	}
-	ensureLiveLineVisible () {
+	ensureLiveLineVisible = _.debounce(() => {
 		if (this.liveLine) {
 			this.liveLine.scrollIntoView({
 				behavior: 'smooth',
 				block: 'start',
 				inline: 'start'
 			})
+			console.log('Scrolling into view')
 		}
-	}
+	}, 250)
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -153,13 +156,14 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 									seg.pieces.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter)) :
 									[]
 								
-								return filteredPieces.length > 0 || seg.isLive ?
+								return filteredPieces.length > 0 || seg.isLive || (seg.isNext && !this.props.rundown.currentPartId) ?
 									<div key={seg._id}
 										id={'dashboard-panel__panel__group__' + seg._id}
 										className={ClassNames('dashboard-panel__panel__group', {
-											'live': seg.isLive
+											'live': seg.isLive,
+											'next': (seg.isNext && !this.props.rundown.currentPartId)
 										})}>
-										{seg.isLive && 
+										{(seg.isLive || (seg.isNext && !this.props.rundown.currentPartId)) && 
 											<div className='dashboard-panel__panel__group__liveline' ref={this.setRef}></div>
 										}
 										{filteredPieces.map((item: AdLibPieceUi) => {
