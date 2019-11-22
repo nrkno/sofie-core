@@ -182,7 +182,8 @@ export namespace ServerPlayoutAdLibAPI {
 			title: adLibPiece.name,
 			dynamicallyInserted: true,
 			afterPart: part.afterPart || part._id,
-			typeVariant: 'adlib'
+			typeVariant: 'adlib',
+			expectedDuration: adLibPiece.expectedDuration
 		})
 
 		updatePartRanks(rundown._id) // place in order
