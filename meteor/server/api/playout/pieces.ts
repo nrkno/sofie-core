@@ -430,7 +430,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	return newAdLibPiece
 }
 
-export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part, queue: boolean): Piece {
+export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part, queue: boolean, start: number | 'now'): Piece {
 	let duration: number | string | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
@@ -443,7 +443,7 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 		..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
 		_id: newId,
 		enable: {
-			start: (queue ? 0 : 'now'),
+			start: start,
 			duration: duration
 		},
 		partId: part._id,

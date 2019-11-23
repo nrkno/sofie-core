@@ -1032,7 +1032,7 @@ export namespace ServerPlayoutAPI {
 				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
 
 				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
-				const newAdLibPiece = convertAdLibToPiece(lastPiece, currentPart, false)
+				const newAdLibPiece = convertAdLibToPiece(lastPiece, currentPart, false, 'now')
 
 				Pieces.insert(newAdLibPiece)
 

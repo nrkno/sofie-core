@@ -44,7 +44,7 @@ export namespace ServerPlayoutAdLibAPI {
 			const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 			if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Piece "${pieceId}" is not a GRAPHICS item!`)
 
-			const newPiece = convertAdLibToPiece(piece, part, false)
+			const newPiece = convertAdLibToPiece(piece, part, false, 'now')
 			if (newPiece.content && newPiece.content.timelineObjects) {
 				newPiece.content.timelineObjects = prefixAllObjectIds(
 					_.compact(
@@ -146,7 +146,29 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
-		let newPiece = convertAdLibToPiece(adLibPiece, part, queue)
+		let nextPart = rundown.nextPartId && rundown.nextPartId !== partId ? Parts.findOne({
+			_id: rundown.nextPartId,
+			rundownId: rundown._id
+		}) : undefined
+
+		let pieceStart: number | 'now' = queue ? 0 : 'now'
+		// HACK WARNING: Temporary 'fix' to insert adlibs to the next part if it is a dve and the current one is not.
+		// This will soon get a better way to make this decision
+		if (!queue && nextPart && nextPart.title.match(/DVE/) && part && !part.typeVariant.match(/DVE/) && adLibPiece.sourceLayerId.match(/dve_box/)) {
+			part = nextPart
+			pieceStart = 0
+
+			// Ensure any previous adlibs are pruned first
+			Pieces.remove({
+				partId: part._id,
+				rundownId: rundown._id,
+				'enable.start': 0,
+				dynamicallyInserted: true,
+				sourceLayerId: adLibPiece.sourceLayerId
+			})
+		}
+
+		let newPiece = convertAdLibToPiece(adLibPiece, part, queue, pieceStart)
 		Pieces.insert(newPiece)
 
 		if (queue) {
@@ -154,7 +176,7 @@ export namespace ServerPlayoutAdLibAPI {
 			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
 				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-					let newPiece = convertAdLibToPiece(piece, part!, queue)
+					let newPiece = convertAdLibToPiece(piece, part!, true, 0)
 					Pieces.insert(newPiece)
 				}
 			})
