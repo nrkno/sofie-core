@@ -208,7 +208,7 @@ interface ITimingDisplayProps {
 
 export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'enter',
-	RUNDOWN_TAKE2 = 'numpadenter',
+	RUNDOWN_TAKE2 = 'return',
 	RUNDOWN_HOLD = 'h',
 	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
@@ -222,10 +222,10 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNDOWN_NEXT_FORWARD = 'arrowright',
-	RUNDOWN_NEXT_DOWN = 'arrowdown',
-	RUNDOWN_NEXT_BACK = 'arrowleft',
-	RUNDOWN_NEXT_UP = 'arrowup',
+	RUNDOWN_NEXT_FORWARD = 'right',
+	RUNDOWN_NEXT_DOWN = 'down',
+	RUNDOWN_NEXT_BACK = 'left',
+	RUNDOWN_NEXT_UP = 'up',
 	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNDOWN_LOG_ERROR	= 'shift+backspace'
