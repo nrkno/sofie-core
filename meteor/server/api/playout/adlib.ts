@@ -205,7 +205,10 @@ export namespace ServerPlayoutAdLibAPI {
 		const alreadyQueuedPart = Parts.findOne({
 			rundownId: rundown._id,
 			segmentId: part.segmentId,
-			afterPart: afterPartId
+			afterPart: afterPartId,
+			_rank: { $gt: part._rank }
+		}, {
+			sort: { _rank: -1, _id: -1 }
 		})
 		if (alreadyQueuedPart) {
 			if (rundown.currentPartId !== alreadyQueuedPart._id) {
