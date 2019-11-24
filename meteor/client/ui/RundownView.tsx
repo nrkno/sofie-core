@@ -207,8 +207,8 @@ interface ITimingDisplayProps {
 }
 
 export enum RundownViewKbdShortcuts {
-	RUNDOWN_TAKE = 'f12',
-	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
+	RUNDOWN_TAKE = 'enter',
+	RUNDOWN_TAKE2 = 'numpadenter',
 	RUNDOWN_HOLD = 'h',
 	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
@@ -222,13 +222,13 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNDOWN_NEXT_FORWARD = 'f9',
-	RUNDOWN_NEXT_DOWN = 'f10',
-	RUNDOWN_NEXT_BACK = 'shift+f9',
-	RUNDOWN_NEXT_UP = 'shift+f10',
+	RUNDOWN_NEXT_FORWARD = 'arrowright',
+	RUNDOWN_NEXT_DOWN = 'arrowdown',
+	RUNDOWN_NEXT_BACK = 'arrowleft',
+	RUNDOWN_NEXT_UP = 'arrowup',
 	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR	= 'backspace'
+	RUNDOWN_LOG_ERROR	= 'shift+backspace'
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
