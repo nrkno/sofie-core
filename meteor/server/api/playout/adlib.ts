@@ -15,7 +15,7 @@ import { prefixAllObjectIds } from './lib'
 import { convertAdLibToPiece, getResolvedPieces } from './pieces'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
-import { updatePartRanks } from '../rundown'
+import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
@@ -199,6 +199,21 @@ export namespace ServerPlayoutAdLibAPI {
 		const part = Parts.findOne(partId)
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
+		const afterPartId = part.afterPart || part._id
+
+		// check if there's already a queued part after this:
+		const alreadyQueuedPart = Parts.findOne({
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			afterPart: afterPartId
+		})
+		if (alreadyQueuedPart) {
+			if (rundown.currentPartId !== alreadyQueuedPart._id) {
+				Parts.remove(alreadyQueuedPart._id)
+				afterRemoveParts(rundown._id, [alreadyQueuedPart])
+			}
+		}
+
 		const newPartId = Random.id()
 		Parts.insert({
 			_id: newPartId,
@@ -208,7 +223,7 @@ export namespace ServerPlayoutAdLibAPI {
 			rundownId: rundown._id,
 			title: adLibPiece.name,
 			dynamicallyInserted: true,
-			afterPart: part.afterPart || part._id,
+			afterPart: afterPartId,
 			typeVariant: 'adlib',
 			expectedDuration: adLibPiece.expectedDuration
 		})
