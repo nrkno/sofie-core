@@ -159,18 +159,29 @@ export namespace ServerPlayoutAdLibAPI {
 		let pieceStart: number | 'now' = queue ? 0 : 'now'
 		// HACK WARNING: Temporary 'fix' to insert adlibs to the next part if it is a dve and the current one is not.
 		// This will soon get a better way to make this decision
-		if (!queue && nextPart && nextPart.title.match(/DVE/) && part && !part.typeVariant.match(/DVE/) && adLibPiece.sourceLayerId.match(/dve_box/)) {
-			part = nextPart
-			pieceStart = 0
-
-			// Ensure any previous adlibs are pruned first
-			Pieces.remove({
-				partId: part._id,
+		if (!queue && nextPart && part && adLibPiece.sourceLayerId.match(/dve_box/)) {
+			// Find any core dve pieces
+			const dvePieces = Pieces.find({
 				rundownId: rundown._id,
-				'enable.start': 0,
-				dynamicallyInserted: true,
-				sourceLayerId: adLibPiece.sourceLayerId
-			})
+				partId: { $in: [ part._id, nextPart._id ] },
+				sourceLayerId: /dve(?!_box|_back)/i // dve layers but not dve_box layers
+			}).fetch()
+			const partIds = dvePieces.map(p => p.partId)
+
+			// If only next says it is a dve and not current
+			if (partIds.indexOf(nextPart._id) !== -1 && partIds.indexOf(part._id) === -1) {
+				part = nextPart
+				pieceStart = 0
+
+				// Ensure any previous adlibs are pruned first
+				Pieces.remove({
+					partId: part._id,
+					rundownId: rundown._id,
+					'enable.start': 0,
+					dynamicallyInserted: true,
+					sourceLayerId: adLibPiece.sourceLayerId
+				})
+			}
 		}
 
 		let newPiece = convertAdLibToPiece(adLibPiece, part, queue, pieceStart)
