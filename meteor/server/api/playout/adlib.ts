@@ -175,7 +175,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const newPartId = Random.id()
 		Parts.insert({
 			_id: newPartId,
-			_rank: 99999, // something high, so it will be placed last
+			_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
 			externalId: '',
 			segmentId: part.segmentId,
 			rundownId: rundown._id,
@@ -185,7 +185,7 @@ export namespace ServerPlayoutAdLibAPI {
 			typeVariant: 'adlib'
 		})
 
-		updatePartRanks(rundown._id) // place in order
+		updatePartRanks(rundown) // place in order
 
 		return newPartId
 	}

@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
+import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise, asyncCollectionFindFetch, waitForPromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
-import { Parts, Part } from './Parts'
+import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Studios, Studio } from './Studios'
 import { Pieces, Piece } from './Pieces'
@@ -151,7 +151,7 @@ export class Rundown implements DBRundown {
 
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
-	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions): Segment[] {
 		selector = selector || {}
 		options = options || {}
 		return Segments.find(
@@ -163,10 +163,11 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 	}
-	getParts (selector?: MongoSelector<Part>, options?: FindOptions) {
+	getParts (selector?: MongoSelector<Part>, options?: FindOptions, segmentsInOrder?: Segment[]): Part[] {
 		selector = selector || {}
 		options = options || {}
-		return Parts.find(
+
+		let parts = Parts.find(
 			_.extend({
 				rundownId: this._id
 			}, selector),
@@ -174,6 +175,36 @@ export class Rundown implements DBRundown {
 				sort: { _rank: 1 }
 			}, options)
 		).fetch()
+		if (!options.sort) {
+			parts = Rundown._sortParts(parts, segmentsInOrder || this.getSegments())
+		}
+		return parts
+	}
+	/**
+	 * Return ordered lists of all Segments and Parts in the rundown
+	 */
+	async getSegmentsAndParts (): Promise<{ segments: Segment[], parts: Part[] }> {
+
+		const pSegments = asyncCollectionFindFetch(Segments, {
+			rundownId: this._id
+		}, { sort: { _rank: 1 } })
+
+		const pParts = asyncCollectionFindFetch(Parts, {
+			rundownId: this._id
+		}, { sort: { _rank: 1 } })
+
+		const segments = await pSegments
+		return {
+			segments: segments,
+			parts: Rundown._sortParts(await pParts, segments)
+		}
+	}
+	static _sortParts<T extends DBPart> (parts: T[], segments: DBSegment[]): T[] {
+
+		const segmentRanks: {[segmentId: string]: number} = {}
+		_.each(segments, segment => segmentRanks[segment._id] = segment._rank)
+
+		return _.sortBy(parts, part => [segmentRanks[part.segmentId], part._rank])
 	}
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
@@ -215,52 +246,28 @@ export class Rundown implements DBRundown {
 	fetchAllData (): RundownData {
 
 		// Do fetches in parallell:
-		let ps: [
-			Promise<{ segments: Segment[], segmentsMap: any }>,
-			Promise<{ parts: Part[], partsMap: any } >,
-			Promise<Piece[]>
-		] = [
-			makePromise(() => {
-				let segments = this.getSegments()
-				let segmentsMap = normalizeArray(segments, '_id')
-				return { segments, segmentsMap }
-			}),
-			makePromise(() => {
-				let parts = _.map(this.getParts(), (part) => {
-					// Override member function to use cached data instead:
-					part.getAllPieces = () => {
-						return _.map(_.filter(pieces, (piece) => {
-							return (
-								piece.partId === part._id
-							)
-						}), (part) => {
-							return _.clone(part)
-						})
-					}
-					return part
 
-				})
-				let partsMap = normalizeArray(parts, '_id')
-				return { parts, partsMap }
-			}),
-			makePromise(() => {
-				return Pieces.find({ rundownId: this._id }).fetch()
-			})
-		]
-		let r: any = waitForPromiseAll(ps as any)
-		let segments: Segment[] 				= r[0].segments
-		let segmentsMap 				 		= r[0].segmentsMap
-		let partsMap 					= r[1].partsMap
-		let parts: Part[]			= r[1].parts
-		let pieces: Piece[] = r[2]
+		const pSegmentsAndParts = (async () => {
+
+			let { segments, parts } = await this.getSegmentsAndParts()
+
+			let segmentsMap = normalizeArray(segments, '_id')
+			let partsMap = normalizeArray(parts, '_id')
+
+			return { segments, segmentsMap, parts, partsMap }
+		})()
+		const pPieces = asyncCollectionFindFetch(Pieces, { rundownId: this._id })
+
+		const segmentsAndParts = waitForPromise(pSegmentsAndParts)
+		const pieces = waitForPromise(pPieces)
 
 		return {
 			rundown: this,
-			segments,
-			segmentsMap,
-			parts,
-			partsMap,
-			pieces
+			segments: segmentsAndParts.segments,
+			segmentsMap: segmentsAndParts.segmentsMap,
+			parts: segmentsAndParts.parts,
+			partsMap: segmentsAndParts.partsMap,
+			pieces: pieces
 		}
 	}
 	getNotes (): Array<RundownNote> {

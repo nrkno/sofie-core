@@ -521,9 +521,9 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 
 		const part10: DBPart = {
 			_id: rundownId + '_part1_0',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
-			_rank: 10,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
+			_rank: 0,
 			externalId: 'MOCK_PART_1_0',
 			title: 'Part 1 0',
 			typeVariant: ''
@@ -532,9 +532,9 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 
 		const part11: DBPart = {
 			_id: rundownId + '_part1_1',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
-			_rank: 11,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
+			_rank: 1,
 			externalId: 'MOCK_PART_1_1',
 			title: 'Part 1 1',
 			typeVariant: ''
@@ -543,9 +543,9 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 
 		const part12: DBPart = {
 			_id: rundownId + '_part1_2',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
-			_rank: 12,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
+			_rank: 2,
 			externalId: 'MOCK_PART_1_2',
 			title: 'Part 1 2',
 			typeVariant: ''

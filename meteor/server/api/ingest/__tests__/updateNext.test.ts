@@ -103,7 +103,7 @@ function createMockRO () {
 		// Segment 2
 		literal<DBPart>({
 			_id: 'mock_part4',
-			_rank: 4,
+			_rank: 0,
 			rundownId: rundownId,
 			segmentId: 'mock_segment2',
 			externalId: 'p4',
@@ -112,7 +112,7 @@ function createMockRO () {
 		}),
 		literal<DBPart>({
 			_id: 'mock_part5',
-			_rank: 5,
+			_rank: 1,
 			rundownId: rundownId,
 			segmentId: 'mock_segment2',
 			externalId: 'p5',
@@ -122,7 +122,7 @@ function createMockRO () {
 		// Segment 3
 		literal<DBPart>({
 			_id: 'mock_part6',
-			_rank: 6,
+			_rank: 0,
 			rundownId: rundownId,
 			segmentId: 'mock_segment3',
 			externalId: 'p6',
@@ -132,7 +132,7 @@ function createMockRO () {
 		// Segment 4
 		literal<DBPart>({
 			_id: 'mock_part7',
-			_rank: 7,
+			_rank: 0,
 			rundownId: rundownId,
 			segmentId: 'mock_segment4',
 			externalId: 'p7',
@@ -141,7 +141,7 @@ function createMockRO () {
 		}),
 		literal<DBPart>({
 			_id: 'mock_part8',
-			_rank: 8,
+			_rank: 1,
 			rundownId: rundownId,
 			segmentId: 'mock_segment4',
 			externalId: 'p8',
@@ -150,7 +150,7 @@ function createMockRO () {
 		}),
 		literal<DBPart>({
 			_id: 'mock_part9',
-			_rank: 9,
+			_rank: 2,
 			rundownId: rundownId,
 			segmentId: 'mock_segment4',
 			externalId: 'p9',

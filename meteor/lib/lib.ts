@@ -415,8 +415,11 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: MongoSelector<T>, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
+export function fetchBefore<T> (
+	collection: Mongo.Collection<T>,
+	selector: MongoSelector<T> = {},
+	rank: number = Number.POSITIVE_INFINITY
+): T {
 	return collection.find(_.extend(selector, {
 		_rank: { $lt: rank }
 	}), {
@@ -427,24 +430,28 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: MongoSelector<T>, rank: number | null): T | undefined {
-	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
+export function fetchNext<T extends { _id: string }> (
+	values: Array<T>,
+	currentValue: T | undefined
+): T | undefined {
 
-	selector = _.extend({}, selector, {
-		_rank: { $gt: rank }
+	if (!currentValue) return values[0]
+
+	let nextValue: T | undefined
+	let found: boolean = false
+	return _.find(values, (value) => {
+		if (found) {
+			nextValue = value
+			return true
+		}
+
+		if (currentValue._id) {
+			found = (currentValue._id === value._id)
+		} else {
+			found = (currentValue === value)
+		}
+		return false
 	})
-
-	if (_.isArray(collection)) {
-		return _.find(collection, (o) => mongoWhere(o, selector))
-	} else {
-		return collection.find(selector, {
-			sort: {
-				_rank: 1,
-				_id: 1
-			},
-			limit: 1
-		}).fetch()[0]
-	}
 }
 export function getRank<T extends {_rank: number}> (
 	beforeOrLast: T | null | undefined,
@@ -484,6 +491,10 @@ export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexK
 		normalizedObject[key] = array[i]
 	}
 	return normalizedObject as { [key: string]: T }
+}
+/** Convenience function, to be used when length of array has previously been verified */
+export function last<T> (values: T[]): T {
+	return _.last(values) as T
 }
 
 const rateLimitCache: {[name: string]: number} = {}
@@ -779,6 +790,11 @@ export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.
 		cb(e)
 	})
 })
+/**
+ * Convert a promise to a "synchronous" Fiber function
+ * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
+ * If the fiber rejects, the function in the Fiber will "throw"
+ */
 export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
 	Promise.resolve(p)
 	.then((result) => {
@@ -788,6 +804,10 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 		cb(e)
 	})
 })
+/**
+ * Convert a Fiber function into a promise
+ * Makes the Fiber function to run in its own fiber and return a promise
+ */
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {

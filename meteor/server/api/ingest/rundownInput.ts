@@ -593,7 +593,7 @@ function updateSegmentFromIngestData (
 export function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
-	updatePartRanks(rundown._id)
+	updatePartRanks(rundown)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	UpdateNext.ensureNextPartIsValid(rundown)
 	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
@@ -712,7 +712,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: i, // This gets updated to a rundown unique rank as a later step
+			_rank: i, // This gets updated to a rank unique within its segment in a later step
 			notes: notes,
 		})
 		parts.push(part)
