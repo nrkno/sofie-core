@@ -135,6 +135,11 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 	}
 	function innerStartAdLibPiece (rundown: Rundown, queue: boolean, partId: string, adLibPiece: AdLibPiece) {
+		if (adLibPiece.toBeQueued) {
+			// Allow adlib to request to always be queued
+			queue = true
+		}
+
 		let orgPartId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
