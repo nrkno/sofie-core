@@ -3,6 +3,7 @@
 pipeline {
   agent any
   stages {
+    /*
     stage('Version') {
       when {
         branch 'master'
@@ -11,6 +12,7 @@ pipeline {
         versionRelease('meteor')
       }
     }
+    */
     stage('Build') {
       steps {
         sofieSlackSendBuildStarted()
