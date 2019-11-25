@@ -208,7 +208,6 @@ interface ITimingDisplayProps {
 
 export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'enter',
-	RUNDOWN_TAKE2 = 'return',
 	RUNDOWN_HOLD = 'h',
 	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
@@ -360,11 +359,6 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			this.bindKeys = [
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
-					up: this.keyTake,
-					label: t('Take'),
-					global: true
-				},{
-					key: RundownViewKbdShortcuts.RUNDOWN_TAKE2,
 					up: this.keyTake,
 					label: t('Take'),
 					global: true
