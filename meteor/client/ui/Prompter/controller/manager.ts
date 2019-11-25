@@ -1,8 +1,9 @@
-import { PrompterViewInner } from '../PrompterView'
+import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { ControllerAbstract } from './lib'
-import { KeyboardController } from './keyboard-device'
+import { ShuttleKeyboardController } from './shuttle-keyboard-device'
 import * as _ from 'underscore'
+import { KeyboardController } from './keyboard-device'
 
 export class PrompterControlManager {
 	private _view: PrompterViewInner
@@ -17,9 +18,20 @@ export class PrompterControlManager {
 		window.addEventListener('mousedown', this._onMouseKeyDown)
 		window.addEventListener('mouseup', this._onMouseKeyUp)
 
-		// tmp, activate some default controllers:
-		this._controllers.push(new MouseIshController(this._view))
-		this._controllers.push(new KeyboardController(this._view))
+		if (this._view.configOptions.mode === PrompterConfigMode.MOUSE) {
+			this._controllers.push(new MouseIshController(this._view))
+
+		} else if (this._view.configOptions.mode === PrompterConfigMode.KEYBOARD) {
+			this._controllers.push(new KeyboardController(this._view))
+
+		} else if (this._view.configOptions.mode === PrompterConfigMode.SHUTTLEKEYBOARD) {
+			this._controllers.push(new ShuttleKeyboardController(this._view))
+
+		} else {
+			// Default behaviour:
+			this._controllers.push(new MouseIshController(this._view))
+			this._controllers.push(new KeyboardController(this._view))
+		}
 	}
 	destroy () {
 		window.removeEventListener('keydown', this._onKeyDown)

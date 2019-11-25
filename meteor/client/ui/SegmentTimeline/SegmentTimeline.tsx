@@ -264,6 +264,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	setSegmentRef = (el: HTMLDivElement) => {
 		this.segmentBlock = el
 		if (typeof this.props.segmentRef === 'function') this.props.segmentRef(this as any, this.props.segment._id)
+
+		if (this.segmentBlock) {
+			this.segmentBlock.addEventListener('wheel', this.onTimelineWheel, { passive: false, capture: true })
+		}
 	}
 
 	setTimelineRef = (el: HTMLDivElement) => {
@@ -388,8 +392,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					key={this.props.segment._id + '-liveline-shade'}
 					style={{
 						'width': (this.props.followLiveLine ?
-							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
-							pixelPostion.toString()
+							Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString() :
+							Math.max(0, pixelPostion).toString()
 						) + 'px'
 					}} />,
 				<div className='segment-timeline__liveline'
@@ -509,7 +513,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<h2>
 						{this.props.segment.name}
 					</h2>
-					<div className='segment-timeline__title__notes'>
+					{(criticalNotes > 0 || warningNotes > 0) && <div className='segment-timeline__title__notes'>
 						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
 							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
@@ -530,7 +534,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								</b>
 							</div>
 						</div>}
-					</div>
+					</div>}
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
@@ -565,9 +569,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<TimelineGrid {...this.props}
 					onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'
-					onTouchStartCapture={this.onTimelineTouchStart}
-					onWheelCapture={this.onTimelineWheel}>
-					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
+					onTouchStartCapture={this.onTimelineTouchStart}>
+					<div className='segment-timeline__timeline'
+						key={this.props.segment._id + '-timeline'}
+						ref={this.setTimelineRef}
+						style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderEndOfSegment()}

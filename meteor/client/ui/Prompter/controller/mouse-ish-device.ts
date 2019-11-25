@@ -51,8 +51,8 @@ export class MouseIshController extends ControllerAbstract {
 
 		this._prompterView = view
 
-		if (view.configOptions.restrictMode !== undefined) {
-			this._setMode(view.configOptions.restrictMode as Mode)
+		if (view.configOptions.controlMode !== undefined) {
+			this._setMode(view.configOptions.controlMode as Mode)
 			this._allowModeSwitch = false
 		} else {
 			// Recall mode:
@@ -126,14 +126,6 @@ export class MouseIshController extends ControllerAbstract {
 				this._scrollingUp = false
 				this.triggerStartSpeedScrolling()
 			}
-		}
-		if (
-			this._mouseKeyDown['0'] && // Left mouse button
-			this._mouseKeyDown['2']	// Right mouse button
-		) {
-			// Switch mode
-			this._toggleMode()
-			e.preventDefault()
 		}
 		this._mouseKeyDown[e.button + ''] = 0
 	}
@@ -226,31 +218,11 @@ export class MouseIshController extends ControllerAbstract {
 		this._noMovement = 0
 		this._updateScrollPosition()
 	}
-	private _toggleMode () {
-		if (this._mode === Mode.NORMAL) {
-			this._setMode(Mode.SPEED)
-			this._scrollSpeedTarget = 4
-			this._scrollSpeedCurrent = 0
-			this._scrollingDown = false
-			this._scrollingUp = false
-
-		} else if (this._mode === Mode.SPEED) {
-			this._setMode(Mode.SMOOTHSCROLL)
-
-			this._scrollSpeedTarget = 4
-			this._scrollSpeedCurrent = 0
-			this._scrollingDown = false
-			this._scrollingUp = false
-
-		} else {
-			this._setMode(Mode.NORMAL)
-		}
-	}
 	private _setMode (mode: Mode) {
 		const { t } = this._prompterView.props
 
 		this._mode = mode
-		console.log('Mouse-control: Switching mode to ' + mode)
+		// console.log('Mouse-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
 
 		NotificationCenter.push(new Notification(t('Operating Mode'), NoticeLevel.NOTIFICATION, t('Switching operating mode to {{mode}}', { mode: mode }), 'setMode'))

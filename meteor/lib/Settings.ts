@@ -1,25 +1,22 @@
+import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 
-const defaultSettings = require('./defaultSettings.json')
-let localSettings = {}
-try {
-	localSettings = require('../settings.json')
-} catch (e) {
-	localSettings = {}
+export interface ISettings {
+	frameRate: number,
+	defaultToCollapsedSegments: boolean,
+	autoExpandCurrentNextSegment: boolean
 }
 
-let localSettingsEnv = {}
-function screamSnakeCase (input: string) {
-	return input.replace(/([A-Z])/g, '_$1').toUpperCase()
+export let Settings: ISettings
+
+const DEFAULT_SETTINGS: ISettings = {
+	'frameRate': 25,
+	'defaultToCollapsedSegments': false,
+	'autoExpandCurrentNextSegment': false
 }
 
-try {
-	_.keys(defaultSettings).forEach((setting) => {
-		const envName = screamSnakeCase(setting)
-		if (process.env[envName] !== undefined) localSettingsEnv[setting] = process.env[envName]
-	})
-} catch (e) {
-	localSettingsEnv = {}
-}
+Settings = _.clone(DEFAULT_SETTINGS)
 
-export const Settings = _.extend({}, defaultSettings, localSettings, localSettingsEnv)
+Meteor.startup(() => {
+	Settings = _.extend(Settings, Meteor.settings.public)
+})

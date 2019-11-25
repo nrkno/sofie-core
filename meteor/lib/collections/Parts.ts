@@ -142,7 +142,7 @@ export class Part implements DBPart {
 				partId: this._id
 			}, selector),
 			_.extend({
-				sort: { _rank: 1 }
+				sort: { _rank: 1, name: 1 }
 			}, options)
 		).fetch()
 	}

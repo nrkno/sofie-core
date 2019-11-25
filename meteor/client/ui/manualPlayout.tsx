@@ -15,15 +15,15 @@ import {
 	TimelineObjCCGMedia,
 	TimelineContentTypeCasparCg,
 	DeviceType,
-	TimelineObjQuantelAny
+	TimelineObjQuantelAny,
+	DeviceOptionsAtem
 } from 'timeline-state-resolver-types'
 import { Studios, Studio, MappingExt } from '../../lib/collections/Studios'
 import {
 	PeripheralDevices,
 } from '../../lib/collections/PeripheralDevices'
 import {
-	PlayoutDeviceSettings,
-	PlayoutDeviceSettingsDeviceAtem
+	PlayoutDeviceSettings
 } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'
@@ -55,7 +55,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 	}
 	getAtems (studio: Studio) {
 
-		let atems: {[id: string]: PlayoutDeviceSettingsDeviceAtem} = {}
+		let atems: {[id: string]: DeviceOptionsAtem} = {}
 
 		let parentDevices = PeripheralDevices.find({
 			studioId: studio._id,
@@ -68,7 +68,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				_.each(
 					settings.devices, (device, deviceId) => {
 						if (device.type === PlayoutDeviceType.ATEM) {
-							atems[deviceId] = device as PlayoutDeviceSettingsDeviceAtem
+							atems[deviceId] = device
 						}
 					}
 				)

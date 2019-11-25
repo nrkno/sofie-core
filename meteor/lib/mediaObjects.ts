@@ -10,7 +10,7 @@ import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly 
 import * as i18next from 'i18next'
 import { IStudioSettings } from './collections/Studios'
 
-/**
+/**d
  * Take properties from the mediainfo / medistream and transform into a
  * formatted string
  */
@@ -29,8 +29,8 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
 	}
 	if (stream.codec.time_base) {
 		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-		let fps = Number(formattedTimebase[2])
-		fps = Math.floor(fps * 100)
+		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
+		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps
 	}
 	switch (mediainfo.field_order) {
@@ -87,7 +87,7 @@ export function getAcceptedFormats (settings: IStudioSettings | undefined): Arra
 	return _.compact(formatsString
 		.split(',')
 		.map((res) => {
-			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)
+			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res.trim())
 			if (match) {
 				return match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 			} else {
@@ -102,7 +102,7 @@ export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLaye
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
 			if (piece.content && piece.content.fileName) {
-				return (piece.content as VTContent).fileName
+				return (piece.content as VTContent).fileName.toUpperCase()
 			}
 			return undefined
 	}
@@ -128,7 +128,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 					messages.push(t('Source is not set'))
 				} else {
 					const mediaObject = MediaObjects.findOne({
-						mediaId: fileName.toUpperCase()
+						mediaId: fileName
 					})
 					// If media object not found, then...
 					if (!mediaObject) {
@@ -136,7 +136,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 						messages.push(t('Source is missing', { fileName: displayName }))
 						// All VT content should have at least two streams
 					} else {
-						if (!newStatus) newStatus = RundownAPI.PieceStatusCode.OK
+						newStatus = RundownAPI.PieceStatusCode.OK
 
 						// Do a format check:
 						if (mediaObject.mediainfo) {

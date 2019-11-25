@@ -377,9 +377,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 								onFilterChange={this.onFilterChange} />
 						}
 						<div className='dashboard-panel__panel'>
-							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
-								.concat(this.props.rundownBaselineAdLibs)
-								.sort((a, b) => a._rank - b._rank)
+							{this.props.rundownBaselineAdLibs
+								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton

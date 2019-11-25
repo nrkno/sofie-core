@@ -1,7 +1,6 @@
 const commonConfig = {
 	modulePaths: [
 		'<rootDir>/node_modules/',
-		'<rootDir>/node_modules/jest-meteor-stubs/lib/',
 	],
 	moduleNameMapper: {
 	},
@@ -43,6 +42,9 @@ const commonConfig = {
 		"!**/*.{tsx}",
 		"!**/client/main.js",
 		"!.meteor/**/*.*",
+		"!**/__tests__/**",
+		"!**/__mocks__/**",
+		'!**/node_modules/**'
 	],
 	collectCoverage: false,
 	watchPathIgnorePatterns: [

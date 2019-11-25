@@ -80,42 +80,6 @@
 			margin-left: -1px;
 		}
 
-		@-webkit-keyframes help-fade {
-			0% {
-				background-color: #fff
-			}
-			40% {
-				background-color: #fff
-			}
-			50% {
-				background-color: $ui-button-primary
-			}
-			60% {
-				background-color: #fff
-			}
-			100% {
-				background-color: #fff
-			}
-		}
-
-		@-moz-keyframes help-fade {
-			0% {
-				background-color: #fff
-			}
-			40% {
-				background-color: #fff
-			}
-			50% {
-				background-color: $ui-button-primary
-			}
-			60% {
-				background-color: #fff
-			}
-			100% {
-				background-color: #fff
-			}
-		}
-
 		@keyframes help-fade {
 			0% {
 				background-color: #fff
@@ -135,9 +99,7 @@
 		}
 
 		&.status-bar__controls__button--has-messages {
-			-webkit-animation: help-fade 8s infinite;
-			-moz-animation: help-fade 8s infinite;
-			animation: help-fade 8s infinite;
+			animation: help-fade 8s 1;
 		}
 
 		&.status-bar__controls__button--take {
@@ -148,10 +110,6 @@
 			@media (pointer: coarse) {
 				display: inline !important;
 			}
-		}
-
-		> div[aria-label="animation"] {
-
 		}
 	}
 

@@ -1,14 +1,10 @@
 import {
-	DeviceType as PlayoutDeviceType,
-	DeviceOptions as PlayoutDeviceSettingsDevice,
-	CasparCGOptions,
-	AtemOptions,
-	HyperdeckOptions
+	DeviceOptionsAny
 } from 'timeline-state-resolver-types'
 
 export interface PlayoutDeviceSettings {
 	devices: {
-		[deviceId: string]: PlayoutDeviceSettingsDevice
+		[deviceId: string]: DeviceOptionsAny
 	}
 	mediaScanner: {
 		host: string
@@ -18,46 +14,3 @@ export interface PlayoutDeviceSettings {
 	multiThreadedResolver?: boolean
 }
 
-export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType.CASPARCG
-	options: CasparCGOptions
-}
-export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType.ATEM
-	options: AtemOptions
-}
-
-export interface PanasonicDeviceSettings {
-	identifier: string
-	url: string
-}
-
-export interface PlayoutDeviceSettingsDevicePanasonicPTZ extends PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType.PANASONIC_PTZ
-	options: {
-		cameraDevices: Array<PanasonicDeviceSettings>
-	}
-}
-
-export interface PlayoutDeviceSettingsDeviceHyperdeck extends PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType.HYPERDECK
-	options: HyperdeckOptions
-}
-export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType.PHAROS
-	options: {
-		host: string,
-		spart?: boolean
-	}
-}
-
-export interface PlayoutDeviceSettingsDeviceQuantel extends PlayoutDeviceSettingsDevice {
-	// @ts-ignore
-	type: PlayoutDeviceType.QUANTEL
-	options: {
-		gatewayUrl: string
-		ISAUrl: string
-		zoneId?: string
-		serverId: number
-	}
-}

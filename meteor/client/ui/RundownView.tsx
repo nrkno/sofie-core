@@ -434,19 +434,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPiece,
 					label: t('Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPieceUndo,
 					label: t('Undo Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
-					global: true,
 					coolDown: 1000
 				}
 			]
@@ -634,6 +631,22 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	) => {
 		const { t } = this.props
 
+		function handleResult (err, response) {
+			if (!err) {
+				if (typeof clb === 'function') clb(response)
+			} else {
+				console.error(err)
+				doModalDialog({
+					title: t('Failed to activate'),
+					message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+					acceptOnly: true,
+					warning: true,
+					yes: t('OK'),
+					onAccept: (le: any) => { console.log() }
+				})
+			}
+		}
+
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
 			title: t('Another Rundown is Already Active!'),
@@ -644,44 +657,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			no: t('Cancel'),
 			actions: [
 				{
-					label: t('Activate anyway (GO ON AIR)'),
+					label: t('Activate Anyway (GO ON AIR)'),
 					classNames: 'btn-primary',
 					on: (e) => {
-						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], (err, response) => {
-							if (!err) {
-								if (typeof clb === 'function') clb()
-							} else {
-								console.error(err)
-								doModalDialog({
-									title: t('Failed to activate'),
-									message: t('Something went wrong, please contact the system administrator if the problem persists.'),
-									acceptOnly: true,
-									warning: true,
-									yes: t('OK'),
-									onAccept: (le: any) => { console.log() }
-								})
-							}
-						})
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], handleResult)
 					}
 				}
 			],
 			warning: true,
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], (err, response) => {
-					if (!err) {
-						if (typeof clb === 'function') clb()
-					} else {
-						console.error(err)
-						doModalDialog({
-							title: t('Failed to activate'),
-							message: t('Something went wrong, please contact the system administrator if the problem persists.'),
-							acceptOnly: true,
-							warning: true,
-							yes: t('OK'),
-							onAccept: (le: any) => { console.log() }
-						})
-					}
-				})
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], handleResult)
 			}
 		})
 	}
