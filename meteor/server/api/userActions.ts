@@ -140,9 +140,9 @@ export function prepareForBroadcast (rundownId: string): ClientAPI.ClientRespons
 export function resetRundown (rundownId: string): ClientAPI.ClientResponse {
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	if (rundown.active && !rundown.rehearsal) {
-		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
-	}
+	// if (rundown.active && !rundown.rehearsal) {
+	// 	return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
+	// }
 
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.resetRundown(rundownId)
@@ -151,9 +151,9 @@ export function resetRundown (rundownId: string): ClientAPI.ClientResponse {
 export function resetAndActivate (rundownId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	if (rundown.active && !rundown.rehearsal) {
-		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
-	}
+	// if (rundown.active && !rundown.rehearsal) {
+	// 	return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
+	// }
 	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, rundown.name).join(', '), anyOtherActiveRundowns)

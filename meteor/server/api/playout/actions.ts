@@ -19,7 +19,7 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	logger.info('Activating rundown ' + rundown._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
+	if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
 	let newRundown = Rundowns.findOne(rundown._id) // fetch new from db, to make sure its up to date
 
