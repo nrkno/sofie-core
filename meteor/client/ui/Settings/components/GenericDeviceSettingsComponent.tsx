@@ -489,7 +489,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 												<div className='mod mvs mhs'>
 													<label className='field'>
 														{t('Type')}
-														<EditAttribute modifiedClassName='bghl' attribute={prefix + i + '.type'} obj={this.props.device} type='dropdown' options={configTypes} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+														<EditAttribute modifiedClassName='bghl' attribute={prefix + i + '.' + (configField.defaultType || 'type')} obj={this.props.device} type='dropdown' options={configTypes} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 													</label>
 												</div>
 												{this.renderConfigFields(tableConfigField, this.props.device, prefix + '' + i + '.')}
