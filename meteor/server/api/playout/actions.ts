@@ -47,10 +47,9 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	rundown.rehearsal = rehearsal
 
 	if (!rundown.nextPartId) {
-		let parts = rundown.getParts()
-		let firstPart = _.first(parts)
-		if (firstPart && !firstPart.invalid) {
-			setNextPart(rundown, firstPart)
+		const part = rundown.getParts().find(p => !p.invalid)
+		if (part) {
+			setNextPart(rundown, part)
 		}
 	}
 
