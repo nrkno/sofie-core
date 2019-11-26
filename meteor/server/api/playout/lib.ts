@@ -120,9 +120,9 @@ function resetRundownPlayhead (rundown: Rundown) {
 
 	if (rundown.active) {
 		// put the first on queue:
-		let firstPart = _.first(parts)
-		if (firstPart && !firstPart.invalid) {
-			setNextPart(rundown, firstPart)
+		const part = rundown.getParts().find(p => !p.invalid)
+		if (part) {
+			setNextPart(rundown, part)
 		}
 	} else {
 		setNextPart(rundown, null)
