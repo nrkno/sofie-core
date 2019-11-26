@@ -97,7 +97,9 @@ export namespace ServerPlayoutAPI {
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(401, `rundownResetBroadcast can only be run in rehearsal!`)
+
+			// @todo: TV 2 hack, not to be merged upstream, I guess?
+			// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(401, `rundownResetBroadcast can only be run in rehearsal!`)
 
 			libResetRundown(rundown)
 
