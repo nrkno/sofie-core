@@ -217,8 +217,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_DEACTIVATE = 'mod+shift+§',
 	RUNDOWN_GO_TO_LIVE = 'mod+home',
 	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
-	RUNDOWN_RESET_RUNDOWN = 'mod+shift+f12',
-	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
+	RUNDOWN_RESET_RUNDOWN = 'escape',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNDOWN_NEXT_FORWARD = 'right',
@@ -397,11 +396,6 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					global: true
 				},{
 					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
-					up: this.keyResetRundown,
-					label: t('Reset Rundown'),
-					global: true
-				},{
-					key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 					up: this.keyResetRundown,
 					label: t('Reset Rundown'),
 					global: true
