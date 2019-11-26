@@ -854,20 +854,20 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				this.deferFlushAndRewindSegments()
 			})
 		}
-		if ((this.props.rundown.active && !this.props.rundown.rehearsal)) {
-			// The rundown is active and not in rehersal
-			doModalDialog({
-				title: this.props.rundown.name,
-				message: t('The rundown can not be reset while it is active'),
-				onAccept: () => {
-					// nothing
-				},
-				acceptOnly: true,
-				yes: 'OK'
-			})
-		} else {
+		// if ((this.props.rundown.active && !this.props.rundown.rehearsal)) {
+		// 	// The rundown is active and not in rehersal
+		// 	doModalDialog({
+		// 		title: this.props.rundown.name,
+		// 		message: t('The rundown can not be reset while it is active'),
+		// 		onAccept: () => {
+		// 			// nothing
+		// 		},
+		// 		acceptOnly: true,
+		// 		yes: 'OK'
+		// 	})
+		// } else {
 			doReset()
-		}
+		// }
 	}
 
 	reloadRundown = (e: any, changeRehearsal?: boolean) => {
@@ -971,11 +971,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 										null
 								}
 								{
-									!(this.props.rundown.active && !this.props.rundown.rehearsal) ?
+									// !(this.props.rundown.active && !this.props.rundown.rehearsal) ?
 										<MenuItem onClick={(e) => this.resetRundown(e)}>
 											{t('Reset Rundown')}
-										</MenuItem> :
-										null
+										</MenuItem>
+										// </MenuItem> :
+										// null
 								}
 								<MenuItem onClick={(e) => this.reloadRundown(e)}>
 									{t('Reload iNews Data')}
