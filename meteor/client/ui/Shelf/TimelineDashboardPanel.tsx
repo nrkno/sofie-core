@@ -106,7 +106,6 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 				block: 'start',
 				inline: 'start'
 			})
-			console.log('Scrolling into view')
 		}
 	}, 250)
 	render () {
