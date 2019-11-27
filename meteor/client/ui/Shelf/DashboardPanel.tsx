@@ -301,7 +301,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			if (!this.isAdLibOnAir(piece)) {
+			if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 				if (!piece.isGlobal) {
 					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
 						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
