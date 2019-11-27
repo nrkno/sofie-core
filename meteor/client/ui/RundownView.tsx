@@ -22,7 +22,7 @@ import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
+import { RundownTimingProvider, withTiming, WithTiming, CurrentPartRemaining, AutoNextStatus } from './RundownView/RundownTiming'
 import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -266,11 +266,15 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+				</span>
+				{ this.props.rundown.currentPartId && <span className='timing-clock current-remaining'>
+					<CurrentPartRemaining heavyClassName='overtime' />
+					<AutoNextStatus />
 					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
 						: null
 					}
-				</span>
+				</span> }
 				{ this.props.rundown.expectedDuration ?
 					(<React.Fragment>
 						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&

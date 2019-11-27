@@ -15,7 +15,8 @@ import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import {
 	SegmentDuration,
 	PartCountdown,
-	RundownTiming
+	RundownTiming,
+	CurrentPartRemaining
 } from '../RundownView/RundownTiming'
 
 import { RundownUtils } from '../../lib/rundown'
@@ -37,6 +38,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { getAllowSpeaking } from '../../lib/localStorage';
 
 interface IProps {
 	id: string
@@ -63,7 +65,6 @@ interface IProps {
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
-	displayTimecode: number,
 	autoNextPart: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
@@ -403,12 +404,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
 						{t('On Air')}
 					</div>
-					<div className={ClassNames('segment-timeline__liveline__timecode', {
-						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
-					})}>
-						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
-						{!this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
-						{this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
+					<div className='segment-timeline__liveline__timecode'>
+						<CurrentPartRemaining speaking={getAllowSpeaking()} heavyClassName='overtime' />
+						{this.props.autoNextPart ?
+							<div className='rundown-view__part__icon rundown-view__part__icon--auto-next'></div> :
+							<div className='rundown-view__part__icon rundown-view__part__icon--next'></div>
+						}
 						{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 							<div className='segment-timeline__liveline__status segment-timeline__liveline__status--hold'>{t('Hold')}</div>
 							: null
