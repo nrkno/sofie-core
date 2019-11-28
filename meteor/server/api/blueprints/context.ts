@@ -260,7 +260,7 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
 	private readonly segment: Readonly<Segment>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], contextName?: string) {
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], contextName: string) {
 		super(rundown, studio, contextName)
 
 		if (_.isArray(runtimeArguments)) {
@@ -284,7 +284,7 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 export class PartContext extends RundownContext implements IPartContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArguments>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments, contextName?: string) {
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments, contextName: string) {
 		super(rundown, studio, contextName)
 
 		this.runtimeArguments = runtimeArguments
