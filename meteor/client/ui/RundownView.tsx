@@ -219,11 +219,11 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
 	RUNDOWN_RESET_RUNDOWN = 'escape',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
-	ADLIB_QUEUE_MODIFIER = 'shift+shift',
+	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNDOWN_NEXT_FORWARD = 'shift+right',
 	RUNDOWN_NEXT_DOWN = 'shift+down',
 	RUNDOWN_NEXT_BACK = 'shift+left',
-	RUNDOWN_NEXT_UP = 'up',
+	RUNDOWN_NEXT_UP = 'shift+up',
 	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNDOWN_LOG_ERROR	= 'shift+backspace'
