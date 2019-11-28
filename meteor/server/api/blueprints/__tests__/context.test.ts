@@ -301,7 +301,7 @@ describe('Test blueprint api context', () => {
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
-			const context = new SegmentContext(rundown, undefined, {})
+			const context = new SegmentContext(rundown, undefined, {}, '')
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.getRuntimeArguments('')).toBeUndefined()
@@ -319,7 +319,7 @@ describe('Test blueprint api context', () => {
 					c: 'd'
 				},
 				part5: {}
-			})
+			}, '')
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.getRuntimeArguments('')).toBeUndefined()
@@ -351,7 +351,7 @@ describe('Test blueprint api context', () => {
 					externalId: 'part5',
 					runtimeArguments: {}
 				}) as DBPart
-			])
+			], '')
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.getRuntimeArguments('')).toBeUndefined()
@@ -373,7 +373,7 @@ describe('Test blueprint api context', () => {
 			const context = new PartContext(rundown, undefined, {
 				a: 'b',
 				c: 'd'
-			})
+			}, '')
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.getRuntimeArguments()).toEqual({
@@ -387,7 +387,7 @@ describe('Test blueprint api context', () => {
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
-			const context = new PartContext(rundown, undefined, {})
+			const context = new PartContext(rundown, undefined, {}, '')
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.getRuntimeArguments()).toEqual({})
