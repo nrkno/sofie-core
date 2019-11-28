@@ -4,7 +4,8 @@ import * as _ from 'underscore'
 export interface ISettings {
 	frameRate: number,
 	defaultToCollapsedSegments: boolean,
-	autoExpandCurrentNextSegment: boolean
+	autoExpandCurrentNextSegment: boolean,
+	autoRewindLeavingSegment: boolean
 }
 
 export let Settings: ISettings
@@ -12,7 +13,8 @@ export let Settings: ISettings
 const DEFAULT_SETTINGS: ISettings = {
 	'frameRate': 25,
 	'defaultToCollapsedSegments': false,
-	'autoExpandCurrentNextSegment': false
+	'autoExpandCurrentNextSegment': false,
+	'autoRewindLeavingSegment': false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

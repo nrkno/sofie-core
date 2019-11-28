@@ -293,6 +293,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					)
 				})
 			}
+
+			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 		}
 
 		// segment is becoming next
