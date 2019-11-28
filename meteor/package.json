@@ -85,7 +85,7 @@
     "superfly-timeline": "^7.2.4",
     "timecode": "0.0.4",
     "timeline-state-resolver-types": "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist-types",
-    "tv-automation-sofie-blueprints-integration": "git+https://github.com/olzzon/tv-automation-sofie-blueprints-integration.git#e66399dddad703839c708955a084d530b7e1fe95",
+    "tv-automation-sofie-blueprints-integration": "git+https://github.com/olzzon/tv-automation-sofie-blueprints-integration.git#c434061ed26b1e3c12ff2a63a1df260b6e1dc0b4",
     "underscore": "^1.8.3",
     "velocity-animate": "^1.5.1",
     "velocity-react": "^1.3.3",

@@ -45,8 +45,9 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 	}
 
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
-		const lookaheadDepth = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
-		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead, lookaheadDepth)
+		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
+		const lookaheadMaxSearchDistance = mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0 ? mapping.lookaheadMaxSearchDistance : undefined
+		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead, lookaheadTargetObjects, lookaheadMaxSearchDistance)
 
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
@@ -113,7 +114,8 @@ export function findLookaheadForlayer (
 	rundownData: RundownData,
 	layer: string,
 	mode: LookaheadMode,
-	lookaheadDepth: number
+	lookaheadTargetObjects: number,
+	lookaheadMaxSearchDistance?: number
 ): LookaheadResult {
 	let activeRundown: Rundown = rundownData.rundown
 
@@ -164,16 +166,18 @@ export function findLookaheadForlayer (
 		return { timed: [], future: [] }
 	}
 
-
 	const timeOrderedPartsWithPieces: PartInfoWithPieces[] = timeOrderedParts.map(part => ({
 		...part,
 		pieces: piecesUsingLayerByPart[part.partId] || []
 	}))
+	const lastAllowedPartIndex = lookaheadMaxSearchDistance !== undefined
+		? Math.min(currentPartIndex + 1 + lookaheadMaxSearchDistance, timeOrderedPartsWithPieces.length)
+		: timeOrderedPartsWithPieces.length
 
 	// Start by taking the value from the current (if any), or search forwards
 	let startingPartOnLayer: PartInfoWithPieces | undefined
 	let startingPartOnLayerIndex: number = -1
-	for (let i = currentPartIndex; i < timeOrderedPartsWithPieces.length; i++) {
+	for (let i = currentPartIndex; i < lastAllowedPartIndex; i++) {
 		const v = timeOrderedPartsWithPieces[i]
 		if (v.pieces.length > 0) {
 			startingPartOnLayer = v
@@ -218,7 +222,7 @@ export function findLookaheadForlayer (
 
 	// Loop over future parts until we have enough objects, or run out of parts
 	let nextPartOnLayerIndex = startingPartOnLayerIndex
-	while (nextPartOnLayerIndex !== -1 && res.future.length < lookaheadDepth) {
+	while (nextPartOnLayerIndex !== -1 && res.future.length < lookaheadTargetObjects) {
 		nextPartOnLayerIndex = _.findIndex(timeOrderedPartsWithPieces, (v, i) => i > nextPartOnLayerIndex && v.pieces.length > 0)
 
 		if (nextPartOnLayerIndex !== -1) {
