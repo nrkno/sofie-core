@@ -161,11 +161,13 @@ export namespace ServerPlayoutAdLibAPI {
 			})
 
 			// Copy across adlib-preroll and other properties needed on the part
-			Parts.update(partId, {
-				$set: {
-					prerollDuration: newPiece.adlibPreroll
-				}
-			})
+			if (newPiece.adlibPreroll !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						prerollDuration: newPiece.adlibPreroll
+					}
+				})
+			}
 
 			ServerPlayoutAPI.setNextPartInner(rundown, partId)
 		} else {
