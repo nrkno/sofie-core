@@ -34,7 +34,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							key={panel._id}
 							includeGlobalAdLibs={true}
 							filter={panel}
-							visible={true}
+							visible={!(panel as DashboardLayoutFilter).hide}
 							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
 							playlist={props.playlist}
 							showStyleBase={props.showStyleBase}
@@ -46,7 +46,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							key={panel._id}
 							includeGlobalAdLibs={true}
 							filter={panel}
-							visible={true}
+							visible={!(panel as DashboardLayoutFilter).hide}
 							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
 							playlist={props.playlist}
 							showStyleBase={props.showStyleBase}
