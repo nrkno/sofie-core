@@ -107,7 +107,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	const newObjIds: {[identifier: string]: true} = {}
 	_.each(newData, (o) => {
 		if (newObjIds[o[identifier]]) {
-			throw new Meteor.Error(500, `saveIntoDb into collection "${collection.rawCollection.name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
+			throw new Meteor.Error(500, `saveIntoDb into collection "${(collection as any)._name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
 		}
 		newObjIds[o[identifier]] = true
 	})

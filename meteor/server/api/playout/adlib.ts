@@ -151,11 +151,19 @@ export namespace ServerPlayoutAdLibAPI {
 
 		if (queue) {
 			// keep infinite pieces
+			// TODO - what does this actually do? It looks like a bad attempt to efficiently update infinites, but that it will cause problems
 			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
 				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
 					let newPiece = convertAdLibToPiece(piece, part!, queue)
 					Pieces.insert(newPiece)
+				}
+			})
+
+			// Copy across adlib-preroll and other properties needed on the part
+			Parts.update(partId, {
+				$set: {
+					prerollDuration: newPiece.adlibPreroll
 				}
 			})
 
