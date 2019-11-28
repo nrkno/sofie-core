@@ -1,10 +1,10 @@
 import {
-	DeviceOptionsAny as PlayoutDeviceSettingsDevice,
+	DeviceOptionsAny
 } from 'timeline-state-resolver-types'
 
 export interface PlayoutDeviceSettings {
 	devices: {
-		[deviceId: string]: PlayoutDeviceSettingsDevice
+		[deviceId: string]: DeviceOptionsAny
 	}
 	mediaScanner: {
 		host: string

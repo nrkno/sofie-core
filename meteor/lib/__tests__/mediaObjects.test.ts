@@ -5,9 +5,9 @@ import { testInFiber } from '../../__mocks__/helpers/jest'
 import { buildFormatString, acceptFormat, getAcceptedFormats, getMediaObjectMediaId, checkPieceContentStatus } from '../mediaObjects'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly, MediaStreamType } from './../collections/MediaObjects'
 import { literal } from '../lib'
-import { IBlueprintPieceGeneric, ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration';
-import { IStudioSettings } from '../collections/Studios';
-import { RundownAPI } from '../api/rundown';
+import { IBlueprintPieceGeneric, ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { IStudioSettings } from '../collections/Studios'
+import { RundownAPI } from '../api/rundown'
 
 
 describe('lib/mediaObjects', () => {

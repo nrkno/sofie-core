@@ -107,8 +107,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			if (this.props.part && this.props.partStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
 				let piece = this.props.piece
 
-				let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
+				let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition['duration'] || 0 : 0
+				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition['duration'] || 0 : 0
 
 				const inPoint = piece.renderedInPoint || 0
 				const duration = (Number.isFinite(piece.renderedDuration || 0)) ?
@@ -189,7 +189,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 				let piece = this.props.piece
 
 				// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
+				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition['duration'] || 0 : 0
 
 				const inPoint = piece.renderedInPoint || 0
 				const duration = (piece.infiniteMode || piece.renderedDuration === 0) ? (this.props.partDuration - inPoint) : Math.min((piece.renderedDuration || 0), this.props.partDuration - inPoint)
@@ -232,8 +232,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	getItemStyle (): { [key: string]: string } {
 		let piece = this.props.piece
 
-		let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-		let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
+		let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition['duration'] || 0 : 0
+		let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition['duration'] || 0 : 0
 
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run part "duration" limits renderdDuration which takes priority over MOS-import
@@ -474,8 +474,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 			return (
 				<div className={ClassNames('segment-timeline__piece', typeClass, {
-					'with-in-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0,
-					'with-out-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0,
+					'with-in-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition['duration'] || 0) > 0,
+					'with-out-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition['duration'] || 0) > 0,
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
@@ -505,24 +505,24 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						)
 					}
 					{
-						this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0 ? (
+						this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition['duration'] || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__piece__transition', 'in', {
 								'mix': this.props.piece.transitions.inTransition.type === Transition.MIX,
 								'wipe': this.props.piece.transitions.inTransition.type === Transition.WIPE
 							})}
 								style={{
-									'width': ((this.props.piece.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
+									'width': ((this.props.piece.transitions.inTransition['duration'] || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}
 					{
-						this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0 ? (
+						this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition['duration'] || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__piece__transition', 'out', {
 								'mix': this.props.piece.transitions.outTransition.type === Transition.MIX,
 								'wipe': this.props.piece.transitions.outTransition.type === Transition.WIPE
 							})}
 								style={{
-									'width': ((this.props.piece.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'
+									'width': ((this.props.piece.transitions.outTransition['duration'] || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}

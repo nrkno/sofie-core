@@ -23,7 +23,7 @@ import {
 	PeripheralDevices,
 } from '../../lib/collections/PeripheralDevices'
 import {
-	PlayoutDeviceSettings,
+	PlayoutDeviceSettings
 } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'

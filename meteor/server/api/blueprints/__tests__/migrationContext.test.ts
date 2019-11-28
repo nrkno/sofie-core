@@ -435,7 +435,8 @@ describe('Test blueprint migrationContext', () => {
 						},
 						devices: {
 							'device01': {
-								type: DeviceType.ABSTRACT
+								type: DeviceType.ABSTRACT,
+								options: {}
 							}
 						}
 					})
@@ -491,7 +492,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.insertDevice('', { type: DeviceType.ABSTRACT })
+					ctx.insertDevice('', { type: DeviceType.ABSTRACT } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -522,7 +523,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				try {
-					ctx.insertDevice('device01', { type: DeviceType.CASPARCG })
+					ctx.insertDevice('device01', { type: DeviceType.CASPARCG } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device01" cannot be inserted as it already exists`)
@@ -536,7 +537,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
-				const rawDevice = { type: DeviceType.CASPARCG }
+				const rawDevice: any = { type: DeviceType.CASPARCG }
 
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
@@ -600,7 +601,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
-				const rawDevice = {
+				const rawDevice: any = {
 					type: DeviceType.HYPERDECK
 				}
 				const expectedDevice = {

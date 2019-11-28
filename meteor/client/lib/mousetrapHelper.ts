@@ -33,7 +33,7 @@ export namespace mousetrapHelper {
 		// console.log(`Registering callback for key combo "${keys}"`)
 
 		const callbackWrap = (e: Event) => {
-			//if (isEventInInputField(e)) return - global hotkeys need to work everywhere, including input fields
+			// if (isEventInInputField(e)) return - global hotkeys need to work everywhere, including input fields
 			e.preventDefault()
 			if (!allowInModal && isModalShowing()) return
 

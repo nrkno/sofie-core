@@ -168,7 +168,7 @@ const AdLibListView = translate()(class extends React.Component<
 		return <tbody className='adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline'>
 			{
 				this.props.rundownAdLibs && this.props.rundownAdLibs.
-					filter((item) => 
+					filter((item) =>
 						matchFilter(
 							item,
 							this.props.showStyleBase,
@@ -177,7 +177,7 @@ const AdLibListView = translate()(class extends React.Component<
 							this.props.searchFilter
 						)
 					).
-					map((item: AdLibPieceUi) => 
+					map((item: AdLibPieceUi) =>
 						<AdLibListItem
 							key={item._id}
 							item={item}
