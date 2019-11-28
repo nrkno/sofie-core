@@ -340,7 +340,7 @@ function updateRundownFromIngestData (
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
 
-		const context = new SegmentContext(dbRundown, studio, existingParts)
+		const context = new SegmentContext(dbRundown, studio, existingParts, ingestSegment.name)
 		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
@@ -510,7 +510,7 @@ function updateSegmentFromIngestData (
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
-	const context = new SegmentContext(rundown, studio, existingParts)
+	const context = new SegmentContext(rundown, studio, existingParts, ingestSegment.name)
 	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 

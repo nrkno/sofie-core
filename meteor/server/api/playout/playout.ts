@@ -40,7 +40,7 @@ import {
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { getBlueprintOfRundown } from '../blueprints/cache'
-import { PartEventContext, PartContext, RundownContext } from '../blueprints/context'
+import { PartEventContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
