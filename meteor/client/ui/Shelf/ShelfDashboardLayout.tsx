@@ -8,7 +8,7 @@ import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { BucketPanel } from './BucketPanel';
+import { BucketPanel } from './BucketPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -32,7 +32,7 @@ export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
 							key={panel._id}
 							includeGlobalAdLibs={true}
 							filter={panel}
-							visible={true}
+							visible={!(panel as DashboardLayoutFilter).hide}
 							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
 							rundown={props.rundown}
 							showStyleBase={props.showStyleBase}
@@ -44,7 +44,7 @@ export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
 							key={panel._id}
 							includeGlobalAdLibs={true}
 							filter={panel}
-							visible={true}
+							visible={!(panel as DashboardLayoutFilter).hide}
 							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
 							rundown={props.rundown}
 							showStyleBase={props.showStyleBase}
