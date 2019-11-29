@@ -43,6 +43,32 @@ addMigrationSteps('0.1.0', [
 	ensureCollectionProperty('Studios', {}, 'config', []),
 
 	{
+		id: 'Assign devices to studio',
+		canBeRunAutomatically: true,
+		dependOnResultFrom: 'studio exists',
+		validate: () => {
+
+			let missing: string | boolean = false
+			PeripheralDevices.find().forEach((device) => {
+				if (!device.studioId) missing = `PeripheralDevice ${device._id} has no studio`
+			})
+			return missing
+		},
+		migrate: () => {
+			let studios = Studios.find().fetch()
+			if (studios.length === 1) {
+				const studio = studios[0]
+
+				let missing: string | boolean = false
+				PeripheralDevices.find().forEach((device) => {
+					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id } })
+				})
+			} else {
+				throw new Error(`Unable to automatically assign Peripheral-devices to a studio, since there are ${studios.length} studios. Please assign them manually`)
+			}
+		}
+	},
+	{
 		id: 'Playout-gateway exists',
 		canBeRunAutomatically: false,
 		dependOnResultFrom: 'studio exists',
@@ -68,33 +94,5 @@ addMigrationSteps('0.1.0', [
 			inputType: null,
 			attribute: null
 		}]
-	},
-	{
-		id: 'Mos-gateway exists',
-		canBeRunAutomatically: false,
-		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			let studios = Studios.find().fetch()
-			let missing: string | boolean = false
-			_.each(studios, (studio: Studio) => {
-				const dev = PeripheralDevices.findOne({
-					type: PeripheralDeviceAPI.DeviceType.MOS,
-					studioId: studio._id
-				})
-				if (!dev) {
-					missing = `Mos-device is missing on ${studio._id}`
-				}
-			})
-
-			return missing
-		},
-		// Note: No migrate() function, user must fix this him/herself
-		input: [{
-			label: 'Mos-device not set up for all studios',
-			description: 'Start up the Mos-gateway and make sure it\'s connected to Sofie',
-			inputType: null,
-			attribute: null
-		}]
 	}
-
 ])

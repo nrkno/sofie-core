@@ -57,7 +57,7 @@ export function setupMockPeripheralDevice (
 	category: PeripheralDeviceAPI.DeviceCategory,
 	type: PeripheralDeviceAPI.DeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio: Studio,
+	studio?: Studio,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}
@@ -65,7 +65,7 @@ export function setupMockPeripheralDevice (
 	const defaultDevice: PeripheralDevice = {
 		_id: 'mockDevice' + (dbI++),
 		name: 'mockDevice',
-		studioId: studio._id,
+		studioId: studio ? studio._id : undefined,
 
 		category: category,
 		type: type,
@@ -396,6 +396,14 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 		studio,
 		core,
 		ingestDevice
+	}
+}
+export function setupEmptyEnvironment () {
+
+	const core = setupMockCore({})
+
+	return {
+		core
 	}
 }
 export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: string): string {
