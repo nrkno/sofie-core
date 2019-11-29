@@ -34,6 +34,7 @@ import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
+import { Segment } from '../../../lib/collections/Segments';
 
 /** Common */
 
@@ -257,9 +258,10 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments | undefined }
 export class SegmentContext extends RundownContext implements ISegmentContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
+	private readonly segment: Readonly<Segment>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[]) {
-		super(rundown, studio)
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], contextName: string) {
+		super(rundown, studio, contextName)
 
 		if (_.isArray(runtimeArguments)) {
 			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
@@ -282,8 +284,8 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 export class PartContext extends RundownContext implements IPartContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArguments>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments) {
-		super(rundown, studio)
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments, contextName: string) {
+		super(rundown, studio, contextName)
 
 		this.runtimeArguments = runtimeArguments
 	}
