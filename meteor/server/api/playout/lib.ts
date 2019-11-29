@@ -109,7 +109,6 @@ function resetRundownPlayhead (rundown: Rundown) {
 		$set: {
 			previousPartId: null,
 			currentPartId: null,
-			updateStoryStatus: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
 			startedPlayback: 1,
@@ -197,10 +196,12 @@ export function setNextPart (
 		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 			$set: {
 				nextPartId: null,
-				nextPartManual: !!setManually
+				nextPartManual: !!setManually,
+				nextTimeOffset: null
 			}
 		}))
 		rundown.nextPartId = null
+		rundown.nextTimeOffset = null
 		rundown.nextPartManual = !!setManually
 	}
 
