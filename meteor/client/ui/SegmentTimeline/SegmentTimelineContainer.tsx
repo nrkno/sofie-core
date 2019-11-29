@@ -23,6 +23,7 @@ import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
+import { Settings } from '../../../lib/Settings'
 
 const SPEAK_ADVANCE = 500
 
@@ -249,6 +250,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.stopLive()
+			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
