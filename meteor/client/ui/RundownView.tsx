@@ -63,6 +63,7 @@ import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { PointerLockCursor } from '../lib/PointerLockCursor';
+import { Settings } from '../../lib/Settings'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1152,7 +1153,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.usedArgumentKeys = []
 
 		this.state = {
-			timeScale: 0.03,
+			timeScale: 0.03 * Settings.defaultTimeScale,
 			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
