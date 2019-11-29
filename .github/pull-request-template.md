@@ -11,3 +11,11 @@
 
 
 * **Other information**:
+
+**Status**
+<!--
+Check the checkboxes below as the PR progresses.
+The author is encouraged to do a functional test before submitting
+-->
+- [ ] The functionality has been tested by the PR author
+- [ ] The functionality has been tested by NRK
