@@ -624,11 +624,15 @@ class AutoNextStatus extends React.Component<WithTiming<{}>> {
 const SPEAK_ADVANCE = 500
 
 interface IPartRemainingProps {
+	currentPartId: string | null
 	hideOnZero?: boolean
 	className?: string
 	heavyClassName?: string
 	speaking?: boolean
 }
+
+// global variable for remembering last uttered displayTime
+let prevDisplayTime: number | undefined = undefined
 
 /**
  * A presentational component that will render a countdown to the end of the current part
@@ -638,6 +642,7 @@ interface IPartRemainingProps {
 export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 	isHighResolution: true
 })(class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
+
 	render () {
 		const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
 		return (<span className={ClassNames(this.props.className, 
@@ -645,7 +650,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 			)}>{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>)
 	}
 
-	speak (prevDisplayTime: number) {
+	speak () {
 		// Note that the displayTime is negative when counting down to 0.
 		let displayTime = this.props.timingDurations.remainingTimeOnCurrentPart || 0
 
@@ -671,18 +676,25 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 				case -9: text = 'Nine'; break
 				case -10: text = 'Ten'; break
 			}
-			if (displayTime === 0 && prevDisplayTime === -1) {
-				text = 'Zero'
-			}
+			// if (displayTime === 0 && prevDisplayTime !== undefined) {
+			// 	text = 'Zero'
+			// }
 			
 			if (text) {
 				SpeechSynthesiser.speak(text, 'countdown')
 			}
+
+			prevDisplayTime = displayTime
 		}
 	}
 
 	componentDidUpdate (prevProps: WithTiming<IPartRemainingProps>) {
-		if (this.props.speaking) this.speak(prevProps.timingDurations.remainingTimeOnCurrentPart || -1)
+		if (this.props.speaking) {
+			if (this.props.currentPartId !== prevProps.currentPartId) {
+				prevDisplayTime = undefined
+			}
+			this.speak()
+		}
 	}
 })
 

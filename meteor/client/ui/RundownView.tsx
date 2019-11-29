@@ -268,7 +268,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
 				</span>
 				{ this.props.rundown.currentPartId && <span className='timing-clock current-remaining'>
-					<CurrentPartRemaining heavyClassName='overtime' />
+					<CurrentPartRemaining currentPartId={this.props.rundown.currentPartId} heavyClassName='overtime' />
 					<AutoNextStatus />
 					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>

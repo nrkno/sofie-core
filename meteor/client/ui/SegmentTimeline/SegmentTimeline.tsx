@@ -405,7 +405,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						{t('On Air')}
 					</div>
 					<div className='segment-timeline__liveline__timecode'>
-						<CurrentPartRemaining speaking={getAllowSpeaking()} heavyClassName='overtime' />
+						<CurrentPartRemaining currentPartId={this.props.rundown.currentPartId} speaking={getAllowSpeaking()} heavyClassName='overtime' />
 						{this.props.autoNextPart ?
 							<div className='rundown-view__part__icon rundown-view__part__icon--auto-next'></div> :
 							<div className='rundown-view__part__icon rundown-view__part__icon--next'></div>
