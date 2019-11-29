@@ -231,4 +231,15 @@ body.tv2 {
 			}
 		}
 	}
+	.rundown-view {
+		.status-bar {
+			top: 3.375rem;
+		}
+		.notification-center-panel {
+			top: 3.375rem;
+		}
+	}
+	.rundown-view + .notification-pop-ups {
+		top: 3.375rem;
+	}
 }

@@ -6,7 +6,7 @@ $output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.3s;
 
 $segment-header-height: 2.3em;
-$segment-header-width: 200px;
+$segment-header-width: 12.5rem;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-next-preview-background-color: #181818;
@@ -21,7 +21,7 @@ $part-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
-$segment-nextline-shade-width: 30px;
+$segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
 
 $liveline-timecode-color:  #ffff00; //$general-live-color;
@@ -48,8 +48,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		display: block;
 		background: url('/images/collapse-triangle.svg') no-repeat scroll center center;
 		background-size: contain;
-		width: 15px;
-		height: 15px;
+		width: 0.9375rem;
+		height: 0.9375rem;
 		transition: $output-layer-group-collapse-animation-duration transform ease-in-out;
 	}
 }
@@ -102,7 +102,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .rundown-view {
-	padding-top: 125px;
+	padding-top: 7.8125rem;
 	padding-bottom: 50vh;
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
@@ -150,14 +150,7 @@ body.no-overflow {
 		transparent 10px,
 		$color-status-fatal 11px,
 		$color-status-fatal 31px,
-		transparent 32px) 8; 
-/* 	border-image: repeating-linear-gradient(
-		315deg,
-		#ffff00,
-		#ffff00 10px,
-		$color-status-fatal 11px,
-		$color-status-fatal 31px,
-		#ffff00 32px) 8;  */
+		transparent 32px) 8;
 	z-index: 10000;
 	pointer-events: none;
 }
