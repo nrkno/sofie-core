@@ -1,8 +1,5 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { Rundowns } from '../../lib/collections/Rundowns'
 import { setLoggerLevel } from '../../server/api/logger'
 import {
 	getHash,
@@ -22,15 +19,13 @@ import {
 	objectPathGet,
 	objectPathSet,
 	stringifyObjects,
-	getCollectionIndexes,
 	rateLimit,
 	rateLimitAndDoItLater,
 	rateLimitIgnore
 } from '../lib'
 import { setMeteorMethods } from '../../server/methods'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
-import { ExpectedMediaItems } from '../collections/ExpectedMediaItems'
-import { DeviceType } from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
@@ -75,7 +70,7 @@ describe('lib/lib', () => {
 				start: 0
 			},
 			layer: 'L1',
-			content: { deviceType: DeviceType.ABSTRACT },
+			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio',
 			classes: ['abc'] // to be removed
@@ -87,7 +82,7 @@ describe('lib/lib', () => {
 				start: 0
 			},
 			layer: 'L1',
-			content: { deviceType: DeviceType.ABSTRACT },
+			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio'
 		})
@@ -98,7 +93,7 @@ describe('lib/lib', () => {
 				start: 0
 			},
 			layer: 'L1',
-			content: { deviceType: DeviceType.ABSTRACT },
+			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio2'
 		})
@@ -126,7 +121,7 @@ describe('lib/lib', () => {
 					start: 0
 				},
 				layer: 'L2', // changed property
-				content: { deviceType: DeviceType.ABSTRACT },
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
 				studioId: 'myStudio'
 			},
@@ -137,7 +132,7 @@ describe('lib/lib', () => {
 					start: 0
 				},
 				layer: 'L1',
-				content: { deviceType: DeviceType.ABSTRACT },
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
 				studioId: 'myStudio'
 			}
@@ -212,7 +207,7 @@ describe('lib/lib', () => {
 				start: 0
 			},
 			layer: 'L1',
-			content: { deviceType: DeviceType.ABSTRACT },
+			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio',
 		})
@@ -223,7 +218,7 @@ describe('lib/lib', () => {
 				start: 0
 			},
 			layer: 'L1',
-			content: { deviceType: DeviceType.ABSTRACT },
+			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: 'myStudio',
 		})

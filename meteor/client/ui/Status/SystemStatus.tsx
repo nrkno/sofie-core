@@ -17,11 +17,11 @@ import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import * as ClassNames from 'classnames'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -248,7 +248,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 					<div className='device-item__actions'>
 						{(
 							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-							this.props.device.subType === TSR_DeviceType.CASPARCG ? <React.Fragment>
+							this.props.device.subType === TSR.DeviceType.CASPARCG ? <React.Fragment>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
 										e.preventDefault()
@@ -263,7 +263,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 						)}
 						{(
 							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-							this.props.device.subType === TSR_DeviceType.HYPERDECK ? <React.Fragment>
+							this.props.device.subType === TSR.DeviceType.HYPERDECK ? <React.Fragment>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
 										e.preventDefault()
@@ -277,7 +277,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 						)}
 						{(
 							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-							this.props.device.subType === TSR_DeviceType.QUANTEL ? <React.Fragment>
+							this.props.device.subType === TSR.DeviceType.QUANTEL ? <React.Fragment>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
 										e.preventDefault()

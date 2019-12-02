@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { Timeline } from 'timeline-state-resolver-types'
 
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
@@ -9,7 +8,6 @@ import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
-import { logger } from '../../../lib/logging'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)

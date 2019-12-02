@@ -14,11 +14,11 @@ import {
 	ShowStyleVariantPart,
 	IBlueprintShowStyleVariant,
 	IBlueprintRuntimeArgumentsItem,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from 'meteor/check'
-import { DeviceOptionsAny as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
@@ -135,7 +135,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 	}
 
-	getDevice (deviceId: string): PlayoutDeviceSettingsDevice | undefined {
+	getDevice (deviceId: string): TSR.DeviceOptionsAny | undefined {
 		check(deviceId, String)
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
@@ -153,7 +153,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		if (!parentDevice || !parentDevice.settings) return undefined
 		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId]
 	}
-	insertDevice (deviceId: string, device: PlayoutDeviceSettingsDevice): string {
+	insertDevice (deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String)
 
 		if (!deviceId) {
@@ -186,7 +186,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		return deviceId
 	}
-	updateDevice (deviceId: string, device: Partial<PlayoutDeviceSettingsDevice>): void {
+	updateDevice (deviceId: string, device: Partial<TSR.DeviceOptionsAny>): void {
 		check(deviceId, String)
 
 		if (!deviceId) {

@@ -1,10 +1,8 @@
-import {
-	DeviceOptionsAny
-} from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 export interface PlayoutDeviceSettings {
 	devices: {
-		[deviceId: string]: DeviceOptionsAny
+		[deviceId: string]: TSR.DeviceOptionsAny
 	}
 	mediaScanner: {
 		host: string
