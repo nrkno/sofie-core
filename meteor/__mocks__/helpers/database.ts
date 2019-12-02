@@ -30,7 +30,8 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	IBlueprintRuntimeArgumentsItem
+	IBlueprintRuntimeArgumentsItem,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -39,8 +40,7 @@ import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime } from '../../lib/lib'
-import { TSRTimelineObjBase } from 'timeline-state-resolver-types'
-import { Rundown, DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -202,11 +202,12 @@ export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[
 }
 export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
-	const PackageInfo = require('../../package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
+	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.STUDIO
-	const INTEGRATION_VERSION: string			= PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
-	const TSR_VERSION: string					= PackageInfo.dependencies['timeline-state-resolver-types']
+	const INTEGRATION_VERSION: string			= IntegrationInfo.version
+	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_ID: string					= showStyleBaseId
 
@@ -227,7 +228,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
 			studioConfigManifest: [],
 			studioMigrations: [],
-			getBaseline: (context: IStudioContext): TSRTimelineObjBase[] => {
+			getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
 				return []
 			},
 			getShowStyleId: (context: IStudioConfigContext, showStyles: Array<IBlueprintShowStyleBase>, ingestRundown: IngestRundown): string | null => {
@@ -243,11 +244,12 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
 
-	const PackageInfo = require('../../package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
+	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.SHOWSTYLE
-	const INTEGRATION_VERSION: string			= PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
-	const TSR_VERSION: string					= PackageInfo.dependencies['timeline-state-resolver-types']
+	const INTEGRATION_VERSION: string			= IntegrationInfo.version
+	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_VARIANT_ID: string			= showStyleVariantId
 

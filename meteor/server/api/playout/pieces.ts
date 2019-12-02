@@ -19,13 +19,13 @@ import {
 	getPieceFirstObjectId,
 	TimelineObjectCoreExt,
 	PieceLifespan,
-	OnGenerateTimelineObj
+	OnGenerateTimelineObj,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { transformTimeline } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownData } from '../../../lib/collections/Rundowns'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
@@ -130,7 +130,7 @@ export function createPieceGroupFirstObject (
 		enable: { start: 0 },
 		layer: piece.sourceLayerId + '_firstobject',
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
 
 			callBack: 'piecePlaybackStarted',
@@ -153,7 +153,7 @@ export function createPieceGroup (
 		_id: '', // set later
 		studioId: '', // set later
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP
 		},
 		children: [],

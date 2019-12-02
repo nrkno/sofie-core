@@ -14,9 +14,9 @@ import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
 	RundownContext,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { Timeline, TSRTimelineObjBase } from 'timeline-state-resolver-types'
 
 export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
 	let i = 0
@@ -89,7 +89,7 @@ export function postProcessAdLibPieces (innerContext: RundownContext, adLibPiece
 	})
 }
 
-export function postProcessStudioBaselineObjects (studio: Studio, objs: TSRTimelineObjBase[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(objs), (baseObj, i) => {
 		const obj = convertTimelineObject('', baseObj)
@@ -114,7 +114,7 @@ function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): Ti
 	}
 }
 
-export function postProcessRundownBaselineItems (innerContext: RundownContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
+export function postProcessRundownBaselineItems (innerContext: RundownContext, baselineItems: TSR.Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric, i): TimelineObjGeneric => {
 		const obj: TimelineObjGeneric = convertTimelineObject(innerContext.rundown._id, o)

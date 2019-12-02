@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, VTEditableParameters, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -58,7 +58,6 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
@@ -1113,7 +1112,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch().map(i => i._id)
 			},
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			subType: TSR_DeviceType.CASPARCG
+			subType: TSR.DeviceType.CASPARCG
 		}).fetch()) || undefined,
 		rundownLayoutId: String(params['layout'])
 	}

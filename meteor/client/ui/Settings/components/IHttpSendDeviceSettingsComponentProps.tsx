@@ -1,9 +1,9 @@
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { DeviceOptionsAny as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 export interface IHttpSendDeviceSettingsComponentProps {
 	parentDevice: PeripheralDevice
 	deviceId: string
-	device: PlayoutDeviceSettingsDevice
+	device: TSR.DeviceOptionsAny
 }
 export interface IHttpSendDeviceSettingsComponentState {
 	deleteConfirmMakeReadyId: string | undefined

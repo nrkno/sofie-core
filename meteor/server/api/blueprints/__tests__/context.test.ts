@@ -2,10 +2,9 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { getHash, literal } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
-import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartContext, PartEventContext, AsRunEventContext } from '../context'
 import { ConfigRef } from '../config'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
@@ -137,7 +136,7 @@ describe('Test blueprint api context', () => {
 				mappings: {
 					abc: {
 						deviceId: 'abc',
-						device: DeviceType.ABSTRACT,
+						device: TSR.DeviceType.ABSTRACT,
 						lookahead: LookaheadMode.PRELOAD
 					}
 				}
@@ -151,7 +150,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getStudioMappings()).toEqual({
 				abc: {
 					deviceId: 'abc',
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					lookahead: LookaheadMode.PRELOAD
 				}
 			})
@@ -164,7 +163,7 @@ describe('Test blueprint api context', () => {
 				mappings: {
 					abc: {
 						deviceId: 'abc',
-						device: DeviceType.ABSTRACT,
+						device: TSR.DeviceType.ABSTRACT,
 						lookahead: LookaheadMode.PRELOAD
 					}
 				}

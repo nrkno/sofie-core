@@ -8,9 +8,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 const Tooltip = require('rc-tooltip')
 import { translate } from 'react-i18next'
-import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { DeviceType as PlayoutDeviceType, DeviceOptionsAny as PlayoutDeviceSettingsDevice } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -19,7 +18,8 @@ import { DeviceItem } from '../../Status/SystemStatus'
 import { HttpSendDeviceSettingsComponent } from './HttpSendDeviceSettingsComponent'
 import { IPlayoutDeviceSettingsComponentProps, IPlayoutDeviceSettingsComponentState } from './IHttpSendDeviceSettingsComponentProps'
 import { getHelpMode } from '../../../lib/localStorage'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
+
 export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IPlayoutDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
@@ -88,7 +88,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 		}
 		let setObject = {}
 		setObject['settings.devices.' + newDeviceId + iter.toString()] = {
-			type: PlayoutDeviceType.ABSTRACT,
+			type: TSR.DeviceType.ABSTRACT,
 			options: {}
 		}
 		PeripheralDevices.update(this.props.device._id, {
@@ -130,7 +130,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<th className='alc'>{t('Disable')}</th>
 					<th></th>
 				</tr>
-				{_.map(settings.devices, (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) => {
+				{_.map(settings.devices, (subDevice: TSR.DeviceOptionsAny, deviceId: string) => {
 					return <React.Fragment key={deviceId}>
 						<tr className={ClassNames({
 							'hl': this.isItemEdited(deviceId)
@@ -139,10 +139,10 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 								{deviceId}
 							</th>
 							<td className='settings-studio-device__id c4'>
-								{PlayoutDeviceType[subDevice.type]}
+								{TSR.DeviceType[subDevice.type]}
 							</td>
 							<td className='settings-studio-device__id c2 alc'>
-								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.disable'} obj={this.props.device} type='checkbox' options={PlayoutDeviceType} collection={PeripheralDevices} className='input'></EditAttribute>
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.disable'} obj={this.props.device} type='checkbox' options={TSR.DeviceType} collection={PeripheralDevices} className='input'></EditAttribute>
 							</td>
 							<td className='settings-studio-device__actions table-item-actions c3'>
 								<button className='action-btn' onClick={(e) => this.editItem(deviceId)}>
@@ -166,7 +166,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 										<div className='mod mvs mhs'>
 											<label className='field'>
 												{t('Device Type')}
-												<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.type'} obj={this.props.device} type='dropdown' options={PlayoutDeviceType} optionsAreNumbers={true} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.type'} obj={this.props.device} type='dropdown' options={TSR.DeviceType} optionsAreNumbers={true} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
 										<div className='mod mvs mhs'>
@@ -176,29 +176,29 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 											</label>
 										</div>
 										{
-											subDevice.type === PlayoutDeviceType.CASPARCG ?
+											subDevice.type === TSR.DeviceType.CASPARCG ?
 												this.renderCasparCGDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.ATEM ?
+											subDevice.type === TSR.DeviceType.ATEM ?
 												this.renderAtemDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.LAWO ?
+											subDevice.type === TSR.DeviceType.LAWO ?
 												this.renderLawoDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.HTTPSEND ?
+											subDevice.type === TSR.DeviceType.HTTPSEND ?
 												this.renderHTTPSendDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.PANASONIC_PTZ ?
+											subDevice.type === TSR.DeviceType.PANASONIC_PTZ ?
 												this.renderPanasonicPTZDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.TCPSEND ?
+											subDevice.type === TSR.DeviceType.TCPSEND ?
 												this.renderTCPSendDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.HYPERDECK ?
+											subDevice.type === TSR.DeviceType.HYPERDECK ?
 												this.renderHyperdeckDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.PHAROS ?
+											subDevice.type === TSR.DeviceType.PHAROS ?
 												this.renderPharosDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.OSC ?
+											subDevice.type === TSR.DeviceType.OSC ?
 												this.renderOSCDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.HTTPWATCHER ?
+											subDevice.type === TSR.DeviceType.HTTPWATCHER ?
 												this.renderHTTPWatcherDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.SISYFOS ?
+											subDevice.type === TSR.DeviceType.SISYFOS ?
 												this.renderSisyfosDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.QUANTEL ?
+											subDevice.type === TSR.DeviceType.QUANTEL ?
 												this.renderQuantelDeviceSettings(subDevice, deviceId) :
 											null
 										}
@@ -215,7 +215,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</tbody>
 		</table>
 	}
-	renderCasparCGDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderCasparCGDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -244,7 +244,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderAtemDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderAtemDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -261,7 +261,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderLawoDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderLawoDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -296,10 +296,10 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderHTTPSendDeviceSettings (subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderHTTPSendDeviceSettings (subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		return <HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={subDevice} deviceId={deviceId} />
 	}
-	renderPanasonicPTZDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderPanasonicPTZDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -316,7 +316,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderTCPSendDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderTCPSendDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -339,7 +339,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderHyperdeckDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderHyperdeckDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -362,7 +362,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderPharosDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderPharosDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -379,7 +379,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderOSCDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderOSCDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -396,7 +396,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderHTTPWatcherDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderHTTPWatcherDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -431,7 +431,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderSisyfosDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderSisyfosDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -448,7 +448,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderQuantelDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderQuantelDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
