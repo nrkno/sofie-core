@@ -131,7 +131,7 @@ interface ITimingWarningState {
 
 const WarningDisplay = translate()(timer(5000)(
 	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
-		private REHEARSAL_MARGIN = 1 * 60 * 1000
+		private readonly REHEARSAL_MARGIN = 1 * 60 * 1000
 
 		constructor (props: Translated<ITimingWarningProps>) {
 			super(props)
@@ -1113,6 +1113,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(
 class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	private readonly LIVELINE_HISTORY_SIZE = 100
 
 	private bindKeys: Array<{
 		key: string,
@@ -1606,7 +1607,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									followLiveSegments={this.state.followLiveSegments}
 									segmentId={segment._id}
 									rundown={this.props.rundown}
-									liveLineHistorySize={100}
+									liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
 									timeScale={this.state.timeScale}
 									onTimeScaleChange={this.onTimeScaleChange}
 									onContextMenu={this.onContextMenu}
