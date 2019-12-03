@@ -524,6 +524,18 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.preloadAllElements'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Clear-All template name')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllTemplateName'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Clear-All on make-ready (activation)')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllOnMakeReady'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
 		</React.Fragment>
 	}
 	render () {
