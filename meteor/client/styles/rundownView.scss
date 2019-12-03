@@ -1146,8 +1146,8 @@ body.no-overflow {
 				z-index: 1;
 				pointer-events: none;
 				background-image:
-					repeating-linear-gradient(-45deg, transparent 0%, transparent 9px, black 9px, black 12px);
-				mix-blend-mode: color-burn;
+					repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
+   				backdrop-filter: saturate(0%) brightness(50%);
 			}
 
 			&:not(.live) {
