@@ -160,6 +160,8 @@ $segment-layer-background-guest: #008a92;
 }
 
 @mixin floated-overlay {
+	$part-start-color: #a5a5a5;
+	
 	&.floated {
 		background-image:
 			repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
