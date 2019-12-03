@@ -503,6 +503,9 @@ function diffAndApplyChanges (
 					$set: {
 						segmentId: getSegmentId(rundown._id, newSegmentExternalId)
 					}
+				},
+				{
+					multi: true
 				}
 			)
 		)

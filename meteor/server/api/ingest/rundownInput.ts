@@ -37,7 +37,7 @@ import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
-import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -314,7 +314,7 @@ function updateRundownFromIngestData (
 	const baselineObj: RundownBaselineObj = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
-		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
+		objects: postProcessRundownBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
@@ -340,7 +340,7 @@ function updateRundownFromIngestData (
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
 
-		const context = new SegmentContext(dbRundown, studio, existingParts)
+		const context = new SegmentContext(dbRundown, studio, existingParts, ingestSegment.name)
 		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
@@ -510,7 +510,7 @@ function updateSegmentFromIngestData (
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
-	const context = new SegmentContext(rundown, studio, existingParts)
+	const context = new SegmentContext(rundown, studio, existingParts, ingestSegment.name)
 	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 
@@ -532,7 +532,9 @@ function updateSegmentFromIngestData (
 			_id: { $in: _.pluck(parts, '_id') }
 		}, { $set: {
 			segmentId: segmentId
-		}})
+		}}, {
+			multi: true
+		})
 	]))
 
 	const changes = sumChanges(

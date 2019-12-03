@@ -29,7 +29,8 @@ import {
 	IBlueprintSegment,
 	BlueprintResultPart,
 	IBlueprintPart,
-	IBlueprintPiece
+	IBlueprintPiece,
+	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -56,7 +57,7 @@ export function setupMockPeripheralDevice (
 	category: PeripheralDeviceAPI.DeviceCategory,
 	type: PeripheralDeviceAPI.DeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio: Studio,
+	studio?: Studio,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}
@@ -64,7 +65,7 @@ export function setupMockPeripheralDevice (
 	const defaultDevice: PeripheralDevice = {
 		_id: 'mockDevice' + (dbI++),
 		name: 'mockDevice',
-		studioId: studio._id,
+		studioId: studio ? studio._id : undefined,
 
 		category: category,
 		type: type,
@@ -158,7 +159,15 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 		config: [],
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
-		// runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
+		runtimeArguments: [
+			literal<IBlueprintRuntimeArgumentsItem>({
+				_id: 'ra0',
+				label: 'mix12',
+				hotkeys: 'ctrl+j',
+				value: '12',
+				property: 'mix'
+			})
+		],
 		_rundownVersionHash: ''
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
@@ -181,7 +190,7 @@ export function setupMockShowStyleVariant (showStyleBaseId: string, doc?: Partia
 	return showStyleVariant
 }
 
-function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constant: string]: string}, blueprintFcn: () => T): string {
+export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constant: string]: string}, blueprintFcn: () => T): string {
 	let code = blueprintFcn.toString()
 	_.each(constants, (newConstant, constant) => {
 
@@ -387,6 +396,14 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 		studio,
 		core,
 		ingestDevice
+	}
+}
+export function setupEmptyEnvironment () {
+
+	const core = setupMockCore({})
+
+	return {
+		core
 	}
 }
 export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: string): string {

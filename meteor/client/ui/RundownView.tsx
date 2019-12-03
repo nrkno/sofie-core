@@ -22,7 +22,7 @@ import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
+import { RundownTimingProvider, withTiming, WithTiming, CurrentPartRemaining, AutoNextStatus } from './RundownView/RundownTiming'
 import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -266,11 +266,15 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+				</span>
+				{ this.props.rundown.currentPartId && <span className='timing-clock current-remaining'>
+					<CurrentPartRemaining currentPartId={this.props.rundown.currentPartId} heavyClassName='overtime' />
+					<AutoNextStatus />
 					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
 						: null
 					}
-				</span>
+				</span> }
 				{ this.props.rundown.expectedDuration ?
 					(<React.Fragment>
 						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
@@ -434,19 +438,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPiece,
 					label: t('Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPieceUndo,
 					label: t('Undo Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
-					global: true,
 					coolDown: 1000
 				}
 			]
@@ -634,6 +635,22 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	) => {
 		const { t } = this.props
 
+		function handleResult (err, response) {
+			if (!err) {
+				if (typeof clb === 'function') clb(response)
+			} else {
+				console.error(err)
+				doModalDialog({
+					title: t('Failed to activate'),
+					message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+					acceptOnly: true,
+					warning: true,
+					yes: t('OK'),
+					onAccept: (le: any) => { console.log() }
+				})
+			}
+		}
+
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
 			title: t('Another Rundown is Already Active!'),
@@ -644,44 +661,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			no: t('Cancel'),
 			actions: [
 				{
-					label: t('Activate anyway (GO ON AIR)'),
+					label: t('Activate Anyway (GO ON AIR)'),
 					classNames: 'btn-primary',
 					on: (e) => {
-						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], (err, response) => {
-							if (!err) {
-								if (typeof clb === 'function') clb()
-							} else {
-								console.error(err)
-								doModalDialog({
-									title: t('Failed to activate'),
-									message: t('Something went wrong, please contact the system administrator if the problem persists.'),
-									acceptOnly: true,
-									warning: true,
-									yes: t('OK'),
-									onAccept: (le: any) => { console.log() }
-								})
-							}
-						})
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], handleResult)
 					}
 				}
 			],
 			warning: true,
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], (err, response) => {
-					if (!err) {
-						if (typeof clb === 'function') clb()
-					} else {
-						console.error(err)
-						doModalDialog({
-							title: t('Failed to activate'),
-							message: t('Something went wrong, please contact the system administrator if the problem persists.'),
-							acceptOnly: true,
-							warning: true,
-							yes: t('OK'),
-							onAccept: (le: any) => { console.log() }
-						})
-					}
-				})
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], handleResult)
 			}
 		})
 	}

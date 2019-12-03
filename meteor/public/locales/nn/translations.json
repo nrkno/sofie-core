@@ -91,7 +91,7 @@
     "Disable the next element": "Skip neste super",
     "Undo Disable the next element": "Unskip neste super",
     "Log Error": "Loggfør feil",
-    "Another Rundown is Already Active!": "En annen køyreplan er allerede aktiv!",
+    "Another Rundown is Already Active!": "Ein annan køyreplan er allereie aktiv!",
     "The rundown \"{{rundownName}}\" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?": "Køyreplanen \"{{rundownName}}\" må deaktiveres for å aktivere denne køyreplanen.\n\nEr du sikker på at du ønsker å aktivere?",
     "Activate Anyway": "Aktiver likevel",
     "Activate anyway (GO ON AIR)": "Aktiver likevel (GO ON AIR)",
@@ -190,7 +190,7 @@
     "Play-out Gateway": "Playout-gateway",
     "Media Manager": "Media Manager",
     "Unknown Device": "Ukjend eining",
-    "Delete this Studio?": "Slett denne studioen?",
+    "Delete this Studio?": "Slett dette studio?",
     "Are you sure you want to delete the studio \"{{studioId}}\"?": "Er du sikker på at du vil slette studioen \"{{studioId}}\"?",
     "Delete this Show Style?": "Slett denne showstylen?",
     "Are you sure you want to delete the show style \"{{showStyleId}}\"?": "Er du sikker på at du vil slette showstylen \"{{showStyleId}}\"?",
@@ -464,7 +464,7 @@
     "A required setting is not configured": "Ei obligatorisk innstilling er ikkje konfigurert",
     "Active": "Aktiv",
     "Ready": "Klar",
-    "Stop": "Stop",
+    "Stop": "Stopp",
     "Start": "Start",
     "Are you sure you want to delete recording \"{{name}}\"?": "Er  du sikker på at du vil slette opptaket \"{{name}}\"?",
     "Stopped": "Stoppa",
@@ -477,6 +477,9 @@
     "Source has {{audioStreams}} audio streams": "Kjelde har {{audioStreams}} lydstraumar",
     "Clip starts with {{frames}} {{type}} frame": "Klipp startar med {{frames}} {{type}} frame",
     "Clip ends with {{frames}} {{type}} frame": "Klipp sluttar med {{frames}} {{type}} frame",
-    "{{frames}} {{type}} frame detected in clip.": "{{frames}} {{type}} frame gjenkjend i klipp",
-    "Clip is being ingested": "Klippet blir prosessert"
+    "{{frames}} {{type}} frame detected in clip.": "{{frames}} {{type}} frame oppdaga i klipp",
+    "Clip is being ingested": "Klippet blir prosessert",
+    "Clip starts with {{frames}} {{type}} frame°°°°°°_°°°°°°plural": "Klipp startar med {{frames}} {{type}} frame°°°°°°",
+    "Clip ends with {{frames}} {{type}} frame°°°°°°_°°°°°°plural": "Klipp sluttar {{frames}} {{type}} frame°°°°°°",
+    "{{frames}} {{type}} frame detected in clip.°°°°°°_°°°°°°plural": "{{frames}} {{type}} frame oppdaga i klipp.°°°°°°"
 }

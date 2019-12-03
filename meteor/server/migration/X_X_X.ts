@@ -12,7 +12,7 @@ import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/Cor
  * **************************************************************************************
 */
 // x.x.x (Release X)
-addMigrationSteps('1.3.0', [
+addMigrationSteps('1.4.0', [
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',

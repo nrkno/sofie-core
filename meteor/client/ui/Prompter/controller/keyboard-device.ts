@@ -45,7 +45,7 @@ export class KeyboardController extends ControllerAbstract {
 		this._destroyed = true
 	}
 	public onKeyDown (e: KeyboardEvent) {
-		console.log(e)
+		// console.log(e)
 		if (!this._keyDown[e.code]) this._keyDown[e.code] = Date.now()
 
 		if (this._mode === Mode.NORMAL) {
@@ -131,7 +131,7 @@ export class KeyboardController extends ControllerAbstract {
 	}
 	private _setMode (mode: Mode) {
 		this._mode = mode
-		console.log('Arrow-control: Switching mode to ' + mode)
+		// console.log('Arrow-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
 	}
 	private _getDistanceToStop (currentSpeed, stopAcceleration): number {
