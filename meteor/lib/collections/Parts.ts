@@ -184,7 +184,7 @@ export class Part implements DBPart {
 				type: NoteType.WARNING,
 				message: this.invalidReason.title + (this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
 				origin: {
-					name: 'Invalid',
+					name: this.title,
 					partId: this._id,
 					segmentId: this.segmentId,
 					rundownId: this.rundownId
