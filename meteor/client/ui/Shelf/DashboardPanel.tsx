@@ -281,6 +281,14 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				'toggleAdLib'))
 			return
 		}
+		if (piece.floated) {
+			NotificationCenter.push(new Notification(
+				t('Floated AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Floated'),
+				'toggleAdLib'))
+			return
+		}
 
 		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 
