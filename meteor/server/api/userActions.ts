@@ -30,6 +30,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
+import { Segments, Segment } from '../../lib/collections/Segments'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -97,6 +98,32 @@ export function setNext (rundownId: string, nextPartId: string | null, setManual
 	}
 
 	return ServerPlayoutAPI.setNextPart(rundownId, nextPartId, setManually, timeOffset)
+}
+export function setNextSegment (
+	rundownId: string,
+	nextSegmentId: string | null
+): ClientAPI.ClientResponse {
+	check(rundownId, String)
+	if (nextSegmentId) check(nextSegmentId, String)
+	else check(nextSegmentId, null)
+
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	if (!rundown.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a segment as Next')
+
+	let nextSegment: Segment | null = null
+	if (nextSegmentId) {
+		nextSegment = Segments.findOne(nextSegmentId) || null
+		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
+
+		const partsInSegment = nextSegment.getParts()
+		const firstvalidPartInSegment = _.find(partsInSegment, p => !p.invalid)
+
+		if (!partsInSegment.length) return ClientAPI.responseError('Cannot set segment as Next: Segment is empty')
+		if (!firstvalidPartInSegment) return ClientAPI.responseError('Cannot set segment as Next: Segment contains no valid parts')
+	}
+
+	return ServerPlayoutAPI.setNextSegment(rundownId, nextSegmentId)
 }
 export function moveNext (
 	rundownId: string,
@@ -497,6 +524,9 @@ methods[UserActionAPI.methods.setNext] = function (rundownId: string, partId: st
 }
 methods[UserActionAPI.methods.moveNext] = function (rundownId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse {
 	return moveNext.call(this, rundownId, horisontalDelta, verticalDelta, true)
+}
+methods[UserActionAPI.methods.setNextSegment] = function (rundownId: string, segmentId: string): ClientAPI.ClientResponse {
+	return setNextSegment.call(this, rundownId, segmentId)
 }
 methods[UserActionAPI.methods.prepareForBroadcast] = function (rundownId: string): ClientAPI.ClientResponse {
 	return prepareForBroadcast.call(this, rundownId)

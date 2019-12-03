@@ -47,9 +47,9 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	rundown.rehearsal = rehearsal
 
 	if (!rundown.nextPartId) {
-		const part = rundown.getParts().find(p => !p.invalid)
-		if (part) {
-			setNextPart(rundown, part)
+		const firstValidPart = rundown.getParts().find(p => !p.invalid)
+		if (firstValidPart) {
+			setNextPart(rundown, firstValidPart, null)
 		}
 	}
 
@@ -95,7 +95,7 @@ export function deactivateRundownInner (rundown: Rundown) {
 			holdState: RundownHoldState.NONE,
 		}
 	})
-	setNextPart(rundown, null)
+	setNextPart(rundown, null, null)
 
 	if (rundown.currentPartId) {
 		Parts.update(rundown.currentPartId, {

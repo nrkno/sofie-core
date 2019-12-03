@@ -9,6 +9,7 @@ import { RundownUtils } from '../../lib/rundown'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
+	onSetNextSegment: (segmentId: string | null, e: any) => void
 	rundown?: Rundown
 	studioMode: boolean
 	contextMenuContext: any
@@ -45,9 +46,19 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 								</MenuItem>
 							</React.Fragment> : null}
 						</React.Fragment>}
-						{part && timecode === null && <MenuItem onClick={(e) => this.props.onSetNext(part, e)} disabled={part._id === this.props.rundown.currentPartId}>
-							<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
-						</MenuItem>}
+						{part && timecode === null && <React.Fragment>
+							<MenuItem onClick={(e) => this.props.onSetNext(part, e)} disabled={part._id === this.props.rundown.currentPartId}>
+								<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
+							</MenuItem>
+							{part.segmentId !== this.props.rundown.nextSegmentId ?
+								<MenuItem onClick={(e) => this.props.onSetNextSegment(part.segmentId, e)}>
+									<span dangerouslySetInnerHTML={{ __html: t('Queue segment') }}></span>
+								</MenuItem> :
+								<MenuItem onClick={(e) => this.props.onSetNextSegment(null, e)}>
+									<span>{t('Clear queued segment')}</span>
+								</MenuItem>
+							}
+						</React.Fragment>}
 					</ContextMenu>
 				</Escape>
 				: null
