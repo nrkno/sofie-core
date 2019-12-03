@@ -112,15 +112,28 @@ export function setNextSegment (
 	if (!rundown.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a segment as Next')
 
 	let nextSegment: Segment | null = null
+	let firstvalidPartInSegment: Part | undefined
+
 	if (nextSegmentId) {
 		nextSegment = Segments.findOne(nextSegmentId) || null
 		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
 
 		const partsInSegment = nextSegment.getParts()
-		const firstvalidPartInSegment = _.find(partsInSegment, p => !p.invalid)
+		firstvalidPartInSegment = _.find(partsInSegment, p => !p.invalid)
 
 		if (!partsInSegment.length) return ClientAPI.responseError('Cannot set segment as Next: Segment is empty')
 		if (!firstvalidPartInSegment) return ClientAPI.responseError('Cannot set segment as Next: Segment contains no valid parts')
+
+		const currentPart	= rundown.currentPartId && Parts.findOne(rundown.currentPartId)
+		const nextPart		= rundown.nextPartId && Parts.findOne(rundown.nextPartId)
+		if (
+			!currentPart ||
+			!nextPart ||
+			nextPart.segmentId !== currentPart.segmentId
+		) {
+			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
+			return ServerPlayoutAPI.setNextPart(rundownId, firstvalidPartInSegment._id, true, 0)
+		}
 	}
 
 	return ServerPlayoutAPI.setNextSegment(rundownId, nextSegmentId)
