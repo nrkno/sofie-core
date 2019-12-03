@@ -122,6 +122,7 @@
 
 		@include item-type-colors();
 		@include invalid-overlay();
+		@include floated-overlay();
 		@include missing-overlay();
 
 		&.live {

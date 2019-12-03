@@ -160,7 +160,11 @@ $segment-layer-background-guest: #008a92;
 }
 
 @mixin floated-overlay {
-
+	&.floated {
+		background-image:
+			repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
+		backdrop-filter: saturate(0%) brightness(50%);
+	}
 };
 
 @mixin missing-overlay {
