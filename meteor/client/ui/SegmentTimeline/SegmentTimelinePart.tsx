@@ -468,6 +468,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					style={_.extend(this.getLayerStyle(), invalidReasonColorVars)}
 				>
 					{this.props.part.invalid ? <div className='segment-timeline__part__invalid-cover'></div> : null}
+					{this.props.part.floated ? <div className='segment-timeline__part__floated-cover'></div> : null}
 
 					<div className={ClassNames('segment-timeline__part__nextline', { // This is the base, basic line
 						'auto-next': ((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)),

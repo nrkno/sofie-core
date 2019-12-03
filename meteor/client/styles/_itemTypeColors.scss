@@ -159,6 +159,10 @@ $segment-layer-background-guest: #008a92;
 	}
 }
 
+@mixin floated-overlay {
+
+};
+
 @mixin missing-overlay {
 	
 	&.source-broken, &.source-missing {
