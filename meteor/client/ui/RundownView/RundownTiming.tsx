@@ -323,6 +323,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					// or there is a following member of this displayDurationGroup
 					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
 					)
+					&& !part.floated
 				) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
@@ -368,7 +369,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					this.partPlayed[part._id] = 0
 				}
 
-				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
+				if (memberOfDisplayDurationGroup && part.displayDurationGroup && !part.floated) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration
 				}
@@ -390,7 +391,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				}
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
-				if (!part.startedPlayback) {
+				if (!part.startedPlayback && !part.floated) {
 					remainingRundownDuration += part.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
 				} else if (

@@ -443,6 +443,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
 			return
 		}
+		if (piece.floated) {
+			NotificationCenter.push(new Notification(t('Floated AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Floated'), 'toggleAdLib'))
+			return
+		}
 		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
 			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
 			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)

@@ -439,6 +439,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					'live': this.state.isLive,
 					'next': this.state.isNext,
 					'invalid': this.props.part.invalid,
+					'floated': this.props.part.floated,
 
 					'duration-settling': this.state.isDurationSettling
 				})} data-obj-id={this.props.part._id}
@@ -450,6 +451,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					<div className={ClassNames('segment-timeline__part__nextline', { // This is the base, basic line
 						'auto-next': ((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)),
 						'invalid': this.props.part.invalid,
+						'floated': this.props.part.floated,
 						'offset': !!this.props.rundown.nextTimeOffset
 					})}>
 						<div className={ClassNames('segment-timeline__part__nextline__label', {
@@ -468,7 +470,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					{this.props.rundown.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__part__nextline', {
 							'auto-next': this.props.part.willProbablyAutoNext,
-							'invalid': this.props.part.invalid
+							'invalid': this.props.part.invalid,
+							'floated': this.props.part.floated
 						})} style={{
 							'left': (this.props.relative ?
 								((this.props.rundown.nextTimeOffset / (this.getPartDuration() || 1) * 100) + '%') :

@@ -87,6 +87,7 @@ export class Part implements DBPart {
 	public displayDurationGroup?: string
 	public displayDuration?: number
 	public invalid?: boolean
+	public floated?: boolean
 	// From IBlueprintPartDB:
 	public _id: string
 	public segmentId: string
