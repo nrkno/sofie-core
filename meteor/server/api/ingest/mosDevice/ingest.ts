@@ -262,8 +262,6 @@ export function handleMosDeleteStory (
 		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
-
-		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 
@@ -376,8 +374,6 @@ export function handleSwapStories (
 		ingestParts[story1Index] = tmp
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
-
-		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 export function handleMoveStories (
@@ -429,8 +425,6 @@ export function handleMoveStories (
 		filteredParts.splice(insertIndex, 0, ...movingParts)
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
-
-		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 
