@@ -114,7 +114,7 @@ export function parseRange (r: string | VersionRange): VersionRange {
 	return range
 }
 export function parseVersion (v: string | Version): Version {
-	if ((v + '').match(/git:\/\//)) {
+	if ((v + '').match(/git:\/\//) || (v + '').match(/http/)) {
 		return '0.0.0' // fallback
 	}
 	const valid = semver.valid(v)
