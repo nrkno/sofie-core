@@ -441,7 +441,7 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 					</div>
 				</div>
 
-				{(getAllowConfigure() || getAllowDeveloper() || getAllowService()) && <div className='actions-container'>
+				{(getAllowConfigure() || getAllowDeveloper()) && <div className='actions-container'>
 					<div className='device-item__actions'>
 						<ModalDialog key='modal-device' title={t('Restart this system?')} acceptText={t('Restart')}
 							secondaryText={t('Cancel')}
