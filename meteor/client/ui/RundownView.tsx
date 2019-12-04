@@ -815,6 +815,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+						warning: true,
 						onAccept: () => {
 							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 						}
