@@ -154,6 +154,59 @@ body.tv2 {
 				}
 			}
 		}
+
+		&.has-guest-items {
+			.segment-timeline__title {
+				background: var(--segment-layer-background-guest);
+
+				> h2 {
+					background: unset;
+					border: unset;
+				}
+			}
+
+			&.live {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(to top, var(--segment-layer-background-guest) 5px, var(--general-live-color) 5px);
+					}
+				}
+			}
+			&.next {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(to top, var(--segment-layer-background-guest) 5px, var(--general-next-color) 5px);
+					}
+				}
+			}
+		}
+
+		// the live and next states are the states of the entire segment component
+		&.has-remote-items {
+			.segment-timeline__title {
+				background: var(--segment-layer-background-remote);
+
+				> h2 {
+					background: unset;
+					border: unset;
+				}
+			}
+
+			&.live {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(to top, var(--segment-layer-background-remote) 5px, var(--general-live-color) 5px);
+					}
+				}
+			}
+			&.next {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(to top, var(--segment-layer-background-remote) 5px, var(--general-next-color) 5px);
+					}
+				}
+			}
+		}
 	}
 	.segment-timeline.next, .segment-timeline.live {
 		.segment-timeline__timeUntil {
