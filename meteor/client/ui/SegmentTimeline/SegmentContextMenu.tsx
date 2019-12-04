@@ -52,7 +52,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 							</MenuItem>
 							{part.segmentId !== this.props.rundown.nextSegmentId ?
 								<MenuItem onClick={(e) => this.props.onSetNextSegment(part.segmentId, e)}>
-									<span dangerouslySetInnerHTML={{ __html: t('Queue segment') }}></span>
+									<span>{t('Queue segment')}</span>
 								</MenuItem> :
 								<MenuItem onClick={(e) => this.props.onSetNextSegment(null, e)}>
 									<span>{t('Clear queued segment')}</span>
