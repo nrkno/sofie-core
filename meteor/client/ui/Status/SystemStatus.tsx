@@ -448,7 +448,7 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 							show={!!this.state.showKillCoreConfirm}
 							onAccept={(e) => this.handleConfirmKillAccept(e)}
 							onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-							<p>{t('Are you sure you want to restart this Core Sofie System: {{name}}?', {name: this.props.coreSystem.name || 'unnamed'})}</p>
+							<p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', {name: this.props.coreSystem.name || 'unnamed'})}</p>
 						</ModalDialog>
 						<button className='btn btn-secondary' onClick={
 							(e) => {
