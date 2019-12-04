@@ -18,7 +18,7 @@ import { getCurrentTime,
 	literal,
 	asyncCollectionRemove} from '../../../lib/lib'
 import { Timeline, TimelineObjGeneric } from '../../../lib/collections/Timeline'
-import { Segments, Segment } from '../../../lib/collections/Segments'
+import { Segments, Segment, DBSegment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -46,9 +46,11 @@ import { updateTimeline } from './timeline'
 import {
 	resetRundown as libResetRundown,
 	setNextPart as libSetNextPart,
+	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPreviousPartForSegment
+	getPreviousPartForSegment,
+	getNextPart
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -285,13 +287,8 @@ export namespace ServerPlayoutAPI {
 			)
 			let takePart = rundownData.partsMap[rundown.nextPartId]
 			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
-			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			let partAfter = fetchAfter(rundownData.parts, {
-				rundownId: rundown._id,
-				invalid: { $ne: true }
-			}, takePart._rank)
 
-			let nextPart: DBPart | null = partAfter || null
+			let nextPart: Part | null = getNextPart(rundown, rundownData.parts, takePart) || null
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
@@ -353,7 +350,7 @@ export namespace ServerPlayoutAPI {
 			}
 			rundown = _.extend(rundown, m) as Rundown
 
-			libSetNextPart(rundown, nextPart)
+			libSetNextPart(rundown, nextPart, takePart)
 			waitForPromiseAll(ps)
 			ps = []
 
@@ -462,7 +459,9 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
-		libSetNextPart(rundown, nextPart, setManually, nextTimeOffset)
+		const takePart = rundown.currentPartId && Parts.findOne(rundown.currentPartId) || null
+
+		libSetNextPart(rundown, nextPart, takePart, setManually, nextTimeOffset)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(rundown.studioId)
@@ -580,6 +579,30 @@ export namespace ServerPlayoutAPI {
 			setNextPartInner(rundown, part, setManually)
 			return part._id
 		}
+	}
+	export function setNextSegment (
+		rundownId: string,
+		nextSegmentId: string | null
+	): ClientAPI.ClientResponse {
+		check(rundownId, String)
+		if (nextSegmentId) check(nextSegmentId, String)
+
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundown._id}" is not active!`)
+
+			let nextSegment: Segment | null = null
+			if (nextSegmentId) {
+				nextSegment = Segments.findOne(nextSegmentId) || null
+
+				if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
+			}
+
+			libSetNextSegment(rundown, nextSegment)
+
+			return ClientAPI.responseSuccess()
+		})
 	}
 	export function activateHold (rundownId: string) {
 		check(rundownId, String)
@@ -869,53 +892,37 @@ export namespace ServerPlayoutAPI {
 
 						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPart._rank,
-							},
-							_id: { $ne: playingPart._id }
-						}, {
-							limit: 1
-						})
-
-						let nextPart: Part | null = _.first(partsAfter) || null
-
-						const rundownChange = {
-							previousPartId: rundown.currentPartId,
-							currentPartId: playingPart._id,
-							holdState: RundownHoldState.NONE,
-						}
+						let nextPart: Part | null = getNextPart(rundown, rundown.getParts(), playingPart) || null
 
 						Rundowns.update(rundown._id, {
-							$set: rundownChange
+							$set: {
+								previousPartId: rundown.currentPartId,
+								currentPartId: playingPart._id,
+								holdState: RundownHoldState.NONE
+							}
 						})
-						rundown = _.extend(rundown, rundownChange) as Rundown
+						rundown.previousPartId = rundown.currentPartId
+						rundown.currentPartId = playingPart._id
+						rundown.holdState = RundownHoldState.NONE
 
-						libSetNextPart(rundown, nextPart)
+						libSetNextPart(rundown, nextPart, playingPart)
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPart._rank,
-							},
-							_id: { $ne: playingPart._id }
-						})
-
-						let nextPart: Part | null = partsAfter[0] || null
+						let nextPart: Part | null = getNextPart(rundown, rundown.getParts(), playingPart) || null
 
 						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						const rundownChange = {
-							previousPartId: null,
-							currentPartId: playingPart._id,
-						}
-
 						Rundowns.update(rundown._id, {
-							$set: rundownChange
+							$set: {
+								previousPartId: null,
+								currentPartId: playingPart._id
+							}
 						})
-						rundown = _.extend(rundown, rundownChange) as Rundown
-						libSetNextPart(rundown, nextPart)
+						rundown.previousPartId = null
+						rundown.currentPartId = playingPart._id
+
+						libSetNextPart(rundown, nextPart, playingPart)
 
 						logger.error(`Part "${playingPart._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
