@@ -62,6 +62,7 @@ interface IProps {
 	hasRemoteItems: boolean,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
+	isQueuedSegment: boolean,
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
@@ -563,6 +564,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 					'live': this.props.isLiveSegment,
 					'next': !this.props.isLiveSegment && this.props.isNextSegment,
+					'queued': this.props.isQueuedSegment,
 
 					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment && !this.props.hasGuestItems && !this.props.hasRemoteItems,
 

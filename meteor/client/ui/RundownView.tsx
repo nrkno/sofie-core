@@ -1544,7 +1544,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 	onSetNextSegment = (segmentId: string | null, e: any) => {
 		const { t } = this.props
-		if (this.state.studioMode && segmentId && this.props.rundown) {
+		if (this.state.studioMode && (segmentId || segmentId === null)  && this.props.rundown) {
 			doUserAction(t, e, UserActionAPI.methods.setNextSegment, [this.props.rundown._id, segmentId],  (err, res) => {
 				this.setState({
 					manualSetAsNext: true
