@@ -441,8 +441,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 		if (activeRundown.previousPartId) {
 			previousPart = rundownData.partsMap[activeRundown.previousPartId]
-			logger.warn(`Part "${activeRundown.previousPartId}" not found!`)
-			// if (!previousPart) throw new Meteor.Error(404, `Part "${activeRundown.previousPartId}" not found!`)
+			if (!previousPart) logger.warn(`Part "${activeRundown.previousPartId}" not found!`)
 		}
 	}
 
