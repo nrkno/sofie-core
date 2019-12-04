@@ -48,7 +48,8 @@ export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation
 	return Promise.reject('Could not find part')
 }
 
-const HEADER_HEIGHT = 175
+export const HEADER_HEIGHT = 54 // was: 150
+export const HEADER_MARGIN = 15
 
 export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	let elementToScrollTo: HTMLElement | null = (
@@ -68,7 +69,7 @@ export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | str
 	// check if the item is in viewport
 	if (forceScroll ||
 		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY + HEADER_HEIGHT) {
+		top < window.scrollY + HEADER_HEIGHT + HEADER_MARGIN) {
 
 		return scrollToPosition(top, noAnimation).then(() => true)
 	}
@@ -80,7 +81,7 @@ export function scrollToPosition (scrollPosition: number, noAnimation?: boolean)
 	if (noAnimation) {
 		return new Promise((resolve, reject) => {
 			window.scroll({
-				top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+				top: Math.max(0, scrollPosition - HEADER_HEIGHT - HEADER_MARGIN),
 				left: 0
 			})
 			resolve()
@@ -89,7 +90,7 @@ export function scrollToPosition (scrollPosition: number, noAnimation?: boolean)
 		return new Promise((resolve, reject) => {
 			window.requestIdleCallback(() => {
 				window.scroll({
-					top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+					top: Math.max(0, scrollPosition - HEADER_HEIGHT - HEADER_MARGIN),
 					left: 0,
 					behavior: 'smooth'
 				})
