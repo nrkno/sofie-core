@@ -35,66 +35,67 @@ import { mousetrapHelper } from './mousetrapHelper'
 	Mousetrap.init();
 })(Mousetrap);
 
-(function (Mousetrap) {
-	var _originalStopCallback = Mousetrap.prototype.stopCallback;
-	var _originalHandleKey = Mousetrap.prototype.handleKey;
+// Disabled ESC key as get out of jail feature
+// (function (Mousetrap) {
+// 	var _originalStopCallback = Mousetrap.prototype.stopCallback;
+// 	var _originalHandleKey = Mousetrap.prototype.handleKey;
 
-	let _shouldAbortNextCombo = false;
-	let _isEscapePressed = false;
+// 	let _shouldAbortNextCombo = false;
+// 	let _isEscapePressed = false;
 
-	const _downKeys = [];
+// 	const _downKeys = [];
 
-	Mousetrap.prototype.handleKey = function (character, modifiers, e) {
-		var self = this;
+// 	Mousetrap.prototype.handleKey = function (character, modifiers, e) {
+// 		var self = this;
 
-		if (e.type === 'keydown' && !_downKeys.includes(character)) _downKeys.push(character);
-		if (e.type === 'keyup') {
-			const index = _downKeys.indexOf(character)
-			if (index >= 0) {
-				_downKeys.splice(_downKeys.indexOf(character), 1);
-			}
-		}
+// 		if (e.type === 'keydown' && !_downKeys.includes(character)) _downKeys.push(character);
+// 		if (e.type === 'keyup') {
+// 			const index = _downKeys.indexOf(character)
+// 			if (index >= 0) {
+// 				_downKeys.splice(_downKeys.indexOf(character), 1);
+// 			}
+// 		}
 
-		return _originalHandleKey.apply(self, arguments);
-	};
+// 		return _originalHandleKey.apply(self, arguments);
+// 	};
 
-	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
-		var self = this;
+// 	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
+// 		var self = this;
 
-		if (self.paused) {
-			return true;
-		}
+// 		if (self.paused) {
+// 			return true;
+// 		}
 
-		if ((_shouldAbortNextCombo) && combo !== 'esc' && e.type === 'keyup') {
-			_shouldAbortNextCombo = false;
-			return true;
-		}
+// 		if ((_shouldAbortNextCombo) && combo !== 'esc' && e.type === 'keyup') {
+// 			_shouldAbortNextCombo = false;
+// 			return true;
+// 		}
 
-		return _originalStopCallback.call(self, e, element, combo);
-	};
+// 		return _originalStopCallback.call(self, e, element, combo);
+// 	};
 
-	const escDown = function (e) {
-		_isEscapePressed = true;
+// 	const escDown = function (e) {
+// 		_isEscapePressed = true;
 
-		if (!e.repeat) {
-			_shouldAbortNextCombo = (_downKeys.length > 1);
-			_comboTriggered = false;
-		}
+// 		if (!e.repeat) {
+// 			_shouldAbortNextCombo = (_downKeys.length > 1);
+// 			_comboTriggered = false;
+// 		}
 
-		e.preventDefault();
-		e.stopPropagation();
-	};
+// 		e.preventDefault();
+// 		e.stopPropagation();
+// 	};
 
-	const escUp = function (e) {
-		_isEscapePressed = false;
+// 	const escUp = function (e) {
+// 		_isEscapePressed = false;
 
-		if (_downKeys.length === 0) {
-			_shouldAbortNextCombo = false;
-		}
-	};
+// 		if (_downKeys.length === 0) {
+// 			_shouldAbortNextCombo = false;
+// 		}
+// 	};
 
-	Mousetrap.init();
+// 	Mousetrap.init();
 
-	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
-	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
-})(Mousetrap);
+// 	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
+// 	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
+// })(Mousetrap);
