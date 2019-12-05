@@ -15,6 +15,12 @@
 		}
 
 		&.rundown-view--unpublished {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+
 			> .rundown-view__label {
 				&::before {
 					display: block;
@@ -29,6 +35,12 @@
 		}
 
 		&.rundown-view--loading {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			
 			> .mod.mhl.mvl.alc {
 				transform: translate(-160%, -135%);
 			}
