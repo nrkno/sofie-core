@@ -522,8 +522,14 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 			<div className='mod mvs mhs'>
 				<label className='field'>
-					{t('Clear-All on make-ready (activation)')}
+					{t('Clear-All on make-ready (activate rundown)')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllOnMakeReady'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Dont deactivate on stand-down (deactivate rundown)')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.dontDeactivateOnStandDown'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>
