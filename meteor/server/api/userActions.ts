@@ -6,7 +6,7 @@ import {
 	Rundowns,
 	RundownHoldState
 } from '../../lib/collections/Rundowns'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, getHash } from '../../lib/lib'
 import {
 	Parts, Part
 } from '../../lib/collections/Parts'
@@ -484,6 +484,27 @@ export function regenerateRundown (rundownId: string) {
 	)
 }
 
+let restartToken: string | undefined = undefined
+
+export function generateRestartToken () {
+	restartToken = getHash('restart_' + getCurrentTime())
+	return ClientAPI.responseSuccess(
+		restartToken
+	)
+}
+
+export function restartCore (token: string) {
+	check(token, String)
+
+	if (token !== getHash(UserActionAPI.RESTART_SALT + restartToken))
+		throw new Meteor.Error(401, `Restart token is invalid`)
+
+	setTimeout(() => {
+		process.exit(0)
+	}, 3000)
+	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
+}
+
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
@@ -590,6 +611,12 @@ methods[UserActionAPI.methods.mediaAbortAllWorkflows] = function () {
 }
 methods[UserActionAPI.methods.regenerateRundown] = function (rundownId: string) {
 	return regenerateRundown.call(this, rundownId)
+}
+methods[UserActionAPI.methods.generateRestartToken] = function () {
+	return generateRestartToken.call(this)
+}
+methods[UserActionAPI.methods.restartCore] = function (token: string) {
+	return restartCore.call(this, token)
 }
 
 // Apply methods:
