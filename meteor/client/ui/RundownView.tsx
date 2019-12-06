@@ -218,7 +218,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_DEACTIVATE = 'mod+shift+§',
 	RUNDOWN_GO_TO_LIVE = 'mod+home',
 	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
-	RUNDOWN_RESET_RUNDOWN = 'escape',
+	RUNDOWN_RESET_RUNDOWN = 'shift+escape',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNDOWN_NEXT_FORWARD = 'alt+right',
