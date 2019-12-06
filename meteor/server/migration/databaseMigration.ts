@@ -449,9 +449,14 @@ export function runMigration (
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
-	isFirstOfPartialMigrations: boolean = true
+	isFirstOfPartialMigrations: boolean = true,
+	chunksLeft: number = 20
 ): RunMigrationResult {
 
+	if (chunksLeft < 0) {
+		logger.error(`Migration: Bailing out, looks like we're in a loop`)
+		throw new Meteor.Error(500, 'Infinite loop in migrations')
+	}
 	logger.info(`Migration: Starting`)
 	// logger.info(`Migration: Starting, from "${baseVersion}" to "${targetVersion}".`)
 
@@ -573,7 +578,7 @@ export function runMigration (
 		const s = getMigrationStatus()
 		if (s.migration.automaticStepCount > 0 || s.migration.manualStepCount > 0) {
 			try {
-				const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+				const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false, chunksLeft - 1)
 				if (res.migrationCompleted) {
 					return res
 				}
