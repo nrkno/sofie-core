@@ -582,6 +582,7 @@ export function runMigration (
 				if (res.migrationCompleted) {
 					return res
 				}
+				_.each(res.warnings, w => warningMessages.push(w))
 			} catch (e) {
 				warningMessages.push(`When running next chunk: ${e}`)
 				migration.partialMigration = true
