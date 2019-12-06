@@ -22,6 +22,7 @@ export interface IAdLibListItem {
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
+	floated?: boolean
 }
 
 interface IDashboardButtonProps {
@@ -113,6 +114,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
 				'invalid': this.props.item.invalid,
+				'floated': this.props.item.floated,
 
 				'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
