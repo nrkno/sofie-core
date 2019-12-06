@@ -10,7 +10,13 @@ import App from './ui/App.js';
 if ('serviceWorker' in navigator) {
   // Use the window load event to keep the page load performant
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js');
+    // in some versions of Chrome, registering the Service Worker over HTTP throws
+    // an arror
+    if (window.location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.error(err)
+      });
+    }
   });
 }
  
