@@ -49,7 +49,9 @@ addMigrationSteps('0.1.0', [
 		validate: () => {
 
 			let missing: string | boolean = false
-			PeripheralDevices.find().forEach((device) => {
+			PeripheralDevices.find({
+				parentDeviceId: { $exists: false }
+			}).forEach((device) => {
 				if (!device.studioId) missing = `PeripheralDevice ${device._id} has no studio`
 			})
 			return missing
@@ -60,7 +62,9 @@ addMigrationSteps('0.1.0', [
 				const studio = studios[0]
 
 				let missing: string | boolean = false
-				PeripheralDevices.find().forEach((device) => {
+				PeripheralDevices.find({
+					parentDeviceId: { $exists: false }
+				}).forEach((device) => {
 					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id } })
 				})
 			} else {
