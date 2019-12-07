@@ -25,8 +25,6 @@ export function doUserAction (
 		NotificationCenter.push(timeoutMessage)
 	}, 2000)
 
-	console.log(method, ...params)
-
 	callMethod(event, method, ...params, (err, res) => {
 
 		if (!timeoutMessage) {
