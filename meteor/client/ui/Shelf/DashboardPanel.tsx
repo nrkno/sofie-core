@@ -412,6 +412,9 @@ export function getUnfinishedPiecesReactive(rundownId: string, currentPartId: st
 					$exists: false
 				}
 			}],
+			playoutDuration: {
+				$exists: false
+			},
 			adLibSourceId: {
 				$exists: true
 			}
@@ -419,8 +422,17 @@ export function getUnfinishedPiecesReactive(rundownId: string, currentPartId: st
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((piece) => {
-			if (typeof piece.enable.duration === "number") {
-				const end = (piece.startedPlayback! + piece.enable.duration)
+			let duration: number | undefined =
+				(piece.playoutDuration) ?
+					piece.playoutDuration :
+				(piece.userDuration && typeof piece.userDuration.duration === "number") ?
+					piece.userDuration.duration :
+				(typeof piece.enable.duration === "number") ?
+					piece.enable.duration :
+					undefined
+
+			if (duration !== undefined) {
+				const end = (piece.startedPlayback! + duration)
 				if (end > now) {
 					nearestEnd = nearestEnd > end ? end : nearestEnd
 					return true
