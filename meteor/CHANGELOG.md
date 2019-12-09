@@ -1,6 +1,35 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [1.4.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.3.0...v1.4.0-0) (2019-12-09)
+
+
+### Bug Fixes
+
+* bad migration step: PeripheralDevices that has a parent should not be assigned to a Studio ([ed232c4](https://github.com/nrkno/tv-automation-server-core/commit/ed232c4))
+* bubble up error messages from later migrations ([9599942](https://github.com/nrkno/tv-automation-server-core/commit/9599942))
+* check if loaded over https before trying to register service worker ([#134](https://github.com/nrkno/tv-automation-server-core/issues/134)) ([253e144](https://github.com/nrkno/tv-automation-server-core/commit/253e144))
+* failed rabbitmq initialisation should not block new connections ([6b9b491](https://github.com/nrkno/tv-automation-server-core/commit/6b9b491))
+* give Piece.transitions simpler typings specific to how it is used ([f9fe43f](https://github.com/nrkno/tv-automation-server-core/commit/f9fe43f))
+* handle closed rabbitmq instance throwing upon calling close ([b56cb62](https://github.com/nrkno/tv-automation-server-core/commit/b56cb62))
+* make contextName mandatory on SegmentContext and PartContext ([d249b6f](https://github.com/nrkno/tv-automation-server-core/commit/d249b6f))
+* migrations: mechanism for breaking infinite loops ([14570a7](https://github.com/nrkno/tv-automation-server-core/commit/14570a7))
+* tests ([d95f078](https://github.com/nrkno/tv-automation-server-core/commit/d95f078))
+* update ReadMe ([059b9b4](https://github.com/nrkno/tv-automation-server-core/commit/059b9b4))
+* warnings on segments should now have segment-sourced labels ([f9bea61](https://github.com/nrkno/tv-automation-server-core/commit/f9bea61))
+
+
+### Features
+
+* **autorewind:** auto rewind leaving segment ([b88ea43](https://github.com/nrkno/tv-automation-server-core/commit/b88ea43))
+* Floated parts and adLibs ([a4cbde8](https://github.com/nrkno/tv-automation-server-core/commit/a4cbde8))
+* Invalid Reason information on invalid parts ([#129](https://github.com/nrkno/tv-automation-server-core/issues/129)) ([b4f5126](https://github.com/nrkno/tv-automation-server-core/commit/b4f5126))
+* restart core from status view ([#131](https://github.com/nrkno/tv-automation-server-core/issues/131)) ([154f999](https://github.com/nrkno/tv-automation-server-core/commit/154f999))
+* use tsr-types from blueprints-integration ([e15dd59](https://github.com/nrkno/tv-automation-server-core/commit/e15dd59))
+* use tsr-types from blueprints-integration ([#127](https://github.com/nrkno/tv-automation-server-core/issues/127)) ([1d7b659](https://github.com/nrkno/tv-automation-server-core/commit/1d7b659))
+
+
 
 <a name="1.3.0"></a>
 # 1.3.0 (2019-11-25)
