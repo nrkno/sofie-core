@@ -826,6 +826,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+						warning: true,
 						onAccept: () => {
 							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 						}
@@ -1117,7 +1118,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownLayoutId: String(params['layout'])
 	}
 })(
-class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	private bindKeys: Array<{
 		key: string,
@@ -1363,21 +1364,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
-				_.each(combos, (combo: string) => {
-					const handler = (e: KeyboardEvent) => {
-						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
-							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
-								this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
-							])
-						}
+				const handler = (e: KeyboardEvent) => {
+					if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
+						doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+							this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
+						])
 					}
+				}
+				_.each(combos, (combo: string) => {
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 					this.usedArgumentKeys.push({
 						up: handler,
 						key: combo,
 						label: i.label || ''
 					})
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
 			})
 		}
