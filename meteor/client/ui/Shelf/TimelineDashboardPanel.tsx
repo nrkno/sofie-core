@@ -35,7 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { DashboardPanel, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel';
+import { DashboardPanel, DashboardPanelInner, dashboardElementPosition, getUnfinishedPiecesReactive } from './DashboardPanel';
 
 interface IState {
 	outputLayers: {
@@ -58,29 +58,9 @@ interface IDashboardPanelTrackedProps {
 }
 
 export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
-		rundownId: props.rundown._id,
-		partId: props.rundown.currentPartId,
-		startedPlayback: {
-			$exists: true
-		},
-		$or: [{
-			stoppedPlayback: {
-				$eq: 0
-			}
-		}, {
-			stoppedPlayback: {
-				$exists: false
-			}
-		}],
-		adLibSourceId: {
-			$exists: true
-		}
-	}).fetch() : [], (piece) => piece.adLibSourceId)
-
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.rundown.getStudio(),
-		unfinishedPieces
+		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
