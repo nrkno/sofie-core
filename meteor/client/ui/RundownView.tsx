@@ -1112,10 +1112,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}).fetch()) || undefined,
 		rundownLayoutId: String(params['layout'])
 	}
-})(
-class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	private readonly LIVELINE_HISTORY_SIZE = 100
-
+})(class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+		private readonly LIVELINE_HISTORY_SIZE = 100
+		
 	private bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any,
@@ -1360,21 +1359,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
-				_.each(combos, (combo: string) => {
-					const handler = (e: KeyboardEvent) => {
-						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
-							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
-								this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
-							])
-						}
+				const handler = (e: KeyboardEvent) => {
+					if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
+						doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+							this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
+						])
 					}
+				}
+				_.each(combos, (combo: string) => {
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 					this.usedArgumentKeys.push({
 						up: handler,
 						key: combo,
 						label: i.label || ''
 					})
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
 			})
 		}
