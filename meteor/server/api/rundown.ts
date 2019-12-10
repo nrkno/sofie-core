@@ -151,12 +151,6 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		// TODO - batch?
 		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
 	})
-
-	const rundown = Rundowns.findOne(rundownId)
-	if (rundown && rundown.active) {
-		// Ensure the next-part is still valid
-		UpdateNext.ensureNextPartIsValid(rundown)
-	}
 }
 /**
  * Update the ranks of all parts.

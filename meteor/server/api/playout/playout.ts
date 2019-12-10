@@ -1295,15 +1295,15 @@ interface UpdateTimelineFromIngestDataTimeout {
 let updateTimelineFromIngestDataTimeouts: {
 	[id: string]: UpdateTimelineFromIngestDataTimeout
 } = {}
-export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegments: Array<string>) {
+export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegmentIds: Array<string>) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
 	let data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts[rundownId]
 	if (data) {
 		if (data.timeout) Meteor.clearTimeout(data.timeout)
-		data.changedSegments = data.changedSegments.concat(changedSegments)
+		data.changedSegments = data.changedSegments.concat(changedSegmentIds)
 	} else {
 		data = {
-			changedSegments: changedSegments
+			changedSegments: changedSegmentIds
 		}
 	}
 
