@@ -427,6 +427,8 @@ export function getUnfinishedPiecesReactive(rundownId: string, currentPartId: st
 					piece.playoutDuration :
 				(piece.userDuration && typeof piece.userDuration.duration === "number") ?
 					piece.userDuration.duration :
+				(piece.userDuration && typeof piece.userDuration.end === "string") ?
+					0 : // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
 				(typeof piece.enable.duration === "number") ?
 					piece.enable.duration :
 					undefined
