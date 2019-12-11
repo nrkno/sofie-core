@@ -143,5 +143,6 @@ mousetrap.addKeycodes({
 	109: 'numSub',
 	110: 'numDot',
 	111: 'numDiv',
-	187: 'add'
+	187: 'add',
+	188: 'comma'
 })
