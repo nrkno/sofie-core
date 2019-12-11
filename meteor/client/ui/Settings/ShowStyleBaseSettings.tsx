@@ -485,9 +485,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			_id: this.props.showStyleBase._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
 			name: t('New Source'),
-			type: SourceLayerType.UNKNOWN,
-			unlimited: false,
-			onPGMClean: true
+			type: SourceLayerType.UNKNOWN
 		})
 
 		ShowStyleBases.update(this.props.showStyleBase._id, {
@@ -609,30 +607,6 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 													collection={ShowStyleBases}
 													className='focusable-main input-l'></EditAttribute>
 											</div>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.unlimited'}
-												obj={this.props.showStyleBase}
-												type='checkbox'
-												collection={ShowStyleBases}
-												className=''></EditAttribute>
-											{t('Is unlimited')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.onPGMClean'}
-												obj={this.props.showStyleBase}
-												type='checkbox'
-												collection={ShowStyleBases}
-												className=''></EditAttribute>
-											{t('Is on clean PGM')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
