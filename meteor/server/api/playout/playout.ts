@@ -512,8 +512,16 @@ export namespace ServerPlayoutAPI {
 		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
 		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
-		let parts = rundown.getParts()
-		let segments = rundown.getSegments()
+		const parts = rundown.getParts()
+		const partsInSegments: {[segmentId: string]: Part[]} = {}
+		const segmentsWithParts: Segment[] = []
+		_.each(rundown.getSegments(), segment => {
+			let partsInSegment = segment.getParts()
+			if (partsInSegment.length) {
+				segmentsWithParts.push(segment)
+				partsInSegments[segment._id] = partsInSegment
+			}
+		})
 
 		let partIndex: number = -1
 		_.find(parts, (part, i) => {
@@ -523,23 +531,21 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 		let segmentIndex: number = -1
-		_.find(segments, (s, i) => {
+		_.find(segmentsWithParts, (s, i) => {
 			if (s._id === currentNextSegment._id) {
 				segmentIndex = i
 				return true
 			}
 		})
 		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
-		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment "${currentNextSegment._id}" not found in segmentsWithParts!`)
 		if (verticalDelta !== 0) {
 			segmentIndex += verticalDelta
 
-			let segment = segments[segmentIndex]
-
+			const segment = segmentsWithParts[segmentIndex]
 			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
 
-			let partsInSegment = segment.getParts()
-			let part = _.first(partsInSegment) as Part
+			const part = _.first(partsInSegments[segment._id]) as Part
 			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
 			partIndex = -1
