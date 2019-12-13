@@ -4,6 +4,7 @@ import {
 	PeripheralDevice,
 	PeripheralDevices
 } from '../../../lib/collections/PeripheralDevices'
+import { Meteor } from 'meteor/meteor'
 import * as i18next from 'react-i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
