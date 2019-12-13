@@ -144,14 +144,12 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_rank: 0,
 				name: 'Camera',
 				type: SourceLayerType.CAMERA,
-				unlimited: false
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
 				type: SourceLayerType.VT,
-				unlimited: false
 			})
 		],
 		config: [],
