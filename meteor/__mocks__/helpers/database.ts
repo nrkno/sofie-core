@@ -236,7 +236,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
 
@@ -346,7 +346,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: string

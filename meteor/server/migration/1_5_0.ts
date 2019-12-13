@@ -47,4 +47,27 @@ addMigrationSteps('1.5.0', [
 			})
 		}
 	},
+
+	{
+		id: 'Blueprints.blueprintId default',
+		canBeRunAutomatically: true,
+		validate: () => {
+			let blueprints = Blueprints.find({
+				blueprintId: { $exists: false }
+			}).count()
+			if (blueprints) {
+				return 'Blueprints.blueprintId is "undefined"'
+			}
+			return false
+		},
+		migrate: () => {
+			Blueprints.update({
+				blueprintId: { $exists: false }
+			}, {
+				$set: {
+					blueprintId: ''
+				}
+			})
+		}
+	},
 ])

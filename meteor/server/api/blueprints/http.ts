@@ -20,6 +20,7 @@ postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMess
 
 	const blueprintId = params.blueprintId
 	const url = parseUrl(req.url || '', true)
+	const force = url.query.force === '1' || url.query.force === 'true'
 
 	const blueprintNames = url.query['name'] || undefined
 	const blueprintName: string | undefined = (
@@ -38,7 +39,7 @@ postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMess
 
 		if (!_.isString(body) || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		uploadBlueprint(blueprintId, body, blueprintName)
+		uploadBlueprint(blueprintId, body, blueprintName, force)
 
 		res.statusCode = 200
 	} catch (e) {
