@@ -1,7 +1,7 @@
 
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import { Rundowns, Rundown, RundownHoldState, RundownData } from '../../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
