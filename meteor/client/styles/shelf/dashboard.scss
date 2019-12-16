@@ -278,5 +278,13 @@ $dashboard-button-height: 5.625em;
 			text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 			z-index: 2;
 		}
+
+		> svg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 100%;
+		}
 	}
 }

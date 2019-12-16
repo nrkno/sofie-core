@@ -466,7 +466,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Oveflow horizontally')}
+							{t('Overflow horizontally')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.overflowHorizontally`}
