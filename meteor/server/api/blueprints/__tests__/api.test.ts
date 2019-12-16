@@ -39,6 +39,7 @@ describe('Test blueprint management api', () => {
 				created: 0,
 				modified: 0,
 
+				blueprintId: '',
 				blueprintType: BlueprintManifestType.SYSTEM,
 
 				studioConfigManifest: [],
@@ -287,6 +288,7 @@ describe('Test blueprint management api', () => {
 				BLUEPRINT_TYPE
 			}, () => {
 				return {
+					blueprintId: 'ss1',
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
@@ -303,6 +305,7 @@ describe('Test blueprint management api', () => {
 				_id: 'tmp_showstyle',
 				name: 'tmp_showstyle',
 				blueprintType: BLUEPRINT_TYPE,
+				blueprintId: 'ss1',
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
 				TSRVersion: '0.3.0',
@@ -333,6 +336,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: 'tmp_studio',
 				name: 'tmp name',
+				blueprintId: '',
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -349,6 +353,7 @@ describe('Test blueprint management api', () => {
 				BLUEPRINT_TYPE
 			}, () => {
 				return {
+					blueprintId: 'sys',
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
@@ -364,6 +369,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: 'tmp_system',
 				name: 'tmp name',
+				blueprintId: 'sys',
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -392,12 +398,14 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({ blueprintType: BlueprintManifestType.STUDIO }) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
+			expect(existingBlueprint.blueprintId).toBeFalsy()
 
 			const blueprint = uploadBlueprint(existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: existingBlueprint._id,
 				name: existingBlueprint.name,
+				blueprintId: '',
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -407,6 +415,107 @@ describe('Test blueprint management api', () => {
 				studioConfigManifest: ['studio1'] as any,
 				code: blueprintStr
 			}))
+		})
+		testInFiber('update - matching blueprintId', () => {
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const blueprintStr = packageBlueprint({
+				BLUEPRINT_TYPE
+			}, () => {
+				return {
+					blueprintId: 'ss1',
+					blueprintType: BLUEPRINT_TYPE,
+					blueprintVersion: '0.1.0',
+					integrationVersion: '0.2.0',
+					TSRVersion: '0.3.0',
+					minimumCoreVersion: '0.4.0',
+					showStyleConfigManifest: ['show1'],
+					studioConfigManifest: ['studio1']
+				}
+			})
+
+			const existingBlueprint = Blueprints.findOne({
+				blueprintType: BlueprintManifestType.SHOWSTYLE,
+				blueprintId: 'ss1'
+			}) as Blueprint
+			expect(existingBlueprint).toBeTruthy()
+			expect(existingBlueprint.blueprintId).toBeTruthy()
+
+			const blueprint = uploadBlueprint(existingBlueprint._id, blueprintStr)
+			expect(blueprint).toBeTruthy()
+			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
+				_id: existingBlueprint._id,
+				name: existingBlueprint.name,
+				blueprintId: 'ss1',
+				blueprintType: BLUEPRINT_TYPE,
+				blueprintVersion: '0.1.0',
+				integrationVersion: '0.2.0',
+				TSRVersion: '0.3.0',
+				minimumCoreVersion: '0.4.0',
+				showStyleConfigManifest: ['show1'] as any,
+				studioConfigManifest: [],
+				code: blueprintStr
+			}))
+		})
+		testInFiber('update - change blueprintId', () => {
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const blueprintStr = packageBlueprint({
+				BLUEPRINT_TYPE
+			}, () => {
+				return {
+					blueprintId: 'show2',
+					blueprintType: BLUEPRINT_TYPE,
+					blueprintVersion: '0.1.0',
+					integrationVersion: '0.2.0',
+					TSRVersion: '0.3.0',
+					minimumCoreVersion: '0.4.0',
+					showStyleConfigManifest: ['show1'],
+					studioConfigManifest: ['studio1']
+				}
+			})
+
+			const existingBlueprint = Blueprints.findOne({
+				blueprintType: BlueprintManifestType.SHOWSTYLE,
+				blueprintId: 'ss1'
+			}) as Blueprint
+			expect(existingBlueprint).toBeTruthy()
+			expect(existingBlueprint.blueprintId).toBeTruthy()
+
+			try {
+				uploadBlueprint(existingBlueprint._id, blueprintStr)
+				expect(true).toBe(false) // Please throw and don't get here
+			} catch (e) {
+				expect(e.message).toBe(`[422] Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"show2\"`)
+			}
+		})
+		testInFiber('update - drop blueprintId', () => {
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const blueprintStr = packageBlueprint({
+				BLUEPRINT_TYPE
+			}, () => {
+				return {
+					blueprintType: BLUEPRINT_TYPE,
+					blueprintVersion: '0.1.0',
+					integrationVersion: '0.2.0',
+					TSRVersion: '0.3.0',
+					minimumCoreVersion: '0.4.0',
+					showStyleConfigManifest: ['show1'],
+					studioConfigManifest: ['studio1']
+				}
+			})
+
+			const existingBlueprint = Blueprints.findOne({
+				blueprintType: BlueprintManifestType.SHOWSTYLE,
+				blueprintId: 'ss1'
+			}) as Blueprint
+			expect(existingBlueprint).toBeTruthy()
+			expect(existingBlueprint.blueprintId).toBeTruthy()
+
+			try {
+				uploadBlueprint(existingBlueprint._id, blueprintStr)
+				expect(true).toBe(false) // Please throw and don't get here
+			} catch (e) {
+				expect(e.message).toBe(`[422] Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"\"`)
+			}
 		})
 	})
 })

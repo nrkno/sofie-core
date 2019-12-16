@@ -14,6 +14,7 @@ export function generateFakeBlueprint (
 		created: 0,
 		modified: 0,
 
+		blueprintId: '',
 		blueprintType: type,
 
 		studioConfigManifest: [],
