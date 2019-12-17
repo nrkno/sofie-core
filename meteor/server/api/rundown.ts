@@ -33,6 +33,7 @@ import { UpdateNext } from './ingest/updateNext'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -164,6 +165,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	_.each(removedParts, part => {
 		// TODO - batch?
 		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
+		updateExpectedPlayoutItemsOnPart(part.rundownId, part._id)
 	})
 
 	const rundown = Rundowns.findOne(rundownId)
