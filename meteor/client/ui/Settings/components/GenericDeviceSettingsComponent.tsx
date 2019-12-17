@@ -191,7 +191,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		const configSummaryFields = this.getConfigSummaryFields(configManifest)
 
 		// Always show device ID
-		els.push(<th className='settings-studio-device__name c1'>
+		els.push(<th className='settings-studio-device__name c1' key='ID'>
 			{deviceId}
 		</th>)
 
@@ -210,20 +210,14 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			// 	</td>)
 			// }
 
-			if (val !== undefined) {
-				els.push(<td className='settings-studio-device__primary_id'>
-					{val}
-				</td>)
-			} else {
-				els.push(<td className='settings-studio-device__primary_id'>
-					&nbsp;
-				</td>)
-			}
+			els.push(<td className='settings-studio-device__primary_id' key={field}>
+				{val === undefined ? '' : val}
+			</td>)
 		})
 
 		// Add edit / remove buttons
 		els.push(
-			<td className='settings-studio-device__actions table-item-actions c1'>
+			<td className='settings-studio-device__actions table-item-actions c1' key='action'>
 				<button className='action-btn' onClick={(e) => this.editDevice(deviceId)}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
@@ -247,10 +241,11 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 		if (deviceTypes.length === 1) {
 			const config = configManifest.config[configManifest.defaultType || 'default']
-			const propNames = config.map(o => o.columnName).map(name => name ? (<th>{name}</th>) : undefined)
+			const propNames = config.map(o => o.columnName).map(name => name ? (<th key={name}>{name}</th>) : undefined)
+			propNames.push(<th key='action'>&nbsp;</th>)
 	
 			return (<React.Fragment>
-				<tr className='hl' key={'header'}>
+				<tr className='hl'>
 					{propNames}
 				</tr>
 				{_.map(devices, (device: any, deviceId: string) => {
@@ -279,7 +274,8 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				})}
 			</React.Fragment>)
 		} else {
-			const propNames = [ <th>ID</th>, ..._.map(this.getConfigSummaryFields(configManifest), f => <th>{f.columnName}</th>) ]
+			const propNames = [ <th key='ID'>ID</th>, ..._.map(this.getConfigSummaryFields(configManifest), f => <th key={f.columnName}>{f.columnName}</th>) ]
+			propNames.push(<th key='action'>&nbsp;</th>)
 
 			const deviceTypesObj = {}
 			for (let i in deviceTypes) {
@@ -287,7 +283,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			}
 
 			return (<React.Fragment>
-				<tr className='hl' key={'header'}>
+				<tr className='hl'>
 					{propNames}
 				</tr>
 				{_.map(devices, (device: any, deviceId: string) => {
@@ -323,14 +319,12 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				})}
 			</React.Fragment>)
 		}
-		
-		return
 	}
 
 	renderSubdeviceConfig (configField: TableConfigManifestEntry, obj?: any, prefix?: string) {
 		const { t } = this.props
 
-		return (<React.Fragment>
+		return (<React.Fragment key={configField.id}>
 			<h2 className='mhn'>{t(configField.name)}</h2>
 			<table className='expando settings-studio-device-table'>
 				<tbody>
@@ -357,7 +351,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			}
 		})
 
-		if (Object.keys(configManifest.config).length > 1) {
+		if (configManifest.config && Object.keys(configManifest.config).length > 1) {
 			fieldNames[configManifest.typeField || 'type'] = {
 				id: 'type',
 				name: 'Type',
@@ -377,20 +371,16 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			// @ts-ignore underscore typings are incorrect
 			const fn  = _.property(field.split('.'))
 			const val = fn(obj)
-			if (val) {
-				els.push(<td className='settings-studio-device__primary_id'>
-					{val}
-				</td>)
-			} else {
-				els.push(<td className='settings-studio-device__primary_id'>
-					&nbsp;
-				</td>)
-			}
+
+
+			els.push(<td className='settings-studio-device__primary_id' key={field}>
+				{val === undefined ? <>&nbsp;</> : val}
+			</td>)
 		})
 
 		// Add edit / remove buttons
 		els.push(
-			<td className='settings-studio-device__actions table-item-actions c1'>
+			<td className='settings-studio-device__actions table-item-actions c1' key='action'>
 				<button className='action-btn' onClick={(e) => this.editItem(path)}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
@@ -421,20 +411,21 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 		if (configTypes.length === 1) {
 			const config = configField.config[configField.defaultType]
-			const propNames = config.map(o => o.columnName).map(name => name ? (<th>{name}</th>) : undefined)
+			const propNames = config.map(o => o.columnName).map(name => name ? (<th key={name}>{name}</th>) : undefined)
+			propNames.push(<th key='actions'>&nbsp;</th>)
 	
-			return (<React.Fragment>
+			return (<React.Fragment key={configField.id}>
 				<h2 className='mhn'>{t(configField.name)}</h2>
-				<table className='expando settings-studio-device-table'>
+				<table className='expando settings-config-table table'>
 					<thead>
-						<tr className='hl' key={'header'}>
+						<tr className='hl'>
 							{propNames}
 						</tr>
 					</thead>
 					<tbody>
 						{_.map(tableContent, (tableEntry: any, i) => {
 						return <React.Fragment key={i}>
-							{this.renderConfigTableSummary(config, tableEntry, prefix + '' + i, this.isItemEdited)}
+							{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 							{this.isItemEdited(prefix + '' + i) &&
 								<tr className='expando-details hl' key={tableEntry.id + '-details'}>
 									<td colSpan={5}>
@@ -461,18 +452,19 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				</div>
 			</React.Fragment>)
 		} else {
-			const propNames = [ ..._.map(this.getConfigSummaryFields(configField), f => <th>{f.columnName}</th>) ]
+			const propNames = [ ..._.map(this.getConfigSummaryFields(configField), f => <th key={f.columnName}>{f.columnName}</th>) ]
+			propNames.push(<th key='actions'>&nbsp;</th>)
 
 			const configTypesObj = {}
 			for (let i in configTypes) {
 				configTypesObj[configTypes[i]] = configTypes[i]
 			}
 
-			return (<React.Fragment>
+			return (<React.Fragment key={configField.id}>
 				<h2 className='mhn'>{t(configField.name)}</h2>
-				<table className='expando settings-studio-device-table'>
+				<table className='expando settings-config-table table'>
 					<thead>
-						<tr className='hl' key={'header'}>
+						<tr className='hl'>
 							{propNames}
 						</tr>
 					</thead>
@@ -526,7 +518,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					fields.push(this.renderConfigTable(configField as TableConfigManifestEntry, obj, prefix + configField.id + '.'))
 				}
 			} else {
-				fields.push(<ConfigManifestEntryComponent configField={configField} obj={obj} prefix={prefix}></ConfigManifestEntryComponent>)
+				fields.push(<ConfigManifestEntryComponent key={configField.id} configField={configField} obj={obj} prefix={prefix}></ConfigManifestEntryComponent>)
 			}
 		}
 
