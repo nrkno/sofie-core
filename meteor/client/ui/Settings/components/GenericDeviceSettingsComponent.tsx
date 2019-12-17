@@ -91,6 +91,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 	}
 
 	confirmRemove = (path: string) => {
+		console.log(path)
 		this.setState({
 			showDeleteConfirm: true,
 			deleteConfirmItemPath: path
@@ -539,7 +540,11 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				<p>{t('Are you sure you want to remove {{type}} "{{deviceId}}"?',
 					{ 
 						deviceId: (this.state.deleteConfirmItemPath && this.state.deleteConfirmItemPath.split('.').pop()),
-						type: (this.state.deleteConfirmItemPath && this.state.deleteConfirmItemPath.match(/device/i)) ? 'device' : 'item'
+						type: (
+							this.state.deleteConfirmItemPath &&
+							this.state.deleteConfirmItemPath.match(/device/i) &&
+							!this.state.deleteConfirmItemPath.match(/\.(\d)+$/i)
+						) ? 'device' : 'item'
 					})}</p>
 			</ModalDialog>
 
