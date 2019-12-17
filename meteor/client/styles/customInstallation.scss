@@ -8,16 +8,16 @@ body.tv2 {
 	--general-live-guest-color: #00a97f;
 
 	--segment-layer-background-camera: #005919;
-	--segment-layer-background-camera--second: darken(#005919, 10%);
+	--segment-layer-background-camera--second: lighten(#005919, 20%);
 	--segment-layer-background-lower-third: #AF4900;
-	--segment-layer-background-lower-third--second: darken(#AF4900, 10%);
+	--segment-layer-background-lower-third--second: darken(#AF4900, 20%);
 	--segment-layer-background-graphics: #CA9D00;
-	--segment-layer-background-graphics--second: darken(#CA9D00, 10%);
+	--segment-layer-background-graphics--second: darken(#CA9D00, 20%);
 	--segment-layer-background-live-speak: #370020;
 	--segment-layer-background-remote: #AC29A5;
-	--segment-layer-background-remote--second: darken(#AC29A5, 10%);
+	--segment-layer-background-remote--second: darken(#AC29A5, 20%);
 	--segment-layer-background-vt: #1769FF;
-	--segment-layer-background-vt--second: darken(#1769FF, 10%);
+	--segment-layer-background-vt--second: darken(#1769FF, 20%);
 	--segment-layer-background-script: #370020;
 	--segment-layer-background-mic: #00a97f;
 	--segment-layer-background-guest: #00a97f;
