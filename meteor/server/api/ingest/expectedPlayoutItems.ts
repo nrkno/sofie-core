@@ -1,8 +1,12 @@
 import { PieceGeneric, Piece } from '../../../lib/collections/Pieces'
-import { ExpectedPlayoutItem, ExpectedPlayoutItemGeneric } from '../../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedPlayoutItem, ExpectedPlayoutItemGeneric, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import * as _ from 'underscore'
-import { DBRundown } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { syncFunctionIgnore } from '../../codeControl'
+import { logger } from '../../logging'
+import { Parts } from '../../../lib/collections/Parts'
+import { saveIntoDb } from '../../../lib/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: string
@@ -47,3 +51,68 @@ export function extractExpectedPlayoutItems (rundown: DBRundown, pieces: Array<P
 		}
 	})
 }
+
+export const updateExpectedPlayoutItemsOnRundown: (rundownId: string) => void
+= syncFunctionIgnore(function updateExpectedPlayoutItemsOnRundown (rundownId: string) {
+	check(rundownId, String)
+
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) {
+		const removedItems = ExpectedPlayoutItems.remove({
+			rundownId: rundownId
+		})
+		logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
+		return
+	}
+
+	const allPieces: Piece[] = []
+	const adlibPieces: AdLibPiece[] = []
+	_.each(rundown.getParts(), part => {
+		_.each(part.getAllPieces(), piece => allPieces.push(piece))
+		_.each(part.getAllAdLibPieces(), adlibPiece => adlibPieces.push(adlibPiece))
+	})
+
+	const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
+		...allPieces,
+		...adlibPieces
+	])
+
+	saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
+		rundownId: rundownId,
+	}, expectedPlayoutItems)
+})
+
+export const updateExpectedPlayoutItemsOnPart: (rundownId: string, partId: string) => void
+= syncFunctionIgnore(function updateExpectedPlayoutItemsOnPart (rundownId: string, partId: string) {
+	check(rundownId, String)
+	check(partId, String)
+
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) {
+		const removedItems = ExpectedPlayoutItems.remove({
+			rundownId: rundownId
+		})
+		logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
+		return
+	}
+
+	const part = Parts.findOne(partId)
+	if (!part) {
+		const removedItems = ExpectedPlayoutItems.remove({
+			rundownId: rundownId,
+			partId: partId
+		})
+		logger.info(`Removed ${removedItems} expected playout items for deleted part "${partId}"`)
+		return
+	}
+
+	const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
+		...part.getAllPieces(),
+		...part.getAllAdLibPieces()
+	])
+
+	saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
+		rundownId: rundownId,
+		partId: part._id
+	}, expectedPlayoutItems)
+})

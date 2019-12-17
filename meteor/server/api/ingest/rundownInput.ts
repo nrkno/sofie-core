@@ -50,7 +50,7 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
-import { extractExpectedPlayoutItems } from './expectedPlayoutItems'
+import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 
 export enum RundownSyncFunctionPriority {
@@ -353,11 +353,6 @@ function updateRundownFromIngestData (
 		adlibPieces.push(...segmentContents.adlibPieces)
 	})
 
-	const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(dbRundown, [
-		...segmentPieces,
-		...adlibPieces
-	])
-
 	changes = sumChanges(
 		changes,
 		// Save the baseline
@@ -433,10 +428,7 @@ function updateRundownFromIngestData (
 			afterRemove (adLibPiece) {
 				logger.debug('deleted piece ' + adLibPiece._id)
 			}
-		}),
-		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
-			rundownId: rundownId,
-		}, expectedPlayoutItems)
+		})
 	)
 
 	const didChange = anythingChanged(changes)
@@ -613,6 +605,7 @@ function updateSegmentFromIngestData (
 export function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
+	updateExpectedPlayoutItemsOnRundown(rundown._id)
 	updatePartRanks(rundown._id)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	UpdateNext.ensureNextPartIsValid(rundown)
