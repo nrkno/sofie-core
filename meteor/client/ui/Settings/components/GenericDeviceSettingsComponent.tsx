@@ -139,7 +139,23 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			defaults['type'] = Object.keys(itemConfig.config).indexOf(itemConfig.defaultType)
 		}
 
-		setObject[path] = defaults
+		if (!itemConfig.isSubDevices) {
+			const device = PeripheralDevices.findOne(this.props.device._id)!
+			const objectRootPath = (path.split('.')).slice(0, -1)
+			const objectRoot = _.property(objectRootPath as any)(device)
+			if (objectRoot === undefined) {
+				// create the array, as this is the first element inside
+				setObject[objectRootPath.join('.')] = [
+					defaults
+				]
+			} else {
+				// just set/add the element
+				setObject[path] = defaults
+			}
+		} else {
+			setObject[path] = defaults
+		}
+
 		// set db
 		PeripheralDevices.update(this.props.device._id, {
 			$set: setObject
@@ -446,7 +462,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				</table>
 	
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + (tableContent || []).length)}>
+					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
@@ -499,7 +515,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				</table>
 
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + tableContent.length)}>
+					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
