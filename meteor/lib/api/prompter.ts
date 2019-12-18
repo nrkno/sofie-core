@@ -29,7 +29,11 @@ export namespace PrompterAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		let parts = rundown.getParts()
+		let parts = rundown.getParts({
+			floated: {
+				$ne: true
+			}
+		})
 
 		let data: PrompterData = {
 			lines: []

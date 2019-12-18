@@ -340,7 +340,7 @@ function updateRundownFromIngestData (
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
 
-		const context = new SegmentContext(dbRundown, studio, existingParts)
+		const context = new SegmentContext(dbRundown, studio, existingParts, ingestSegment.name)
 		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
@@ -510,7 +510,7 @@ function updateSegmentFromIngestData (
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
-	const context = new SegmentContext(rundown, studio, existingParts)
+	const context = new SegmentContext(rundown, studio, existingParts, ingestSegment.name)
 	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 
@@ -590,13 +590,13 @@ function updateSegmentFromIngestData (
 	)
 	return anythingChanged(changes) ? segmentId : null
 }
-export function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+export function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updatePartRanks(rundown)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	UpdateNext.ensureNextPartIsValid(rundown)
-	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
+	triggerUpdateTimelineAfterIngestData(rundown._id, changedSegmentIds)
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {

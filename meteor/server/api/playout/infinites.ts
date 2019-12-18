@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { Timeline } from 'timeline-state-resolver-types'
 
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
@@ -9,11 +8,10 @@ import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
-import { logger } from '../../../lib/logging'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
-export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean): string {
+export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean): void {
 	let activeInfinitePieces: { [layer: string]: Piece } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
 
@@ -113,7 +111,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   // TODO - this guard is useless, as all shows have klokke and logo as infinites throughout...
 		   // This should instead do a check after each iteration to check if anything changed (even fields such as name on the piece)
 		   // If nothing changed, then it is safe to assume that it doesnt need to go further
-		   return part._id
+		   return
 	   }
 
 	   // figure out what infinites are to be extended
@@ -235,7 +233,6 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	}
 
 	waitForPromiseAll(ps)
-	return ''
 }
 
 export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (rundown: Rundown, part: Part, newPiece: Piece) {

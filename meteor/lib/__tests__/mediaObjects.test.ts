@@ -88,9 +88,7 @@ describe('lib/mediaObjects', () => {
 			_id: '',
 			_rank: 0,
 			name: '',
-			type: SourceLayerType.VT,
-			unlimited: false,
-			onPGMClean: false
+			type: SourceLayerType.VT
 		}))
 		expect(mediaId1).toEqual('TEST')
 
@@ -106,9 +104,7 @@ describe('lib/mediaObjects', () => {
 			_id: '',
 			_rank: 0,
 			name: '',
-			type: SourceLayerType.SCRIPT,
-			unlimited: false,
-			onPGMClean: false
+			type: SourceLayerType.SCRIPT
 		}))
 		expect(mediaId2).toEqual(undefined)
 
@@ -122,9 +118,7 @@ describe('lib/mediaObjects', () => {
 			_id: '',
 			_rank: 0,
 			name: '',
-			type: SourceLayerType.LIVE_SPEAK,
-			unlimited: false,
-			onPGMClean: false
+			type: SourceLayerType.LIVE_SPEAK
 		}))
 		expect(mediaId3).toEqual(undefined)
 	})
@@ -217,9 +211,7 @@ describe('lib/mediaObjects', () => {
 			_id: '',
 			_rank: 0,
 			name: '',
-			type: SourceLayerType.LIVE_SPEAK,
-			unlimited: false,
-			onPGMClean: false
+			type: SourceLayerType.LIVE_SPEAK
 		})
 
 		MediaObjects.insert(literal<MediaObject>({

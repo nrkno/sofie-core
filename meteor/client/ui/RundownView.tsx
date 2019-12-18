@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, VTEditableParameters, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -22,7 +22,7 @@ import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
+import { RundownTimingProvider, withTiming, WithTiming, CurrentPartRemaining, AutoNextStatus } from './RundownView/RundownTiming'
 import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -58,7 +58,6 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
@@ -266,11 +265,15 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+				</span>
+				{ this.props.rundown.currentPartId && <span className='timing-clock current-remaining'>
+					<CurrentPartRemaining currentPartId={this.props.rundown.currentPartId} heavyClassName='overtime' />
+					<AutoNextStatus />
 					{this.props.rundown.holdState && this.props.rundown.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
 						: null
 					}
-				</span>
+				</span> }
 				{ this.props.rundown.expectedDuration ?
 					(<React.Fragment>
 						{this.props.rundown.expectedStart && this.props.rundown.expectedDuration &&
@@ -823,6 +826,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.rundown.name,
 						message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+						warning: true,
 						onAccept: () => {
 							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
 						}
@@ -1109,12 +1113,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch().map(i => i._id)
 			},
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			subType: TSR_DeviceType.CASPARCG
+			subType: TSR.DeviceType.CASPARCG
 		}).fetch()) || undefined,
 		rundownLayoutId: String(params['layout'])
 	}
 })(
-class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	private bindKeys: Array<{
 		key: string,
@@ -1360,21 +1364,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
-				_.each(combos, (combo: string) => {
-					const handler = (e: KeyboardEvent) => {
-						if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
-							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
-								this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
-							])
-						}
+				const handler = (e: KeyboardEvent) => {
+					if (this.props.rundown && this.props.rundown.active && this.props.rundown.nextPartId) {
+						doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+							this.props.rundown._id, this.props.rundown.nextPartId, i.property, i.value
+						])
 					}
+				}
+				_.each(combos, (combo: string) => {
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 					this.usedArgumentKeys.push({
 						up: handler,
 						key: combo,
 						label: i.label || ''
 					})
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
 			})
 		}

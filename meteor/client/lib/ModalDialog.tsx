@@ -89,9 +89,9 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
-			if (e.code === 'Enter') {
-				this.handleAccept(e)
-			} else if (e.code === 'Escape') {
+			if (e.key === 'Enter') {
+				if (!this.props.warning) this.handleAccept(e)
+			} else if (e.key === 'Escape') {
 				if (this.props.secondaryText) {
 					this.handleSecondary(e)
 				} else {
@@ -203,7 +203,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 													}))
 												}
 												<button className={ClassNames('btn btn-primary', {
-													'right': this.props.secondaryText !== undefined
+													'right': this.props.secondaryText !== undefined,
+													'btn-warn': this.props.warning
 												})} onClick={this.handleAccept}>{this.props.acceptText}</button>
 											</div>
 										</dialog>
@@ -215,7 +216,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 				: null
 	}
 
-	private preventDefault (e: KeyboardEvent) {
+	private preventDefault = (e: KeyboardEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
 	}
@@ -332,7 +333,9 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 				}
 			})
 			return (
-			<ModalDialog title	= {onQueue.title}
+			<ModalDialog
+				key				= {this.state.queue.length}
+				title			= {onQueue.title}
 				acceptText		= {onQueue.yes || t('Yes')}
 				secondaryText	= {onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)}
 				onAccept		= {this.onAccept}

@@ -12,15 +12,20 @@ require('../http.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint http api', () => {
 	describe('router restore single', () => {
-		function callRoute (blueprintId: string, body: any, name?: string): MockResponseDataString {
+		function callRoute (blueprintId: string, body: any, name?: string, force?: boolean): MockResponseDataString {
 			const routeName = '/blueprints/restore/:blueprintId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
 
+			const queryParams = _.compact([
+				name ? `name=${name}` : undefined,
+				force ? 'force=1' : undefined
+			])
+
 			const res = new MockResponse()
 			const req = new MockRequest({
 				method: 'POST',
-				url: `/blueprints/restore/${blueprintId}` + (name ? `?name=${name}` : '')
+				url: `/blueprints/restore/${blueprintId}?` + queryParams.join('&')
 			})
 			;(req as any).body = body
 
@@ -80,7 +85,18 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined, false)
+		})
+		testInFiber('with body & force', () => {
+			const id = 'id1'
+			const body = '0123456789'
+
+			const res = callRoute(id, body, undefined, true)
+			expect(res.statusCode).toEqual(200)
+			expect(res.bufferStr).toEqual('')
+
+			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined, true)
 		})
 		testInFiber('internal error', () => {
 			const id = 'id1'
@@ -98,7 +114,7 @@ describe('Test blueprint http api', () => {
 				expect(res.bufferStr).toEqual('[505] Some thrown error')
 
 				expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-				expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined)
+				expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined, false)
 			} finally {
 				uploadBlueprint.mockRestore()
 			}
@@ -113,7 +129,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, name)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, name, false)
 		})
 
 	})
@@ -127,6 +143,7 @@ describe('Test blueprint http api', () => {
 			const res = new MockResponse()
 			const req = new MockRequest({
 				method: 'POST',
+				url: `${routeName}?force=1`
 			})
 			;(req as any).body = body
 

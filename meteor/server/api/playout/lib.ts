@@ -109,13 +109,19 @@ function resetRundownPlayhead (rundown: Rundown) {
 		$set: {
 			previousPartId: null,
 			currentPartId: null,
-			updateStoryStatus: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
 			startedPlayback: 1,
 			previousPersistentState: 1
 		}
 	})
+	// Also update locally:
+	rundown.previousPartId = null
+	rundown.currentPartId = null
+	rundown.holdState = RundownHoldState.NONE
+	delete rundown.startedPlayback
+	delete rundown.previousPersistentState
+
 
 	if (rundown.active) {
 		// put the first on queue:
@@ -173,6 +179,9 @@ export function setNextPart (
 		}
 		if (nextPart.invalid) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
+		}
+		if (nextPart.floated) {
+			throw new Meteor.Error(400, 'Part is marked as floated, cannot set as next.')
 		}
 
 		ps.push(resetPart(nextPart))
