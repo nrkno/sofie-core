@@ -24,7 +24,8 @@ enum SofieExternalMessageType {
 	NAK = 'nak',
 	KEYBOARD_EVENT = 'keyboard_event',
 	CURRENT_PART_CHANGED = 'current_part_changed',
-	NEXT_PART_CHANGED = 'next_part_changed'
+	NEXT_PART_CHANGED = 'next_part_changed',
+	FOCUS_IN = 'focus_in'
 }
 
 interface SofieExternalMessage {
@@ -147,7 +148,16 @@ export class ExternalFramePanel extends React.Component<IProps> {
 						this.sendCurrentState()
 					}
 				}).catch(e => console.warn)
-				break;
+				break
+			case SofieExternalMessageType.FOCUS_IN:
+				this.sendMessage(literal<SofieExternalMessage>({
+					id: Random.id(),
+					replyToId: message.id,
+					type: SofieExternalMessageType.ACK
+				}))
+				const randomEl = document.querySelector('button')
+				if (randomEl) randomEl.focus()
+				break
 		}
 	}
 
