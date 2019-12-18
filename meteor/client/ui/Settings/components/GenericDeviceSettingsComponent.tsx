@@ -91,7 +91,6 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 	}
 
 	confirmRemove = (path: string) => {
-		console.log(path)
 		this.setState({
 			showDeleteConfirm: true,
 			deleteConfirmItemPath: path
@@ -192,7 +191,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		const configSummaryFields = this.getConfigSummaryFields(configManifest)
 
 		// Always show device ID
-		els.push(<th className='settings-studio-device__name c1' key='ID'>
+		els.push(<th className='settings-studio-device__name c2' key='ID'>
 			{deviceId}
 		</th>)
 
@@ -211,7 +210,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			// 	</td>)
 			// }
 
-			els.push(<td className='settings-studio-device__primary_id' key={field}>
+			els.push(<td className='settings-studio-device__primary_id c4' key={field}>
 				{val === undefined ? '' : val}
 			</td>)
 		})
@@ -374,7 +373,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			const val = fn(obj)
 
 
-			els.push(<td className='settings-studio-device__primary_id' key={field}>
+			els.push(<td className='settings-studio-device__primary_id c4' key={field}>
 				{val === undefined ? <>&nbsp;</> : val}
 			</td>)
 		})
@@ -447,7 +446,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				</table>
 	
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + tableContent.length)}>
+					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + (tableContent || []).length)}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
