@@ -199,6 +199,22 @@ export class Rundown implements DBRundown {
 			parts: Rundown._sortParts(await pParts, segments)
 		}
 	}
+	/** Synchronous version of getSegmentsAndParts, to be used client-side */
+	getSegmentsAndPartsSync (): { segments: Segment[], parts: Part[] } {
+
+		const segments = Segments.find({
+			rundownId: this._id
+		}, { sort: { _rank: 1 } }).fetch()
+
+		const parts = Parts.find({
+			rundownId: this._id
+		}, { sort: { _rank: 1 } }).fetch()
+
+		return {
+			segments: segments,
+			parts: Rundown._sortParts(parts, segments)
+		}
+	}
 	static _sortParts<T extends DBPart> (parts: T[], segments: DBSegment[]): T[] {
 
 		const segmentRanks: {[segmentId: string]: number} = {}

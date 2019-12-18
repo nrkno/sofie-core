@@ -123,8 +123,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	// fetch all the parts for the segment
 	let partsE: Array<PartExtended> = []
 
-	const pSegmentsAndParts = rundown.getSegmentsAndParts()
-	const segmentsAndParts = waitForPromise(pSegmentsAndParts)
+	const segmentsAndParts = rundown.getSegmentsAndPartsSync()
 	let parts = segmentsAndParts.parts
 	// let segments = segmentsAndParts.segments
 	const partsInSegment = _.filter(parts, p => p.segmentId === segment._id)
