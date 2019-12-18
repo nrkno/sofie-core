@@ -18,18 +18,21 @@ import {
 	unprotectObjectArray,
 	protectString,
 	unprotectString,
-	makePromise
+	makePromise,
+	waitForPromiseObj,
+	asyncCollectionFindFetch,
+	normalizeArray
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
+import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId, createShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultOrderedRundowns, ConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -464,6 +467,81 @@ export namespace ClientRundownAPI {
 
 		return _.compact(errors)
 	}
+	// Validate the blueprint config used for this rundown, to ensure that all the required fields are specified
+	export function rundownPlaylistValidateBlueprintConfig (playlistId: RundownPlaylistId): RundownPlaylistValidateBlueprintConfigResult {
+		check(playlistId, String)
+
+		const rundownPlaylist = RundownPlaylists.findOne(playlistId)
+		if (!rundownPlaylist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+
+		const studio = rundownPlaylist.getStudio()
+		const studioBlueprint = Blueprints.findOne(studio.blueprintId)
+		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
+
+		const rundowns = rundownPlaylist.getRundowns()
+		const uniqueShowStyleCompounds = _.uniq(rundowns, undefined, rundown => `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`)
+		
+		// Load all variants/compounds
+		const { showStyleBases, showStyleVariants } = waitForPromiseObj({
+			showStyleBases: asyncCollectionFindFetch(ShowStyleBases, { _id: { $in: uniqueShowStyleCompounds.map(r => r.showStyleBaseId) } }),
+			showStyleVariants: asyncCollectionFindFetch(ShowStyleVariants, { _id: { $in: uniqueShowStyleCompounds.map(r => r.showStyleVariantId) } })
+		})
+		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
+		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
+
+		const findMissingConfigs = (manifest: ConfigManifestEntry[], config: IConfigItem[]) => {
+			const missingKeys: string[] = []
+
+			const configKeys = _.map(config, c => c._id)
+			_.each(manifest, m => {
+				if (m.required && configKeys.indexOf(m.id) === -1) {
+					missingKeys.push(m.name)
+				}
+			})
+
+			return missingKeys
+		}
+
+		const showStyleBlueprints = Blueprints.find({ _id: { $in: _.uniq(_.compact(showStyleBases.map(c => c.blueprintId))) } }).fetch()
+		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
+
+		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] = uniqueShowStyleCompounds.map(rundown => {
+			const showStyleBase = showStyleBasesMap[unprotectString(rundown.showStyleBaseId)]
+			const showStyleVariant = showStyleVariantsMap[unprotectString(rundown.showStyleVariantId)]
+			const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
+			if (!showStyleBase || !showStyleVariant) {
+				return {
+					id: id,
+					name: `${showStyleBase ? showStyleBase.name : rundown.showStyleBaseId}-${rundown.showStyleVariantId}`,
+					checkFailed: true,
+					fields: []
+				}
+			} else {
+				const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+				const blueprint = showStyleBlueprintsMap[unprotectString(compound.blueprintId)]
+				if (!blueprint) {
+					return {
+						id: id,
+						name: compound.name,
+						checkFailed: true,
+						fields: []
+					}
+				} else {
+					return {
+						id: id,
+						name: compound.name,
+						checkFailed: false,
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest || [], compound.config)
+					}
+				}
+			}
+		})
+
+		return {
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest || [], studio.config),
+			showStyles: showStyleWarnings
+		}
+	}
 }
 
 class ServerRundownAPIClass implements NewRundownAPI {
@@ -475,6 +553,9 @@ class ServerRundownAPIClass implements NewRundownAPI {
 	}
 	rundownPlaylistNeedsResync (playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(playlistId))
+	}
+	rundownPlaylistValidateBlueprintConfig (playlistId: RundownPlaylistId) {
+		return makePromise(() => ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(playlistId))
 	}
 	removeRundown (rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.removeRundown(rundownId))
