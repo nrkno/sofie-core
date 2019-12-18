@@ -782,13 +782,7 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
  * Blocks the fiber until all the Promises have resolved
  */
 export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
-	Promise.all(ps)
-	.then((result) => {
-		cb(null, result)
-	})
-	.catch((e) => {
-		cb(e)
-	})
+	return waitForPromise(Promise.all(ps))
 })
 /**
  * Convert a promise to a "synchronous" Fiber function
@@ -796,6 +790,7 @@ export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.
  * If the fiber rejects, the function in the Fiber will "throw"
  */
 export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)
 	Promise.resolve(p)
 	.then((result) => {
 		cb(null, result)
