@@ -532,6 +532,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.dontDeactivateOnStandDown'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Only preload elements in active Rundown')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.onlyPreloadActiveRundown'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
 		</React.Fragment>
 	}
 	render () {
