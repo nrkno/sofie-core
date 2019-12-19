@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
-import { Rundowns } from './Rundowns'
+import { Rundowns, Rundown } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { AdLibPieces } from './AdLibPieces'
 import { Segments } from './Segments'
@@ -17,6 +17,8 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
 import { createMongoCollection } from './lib'
+import { Studio } from './Studios'
+import { ShowStyleBase } from './ShowStyleBases'
 
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends IBlueprintPartDB {
@@ -88,10 +90,10 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-        title: string
-        description?: string
-        color?: string
-    }
+		title: string
+		description?: string
+		color?: string
+	}
 	public floated?: boolean
 	// From IBlueprintPartDB:
 	public _id: string
@@ -193,15 +195,26 @@ export class Part implements DBPart {
 			}
 		] : []
 	}
-	getNotes (runtimeNotes?: boolean): Array<PartNote> {
+	getNotes (runtimeNotes?: boolean, context?: { rundown?: Rundown, studio?: Studio, showStyleBase?: ShowStyleBase }): Array<PartNote> {
 		let notes: Array<PartNote> = []
 		notes = notes.concat(this.notes || [])
 
 		if (runtimeNotes) {
 			const pieces = this.getPieces()
-			const rundown = this.getRundown()
-			const studio = rundown && rundown.getStudio()
-			const showStyleBase = rundown && rundown.getShowStyleBase()
+
+			let rundown: Rundown | undefined
+			let studio: Studio | undefined
+			let showStyleBase: ShowStyleBase | undefined
+
+			if (context) {
+				rundown = context.rundown
+				studio = context.studio
+				showStyleBase = context.showStyleBase
+			} else {
+				rundown = this.getRundown()
+				studio = rundown && rundown.getStudio()
+				showStyleBase = rundown && rundown.getShowStyleBase()
+			}
 			const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
 			_.each(pieces, (piece) => {
 				// TODO: check statuses (like media availability) here

@@ -27,6 +27,7 @@ import { literal } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
 import { Settings } from '../../../lib/Settings'
+import { Part } from '../../../lib/collections/Parts'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -116,9 +117,14 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	let o = getResolvedSegment(props.showStyleBase, props.rundown, segment)
+	const partContext = {
+		rundown: props.rundown,
+		studio: props.studio,
+		showStyleBase: props.showStyleBase
+	}
 	let notes: Array<PartNote> = []
-	_.each(o.parts, (part) => {
-		notes = notes.concat(part.getNotes(true), part.getInvalidReasonNotes())
+	_.each(o.parts, (part: Part) => {
+		notes = notes.concat(part.getNotes(true, partContext), part.getInvalidReasonNotes())
 	})
 	notes = notes.concat(segment.notes || [])
 

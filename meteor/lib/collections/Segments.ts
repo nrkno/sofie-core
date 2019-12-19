@@ -1,12 +1,14 @@
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
 import { Parts } from './Parts'
-import { Rundowns } from './Rundowns'
+import { Rundowns, Rundown } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
+import { ShowStyleBase } from './ShowStyleBases'
+import { Studio } from './Studios'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends IBlueprintSegmentDB {
@@ -55,13 +57,22 @@ export class Segment implements DBSegment {
 			}, options)
 		).fetch()
 	}
-	getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
+	getNotes (includeParts?: boolean, runtimeNotes?: boolean, context?: {rundown?: Rundown, studio?: Studio, showStyleBase?: ShowStyleBase }) {
 		let notes: Array<PartNote> = []
 
 		if (includeParts) {
 			const parts = this.getParts()
-			_.each(parts, l => {
-				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
+
+			if (runtimeNotes && !context) { // Note: This is an optimization for part.getNotes()
+				const rundown = this.getRundown()
+				context = {
+					rundown: rundown,
+					studio: rundown && rundown.getStudio(),
+					showStyleBase: rundown && rundown.getShowStyleBase()
+				}
+			}
+			_.each(parts, part => {
+				notes = notes.concat(part.getNotes(runtimeNotes, context)).concat(part.getInvalidReasonNotes())
 			})
 		}
 

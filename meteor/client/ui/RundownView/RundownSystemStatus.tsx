@@ -150,9 +150,16 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 
 	let segments = props.rundown.getSegments()
 
+
+	const context = {
+		rundown: props.rundown,
+		studio: props.rundown.getStudio(),
+		showStyleBase: props.rundown.getShowStyleBase()
+	}
+
 	let notes: Array<PartNote> = []
 	_.each(segments, s => {
-		notes = notes.concat(s.getNotes(true, true))
+		notes = notes.concat(s.getNotes(true, true, context))
 	})
 
 	return {

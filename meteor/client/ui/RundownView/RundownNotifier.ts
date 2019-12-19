@@ -307,8 +307,8 @@ class RundownViewNotifier extends WithManagedTracker {
 			}).fetch()
 
 			const newNoteIds: Array<string> = []
-			_.flatten(_.compact(segments.map(i => i.getNotes(true).map(j => _.extend(j, {
-				rank: i._rank
+			_.flatten(_.compact(segments.map(segment => segment.getNotes(true).map(j => _.extend(j, {
+				rank: segment._rank
 			}))))).forEach((item: PartNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
