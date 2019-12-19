@@ -112,7 +112,7 @@ export function deactivateRundownInner (rundown: Rundown) {
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boolean) {
+export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boolean, rundownToBeActivated: Rundown) {
 	logger.info('prepareStudioForBroadcast ' + studio._id)
 
 	const ssrcBgs: Array<IConfigItem> = _.compact([
@@ -134,7 +134,7 @@ export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boo
 			} else {
 				logger.info('devicesMakeReady OK')
 			}
-		}, 'devicesMakeReady', okToDestoryStuff)
+		}, 'devicesMakeReady', okToDestoryStuff, rundownToBeActivated._id)
 
 		if (okToDestoryStuff) {
 			if (ssrcBgs.length > 0) {

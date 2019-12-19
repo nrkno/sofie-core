@@ -84,7 +84,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundown(rundown)
-			prepareStudioForBroadcast(rundown.getStudio(), true)
+			prepareStudioForBroadcast(rundown.getStudio(), true, rundown)
 
 			return libActivateRundown(rundown, true) // Activate rundown (rehearsal)
 		})
@@ -119,7 +119,7 @@ export namespace ServerPlayoutAPI {
 			// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(402, `rundownResetAndActivate cannot be run when active!`)
 
 			libResetRundown(rundown)
-			prepareStudioForBroadcast(rundown.getStudio(), true)
+			prepareStudioForBroadcast(rundown.getStudio(), true, rundown)
 
 			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
 		})
@@ -155,7 +155,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundown(rundown)
-			prepareStudioForBroadcast(rundown.getStudio(), true)
+			prepareStudioForBroadcast(rundown.getStudio(), true, rundown)
 
 			return libActivateRundown(rundown, rehearsal)
 		})
@@ -169,7 +169,7 @@ export namespace ServerPlayoutAPI {
 			const rundown = Rundowns.findOne(rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-			prepareStudioForBroadcast(rundown.getStudio(), true)
+			prepareStudioForBroadcast(rundown.getStudio(), true, rundown)
 
 			return libActivateRundown(rundown, rehearsal)
 		})
