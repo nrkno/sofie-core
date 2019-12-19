@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { Rundowns, Rundown } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
-import { AdLibPieces } from './AdLibPieces'
+import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
 import { RundownAPI } from '../api/rundown'
@@ -124,7 +124,7 @@ export class Part implements DBPart {
 	getSegment () {
 		return Segments.findOne(this.segmentId)
 	}
-	getPieces (selector?: MongoSelector<Piece>, options?: FindOptions) {
+	getPieces (selector?: MongoSelector<Piece>, options?: FindOptions): Piece[] {
 		selector = selector || {}
 		options = options || {}
 		return Pieces.find(
@@ -137,11 +137,15 @@ export class Part implements DBPart {
 			}, options)
 		).fetch()
 	}
+	/** Returns pieces in part, using an array of pieces in rundown */
+	filterPieces (piecesInRundown: Piece[]): Piece[] {
+		return _.filter(piecesInRundown, piece => piece.partId === this._id)
+	}
 	getAllPieces () {
 		return this.getPieces()
 	}
 
-	getAdLibPieces (selector?: MongoSelector<Piece>, options?: FindOptions) {
+	getAdLibPieces (selector?: MongoSelector<Piece>, options?: FindOptions): AdLibPiece[] {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(
@@ -153,6 +157,10 @@ export class Part implements DBPart {
 				sort: { _rank: 1, name: 1 }
 			}, options)
 		).fetch()
+	}
+	/** Returns pieces in part, using an array of pieces in rundown */
+	filterAdlibPieces (adLibPiecesInRundown: AdLibPiece[]): AdLibPiece[] {
+		return _.filter(adLibPiecesInRundown, piece => piece.partId === this._id)
 	}
 	getTimings () {
 		// return a chronological list of timing events
@@ -195,22 +203,24 @@ export class Part implements DBPart {
 			}
 		] : []
 	}
-	getNotes (runtimeNotes?: boolean, context?: { rundown?: Rundown, studio?: Studio, showStyleBase?: ShowStyleBase }): Array<PartNote> {
+	getNotes (runtimeNotes?: boolean, context?: GetNotesContext): Array<PartNote> {
 		let notes: Array<PartNote> = []
 		notes = notes.concat(this.notes || [])
 
 		if (runtimeNotes) {
-			const pieces = this.getPieces()
+			let pieces: Piece[] = []
 
 			let rundown: Rundown | undefined
 			let studio: Studio | undefined
 			let showStyleBase: ShowStyleBase | undefined
 
 			if (context) {
+				pieces = this.filterPieces(context.allPiecesInRundown)
 				rundown = context.rundown
 				studio = context.studio
 				showStyleBase = context.showStyleBase
 			} else {
+				pieces = this.getPieces()
 				rundown = this.getRundown()
 				studio = rundown && rundown.getStudio()
 				showStyleBase = rundown && rundown.getShowStyleBase()
@@ -239,6 +249,15 @@ export class Part implements DBPart {
 			})
 		}
 		return notes
+	}
+	static getNotesContext (rundown?: Rundown): GetNotesContext {
+		const context: GetNotesContext = {
+			rundown: rundown,
+			studio: rundown && rundown.getStudio(),
+			showStyleBase: rundown && rundown.getShowStyleBase(),
+			allPiecesInRundown: rundown ? Pieces.find({ rundownId: rundown._id }).fetch() : []
+		}
+		return context
 	}
 	getLastTake () {
 		if (!this.timings) return undefined
@@ -279,3 +298,10 @@ Meteor.startup(() => {
 		})
 	}
 })
+
+export interface GetNotesContext {
+	rundown?: Rundown
+	studio?: Studio
+	showStyleBase?: ShowStyleBase
+	allPiecesInRundown: Piece[]
+}

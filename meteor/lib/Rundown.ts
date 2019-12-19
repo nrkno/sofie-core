@@ -194,13 +194,14 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 		let startsAt = 0
 		let previousPart: PartExtended
+		const allPiecesInRundown = Pieces.find({ rundownId: rundown._id }).fetch()
 		// fetch all the pieces for the parts
 		partsE = _.map(parts, (part, itIndex) => {
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
 			let partE: PartExtended = extendMandadory(part, {
-				pieces: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
+				pieces: _.map(part.filterPieces(allPiecesInRundown), (piece) => {
 					return extendMandadory<Piece, PieceExtended>(piece, {
 						renderedDuration: 0,
 						renderedInPoint: 0

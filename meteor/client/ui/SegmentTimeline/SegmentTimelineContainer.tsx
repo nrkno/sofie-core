@@ -117,11 +117,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	let o = getResolvedSegment(props.showStyleBase, props.rundown, segment)
-	const partContext = {
-		rundown: props.rundown,
-		studio: props.studio,
-		showStyleBase: props.showStyleBase
-	}
+	const partContext = Part.getNotesContext(props.rundown)
+
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part: Part) => {
 		notes = notes.concat(part.getNotes(true, partContext), part.getInvalidReasonNotes())

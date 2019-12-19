@@ -10,7 +10,7 @@ import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/med
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Parts } from '../../../lib/collections/Parts'
+import { Parts, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
@@ -301,29 +301,34 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		let oldNoteIds: Array<string> = []
 		this.autorun(() => {
+
+			const rundown = Tracker.nonreactive(() => {
+				return Rundowns.findOne(rRundownId)
+			})
 			// console.log('RundownViewNotifier 4')
-			const segments = Segments.find({
-				rundownId: rRundownId
-			}).fetch()
+			if (!rundown) return
+
+			const segmentsAndParts = rundown.getSegmentsAndPartsSync()
+			const context = Part.getNotesContext()
 
 			const newNoteIds: Array<string> = []
-			_.flatten(_.compact(segments.map(segment => segment.getNotes(true).map(j => _.extend(j, {
+			_.flatten(_.compact(segmentsAndParts.segments.map(segment => segment.getNotes(true, false, context, segmentsAndParts.parts).map(note => _.extend(note, {
 				rank: segment._rank
-			}))))).forEach((item: PartNote & {rank: number}) => {
-				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
-				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
+			}))))).forEach((note: PartNote & {rank: number}) => {
+				const id = note.message + '-' + (note.origin.pieceId || note.origin.partId || note.origin.segmentId || note.origin.rundownId) + '-' + note.origin.name + '-' + note.type
+				let newNotification = new Notification(id, note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (note.origin.name ? note.origin.name + ': ' : '') + note.message, note.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: t('Show issue'),
 						type: 'default'
 					}
-				], item.rank)
+				], note.rank)
 				newNotification.on('action', (notification, type, e) => {
 					switch (type) {
 						case 'default':
 							const handler = onRONotificationClick.get()
 							if (handler && typeof handler === 'function') {
 								handler({
-									sourceLocator: item.origin
+									sourceLocator: note.origin
 								})
 							}
 					}
@@ -336,8 +341,8 @@ class RundownViewNotifier extends WithManagedTracker {
 				}
 			})
 
-			_.difference(oldNoteIds, newNoteIds).forEach((item) => {
-				delete this._notes[item]
+			_.difference(oldNoteIds, newNoteIds).forEach((noteId) => {
+				delete this._notes[noteId]
 				this._notesDep.changed()
 			})
 			oldNoteIds = newNoteIds

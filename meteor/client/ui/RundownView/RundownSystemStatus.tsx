@@ -10,10 +10,11 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Parts } from '../../../lib/collections/Parts'
+import { Parts, Part } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { PubSub } from '../../../lib/api/pubsub'
+import { Pieces } from '../../../lib/collections/Pieces'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -148,18 +149,12 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	})
 
-	let segments = props.rundown.getSegments()
-
-
-	const context = {
-		rundown: props.rundown,
-		studio: props.rundown.getStudio(),
-		showStyleBase: props.rundown.getShowStyleBase()
-	}
+	const segmentsAndParts = props.rundown.getSegmentsAndPartsSync()
+	const context = Part.getNotesContext(props.rundown)
 
 	let notes: Array<PartNote> = []
-	_.each(segments, s => {
-		notes = notes.concat(s.getNotes(true, true, context))
+	_.each(segmentsAndParts.segments, s => {
+		notes = notes.concat(s.getNotes(true, true, context, segmentsAndParts.parts))
 	})
 
 	return {
