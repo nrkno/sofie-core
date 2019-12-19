@@ -23,7 +23,8 @@ const Segments = mockupCollection(_Segments)
 const Parts = mockupCollection(_Parts)
 
 function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
-	const sortedParts = _.sortBy(parts, p => p._rank)
+	const sortedParts = Rundown._sortParts(parts, segments)
+
 	const groupedParts = _.groupBy(sortedParts, p => p.segmentId)
 	const arr: [string, DBPart[]][] = _.pairs(groupedParts)
 	const idMap = _.map(arr, g => ({
@@ -56,8 +57,8 @@ describe('Test recieved mos ingest payloads', () => {
 			externalId: roData.ID.toString()
 		})
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		expect(getPartIdMap(segments, parts)).toEqual(mockRO.segmentIdMap())
 
@@ -82,8 +83,8 @@ describe('Test recieved mos ingest payloads', () => {
 			externalId: roData.ID.toString()
 		})
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap2 = mockRO.segmentIdMap()
 		partMap2[1].parts.splice(1, 0, ...partMap2[3].parts)
@@ -303,8 +304,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(rundown, [newPartData.ID.toString()], false)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts.splice(2, 0, newPartData.ID.toString())
@@ -333,8 +334,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(rundown, [newPartData.ID.toString()], false)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap.splice(1, 0, {
@@ -440,8 +441,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(rundown, [newPartData.ID.toString()], true)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = newPartData.ID.toString()
@@ -495,8 +496,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[1].parts.push(...partMap[3].parts)
@@ -607,8 +608,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = 'ro1;s1;p3'
@@ -638,8 +639,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].segment = 'apDVfF5nk1_StK474hEUxLMZIag_'
@@ -712,8 +713,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[1].parts.push('ro1;s4;p1')
@@ -770,8 +771,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = 'ro1;s1;p3'
@@ -805,8 +806,8 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(rundown)
 
-		const segments = Segments.find({ rundownId: rundown._id }).fetch()
-		const parts = Parts.find({ rundownId: rundown._id }).fetch()
+		const segments = rundown.getSegments()
+		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
 		const old = partMap.splice(0, 1)

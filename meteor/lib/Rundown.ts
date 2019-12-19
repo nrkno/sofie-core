@@ -7,7 +7,7 @@ import {
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, extendMandadory, literal } from './lib'
+import { normalizeArray, extendMandadory, literal, waitForPromise, fetchNext, last } from './lib'
 import { Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
@@ -122,24 +122,23 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 	// fetch all the parts for the segment
 	let partsE: Array<PartExtended> = []
-	const parts = segment.getParts()
 
-	if (parts.length > 0) {
+	const segmentsAndParts = rundown.getSegmentsAndPartsSync()
+	let parts = segmentsAndParts.parts
+	// let segments = segmentsAndParts.segments
+	const partsInSegment = _.filter(parts, p => p.segmentId === segment._id)
+
+	if (partsInSegment.length > 0) {
 		if (checkFollowingSegment) {
-			let followingParts = Parts.find({
-				rundownId: segment.rundownId,
-				_rank: {
-					$gt: parts[parts.length - 1]._rank
-				}
-			}, { sort: { _rank: 1 }, limit: 1 }).fetch()
-			if (followingParts.length > 0) {
-				let firstFollowingPart = followingParts[0]
+			let followingPart = fetchNext(parts, last(partsInSegment))
+
+			if (followingPart) {
 
 				let pieces = Pieces.find({
-					partId: firstFollowingPart._id
+					partId: followingPart._id
 				}).fetch()
 
-				followingPart = extendMandadory<Part, PartExtended>(firstFollowingPart, {
+				followingPart = extendMandadory<Part, PartExtended>(followingPart, {
 					pieces: _.map(pieces, (piece) => {
 						return extendMandadory<Piece, PieceExtended>(piece, {
 							// sourceLayer: ISourceLayerExtended,

@@ -7,7 +7,7 @@ import { Part, Parts, DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getCurrentTime,
 	Time,
-	fetchAfter,
+	fetchNext,
 	asyncCollectionUpdate,
 	waitForPromiseAll,
 	asyncCollectionInsert,
@@ -279,10 +279,7 @@ export namespace ServerPlayoutAPI {
 			let takePart = rundownData.partsMap[rundown.nextPartId]
 			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			let partAfter = fetchAfter(rundownData.parts, {
-				rundownId: rundown._id,
-				invalid: { $ne: true }
-			}, takePart._rank)
+			let partAfter = fetchNext(_.filter(rundownData.parts, p => (p.rundownId === rundown._id && !p.invalid)), takePart)
 
 			let nextPart: DBPart | null = partAfter || null
 
@@ -506,17 +503,22 @@ export namespace ServerPlayoutAPI {
 				nextPartId = rundown.nextPartId
 			}
 		}
+		const pSegmentsAndParts = rundown.getSegmentsAndParts()
+
 		let currentNextPart: Part = Parts.findOne(nextPartId) as Part
 		if (!currentNextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
 		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
 		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
-		const parts = rundown.getParts()
+		// const parts = rundown.getParts()
 		const partsInSegments: {[segmentId: string]: Part[]} = {}
 		const segmentsWithParts: Segment[] = []
-		_.each(rundown.getSegments(), segment => {
-			let partsInSegment = segment.getParts()
+
+		const { segments, parts } = waitForPromise(pSegmentsAndParts)
+
+		_.each(segments, segment => {
+			let partsInSegment = _.filter(parts, p => p.segmentId === segment._id)
 			if (partsInSegment.length) {
 				segmentsWithParts.push(segment)
 				partsInSegments[segment._id] = partsInSegment

@@ -356,7 +356,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
-				if (sourceLayer && part) {
+				if (segment && sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
@@ -373,7 +373,7 @@ class RundownViewNotifier extends WithManagedTracker {
 									label: t('Show issue'),
 									type: 'default'
 								}
-							], part._rank)
+							], segment._rank * 1000 + part._rank)
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':

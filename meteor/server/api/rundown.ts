@@ -1,19 +1,18 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Pieces } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Segments } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
-	fetchBefore,
 	getRank,
-	fetchAfter,
 	getCurrentTime,
 	asyncCollectionUpdate,
-	waitForPromiseAll
+	waitForPromiseAll,
+	waitForPromise
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -158,77 +157,66 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  * @param rundownId
  */
-export function updatePartRanks (rundownId: string): Array<Part> {
-	const allSegments = Segments.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
-	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
+export function updatePartRanks (rundown: Rundown): Array<Part> {
 
-	logger.debug(`updatePartRanks (${allParts.length} parts, ${allSegments.length} segments)`)
 
-	const rankedParts: Array<Part> = []
-	const partsToPutAfter: {[id: string]: Array<Part>} = {}
+	const pSegmentsAndParts = rundown.getSegmentsAndParts()
 
-	_.each(allParts, (part) => {
+	const { segments, parts: orgParts } = waitForPromise(pSegmentsAndParts)
+
+	logger.debug(`updatePartRanks (${orgParts.length} parts, ${segments.length} segments)`)
+
+	const parts: Array<Part> = []
+	const partsToPutAfter: {[partId: string]: Array<Part>} = {}
+
+	_.each(orgParts, (part) => {
 		if (part.afterPart) {
 			if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
 			partsToPutAfter[part.afterPart].push(part)
 		} else {
-			rankedParts.push(part)
-		}
-	})
-
-	// Sort the parts by segment, then rank
-	const segmentRanks: {[segmentId: string]: number} = {}
-	_.each(allSegments, seg => {
-		segmentRanks[seg._id] = seg._rank
-	})
-	rankedParts.sort((a, b) => {
-		let compareRanks = (ar: number, br: number) => {
-			if (ar === br) {
-				return 0
-			} else if (ar < br) {
-				return -1
-			} else {
-				return 1
-			}
-		}
-
-		if (a.segmentId === b.segmentId) {
-			return compareRanks(a._rank, b._rank)
-		} else {
-			const aRank = segmentRanks[a.segmentId] || -1
-			const bRank = segmentRanks[b.segmentId] || -1
-			return compareRanks(aRank, bRank)
+			parts.push(part)
 		}
 	})
 
 	let ps: Array<Promise<any>> = []
-	// Ensure that the parts are all correctly rannnnked
-	_.each(rankedParts, (part, newRank) => {
+
+	// Update _rank and save to database:
+	let newRank = 0
+	let prevSegmentId = ''
+	_.each(parts, (part) => {
+		if (part.segmentId !== prevSegmentId) {
+			newRank = 0
+			prevSegmentId = part.segmentId
+		}
 		if (part._rank !== newRank) {
 			ps.push(asyncCollectionUpdate(Parts, part._id, { $set: { _rank: newRank } }))
 			// Update in place, for the upcoming algorithm
 			part._rank = newRank
 		}
+		newRank++
 	})
 	logger.debug(`updatePartRanks: ${ps.length} parts updated`)
 
+	// Insert the parts that are to be put after other parts:
 	let hasAddedAnything = true
 	while (hasAddedAnything) {
 		hasAddedAnything = false
 
-		_.each(partsToPutAfter, (dynamicParts, partId) => {
-
+		_.each(partsToPutAfter, (dynamicParts, insertAfterPartId) => {
 			let partBefore: Part | null = null
 			let partAfter: Part | null = null
 			let insertI = -1
-			_.each(rankedParts, (part, i) => {
-				if (part._id === partId) {
+			_.each(parts, (part, i) => {
+				if (part._id === insertAfterPartId) {
 					partBefore = part
 
 					insertI = i + 1
-				} else if (partBefore && !partAfter) {
+				} else if (
+					partBefore &&
+					part.segmentId === partBefore.segmentId &&
+					!partAfter
+				) {
 					partAfter = part
-
 				}
 			})
 
@@ -243,12 +231,12 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 							ps.push(asyncCollectionUpdate(Parts, dynamicPart._id, { $set: { _rank: dynamicPart._rank } }))
 						}
 
-						rankedParts.splice(insertI, 0, dynamicPart)
+						parts.splice(insertI, 0, dynamicPart)
 						insertI++
 						hasAddedAnything = true
 					})
 				}
-				delete partsToPutAfter[partId]
+				delete partsToPutAfter[insertAfterPartId]
 			} else {
 				// TODO - part is invalid and should be deleted/warned about
 			}
@@ -257,7 +245,7 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 
 	waitForPromiseAll(ps)
 
-	return rankedParts
+	return parts
 }
 
 export namespace ServerRundownAPI {

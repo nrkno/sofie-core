@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
-import { fetchAfter } from '../../../lib/lib'
+import { fetchNext } from '../../../lib/lib'
 import { moveNext } from '../userActions'
 
 function getRundownValidParts (rundown: Rundown) {
@@ -29,7 +29,7 @@ export namespace UpdateNext {
 					ServerPlayoutAPI.setNextPartInner(rundown, null)
 				}
 			} else {
-				const expectedAutoNextPart = fetchAfter(allValidParts, {}, currentPart ? currentPart._rank : null)
+				const expectedAutoNextPart = fetchNext(allValidParts, currentPart)
 				const expectedAutoNextPartId = expectedAutoNextPart ? expectedAutoNextPart._id : null
 
 				// If not manually set, make sure that next is done by rank
