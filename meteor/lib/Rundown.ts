@@ -124,7 +124,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	let partsE: Array<PartExtended> = []
 
 	const segmentsAndParts = rundown.getSegmentsAndPartsSync()
-	let parts = segmentsAndParts.parts
+	const parts = segmentsAndParts.parts
 	// let segments = segmentsAndParts.segments
 	const partsInSegment = _.filter(parts, p => p.segmentId === segment._id)
 
@@ -196,7 +196,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		let previousPart: PartExtended
 		const allPiecesInRundown = Pieces.find({ rundownId: rundown._id }).fetch()
 		// fetch all the pieces for the parts
-		partsE = _.map(parts, (part, itIndex) => {
+		partsE = _.map(partsInSegment, (part, itIndex) => {
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
