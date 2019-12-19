@@ -114,8 +114,8 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	const ingestData = IngestDataCache.find({ rundownId: rundownId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
 	const userActions = UserActionsLog.find({ args: { $regex: `.*"${rundownId}".*` } }).fetch()
 
-	const segments = Segments.find({ rundownId }).fetch()
-	const parts = Parts.find({ rundownId }).fetch()
+	const segments = rundown.getSegments()
+	const parts = rundown.getParts()
 	const pieces = Pieces.find({ rundownId }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId }).fetch()
 	const mediaObjectIds: Array<string> = [

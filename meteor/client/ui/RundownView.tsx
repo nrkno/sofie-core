@@ -1097,11 +1097,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownId: rundownId,
 		rundown: rundown,
-		segments: rundown ? Segments.find({ rundownId: rundown._id }, {
-			sort: {
-				'_rank': 1
-			}
-		}).fetch() : [],
+		segments: (rundown ? rundown.getSegments() : []),
 		studio: studio,
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 		rundownLayouts: rundown && RundownLayouts.find({

@@ -320,12 +320,10 @@ function updateRundownFromIngestData (
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
-	const existingRundownParts = Parts.find({
-		rundownId: dbRundown._id,
-		dynamicallyInserted: { $ne: true }
-	}).fetch()
+	const segmentsAndParts = waitForPromise(dbRundown.getSegmentsAndParts())
+	const existingRundownParts = _.filter(segmentsAndParts.parts, part => part.dynamicallyInserted !== true)
+	const existingSegments = segmentsAndParts.segments
 
-	const existingSegments = Segments.find({ rundownId: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
@@ -502,11 +500,7 @@ function updateSegmentFromIngestData (
 		_id: segmentId,
 		rundownId: rundown._id,
 	})
-	const existingParts = Parts.find({
-		rundownId: rundown._id,
-		segmentId: segmentId,
-		dynamicallyInserted: { $ne: true }
-	}).fetch()
+	const existingParts = existingSegment && existingSegment.getParts({ dynamicallyInserted: { $ne: true } }) || []
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 

@@ -139,13 +139,8 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 (props) => {
 	let parts: Array<Part> = []
 	if (props.rundown) {
-		parts = Parts.find({
-			'rundownId': props.rundown._id,
-		}, {
-			sort: {
-				'_rank': 1
-			}
-		}).fetch()
+
+		parts = props.rundown.getParts()
 	}
 	return {
 		parts
