@@ -9,7 +9,6 @@
 		"await-promise": [true, "Bluebird"],
 		"no-use-before-declare": false,
 		"one-line": [true, "check-catch", "check-finally", "check-else"],
-		"space-before-function-paren": true,
 		"eofline": true,
 		"new-parens": true,
 		"number-literal-format": true,
@@ -17,8 +16,9 @@
 		"prefer-method-signature": false,
 		"no-reference-import": true,
 		"class-name": true,
-		"no-unnecessary-type-assertion": false, // @todo For some reason, TSLint picks up the wrong typings for Collection.findOne
-		"no-unnecessary-qualifier": false
+		"no-unnecessary-type-assertion": false,
+		"no-unnecessary-qualifier": false,
+		"prettier": true
 	},
 	"linterOptions": {
 		"exclude": ["public/**"]
