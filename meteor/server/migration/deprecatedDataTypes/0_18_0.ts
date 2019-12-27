@@ -1,23 +1,25 @@
-import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from '../../../lib/typings/meteor'
+import { Mongo } from 'meteor/mongo';
+import { TransformedCollection } from '../../../lib/typings/meteor';
 
 // lib/collections/ShowStyles.ts
 export interface TemplateMappings {
-	[key: string]: string
+	[key: string]: string;
 }
 export interface ShowStyle {
-	_id: string
-	name: string
+	_id: string;
+	name: string;
 	/** Map a template name to a runtime function? */
-	templateMappings: TemplateMappings | never[]
+	templateMappings: TemplateMappings | never[];
 	/** The name of the template to be run for the baseline state when the rundown is activated */
-	baselineTemplate: string
+	baselineTemplate: string;
 	/** The name of the template to be run to generate external messages upon TAKEs */
-	messageTemplate: string
+	messageTemplate: string;
 	/** The name of the blueprint which is used to determine which other blueprint is used to create the part&piece for a story */
-	routerBlueprint: string
+	routerBlueprint: string;
 	/** The name of the blueprint which is the post-process step to run on a segment after any part has changed */
-	postProcessBlueprint: string
+	postProcessBlueprint: string;
 }
-export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
-	= new Mongo.Collection<ShowStyle>('showStyles')
+export const ShowStyles: TransformedCollection<
+	ShowStyle,
+	ShowStyle
+> = new Mongo.Collection<ShowStyle>('showStyles');

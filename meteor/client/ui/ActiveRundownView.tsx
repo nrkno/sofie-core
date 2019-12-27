@@ -1,142 +1,180 @@
-import * as React from 'react'
-import * as _ from 'underscore'
+import * as React from 'react';
+import * as _ from 'underscore';
+import { Route, Switch } from 'react-router-dom';
 import {
-	Route, Switch
-} from 'react-router-dom'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { Studios, Studio } from '../../lib/collections/Studios'
+	translateWithTracker,
+	Translated
+} from '../lib/ReactMeteorData/ReactMeteorData';
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns';
+import { Studios, Studio } from '../../lib/collections/Studios';
 
-import { Spinner } from '../lib/Spinner'
-import { RundownView } from './RundownView'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { objectPathGet } from '../../lib/lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { Spinner } from '../lib/Spinner';
+import { RundownView } from './RundownView';
+import { MeteorReactComponent } from '../lib/MeteorReactComponent';
+import { objectPathGet } from '../../lib/lib';
+import { PubSub } from '../../lib/api/pubsub';
 
 interface IProps {
 	match: {
 		params?: {
-			studioId: string
-		}
-		path: string
-	}
+			studioId: string;
+		};
+		path: string;
+	};
 }
 interface ITrackedProps {
-	rundown?: Rundown
-	studio?: Studio
-	studioId?: string
+	rundown?: Rundown;
+	studio?: Studio;
+	studioId?: string;
 	// isReady: boolean
 }
 interface IState {
-	subsReady: boolean
+	subsReady: boolean;
 }
-export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-
-	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studio
+export const ActiveRundownView = translateWithTracker<
+	IProps,
+	{},
+	ITrackedProps
+>((props: IProps) => {
+	let studioId = objectPathGet(props, 'match.params.studioId');
+	let studio;
 	if (studioId) {
-		studio = Studios.findOne(studioId)
+		studio = Studios.findOne(studioId);
 	}
-	const rundown = Rundowns.findOne(_.extend({
-		active: true
-	}, {
-		studioId: studioId
-	}))
+	const rundown = Rundowns.findOne(
+		_.extend(
+			{
+				active: true
+			},
+			{
+				studioId: studioId
+			}
+		)
+	);
 
 	return {
 		rundown,
 		studio,
 		studioId
-	}
-})(class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-
-	constructor (props) {
-		super(props)
-		this.state = {
-			subsReady: false
+	};
+})(
+	class ActiveRundownView extends MeteorReactComponent<
+		Translated<IProps & ITrackedProps>,
+		IState
+	> {
+		constructor(props) {
+			super(props);
+			this.state = {
+				subsReady: false
+			};
 		}
-	}
 
-	componentWillMount () {
-		this.subscribe(PubSub.rundowns, _.extend({
-			active: true
-		}, this.props.studioId ? {
-			studioId: this.props.studioId
-		} : {}))
-		if (this.props.studioId) {
-			this.subscribe(PubSub.studios, {
-				_id: this.props.studioId
-			})
-		}
-		this.autorun(() => {
-			let subsReady = this.subscriptionsReady()
-			if (subsReady !== this.state.subsReady) {
-				this.setState({
-					subsReady: subsReady
-				})
+		componentWillMount() {
+			this.subscribe(
+				PubSub.rundowns,
+				_.extend(
+					{
+						active: true
+					},
+					this.props.studioId
+						? {
+								studioId: this.props.studioId
+						  }
+						: {}
+				)
+			);
+			if (this.props.studioId) {
+				this.subscribe(PubSub.studios, {
+					_id: this.props.studioId
+				});
 			}
-		})
-	}
+			this.autorun(() => {
+				let subsReady = this.subscriptionsReady();
+				if (subsReady !== this.state.subsReady) {
+					this.setState({
+						subsReady: subsReady
+					});
+				}
+			});
+		}
 
-	componentDidMount () {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-	}
+		componentDidMount() {
+			document.body.classList.add('dark', 'vertical-overflow-only');
+		}
 
-	componentWillUnmount () {
-		super.componentWillUnmount()
-		document.body.classList.remove('dark', 'vertical-overflow-only')
-	}
+		componentWillUnmount() {
+			super.componentWillUnmount();
+			document.body.classList.remove('dark', 'vertical-overflow-only');
+		}
 
-	componentDidUpdate () {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-	}
+		componentDidUpdate() {
+			document.body.classList.add('dark', 'vertical-overflow-only');
+		}
 
-	renderMessage (message: string) {
-		const { t } = this.props
+		renderMessage(message: string) {
+			const { t } = this.props;
 
-		return (
-			<div className='rundown-view rundown-view--unpublished'>
-				<div className='rundown-view__label'>
-					<p>
-						{message}
-					</p>
-					<p>
-						<Route render={({ history }) => (
-							<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
-								{t('Return to list')}
-							</button>
-						)} />
-					</p>
-				</div>
-			</div>
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		if (!this.state.subsReady) {
 			return (
-				<div className='rundown-view rundown-view--loading' >
-					<Spinner />
-				</div >
-			)
-		} else {
-			if (this.props.rundown) {
-				return <Switch>
+				<div className="rundown-view rundown-view--unpublished">
+					<div className="rundown-view__label">
+						<p>{message}</p>
+						<p>
+							<Route
+								render={({ history }) => (
+									<button
+										className="btn btn-primary"
+										onClick={() => {
+											history.push('/rundowns');
+										}}>
+										{t('Return to list')}
+									</button>
+								)}
+							/>
+						</p>
+					</div>
+				</div>
+			);
+		}
+
+		render() {
+			const { t } = this.props;
+			if (!this.state.subsReady) {
+				return (
+					<div className="rundown-view rundown-view--loading">
+						<Spinner />
+					</div>
+				);
+			} else {
+				if (this.props.rundown) {
+					return (
+						<Switch>
 							<Route path={this.props.match.path} exact>
-								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+								<RundownView
+									rundownId={this.props.rundown._id}
+									inActiveRundownView={true}
+								/>
 							</Route>
 							<Route path={`${this.props.match.path}/shelf`}>
-								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} onlyShelf={true} />
+								<RundownView
+									rundownId={this.props.rundown._id}
+									inActiveRundownView={true}
+									onlyShelf={true}
+								/>
 							</Route>
 						</Switch>
-			} else if (this.props.studio) {
-				return this.renderMessage(t('There is no rundown active in this studio.'))
-			} else if (this.props.studioId) {
-				return this.renderMessage(t('This studio doesn\'t exist.'))
-			} else {
-				return this.renderMessage(t('There are no active rundowns.'))
+					);
+				} else if (this.props.studio) {
+					return this.renderMessage(
+						t('There is no rundown active in this studio.')
+					);
+				} else if (this.props.studioId) {
+					return this.renderMessage(t("This studio doesn't exist."));
+				} else {
+					return this.renderMessage(
+						t('There are no active rundowns.')
+					);
+				}
 			}
 		}
 	}
-})
+);

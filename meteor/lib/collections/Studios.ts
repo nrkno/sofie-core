@@ -1,95 +1,99 @@
-import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection } from '../lib'
-import * as _ from 'underscore'
+import { TransformedCollection } from '../typings/meteor';
+import { applyClassToDocument, registerCollection } from '../lib';
+import * as _ from 'underscore';
 import {
 	IConfigItem,
 	BlueprintMappings,
 	BlueprintMapping,
 	TSR
-} from 'tv-automation-sofie-blueprints-integration'
-import { Meteor } from 'meteor/meteor'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
+} from 'tv-automation-sofie-blueprints-integration';
+import { Meteor } from 'meteor/meteor';
+import { ObserveChangesForHash, createMongoCollection } from './lib';
 
 export interface MappingsExt extends BlueprintMappings {
-	[layerName: string]: MappingExt
+	[layerName: string]: MappingExt;
 }
 export interface MappingExt extends BlueprintMapping {
 	/** Internal mappings are hidden in the UI */
-	internal?: boolean
+	internal?: boolean;
 }
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */
-	mediaPreviewsUrl: string // (former media_previews_url in config)
+	mediaPreviewsUrl: string; // (former media_previews_url in config)
 	/** URL to Sofie Core endpoint */
-	sofieUrl: string // (former sofie_url in config)
+	sofieUrl: string; // (former sofie_url in config)
 	/** URLs for slack webhook to send evaluations */
-	slackEvaluationUrls?: string // (former slack_evaluation in config)
+	slackEvaluationUrls?: string; // (former slack_evaluation in config)
 
 	/** Media Resolutions supported by the studio for media playback */
-	supportedMediaFormats?: string // (former mediaResolutions in config)
+	supportedMediaFormats?: string; // (former mediaResolutions in config)
 	/** Audio Stream Formats supported by the studio for media playback */
-	supportedAudioStreams?: string // (former audioStreams in config)
+	supportedAudioStreams?: string; // (former audioStreams in config)
 }
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
-	_id: string
+	_id: string;
 	/** User-presentable name for the studio installation */
-	name: string
+	name: string;
 	/** Id of the blueprint used by this studio-installation */
-	blueprintId?: string
+	blueprintId?: string;
 
 	/** Mappings between the physical devices / outputs and logical ones */
-	mappings: MappingsExt
+	mappings: MappingsExt;
 
 	/** List of which ShowStyleBases this studio wants to support */
-	supportedShowStyleBase: Array<string>
+	supportedShowStyleBase: Array<string>;
 
 	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
-	testToolsConfig?: ITestToolsConfig
+	config: Array<IConfigItem>;
+	testToolsConfig?: ITestToolsConfig;
 
-	settings: IStudioSettings
+	settings: IStudioSettings;
 
-	_rundownVersionHash: string
+	_rundownVersionHash: string;
 }
 
 export interface ITestToolsConfig {
 	recordings: {
-		deviceId?: string
-		channelIndex?: number
-		channelFormat: TSR.ChannelFormat
-		decklinkDevice?: number
-		filePrefix?: string
-		urlPrefix?: string
-	}
+		deviceId?: string;
+		channelIndex?: number;
+		channelFormat: TSR.ChannelFormat;
+		decklinkDevice?: number;
+		filePrefix?: string;
+		urlPrefix?: string;
+	};
 }
 
 export class Studio implements DBStudio {
-	public _id: string
-	public name: string
-	public blueprintId?: string
-	public mappings: MappingsExt
-	public supportedShowStyleBase: Array<string>
-	public config: Array<IConfigItem> // TODO - migration to rename
-	public settings: IStudioSettings
-	public testToolsConfig?: ITestToolsConfig
+	public _id: string;
+	public name: string;
+	public blueprintId?: string;
+	public mappings: MappingsExt;
+	public supportedShowStyleBase: Array<string>;
+	public config: Array<IConfigItem>; // TODO - migration to rename
+	public settings: IStudioSettings;
+	public testToolsConfig?: ITestToolsConfig;
 
-	public _rundownVersionHash: string
+	public _rundownVersionHash: string;
 
-	constructor (document: DBStudio) {
+	constructor(document: DBStudio) {
 		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+			this[key] = document[key];
+		});
 	}
 }
 
-export const Studios: TransformedCollection<Studio, DBStudio>
-	= createMongoCollection<Studio>('studios', { transform: (doc) => applyClassToDocument(Studio, doc) })
-registerCollection('Studios', Studios)
+export const Studios: TransformedCollection<
+	Studio,
+	DBStudio
+> = createMongoCollection<Studio>('studios', {
+	transform: (doc) => applyClassToDocument(Studio, doc)
+});
+registerCollection('Studios', Studios);
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(Studios, '_rundownVersionHash', ['config'])
+		ObserveChangesForHash(Studios, '_rundownVersionHash', ['config']);
 	}
-})
+});

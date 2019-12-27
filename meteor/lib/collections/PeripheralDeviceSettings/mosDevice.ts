@@ -1,14 +1,14 @@
 export interface MosDeviceSettings {
-	mosId: string,
+	mosId: string;
 	devices: {
-		[deviceId: string]: MosDeviceSettingsDevice
-	}
+		[deviceId: string]: MosDeviceSettingsDevice;
+	};
 }
 export interface MosDeviceSettingsDevice {
-	primary: MosDeviceSettingsDeviceOptions
-	secondary?: MosDeviceSettingsDeviceOptions
+	primary: MosDeviceSettingsDeviceOptions;
+	secondary?: MosDeviceSettingsDeviceOptions;
 }
 export interface MosDeviceSettingsDeviceOptions {
-	id: string
-	host: string
+	id: string;
+	host: string;
 }

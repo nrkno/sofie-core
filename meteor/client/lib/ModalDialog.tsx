@@ -1,363 +1,479 @@
-import * as React from 'react'
-import * as CoreIcons from '@nrk/core-icons/jsx'
-import * as Escape from 'react-escape'
-import * as ClassNames from 'classnames'
-import * as VelocityReact from 'velocity-react'
-import { mousetrapHelper } from './mousetrapHelper'
-import { logger } from '../../lib/logging'
-import * as _ from 'underscore'
-import { translate } from 'react-i18next'
-import { Translated } from './ReactMeteorData/ReactMeteorData'
+import * as React from 'react';
+import * as CoreIcons from '@nrk/core-icons/jsx';
+import * as Escape from 'react-escape';
+import * as ClassNames from 'classnames';
+import * as VelocityReact from 'velocity-react';
+import { mousetrapHelper } from './mousetrapHelper';
+import { logger } from '../../lib/logging';
+import * as _ from 'underscore';
+import { translate } from 'react-i18next';
+import { Translated } from './ReactMeteorData/ReactMeteorData';
 import {
 	EditAttribute,
 	EditAttributeType,
 	EditAttributeBase
-} from './EditAttribute'
+} from './EditAttribute';
 
 interface IModalDialogAttributes {
-	show?: boolean
-	title: string
-	secondaryText?: string
-	acceptText: string
-	onAccept?: (e: SomeEvent, inputResult: ModalInputResult) => void
-	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
-	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
-	inputs?: {[attribute: string]: ModalInput}
-	warning?: boolean
-	actions?: ModalAction[]
+	show?: boolean;
+	title: string;
+	secondaryText?: string;
+	acceptText: string;
+	onAccept?: (e: SomeEvent, inputResult: ModalInputResult) => void;
+	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void;
+	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void;
+	inputs?: { [attribute: string]: ModalInput };
+	warning?: boolean;
+	actions?: ModalAction[];
 }
 interface ModalInput {
-	type: EditAttributeType
-	label?: string
-	options?: any
-	text?: string
-	defaultValue?: any
+	type: EditAttributeType;
+	label?: string;
+	options?: any;
+	text?: string;
+	defaultValue?: any;
 }
 interface ModalAction {
-	label: string
-	on: OnAction
-	classNames?: string
+	label: string;
+	on: OnAction;
+	classNames?: string;
 }
-type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
-export type ModalInputResult = {[attribute: string]: any}
-export type SomeEvent = Event | React.SyntheticEvent<object>
+type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void;
+export type ModalInputResult = { [attribute: string]: any };
+export type SomeEvent = Event | React.SyntheticEvent<object>;
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
-	boundKeys: Array<string> = []
+	boundKeys: Array<string> = [];
 
-	private inputResult: ModalInputResult = {}
+	private inputResult: ModalInputResult = {};
 
-	constructor (args: IModalDialogAttributes) {
-		super(args)
+	constructor(args: IModalDialogAttributes) {
+		super(args);
 	}
 
-	componentDidMount () {
-		this.bindKeys()
+	componentDidMount() {
+		this.bindKeys();
 	}
 
-	componentWillUnmount () {
-		this.unbindKeys()
+	componentWillUnmount() {
+		this.unbindKeys();
 	}
 
-	componentDidUpdate () {
-		this.bindKeys()
+	componentDidUpdate() {
+		this.bindKeys();
 	}
 
 	bindKeys = () => {
 		if (this.props.show) {
 			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrapHelper.bind('enter', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('enter')
+				mousetrapHelper.bind(
+					'enter',
+					this.preventDefault,
+					'keydown',
+					undefined,
+					true
+				);
+				mousetrapHelper.bind(
+					'enter',
+					this.handleKey,
+					'keyup',
+					undefined,
+					true
+				);
+				this.boundKeys.push('enter');
 			}
 			if (this.boundKeys.indexOf('esc') < 0) {
-				mousetrapHelper.bind('esc', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('esc')
+				mousetrapHelper.bind(
+					'esc',
+					this.preventDefault,
+					'keydown',
+					undefined,
+					true
+				);
+				mousetrapHelper.bind(
+					'esc',
+					this.handleKey,
+					'keyup',
+					undefined,
+					true
+				);
+				this.boundKeys.push('esc');
 			}
 		} else {
-			this.unbindKeys()
+			this.unbindKeys();
 		}
-	}
+	};
 
 	unbindKeys = () => {
 		this.boundKeys.forEach((key) => {
-			mousetrapHelper.unbind(key, this.preventDefault, 'keydown')
-			mousetrapHelper.unbind(key, this.handleKey, 'keyup')
-		})
-		this.boundKeys.length = 0
-	}
+			mousetrapHelper.unbind(key, this.preventDefault, 'keydown');
+			mousetrapHelper.unbind(key, this.handleKey, 'keyup');
+		});
+		this.boundKeys.length = 0;
+	};
 
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.key === 'Enter') {
-				if (!this.props.warning) this.handleAccept(e)
+				if (!this.props.warning) this.handleAccept(e);
 			} else if (e.key === 'Escape') {
 				if (this.props.secondaryText) {
-					this.handleSecondary(e)
+					this.handleSecondary(e);
 				} else {
-					this.handleDiscard(e)
+					this.handleDiscard(e);
 				}
 			}
 		}
-	}
+	};
 
 	handleAccept = (e: SomeEvent) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
-			this.props.onAccept(e, this.inputResult)
+			this.props.onAccept(e, this.inputResult);
 		}
-	}
+	};
 
 	handleSecondary = (e: SomeEvent) => {
-		if (this.props.onSecondary && typeof this.props.onSecondary === 'function') {
-			this.props.onSecondary(e, this.inputResult)
+		if (
+			this.props.onSecondary &&
+			typeof this.props.onSecondary === 'function'
+		) {
+			this.props.onSecondary(e, this.inputResult);
 		}
-	}
+	};
 	handleAction = (e: SomeEvent, on: OnAction) => {
 		if (on && typeof on === 'function') {
-			on(e, this.inputResult)
+			on(e, this.inputResult);
 		}
-	}
+	};
 
 	handleDiscard = (e: SomeEvent) => {
-		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
-			this.props.onDiscard(e, this.inputResult)
+		if (
+			this.props.onDiscard &&
+			typeof this.props.onDiscard === 'function'
+		) {
+			this.props.onDiscard(e, this.inputResult);
 		} else {
-			this.handleSecondary(e)
+			this.handleSecondary(e);
 		}
-	}
+	};
 	updatedInput = (edit: EditAttributeBase, newValue: any) => {
-		this.inputResult[edit.props.attribute || ''] = newValue
-	}
-	render () {
-		return this.props.show ?
-					<Escape to='viewport'>
-						<VelocityReact.VelocityTransitionGroup enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }} runOnMount={true}>
-							<div className='glass-pane'>
-								<div className='glass-pane-content'>
-									<VelocityReact.VelocityTransitionGroup enter={{ animation: {
+		this.inputResult[edit.props.attribute || ''] = newValue;
+	};
+	render() {
+		return this.props.show ? (
+			<Escape to="viewport">
+				<VelocityReact.VelocityTransitionGroup
+					enter={{
+						animation: 'fadeIn',
+						easing: 'ease-out',
+						duration: 250
+					}}
+					runOnMount={true}>
+					<div className="glass-pane">
+						<div className="glass-pane-content">
+							<VelocityReact.VelocityTransitionGroup
+								enter={{
+									animation: {
 										translateY: [0, 100],
 										opacity: [1, 0]
-									}, easing: 'spring', duration: 250 }} runOnMount={true}>
-										<dialog open={true} className='border-box overlay-m'>
-											<div className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}>
-												<div className='flex-col c12'>
-													<h2>
-														{this.props.title}
-													</h2>
-												</div>
-												<div className='flex-col horizontal-align-right vertical-align-middle'>
-													<p>
-														<button className='action-btn' onClick={this.handleDiscard}>
-															<CoreIcons id='nrk-close' />
-														</button>
-													</p>
-												</div>
-											</div>
-											<div className='title-box-content'>
-												{this.props.children}
-											</div>
-											{
-												this.props.inputs ?
-												<div className='title-box-inputs'>
-													{
-														_.map(this.props.inputs, (input: ModalInput, attribute: string) => {
+									},
+									easing: 'spring',
+									duration: 250
+								}}
+								runOnMount={true}>
+								<dialog
+									open={true}
+									className="border-box overlay-m">
+									<div
+										className={
+											'flex-row ' +
+											(this.props.warning
+												? 'warn'
+												: 'info') +
+											' vertical-align-stretch tight-s'
+										}>
+										<div className="flex-col c12">
+											<h2>{this.props.title}</h2>
+										</div>
+										<div className="flex-col horizontal-align-right vertical-align-middle">
+											<p>
+												<button
+													className="action-btn"
+													onClick={
+														this.handleDiscard
+													}>
+													<CoreIcons id="nrk-close" />
+												</button>
+											</p>
+										</div>
+									</div>
+									<div className="title-box-content">
+										{this.props.children}
+									</div>
+									{this.props.inputs ? (
+										<div className="title-box-inputs">
+											{_.map(
+												this.props.inputs,
+												(
+													input: ModalInput,
+													attribute: string
+												) => {
+													if (
+														this.inputResult[
+															attribute
+														] === undefined
+													)
+														this.inputResult[
+															attribute
+														] = input.defaultValue;
 
-															if (this.inputResult[attribute] === undefined) this.inputResult[attribute] = input.defaultValue
-
-															return (<div className='title-box-input' key={attribute}>
-																{input.text}
-																<EditAttribute
-																	type={input.type}
-																	label={input.label}
-																	options={input.options}
-																	overrideDisplayValue={input.defaultValue}
-																	attribute={attribute}
-																	updateFunction={this.updatedInput}
-																/>
-															</div>)
-														})
-													}
-												</div> : null
-											}
-											<div className={ClassNames('mod', {
-												'alright': !this.props.secondaryText
-											})}>
-												{
-													this.props.secondaryText &&
-													<button className='btn btn-secondary' onClick={this.handleSecondary}>{this.props.secondaryText}</button>
+													return (
+														<div
+															className="title-box-input"
+															key={attribute}>
+															{input.text}
+															<EditAttribute
+																type={
+																	input.type
+																}
+																label={
+																	input.label
+																}
+																options={
+																	input.options
+																}
+																overrideDisplayValue={
+																	input.defaultValue
+																}
+																attribute={
+																	attribute
+																}
+																updateFunction={
+																	this
+																		.updatedInput
+																}
+															/>
+														</div>
+													);
 												}
-												{
-													_.compact(_.map(this.props.actions || [], (action: ModalAction, i) => {
-														if (action) {
-															return <button
+											)}
+										</div>
+									) : null}
+									<div
+										className={ClassNames('mod', {
+											alright: !this.props.secondaryText
+										})}>
+										{this.props.secondaryText && (
+											<button
+												className="btn btn-secondary"
+												onClick={this.handleSecondary}>
+												{this.props.secondaryText}
+											</button>
+										)}
+										{_.compact(
+											_.map(
+												this.props.actions || [],
+												(action: ModalAction, i) => {
+													if (action) {
+														return (
+															<button
 																key={i}
-																className={ClassNames('btn right', {
-																	'btn-secondary': !(action.classNames || '').match(/btn-/)
-																}, action.classNames)}
-																onClick={e => this.handleAction(e, action.on)}
-															>
+																className={ClassNames(
+																	'btn right',
+																	{
+																		'btn-secondary': !(
+																			action.classNames ||
+																			''
+																		).match(
+																			/btn-/
+																		)
+																	},
+																	action.classNames
+																)}
+																onClick={(e) =>
+																	this.handleAction(
+																		e,
+																		action.on
+																	)
+																}>
 																{action.label}
 															</button>
-														}
-														return undefined
-													}))
+														);
+													}
+													return undefined;
 												}
-												<button className={ClassNames('btn btn-primary', {
-													'right': this.props.secondaryText !== undefined,
-													'btn-warn': this.props.warning
-												})} onClick={this.handleAccept}>{this.props.acceptText}</button>
-											</div>
-										</dialog>
-									</VelocityReact.VelocityTransitionGroup>
-								</div>
-							</div>
-						</VelocityReact.VelocityTransitionGroup>
-					</Escape>
-				: null
+											)
+										)}
+										<button
+											className={ClassNames(
+												'btn btn-primary',
+												{
+													right:
+														this.props
+															.secondaryText !==
+														undefined,
+													'btn-warn': this.props
+														.warning
+												}
+											)}
+											onClick={this.handleAccept}>
+											{this.props.acceptText}
+										</button>
+									</div>
+								</dialog>
+							</VelocityReact.VelocityTransitionGroup>
+						</div>
+					</div>
+				</VelocityReact.VelocityTransitionGroup>
+			</Escape>
+		) : null;
 	}
 
 	private preventDefault = (e: KeyboardEvent) => {
-		e.preventDefault()
-		e.stopPropagation()
-	}
+		e.preventDefault();
+		e.stopPropagation();
+	};
 }
 
 export interface ModalDialogQueueItem {
 	/** The title of the dialog box  */
-	title: string
+	title: string;
 	/** The message / body of the dialog box */
-	message: string | JSX.Element | Array<JSX.Element >
+	message: string | JSX.Element | Array<JSX.Element>;
 	/** Label of the Yes/Accept button */
-	yes?: string
+	yes?: string;
 	/** Label of the NO/Cancel button */
-	no?: string
+	no?: string;
 	/** Set to true if there's only one option/button */
-	acceptOnly?: boolean
+	acceptOnly?: boolean;
 	/** Callback when user clicks Yes/Accept */
-	onAccept: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onAccept: (e: SomeEvent, inputResult: ModalInputResult) => void;
 	/** Callback when user clicks No/Cancel */
-	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void;
 	/** Callback when user does secondary action (for example hits escape) */
-	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void;
 	/** Customomize input fields */
-	inputs?: {[attribute: string]: ModalInput}
-	actions?: ModalAction[]
+	inputs?: { [attribute: string]: ModalInput };
+	actions?: ModalAction[];
 	/** Is a critical decition/information */
-	warning?: boolean
-
+	warning?: boolean;
 }
-interface IModalDialogGlobalContainerProps {
-}
+interface IModalDialogGlobalContainerProps {}
 interface IModalDialogGlobalContainerState {
-	queue: Array<ModalDialogQueueItem>
+	queue: Array<ModalDialogQueueItem>;
 }
 
-class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialogGlobalContainerProps>, IModalDialogGlobalContainerState> {
-	constructor (props: Translated<IModalDialogGlobalContainerProps>) {
-		super(props)
+class ModalDialogGlobalContainer0 extends React.Component<
+	Translated<IModalDialogGlobalContainerProps>,
+	IModalDialogGlobalContainerState
+> {
+	constructor(props: Translated<IModalDialogGlobalContainerProps>) {
+		super(props);
 		if (modalDialogGlobalContainerSingleton) {
-			logger.warn('modalDialogGlobalContainerSingleton called more than once!')
+			logger.warn(
+				'modalDialogGlobalContainerSingleton called more than once!'
+			);
 		}
-		modalDialogGlobalContainerSingleton = this
+		modalDialogGlobalContainerSingleton = this;
 		this.state = {
 			queue: []
-		}
+		};
 	}
-	public addQueue (q: ModalDialogQueueItem) {
-		let queue = this.state.queue
-		queue.push(q)
+	public addQueue(q: ModalDialogQueueItem) {
+		let queue = this.state.queue;
+		queue.push(q);
 		this.setState({
 			queue
-		})
+		});
 	}
-	public queueHasItems (): boolean {
-		return this.state.queue.length > 0
+	public queueHasItems(): boolean {
+		return this.state.queue.length > 0;
 	}
 	onAccept = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		let queue = this.state.queue;
+		let onQueue = queue.pop();
 		if (onQueue) {
-			this.setState({ queue })
-			onQueue.onAccept(e, inputResult)
+			this.setState({ queue });
+			onQueue.onAccept(e, inputResult);
 		}
-	}
+	};
 	onDiscard = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		let queue = this.state.queue;
+		let onQueue = queue.pop();
 		if (onQueue) {
-			this.setState({ queue })
+			this.setState({ queue });
 			if (onQueue.onDiscard) {
-				onQueue.onDiscard(e, inputResult)
+				onQueue.onDiscard(e, inputResult);
 			}
 		}
-	}
+	};
 	onSecondary = (e: SomeEvent, inputResult: ModalInputResult) => {
-
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		let queue = this.state.queue;
+		let onQueue = queue.pop();
 		if (onQueue) {
-			this.setState({ queue })
+			this.setState({ queue });
 			if (onQueue.onSecondary) {
-				onQueue.onSecondary(e, inputResult)
+				onQueue.onSecondary(e, inputResult);
 			}
 		}
-	}
+	};
 	onAction = (e: SomeEvent, inputResult: ModalInputResult, on: OnAction) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		let queue = this.state.queue;
+		let onQueue = queue.pop();
 		if (onQueue) {
-			this.setState({ queue })
-			on(e, inputResult)
+			this.setState({ queue });
+			on(e, inputResult);
 		}
-	}
+	};
 	renderString = (str: string) => {
-		let lines = (str || '').split('\n')
+		let lines = (str || '').split('\n');
 
 		return _.map(lines, (str: string, i) => {
-			return (
-				<p key={i}>
-					{str.trim()}
-				</p>
-			)
-		})
-	}
-	render () {
-		const { t } = this.props
-		let onQueue = _.first(this.state.queue)
+			return <p key={i}>{str.trim()}</p>;
+		});
+	};
+	render() {
+		const { t } = this.props;
+		let onQueue = _.first(this.state.queue);
 
 		if (onQueue) {
-			let actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
-				return {
-					...action,
-					on: (e, inputResult) => this.onAction(e, inputResult, action.on)
+			let actions: ModalAction[] = _.map(
+				onQueue.actions || [],
+				(action: ModalAction) => {
+					return {
+						...action,
+						on: (e, inputResult) =>
+							this.onAction(e, inputResult, action.on)
+					};
 				}
-			})
+			);
 			return (
-			<ModalDialog
-				key				= {this.state.queue.length}
-				title			= {onQueue.title}
-				acceptText		= {onQueue.yes || t('Yes')}
-				secondaryText	= {onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)}
-				onAccept		= {this.onAccept}
-				onDiscard		= {this.onDiscard}
-				onSecondary		= {this.onSecondary}
-				inputs			= {onQueue.inputs}
-				actions			= {actions}
-				show			= {true}
-				warning			= {onQueue.warning}
-			>
-				{
-					_.isString(onQueue.message) ?
-					this.renderString(onQueue.message) :
-					onQueue.message
-				}
-			</ModalDialog>)
-
-		} else return null
+				<ModalDialog
+					key={this.state.queue.length}
+					title={onQueue.title}
+					acceptText={onQueue.yes || t('Yes')}
+					secondaryText={
+						onQueue.no ||
+						(!onQueue.acceptOnly ? t('No') : undefined)
+					}
+					onAccept={this.onAccept}
+					onDiscard={this.onDiscard}
+					onSecondary={this.onSecondary}
+					inputs={onQueue.inputs}
+					actions={actions}
+					show={true}
+					warning={onQueue.warning}>
+					{_.isString(onQueue.message)
+						? this.renderString(onQueue.message)
+						: onQueue.message}
+				</ModalDialog>
+			);
+		} else return null;
 	}
 }
-export const ModalDialogGlobalContainer = translate()(ModalDialogGlobalContainer0)
-let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
+export const ModalDialogGlobalContainer = translate()(
+	ModalDialogGlobalContainer0
+);
+let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0;
 /**
  * Display a ModalDialog, callback on user input
  * @param q ModalDialogQueueItem
@@ -370,19 +486,19 @@ let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
  * 		},
  * 	})
  */
-export function doModalDialog (q: ModalDialogQueueItem) {
+export function doModalDialog(q: ModalDialogQueueItem) {
 	if (modalDialogGlobalContainerSingleton) {
-		modalDialogGlobalContainerSingleton.addQueue(q)
+		modalDialogGlobalContainerSingleton.addQueue(q);
 	} else {
-		logger.error('modalDialogGlobalContainerSingleton not set!')
+		logger.error('modalDialogGlobalContainerSingleton not set!');
 	}
 }
 /**
  * Return true if there's any modal currently showing
  */
-export function isModalShowing (): boolean {
+export function isModalShowing(): boolean {
 	if (modalDialogGlobalContainerSingleton) {
-		return modalDialogGlobalContainerSingleton.queueHasItems()
+		return modalDialogGlobalContainerSingleton.queueHasItems();
 	}
-	return false
+	return false;
 }

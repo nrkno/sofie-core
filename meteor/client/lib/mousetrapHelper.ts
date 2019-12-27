@@ -1,46 +1,59 @@
-import * as mousetrap from 'mousetrap'
-import * as _ from 'underscore'
-import { isEventInInputField } from './lib'
-import { isModalShowing } from './ModalDialog'
+import * as mousetrap from 'mousetrap';
+import * as _ from 'underscore';
+import { isEventInInputField } from './lib';
+import { isModalShowing } from './ModalDialog';
 
 interface IWrappedCallback {
-	allowInModal: boolean
-	isGlobal: boolean
-	original: (e: Event) => void
-	tag?: string
+	allowInModal: boolean;
+	isGlobal: boolean;
+	original: (e: Event) => void;
+	tag?: string;
 }
 
 export namespace mousetrapHelper {
 	const _boundHotkeys: {
-		[key: string]: IWrappedCallback[]
-	} = {}
+		[key: string]: IWrappedCallback[];
+	} = {};
 
-	function handleKey (keys: string, e: ExtendedKeyboardEvent) {
+	function handleKey(keys: string, e: ExtendedKeyboardEvent) {
 		if (_boundHotkeys[keys] === undefined) {
-			return
+			return;
 		}
 		// console.log(`Handling key combo "${keys}"`)
 		_boundHotkeys[keys].forEach((handler) => {
-			if (!handler.isGlobal && isEventInInputField(e)) return
-			e.preventDefault()
-			if (!handler.allowInModal && isModalShowing()) return
-			handler.original(e)
-		})
+			if (!handler.isGlobal && isEventInInputField(e)) return;
+			e.preventDefault();
+			if (!handler.allowInModal && isModalShowing()) return;
+			handler.original(e);
+		});
 	}
 
-	export function bindGlobal (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
-		let index = keys
-		if (action) index = keys + '_' + action
+	export function bindGlobal(
+		keys: string,
+		callback: (e: Event) => void,
+		action?: string,
+		tag?: string,
+		allowInModal?: boolean
+	) {
+		let index = keys;
+		if (action) index = keys + '_' + action;
 		if (
 			// if not yet bound
 			_boundHotkeys[index] === undefined ||
 			// or bound so far were not globals
-			_boundHotkeys[index].reduce((mem, i) => mem || i.isGlobal, false) === false
+			_boundHotkeys[index].reduce(
+				(mem, i) => mem || i.isGlobal,
+				false
+			) === false
 		) {
-			if (_boundHotkeys[index] === undefined) _boundHotkeys[index] = []
-			mousetrap.bindGlobal(keys, (e: ExtendedKeyboardEvent) => {
-				handleKey(index, e)
-			}, action)
+			if (_boundHotkeys[index] === undefined) _boundHotkeys[index] = [];
+			mousetrap.bindGlobal(
+				keys,
+				(e: ExtendedKeyboardEvent) => {
+					handleKey(index, e);
+				},
+				action
+			);
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
 
@@ -49,17 +62,27 @@ export namespace mousetrapHelper {
 			allowInModal: !!allowInModal,
 			original: callback,
 			tag
-		})
+		});
 	}
 
-	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
-		let index = keys
-		if (action) index = keys + '_' + action
+	export function bind(
+		keys: string,
+		callback: (e: Event) => void,
+		action?: string,
+		tag?: string,
+		allowInModal?: boolean
+	) {
+		let index = keys;
+		if (action) index = keys + '_' + action;
 		if (_boundHotkeys[index] === undefined) {
-			_boundHotkeys[index] = []
-			mousetrap.bind(keys, (e: ExtendedKeyboardEvent) => {
-				handleKey(index, e)
-			}, action)
+			_boundHotkeys[index] = [];
+			mousetrap.bind(
+				keys,
+				(e: ExtendedKeyboardEvent) => {
+					handleKey(index, e);
+				},
+				action
+			);
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
 
@@ -68,57 +91,72 @@ export namespace mousetrapHelper {
 			allowInModal: !!allowInModal,
 			original: callback,
 			tag
-		})
+		});
 	}
 
-	export function unbindAll (keys: string[], action?: string, tag?: string) {
-		keys.forEach(key => {
+	export function unbindAll(keys: string[], action?: string, tag?: string) {
+		keys.forEach((key) => {
 			if (!tag) {
-				let index = key
-				if (action) index = key + '_' + action
-				mousetrap.unbind(key, action)
-				if (_boundHotkeys[index] === undefined) return
-				delete _boundHotkeys[index]
+				let index = key;
+				if (action) index = key + '_' + action;
+				mousetrap.unbind(key, action);
+				if (_boundHotkeys[index] === undefined) return;
+				delete _boundHotkeys[index];
 			} else {
-				unbind(key, tag, action)
+				unbind(key, tag, action);
 			}
-		})
+		});
 	}
 
-	export function unbind (keys: string, callbackOrTag: ((e: Event) => void) | string, action?: string) {
-		let index = keys
-		if (action) index = keys + '_' + action
+	export function unbind(
+		keys: string,
+		callbackOrTag: ((e: Event) => void) | string,
+		action?: string
+	) {
+		let index = keys;
+		if (action) index = keys + '_' + action;
 
-		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
-		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
+		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined;
+		let callback =
+			typeof callbackOrTag === 'function' ? callbackOrTag : undefined;
 
-		if (_boundHotkeys[index] === undefined) return
-		const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback || i.tag === tag)
+		if (_boundHotkeys[index] === undefined) return;
+		const callbackIndex = _boundHotkeys[index].findIndex(
+			(i) => i.original === callback || i.tag === tag
+		);
 		if (callbackIndex >= 0) {
-			_boundHotkeys[index].splice(callbackIndex, 1)
+			_boundHotkeys[index].splice(callbackIndex, 1);
 		} else {
-			console.log('Callback not found in list for ', index)
+			console.log('Callback not found in list for ', index);
 		}
 		if (_boundHotkeys[index].length === 0) {
-			delete _boundHotkeys[index]
-			mousetrap.unbind(keys, action)
+			delete _boundHotkeys[index];
+			mousetrap.unbind(keys, action);
 		}
 	}
 
-	export function shortcutLabel (hotkey: string, isMacLike: boolean = false): string {
+	export function shortcutLabel(
+		hotkey: string,
+		isMacLike: boolean = false
+	): string {
 		if (isMacLike) {
-			hotkey = hotkey.replace(/mod/i, '\u2318')
+			hotkey = hotkey.replace(/mod/i, '\u2318');
 		} else {
-			hotkey = hotkey.replace(/mod/i, 'Ctrl')
+			hotkey = hotkey.replace(/mod/i, 'Ctrl');
 		}
 		// capitalize first letter of each combo key
-		hotkey = hotkey.replace(/(\w)\w*/ig, (substring: string) => {
-			return substring.substr(0, 1).toUpperCase() + substring.substr(1).toLowerCase()
-		}).replace(/(\s*,\s*)/g, (separator: string) => {
-			return ', '
-		})
+		hotkey = hotkey
+			.replace(/(\w)\w*/gi, (substring: string) => {
+				return (
+					substring.substr(0, 1).toUpperCase() +
+					substring.substr(1).toLowerCase()
+				);
+			})
+			.replace(/(\s*,\s*)/g, (separator: string) => {
+				return ', ';
+			});
 
-		return hotkey
+		return hotkey;
 	}
 }
 
@@ -143,4 +181,4 @@ mousetrap.addKeycodes({
 	109: 'numSub',
 	110: 'numDot',
 	111: 'numDiv'
-})
+});

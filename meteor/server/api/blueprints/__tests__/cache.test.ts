@@ -1,86 +1,112 @@
-import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
-import { loadSystemBlueprints, loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown, WrappedStudioBlueprint } from '../cache'
-import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
-import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
-import { BlueprintManifestType, BlueprintResultRundown, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, Studio } from '../../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { generateFakeBlueprint } from './lib'
+import * as _ from 'underscore';
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database';
+import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns';
+import { testInFiber } from '../../../../__mocks__/helpers/jest';
+import { literal } from '../../../../lib/lib';
+import {
+	loadSystemBlueprints,
+	loadStudioBlueprints,
+	loadShowStyleBlueprints,
+	getBlueprintOfRundown,
+	WrappedStudioBlueprint
+} from '../cache';
+import {
+	getCoreSystem,
+	ICoreSystem
+} from '../../../../lib/collections/CoreSystem';
+import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints';
+import {
+	BlueprintManifestType,
+	BlueprintResultRundown,
+	BlueprintResultSegment
+} from 'tv-automation-sofie-blueprints-integration';
+import { Studios, Studio } from '../../../../lib/collections/Studios';
+import {
+	ShowStyleBase,
+	ShowStyleBases
+} from '../../../../lib/collections/ShowStyleBases';
+import { generateFakeBlueprint } from './lib';
 
 // require('../api.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint cache', () => {
-
 	beforeAll(() => {
-		setupDefaultStudioEnvironment()
-	})
+		setupDefaultStudioEnvironment();
+	});
 
 	describe('loadSystemBlueprints', () => {
-		function getCore (): ICoreSystem {
-			const core = getCoreSystem() as ICoreSystem
-			expect(core).toBeTruthy()
-			return core
+		function getCore(): ICoreSystem {
+			const core = getCoreSystem() as ICoreSystem;
+			expect(core).toBeTruthy();
+			return core;
 		}
 
 		testInFiber('Blueprint not specified', () => {
-			const core = getCore()
-			expect(core.blueprintId).toBeFalsy()
+			const core = getCore();
+			expect(core.blueprintId).toBeFalsy();
 
-			const blueprint = loadSystemBlueprints(core)
-			expect(blueprint).toBeFalsy()
-		})
+			const blueprint = loadSystemBlueprints(core);
+			expect(blueprint).toBeFalsy();
+		});
 		testInFiber('Blueprint does not exist', () => {
-			const core = getCore()
-			core.blueprintId = 'fake_id'
-			expect(core.blueprintId).toBeTruthy()
+			const core = getCore();
+			core.blueprintId = 'fake_id';
+			expect(core.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove('fake_id');
 
 			try {
-				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadSystemBlueprints(core);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[404] Blueprint "${core.blueprintId}" not found! (referenced by CoreSystem)`)
+				expect(e.message).toBe(
+					`[404] Blueprint "${core.blueprintId}" not found! (referenced by CoreSystem)`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint no type', () => {
-			const core = getCore()
-			core.blueprintId = 'fake_id'
-			expect(core.blueprintId).toBeTruthy()
+			const core = getCore();
+			core.blueprintId = 'fake_id';
+			expect(core.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id'))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(generateFakeBlueprint('fake_id'));
 
 			try {
-				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadSystemBlueprints(core);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint wrong type', () => {
-			const core = getCore()
-			core.blueprintId = 'fake_id'
-			expect(core.blueprintId).toBeTruthy()
+			const core = getCore();
+			core.blueprintId = 'fake_id';
+			expect(core.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SHOWSTYLE
+				)
+			);
 
 			try {
-				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadSystemBlueprints(core);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint wrong internal type', () => {
-			const core = getCore()
-			core.blueprintId = 'fake_id'
-			expect(core.blueprintId).toBeTruthy()
+			const core = getCore();
+			core.blueprintId = 'fake_id';
+			expect(core.blueprintId).toBeTruthy();
 
 			const manifest = () => ({
 				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
@@ -93,22 +119,30 @@ describe('Test blueprint cache', () => {
 				studioMigrations: [],
 				getBaseline: () => [],
 				getShowStyleId: () => null
-			})
+			});
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SYSTEM,
+					manifest
+				)
+			);
 
 			try {
-				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadSystemBlueprints(core);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint correct type', () => {
-			const core = getCore()
-			core.blueprintId = 'fake_id'
-			expect(core.blueprintId).toBeTruthy()
+			const core = getCore();
+			core.blueprintId = 'fake_id';
+			expect(core.blueprintId).toBeTruthy();
 
 			const manifest = () => ({
 				blueprintType: 'system' as BlueprintManifestType.SYSTEM,
@@ -117,79 +151,96 @@ describe('Test blueprint cache', () => {
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
 				minimumCoreVersion: '0.0.0'
-			})
+			});
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SYSTEM,
+					manifest
+				)
+			);
 
-			const blueprint = loadSystemBlueprints(core)
-			expect(blueprint).toBeTruthy()
-		})
-	})
+			const blueprint = loadSystemBlueprints(core);
+			expect(blueprint).toBeTruthy();
+		});
+	});
 
 	describe('loadStudioBlueprints', () => {
-		function getStudio (): Studio {
-			const studio = Studios.findOne() as Studio
-			expect(studio).toBeTruthy()
-			return studio
+		function getStudio(): Studio {
+			const studio = Studios.findOne() as Studio;
+			expect(studio).toBeTruthy();
+			return studio;
 		}
 
 		testInFiber('Blueprint not specified', () => {
-			const studio = getStudio()
-			studio.blueprintId = undefined
-			expect(studio.blueprintId).toBeFalsy()
+			const studio = getStudio();
+			studio.blueprintId = undefined;
+			expect(studio.blueprintId).toBeFalsy();
 
-			const blueprint = loadStudioBlueprints(studio)
-			expect(blueprint).toBeFalsy()
-		})
+			const blueprint = loadStudioBlueprints(studio);
+			expect(blueprint).toBeFalsy();
+		});
 		testInFiber('Blueprint does not exist', () => {
-			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
-			expect(studio.blueprintId).toBeTruthy()
+			const studio = getStudio();
+			studio.blueprintId = 'fake_id';
+			expect(studio.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove('fake_id');
 
 			try {
-				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadStudioBlueprints(studio);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[404] Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`)
+				expect(e.message).toBe(
+					`[404] Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint no type', () => {
-			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
-			expect(studio.blueprintId).toBeTruthy()
+			const studio = getStudio();
+			studio.blueprintId = 'fake_id';
+			expect(studio.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id'))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(generateFakeBlueprint('fake_id'));
 
 			try {
-				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadStudioBlueprints(studio);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint wrong type', () => {
-			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
-			expect(studio.blueprintId).toBeTruthy()
+			const studio = getStudio();
+			studio.blueprintId = 'fake_id';
+			expect(studio.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SHOWSTYLE
+				)
+			);
 
 			try {
-				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadStudioBlueprints(studio);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint wrong internal type', () => {
-			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
-			expect(studio.blueprintId).toBeTruthy()
+			const studio = getStudio();
+			studio.blueprintId = 'fake_id';
+			expect(studio.blueprintId).toBeTruthy();
 
 			const manifest = () => ({
 				blueprintType: 'system' as BlueprintManifestType.SYSTEM,
@@ -198,22 +249,30 @@ describe('Test blueprint cache', () => {
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
 				minimumCoreVersion: '0.0.0'
-			})
+			});
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SYSTEM,
+					manifest
+				)
+			);
 
 			try {
-				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadStudioBlueprints(studio);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint correct type', () => {
-			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
-			expect(studio.blueprintId).toBeTruthy()
+			const studio = getStudio();
+			studio.blueprintId = 'fake_id';
+			expect(studio.blueprintId).toBeTruthy();
 
 			const manifest = () => ({
 				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
@@ -226,86 +285,106 @@ describe('Test blueprint cache', () => {
 				studioMigrations: [],
 				getBaseline: () => [],
 				getShowStyleId: () => null
-			})
+			});
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SYSTEM,
+					manifest
+				)
+			);
 
-			const blueprint = loadStudioBlueprints(studio) as WrappedStudioBlueprint
-			expect(blueprint).toBeTruthy()
+			const blueprint = loadStudioBlueprints(
+				studio
+			) as WrappedStudioBlueprint;
+			expect(blueprint).toBeTruthy();
 
-
-			expect(blueprint.blueprint.blueprintType).toEqual('studio')
-		})
-	})
+			expect(blueprint.blueprint.blueprintType).toEqual('studio');
+		});
+	});
 
 	describe('loadShowStyleBlueprints', () => {
-		function getShowStyle (): ShowStyleBase {
-			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-			expect(showStyle).toBeTruthy()
-			return showStyle
+		function getShowStyle(): ShowStyleBase {
+			const showStyle = ShowStyleBases.findOne() as ShowStyleBase;
+			expect(showStyle).toBeTruthy();
+			return showStyle;
 		}
 
 		testInFiber('Blueprint not specified', () => {
-			const showStyle = getShowStyle()
-			;(showStyle as any).blueprintId = undefined
-			expect(showStyle.blueprintId).toBeFalsy()
+			const showStyle = getShowStyle();
+			(showStyle as any).blueprintId = undefined;
+			expect(showStyle.blueprintId).toBeFalsy();
 
 			try {
-				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadShowStyleBlueprints(showStyle);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] ShowStyleBase "${showStyle._id}" has no defined blueprint!`)
+				expect(e.message).toBe(
+					`[500] ShowStyleBase "${showStyle._id}" has no defined blueprint!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint does not exist', () => {
-			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
-			expect(showStyle.blueprintId).toBeTruthy()
+			const showStyle = getShowStyle();
+			showStyle.blueprintId = 'fake_id';
+			expect(showStyle.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove('fake_id');
 
 			try {
-				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadShowStyleBlueprints(showStyle);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[404] Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase \"${showStyle._id}\")`)
+				expect(e.message).toBe(
+					`[404] Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase \"${showStyle._id}\")`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint no type', () => {
-			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
-			expect(showStyle.blueprintId).toBeTruthy()
+			const showStyle = getShowStyle();
+			showStyle.blueprintId = 'fake_id';
+			expect(showStyle.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id'))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(generateFakeBlueprint('fake_id'));
 
 			try {
-				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadShowStyleBlueprints(showStyle);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint wrong type', () => {
-			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
-			expect(showStyle.blueprintId).toBeTruthy()
+			const showStyle = getShowStyle();
+			showStyle.blueprintId = 'fake_id';
+			expect(showStyle.blueprintId).toBeTruthy();
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SHOWSTYLE
+				)
+			);
 
 			try {
-				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadShowStyleBlueprints(showStyle);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint wrong internal type', () => {
-			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
-			expect(showStyle.blueprintId).toBeTruthy()
+			const showStyle = getShowStyle();
+			showStyle.blueprintId = 'fake_id';
+			expect(showStyle.blueprintId).toBeTruthy();
 
 			const manifest = () => ({
 				blueprintType: 'system' as BlueprintManifestType.SYSTEM,
@@ -314,22 +393,30 @@ describe('Test blueprint cache', () => {
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
 				minimumCoreVersion: '0.0.0'
-			})
+			});
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SYSTEM,
+					manifest
+				)
+			);
 
 			try {
-				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				loadShowStyleBlueprints(showStyle);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+				);
 			}
-		})
+		});
 		testInFiber('Blueprint correct type', () => {
-			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
-			expect(showStyle.blueprintId).toBeTruthy()
+			const showStyle = getShowStyle();
+			showStyle.blueprintId = 'fake_id';
+			expect(showStyle.blueprintId).toBeTruthy();
 
 			const manifest = () => ({
 				blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
@@ -342,96 +429,107 @@ describe('Test blueprint cache', () => {
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
 				getShowStyleVariantId: () => null,
-				getRundown: () => null as any as BlueprintResultRundown,
-				getSegment: () => null as any as BlueprintResultSegment
-			})
+				getRundown: () => (null as any) as BlueprintResultRundown,
+				getSegment: () => (null as any) as BlueprintResultSegment
+			});
 
-			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.remove('fake_id');
+			Blueprints.insert(
+				generateFakeBlueprint(
+					'fake_id',
+					BlueprintManifestType.SYSTEM,
+					manifest
+				)
+			);
 
-			const blueprint = loadShowStyleBlueprints(showStyle)
-			expect(blueprint).toBeTruthy()
-		})
-	})
+			const blueprint = loadShowStyleBlueprints(showStyle);
+			expect(blueprint).toBeTruthy();
+		});
+	});
 
 	describe('getBlueprintOfRundown', () => {
-		function getRundown () {
-			return new Rundown(literal<DBRundown>({
-				_id: 'ro1',
-				externalId: 'ro1',
-				studioId: 'studio0',
-				showStyleBaseId: '',
-				showStyleVariantId: 'variant0',
-				peripheralDeviceId: '',
-				dataSource: '',
-				created: 0,
-				modified: 0,
-				importVersions: {} as any,
-				name: 'test',
+		function getRundown() {
+			return new Rundown(
+				literal<DBRundown>({
+					_id: 'ro1',
+					externalId: 'ro1',
+					studioId: 'studio0',
+					showStyleBaseId: '',
+					showStyleVariantId: 'variant0',
+					peripheralDeviceId: '',
+					dataSource: '',
+					created: 0,
+					modified: 0,
+					importVersions: {} as any,
+					name: 'test',
 
-				previousPartId: null,
-				currentPartId: null,
-				nextPartId: null
-			}))
+					previousPartId: null,
+					currentPartId: null,
+					nextPartId: null
+				})
+			);
 		}
 		testInFiber('Missing showStyleBaseId', () => {
-			const rundown = getRundown()
-			expect(rundown.showStyleBaseId).toBeFalsy()
+			const rundown = getRundown();
+			expect(rundown.showStyleBaseId).toBeFalsy();
 
 			try {
-				getBlueprintOfRundown(rundown, true)
-				expect(true).toBe(false) // Please throw and don't get here
+				getBlueprintOfRundown(rundown, true);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[400] Rundown "${rundown._id}" is missing showStyleBaseId!`)
+				expect(e.message).toBe(
+					`[400] Rundown "${rundown._id}" is missing showStyleBaseId!`
+				);
 			}
-		})
+		});
 		testInFiber('Missing showStyleBase', () => {
-			const rundown = getRundown()
-			rundown.showStyleBaseId = 'fake0'
+			const rundown = getRundown();
+			rundown.showStyleBaseId = 'fake0';
 
 			try {
-				getBlueprintOfRundown(rundown, true)
-				expect(true).toBe(false) // Please throw and don't get here
+				getBlueprintOfRundown(rundown, true);
+				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[404] ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`)
+				expect(e.message).toBe(
+					`[404] ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`
+				);
 			}
-		})
+		});
 		testInFiber('Valid showStyleBase', () => {
-			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-			expect(showStyle).toBeTruthy()
+			const showStyle = ShowStyleBases.findOne() as ShowStyleBase;
+			expect(showStyle).toBeTruthy();
 
-			const rundown = getRundown()
-			rundown.showStyleBaseId = showStyle._id
+			const rundown = getRundown();
+			rundown.showStyleBaseId = showStyle._id;
 
-			const blueprint = getBlueprintOfRundown(rundown, true)
-			expect(blueprint).toBeTruthy()
-		})
+			const blueprint = getBlueprintOfRundown(rundown, true);
+			expect(blueprint).toBeTruthy();
+		});
 		testInFiber('Test caching', () => {
-			jest.useFakeTimers()
+			jest.useFakeTimers();
 
 			try {
-				const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-				expect(showStyle).toBeTruthy()
+				const showStyle = ShowStyleBases.findOne() as ShowStyleBase;
+				expect(showStyle).toBeTruthy();
 
-				const rundown = getRundown()
-				rundown.showStyleBaseId = showStyle._id
+				const rundown = getRundown();
+				rundown.showStyleBaseId = showStyle._id;
 
-				const blueprint1 = getBlueprintOfRundown(rundown)
-				expect(blueprint1).toBeTruthy()
+				const blueprint1 = getBlueprintOfRundown(rundown);
+				expect(blueprint1).toBeTruthy();
 
-				jest.runTimersToTime(500)
+				jest.runTimersToTime(500);
 
-				rundown.showStyleBaseId = 'abc' // Not real
-				const blueprint2 = getBlueprintOfRundown(rundown)
-				expect(blueprint2).toBeTruthy()
+				rundown.showStyleBaseId = 'abc'; // Not real
+				const blueprint2 = getBlueprintOfRundown(rundown);
+				expect(blueprint2).toBeTruthy();
 
 				// Should still be the same, as within cache window
-				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId)
+				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId);
 			} finally {
 				// Restore timers after run
-				jest.useRealTimers()
+				jest.useRealTimers();
 			}
-		})
-
-	})
-})
+		});
+	});
+});

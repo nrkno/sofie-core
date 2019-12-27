@@ -1,12 +1,12 @@
-import * as React from 'react'
-import * as _ from 'underscore'
+import * as React from 'react';
+import * as _ from 'underscore';
 
 interface IState {
-	hasError: boolean,
-	error?: Error,
-	info?: React.ErrorInfo,
-	expandedStack?: boolean,
-	expandedComponentStack?: boolean
+	hasError: boolean;
+	error?: Error;
+	info?: React.ErrorInfo;
+	expandedStack?: boolean;
+	expandedComponentStack?: boolean;
 }
 
 export class ErrorBoundary extends React.Component<{}, IState> {
@@ -123,71 +123,85 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			border: 'none',
 			cursor: 'pointer'
 		} as React.CSSProperties
-	}
+	};
 
-	constructor (props) {
-		super(props)
+	constructor(props) {
+		super(props);
 		this.state = {
 			hasError: false
-		}
+		};
 	}
 
-	componentDidCatch (error: Error, info: React.ErrorInfo) {
+	componentDidCatch(error: Error, info: React.ErrorInfo) {
 		this.setState({
 			hasError: true,
 			error: error,
 			info: info
-		})
+		});
 	}
 
 	toggleComponentStack = (e) => {
-		this.setState({ expandedComponentStack: !this.state.expandedComponentStack })
-	}
+		this.setState({
+			expandedComponentStack: !this.state.expandedComponentStack
+		});
+	};
 
 	toggleStack = (e) => {
-		this.setState({ expandedStack: !this.state.expandedStack })
-	}
+		this.setState({ expandedStack: !this.state.expandedStack });
+	};
 
 	resetComponent = (e) => {
-		this.setState({ hasError: false })
-	}
+		this.setState({ hasError: false });
+	};
 
-	render () {
+	render() {
 		if (this.state.hasError) {
 			return (
 				<div style={ErrorBoundary.style.box}>
-					{this.state.error &&
+					{this.state.error && (
 						<React.Fragment>
-							<h5 style={ErrorBoundary.style.header}>{this.state.error.name}</h5>
-							{this.state.info &&
-								<p style={_.extend(
-										_.clone(ErrorBoundary.style.componentStack),
-										this.state.expandedComponentStack ?
-											ErrorBoundary.style.expandedStack :
-											{})
-										}
-									onClick={this.toggleComponentStack}
-									>{this.state.info.componentStack}</p>
-							}
-							<p style={ErrorBoundary.style.message}>{this.state.error.message}</p>
-							{this.state.error.stack &&
-								<p style={_.extend(
+							<h5 style={ErrorBoundary.style.header}>
+								{this.state.error.name}
+							</h5>
+							{this.state.info && (
+								<p
+									style={_.extend(
+										_.clone(
+											ErrorBoundary.style.componentStack
+										),
+										this.state.expandedComponentStack
+											? ErrorBoundary.style.expandedStack
+											: {}
+									)}
+									onClick={this.toggleComponentStack}>
+									{this.state.info.componentStack}
+								</p>
+							)}
+							<p style={ErrorBoundary.style.message}>
+								{this.state.error.message}
+							</p>
+							{this.state.error.stack && (
+								<p
+									style={_.extend(
 										_.clone(ErrorBoundary.style.stack),
-										this.state.expandedStack ?
-											ErrorBoundary.style.expandedStack :
-											{})
-										}
-									onClick={this.toggleStack}
-									>{this.state.error.stack}</p>
-							}
+										this.state.expandedStack
+											? ErrorBoundary.style.expandedStack
+											: {}
+									)}
+									onClick={this.toggleStack}>
+									{this.state.error.stack}
+								</p>
+							)}
 						</React.Fragment>
-					}
-					<div style={ErrorBoundary.style.resetButton} onClick={this.resetComponent}>
+					)}
+					<div
+						style={ErrorBoundary.style.resetButton}
+						onClick={this.resetComponent}>
 						Try to restart component
 					</div>
 				</div>
-			)
+			);
 		}
-		return this.props.children
+		return this.props.children;
 	}
 }

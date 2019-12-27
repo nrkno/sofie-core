@@ -1,8 +1,8 @@
 export namespace BlueprintAPI {
-		export enum methods {
+	export enum methods {
 		'insertBlueprint' = 'showstyles.insertBlueprint',
 		'removeBlueprint' = 'showstyles.removeBlueprint',
 
-		'assignSystemBlueprint' = 'blueprint.assignSystem',
+		'assignSystemBlueprint' = 'blueprint.assignSystem'
 	}
 }

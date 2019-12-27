@@ -1,83 +1,131 @@
-import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
-import { check } from 'meteor/check'
-import { Meteor } from 'meteor/meteor'
-import { waitForPromise } from '../../lib/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows';
+import { check } from 'meteor/check';
+import { Meteor } from 'meteor/meteor';
+import { waitForPromise } from '../../lib/lib';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 export namespace MediaManagerAPI {
-
-	export function restartAllWorkflows () {
-		const workflows = MediaWorkFlows.find().fetch()
+	export function restartAllWorkflows() {
+		const workflows = MediaWorkFlows.find().fetch();
 		const devices = workflows.reduce((memo, workflow) => {
 			if (memo.indexOf(workflow.deviceId) < 0) {
-				memo.push(workflow.deviceId)
+				memo.push(workflow.deviceId);
 			}
-			return memo
-		}, [] as string[])
-		return waitForPromise(Promise.all(devices.map((deviceId) => {
-			return new Promise((resolve, reject) => {
-				PeripheralDeviceAPI.executeFunction(deviceId, (err, res) => {
-					if (err) reject(err)
-					else resolve(res)
-				}, 'restartAllWorkflows')
-			})
-		})))
+			return memo;
+		}, [] as string[]);
+		return waitForPromise(
+			Promise.all(
+				devices.map((deviceId) => {
+					return new Promise((resolve, reject) => {
+						PeripheralDeviceAPI.executeFunction(
+							deviceId,
+							(err, res) => {
+								if (err) reject(err);
+								else resolve(res);
+							},
+							'restartAllWorkflows'
+						);
+					});
+				})
+			)
+		);
 	}
-	export function abortAllWorkflows () {
-		const workflows = MediaWorkFlows.find().fetch()
+	export function abortAllWorkflows() {
+		const workflows = MediaWorkFlows.find().fetch();
 		const devices = workflows.reduce((memo, workflow) => {
 			if (memo.indexOf(workflow.deviceId) < 0) {
-				memo.push(workflow.deviceId)
+				memo.push(workflow.deviceId);
 			}
-			return memo
-		}, [] as string[])
-		return waitForPromise(Promise.all(devices.map((deviceId) => {
-			return new Promise((resolve, reject) => {
-				PeripheralDeviceAPI.executeFunction(deviceId, (err, res) => {
-					if (err) reject(err)
-					else resolve(res)
-				}, 'abortAllWorkflows')
+			return memo;
+		}, [] as string[]);
+		return waitForPromise(
+			Promise.all(
+				devices.map((deviceId) => {
+					return new Promise((resolve, reject) => {
+						PeripheralDeviceAPI.executeFunction(
+							deviceId,
+							(err, res) => {
+								if (err) reject(err);
+								else resolve(res);
+							},
+							'abortAllWorkflows'
+						);
+					});
+				})
+			)
+		);
+	}
+
+	export function restartWorkflow(workflowId: string) {
+		check(workflowId, String);
+
+		const workflow = MediaWorkFlows.findOne(workflowId);
+		if (!workflow)
+			throw new Meteor.Error(
+				404,
+				`MediaWorkFlow "${workflowId}" not found`
+			);
+
+		return waitForPromise(
+			new Promise((resolve, reject) => {
+				PeripheralDeviceAPI.executeFunction(
+					workflow.deviceId,
+					(err, res) => {
+						if (err) reject(err);
+						else resolve(res);
+					},
+					'restartWorkflow',
+					workflow._id
+				);
 			})
-		})))
+		);
 	}
+	export function abortWorkflow(workflowId: string) {
+		check(workflowId, String);
 
-	export function restartWorkflow (workflowId: string) {
-		check(workflowId, String)
+		const workflow = MediaWorkFlows.findOne(workflowId);
+		if (!workflow)
+			throw new Meteor.Error(
+				404,
+				`MediaWorkFlow "${workflowId}" not found`
+			);
 
-		const workflow = MediaWorkFlows.findOne(workflowId)
-		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
-
-		return waitForPromise(new Promise((resolve, reject) => {
-			PeripheralDeviceAPI.executeFunction(workflow.deviceId, (err, res) => {
-				if (err) reject(err)
-				else resolve(res)
-			}, 'restartWorkflow', workflow._id)
-		}))
+		return waitForPromise(
+			new Promise((resolve, reject) => {
+				PeripheralDeviceAPI.executeFunction(
+					workflow.deviceId,
+					(err, res) => {
+						if (err) reject(err);
+						else resolve(res);
+					},
+					'abortWorkflow',
+					workflow._id
+				);
+			})
+		);
 	}
-	export function abortWorkflow (workflowId: string) {
-		check(workflowId, String)
+	export function prioritizeWorkflow(workflowId: string) {
+		check(workflowId, String);
 
-		const workflow = MediaWorkFlows.findOne(workflowId)
-		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
+		const workflow = MediaWorkFlows.findOne(workflowId);
+		if (!workflow)
+			throw new Meteor.Error(
+				404,
+				`MediaWorkFlow "${workflowId}" not found`
+			);
 
-		return waitForPromise(new Promise((resolve, reject) => {
-			PeripheralDeviceAPI.executeFunction(workflow.deviceId, (err, res) => {
-				if (err) reject(err)
-				else resolve(res)
-			}, 'abortWorkflow', workflow._id)
-		}))
-	}
-	export function prioritizeWorkflow (workflowId: string) {
-		check(workflowId, String)
-
-		const workflow = MediaWorkFlows.findOne(workflowId)
-		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
-
-		return waitForPromise(new Promise((resolve, reject) => {
-			PeripheralDeviceAPI.executeFunction(workflow.deviceId, (err, res) => {
-				if (err) reject(err)
-				else resolve(res)
-			}, 'prioritizeWorkflow', workflow._id)
-		}))
+		return waitForPromise(
+			new Promise((resolve, reject) => {
+				PeripheralDeviceAPI.executeFunction(
+					workflow.deviceId,
+					(err, res) => {
+						if (err) reject(err);
+						else resolve(res);
+					},
+					'prioritizeWorkflow',
+					workflow._id
+				);
+			})
+		);
 	}
 }

@@ -1,13 +1,16 @@
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
-import { allowOnlyFields } from './lib'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints';
+import { allowOnlyFields } from './lib';
 
 export namespace BlueprintsSecurity {
-	export function allowReadAccess (selector: object, token: string, context: any) {
-
-		return true
+	export function allowReadAccess(
+		selector: object,
+		token: string,
+		context: any
+	) {
+		return true;
 		// TODO: implement some security here
 	}
-	export function allowWriteAccess () {
+	export function allowWriteAccess() {
 		// TODO
 	}
 }
@@ -15,15 +18,13 @@ export namespace BlueprintsSecurity {
 
 // Setup rules:
 Blueprints.allow({
-	insert (userId: string, doc: Blueprint): boolean {
-		return false
+	insert(userId: string, doc: Blueprint): boolean {
+		return false;
 	},
-	update (userId, doc, fields, modifier) {
-		return allowOnlyFields(fields, [
-			'name'
-		])
+	update(userId, doc, fields, modifier) {
+		return allowOnlyFields(fields, ['name']);
 	},
-	remove (userId, doc) {
-		return false
+	remove(userId, doc) {
+		return false;
 	}
-})
+});

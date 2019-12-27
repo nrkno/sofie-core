@@ -1,37 +1,42 @@
-import { Meteor } from 'meteor/meteor'
+import { Meteor } from 'meteor/meteor';
 
 export interface LoggerInstanceFixed {
-	error: LeveledLogMethodFixed
-	warn: LeveledLogMethodFixed
-	help: LeveledLogMethodFixed
-	data: LeveledLogMethodFixed
-	info: LeveledLogMethodFixed
-	debug: LeveledLogMethodFixed
-	prompt: LeveledLogMethodFixed
-	verbose: LeveledLogMethodFixed
-	input: LeveledLogMethodFixed
-	silly: LeveledLogMethodFixed
+	error: LeveledLogMethodFixed;
+	warn: LeveledLogMethodFixed;
+	help: LeveledLogMethodFixed;
+	data: LeveledLogMethodFixed;
+	info: LeveledLogMethodFixed;
+	debug: LeveledLogMethodFixed;
+	prompt: LeveledLogMethodFixed;
+	verbose: LeveledLogMethodFixed;
+	input: LeveledLogMethodFixed;
+	silly: LeveledLogMethodFixed;
 
-	emerg: LeveledLogMethodFixed
-	alert: LeveledLogMethodFixed
-	crit: LeveledLogMethodFixed
-	warning: LeveledLogMethodFixed
-	notice: LeveledLogMethodFixed
+	emerg: LeveledLogMethodFixed;
+	alert: LeveledLogMethodFixed;
+	crit: LeveledLogMethodFixed;
+	warning: LeveledLogMethodFixed;
+	notice: LeveledLogMethodFixed;
 }
-type Winston_LogCallback = (error?: any, level?: string, msg?: string, meta?: any) => void
+type Winston_LogCallback = (
+	error?: any,
+	level?: string,
+	msg?: string,
+	meta?: any
+) => void;
 export interface LeveledLogMethodFixed {
-	(msg: any, callback: Winston_LogCallback): LoggerInstanceFixed
-	(msg: any, meta: any, callback: Winston_LogCallback): LoggerInstanceFixed
-	(msg: any, ...meta: any[]): LoggerInstanceFixed
+	(msg: any, callback: Winston_LogCallback): LoggerInstanceFixed;
+	(msg: any, meta: any, callback: Winston_LogCallback): LoggerInstanceFixed;
+	(msg: any, ...meta: any[]): LoggerInstanceFixed;
 }
 
-let logger: LoggerInstanceFixed
+let logger: LoggerInstanceFixed;
 if (Meteor.isServer) {
 	let getLogMethod = (type) => {
 		return (...args) => {
-			return Meteor.call('logger', type, ...args)
-		}
-	}
+			return Meteor.call('logger', type, ...args);
+		};
+	};
 
 	logger = {
 		error: getLogMethod('error'),
@@ -50,21 +55,21 @@ if (Meteor.isServer) {
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warn'),
 		notice: getLogMethod('notice')
-	}
+	};
 } else {
 	let getLogMethod = (type) => {
 		return (...args) => {
-			console.log(type, ...args)
+			console.log(type, ...args);
 			// TODO: Maybe add sending logs to server here?
 			// Meteor.call('logger', type, ...args)
-			return logger
-		}
-	}
+			return logger;
+		};
+	};
 
 	let noop = (type) => {
 		// do nothing
-		return logger
-	}
+		return logger;
+	};
 
 	logger = {
 		error: getLogMethod('error'),
@@ -83,13 +88,13 @@ if (Meteor.isServer) {
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warn'),
 		notice: getLogMethod('notice')
-	}
+	};
 	// @ts-ignore localStorage
 	if (localStorage && localStorage.getItem('developerMode') !== '1') {
 		// not in developerMode, don't log everything then:
-		logger.debug = noop
-		logger.silly = noop
+		logger.debug = noop;
+		logger.silly = noop;
 	}
 }
 
-export { logger }
+export { logger };

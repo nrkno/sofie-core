@@ -1,15 +1,15 @@
-import { runInFiber } from '../Fibers'
+import { runInFiber } from '../Fibers';
 
-export function testInFiber (testName: string, fcn: Function) {
+export function testInFiber(testName: string, fcn: Function) {
 	test(testName, async () => {
-		await runInFiber(fcn)
-	})
+		await runInFiber(fcn);
+	});
 }
 
-export function testInFiberOnly (testName: string, fcn: Function) {
+export function testInFiberOnly(testName: string, fcn: Function) {
 	test.only(testName, async () => {
-		await runInFiber(fcn)
-	})
+		await runInFiber(fcn);
+	});
 }
 
 // testInFiber.only = testInFiberOnly

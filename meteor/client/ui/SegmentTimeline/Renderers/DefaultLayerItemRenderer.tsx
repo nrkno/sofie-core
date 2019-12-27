@@ -1,71 +1,83 @@
-import * as React from 'react'
-import { getElementWidth } from '../../../utils/dimensions'
+import * as React from 'react';
+import { getElementWidth } from '../../../utils/dimensions';
 
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-interface IProps extends ICustomLayerItemProps {
-}
-interface IState {
-}
+import {
+	CustomLayerItemRenderer,
+	ICustomLayerItemProps
+} from './CustomLayerItemRenderer';
+interface IProps extends ICustomLayerItemProps {}
+interface IState {}
 
-export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLSpanElement
-	rightLabel: HTMLSpanElement
+export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<
+	IProps,
+	IState
+> {
+	leftLabel: HTMLSpanElement;
+	rightLabel: HTMLSpanElement;
 
-	constructor (props) {
-		super(props)
+	constructor(props) {
+		super(props);
 	}
 
 	setLeftLabelRef = (e: HTMLSpanElement) => {
-		this.leftLabel = e
-	}
+		this.leftLabel = e;
+	};
 
 	setRightLabelRef = (e: HTMLSpanElement) => {
-		this.rightLabel = e
-	}
+		this.rightLabel = e;
+	};
 
-	componentDidMount () {
-		this.updateAnchoredElsWidths()
+	componentDidMount() {
+		this.updateAnchoredElsWidths();
 	}
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
+		const leftLabelWidth = getElementWidth(this.leftLabel);
+		const rightLabelWidth = getElementWidth(this.rightLabel);
 
-		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
-	}
+		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth);
+	};
 
-	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
-		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
-			super.componentDidUpdate(prevProps, prevState)
+	componentDidUpdate(
+		prevProps: Readonly<IProps>,
+		prevState: Readonly<IState>
+	) {
+		if (
+			super.componentDidUpdate &&
+			typeof super.componentDidUpdate === 'function'
+		) {
+			super.componentDidUpdate(prevProps, prevState);
 		}
 
 		if (this.props.piece.name !== prevProps.piece.name) {
-			this.updateAnchoredElsWidths()
+			this.updateAnchoredElsWidths();
 		}
 	}
 
-	render () {
-		return <React.Fragment>
-			<span className='segment-timeline__piece__label'
-				ref={this.setLeftLabelRef}
-				style={this.getItemLabelOffsetLeft()}
-			>
-				<span className='segment-timeline__piece__label'>
-					{this.props.piece.name}
+	render() {
+		return (
+			<React.Fragment>
+				<span
+					className="segment-timeline__piece__label"
+					ref={this.setLeftLabelRef}
+					style={this.getItemLabelOffsetLeft()}>
+					<span className="segment-timeline__piece__label">
+						{this.props.piece.name}
+					</span>
 				</span>
-			</span>
-			<span className='segment-timeline__piece__label right-side'
-				ref={this.setRightLabelRef}
-				style={this.getItemLabelOffsetRight()}
-			>
-				{this.renderInfiniteIcon()}
-				{this.renderOverflowTimeLabel()}
-			</span>
-			{ /* <FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== null}>
+				<span
+					className="segment-timeline__piece__label right-side"
+					ref={this.setRightLabelRef}
+					style={this.getItemLabelOffsetRight()}>
+					{this.renderInfiniteIcon()}
+					{this.renderOverflowTimeLabel()}
+				</span>
+				{/* <FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== null}>
 				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
 					Item properties
 				</div>
-			</FloatingInspector> */ }
-		</React.Fragment>
+			</FloatingInspector> */}
+			</React.Fragment>
+		);
 	}
 }

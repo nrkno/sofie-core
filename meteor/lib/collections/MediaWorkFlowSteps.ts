@@ -1,7 +1,7 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import { createMongoCollection } from './lib'
+import { TransformedCollection } from '../typings/meteor';
+import { registerCollection } from '../lib';
+import { Meteor } from 'meteor/meteor';
+import { createMongoCollection } from './lib';
 
 export enum WorkStepStatus {
 	IDLE = 'idle',
@@ -14,38 +14,40 @@ export enum WorkStepStatus {
 }
 
 export abstract class MediaWorkFlowStep {
-	_id: string
-	_rev: string
+	_id: string;
+	_rev: string;
 
 	/** Which device this workflow originated from */
-	deviceId: string
-	studioId: string
+	deviceId: string;
+	studioId: string;
 
-	workFlowId: string
-	action: string
-	status: WorkStepStatus
-	messages?: Array<string>
+	workFlowId: string;
+	action: string;
+	status: WorkStepStatus;
+	messages?: Array<string>;
 
-	priority: number
+	priority: number;
 	/** 0-1 */
-	progress?: number
-	criticalStep?: boolean
+	progress?: number;
+	criticalStep?: boolean;
 	/** Calculated time left of this step */
-	expectedLeft?: number
+	expectedLeft?: number;
 }
 
-export const MediaWorkFlowSteps: TransformedCollection<MediaWorkFlowStep, MediaWorkFlowStep>
-	= createMongoCollection<MediaWorkFlowStep>('mediaWorkFlowSteps')
-registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
+export const MediaWorkFlowSteps: TransformedCollection<
+	MediaWorkFlowStep,
+	MediaWorkFlowStep
+> = createMongoCollection<MediaWorkFlowStep>('mediaWorkFlowSteps');
+registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps);
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaWorkFlowSteps._ensureIndex({
 			// TODO: add deviceId: 1,
 			mediaWorkFlowId: 1
-		})
+		});
 		MediaWorkFlowSteps._ensureIndex({
 			status: 1,
 			priority: 1
-		})
+		});
 	}
-})
+});

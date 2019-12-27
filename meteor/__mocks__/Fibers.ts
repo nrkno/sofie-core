@@ -1,6 +1,6 @@
-let Fiber
+let Fiber;
 try {
-	Fiber = require('fibers')
+	Fiber = require('fibers');
 } catch (e) {
 	if (e.toString().match(/Missing binary/)) {
 		// Temporary workaround:
@@ -9,14 +9,12 @@ Note: When you get the "Missing binary"-error when running in Jest
 be sure you have run npm install (so that the postInstall script has run)
 
 Original error:
-${e.toString()}`
-)
-// Head over to
-// 	meteor/node_modules/fibers/fibers.js
-// and add this line to line 13:
-// if (process.env.JEST_WORKER_ID !== undefined ) modPath += '.node'
-
-	} else throw e
+${e.toString()}`);
+		// Head over to
+		// 	meteor/node_modules/fibers/fibers.js
+		// and add this line to line 13:
+		// if (process.env.JEST_WORKER_ID !== undefined ) modPath += '.node'
+	} else throw e;
 }
 /**
  * Run function in a Fiber
@@ -29,23 +27,23 @@ ${e.toString()}`
  *     })
  * })
  */
-export function isInFiber (): boolean {
-	return !!Fiber.current
+export function isInFiber(): boolean {
+	return !!Fiber.current;
 }
-export function runInFiber (fcn: Function): Promise<void> {
+export function runInFiber(fcn: Function): Promise<void> {
 	return new Promise((resolve, reject) => {
 		Fiber(() => {
 			try {
 				// Run the function
-				const out = fcn()
+				const out = fcn();
 				// the function has finished
-				resolve(out)
+				resolve(out);
 			} catch (e) {
-				console.log('Error: ' + e)
-				reject(e)
+				console.log('Error: ' + e);
+				reject(e);
 			}
-		}).run()
-	})
+		}).run();
+	});
 }
 
-export { Fiber }
+export { Fiber };

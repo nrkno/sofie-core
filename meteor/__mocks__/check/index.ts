@@ -1,5 +1,5 @@
-import * as match from './match'
+import * as match from './match';
 
-export function setup () {
-	return match
+export function setup() {
+	return match;
 }

@@ -1,49 +1,52 @@
-import * as i18n from 'i18next'
-import * as Backend from 'i18next-xhr-backend'
-import * as LanguageDetector from 'i18next-browser-languagedetector'
-import { reactI18nextModule } from 'react-i18next'
+import * as i18n from 'i18next';
+import * as Backend from 'i18next-xhr-backend';
+import * as LanguageDetector from 'i18next-browser-languagedetector';
+import { reactI18nextModule } from 'react-i18next';
 
-let i18nTranslator: i18n.TranslationFunction<any, object, string>
+let i18nTranslator: i18n.TranslationFunction<any, object, string>;
 const i18nInstance = i18n
 	.use(Backend)
 	.use(LanguageDetector)
 	.use(reactI18nextModule)
-	.init({
-		fallbackLng: {
-			'nn': ['nb', 'en'],
-			'default': ['en']
+	.init(
+		{
+			fallbackLng: {
+				nn: ['nb', 'en'],
+				default: ['en']
+			},
+
+			// have a common namespace used around the full app
+			ns: ['translations'],
+			defaultNS: 'translations',
+
+			debug: false,
+			joinArrays: '\n',
+
+			whitelist: ['en', 'nb', 'nn', 'sv'],
+
+			keySeparator: '→',
+			nsSeparator: '⇒',
+			pluralSeparator: '⥤',
+			contextSeparator: '⥤',
+
+			interpolation: {
+				escapeValue: false // not needed for react!!
+			},
+
+			react: {
+				wait: true
+			}
 		},
-
-		// have a common namespace used around the full app
-		ns: ['translations'],
-		defaultNS: 'translations',
-
-		debug: false,
-		joinArrays: '\n',
-
-		whitelist: ['en', 'nb', 'nn', 'sv'],
-
-		keySeparator: '→',
-		nsSeparator: '⇒',
-		pluralSeparator: '⥤',
-		contextSeparator: '⥤',
-
-		interpolation: {
-			escapeValue: false, // not needed for react!!
-		},
-
-		react: {
-			wait: true
+		(err, t) => {
+			if (err) {
+				console.error('Error initializing i18Next', err);
+			} else {
+				i18nTranslator = t;
+			}
 		}
-	}, (err, t) => {
-		if (err) {
-			console.error('Error initializing i18Next', err)
-		} else {
-			i18nTranslator = t
-		}
-	})
+	);
 
-export { i18nInstance, i18nTranslator }
+export { i18nInstance, i18nTranslator };
 
 /*
  Notes:

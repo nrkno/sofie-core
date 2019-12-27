@@ -5,5 +5,5 @@ checkNpmVersions({
 }, 'react-meteor-data');
 */
 
-export * from './createContainer'
-export * from './ReactMeteorData'
+export * from './createContainer';
+export * from './ReactMeteorData';

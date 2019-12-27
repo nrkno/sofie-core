@@ -1,7 +1,10 @@
-import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
-import * as CoreSystem from '../../../../lib/collections/CoreSystem'
+import {
+	readAllMessages,
+	writeMessage
+} from '../../../api/serviceMessages/serviceMessagesApi';
+import * as CoreSystem from '../../../../lib/collections/CoreSystem';
 
-jest.mock('../../../../lib/collections/CoreSystem')
+jest.mock('../../../../lib/collections/CoreSystem');
 
 const message1: CoreSystem.ServiceMessage = {
 	id: '294a7079efdce49fb553e52d9e352e24',
@@ -9,7 +12,7 @@ const message1: CoreSystem.ServiceMessage = {
 	message: 'Something is wrong that should have been right',
 	sender: 'ola',
 	timestamp: new Date()
-}
+};
 
 const message2: CoreSystem.ServiceMessage = {
 	id: '4d6fb1e005ac3364784acc7194e329c2',
@@ -17,7 +20,7 @@ const message2: CoreSystem.ServiceMessage = {
 	message: 'Something is rotten in the state of Denmark',
 	sender: 'ola',
 	timestamp: new Date()
-}
+};
 
 const fakeCoreSystem: CoreSystem.ICoreSystem = {
 	_id: 'core',
@@ -27,146 +30,176 @@ const fakeCoreSystem: CoreSystem.ICoreSystem = {
 	previousVersion: null,
 	serviceMessages: {},
 	storePath: '/dev/null'
-}
+};
 
 describe('Service messages internal API', () => {
-	const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem > = CoreSystem.getCoreSystem as any
+	const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem> = CoreSystem.getCoreSystem as any;
 
 	describe('readAllMessages', () => {
 		it('should throw when core system object cant be accessed', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => undefined)
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => undefined);
 
-			expect(readAllMessages).toThrow()
+			expect(readAllMessages).toThrow();
 
-			spy.mockRestore()
-		})
+			spy.mockRestore();
+		});
 
 		it('should throw when core system object doesnt have a serviceMessages field', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => {
-				const brokenCore = { ...fakeCoreSystem }
-				delete brokenCore.serviceMessages
-				return brokenCore
-			})
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => {
+					const brokenCore = { ...fakeCoreSystem };
+					delete brokenCore.serviceMessages;
+					return brokenCore;
+				});
 
-			expect(readAllMessages).toThrow()
+			expect(readAllMessages).toThrow();
 
-			spy.mockRestore()
-		})
+			spy.mockRestore();
+		});
 
 		it('should return an empty array when there are no service messages', () => {
-			const cs = { ...fakeCoreSystem }
-			cs.serviceMessages = {}
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const cs = { ...fakeCoreSystem };
+			cs.serviceMessages = {};
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
 
-			const actual = readAllMessages()
+			const actual = readAllMessages();
 
-			expect(actual).toEqual([])
+			expect(actual).toEqual([]);
 
-			spy.mockRestore()
-		})
+			spy.mockRestore();
+		});
 
 		it('should return all service messages as an array', () => {
-			const cs = { ...fakeCoreSystem }
-			cs.serviceMessages[message1.id] = message1
-			cs.serviceMessages[message2.id] = message2
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const cs = { ...fakeCoreSystem };
+			cs.serviceMessages[message1.id] = message1;
+			cs.serviceMessages[message2.id] = message2;
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
 
-			const actual = readAllMessages()
+			const actual = readAllMessages();
 
-			expect(actual).toContainEqual(message1)
-			expect(actual).toContainEqual(message2)
-			spy.mockRestore()
-		})
-	})
+			expect(actual).toContainEqual(message1);
+			expect(actual).toContainEqual(message2);
+			spy.mockRestore();
+		});
+	});
 
 	describe('writeMessage', () => {
 		it('should throw when core system object cant be accessed', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => undefined)
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => undefined);
 
-			expect(writeMessage).toThrow()
+			expect(writeMessage).toThrow();
 
-			spy.mockRestore()
-		})
+			spy.mockRestore();
+		});
 
 		it('should throw when core system object doesnt have a serviceMessages field', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => {
-				const brokenCore = { ...fakeCoreSystem }
-				delete brokenCore.serviceMessages
-				return brokenCore
-			})
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => {
+					const brokenCore = { ...fakeCoreSystem };
+					delete brokenCore.serviceMessages;
+					return brokenCore;
+				});
 
-			expect(writeMessage).toThrow()
+			expect(writeMessage).toThrow();
 
-			spy.mockRestore()
-		})
+			spy.mockRestore();
+		});
 
 		it('should set isUpdate flag true when message with given id exists in system already', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {}
-			})
-			cs.serviceMessages[message1.id] = message1
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			});
+			cs.serviceMessages[message1.id] = message1;
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
 
-			const actual = writeMessage(message1)
+			const actual = writeMessage(message1);
 
-			expect(actual).toHaveProperty('isUpdate', true)
-			spy.mockRestore()
-		})
+			expect(actual).toHaveProperty('isUpdate', true);
+			spy.mockRestore();
+		});
 
 		it('should set isUpdate flag false when message does not already exist in system', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {}
-			})
-			cs.serviceMessages[message1.id] = message1
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			const actual = writeMessage(message2)
+			});
+			cs.serviceMessages[message1.id] = message1;
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
+			const actual = writeMessage(message2);
 
-			expect(actual).toHaveProperty('isUpdate', false)
-			spy.mockRestore()
-		})
+			expect(actual).toHaveProperty('isUpdate', false);
+			spy.mockRestore();
+		});
 
 		it('should write message to CoreSystem.serviceMessages', () => {
-			const expected = {}
-			expected[message2.id] = message2
+			const expected = {};
+			expected[message2.id] = message2;
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {}
-			})
-			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			});
+			const spyGetCoreSystem = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
 
-			writeMessage(message2)
+			writeMessage(message2);
 
-			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, { $set: { serviceMessages: expected } })
-			spyGetCoreSystem.mockRestore()
-		})
+			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
+				$set: { serviceMessages: expected }
+			});
+			spyGetCoreSystem.mockRestore();
+		});
 
 		it('should leave existing messages untouched', () => {
-			const expected = {}
-			expected[message1.id] = message1
-			expected[message2.id] = message2
+			const expected = {};
+			expected[message1.id] = message1;
+			expected[message2.id] = message2;
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {}
-			})
-			cs.serviceMessages[message1.id] = message1
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			const actual = writeMessage(message2)
+			});
+			cs.serviceMessages[message1.id] = message1;
+			const spy = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
+			const actual = writeMessage(message2);
 
-			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, { $set: { serviceMessages: expected } })
-			spy.mockRestore()
-		})
+			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
+				$set: { serviceMessages: expected }
+			});
+			spy.mockRestore();
+		});
 
-		 it('should throw when message cant be written', () => {
-			 const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'update').mockImplementation(() => {
-				 throw new Error('lol')
-			 })
-			 const cs = Object.assign({}, fakeCoreSystem, {
+		it('should throw when message cant be written', () => {
+			const spyUpdate = jest
+				.spyOn(CoreSystem.CoreSystem, 'update')
+				.mockImplementation(() => {
+					throw new Error('lol');
+				});
+			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {}
-			})
-			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			});
+			const spyGetCoreSystem = jest
+				.spyOn(CoreSystem, 'getCoreSystem')
+				.mockImplementation(() => cs);
 
-			expect(() => { writeMessage(message2) }).toThrow()
+			expect(() => {
+				writeMessage(message2);
+			}).toThrow();
 
-			spyGetCoreSystem.mockRestore()
-			spyUpdate.mockRestore()
-		 })
-	})
-})
+			spyGetCoreSystem.mockRestore();
+			spyUpdate.mockRestore();
+		});
+	});
+});
