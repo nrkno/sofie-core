@@ -118,7 +118,10 @@ function checkDatabaseVersions() {
 					!blueprint.databaseVersion ||
 					_.isString(blueprint.databaseVersion)
 				)
-					blueprint.databaseVersion = {};
+					blueprint.databaseVersion = {
+						showStyle: {},
+						studio: {}
+					};
 				if (!blueprint.databaseVersion.showStyle)
 					blueprint.databaseVersion.showStyle = {};
 				if (!blueprint.databaseVersion.studio)

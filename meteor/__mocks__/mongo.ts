@@ -303,8 +303,7 @@ export namespace MongoMock {
 	) {
 		const collectionName: string = _.isString(collection)
 			? collection
-			: // @ts-ignore
-			  collection.localName;
+			: collection['localName'];
 		data = data || {};
 		if (_.isArray(data)) {
 			const collectionData = {};
