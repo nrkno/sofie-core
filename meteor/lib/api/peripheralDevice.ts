@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -38,7 +38,7 @@ export enum DeviceType {
 	// Media-manager devices:
 	MEDIA_MANAGER 	= 'media_manager'
 }
-export type DeviceSubType = SUBTYPE_PROCESS | TSR_DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
+export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 /** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
 export type SUBTYPE_PROCESS = '_process'

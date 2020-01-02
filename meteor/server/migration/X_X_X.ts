@@ -1,22 +1,22 @@
 import { literal, getCurrentTime } from '../../lib/lib'
 import { ensureCollectionProperty } from './lib'
-import { addMigrationSteps } from './databaseMigration'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 import { Random } from 'meteor/random'
+import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 
 /*
  * **************************************************************************************
  *
  *  These migrations are destined for the next release
  *
- * (This file is to be renamed to the correct version number when finalizing the release)
+ * (This file is to be renamed to the correct version number when doing the release)
  *
  * **************************************************************************************
 */
 // x.x.x (Release X)
-addMigrationSteps('1.2.0', [
+addMigrationSteps(CURRENT_SYSTEM_VERSION, [ // <--- To be set to an absolute version number when doing the release
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',

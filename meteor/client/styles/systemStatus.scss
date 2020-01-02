@@ -135,6 +135,9 @@
 	> .value {
 		> .pill {
 			margin-right: 0;
+			a {
+				color: inherit;
+			}
 		}
 	}
 	
@@ -190,10 +193,6 @@
 			background: $color-status-unknown;
 			border: $color-status-unknown;
 		}
-	}
-
-	&:hover {
-		background: #f0f0f0aa;
 	}
 }
 

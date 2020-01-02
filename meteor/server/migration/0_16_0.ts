@@ -26,7 +26,9 @@ addMigrationSteps('0.16.0', [
 			return false
 		},
 		migrate: (input) => {
-			setCoreSystemStorePath(input.storePath)
+			if (input.storePath) {
+				setCoreSystemStorePath(input.storePath)
+			}
 		},
 		input: [{
 			label: 'File path for persistant storage',

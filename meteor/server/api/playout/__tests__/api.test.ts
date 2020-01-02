@@ -92,7 +92,7 @@ describe('Playout API', () => {
 		})
 		// Activate a second rundown (this should throw an error)
 		expect(() => {
-			Meteor.call(PlayoutAPI.methods.rundownActivate, playlistId1)
+			Meteor.call(PlayoutAPI.methods.rundownActivate, playlistId1, false)
 		}).toThrowError(/only one rundown/i)
 
 

@@ -135,7 +135,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		return (
 			<div className='video-preview'>
 				{
-					this.state.subItems.map((item, index, array) => {
+					this.state.subItems.reverse().map((item, index, array) => {
 						return (
 							<div className={ClassNames(
 								'video-preview',

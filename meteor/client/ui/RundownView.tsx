@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, VTEditableParameters, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -23,7 +23,7 @@ import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
+import { RundownTimingProvider, withTiming, WithTiming, CurrentPartRemaining, AutoNextStatus } from './RundownView/RundownTiming'
 import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -59,7 +59,6 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
@@ -271,11 +270,15 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+				</span>
+				{ this.props.rundownPlaylist.currentPartId && <span className='timing-clock current-remaining'>
+					<CurrentPartRemaining currentPartId={this.props.rundownPlaylist.currentPartId} heavyClassName='overtime' />
+					<AutoNextStatus />
 					{this.props.rundownPlaylist.holdState && this.props.rundownPlaylist.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
 						: null
 					}
-				</span>
+				</span> }
 				{ this.props.rundownPlaylist.expectedDuration ?
 					(<React.Fragment>
 						{this.props.rundownPlaylist.expectedStart && this.props.rundownPlaylist.expectedDuration &&
@@ -440,19 +443,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPiece,
 					label: t('Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextPieceUndo,
 					label: t('Undo Disable the next element'),
-					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
-					global: true,
 					coolDown: 1000
 				}
 			]
@@ -640,6 +640,22 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	) => {
 		const { t } = this.props
 
+		function handleResult (err, response) {
+			if (!err) {
+				if (typeof clb === 'function') clb(response)
+			} else {
+				console.error(err)
+				doModalDialog({
+					title: t('Failed to activate'),
+					message: t('Something went wrong, please contact the system administrator if the problem persists.'),
+					acceptOnly: true,
+					warning: true,
+					yes: t('OK'),
+					onAccept: (le: any) => { console.log() }
+				})
+			}
+		}
+
 		const otherRundowns = err.details as Rundown[]
 		doModalDialog({
 			title: t('Another Rundown is Already Active!'),
@@ -650,44 +666,16 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			no: t('Cancel'),
 			actions: [
 				{
-					label: t('Activate anyway (GO ON AIR)'),
+					label: t('Activate Anyway (GO ON AIR)'),
 					classNames: 'btn-primary',
 					on: (e) => {
-						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], (err, response) => {
-							if (!err) {
-								if (typeof clb === 'function') clb()
-							} else {
-								console.error(err)
-								doModalDialog({
-									title: t('Failed to activate'),
-									message: t('Something went wrong, please contact the system administrator if the problem persists.'),
-									acceptOnly: true,
-									warning: true,
-									yes: t('OK'),
-									onAccept: (le: any) => { console.log() }
-								})
-							}
-						})
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], handleResult)
 					}
 				}
 			],
 			warning: true,
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], (err, response) => {
-					if (!err) {
-						if (typeof clb === 'function') clb()
-					} else {
-						console.error(err)
-						doModalDialog({
-							title: t('Failed to activate'),
-							message: t('Something went wrong, please contact the system administrator if the problem persists.'),
-							acceptOnly: true,
-							warning: true,
-							yes: t('OK'),
-							onAccept: (le: any) => { console.log() }
-						})
-					}
-				})
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], handleResult)
 			}
 		})
 	}
@@ -844,6 +832,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+						warning: true,
 						onAccept: () => {
 							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.playlist._id])
 						}
@@ -1137,12 +1126,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch().map(i => i._id)
 			},
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			subType: TSR_DeviceType.CASPARCG
+			subType: TSR.DeviceType.CASPARCG
 		}).fetch()) || undefined,
 		rundownLayoutId: String(params['layout'] || '')
 	}
 })(
-class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	private bindKeys: Array<{
 		key: string,
@@ -1415,21 +1404,22 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
-				_.each(combos, (combo: string) => {
-					const handler = (e: KeyboardEvent) => {
-						if (this.props.playlist && this.props.playlist.active && this.props.playlist.nextPartId) {
-							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
-								this.props.playlist._id, this.props.playlist.nextPartId, i.property, i.value
-							])
-						}
+
+				const handler = (e: KeyboardEvent) => {
+					if (this.props.playlist && this.props.playlist.active && this.props.playlist.nextPartId) {
+						doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+							this.props.playlist._id, this.props.playlist.nextPartId, i.property, i.value
+						])
 					}
+				}
+				_.each(combos, (combo: string) => {
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 					this.usedArgumentKeys.push({
 						up: handler,
 						key: combo,
 						label: i.label || ''
 					})
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
 			})
 		}

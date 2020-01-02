@@ -25,8 +25,10 @@ import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
+import { literal } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
+import { Settings } from '../../../lib/Settings'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -78,8 +80,7 @@ interface IState {
 	},
 	collapsed: boolean,
 	followLiveLine: boolean,
-	livePosition: number,
-	displayTimecode: number
+	livePosition: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
@@ -119,7 +120,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part) => {
-		notes = notes.concat(part.getNotes(true))
+		notes = notes.concat(part.getNotes(true), part.getInvalidReasonNotes())
 	})
 	notes = notes.concat(segment.notes || [])
 
@@ -198,8 +199,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	intersectionObserver: IntersectionObserver | undefined
 	mountedTime: number
 
-	private _prevDisplayTime: number
-
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
 
@@ -208,8 +207,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.playlist._id}`, `segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
-			livePosition: 0,
-			displayTimecode: 0
+			livePosition: 0
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -251,6 +249,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.stopLive()
+			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
@@ -260,16 +259,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			})
 		} else if (this.props.playlist && !this.props.playlist.active && prevProps.rundown && prevProps.rundown.active) {
 			this.setState({
-				livePosition: 0,
-				displayTimecode: 0
+				livePosition: 0
 			})
 		}
 
 		if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
 			this.onFollowLiveLine(true, {})
 		}
-
-		this.updateSpeech()
 	}
 
 	componentWillUnmount () {
@@ -323,16 +319,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				(e.detail.currentTime - lastStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
-			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
-			if (this.props.currentLivePart.displayDurationGroup && !this.props.currentLivePart.displayDuration) {
-				onAirPartDuration = this.props.currentLivePart.renderedDuration || onAirPartDuration
-			}
-
 			this.setState(_.extend({
-				livePosition: newLivePosition,
-				displayTimecode: this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
-					(e.detail.currentTime - (lastStartedPlayback + onAirPartDuration)) :
-					(onAirPartDuration * -1)
+				livePosition: newLivePosition
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 			} : null))
@@ -404,45 +392,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
-	updateSpeech () {
-
-		// Note that the displayTime is negative when counting down to 0.
-		let displayTime = this.state.displayTimecode
-
-		if (displayTime === 0) {
-			// do nothing
-		} else {
-			displayTime += SPEAK_ADVANCE
-			displayTime = Math.floor(displayTime / 1000)
-		}
-
-		if (this._prevDisplayTime !== displayTime) {
-
-			let text = '' // Say nothing
-
-			if (getAllowSpeaking()) {
-				switch (displayTime) {
-					case -1: text = 'One'; break
-					case -2: text = 'Two'; break
-					case -3: text = 'Three'; break
-					case -4: text = 'Four'; break
-					case -5: text = 'Five'; break
-					case -6: text = 'Six'; break
-					case -7: text = 'Seven'; break
-					case -8: text = 'Eight'; break
-					case -9: text = 'Nine'; break
-					case -10: text = 'Ten'; break
-				}
-				if (displayTime === 0 && this._prevDisplayTime === -1) {
-					text = 'Zero'
-				}
-			}
-			this._prevDisplayTime = displayTime
-			if (text) {
-				SpeechSynthesiser.speak(text, 'countdown')
-			}
-		}
-	}
 
 	render () {
 		return this.props.segmentui && (
@@ -473,7 +422,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				followLiveLine={this.state.followLiveLine}
 				liveLineHistorySize={this.props.liveLineHistorySize}
 				livePosition={this.state.livePosition}
-				displayTimecode={this.state.displayTimecode}
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
 				onShowEntireSegment={this.onShowEntireSegment}

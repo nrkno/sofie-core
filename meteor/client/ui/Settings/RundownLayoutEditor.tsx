@@ -216,7 +216,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.name`}
 								obj={item}
-								options={RundownLayoutType}
 								type='text'
 								collection={RundownLayouts}
 								className='input text-input input-l' />
@@ -231,7 +230,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.x`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -244,7 +242,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.y`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -257,7 +254,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.width`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -270,7 +266,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.height`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -283,7 +278,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.buttonWidthScale`}
 										obj={item}
-										options={RundownLayoutType}
 										type='float'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -296,7 +290,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.buttonHeightScale`}
 										obj={item}
-										options={RundownLayoutType}
 										type='float'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -311,7 +304,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.rank`}
 								obj={item}
-								options={RundownLayoutType}
 								type='float'
 								collection={RundownLayouts}
 								className='input text-input input-l' />
@@ -364,7 +356,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.includeClearInRundownBaseline`}
 										obj={item}
-										options={RundownLayoutType}
 										type='checkbox'
 										collection={RundownLayouts}
 										className='mod mas' />
@@ -469,6 +460,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 						</label>
 					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Register Shortcuts for this Panel')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.assignHotKeys`}
+										obj={item}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 				</div>
 			))}
 		</React.Fragment>

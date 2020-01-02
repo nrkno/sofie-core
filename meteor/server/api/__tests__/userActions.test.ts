@@ -5,6 +5,8 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownP
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { setMinimumTakeSpan } from '../userActions'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { UserActionAPI as OriginalUserActionAPI } from '../../../lib/api/userActions'
+import { getHash } from '../../../lib/lib'
 
 namespace UserActionAPI { // Using our own method definition, to catch external API changes
 	export enum methods {
@@ -52,7 +54,10 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 		'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
 		'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
 
-		'regenerateRundown'					= 'userAction.ingest.regenerateRundown'
+		'regenerateRundown'					= 'userAction.ingest.regenerateRundown',
+
+		'generateRestartToken'				= 'userAction.system.generateRestartToken',
+		'restartCore'						= 'userAction.system.restartCore'
 	}
 }
 
@@ -111,7 +116,7 @@ describe('User Actions', () => {
 		})
 		// Activate a second rundown (this should throw an error)
 		expect(
-			Meteor.call(UserActionAPI.methods.activate, playlistId1)
+			Meteor.call(UserActionAPI.methods.activate, playlistId1, false)
 		).toMatchObject({
 			error: 409,
 			message: expect.stringMatching(/only one rundown/i)
@@ -206,5 +211,33 @@ describe('User Actions', () => {
 			currentPartId: null,
 			nextPartId: null
 		})
+	})
+
+	testInFiber('Restart Core', () => {
+		jest.useFakeTimers();
+
+		// Generate restart token
+		const res = Meteor.call(UserActionAPI.methods.generateRestartToken)
+		expect(res).toMatchObject({ success: 200 })
+		expect(typeof res.result).toBe('string');
+
+		const mockExit = jest.spyOn(process, 'exit').mockImplementation()
+
+		// Use an invalid token to try and restart it
+		try {
+			Meteor.call(UserActionAPI.methods.restartCore, 'invalidToken')
+			// calling this method with an invalid token should throw
+			expect(false).toBeTruthy()
+		} catch (e) {
+			expect(true).toBeTruthy()
+		}
+
+		expect(
+			Meteor.call(UserActionAPI.methods.restartCore, getHash(OriginalUserActionAPI.RESTART_SALT + res.result))
+		).toMatchObject({ success: 200 })
+
+		jest.runAllTimers()
+
+		expect(mockExit).toHaveBeenCalledTimes(1)
 	})
 })

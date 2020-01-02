@@ -170,23 +170,27 @@ const AdLibListView = translate()(class extends React.Component<
 		return <tbody className='adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline'>
 			{
 				this.props.rundownAdLibs && this.props.rundownAdLibs.
-					filter((item) => {
-						return matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.props.searchFilter)
-					}).
-					map((item: AdLibPieceUi) => {
-						return (
-							<AdLibListItem
-								key={item._id}
-								item={item}
-								selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-								layer={this.state.sourceLayers[item.sourceLayerId]}
-								outputLayer={this.state.outputLayers[item.outputLayerId]}
-								onToggleAdLib={this.props.onToggleAdLib}
-								onSelectAdLib={this.props.onSelectAdLib}
-								playlist={this.props.playlist}
-							/>
+					filter((item) =>
+						matchFilter(
+							item,
+							this.props.showStyleBase,
+							this.props.uiSegments,
+							this.props.filter,
+							this.props.searchFilter
 						)
-					})
+					).
+					map((item: AdLibPieceUi) =>
+						<AdLibListItem
+							key={item._id}
+							item={item}
+							selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+							layer={this.state.sourceLayers[item.sourceLayerId]}
+							outputLayer={this.state.outputLayers[item.outputLayerId]}
+							onToggleAdLib={this.props.onToggleAdLib}
+							onSelectAdLib={this.props.onSelectAdLib}
+							playlist={this.props.playlist}
+						/>
+					)
 			}
 		</tbody>
 	}
@@ -218,22 +222,27 @@ const AdLibListView = translate()(class extends React.Component<
 						</tr>
 						{
 							seg.pieces && seg.pieces.
-								sort((a, b) => a._rank - b._rank).
-								filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.props.searchFilter)).
-								map((item: AdLibPieceUi) => {
-									return (
-										<AdLibListItem
-											key={item._id}
-											item={item}
-											selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-											layer={this.state.sourceLayers[item.sourceLayerId]}
-											outputLayer={this.state.outputLayers[item.outputLayerId]}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-											/>
+								filter((item) =>
+									matchFilter(
+										item,
+										this.props.showStyleBase,
+										this.props.uiSegments,
+										this.props.filter,
+										this.props.searchFilter
 									)
-								})
+								).
+								map((item: AdLibPieceUi) =>
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
+										layer={this.state.sourceLayers[item.sourceLayerId]}
+										outputLayer={this.state.outputLayers[item.outputLayerId]}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+										playlist={this.props.playlist}
+										/>
+								)
 						}
 					</tbody>
 				)
@@ -481,7 +490,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 				let rundownAdLibItems = RundownBaselineAdLibPieces.find({
 					rundownId: currentRundownId
 				}, {
-					sort: { sourceLayerId: 1, _rank: 1 }
+					sort: { sourceLayerId: 1, _rank: 1, name: 1 }
 				}).fetch()
 				rundownBaselineAdLibs = rundownAdLibItems.map((item) => {
 					// automatically assign hotkeys based on adLibItem index
@@ -509,7 +518,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 					// always add them to the list
 					return uiAdLib
 				}).
-				concat(sourceLayers ? sourceLayers.filter(i => i.isSticky).
+				concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
+					sort((a, b) => a._rank - b._rank).
 					map(layer => literal<AdLibPieceUi>({
 						_id: `sticky_${layer._id}`,
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
@@ -525,7 +535,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 						outputLayerId: '',
 						_rank: 0
 					}))
-				: [])
+				)
+
 				return rundownBaselineAdLibs
 			}, 'rundownBaselineAdLibs', currentRundown._id, sourceLayerLookup, props.showStyleBase.sourceLayers, sourceHotKeyUse)
 		}
@@ -536,7 +547,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun((sourceLayers) => {
-				return sourceLayers ? sourceLayers.filter(i => !!i.clearKeyboardHotkey).
+				return sourceLayers.filter(i => !!i.clearKeyboardHotkey).
+					sort((a, b) => a._rank - b._rank).
 					map(layer => literal<AdLibPieceUi>({
 						_id: `clear_${layer._id}`,
 						hotkey: layer.clearKeyboardHotkey ? layer.clearKeyboardHotkey.split(',')[0] : '',
@@ -552,7 +564,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 						sourceLayerId: layer._id,
 						outputLayerId: '',
 						_rank: 0
-					})) : []
+					}))
 			}, 'rundownBaselineClearAdLibs', props.showStyleBase.sourceLayers)
 			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(rundownBaselineClearAdLibs)
 		}
@@ -632,7 +644,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 	}
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 		this.usedHotkeys.length = 0
 
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -646,8 +659,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 
 		this.usedHotkeys.length = 0
 	} 
@@ -656,28 +669,28 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', this.constructor.name)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -706,6 +719,14 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 				t('Invalid AdLib'),
 				NoticeLevel.WARNING,
 				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
+			return
+		}
+		if (piece.floated) {
+			NotificationCenter.push(new Notification(
+				t('Floated AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Floated'),
 				'toggleAdLib'))
 			return
 		}

@@ -927,7 +927,9 @@ describe('Test recieved mos ingest payloads', () => {
 			segmentId: partToBeRemoved.segmentId
 		}, {$set: {
 			'aCheckToSeeThatThePartHasNotBeenRemoved': true
-		}})
+		}}, {
+			multi: true
+		})
 
 		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
 		expect(partsInSegmentBefore).toHaveLength(3)

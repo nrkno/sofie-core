@@ -3,12 +3,16 @@ import * as _ from 'underscore'
 import { isEventInInputField } from './lib'
 import { isModalShowing } from './ModalDialog'
 
+interface IWrappedCallback {
+	allowInModal: boolean
+	isGlobal: boolean
+	original: (e: Event) => void
+	tag?: string
+}
+
 export namespace mousetrapHelper {
 	const _boundHotkeys: {
-		[key: string]: ((e: Event) => void)[]
-	} = {}
-	const _callbackTags: {
-		[key: string]: (e: Event) => void
+		[key: string]: IWrappedCallback[]
 	} = {}
 
 	function handleKey (keys: string, e: ExtendedKeyboardEvent) {
@@ -16,37 +20,36 @@ export namespace mousetrapHelper {
 			return
 		}
 		// console.log(`Handling key combo "${keys}"`)
-		_boundHotkeys[keys].forEach((i) => {
-			i(e)
+		_boundHotkeys[keys].forEach((handler) => {
+			if (!handler.isGlobal && isEventInInputField(e)) return
+			e.preventDefault()
+			if (!handler.allowInModal && isModalShowing()) return
+			handler.original(e)
 		})
 	}
 
 	export function bindGlobal (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
 		let index = keys
 		if (action) index = keys + '_' + action
-		if (_boundHotkeys[index] === undefined) {
-			_boundHotkeys[index] = []
+		if (
+			// if not yet bound
+			_boundHotkeys[index] === undefined ||
+			// or bound so far were not globals
+			_boundHotkeys[index].reduce((mem, i) => mem || i.isGlobal, false) === false
+		) {
+			if (_boundHotkeys[index] === undefined) _boundHotkeys[index] = []
 			mousetrap.bindGlobal(keys, (e: ExtendedKeyboardEvent) => {
 				handleKey(index, e)
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
 
-		const callbackWrap = (e: Event) => {
-			if (isEventInInputField(e)) return
-			e.preventDefault()
-			if (!allowInModal && isModalShowing()) return
-
-			callback(e)
-		}
-		_boundHotkeys[index].push(callbackWrap)
-
-		if (tag) {
-			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Globalbind: Callback with tag "${tag}" already exists for ${index}!`)
-			}
-			_callbackTags[index + '_' + tag] = callbackWrap
-		}
+		_boundHotkeys[index].push({
+			isGlobal: true,
+			allowInModal: !!allowInModal,
+			original: callback,
+			tag
+		})
 	}
 
 	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
@@ -60,30 +63,25 @@ export namespace mousetrapHelper {
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
 
-		const callbackWrap = (e: Event) => {
-			if (isEventInInputField(e)) return
-			e.preventDefault()
-			if (!allowInModal && isModalShowing()) return
-
-			callback(e)
-		}
-		_boundHotkeys[index].push(callbackWrap)
-
-		if (tag) {
-			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
-			}
-			_callbackTags[index + '_' + tag] = callbackWrap
-		}
+		_boundHotkeys[index].push({
+			isGlobal: false,
+			allowInModal: !!allowInModal,
+			original: callback,
+			tag
+		})
 	}
 
-	export function unbindAll (keys: string[], action?: string) {
+	export function unbindAll (keys: string[], action?: string, tag?: string) {
 		keys.forEach(key => {
-			let index = key
-			if (action) index = key + '_' + action
-			if (_boundHotkeys[index] === undefined) return
-			delete _boundHotkeys[index]
-			mousetrap.unbind(keys, action)
+			if (!tag) {
+				let index = key
+				if (action) index = key + '_' + action
+				mousetrap.unbind(key, action)
+				if (_boundHotkeys[index] === undefined) return
+				delete _boundHotkeys[index]
+			} else {
+				unbind(key, tag, action)
+			}
 		})
 	}
 
@@ -94,21 +92,12 @@ export namespace mousetrapHelper {
 		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
 		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
 
-		if (tag) {
-			callback = _callbackTags[index + '_' + tag]
-			if (callback === undefined) {
-				throw new Error(`No callback found for ${tag} and keys ${keys}`)
-			}
-		}
-
 		if (_boundHotkeys[index] === undefined) return
-		const callbackIndex = _boundHotkeys[index].findIndex(val => val === callback)
+		const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback || i.tag === tag)
 		if (callbackIndex >= 0) {
 			_boundHotkeys[index].splice(callbackIndex, 1)
-			if (tag) {
-				// cleanup callback tags to avoid memory leaks
-				delete _callbackTags[index + '_' + tag]
-			}
+		} else {
+			console.log('Callback not found in list for ', index)
 		}
 		if (_boundHotkeys[index].length === 0) {
 			delete _boundHotkeys[index]

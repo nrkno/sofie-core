@@ -12,6 +12,7 @@ makeCompatible(Promise, Fiber)
 
 jest.mock('meteor/meteor',					require('./meteor').setup,					{ virtual: true })
 jest.mock('meteor/random',					require('./random').setup,					{ virtual: true })
+jest.mock('meteor/check',					require('./check').setup,					{ virtual: true })
 
 jest.mock('meteor/meteorhacks:picker',		require('./meteorhacks-picker').setup,		{ virtual: true })
 jest.mock('meteor/mdg:validated-method',	require('./validated-method').setup,		{ virtual: true })

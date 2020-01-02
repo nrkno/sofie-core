@@ -123,7 +123,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
 
-			created: getCurrentTime(),
+			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
 			modified: getCurrentTime(),
 
 			peripheralDeviceId: '',
@@ -131,7 +131,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			currentPartId: null,
 			nextPartId: null,
 			previousPartId: null
-		}), [ 'currentPartId', 'nextPartId', 'previousPartId', 'created', 'modified' ])) as DBRundownPlaylist
+		}), [ 'currentPartId', 'nextPartId', 'previousPartId', 'created' ])) as DBRundownPlaylist
 
 		if (peripheralDevice) {
 			playlist.peripheralDeviceId = peripheralDevice._id
@@ -166,15 +166,19 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: currentRundown.expectedStart,
 			expectedDuration: currentRundown.expectedDuration,
 
-			created: 0,
-			modified: 0,
+			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
+			modified: getCurrentTime(),
 
 			peripheralDeviceId: '',
 
 			currentPartId: null,
 			nextPartId: null,
 			previousPartId: null
-		}), [ 'currentPartId', 'nextPartId', 'previousPartId', 'created', 'modified' ])) as DBRundownPlaylist
+		}), [ 'currentPartId', 'nextPartId', 'previousPartId' ])) as DBRundownPlaylist
+
+		if (peripheralDevice) {
+			playlist.peripheralDeviceId = peripheralDevice._id
+		}
 
 		return {
 			rundownPlaylist: playlist,
@@ -251,11 +255,6 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		// TODO - batch?
 		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
 	})
-
-	const rundown = Rundowns.findOne(rundownId)
-	if (rundown) {
-		UpdateNext.ensureNextPartIsValid(rundown)
-	}
 }
 /**
  * Update the ranks of all parts.

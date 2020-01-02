@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { clone } from '../../lib/lib'
 import { TimelineObjGeneric } from '../../lib/collections/Timeline'
-import { DBRundown } from '../../lib/collections/Rundowns'
+import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { Part } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
@@ -50,12 +50,24 @@ export function fixSnapshot (
 				delete o.content['objHash']
 
 			}
+			if (
+				o.metadata &&
+				o.metadata.versions &&
+				o.metadata.versions.core
+			) {
+				// re-write the core version so something static, so tests won't fail just because the version has changed
+				o.metadata.versions.core = '0.0.0-test'
+			}
 		} else if (isPlaylist(o)) {
 			delete o['created']
 			delete o['modified']
 		} else if (isRundown(o)) {
 			delete o['created']
 			delete o['modified']
+			if (o.importVersions.core) {
+				// re-write the core version so something static, so tests won't fail just because the version has changed
+				o.importVersions.core = '0.0.0-test'
+			}
 		// } else if (isPiece(o)) {
 		// } else if (isPart(o)) {
 		// } else if (isSegment(o)) {

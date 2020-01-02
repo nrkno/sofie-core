@@ -46,9 +46,6 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-const BUTTON_GRID_WIDTH = 1
-const BUTTON_GRID_HEIGHT = 0.61803
-
 interface IDashboardPanelProps {
 	searchFilter?: string | undefined
 	mediaPreviewUrl?: string
@@ -186,7 +183,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -194,8 +192,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 
 		this.usedHotkeys.length = 0
 	}
@@ -218,21 +216,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', this.constructor.name)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -242,21 +240,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		if (this.props.rundownBaselineAdLibs) {
 			this.props.rundownBaselineAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', this.constructor.name)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -267,11 +265,11 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			_.each(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
 					item.clearKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onClearAllSourceLayer(item, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(element)
 					})
 
@@ -279,11 +277,11 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 				if (item.isSticky && item.activateStickyKeyboardHotkey) {
 					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleSticky(item._id, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(element)
 					})
 				}
@@ -299,6 +297,14 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				t('Invalid AdLib'),
 				NoticeLevel.WARNING,
 				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
+			return
+		}
+		if (piece.floated) {
+			NotificationCenter.push(new Notification(
+				t('Floated AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Floated'),
 				'toggleAdLib'))
 			return
 		}
@@ -363,30 +369,30 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 					<div className='dashboard-panel'
 						style={{
 							width: filter.width >= 0 ?
-								(filter.width * BUTTON_GRID_WIDTH) + 'vw' :
+								`calc((${filter.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
 								undefined,
 							height: filter.height >= 0 ?
-								(filter.height * BUTTON_GRID_HEIGHT) + 'vw' :
+								`calc((${filter.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
 								undefined,
 							left: filter.x >= 0 ?
-								(filter.x * BUTTON_GRID_WIDTH) + 'vw' :
+								`calc(${filter.x} * var(--dashboard-button-grid-width))` :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
 									undefined,
 							top: filter.y >= 0 ?
-								(filter.y * BUTTON_GRID_HEIGHT) + 'vw' :
+								`calc(${filter.y} * var(--dashboard-button-grid-height))` :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
 									undefined,
 							right: filter.x < 0 ?
-								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+								`calc(${-1 * filter.x - 1} * var(--dashboard-button-grid-width))` :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) + 'vw' :
+									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
 									undefined,
 							bottom: filter.y < 0 ?
-								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+								`calc(${-1 * filter.y - 1} * var(--dashboard-button-grid-height))` :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) + 'vw' :
+									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
 									undefined
 						}}
 					>
@@ -398,9 +404,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 								onFilterChange={this.onFilterChange} />
 						}
 						<div className='dashboard-panel__panel'>
-							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
-								.concat(this.props.rundownBaselineAdLibs)
-								.sort((a, b) => a._rank - b._rank)
+							{this.props.rundownBaselineAdLibs
+								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton

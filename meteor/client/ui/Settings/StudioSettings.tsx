@@ -8,15 +8,6 @@ import {
 	Studios,
 	MappingExt
 } from '../../../lib/collections/Studios'
-import {
-	MappingAtemType,
-	MappingLawoType,
-	MappingPanasonicPtzType,
-	MappingHyperdeckType,
-	DeviceType as PlayoutDeviceType,
-	ChannelFormat,
-	QuantelControlMode
-} from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -34,7 +25,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, BlueprintManifestType, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { PlayoutAPI } from '../../../lib/api/playout'
@@ -259,7 +250,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		}
 		let setObject = {}
 		setObject['mappings.' + newLayerKeyName + iter.toString()] = {
-			device: PlayoutDeviceType.CASPARCG,
+			device: TSR.DeviceType.CASPARCG,
 			deviceId: 'newDeviceId',
 		}
 
@@ -339,7 +330,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingAtemType}
+							options={TSR.MappingAtemType}
 							optionsAreNumbers={true}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -372,7 +363,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingLawoType}
+							options={TSR.MappingLawoType}
 							optionsAreNumbers={true}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -417,7 +408,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingPanasonicPtzType}
+							options={TSR.MappingPanasonicPtzType}
 							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -446,7 +437,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingHyperdeckType}
+							options={TSR.MappingHyperdeckType}
 							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -521,7 +512,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mode'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={QuantelControlMode}
+							options={TSR.QuantelControlMode}
 							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -547,7 +538,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							{layerId}
 						</th>
 						<td className='settings-studio-device__id c2'>
-							{PlayoutDeviceType[mapping.device]}
+							{TSR.DeviceType[mapping.device]}
 						</td>
 						<td className='settings-studio-device__id c2'>
 							{mapping.deviceId}
@@ -564,19 +555,19 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							)) ||
 							(
 								mappingIsAtem(mapping) && (
-								<span>{ MappingAtemType[mapping.mappingType] } { mapping.index }</span>
+								<span>{ TSR.MappingAtemType[mapping.mappingType] } { mapping.index }</span>
 							)) ||
 							(
 								mappingIsLawo(mapping) && (
-								<span>{ MappingLawoType[mapping.mappingType] } { mapping.identifier }</span>
+								<span>{ TSR.MappingLawoType[mapping.mappingType] } { mapping.identifier }</span>
 							)) ||
 							(
 								mappingIsPanasonicPtz(mapping) && (
 									<span>{
-										mapping.mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										mapping.mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
-										mapping.mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
-										mapping.mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET ? t('Preset') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM ? t('Zoom') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
 										t('Unknown Mapping')
 									}</span>
 							)) ||
@@ -605,7 +596,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 									<span>{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}</span>
 							)) ||
 							(
-								<span>{t('Unknown device type: {{device}}', { device: PlayoutDeviceType[mapping.device] }) } </span>
+								<span>{t('Unknown device type: {{device}}', { device: TSR.DeviceType[mapping.device] }) } </span>
 							)
 						}
 						</td>
@@ -646,7 +637,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												attribute={'mappings.' + layerId + '.device'}
 												obj={this.props.studio}
 												type='dropdown'
-												options={PlayoutDeviceType}
+												options={TSR.DeviceType}
 												optionsAreNumbers={true}
 												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
@@ -815,9 +806,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							attribute='testToolsConfig.recordings.channelFormat'
 							obj={this.props.studio}
 							type='dropdown'
-							options={_.keys(ChannelFormat).map((k) => ({
+							options={_.keys(TSR.ChannelFormat).map((k) => ({
 								name: k,
-								value: ChannelFormat[k]
+								value: TSR.ChannelFormat[k]
 							}))}
 							collection={Studios}
 							className='input text-input input-l '></EditAttribute>

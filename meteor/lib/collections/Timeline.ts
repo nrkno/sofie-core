@@ -1,8 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
-import { Timeline as TimelineTypes, TSRTimelineObj, DeviceType } from 'timeline-state-resolver-types'
+import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
@@ -27,7 +26,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	objectType: TimelineObjType
 
-	enable: TimelineTypes.TimelineEnable & { setFromNow?: boolean }
+	enable: TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 	/** The id of the group object this object is in  */
 	inGroup?: string
@@ -51,7 +50,7 @@ export enum TimelineObjType {
 export interface TimelineObjStat extends TimelineObjGeneric {
 	objectType: TimelineObjType.STAT
 	content: {
-		deviceType: DeviceType.ABSTRACT
+		deviceType: TSR.DeviceType.ABSTRACT
 		type: TimelineContentTypeOther.NOTHING
 		modified: Time
 		objCount: number
@@ -85,7 +84,7 @@ export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 }
 export interface TimelineObjPartAbstract extends TimelineObjRundown { // used for sending callbacks
 	content: {
-		deviceType: DeviceType.ABSTRACT
+		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
@@ -97,7 +96,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown { // used fo
 }
 export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used for sending callbacks
 	content: {
-		deviceType: DeviceType.ABSTRACT
+		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'

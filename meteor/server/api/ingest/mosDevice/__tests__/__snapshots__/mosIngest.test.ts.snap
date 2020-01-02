@@ -8,7 +8,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -280,7 +280,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -646,7 +646,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -931,7 +931,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -1298,7 +1298,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -1664,7 +1664,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -1903,7 +1903,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -2193,7 +2193,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -2490,7 +2490,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -2766,7 +2766,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -3042,7 +3042,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -3318,7 +3318,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -3597,7 +3597,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -3865,7 +3865,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -4165,7 +4165,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",
@@ -4441,7 +4441,7 @@ Object {
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
-    "core": "0.0.0-develop",
+    "core": "0.0.0-test",
     "showStyleBase": "",
     "showStyleVariant": "",
     "studio": "asdf",

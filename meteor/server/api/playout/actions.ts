@@ -50,16 +50,16 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 	// Update local object:
 	rundownPlaylist.active = true
 	rundownPlaylist.rehearsal = rehearsal
-
+	
 	let rundown: Rundown | undefined
 
-	if (!rundownPlaylist.nextPartId) {
+	if (!rundownPlaylist.nextPartId) {	
 		const rundowns = rundownPlaylist.getRundowns()
 		rundown = _.first(rundowns)
 		if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
-		const parts = rundown.getParts()
-		const firstPart = _.first(parts)
-		if (firstPart && !firstPart.invalid) {
+		let parts = rundown.getParts()
+		let firstPart = _.first(parts)
+		if (firstPart && !firstPart.invalid && !firstPart.floated) {
 			setNextPart(rundownPlaylist, firstPart)
 		}
 	} else {

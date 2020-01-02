@@ -48,7 +48,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		maxDuration: piece ? (piece.content as VTContent).sourceDuration : 0
 	}
 })(class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
-	private fps = Settings['frameRate']
+	private fps = Settings.frameRate
 
 	constructor (props: Translated<IProps> & ITrackedProps) {
 		super(props)
@@ -63,10 +63,10 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 
 	static getDerivedStateFromProps (props: Translated<IProps> & ITrackedProps, state: IState) {
 		return {
-			inPoint: props.inPoint * Settings['frameRate'] / 1000,
-			duration: props.duration * Settings['frameRate'] / 1000,
-			outPoint: (props.inPoint + props.duration) * Settings['frameRate'] / 1000,
-			maxDuration: props.maxDuration * Settings['frameRate'] / 1000
+			inPoint: props.inPoint * Settings.frameRate / 1000,
+			duration: props.duration * Settings.frameRate / 1000,
+			outPoint: (props.inPoint + props.duration) * Settings.frameRate / 1000,
+			maxDuration: props.maxDuration * Settings.frameRate / 1000
 		}
 	}
 

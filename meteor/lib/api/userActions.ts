@@ -51,7 +51,10 @@ export namespace UserActionAPI {
 		'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
 		'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
 
-		'regenerateRundown'					= 'userAction.ingest.regenerateRundown'
+		'regenerateRundown'					= 'userAction.ingest.regenerateRundown',
+
+		'generateRestartToken'				= 'userAction.system.generateRestartToken',
+		'restartCore'						= 'userAction.system.restartCore'
 	}
 
 	export enum ReloadRundownResponse {
@@ -62,4 +65,6 @@ export namespace UserActionAPI {
 		/** When reloading cannot continue, because the rundown is missing */
 		MISSING = 'missing'
 	}
+
+	export const RESTART_SALT = 'clientRestart_'
 }

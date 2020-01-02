@@ -220,13 +220,19 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 		$set: {
 			previousPartId: null,
 			currentPartId: null,
-			updateStoryStatus: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
 			startedPlayback: 1,
 			previousPersistentState: 1
 		}
 	})
+	// Also update locally:
+	rundownPlaylist.previousPartId = null
+	rundownPlaylist.currentPartId = null
+	rundownPlaylist.holdState = RundownHoldState.NONE
+	delete rundownPlaylist.startedPlayback
+	delete rundownPlaylist.previousPersistentState
+
 
 	Rundowns.update({
 		playlistId: rundownPlaylist._id
@@ -236,6 +242,10 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 		}
 	}, {
 		multi: true
+	})
+	// Also update locally:
+	rundowns.forEach(rundown => {
+		delete rundown.startedPlayback
 	})
 
 	if (rundownPlaylist.active) {
@@ -294,6 +304,9 @@ export function setNextPart (
 		}
 		if (nextPart.invalid) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
+		}
+		if (nextPart.floated) {
+			throw new Meteor.Error(400, 'Part is marked as floated, cannot set as next.')
 		}
 
 		ps.push(resetPart(nextPart))

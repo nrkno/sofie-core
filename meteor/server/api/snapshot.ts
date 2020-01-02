@@ -53,6 +53,7 @@ import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 
 interface RundownSnapshot {
 	version: string
@@ -79,6 +80,7 @@ interface SystemSnapshot {
 	showStyleBases: Array<ShowStyleBase>
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
+	rundownLayouts?: Array<RundownLayoutBase> // optional, to be backwards compatible
 	devices: Array<PeripheralDevice>
 	deviceCommands: Array<PeripheralDeviceCommand>
 	coreSystem: ICoreSystem
@@ -174,6 +176,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 
 	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
+	let queryRundownLayouts: MongoSelector<RundownLayoutBase> = {}
 	let queryDevices: MongoSelector<PeripheralDevice> = {}
 	let queryBlueprints: MongoSelector<Blueprint> = {}
 
@@ -189,10 +192,14 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		queryShowStyleVariants = {
 			showStyleBaseId: { $in: showStyleBaseIds }
 		}
+		queryRundownLayouts = {
+			showStyleBaseId: { $in: showStyleBaseIds }
+		}
 		queryDevices = { studioId: studioId }
 	}
 	const showStyleBases 	= ShowStyleBases	.find(queryShowStyleBases).fetch()
 	const showStyleVariants = ShowStyleVariants	.find(queryShowStyleVariants).fetch()
+	const rundownLayouts	= RundownLayouts	.find(queryRundownLayouts).fetch()
 	const devices 			= PeripheralDevices	.find(queryDevices).fetch()
 
 	if (studioId) {
@@ -225,6 +232,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		showStyleBases,
 		showStyleVariants,
 		blueprints,
+		rundownLayouts,
 		devices,
 		coreSystem,
 		deviceCommands: deviceCommands,
@@ -477,6 +485,7 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
 		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
 		(snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null),
+		(snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null),
 		saveIntoDb(PeripheralDevices, (studioId ? { studioId: studioId } : {}), snapshot.devices),
 		saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
 	)

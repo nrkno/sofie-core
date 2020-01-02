@@ -114,16 +114,24 @@ export function setCoreSystemVersion (versionStr: string): string {
 		throw new Meteor.Error(500, `Unable to set version. Parsed version differ from expected: "${versionStr}", "${version}"`)
 	}
 }
-export function setCoreSystemStorePath (storePath: string): void {
+export function setCoreSystemStorePath (storePath: string | undefined): void {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
 
-	storePath = (storePath + '').trim().replace(/(.*)[\/\\]$/, '$1') // remove last "/" or "\"
+	if (storePath) {
+		storePath = storePath.trim().replace(/(.*)[\/\\]$/, '$1') // remove last "/" or "\"
+	}
 
-	CoreSystem.update(system._id, {$set: {
-		storePath: storePath
-	}})
+	if (!storePath) {
+		CoreSystem.update(system._id, {$unset: {
+			storePath: 1
+		}})
+	} else {
+		CoreSystem.update(system._id, {$set: {
+			storePath: storePath
+		}})
+	}
 }
 
 export type Version = string

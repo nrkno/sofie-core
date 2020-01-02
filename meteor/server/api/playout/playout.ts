@@ -41,7 +41,7 @@ import {
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
 import { getBlueprintOfRundown } from '../blueprints/cache'
-import { PartEventContext, PartContext, RundownContext } from '../blueprints/context'
+import { PartEventContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
@@ -534,8 +534,16 @@ export namespace ServerPlayoutAPI {
 		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
 		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
-		let parts = playlist.getParts()
-		let segments = playlist.getSegments()
+		const partsInSegments: {[segmentId: string]: Part[]} = {}
+		const segmentsWithParts = playlist.getSegments()
+		const parts: Part[] = []
+		_.each(segmentsWithParts, segment => {
+			let partsInSegment = segment.getParts()
+			if (partsInSegment.length) {
+				partsInSegments[segment._id] = partsInSegment
+				parts.push(...partsInSegment)
+			}
+		})
 
 		let partIndex: number = -1
 		_.find(parts, (part, i) => {
@@ -545,23 +553,21 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 		let segmentIndex: number = -1
-		_.find(segments, (s, i) => {
+		_.find(segmentsWithParts, (s, i) => {
 			if (s._id === currentNextSegment._id) {
 				segmentIndex = i
 				return true
 			}
 		})
 		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
-		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment "${currentNextSegment._id}" not found in segmentsWithParts!`)
 		if (verticalDelta !== 0) {
 			segmentIndex += verticalDelta
 
-			let segment = segments[segmentIndex]
-
+			const segment = segmentsWithParts[segmentIndex]
 			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
 
-			let partsInSegment = segment.getParts()
-			let part = _.first(partsInSegment) as Part
+			const part = _.first(partsInSegments[segment._id]) as Part
 			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
 			partIndex = -1
@@ -580,7 +586,7 @@ export namespace ServerPlayoutAPI {
 		let part = parts[partIndex]
 		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-		if ((part._id === playlist.currentPartId && !nextPartId0) || part.invalid) {
+		if ((part._id === playlist.currentPartId && !nextPartId0) || part.invalid || part.floated) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			if (part._id !== nextPartId0) {
@@ -1330,15 +1336,15 @@ interface UpdateTimelineFromIngestDataTimeout {
 let updateTimelineFromIngestDataTimeouts: {
 	[id: string]: UpdateTimelineFromIngestDataTimeout
 } = {}
-export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegments: Array<string>) {
+export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegmentIds: Array<string>) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
 	let data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts[rundownId]
 	if (data) {
 		if (data.timeout) Meteor.clearTimeout(data.timeout)
-		data.changedSegments = data.changedSegments.concat(changedSegments)
+		data.changedSegments = data.changedSegments.concat(changedSegmentIds)
 	} else {
 		data = {
-			changedSegments: changedSegments
+			changedSegments: changedSegmentIds
 		}
 	}
 

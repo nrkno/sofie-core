@@ -87,6 +87,12 @@ export class Part implements DBPart {
 	public displayDurationGroup?: string
 	public displayDuration?: number
 	public invalid?: boolean
+	public invalidReason?: {
+        title: string
+        description?: string
+        color?: string
+    }
+	public floated?: boolean
 	// From IBlueprintPartDB:
 	public _id: string
 	public segmentId: string
@@ -142,7 +148,7 @@ export class Part implements DBPart {
 				partId: this._id
 			}, selector),
 			_.extend({
-				sort: { _rank: 1 }
+				sort: { _rank: 1, name: 1 }
 			}, options)
 		).fetch()
 	}
@@ -172,6 +178,20 @@ export class Part implements DBPart {
 			}
 		)
 
+	}
+	getInvalidReasonNotes (): Array<PartNote> {
+		return this.invalidReason ? [
+			{
+				type: NoteType.WARNING,
+				message: this.invalidReason.title + (this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
+				origin: {
+					name: this.title,
+					partId: this._id,
+					segmentId: this.segmentId,
+					rundownId: this.rundownId
+				}
+			}
+		] : []
 	}
 	getNotes (runtimeNotes?: boolean): Array<PartNote> {
 		let notes: Array<PartNote> = []

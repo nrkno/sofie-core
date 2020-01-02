@@ -130,6 +130,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 
 	private createNewStatusNotification (meteorStatus: DDP.DDPStatus): Notification {
 		const { status, reason, retryTime, connected } = meteorStatus
+		const t = this._translator
 		const notification = new Notification(
 			Random.id(),
 			this.getNoticeLevel(status),
@@ -140,7 +141,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			(status === 'failed' || status === 'waiting' || status === 'offline')
 			? [
 				{
-					label: 'Reconnect now',
+					label: t('Reconnect now'),
 					type: 'primary',
 					icon: 'icon-retry',
 					action: () => { Meteor.reconnect() }

@@ -299,12 +299,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
 					{rundownLayout && rundownLayout.filters
 						.sort((a, b) => a.rank - b.rank)
-						.map(f =>
+						.map(panel =>
 							<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-								'selected': (this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`
+								'selected': (this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`
 							})}
-								key={f._id}
-								onClick={(e) => this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`)} tabIndex={0}>{f.name}</div>
+								key={panel._id}
+								onClick={(e) => this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)} tabIndex={0}>{panel.name}</div>
 						)}
 				</OverflowingContainer>
 				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
@@ -322,12 +322,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						{...this.props}></AdLibPanel>
 				</ErrorBoundary>
 				<ErrorBoundary>
-					{rundownLayout && rundownLayout.filters.map(f =>
+					{rundownLayout && rundownLayout.filters.map(panel =>
 						<AdLibPanel
-							key={f._id}
-							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`}
+							key={panel._id}
+							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
 							includeGlobalAdLibs={true}
-							filter={f}
+							filter={panel}
 							{...this.props}
 							/>
 					)}
@@ -347,13 +347,13 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		return <div className='dashboard'>
 			{rundownLayout.filters
 				.sort((a, b) => a.rank - b.rank)
-				.map((f: DashboardLayoutFilter) =>
+				.map((panel: DashboardLayoutFilter) =>
 					<DashboardPanel
-						key={f._id}
+						key={panel._id}
 						includeGlobalAdLibs={true}
-						filter={f}
+						filter={panel}
 						visible={true}
-						registerHotkeys={true}
+						registerHotkeys={panel.assignHotKeys}
 						{...this.props}
 						/>
 			)}

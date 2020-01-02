@@ -7,9 +7,8 @@ import {
 	PieceUi
 } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan, PieceTransitionType } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
-import { Transition } from 'timeline-state-resolver-types'
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
@@ -507,8 +506,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__piece__transition', 'in', {
-								'mix': this.props.piece.transitions.inTransition.type === Transition.MIX,
-								'wipe': this.props.piece.transitions.inTransition.type === Transition.WIPE
+								'mix': this.props.piece.transitions.inTransition.type === PieceTransitionType.MIX,
+								'wipe': this.props.piece.transitions.inTransition.type === PieceTransitionType.WIPE
 							})}
 								style={{
 									'width': ((this.props.piece.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
@@ -518,8 +517,8 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__piece__transition', 'out', {
-								'mix': this.props.piece.transitions.outTransition.type === Transition.MIX,
-								'wipe': this.props.piece.transitions.outTransition.type === Transition.WIPE
+								'mix': this.props.piece.transitions.outTransition.type === PieceTransitionType.MIX,
+								'wipe': this.props.piece.transitions.outTransition.type === PieceTransitionType.WIPE
 							})}
 								style={{
 									'width': ((this.props.piece.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'

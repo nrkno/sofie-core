@@ -16,7 +16,8 @@ import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import {
 	SegmentDuration,
 	PartCountdown,
-	RundownTiming
+	RundownTiming,
+	CurrentPartRemaining
 } from '../RundownView/RundownTiming'
 
 import { RundownUtils } from '../../lib/rundown'
@@ -38,6 +39,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { getAllowSpeaking } from '../../lib/localStorage';
 
 interface IProps {
 	id: string
@@ -64,7 +66,6 @@ interface IProps {
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
-	displayTimecode: number,
 	autoNextPart: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
@@ -265,6 +266,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	setSegmentRef = (el: HTMLDivElement) => {
 		this.segmentBlock = el
 		if (typeof this.props.segmentRef === 'function') this.props.segmentRef(this as any, this.props.segment._id)
+
+		if (this.segmentBlock) {
+			this.segmentBlock.addEventListener('wheel', this.onTimelineWheel, { passive: false, capture: true })
+		}
 	}
 
 	setTimelineRef = (el: HTMLDivElement) => {
@@ -389,8 +394,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					key={this.props.segment._id + '-liveline-shade'}
 					style={{
 						'width': (this.props.followLiveLine ?
-							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
-							pixelPostion.toString()
+							Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString() :
+							Math.max(0, pixelPostion).toString()
 						) + 'px'
 					}} />,
 				<div className='segment-timeline__liveline'
@@ -400,12 +405,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
 						{t('On Air')}
 					</div>
-					<div className={ClassNames('segment-timeline__liveline__timecode', {
-						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
-					})}>
-						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
-						{!this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
-						{this.props.autoNextPart && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
+					<div className='segment-timeline__liveline__timecode'>
+						<CurrentPartRemaining currentPartId={this.props.playlist.currentPartId} speaking={getAllowSpeaking()} heavyClassName='overtime' />
+						{this.props.autoNextPart ?
+							<div className='rundown-view__part__icon rundown-view__part__icon--auto-next'></div> :
+							<div className='rundown-view__part__icon rundown-view__part__icon--next'></div>
+						}
 						{this.props.playlist.holdState && this.props.playlist.holdState !== RundownHoldState.COMPLETE ?
 							<div className='segment-timeline__liveline__status segment-timeline__liveline__status--hold'>{t('Hold')}</div>
 							: null
@@ -510,7 +515,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<h2>
 						{this.props.segment.name}
 					</h2>
-					<div className='segment-timeline__title__notes'>
+					{(criticalNotes > 0 || warningNotes > 0) && <div className='segment-timeline__title__notes'>
 						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
 							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
@@ -531,7 +536,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								</b>
 							</div>
 						</div>}
-					</div>
+					</div>}
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
@@ -566,9 +571,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<TimelineGrid {...this.props}
 					onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'
-					onTouchStartCapture={this.onTimelineTouchStart}
-					onWheelCapture={this.onTimelineWheel}>
-					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
+					onTouchStartCapture={this.onTimelineTouchStart}>
+					<div className='segment-timeline__timeline'
+						key={this.props.segment._id + '-timeline'}
+						ref={this.setTimelineRef}
+						style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderEndOfSegment()}

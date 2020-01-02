@@ -18,8 +18,7 @@ import {
 	RundownSyncFunctionPriority,
 	handleUpdatedRundownInner,
 	handleUpdatedPartInner,
-	updateSegmentsFromIngestData,
-	afterIngestChangedData
+	updateSegmentsFromIngestData
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
@@ -265,7 +264,6 @@ export function handleMosDeleteStory (
 		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
 
 		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
-
 		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
@@ -513,6 +511,9 @@ function diffAndApplyChanges (
 					$set: {
 						segmentId: getSegmentId(rundown._id, newSegmentExternalId)
 					}
+				},
+				{
+					multi: true
 				}
 			)
 		)
@@ -534,14 +535,6 @@ function diffAndApplyChanges (
 			..._.values(segmentDiff.added),
 			..._.values(segmentDiff.changed)
 		], se => se.rank)
-	)
-
-	afterIngestChangedData(
-		rundown,
-		[
-			..._.keys(segmentDiff.added),
-			..._.keys(segmentDiff.changed)
-		]
 	)
 }
 

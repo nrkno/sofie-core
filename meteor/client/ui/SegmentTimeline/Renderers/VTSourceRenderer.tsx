@@ -57,7 +57,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 			let targetTime = this.props.cursorTimePosition
 			let seek = ((piece.content ? piece.content.seek as number : undefined) || 0)
 			if (piece.content && piece.content.loop && this.vPreview.duration > 0) {
-				targetTime = targetTime % (Math.min(this.vPreview.duration, itemDuration) * 1000)
+				targetTime = targetTime % (
+					(itemDuration > 0 ?
+						Math.min(this.vPreview.duration, itemDuration) :
+						this.vPreview.duration)
+					* 1000)
 			} else if (itemDuration === 0 && piece.infiniteMode) {
 				// noop
 			} else {

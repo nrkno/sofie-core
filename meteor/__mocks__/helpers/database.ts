@@ -29,7 +29,9 @@ import {
 	IBlueprintSegment,
 	BlueprintResultPart,
 	IBlueprintPart,
-	IBlueprintPiece
+	IBlueprintPiece,
+	IBlueprintRuntimeArgumentsItem,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -38,8 +40,7 @@ import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime } from '../../lib/lib'
-import { TSRTimelineObjBase } from 'timeline-state-resolver-types'
-import { Rundown, DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -57,7 +58,7 @@ export function setupMockPeripheralDevice (
 	category: PeripheralDeviceAPI.DeviceCategory,
 	type: PeripheralDeviceAPI.DeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio: Studio,
+	studio?: Studio,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}
@@ -65,7 +66,7 @@ export function setupMockPeripheralDevice (
 	const defaultDevice: PeripheralDevice = {
 		_id: 'mockDevice' + (dbI++),
 		name: 'mockDevice',
-		studioId: studio._id,
+		studioId: studio ? studio._id : undefined,
 
 		category: category,
 		type: type,
@@ -143,23 +144,27 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_id: LAYER_IDS.SOURCE_CAM0,
 				_rank: 0,
 				name: 'Camera',
-				onPGMClean: true,
 				type: SourceLayerType.CAMERA,
-				unlimited: false
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
-				onPGMClean: true,
 				type: SourceLayerType.VT,
-				unlimited: false
 			})
 		],
 		config: [],
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
-		// runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
+		runtimeArguments: [
+			literal<IBlueprintRuntimeArgumentsItem>({
+				_id: 'ra0',
+				label: 'mix12',
+				hotkeys: 'ctrl+j',
+				value: '12',
+				property: 'mix'
+			})
+		],
 		_rundownVersionHash: ''
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
@@ -182,7 +187,7 @@ export function setupMockShowStyleVariant (showStyleBaseId: string, doc?: Partia
 	return showStyleVariant
 }
 
-function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constant: string]: string}, blueprintFcn: () => T): string {
+export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constant: string]: string}, blueprintFcn: () => T): string {
 	let code = blueprintFcn.toString()
 	_.each(constants, (newConstant, constant) => {
 
@@ -194,11 +199,12 @@ function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constan
 }
 export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
-	const PackageInfo = require('../../package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
+	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.STUDIO
-	const INTEGRATION_VERSION: string			= PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
-	const TSR_VERSION: string					= PackageInfo.dependencies['timeline-state-resolver-types']
+	const INTEGRATION_VERSION: string			= IntegrationInfo.version
+	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_ID: string					= showStyleBaseId
 
@@ -219,7 +225,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
 			studioConfigManifest: [],
 			studioMigrations: [],
-			getBaseline: (context: IStudioContext): TSRTimelineObjBase[] => {
+			getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
 				return []
 			},
 			getShowStyleId: (context: IStudioConfigContext, showStyles: Array<IBlueprintShowStyleBase>, ingestRundown: IngestRundown): string | null => {
@@ -231,15 +237,16 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
 
-	const PackageInfo = require('../../package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
+	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.SHOWSTYLE
-	const INTEGRATION_VERSION: string			= PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
-	const TSR_VERSION: string					= PackageInfo.dependencies['timeline-state-resolver-types']
+	const INTEGRATION_VERSION: string			= IntegrationInfo.version
+	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_VARIANT_ID: string			= showStyleVariantId
 
@@ -340,7 +347,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: string
@@ -414,6 +421,20 @@ export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0
 	}
 	const playlistId = RundownPlaylists.insert(playlist)
 
+	return {
+		rundownId: setupDefaultRundown(env, playlistId, rundownId),
+		playlistId
+	}
+}
+export function setupEmptyEnvironment () {
+
+	const core = setupMockCore({})
+
+	return {
+		core
+	}
+}
+export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string, rundownId: string): string {
 	const rundown: DBRundown = {
 
 		peripheralDeviceId: env.ingestDevice._id,
@@ -573,7 +594,7 @@ export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0
 	}
 	Segments.insert(segment2)
 
-	return { rundownId, playlistId }
+	return rundownId
 }
 
 // const studioBlueprint
