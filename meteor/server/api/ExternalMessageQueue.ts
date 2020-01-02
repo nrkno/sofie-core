@@ -198,7 +198,7 @@ function updateExternalMessageQueueStatus (): void {
 			let status: StatusObject = {
 				statusCode: StatusCode.GOOD
 			}
-			if (messagesOnQueueCount > 1) {
+			if (messagesOnQueueCount > 0) {
 				const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
 				status = {
 					statusCode: (
