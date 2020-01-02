@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.0-0...v1.4.1) (2020-01-02)
+
+
+### Bug Fixes
+
+* removed call to afterIngestChangedData, as it is called from inside updateSegmentsFromIngestData anyway ([dcad22a](https://github.com/nrkno/tv-automation-server-core/commit/dcad22a))
+* removed unneccesary calls to ensureNextPartIsValid, as it is called in other places as well ([4bd19bd](https://github.com/nrkno/tv-automation-server-core/commit/4bd19bd))
+
+
+
 ## [1.4.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.3.0...v1.4.0-0) (2019-12-09)
 
 
