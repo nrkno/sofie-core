@@ -430,5 +430,12 @@ describe('lib/lib', () => {
 		expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
 		expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
 
+		// Insert in empty list
+		expect(getRank(undefined, undefined)).toEqual(0.5)
+
+		// Insert three:
+		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
+		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
+
 	})
 })
