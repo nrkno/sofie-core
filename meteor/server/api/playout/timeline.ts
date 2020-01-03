@@ -700,6 +700,7 @@ function transformPartIntoTimeline (
 		if (piece.isTransition && (!allowTransition || isHold)) {
 			return
 		}
+		if (piece.definitelyEnded && piece.definitelyEnded < getCurrentTime()) return
 
 		if (piece.infiniteId && piece.infiniteId !== piece._id) {
 			piece._id = piece.infiniteId

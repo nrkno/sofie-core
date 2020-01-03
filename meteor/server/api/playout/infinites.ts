@@ -8,8 +8,11 @@ import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
+import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise, getCurrentTime } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
+
+/** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
+const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
@@ -253,6 +256,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	for (const piece of pieces) {
 		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
 			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
+			definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION,
 			infiniteMode: PieceLifespan.Normal,
 			originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
 		}}))
