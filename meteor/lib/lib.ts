@@ -446,18 +446,25 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before	Object before, null/undefined if inserted first
+ * @param after			Object after, null/undefined if inserted last
+ * @param i				If inserting multiple objects, this is the number of this object
+ * @param count			If inserting multiple objects, this is total count of objects
+ */
 export function getRank<T extends {_rank: number}> (
-	beforeOrLast: T | null | undefined,
+	before: T | null | undefined,
 	after: T | null | undefined,
-	i: number,
-	count: number
+	i: number = 0,
+	count: number = 1
 ): number {
 	let newRankMax
 	let newRankMin
 
 	if (after) {
-		if (beforeOrLast) {
-			newRankMin = beforeOrLast._rank
+		if (before) {
+			newRankMin = before._rank
 			newRankMax = after._rank
 		} else {
 			// First
@@ -465,10 +472,10 @@ export function getRank<T extends {_rank: number}> (
 			newRankMax = after._rank
 		}
 	} else {
-		if (beforeOrLast) {
+		if (before) {
 			// Last
-			newRankMin = beforeOrLast._rank
-			newRankMax = beforeOrLast._rank + 1
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
 		} else {
 			// Empty list
 			newRankMin = 0
