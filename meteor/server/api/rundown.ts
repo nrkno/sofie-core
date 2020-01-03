@@ -160,7 +160,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
 			_id: playlistId,
-			externalId: currentRundown._id,
+			externalId: currentRundown.externalId,
 			studioId: studio._id,
 			name: currentRundown.name,
 			expectedStart: currentRundown.expectedStart,

@@ -8,6 +8,7 @@ import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { updatePartRanks } from '../../rundown'
+import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists';
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -70,9 +71,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData)
 
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
-			externalId: rundownData.externalId
+			externalId: rundownData.externalId,
+			playlistId: rundownPlaylist._id
 		})
 		expect(typeof rundown.touch).toEqual('function')
 
@@ -132,10 +140,19 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
 
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId,
+			name: rundownData.name
+		})
+		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(RundownPlaylists.find().count()).toBe(1)
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
-			name: rundownData.name
+			name: rundownData.name,
+			playlistId: rundownPlaylist._id
 		})
 		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
@@ -295,6 +312,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
 
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(RundownPlaylists.find().count()).toBe(1)
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId
@@ -361,6 +385,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			]
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
+
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({

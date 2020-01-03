@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, waitForPromiseAll } from '../lib'
+import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, waitForPromiseAll, getCurrentTime } from '../lib'
 import { RundownHoldState, Rundowns, Rundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
 import { Segments, Segment } from './Segments'
@@ -108,6 +108,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 	getRundownsMap (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
+	}
+	touch () {
+		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
+		if (getCurrentTime() - this.modified > 3600 * 1000) {
+			const m = getCurrentTime()
+			this.modified = m
+			RundownPlaylists.update(this._id, { $set: { modified: m } })
+		}
 	}
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
