@@ -47,7 +47,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 							</React.Fragment> : null}
 						</React.Fragment>}
 						{part && timecode === null && <React.Fragment>
-							<MenuItem onClick={(e) => this.props.onSetNextSegment(part.segmentId, e)} disabled={part._id === this.props.rundown.currentPartId}>
+							<MenuItem onClick={(e) => this.props.onSetNext(part, e)} disabled={part._id === this.props.rundown.currentPartId}>
 								<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
 							</MenuItem>
 							{part.segmentId !== this.props.rundown.nextSegmentId ?
