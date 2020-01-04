@@ -298,10 +298,14 @@ export namespace ServerRundownAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		Rundowns.update(rundown._id, {$set: {
-			unsynced: true,
-			unsyncedTime: getCurrentTime()
-		}})
+		if (!rundown.unsynced) {
+			Rundowns.update(rundown._id, {$set: {
+				unsynced: true,
+				unsyncedTime: getCurrentTime()
+			}})
+		} else {
+			logger.info(`Rundown "${rundownId}" was already unsynced`)
+		}
 	}
 }
 export namespace ClientRundownAPI {
