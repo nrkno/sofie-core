@@ -461,6 +461,7 @@ function diffAndApplyChanges (
 			return
 		} else {
 			// TODO: add logic for determining whether to allow changes to the currently playing Part.
+			// TODO: use isUpdateAllowed()
 		}
 	}
 
