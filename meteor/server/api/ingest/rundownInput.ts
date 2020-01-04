@@ -628,6 +628,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	})
 }
 export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmentExternalId: string, ingestPart: IngestPart) {
+	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
 
@@ -638,9 +639,9 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 		segmentId: segmentId,
 		rundownId: rundown._id
 	})
-	if (!part) throw new Meteor.Error(404, 'Part not found')
 
-	if (!isUpdateAllowed(rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })) {
+	if (
+		part && !isUpdateAllowed(rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })) {
 		ServerRundownAPI.unsyncRundown(rundown._id)
 	} else {
 
