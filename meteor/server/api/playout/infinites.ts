@@ -256,7 +256,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	for (const piece of pieces) {
 		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
 			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
-			definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION,
+			definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPiece.adlibPreroll || 0),
 			infiniteMode: PieceLifespan.Normal,
 			originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
 		}}))
