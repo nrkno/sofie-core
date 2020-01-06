@@ -22,7 +22,10 @@ import {
 	rateLimit,
 	rateLimitAndDoItLater,
 	rateLimitIgnore,
-	getRank
+	getRank,
+	partial,
+	partialExceptId,
+	escapeHtml
 } from '../lib'
 import { setMeteorMethods } from '../../server/methods'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
@@ -436,6 +439,42 @@ describe('lib/lib', () => {
 		// Insert three:
 		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
 		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
+
+	})
+	testInFiber('partial', () => {
+		const o = {
+			a: 1,
+			b: 'asdf',
+			c: {
+				d: 1
+			},
+			e: null,
+			f: undefined
+		}
+		expect(partial(o)).toEqual(o) // The function only affects typings
+	})
+	testInFiber('partialExceptId', () => {
+		const o = {
+			_id: 'myId',
+			a: 1,
+			b: 'asdf',
+			c: {
+				d: 1
+			},
+			e: null,
+			f: undefined,
+		}
+		expect(partialExceptId(o)).toEqual(o) // The function only affects typings
+	})
+	testInFiber('formatDateTime', () => {
+		expect(formatDateTime(1578295344070)).toBe('2020-01-06 08:22:24')
+		expect(formatDateTime(2579292001000)).toBe('2051-09-26 00:00:01')
+		expect(formatDateTime(2579292000000)).toBe('2051-09-26 00:00:00')
+		expect(formatDateTime(2579295344070)).toBe('2051-09-26 00:55:44')
+	})
+	testInFiber('escapeHtml', () => {
+		expect(escapeHtml(`<div>Hello & goodbye! Please use '"'-signs!</div>`))
+		.toBe(`&lt;div&gt;Hello &amp; goodbye! Please use &#039;&quot;&#039;-signs!&lt;/div&gt;`)
 
 	})
 })

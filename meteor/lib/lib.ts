@@ -336,6 +336,7 @@ export function formatDateTime (time: Time) {
 	let ss: any = d.getSeconds()
 
 	if (mm < 10) mm = '0' + mm
+	if (dd < 10) dd = '0' + dd
 	if (hh < 10) hh = '0' + hh
 	if (ii < 10) ii = '0' + ii
 	if (ss < 10) ss = '0' + ss
