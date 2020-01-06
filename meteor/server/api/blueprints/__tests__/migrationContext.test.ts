@@ -438,7 +438,10 @@ describe('Test blueprint migrationContext', () => {
 								type: DeviceType.ABSTRACT
 							}
 						}
-					})
+					}),
+					configManifest: {
+						deviceConfig: [] // can be empty as it's only useful for UI.
+					}
 				})
 			}
 			function getPlayoutDevice (studio: Studio): PeripheralDevice {
