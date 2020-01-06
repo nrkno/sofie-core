@@ -37,7 +37,7 @@ export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio
 export function getRundownPlaylist (rundown: Rundown): RundownPlaylist {
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist) throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
-
+	playlist.touch()
 	return playlist
 }
 export function getRundown (rundownId: string, externalRundownId: string): Rundown {

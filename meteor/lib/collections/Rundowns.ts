@@ -6,7 +6,7 @@ import { FindOptions, MongoSelector, TransformedCollection } from '../typings/me
 import { Studios, Studio } from './Studios'
 import { Pieces, Piece } from './Pieces'
 import { Meteor } from 'meteor/meteor'
-import { AdLibPieces } from './AdLibPieces'
+import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
@@ -161,6 +161,18 @@ export class Rundown implements DBRundown {
 		selector = selector || {}
 		options = options || {}
 		return Parts.find(
+			_.extend({
+				rundownId: this._id
+			}, selector),
+			_.extend({
+				sort: { _rank: 1 }
+			}, options)
+		).fetch()
+	}
+	getGlobalAdLibPieces (selector?: MongoSelector<AdLibPiece>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
+		return RundownBaselineAdLibPieces.find(
 			_.extend({
 				rundownId: this._id
 			}, selector),

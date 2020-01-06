@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { Piece } from '../../../../lib/collections/Pieces'
 
 namespace PlayoutAPI { // Using our own method definition, to catch external API changes
 	export enum methods {
@@ -35,6 +36,8 @@ namespace PlayoutAPI { // Using our own method definition, to catch external API
 		'sourceLayerStickyPieceStart'		= 'playout.sourceLayerStickyPieceStart'
 	}
 }
+
+
 
 describe('Playout API', () => {
 	let env: DefaultEnvironment
@@ -164,5 +167,70 @@ describe('Playout API', () => {
 			currentPartId: null,
 			nextPartId: null
 		})
+	})
+	testInFiberOnly('Global and Part Ad-Libs', () => {
+		const nowSpy = jest.spyOn(Date, 'now')
+		nowSpy.mockReturnValue(1000)
+
+		const {
+			rundownId: rundownId0,
+			playlistId: playlistId0
+		} = setupDefaultRundownPlaylist(env)
+
+		const getRundown0 = () => {
+			return Rundowns.findOne(rundownId0) as Rundown
+		}
+		const getPlaylist0 = () => {
+			return RundownPlaylists.findOne(playlistId0)
+		}
+
+		expect(getRundown0()).toBeTruthy()
+		expect(getPlaylist0()).toBeTruthy()
+
+		const parts = getRundown0().getParts()
+		const globalAdLibs = getRundown0().getGlobalAdLibPieces()
+		expect(globalAdLibs).toHaveLength(2)
+
+		const adLibs = parts[0].getAdLibPieces()
+		expect(adLibs).toHaveLength(1)
+
+		expect(() => {
+			Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, rundownId0, parts[0]._id, globalAdLibs[0]._id)
+		}).toThrowError(/active/)
+
+		expect(() => {
+			Meteor.call(PlayoutAPI.methods.segmentAdLibPieceStart, playlistId0, rundownId0, parts[0]._id, adLibs[0]._id)
+		}).toThrowError(/active/)
+
+		// Prepare and activate in rehersal:
+		Meteor.call(PlayoutAPI.methods.rundownPrepareForBroadcast, playlistId0)
+		expect(getPlaylist0()).toMatchObject({
+			active: true,
+			rehearsal: true,
+			currentPartId: null,
+			nextPartId: parts[0]._id,
+		})
+
+		expect(() => {
+			Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, rundownId0, parts[0]._id, globalAdLibs[0]._id)
+		}).toThrowError(/currently playing part/)
+
+		Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
+		expect(getPlaylist0()).toMatchObject({
+			currentPartId: parts[0]._id,
+			nextPartId: parts[1]._id,
+		})
+
+		nowSpy.mockReturnValue(1000)
+
+		Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, rundownId0, parts[0]._id, globalAdLibs[0]._id)
+		const pieces0 = parts[0].getPieces()
+		expect(pieces0).toMatchSnapshot()
+
+		nowSpy.mockReturnValue(3000)
+
+		Meteor.call(PlayoutAPI.methods.segmentAdLibPieceStart, playlistId0, rundownId0, parts[0]._id, adLibs[0]._id)
+		const pieces1 = parts[0].getPieces()
+		expect(pieces1).toMatchSnapshot()
 	})
 })

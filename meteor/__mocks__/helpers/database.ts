@@ -46,6 +46,8 @@ import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces';
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces';
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -145,12 +147,14 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_rank: 0,
 				name: 'Camera',
 				type: SourceLayerType.CAMERA,
+				exclusiveGroup: 'main'
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
 				type: SourceLayerType.VT,
+				exclusiveGroup: 'main'
 			})
 		],
 		config: [],
@@ -517,6 +521,23 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			}
 			Pieces.insert(piece001)
 
+			const adLibPiece000: AdLibPiece = {
+				_id: rundownId + '_adLib000',
+				_rank: 0,
+				expectedDuration: 1000,
+				infiniteMode: PieceLifespan.Normal,
+				externalId: 'MOCK_ADLIB_000',
+				partId: part00._id,
+				disabled: false,
+				rundownId: segment0.rundownId,
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				name: 'AdLib 0',
+				sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+				outputLayerId: env.showStyleBase.outputLayers[0]._id
+			}
+
+			AdLibPieces.insert(adLibPiece000)
+
 		const part01: DBPart = {
 			_id: rundownId + '_part0_1',
 			segmentId: segment0._id,
@@ -593,6 +614,35 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 		name: 'Segment 2'
 	}
 	Segments.insert(segment2)
+
+	const globalAdLib0: RundownBaselineAdLibItem = {
+		_id: rundownId + '_globalAdLib0',
+		_rank: 0,
+		externalId: 'MOCK_GLOBAL_ADLIB_0',
+		disabled: false,
+		infiniteMode: PieceLifespan.Infinite,
+		rundownId: segment0.rundownId,
+		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		name: 'Global AdLib 0',
+		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id
+	}
+
+	const globalAdLib1: RundownBaselineAdLibItem = {
+		_id: rundownId + '_globalAdLib1',
+		_rank: 0,
+		externalId: 'MOCK_GLOBAL_ADLIB_1',
+		disabled: false,
+		infiniteMode: PieceLifespan.Infinite,
+		rundownId: segment0.rundownId,
+		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		name: 'Global AdLib 1',
+		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id
+	}
+
+	RundownBaselineAdLibPieces.insert(globalAdLib0)
+	RundownBaselineAdLibPieces.insert(globalAdLib1)
 
 	return rundownId
 }
