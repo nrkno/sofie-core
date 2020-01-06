@@ -143,17 +143,13 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_id: LAYER_IDS.SOURCE_CAM0,
 				_rank: 0,
 				name: 'Camera',
-				onPGMClean: true,
 				type: SourceLayerType.CAMERA,
-				unlimited: false
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
-				onPGMClean: true,
 				type: SourceLayerType.VT,
-				unlimited: false
 			})
 		],
 		config: [],

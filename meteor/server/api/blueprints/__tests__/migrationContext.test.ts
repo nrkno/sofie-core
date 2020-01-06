@@ -939,8 +939,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertSourceLayer('', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
@@ -960,8 +958,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertSourceLayer('vt0', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
@@ -980,8 +976,6 @@ describe('Test blueprint migrationContext', () => {
 				const rawLayer = {
 					name: 'test',
 					_rank: 10,
-					unlimited: true,
-					onPGMClean: true,
 					type: SourceLayerType.UNKNOWN
 				}
 
@@ -1004,8 +998,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateSourceLayer('', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
@@ -1025,8 +1017,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateSourceLayer('fake99', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
