@@ -30,7 +30,9 @@ export function getShowStyleCompound (showStyleVariantId: ShowStyleVariantId): S
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
 
-export function createShowStyleCompound(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): ShowStyleCompound {
+export function createShowStyleCompound(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): ShowStyleCompound | undefined {
+	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
+	
 	let configs: {[id: string]: IConfigItem} = {}
 	_.each(showStyleBase.config, (config: IConfigItem) => {
 		configs[config._id] = config

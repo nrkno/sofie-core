@@ -41,6 +41,7 @@ import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../li
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { findMissingConfigs } from './blueprints/config'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -486,23 +487,10 @@ export namespace ClientRundownAPI {
 			showStyleBases: asyncCollectionFindFetch(ShowStyleBases, { _id: { $in: uniqueShowStyleCompounds.map(r => r.showStyleBaseId) } }),
 			showStyleVariants: asyncCollectionFindFetch(ShowStyleVariants, { _id: { $in: uniqueShowStyleCompounds.map(r => r.showStyleVariantId) } })
 		})
+		const showStyleBlueprints = Blueprints.find({ _id: { $in: _.uniq(_.compact(showStyleBases.map(c => c.blueprintId))) } }).fetch()
+
 		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
-
-		const findMissingConfigs = (manifest: ConfigManifestEntry[], config: IConfigItem[]) => {
-			const missingKeys: string[] = []
-
-			const configKeys = _.map(config, c => c._id)
-			_.each(manifest, m => {
-				if (m.required && configKeys.indexOf(m.id) === -1) {
-					missingKeys.push(m.name)
-				}
-			})
-
-			return missingKeys
-		}
-
-		const showStyleBlueprints = Blueprints.find({ _id: { $in: _.uniq(_.compact(showStyleBases.map(c => c.blueprintId))) } }).fetch()
 		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
 
 		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] = uniqueShowStyleCompounds.map(rundown => {
@@ -516,23 +504,32 @@ export namespace ClientRundownAPI {
 					checkFailed: true,
 					fields: []
 				}
+			}
+
+			const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+			if (!compound) {
+				return {
+					id: id,
+					name: `${showStyleBase ? showStyleBase.name : rundown.showStyleBaseId}-${rundown.showStyleVariantId}`,
+					checkFailed: true,
+					fields: []
+				}
+			}
+
+			const blueprint = showStyleBlueprintsMap[unprotectString(compound.blueprintId)]
+			if (!blueprint) {
+				return {
+					id: id,
+					name: compound.name,
+					checkFailed: true,
+					fields: []
+				}
 			} else {
-				const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
-				const blueprint = showStyleBlueprintsMap[unprotectString(compound.blueprintId)]
-				if (!blueprint) {
-					return {
-						id: id,
-						name: compound.name,
-						checkFailed: true,
-						fields: []
-					}
-				} else {
-					return {
-						id: id,
-						name: compound.name,
-						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest || [], compound.config)
-					}
+				return {
+					id: id,
+					name: compound.name,
+					checkFailed: false,
+					fields: findMissingConfigs(blueprint.showStyleConfigManifest || [], compound.config)
 				}
 			}
 		})
