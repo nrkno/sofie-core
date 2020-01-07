@@ -198,13 +198,11 @@ function updateExternalMessageQueueStatus (): void {
 			let status: StatusObject = {
 				statusCode: StatusCode.GOOD
 			}
-			if (messagesOnQueueCount > 1) {
+			if (messagesOnQueueCount > 0) {
 				const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
 				status = {
 					statusCode: (
-						messagesOnQueueCount > 10 ?
-						StatusCode.BAD :
-						StatusCode.WARNING_MINOR
+						StatusCode.WARNING_MAJOR
 					),
 					messages: [
 						`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${messagesOnQueueExample.errorMessage}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(messagesOnQueueExample.receiver)}")`

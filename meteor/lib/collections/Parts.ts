@@ -92,6 +92,7 @@ export class Part implements DBPart {
         description?: string
         color?: string
     }
+	public floated?: boolean
 	// From IBlueprintPartDB:
 	public _id: string
 	public segmentId: string

@@ -143,17 +143,13 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_id: LAYER_IDS.SOURCE_CAM0,
 				_rank: 0,
 				name: 'Camera',
-				onPGMClean: true,
 				type: SourceLayerType.CAMERA,
-				unlimited: false
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
-				onPGMClean: true,
 				type: SourceLayerType.VT,
-				unlimited: false
 			})
 		],
 		config: [],
@@ -240,7 +236,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
 
@@ -350,7 +346,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: string

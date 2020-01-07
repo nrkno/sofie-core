@@ -23,6 +23,7 @@ export function insertBlueprint (type?: BlueprintManifestType, name?: string): s
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
 
+		blueprintId: '',
 		blueprintType: type,
 
 		studioConfigManifest: [],
@@ -48,7 +49,7 @@ export function removeBlueprint (id: string) {
 	removeSystemStatus('blueprintCompability_' + id)
 }
 
-export function uploadBlueprint (blueprintId: string, body: string, blueprintName?: string): Blueprint {
+export function uploadBlueprint (blueprintId: string, body: string, blueprintName?: string, ignoreIdChange?: boolean): Blueprint {
 	check(blueprintId, String)
 	check(body, String)
 	check(blueprintName, Match.Maybe(String))
@@ -69,10 +70,11 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 		modified: getCurrentTime(),
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
-		databaseVersion: {
+		databaseVersion: existingBlueprint ? existingBlueprint.databaseVersion : {
 			studio: {},
 			showStyle: {}
 		},
+		blueprintId: '',
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
@@ -93,6 +95,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 		throw new Meteor.Error(400, `Blueprint ${blueprintId} returned a manifest of unknown blueprintType "${blueprintManifest.blueprintType}"`)
 	}
 
+	newBlueprint.blueprintId				= blueprintManifest.blueprintId || ''
 	newBlueprint.blueprintType				= blueprintManifest.blueprintType
 	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
@@ -105,6 +108,19 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 		existingBlueprint.blueprintType !== newBlueprint.blueprintType
 	) {
 		throw new Meteor.Error(400, `Cannot replace old blueprint (of type "${existingBlueprint.blueprintType}") with new blueprint of type "${newBlueprint.blueprintType}"`)
+	}
+	if (existingBlueprint && existingBlueprint.blueprintId && existingBlueprint.blueprintId !== newBlueprint.blueprintId) {
+		if (ignoreIdChange) {
+			logger.warn(`Replacing blueprint "${newBlueprint._id}" ("${existingBlueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`)
+
+			// Force reset migrations
+			newBlueprint.databaseVersion = {
+				showStyle: {},
+				studio: {}
+			}
+		} else {
+			throw new Meteor.Error(422, `Cannot replace old blueprint "${newBlueprint._id}" ("${existingBlueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`)
+		}
 	}
 
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {

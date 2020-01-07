@@ -21,6 +21,7 @@ export interface IAdLibListItem {
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
+	floated?: boolean
 }
 
 interface IListViewItemProps {
@@ -84,7 +85,8 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 		return (
 			<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
 				'selected': this.props.selected,
-				'invalid': this.props.item.invalid
+				'invalid': this.props.item.invalid,
+				'floated': this.props.item.floated
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
 				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}

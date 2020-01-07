@@ -1035,6 +1035,7 @@ body.no-overflow {
 				min-width: 200%;
 				z-index: 0;
 			}
+			
 			&.invalid {
 				background-color: #333;
 			}
@@ -1134,7 +1135,19 @@ body.no-overflow {
 				background-image:
 					repeating-linear-gradient(45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 5px, var(--invalid-reason-color-opaque) 5px, var(--invalid-reason-color-opaque) 10px),
 					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 5px, var(--invalid-reason-color-opaque) 5px, var(--invalid-reason-color-opaque) 10px);
+			}
 
+			.segment-timeline__part__floated-cover {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				z-index: 1;
+				pointer-events: none;
+				background-image:
+					repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
+   				backdrop-filter: saturate(0%) brightness(50%);
 			}
 
 			&:not(.live) {

@@ -61,9 +61,11 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 1.0.0: Release 12  (2019-09-11)
  * 1.1.0: Release 13  (2019-10-17)
  * 1.2.0: Release 14  (2019-11-06)
- * 1.3.0: Release 15  (TBD)
+ * 1.3.0: Release 15  (2019-11-25)
+ * 1.4.0: Release 16  (TBD)
+ * 1.5.0: Release 17  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.3.0'
+export const CURRENT_SYSTEM_VERSION = '1.5.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -449,9 +451,14 @@ export function runMigration (
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
-	isFirstOfPartialMigrations: boolean = true
+	isFirstOfPartialMigrations: boolean = true,
+	chunksLeft: number = 20
 ): RunMigrationResult {
 
+	if (chunksLeft < 0) {
+		logger.error(`Migration: Bailing out, looks like we're in a loop`)
+		throw new Meteor.Error(500, 'Infinite loop in migrations')
+	}
 	logger.info(`Migration: Starting`)
 	// logger.info(`Migration: Starting, from "${baseVersion}" to "${targetVersion}".`)
 
@@ -573,10 +580,11 @@ export function runMigration (
 		const s = getMigrationStatus()
 		if (s.migration.automaticStepCount > 0 || s.migration.manualStepCount > 0) {
 			try {
-				const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+				const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false, chunksLeft - 1)
 				if (res.migrationCompleted) {
 					return res
 				}
+				_.each(res.warnings, w => warningMessages.push(w))
 			} catch (e) {
 				warningMessages.push(`When running next chunk: ${e}`)
 				migration.partialMigration = true

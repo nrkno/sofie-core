@@ -12,6 +12,7 @@ export interface Blueprint {
 	modified: number
 	created: number
 
+	blueprintId: string
 	blueprintType?: BlueprintManifestType
 
 	studioConfigManifest?: ConfigManifestEntry[]
