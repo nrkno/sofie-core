@@ -75,11 +75,7 @@ export class LottieButton extends React.Component<IProps, IState> {
 				onClick={this.onClick}
 				tabIndex={0}>
 				<Lottie
-					options={
-						this.state.hover
-							? this.overAnimation
-							: this.outAnimation
-					}
+					options={this.state.hover ? this.overAnimation : this.outAnimation}
 					isStopped={false}
 					isPaused={false}
 				/>

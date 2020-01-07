@@ -126,10 +126,7 @@ const UserLogPlayerPage = translateWithTracker<
 			}
 		}
 		startExecution(msg: UserActionsLogItem) {
-			if (
-				this.state.nextAction &&
-				this.state.nextAction.timeout !== null
-			) {
+			if (this.state.nextAction && this.state.nextAction.timeout !== null) {
 				clearTimeout(this.state.nextAction.timeout);
 			}
 
@@ -145,17 +142,14 @@ const UserLogPlayerPage = translateWithTracker<
 
 			// find next
 			const { log } = this.props;
-			const currentIndex = log.findIndex(
-				(l) => l._id === action.message._id
-			);
+			const currentIndex = log.findIndex((l) => l._id === action.message._id);
 			const nextItem = log[currentIndex + 1];
 			if (currentIndex === -1 || !nextItem) {
 				this.setState({
 					nextAction: undefined
 				});
 			} else {
-				const targetTimeDiff =
-					nextItem.timestamp - action.message.timestamp;
+				const targetTimeDiff = nextItem.timestamp - action.message.timestamp;
 				const targetTime = action.targetTime + targetTimeDiff;
 
 				const nextAction = {
@@ -223,15 +217,10 @@ const UserLogPlayerPage = translateWithTracker<
 							{`${nextAction.message.method} ${nextAction.message.args}`}
 						</p>
 						<p>
-							Run in:{' '}
-							<MomentFromNow>
-								{nextAction.targetTime}
-							</MomentFromNow>
+							Run in: <MomentFromNow>{nextAction.targetTime}</MomentFromNow>
 						</p>
 						<p>
-							<button onClick={() => this.stopExecution()}>
-								{t('Stop')}
-							</button>
+							<button onClick={() => this.stopExecution()}>{t('Stop')}</button>
 						</p>
 					</React.Fragment>
 				);
@@ -336,9 +325,7 @@ const UserLogRundownSelect = translateWithTracker<
 							{_.map(this.props.rundowns, (name, id) => {
 								return (
 									<li key={id}>
-										<Link to={`userlogplayer/${id}`}>
-											{name}
-										</Link>
+										<Link to={`userlogplayer/${id}`}>{name}</Link>
 									</li>
 								);
 							})}

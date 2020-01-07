@@ -78,11 +78,7 @@ const ExternalMessages = translateWithTracker<
 							{_.map(this.props.studios, (studio) => {
 								return (
 									<li key={studio._id}>
-										<a
-											href="#"
-											onClick={() =>
-												this.onClickStudio(studio)
-											}>
+										<a href="#" onClick={() => this.onClickStudio(studio)}>
 											{studio.name}
 										</a>
 									</li>
@@ -92,9 +88,7 @@ const ExternalMessages = translateWithTracker<
 					</div>
 					<div>
 						{this.state.studioId ? (
-							<ExternalMessagesInStudio
-								studioId={this.state.studioId}
-							/>
+							<ExternalMessagesInStudio studioId={this.state.studioId} />
 						) : null}
 					</div>
 				</div>
@@ -150,8 +144,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 })(
 	class ExternalMessagesInStudio extends MeteorReactComponent<
 		Translated<
-			IExternalMessagesInStudioProps &
-				IExternalMessagesInStudioTrackedProps
+			IExternalMessagesInStudioProps & IExternalMessagesInStudioTrackedProps
 		>,
 		IExternalMessagesInStudioState
 	> {
@@ -261,9 +254,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 						<b>Error: </b>
 						<i>{msg.errorMessage}</i>
 						<div>
-							<MomentFromNow>
-								{msg.errorMessageTime}
-							</MomentFromNow>
+							<MomentFromNow>{msg.errorMessageTime}</MomentFromNow>
 						</div>
 					</div>
 				);
@@ -280,9 +271,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 					info = (
 						<div>
 							<b>Last try: </b>
-							<MomentFromNow unit="seconds">
-								{msg.lastTry}
-							</MomentFromNow>
+							<MomentFromNow unit="seconds">{msg.lastTry}</MomentFromNow>
 						</div>
 					);
 				}
@@ -299,9 +288,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 								</button>
 								<button
 									className="action-btn"
-									onClick={(e) =>
-										this.toggleHoldMessage(msg)
-									}>
+									onClick={(e) => this.toggleHoldMessage(msg)}>
 									{msg.hold ? (
 										<FontAwesomeIcon icon={faPlay} />
 									) : (
@@ -318,10 +305,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 						) : null}
 						ID: {msg._id}
 						<br />
-						Created:{' '}
-						<MomentFromNow unit="seconds">
-							{msg.created}
-						</MomentFromNow>
+						Created: <MomentFromNow unit="seconds">{msg.created}</MomentFromNow>
 					</td>
 					<td className="c7 small">
 						<div>{info}</div>

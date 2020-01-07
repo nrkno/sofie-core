@@ -38,10 +38,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth);
 	};
 
-	componentDidUpdate(
-		prevProps: Readonly<IProps>,
-		prevState: Readonly<IState>
-	) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (
 			super.componentDidUpdate &&
 			typeof super.componentDidUpdate === 'function'

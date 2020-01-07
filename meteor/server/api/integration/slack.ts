@@ -34,10 +34,7 @@ export const sendSlackMessageToWebhookSync: (
 	(
 		message: string,
 		webhookURL: string,
-		callback: (
-			err: Error | undefined,
-			result?: IncomingWebhookResult
-		) => void
+		callback: (err: Error | undefined, result?: IncomingWebhookResult) => void
 	) => {
 		sendSlackMessageToWebhook(message, webhookURL)
 			.then((result) => callback(undefined, result))

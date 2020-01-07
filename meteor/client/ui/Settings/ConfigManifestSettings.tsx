@@ -153,9 +153,7 @@ export class ConfigManifestTable<
 	Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>,
 	IConfigManifestTableState
 > {
-	constructor(
-		props: Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>
-	) {
+	constructor(props: Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>) {
 		super(props);
 
 		this.state = {
@@ -183,9 +181,7 @@ export class ConfigManifestTable<
 						<tr>
 							{_.map(item2.columns, (col) => (
 								<th key={col.id}>
-									<span title={col.description}>
-										{col.name}{' '}
-									</span>
+									<span title={col.description}>{col.name} </span>
 								</th>
 							))}
 							<th>&nbsp;</th>
@@ -206,21 +202,15 @@ export class ConfigManifestTable<
 								))}
 								<td>
 									<button
-										className={ClassNames(
-											'btn btn-danger',
-											{
-												'btn-tight': this.props.subPanel
-											}
-										)}
+										className={ClassNames('btn btn-danger', {
+											'btn-tight': this.props.subPanel
+										})}
 										onClick={() => {
 											const m: any = {};
 											m[baseAttribute] = {
 												_id: val._id
 											};
-											this.updateObject(
-												this.props.object,
-												{ $pull: m }
-											);
+											this.updateObject(this.props.object, { $pull: m });
 										}}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
@@ -286,8 +276,7 @@ export class ConfigManifestTable<
 								uploadFileKey: Date.now()
 							});
 
-							const uploadFileContents = (e2.target as any)
-								.result;
+							const uploadFileContents = (e2.target as any).result;
 
 							// Parse the config
 							let newConfig: TableConfigItemValue = [];
@@ -301,10 +290,9 @@ export class ConfigManifestTable<
 									new Notification(
 										undefined,
 										NoticeLevel.WARNING,
-										t(
-											'Failed to update config: {{errorMessage}}',
-											{ errorMessage: err + '' }
-										),
+										t('Failed to update config: {{errorMessage}}', {
+											errorMessage: err + ''
+										}),
 										'ConfigManifestSettings'
 									)
 								);
@@ -398,15 +386,10 @@ export class ConfigManifestSettings<
 
 	editItem = (item: ConfigManifestEntry) => {
 		// Ensure the item exists, so edit by index works
-		const valIndex = this.getObjectConfig().findIndex(
-			(v) => v._id === item.id
-		);
+		const valIndex = this.getObjectConfig().findIndex((v) => v._id === item.id);
 
 		if (valIndex === -1)
-			throw new Meteor.Error(
-				500,
-				`Unable to edit an item that doesn't exist`
-			);
+			throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`);
 
 		if (this.state.editedItems.indexOf(item.id) < 0) {
 			this.state.editedItems.push(item.id);
@@ -567,9 +550,7 @@ export class ConfigManifestSettings<
 									{!item.required && (
 										<button
 											className="action-btn"
-											onClick={(e) =>
-												this.confirmDelete(item)
-											}>
+											onClick={(e) => this.confirmDelete(item)}>
 											<FontAwesomeIcon icon={faTrash} />
 										</button>
 									)}
@@ -580,8 +561,7 @@ export class ConfigManifestSettings<
 										'btn-tight': this.props.subPanel
 									})}
 									onClick={(e) => this.createItem(item)}>
-									<FontAwesomeIcon icon={faPlus} />{' '}
-									{t('Create')}
+									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 								</button>
 							)}
 						</td>
@@ -591,25 +571,16 @@ export class ConfigManifestSettings<
 							<td colSpan={4}>
 								<div>
 									<div className="mod mvs mhs">
-										<label className="field">
-											{item.description}
-										</label>
+										<label className="field">{item.description}</label>
 									</div>
 									<div className="mod mvs mhs">
-										{this.renderEditableArea(
-											item,
-											valIndex
-										)}
+										{this.renderEditableArea(item, valIndex)}
 									</div>
 								</div>
 								<div className="mod alright">
 									<button
-										className={ClassNames(
-											'btn btn-primary'
-										)}
-										onClick={(e) =>
-											this.finishEditItem(item)
-										}>
+										className={ClassNames('btn btn-primary')}
+										onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -652,9 +623,7 @@ export class ConfigManifestSettings<
 									modifiedClassName="bghl"
 									type="dropdown"
 									options={this.getAddOptions()}
-									updateFunction={(e, v) =>
-										this.setState({ addItemId: v })
-									}
+									updateFunction={(e, v) => this.setState({ addItemId: v })}
 									overrideDisplayValue={this.state.addItemId}
 								/>
 							</div>

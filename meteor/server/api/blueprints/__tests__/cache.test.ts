@@ -88,10 +88,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SHOWSTYLE
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE)
 			);
 
 			try {
@@ -123,11 +120,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SYSTEM,
-					manifest
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest)
 			);
 
 			try {
@@ -155,11 +148,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SYSTEM,
-					manifest
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest)
 			);
 
 			const blueprint = loadSystemBlueprints(core);
@@ -222,10 +211,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SHOWSTYLE
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE)
 			);
 
 			try {
@@ -253,11 +239,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SYSTEM,
-					manifest
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest)
 			);
 
 			try {
@@ -289,16 +271,10 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SYSTEM,
-					manifest
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest)
 			);
 
-			const blueprint = loadStudioBlueprints(
-				studio
-			) as WrappedStudioBlueprint;
+			const blueprint = loadStudioBlueprints(studio) as WrappedStudioBlueprint;
 			expect(blueprint).toBeTruthy();
 
 			expect(blueprint.blueprint.blueprintType).toEqual('studio');
@@ -366,10 +342,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SHOWSTYLE
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE)
 			);
 
 			try {
@@ -397,11 +370,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SYSTEM,
-					manifest
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest)
 			);
 
 			try {
@@ -435,11 +404,7 @@ describe('Test blueprint cache', () => {
 
 			Blueprints.remove('fake_id');
 			Blueprints.insert(
-				generateFakeBlueprint(
-					'fake_id',
-					BlueprintManifestType.SYSTEM,
-					manifest
-				)
+				generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest)
 			);
 
 			const blueprint = loadShowStyleBlueprints(showStyle);

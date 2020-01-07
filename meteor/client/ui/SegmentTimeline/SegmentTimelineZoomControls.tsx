@@ -105,9 +105,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 					0,
 					Math.min(
 						1,
-						(et.touches[0].clientX -
-							this.offsetX -
-							this.clickOffsetX) /
+						(et.touches[0].clientX - this.offsetX - this.clickOffsetX) /
 							this.state.width
 					)
 				);
@@ -120,8 +118,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 				0,
 				Math.min(
 					1,
-					(e.clientX - this.offsetX - this.clickOffsetX) /
-						this.state.width
+					(e.clientX - this.offsetX - this.clickOffsetX) / this.state.width
 				)
 			);
 		}
@@ -204,8 +201,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 			(this.props.scrollLeft + this.props.scrollWidth) /
 			this.props.segmentDuration;
 		let newScale =
-			(this.props.scrollWidth /
-				((end - begin) * this.props.segmentDuration)) *
+			(this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) *
 			this.props.timeScale;
 		// console.log(this.props.scrollWidth, newScale)
 		if (this.props.onZoomChange) {
@@ -261,8 +257,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 		);
 		let begin = this.props.scrollLeft / this.props.segmentDuration;
 		let newScale =
-			(this.props.scrollWidth /
-				((end - begin) * this.props.segmentDuration)) *
+			(this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) *
 			this.props.timeScale;
 		// console.log(this.props.scrollWidth, newScale)
 		if (this.props.onZoomChange) {
@@ -325,9 +320,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 								100,
 								Math.max(
 									0,
-									(this.props.scrollLeft /
-										this.props.segmentDuration) *
-										100
+									(this.props.scrollLeft / this.props.segmentDuration) * 100
 								)
 							).toString() + '%'
 					}}
@@ -341,8 +334,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 								Math.max(
 									0,
 									(1 -
-										(this.props.scrollLeft +
-											this.props.scrollWidth) /
+										(this.props.scrollLeft + this.props.scrollWidth) /
 											this.props.segmentDuration) *
 										100
 								)
@@ -359,16 +351,12 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 					style={{
 						left:
 							Math.max(
-								(this.props.scrollLeft /
-									this.props.segmentDuration) *
-									100,
+								(this.props.scrollLeft / this.props.segmentDuration) * 100,
 								0
 							).toString() + '%',
 						width:
 							Math.min(
-								(this.props.scrollWidth /
-									this.props.segmentDuration) *
-									100,
+								(this.props.scrollWidth / this.props.segmentDuration) * 100,
 								100
 							).toString() + '%'
 					}}
@@ -377,14 +365,10 @@ export const SegmentTimelineZoomControls = class extends React.Component<
 					onTouchStart={(e) => this.zoomAreaBeginMove(e, true)}>
 					<div
 						className="segment-timeline__zoom-area__controls__selected-area__left-handle"
-						onMouseDown={(e) =>
-							this.zoomAreaLeftBeginMove(e)
-						}></div>
+						onMouseDown={(e) => this.zoomAreaLeftBeginMove(e)}></div>
 					<div
 						className="segment-timeline__zoom-area__controls__selected-area__right-handle"
-						onMouseDown={(e) =>
-							this.zoomAreaRightBeginMove(e)
-						}></div>
+						onMouseDown={(e) => this.zoomAreaRightBeginMove(e)}></div>
 					<div className="segment-timeline__zoom-area__controls__selected-area__center-handle"></div>
 				</div>
 			</div>

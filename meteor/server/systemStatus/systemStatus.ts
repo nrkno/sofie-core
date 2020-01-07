@@ -132,9 +132,7 @@ export function getSystemStatus(studioId?: string): StatusResponse {
 							let message = `Version for ${libraryName}: "${versionStr}" does not satisy expected version "${expectedVersionStr}"`;
 
 							const version0 = semver.coerce(version);
-							const expectedVersion0 = semver.coerce(
-								expectedVersion
-							);
+							const expectedVersion0 = semver.coerce(expectedVersion);
 
 							if (
 								version0 &&
@@ -173,9 +171,7 @@ export function getSystemStatus(studioId?: string): StatusResponse {
 								(message: string): CheckError => {
 									return {
 										type: 'version-differ',
-										time: new Date(
-											device.lastSeen
-										).toISOString(),
+										time: new Date(device.lastSeen).toISOString(),
 										message: message
 									};
 								}
@@ -204,17 +200,13 @@ export function getSystemStatus(studioId?: string): StatusResponse {
 			checks: checks
 		};
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-			so.documentation =
-				'https://github.com/nrkno/tv-automation-mos-gateway';
+			so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway';
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
-			so.documentation =
-				'https://github.com/SuperFlyTV/spreadsheet-gateway';
+			so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway';
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
 			so.documentation =
 				'https://github.com/nrkno/tv-automation-playout-gateway';
-		} else if (
-			device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
-		) {
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
 			so.documentation =
 				'https://github.com/nrkno/tv-automation-media-management';
 		}
@@ -306,9 +298,7 @@ function collectMesages(statusObj: StatusResponse): Array<string> {
 		_.each(statusObj.checks, (check: CheckObj) => {
 			if (check._status !== StatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
-					allMessages.push(
-						`check ${check.description}: ${errMsg.message}`
-					);
+					allMessages.push(`check ${check.description}: ${errMsg.message}`);
 				});
 			}
 		});
@@ -332,10 +322,7 @@ function status2ExternalStatus(statusCode: StatusCode): ExternalStatus {
 		statusCode === StatusCode.WARNING_MAJOR
 	) {
 		return 'WARNING';
-	} else if (
-		statusCode === StatusCode.BAD ||
-		statusCode === StatusCode.FATAL
-	) {
+	} else if (statusCode === StatusCode.BAD || statusCode === StatusCode.FATAL) {
 		return 'FAIL';
 	}
 	return 'UNDEFINED';

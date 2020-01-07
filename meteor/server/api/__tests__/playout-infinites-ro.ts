@@ -891,8 +891,7 @@ export const testRO1: MockRO = {
 			name: 'Foto/redigering:, Anne Wirsching',
 			trigger: {
 				type: 1,
-				value:
-					'#piece_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 103000'
+				value: '#piece_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 103000'
 			},
 			sourceLayerId: 'studio0_graphics_super',
 			outputLayerId: 'pgm0',
@@ -1165,8 +1164,7 @@ export const testRO1: MockRO = {
 			partId: 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			status: -1,
 			externalId: '',
-			name:
-				'Jørgen Haugland Kristiansen, varaordfører, Kristiansand (Krf)',
+			name: 'Jørgen Haugland Kristiansen, varaordfører, Kristiansand (Krf)',
 			trigger: {
 				type: 1,
 				value: '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 53000'

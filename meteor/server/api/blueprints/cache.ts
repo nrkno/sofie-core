@@ -164,10 +164,7 @@ function loadBlueprintsById(id: string): SomeBlueprintManifest | undefined {
 		} catch (e) {
 			throw new Meteor.Error(
 				402,
-				'Syntax error in blueprint "' +
-					blueprint._id +
-					'": ' +
-					e.toString()
+				'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString()
 			);
 		}
 	} else {

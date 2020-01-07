@@ -135,9 +135,7 @@ export const updateTimeline: (
 
 	ps.push(
 		caught(
-			getTimelineRundown(studio, activeRundownData).then(
-				applyTimelineObjs
-			)
+			getTimelineRundown(studio, activeRundownData).then(applyTimelineObjs)
 		)
 	);
 	ps.push(caught(getTimelineRecording(studio).then(applyTimelineObjs)));
@@ -249,8 +247,7 @@ function getTimelineRundown(
 ): Promise<TimelineObjRundown[]> {
 	return new Promise((resolve, reject) => {
 		try {
-			let timelineObjs: Array<TimelineObjGeneric &
-				OnGenerateTimelineObj> = [];
+			let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = [];
 
 			const activeRundown = activeRundownData
 				? activeRundownData.rundown
@@ -260,9 +257,7 @@ function getTimelineRundown(
 				// Start with fetching stuff from database:
 
 				// Fetch showstyle blueprint:
-				const pshowStyleBlueprint = getBlueprintOfRundownAsync(
-					activeRundown
-				);
+				const pshowStyleBlueprint = getBlueprintOfRundownAsync(activeRundown);
 
 				// Fetch baseline
 				let promiseBaselineItems: Promise<Array<
@@ -284,8 +279,7 @@ function getTimelineRundown(
 				);
 
 				const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint);
-				const showStyleBlueprintManifest =
-					showStyleBlueprint0.blueprint;
+				const showStyleBlueprintManifest = showStyleBlueprint0.blueprint;
 
 				if (
 					showStyleBlueprintManifest.onTimelineGenerate &&
@@ -315,9 +309,7 @@ function getTimelineRundown(
 					timelineObjs = _.map(
 						tlGenRes.timeline,
 						(object: OnGenerateTimelineObj) => {
-							return literal<
-								TimelineObjGeneric & OnGenerateTimelineObj
-							>({
+							return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
 								...object,
 								_id: '', // set later
 								objectType: TimelineObjType.RUNDOWN,
@@ -329,24 +321,23 @@ function getTimelineRundown(
 					if (tlGenRes.persistentState) {
 						Rundowns.update(rundownData.rundown._id, {
 							$set: {
-								previousPersistentState:
-									tlGenRes.persistentState
+								previousPersistentState: tlGenRes.persistentState
 							}
 						});
 					}
 				}
 
 				resolve(
-					_.map<
-						TimelineObjGeneric & OnGenerateTimelineObj,
-						TimelineObjRundown
-					>(timelineObjs, (timelineObj) => {
-						return {
-							...omit(timelineObj, 'pieceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
-							rundownId: activeRundown._id,
-							objectType: TimelineObjType.RUNDOWN
-						};
-					})
+					_.map<TimelineObjGeneric & OnGenerateTimelineObj, TimelineObjRundown>(
+						timelineObjs,
+						(timelineObj) => {
+							return {
+								...omit(timelineObj, 'pieceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
+								rundownId: activeRundown._id,
+								objectType: TimelineObjType.RUNDOWN
+							};
+						}
+					)
 				);
 			} else {
 				let studioBaseline: TimelineObjRundown[] = [];
@@ -354,9 +345,7 @@ function getTimelineRundown(
 				const studioBlueprint = loadStudioBlueprints(studio);
 				if (studioBlueprint) {
 					const blueprint = studioBlueprint.blueprint;
-					const baselineObjs = blueprint.getBaseline(
-						new StudioContext(studio)
-					);
+					const baselineObjs = blueprint.getBaseline(new StudioContext(studio));
 					studioBaseline = postProcessStudioBaselineObjects(
 						studio,
 						baselineObjs
@@ -376,8 +365,7 @@ function getTimelineRundown(
 								versions: {
 									core: PackageInfo.version,
 									blueprintId: studio.blueprintId,
-									blueprintVersion:
-										blueprint.blueprintVersion,
+									blueprintVersion: blueprint.blueprintVersion,
 									studio: studio._rundownVersionHash
 								}
 							},
@@ -524,9 +512,7 @@ function buildTimelineObjsForRundown(
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT
 			},
-			classes: [
-				activeRundown.rehearsal ? 'rundown_rehersal' : 'rundown_active'
-			]
+			classes: [activeRundown.rehearsal ? 'rundown_rehersal' : 'rundown_active']
 		})
 	);
 
@@ -561,10 +547,7 @@ function buildTimelineObjsForRundown(
 
 	if (baselineItems) {
 		timelineObjs = timelineObjs.concat(
-			transformBaselineItemsIntoTimeline(
-				rundownData.rundown,
-				baselineItems
-			)
+			transformBaselineItemsIntoTimeline(rundownData.rundown, baselineItems)
 		);
 	}
 
@@ -608,15 +591,10 @@ function buildTimelineObjsForRundown(
 				previousPartGroup.priority = -1;
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
-				const skipIds = currentInfinitePieces.map(
-					(l) => l.infiniteId || ''
-				);
+				const skipIds = currentInfinitePieces.map((l) => l.infiniteId || '');
 				const previousPieces = previousPart
 					.getAllPieces()
-					.filter(
-						(l) =>
-							!l.infiniteId || skipIds.indexOf(l.infiniteId) < 0
-					);
+					.filter((l) => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0);
 
 				const groupClasses: string[] = ['previous_part'];
 				let prevObjs: TimelineObjRundown[] = [previousPartGroup];
@@ -645,10 +623,7 @@ function buildTimelineObjsForRundown(
 				? undefined
 				: calcPartTargetDuration(previousPart, currentPart)
 		});
-		if (
-			currentPart.startedPlayback &&
-			currentPart.getLastStartedPlayback()
-		) {
+		if (currentPart.startedPlayback && currentPart.getLastStartedPlayback()) {
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
 			currentPartEnable.start = currentPart.getLastStartedPlayback() || 0;
 		}
@@ -668,9 +643,7 @@ function buildTimelineObjsForRundown(
 				previousPart &&
 				previousPart
 					.getAllPieces()
-					.filter(
-						(i) => i.infiniteId && i.infiniteId === piece.infiniteId
-					)
+					.filter((i) => i.infiniteId && i.infiniteId === piece.infiniteId)
 			) {
 				groupClasses.push('continues_infinite');
 			}
@@ -740,11 +713,7 @@ function buildTimelineObjsForRundown(
 		);
 
 		timelineObjs.push(
-			createPartGroupFirstObject(
-				currentPart,
-				currentPartGroup,
-				previousPart
-			)
+			createPartGroupFirstObject(currentPart, currentPartGroup, previousPart)
 		);
 
 		// only add the next objects into the timeline if the next segment is autoNext
@@ -752,10 +721,7 @@ function buildTimelineObjsForRundown(
 			// console.log('This part will autonext')
 			let nextPartGroup = createPartGroup(nextPart, {});
 			if (currentPartGroup) {
-				const overlapDuration = calcPartOverlapDuration(
-					currentPart,
-					nextPart
-				);
+				const overlapDuration = calcPartOverlapDuration(currentPart, nextPart);
 
 				nextPartGroup.enable = {
 					start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
@@ -918,8 +884,7 @@ function transformPartIntoTimeline(
 		  )
 		: 0;
 	const transitionContentsDelay = transitionProps
-		? (transitionProps.transitionPreroll || 0) -
-		  (transitionProps.preroll || 0)
+		? (transitionProps.transitionPreroll || 0) - (transitionProps.preroll || 0)
 		: 0;
 
 	_.each(clone(pieces), (piece: Piece) => {
@@ -963,11 +928,7 @@ function transformPartIntoTimeline(
 
 			if (!piece.virtual) {
 				timelineObjs.push(
-					createPieceGroupFirstObject(
-						piece,
-						pieceGroup,
-						firstObjClasses
-					)
+					createPieceGroupFirstObject(piece, pieceGroup, firstObjClasses)
 				);
 
 				_.each(tos, (o: TimelineObjectCoreExt) => {
@@ -980,10 +941,7 @@ function transformPartIntoTimeline(
 						) {
 							return;
 						}
-						if (
-							!isHold &&
-							o.holdMode === TimelineObjHoldMode.ONLY
-						) {
+						if (!isHold && o.holdMode === TimelineObjHoldMode.ONLY) {
 							return;
 						}
 					}
@@ -1033,8 +991,7 @@ function calcPartKeepaliveDuration(
 
 		const transPieceDelay = Math.max(
 			0,
-			(toPart.prerollDuration || 0) -
-				(toPart.transitionPrerollDuration || 0)
+			(toPart.prerollDuration || 0) - (toPart.transitionPrerollDuration || 0)
 		);
 		return transPieceDelay + (toPart.transitionKeepaliveDuration || 0);
 	}
@@ -1078,9 +1035,7 @@ function calcPartTargetDuration(
 	}
 
 	let prerollDuration =
-		currentPart.transitionPrerollDuration ||
-		currentPart.prerollDuration ||
-		0;
+		currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0;
 	return rawExpectedDuration + prerollDuration;
 }
 function calcPartOverlapDuration(fromPart: Part, toPart: Part): number {

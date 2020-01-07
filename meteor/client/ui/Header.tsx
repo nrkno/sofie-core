@@ -80,9 +80,7 @@ class Header extends MeteorReactComponent<
 							easing: 'ease-in',
 							duration: 500
 						}}>
-						{this.state.showNotifications && (
-							<NotificationCenterPanel />
-						)}
+						{this.state.showNotifications && <NotificationCenterPanel />}
 					</VelocityReact.VelocityTransitionGroup>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
@@ -122,10 +120,7 @@ class Header extends MeteorReactComponent<
 									<div className="media-elem mrs sofie-logo" />
 									<div className="bd mls">
 										<span className="logo-text">
-											Sofie{' '}
-											{this.props.name
-												? ' - ' + this.props.name
-												: null}
+											Sofie {this.props.name ? ' - ' + this.props.name : null}
 										</span>
 									</div>
 								</div>
@@ -139,21 +134,15 @@ class Header extends MeteorReactComponent<
 										{t('Rundowns')}
 									</NavLink>
 									{this.props.allowTesting && (
-										<NavLink
-											to="/testTools"
-											activeClassName="active">
+										<NavLink to="/testTools" activeClassName="active">
 											{t('Test Tools')}
 										</NavLink>
 									)}
-									<NavLink
-										to="/status"
-										activeClassName="active">
+									<NavLink to="/status" activeClassName="active">
 										{t('Status')}
 									</NavLink>
 									{this.props.allowConfigure && (
-										<NavLink
-											to="/settings"
-											activeClassName="active">
+										<NavLink to="/settings" activeClassName="active">
 											{t('Settings')}
 										</NavLink>
 									)}

@@ -143,8 +143,7 @@ export interface PreparedMigration {
 }
 export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	let databaseSystem = getCoreSystem();
-	if (!databaseSystem)
-		throw new Meteor.Error(500, 'System version not set up');
+	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up');
 
 	// Discover applicable migration steps:
 	let migrationNeeded: boolean = false;
@@ -191,10 +190,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			const rawBlueprint = evalBlueprints(blueprint);
 
 			// @ts-ignore
-			if (
-				!blueprint.databaseVersion ||
-				_.isString(blueprint.databaseVersion)
-			) {
+			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) {
 				blueprint.databaseVersion = {
 					showStyle: {},
 					studio: {}
@@ -222,9 +218,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 						blueprintId: blueprint._id,
 						sourceId: showStyleBase._id,
 						_dbVersion: parseVersion(
-							blueprint.databaseVersion.showStyle[
-								showStyleBase._id
-							] || '0.0.0'
+							blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'
 						),
 						_targetVersion: parseVersion(bp.blueprintVersion),
 						_steps: []
@@ -243,8 +237,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 									id: step.id,
 									overrideSteps: step.overrideSteps,
 									validate: step.validate,
-									canBeRunAutomatically:
-										step.canBeRunAutomatically,
+									canBeRunAutomatically: step.canBeRunAutomatically,
 									migrate: step.migrate,
 									input: step.input,
 									dependOnResultFrom: step.dependOnResultFrom,
@@ -258,9 +251,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 						);
 					});
 				});
-			} else if (
-				blueprint.blueprintType === BlueprintManifestType.STUDIO
-			) {
+			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
 				const bp = rawBlueprint as StudioBlueprintManifest;
 				// Find all studios that use this blueprint
 				Studios.find({
@@ -269,15 +260,11 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					let chunk: MigrationChunk = {
 						sourceType: MigrationStepType.STUDIO,
 						sourceName:
-							'Blueprint ' +
-							blueprint.name +
-							' for studio ' +
-							studio.name,
+							'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
 						blueprintId: blueprint._id,
 						sourceId: studio._id,
 						_dbVersion: parseVersion(
-							blueprint.databaseVersion.studio[studio._id] ||
-								'0.0.0'
+							blueprint.databaseVersion.studio[studio._id] || '0.0.0'
 						),
 						_targetVersion: parseVersion(bp.blueprintVersion),
 						_steps: []
@@ -287,17 +274,12 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					_.each(bp.studioMigrations, (step) => {
 						allMigrationSteps.push(
 							prefixIdsOnStep(
-								'blueprint_' +
-									blueprint._id +
-									'_studio_' +
-									studio._id +
-									'_',
+								'blueprint_' + blueprint._id + '_studio_' + studio._id + '_',
 								{
 									id: step.id,
 									overrideSteps: step.overrideSteps,
 									validate: step.validate,
-									canBeRunAutomatically:
-										step.canBeRunAutomatically,
+									canBeRunAutomatically: step.canBeRunAutomatically,
 									migrate: step.migrate,
 									input: step.input,
 									dependOnResultFrom: step.dependOnResultFrom,
@@ -429,9 +411,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 						getMigrationStudioContext(step.chunk),
 						false
 					);
-				} else if (
-					step.chunk.sourceType === MigrationStepType.SHOWSTYLE
-				) {
+				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 					let validate = step.validate as ValidateFunctionShowStyle;
 					step._validateResult = validate(
 						getMigrationShowStyleContext(step.chunk),
@@ -484,20 +464,12 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					if (step.chunk.sourceType === MigrationStepType.CORE) {
 						let inputFunction = step.input as InputFunctionCore;
 						input = inputFunction();
-					} else if (
-						step.chunk.sourceType === MigrationStepType.STUDIO
-					) {
+					} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
 						let inputFunction = step.input as InputFunctionStudio;
-						input = inputFunction(
-							getMigrationStudioContext(step.chunk)
-						);
-					} else if (
-						step.chunk.sourceType === MigrationStepType.SHOWSTYLE
-					) {
+						input = inputFunction(getMigrationStudioContext(step.chunk));
+					} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 						let inputFunction = step.input as InputFunctionShowStyle;
-						input = inputFunction(
-							getMigrationShowStyleContext(step.chunk)
-						);
+						input = inputFunction(getMigrationShowStyleContext(step.chunk));
 					} else
 						throw new Meteor.Error(
 							500,
@@ -659,9 +631,7 @@ export function runMigration(
 					`Automatic, taken before migration`
 				);
 			} catch (e) {
-				warningMessages.push(
-					`Error when taking snapshot:${e.toString()}`
-				);
+				warningMessages.push(`Error when taking snapshot:${e.toString()}`);
 				logger.error(e);
 			}
 		}
@@ -694,14 +664,9 @@ export function runMigration(
 				} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
 					let migration = step.migrate as MigrateFunctionStudio;
 					migration(getMigrationStudioContext(step.chunk), stepInput);
-				} else if (
-					step.chunk.sourceType === MigrationStepType.SHOWSTYLE
-				) {
+				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 					let migration = step.migrate as MigrateFunctionShowStyle;
-					migration(
-						getMigrationShowStyleContext(step.chunk),
-						stepInput
-					);
+					migration(getMigrationShowStyleContext(step.chunk), stepInput);
 				} else
 					throw new Meteor.Error(
 						500,
@@ -719,10 +684,7 @@ export function runMigration(
 				validateMessage = validate(true);
 			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
 				let validate = step.validate as ValidateFunctionStudio;
-				validateMessage = validate(
-					getMigrationStudioContext(step.chunk),
-					true
-				);
+				validateMessage = validate(getMigrationStudioContext(step.chunk), true);
 			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 				let validate = step.validate as ValidateFunctionShowStyle;
 				validateMessage = validate(
@@ -759,10 +721,7 @@ export function runMigration(
 		logger.info('Migration: Automatically continuing with next batch..');
 		migration.partialMigration = false;
 		const s = getMigrationStatus();
-		if (
-			s.migration.automaticStepCount > 0 ||
-			s.migration.manualStepCount > 0
-		) {
+		if (s.migration.automaticStepCount > 0 || s.migration.manualStepCount > 0) {
 			try {
 				const res = runMigration(
 					s.migration.chunks,
@@ -826,16 +785,14 @@ function completeMigration(chunks: Array<MigrationChunk>) {
 						blueprint.databaseVersion.studio[chunk.sourceId]
 					}" to "${chunk._targetVersion}".`
 				);
-				m[`databaseVersion.studio.${chunk.sourceId}`] =
-					chunk._targetVersion;
+				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion;
 			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 				logger.info(
 					`Updating Blueprint "${chunk.sourceName}" version, from "${
 						blueprint.databaseVersion.showStyle[chunk.sourceId]
 					}" to "${chunk._targetVersion}".`
 				);
-				m[`databaseVersion.showStyle.${chunk.sourceId}`] =
-					chunk._targetVersion;
+				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion;
 			} else
 				throw new Meteor.Error(
 					500,
@@ -936,10 +893,7 @@ function getMigrationShowStyleContext(
 
 	let showStyleBase = ShowStyleBases.findOne(chunk.sourceId);
 	if (!showStyleBase)
-		throw new Meteor.Error(
-			404,
-			`ShowStyleBase "${chunk.sourceId}" not found`
-		);
+		throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`);
 
 	return new MigrationContextShowStyle(showStyleBase);
 }

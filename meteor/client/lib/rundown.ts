@@ -18,10 +18,7 @@ export namespace RundownUtils {
 		return parts.reduce((memo, part) => {
 			return (
 				memo +
-				(part.duration ||
-					part.expectedDuration ||
-					part.renderedDuration ||
-					0)
+				(part.duration || part.expectedDuration || part.renderedDuration || 0)
 			);
 		}, 0);
 	}
@@ -86,17 +83,13 @@ export namespace RundownUtils {
 				secondsRest = useSmartFloor
 					? milliseconds < 100
 						? 0
-						: Math.floor(
-								Math.floor(milliseconds % (60 * 1000)) / 1000
-						  )
+						: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000)
 					: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000);
 			} else {
 				secondsRest = useSmartFloor
 					? milliseconds < 100
 						? 0
-						: Math.ceil(
-								Math.floor(milliseconds % (60 * 1000)) / 1000
-						  )
+						: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 					: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000);
 
 				// cascade the overflowing second
@@ -115,17 +108,13 @@ export namespace RundownUtils {
 				secondsRest = useSmartFloor
 					? milliseconds < 100
 						? 0
-						: Math.floor(
-								Math.floor(milliseconds % (60 * 1000)) / 1000
-						  )
+						: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000)
 					: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000);
 			} else {
 				secondsRest = useSmartFloor
 					? milliseconds < 100
 						? 0
-						: Math.ceil(
-								Math.floor(milliseconds % (60 * 1000)) / 1000
-						  )
+						: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 					: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000);
 
 				// cascade the overflowing second
@@ -186,8 +175,7 @@ export namespace RundownUtils {
 					? (piece.renderedInPoint || 0) +
 					  (piece.renderedDuration ||
 							(part.duration !== undefined
-								? part.duration +
-								  (part.getLastPlayOffset() || 0)
+								? part.duration + (part.getLastPlayOffset() || 0)
 								: (partDuration ||
 										part.renderedDuration ||
 										part.expectedDuration ||
@@ -204,8 +192,7 @@ export namespace RundownUtils {
 	export function getSourceLayerClassName(partType: SourceLayerType): string {
 		// CAMERA_MOVEMENT -> "camera-movement"
 		return (
-			(SourceLayerType[partType] || 'unknown-sourceLayer-' + partType) +
-			''
+			(SourceLayerType[partType] || 'unknown-sourceLayer-' + partType) + ''
 		)
 			.toLowerCase()
 			.replace(/_/g, '-');

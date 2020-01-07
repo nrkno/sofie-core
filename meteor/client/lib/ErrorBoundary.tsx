@@ -166,9 +166,7 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 							{this.state.info && (
 								<p
 									style={_.extend(
-										_.clone(
-											ErrorBoundary.style.componentStack
-										),
+										_.clone(ErrorBoundary.style.componentStack),
 										this.state.expandedComponentStack
 											? ErrorBoundary.style.expandedStack
 											: {}

@@ -37,9 +37,7 @@ export default class LiveSpeakInputIcon extends React.Component<{
 							fontSize: '62px',
 							fontWeight: 100
 						}}>
-						{this.props.abbreviation
-							? this.props.abbreviation
-							: 'LSK'}
+						{this.props.abbreviation ? this.props.abbreviation : 'LSK'}
 					</tspan>
 				</text>
 			</svg>

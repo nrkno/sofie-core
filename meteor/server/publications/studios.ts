@@ -26,9 +26,7 @@ meteorPublish(PubSub.studioOfDevice, (deviceId: string, token) => {
 		let peripheralDevice = PeripheralDevices.findOne(deviceId);
 
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				'PeripheralDevice "' + deviceId + '" not found'
-			);
+			throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found');
 
 		const modifier = {
 			fields: {

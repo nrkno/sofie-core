@@ -38,9 +38,7 @@ expect.extend({
 		const allowed = [200, 201, 204];
 		if (allowed.indexOf(value) > -1) {
 			return {
-				message: `expected ${value} to not be one of ${allowed.join(
-					','
-				)}`,
+				message: `expected ${value} to not be one of ${allowed.join(',')}`,
 				pass: true
 			};
 		}

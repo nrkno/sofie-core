@@ -99,12 +99,7 @@ methods[PeripheralDeviceAPI.methods.mosRoItemReplace] = (
 	Action: MOS.IMOSItemAction,
 	Items: Array<MOS.IMOSItem>
 ) => {
-	return MosIntegration.mosRoItemReplace(
-		deviceId,
-		deviceToken,
-		Action,
-		Items
-	);
+	return MosIntegration.mosRoItemReplace(deviceId, deviceToken, Action, Items);
 };
 methods[PeripheralDeviceAPI.methods.mosRoStoryMove] = (
 	deviceId: string,
@@ -112,12 +107,7 @@ methods[PeripheralDeviceAPI.methods.mosRoStoryMove] = (
 	Action: MOS.IMOSStoryAction,
 	Stories: Array<MOS.MosString128>
 ) => {
-	return MosIntegration.mosRoStoryMove(
-		deviceId,
-		deviceToken,
-		Action,
-		Stories
-	);
+	return MosIntegration.mosRoStoryMove(deviceId, deviceToken, Action, Stories);
 };
 methods[PeripheralDeviceAPI.methods.mosRoItemMove] = (
 	deviceId: string,

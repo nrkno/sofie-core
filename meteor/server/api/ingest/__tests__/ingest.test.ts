@@ -551,9 +551,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			);
 			expect(true).toBe(false); // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(
-				'[404] PeripheralDevice "mockDevice" not found'
-			);
+			expect(e.message).toBe('[404] PeripheralDevice "mockDevice" not found');
 		}
 		try {
 			Meteor.call(
@@ -564,9 +562,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			);
 			expect(true).toBe(false); // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(
-				'[401] Not allowed access to peripheralDevice'
-			);
+			expect(e.message).toBe('[401] Not allowed access to peripheralDevice');
 		}
 	});
 
@@ -895,10 +891,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(e).toBeTruthy();
 		}
 		try {
-			Meteor.call(
-				PeripheralDeviceAPI.methods.dataSegmentCreate,
-				device._id
-			);
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id);
 			expect(0).toBe(1);
 		} catch (e) {
 			expect(e).toBeTruthy();
@@ -934,10 +927,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(e).toBeTruthy();
 		}
 		try {
-			Meteor.call(
-				PeripheralDeviceAPI.methods.dataSegmentCreate,
-				device._id
-			);
+			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id);
 			expect(0).toBe(1);
 		} catch (e) {
 			expect(e).toBeTruthy();

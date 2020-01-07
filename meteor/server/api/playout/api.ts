@@ -139,10 +139,7 @@ methods[PlayoutAPI.methods.sourceLayerStickyPieceStart] = (
 	rundownId: string,
 	sourceLayerId: string
 ) => {
-	return ServerPlayoutAPI.sourceLayerStickyPieceStart(
-		rundownId,
-		sourceLayerId
-	);
+	return ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownId, sourceLayerId);
 };
 methods[PlayoutAPI.methods.updateStudioBaseline] = (studioId: string) => {
 	return ServerPlayoutAPI.updateStudioBaseline(studioId);

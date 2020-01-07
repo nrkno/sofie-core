@@ -34,8 +34,7 @@ export function mockupCollection<A, B>(
 	];
 	_.each(
 		methodNames,
-		(methodName) =>
-			(collection[methodName] = jest.fn(collection[methodName]))
+		(methodName) => (collection[methodName] = jest.fn(collection[methodName]))
 	);
 
 	collection.mockClear = () => {

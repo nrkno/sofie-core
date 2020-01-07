@@ -36,9 +36,7 @@ export function loadCachedRundownData(
 
 	const segmentMap = _.groupBy(cacheEntries, (e) => e.segmentId);
 	_.each(segmentMap, (objs) => {
-		const segmentEntry = objs.find(
-			(e) => e.type === IngestCacheType.SEGMENT
-		);
+		const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT);
 		if (segmentEntry) {
 			const ingestSegment = segmentEntry.data as IngestSegment;
 			_.each(objs, (e) => {
@@ -205,9 +203,7 @@ function generateCacheForSegment(
 	cacheEntries.push(segment);
 
 	_.each(ingestSegment.parts, (part) => {
-		cacheEntries.push(
-			generateCacheForPart(rundownId, segmentExternalId, part)
-		);
+		cacheEntries.push(generateCacheForPart(rundownId, segmentExternalId, part));
 	});
 
 	return cacheEntries;

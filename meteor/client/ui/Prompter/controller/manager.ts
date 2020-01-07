@@ -20,9 +20,7 @@ export class PrompterControlManager {
 
 		if (this._view.configOptions.mode === PrompterConfigMode.MOUSE) {
 			this._controllers.push(new MouseIshController(this._view));
-		} else if (
-			this._view.configOptions.mode === PrompterConfigMode.KEYBOARD
-		) {
+		} else if (this._view.configOptions.mode === PrompterConfigMode.KEYBOARD) {
 			this._controllers.push(new KeyboardController(this._view));
 		} else if (
 			this._view.configOptions.mode === PrompterConfigMode.SHUTTLEKEYBOARD

@@ -8,12 +8,7 @@ export async function sendRabbitMQMessage(
 	return new Promise((resolve, reject) => {
 		process.nextTick(() => {
 			if (msg0.message.message.match(/error/)) {
-				reject(
-					new Meteor.Error(
-						500,
-						'Failed to send slack rabbitMQ message'
-					)
-				);
+				reject(new Meteor.Error(500, 'Failed to send slack rabbitMQ message'));
 			} else {
 				resolve();
 			}

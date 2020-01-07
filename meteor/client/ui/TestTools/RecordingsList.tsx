@@ -145,11 +145,7 @@ const RecordingsList = translateWithTracker<
 			const config = objectPath.get(studio, 'testToolsConfig.recordings');
 			if (!config) return false;
 
-			if (
-				!config.channelIndex ||
-				!config.decklinkDevice ||
-				!config.deviceId
-			)
+			if (!config.channelIndex || !config.decklinkDevice || !config.deviceId)
 				return false;
 
 			return true;
@@ -183,11 +179,7 @@ const RecordingsList = translateWithTracker<
 					</p>
 					<p>
 						Started:{' '}
-						{active ? (
-							<MomentFromNow>{active.startedAt}</MomentFromNow>
-						) : (
-							'-'
-						)}
+						{active ? <MomentFromNow>{active.startedAt}</MomentFromNow> : '-'}
 					</p>
 					<p>
 						{active ? (
@@ -231,14 +223,11 @@ const RecordingsList = translateWithTracker<
 						onAccept={(e) => this.handleConfirmDeleteAccept(e)}
 						onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
 						<p>
-							{t(
-								'Are you sure you want to delete recording "{{name}}"?',
-								{
-									name:
-										this.state.deleteConfirmItem &&
-										this.state.deleteConfirmItem.name
-								}
-							)}
+							{t('Are you sure you want to delete recording "{{name}}"?', {
+								name:
+									this.state.deleteConfirmItem &&
+									this.state.deleteConfirmItem.name
+							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
@@ -274,8 +263,7 @@ export class RecordedFilesListItem extends React.Component<
 		return (
 			<tr className="recorded-file-list-item">
 				<td className="recorded-file-list-item__name">
-					<Link
-						to={`${this.props.file.studioId}/${this.props.file._id}`}>
+					<Link to={`${this.props.file.studioId}/${this.props.file._id}`}>
 						{this.props.file.name}
 					</Link>
 				</td>
@@ -294,9 +282,7 @@ export class RecordedFilesListItem extends React.Component<
 				<td className="actions">
 					<button
 						className="action-btn"
-						onClick={(e) =>
-							this.props.onDeleteRecording(this.props.file)
-						}>
+						onClick={(e) => this.props.onDeleteRecording(this.props.file)}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
 				</td>

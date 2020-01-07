@@ -59,9 +59,7 @@ const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
 							(props.segmentLiveDurations &&
 								props.segmentLiveDurations[props.part._id]) ||
 								0,
-							props.part.duration ||
-								props.part.expectedDuration ||
-								0
+							props.part.duration || props.part.expectedDuration || 0
 						) /
 							(props.segmentDuration || 0)) *
 							100 +
@@ -76,17 +74,12 @@ const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
 						style={{
 							left:
 								((getCurrentTime() -
-									(props.part.getLastStartedPlayback() ||
-										0)) /
+									(props.part.getLastStartedPlayback() || 0)) /
 									Math.max(
 										(props.segmentLiveDurations &&
-											props.segmentLiveDurations[
-												props.part._id
-											]) ||
+											props.segmentLiveDurations[props.part._id]) ||
 											0,
-										props.part.duration ||
-											props.part.expectedDuration ||
-											0
+										props.part.duration || props.part.expectedDuration || 0
 									)) *
 									100 +
 								'%'
@@ -122,9 +115,7 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (
 						: false
 				})}
 				style={{
-					width:
-						((segmentDuration || 0) / props.totalDuration) * 100 +
-						'%'
+					width: ((segmentDuration || 0) / props.totalDuration) * 100 + '%'
 				}}>
 				{props.segment.items.map((item, index) => {
 					return (
@@ -215,11 +206,7 @@ export const RundownOverview = withTiming<
 			RundownOverviewState
 		> {
 			render() {
-				if (
-					this.props.rundown &&
-					this.props.rundownId &&
-					this.props.segments
-				) {
+				if (this.props.rundown && this.props.rundownId && this.props.segments) {
 					return (
 						<ErrorBoundary>
 							<div className="rundown__overview">
@@ -230,30 +217,21 @@ export const RundownOverview = withTiming<
 												segment={item}
 												key={item._id}
 												totalDuration={Math.max(
-													(this.props
-														.timingDurations &&
-														this.props
-															.timingDurations
+													(this.props.timingDurations &&
+														this.props.timingDurations
 															.asPlayedRundownDuration) ||
 														1,
-													this.props.rundown
-														.expectedDuration || 1
+													this.props.rundown.expectedDuration || 1
 												)}
 												segmentLiveDurations={
-													(this.props
-														.timingDurations &&
-														this.props
-															.timingDurations
-															.partDurations) ||
+													(this.props.timingDurations &&
+														this.props.timingDurations.partDurations) ||
 													{}
 												}
 												rundown={this.props.rundown}
 												segmentStartsAt={
-													(this.props
-														.timingDurations &&
-														this.props
-															.timingDurations
-															.partStartsAt) ||
+													(this.props.timingDurations &&
+														this.props.timingDurations.partStartsAt) ||
 													{}
 												}
 											/>

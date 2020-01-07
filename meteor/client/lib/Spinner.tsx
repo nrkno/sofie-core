@@ -22,11 +22,7 @@ export const Spinner: React.SFC<SpinnerProps> = (props: SpinnerProps) => (
 				className="origo-spinner-svg"
 				version="1.1"
 				xmlns="http://www.w3.org/2000/svg">
-				<circle
-					className="origo-spin-circle"
-					cx="17"
-					cy="17"
-					r="15"></circle>
+				<circle className="origo-spin-circle" cx="17" cy="17" r="15"></circle>
 			</svg>
 		</div>
 	</div>

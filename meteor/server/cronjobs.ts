@@ -34,10 +34,7 @@ Meteor.startup(() => {
 			// Clean up Rundown data cache:
 			// Remove caches not related to rundowns:
 			let rundownCacheCount = 0;
-			let rundownIds = _.map(
-				Rundowns.find().fetch(),
-				(rundown) => rundown._id
-			);
+			let rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id);
 			IngestDataCache.find({
 				rundownId: { $nin: rundownIds }
 			}).forEach((roc) => {
@@ -61,8 +58,7 @@ Meteor.startup(() => {
 				}).forEach((subDevice) => {
 					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
-						subDevice.type ===
-							PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 						subDevice.subType === TSR.DeviceType.CASPARCG
 					) {
 						logger.info(

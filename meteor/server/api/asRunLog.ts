@@ -38,14 +38,14 @@ export async function pushAsRunLogAsync(
 ): Promise<AsRunLogEvent | null> {
 	if (!timestamp) timestamp = getCurrentTime();
 
-	let event: AsRunLogEvent = extendMandadory<
-		AsRunLogEventBase,
-		AsRunLogEvent
-	>(eventBase, {
-		_id: getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal),
-		timestamp: timestamp,
-		rehersal: rehersal
-	});
+	let event: AsRunLogEvent = extendMandadory<AsRunLogEventBase, AsRunLogEvent>(
+		eventBase,
+		{
+			_id: getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal),
+			timestamp: timestamp,
+			rehersal: rehersal
+		}
+	);
 
 	let result = await asyncCollectionUpsert(AsRunLog, event._id, event);
 	if (result.insertedId) {
@@ -84,22 +84,12 @@ function handleEvent(event: AsRunLogEvent): void {
 				const { blueprint } = getBlueprintOfRundown(rundown);
 
 				if (blueprint.onAsRunEvent) {
-					const context = new AsRunEventContext(
-						rundown,
-						undefined,
-						event
-					);
+					const context = new AsRunEventContext(rundown, undefined, event);
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
-						.then(
-							(
-								messages: Array<
-									IBlueprintExternalMessageQueueObj
-								>
-							) => {
-								queueExternalMessages(rundown, messages);
-							}
-						)
+						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+							queueExternalMessages(rundown, messages);
+						})
 						.catch((error) => logger.error(error));
 				}
 			}

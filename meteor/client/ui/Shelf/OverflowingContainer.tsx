@@ -46,8 +46,7 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 	resizeHandler = _.throttle(() => {
 		if (this._element) {
 			this.setState({
-				overflowing:
-					this._element.clientWidth < this._element.scrollWidth,
+				overflowing: this._element.clientWidth < this._element.scrollWidth,
 				overflowingLeft: this._element.scrollLeft > 0,
 				// on some high-DPI screens, the scrollLeft+clientWidth may be a non-integer value a little bit below scrollWidth
 				overflowingRight:
@@ -89,10 +88,9 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 				{this.state.overflowing && (
 					<button
 						className={ClassNames('overflowing-container__left', {
-							'overflowing-container--overflowing': this.state
-								.overflowing,
-							'overflowing-container--overflowing-left': this
-								.state.overflowingLeft
+							'overflowing-container--overflowing': this.state.overflowing,
+							'overflowing-container--overflowing-left': this.state
+								.overflowingLeft
 						})}
 						onMouseDown={() => this.startScroll(-15)}
 						onMouseUp={this.stopScroll}>
@@ -100,28 +98,22 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 					</button>
 				)}
 				<div
-					className={ClassNames(
-						this.props.className,
-						'overflowing-container',
-						{
-							'overflowing-container--overflowing': this.state
-								.overflowing,
-							'overflowing-container--overflowing-left': this
-								.state.overflowingLeft,
-							'overflowing-container--overflowing-right': this
-								.state.overflowingRight
-						}
-					)}
+					className={ClassNames(this.props.className, 'overflowing-container', {
+						'overflowing-container--overflowing': this.state.overflowing,
+						'overflowing-container--overflowing-left': this.state
+							.overflowingLeft,
+						'overflowing-container--overflowing-right': this.state
+							.overflowingRight
+					})}
 					ref={(el) => (this._element = el)}>
 					{this.props.children}
 				</div>
 				{this.state.overflowing && (
 					<button
 						className={ClassNames('overflowing-container__right', {
-							'overflowing-container--overflowing': this.state
-								.overflowing,
-							'overflowing-container--overflowing-right': this
-								.state.overflowingRight
+							'overflowing-container--overflowing': this.state.overflowing,
+							'overflowing-container--overflowing-right': this.state
+								.overflowingRight
 						})}
 						onMouseDown={() => this.startScroll(15)}
 						onMouseUp={this.stopScroll}>

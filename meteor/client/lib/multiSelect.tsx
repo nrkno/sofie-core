@@ -91,9 +91,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		return _.compact(
 			_.values(
 				_.mapObject(this.state.checkedValues, (value, key) => {
-					return value
-						? this.props.availableOptions[key] || key
-						: null;
+					return value ? this.props.availableOptions[key] || key : null;
 				})
 			)
 		).join(', ');
@@ -130,40 +128,29 @@ export class MultiSelect extends React.Component<IProps, IState> {
 				</a>
 				<div className="expco-body bd">
 					{_.values(
-						_.mapObject(
-							this.props.availableOptions,
-							(value, key) => {
-								return (
-									<p className="expco-item" key={key}>
-										<label className="action-btn">
-											<span className="checkbox">
-												<input
-													type="checkbox"
-													className="form-control"
-													checked={this.isChecked(
-														key
-													)}
-													onChange={() =>
-														this.handleChange(key)
-													}
-												/>
-												<span className="checkbox-checked">
-													<FontAwesomeIcon
-														icon={faCheckSquare}
-													/>
-												</span>
-												<span className="checkbox-unchecked">
-													<FontAwesomeIcon
-														icon={faSquare}
-													/>
-												</span>
+						_.mapObject(this.props.availableOptions, (value, key) => {
+							return (
+								<p className="expco-item" key={key}>
+									<label className="action-btn">
+										<span className="checkbox">
+											<input
+												type="checkbox"
+												className="form-control"
+												checked={this.isChecked(key)}
+												onChange={() => this.handleChange(key)}
+											/>
+											<span className="checkbox-checked">
+												<FontAwesomeIcon icon={faCheckSquare} />
 											</span>
-											{value}
-										</label>
-									</p>
-								);
-							}
-						)
+											<span className="checkbox-unchecked">
+												<FontAwesomeIcon icon={faSquare} />
+											</span>
+										</span>
+										{value}
+									</label>
+								</p>
+							);
+						})
 					)}
 				</div>
 			</div>

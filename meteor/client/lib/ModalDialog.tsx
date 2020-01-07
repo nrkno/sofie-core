@@ -72,13 +72,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 					undefined,
 					true
 				);
-				mousetrapHelper.bind(
-					'enter',
-					this.handleKey,
-					'keyup',
-					undefined,
-					true
-				);
+				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true);
 				this.boundKeys.push('enter');
 			}
 			if (this.boundKeys.indexOf('esc') < 0) {
@@ -89,13 +83,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 					undefined,
 					true
 				);
-				mousetrapHelper.bind(
-					'esc',
-					this.handleKey,
-					'keyup',
-					undefined,
-					true
-				);
+				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true);
 				this.boundKeys.push('esc');
 			}
 		} else {
@@ -146,10 +134,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	};
 
 	handleDiscard = (e: SomeEvent) => {
-		if (
-			this.props.onDiscard &&
-			typeof this.props.onDiscard === 'function'
-		) {
+		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
 			this.props.onDiscard(e, this.inputResult);
 		} else {
 			this.handleSecondary(e);
@@ -180,15 +165,11 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 									duration: 250
 								}}
 								runOnMount={true}>
-								<dialog
-									open={true}
-									className="border-box overlay-m">
+								<dialog open={true} className="border-box overlay-m">
 									<div
 										className={
 											'flex-row ' +
-											(this.props.warning
-												? 'warn'
-												: 'info') +
+											(this.props.warning ? 'warn' : 'info') +
 											' vertical-align-stretch tight-s'
 										}>
 										<div className="flex-col c12">
@@ -198,59 +179,31 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 											<p>
 												<button
 													className="action-btn"
-													onClick={
-														this.handleDiscard
-													}>
+													onClick={this.handleDiscard}>
 													<CoreIcons id="nrk-close" />
 												</button>
 											</p>
 										</div>
 									</div>
-									<div className="title-box-content">
-										{this.props.children}
-									</div>
+									<div className="title-box-content">{this.props.children}</div>
 									{this.props.inputs ? (
 										<div className="title-box-inputs">
 											{_.map(
 												this.props.inputs,
-												(
-													input: ModalInput,
-													attribute: string
-												) => {
-													if (
-														this.inputResult[
-															attribute
-														] === undefined
-													)
-														this.inputResult[
-															attribute
-														] = input.defaultValue;
+												(input: ModalInput, attribute: string) => {
+													if (this.inputResult[attribute] === undefined)
+														this.inputResult[attribute] = input.defaultValue;
 
 													return (
-														<div
-															className="title-box-input"
-															key={attribute}>
+														<div className="title-box-input" key={attribute}>
 															{input.text}
 															<EditAttribute
-																type={
-																	input.type
-																}
-																label={
-																	input.label
-																}
-																options={
-																	input.options
-																}
-																overrideDisplayValue={
-																	input.defaultValue
-																}
-																attribute={
-																	attribute
-																}
-																updateFunction={
-																	this
-																		.updatedInput
-																}
+																type={input.type}
+																label={input.label}
+																options={input.options}
+																overrideDisplayValue={input.defaultValue}
+																attribute={attribute}
+																updateFunction={this.updatedInput}
 															/>
 														</div>
 													);
@@ -281,19 +234,13 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 																	'btn right',
 																	{
 																		'btn-secondary': !(
-																			action.classNames ||
-																			''
-																		).match(
-																			/btn-/
-																		)
+																			action.classNames || ''
+																		).match(/btn-/)
 																	},
 																	action.classNames
 																)}
 																onClick={(e) =>
-																	this.handleAction(
-																		e,
-																		action.on
-																	)
+																	this.handleAction(e, action.on)
 																}>
 																{action.label}
 															</button>
@@ -304,17 +251,10 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 											)
 										)}
 										<button
-											className={ClassNames(
-												'btn btn-primary',
-												{
-													right:
-														this.props
-															.secondaryText !==
-														undefined,
-													'btn-warn': this.props
-														.warning
-												}
-											)}
+											className={ClassNames('btn btn-primary', {
+												right: this.props.secondaryText !== undefined,
+												'btn-warn': this.props.warning
+											})}
 											onClick={this.handleAccept}>
 											{this.props.acceptText}
 										</button>
@@ -369,9 +309,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 	constructor(props: Translated<IModalDialogGlobalContainerProps>) {
 		super(props);
 		if (modalDialogGlobalContainerSingleton) {
-			logger.warn(
-				'modalDialogGlobalContainerSingleton called more than once!'
-			);
+			logger.warn('modalDialogGlobalContainerSingleton called more than once!');
 		}
 		modalDialogGlobalContainerSingleton = this;
 		this.state = {
@@ -441,8 +379,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 				(action: ModalAction) => {
 					return {
 						...action,
-						on: (e, inputResult) =>
-							this.onAction(e, inputResult, action.on)
+						on: (e, inputResult) => this.onAction(e, inputResult, action.on)
 					};
 				}
 			);
@@ -452,8 +389,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 					title={onQueue.title}
 					acceptText={onQueue.yes || t('Yes')}
 					secondaryText={
-						onQueue.no ||
-						(!onQueue.acceptOnly ? t('No') : undefined)
+						onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)
 					}
 					onAccept={this.onAccept}
 					onDiscard={this.onDiscard}

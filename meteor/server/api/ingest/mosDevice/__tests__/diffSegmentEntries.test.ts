@@ -152,11 +152,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.changed)).toEqual(['first']);
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff.removed)).toHaveLength(0);
-			expect(_.keys(diff.unchanged)).toEqual([
-				'second',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth']);
 
 			// Middle segment
 			const ingestSegments3 = clone(ingestSegments);
@@ -167,11 +163,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.changed)).toEqual(['second']);
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff2.removed)).toHaveLength(0);
-			expect(_.keys(diff2.unchanged)).toEqual([
-				'first',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth']);
 
 			// Last segment
 			const ingestSegments4 = clone(ingestSegments);
@@ -182,11 +174,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.changed)).toEqual(['fourth']);
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff3.removed)).toHaveLength(0);
-			expect(_.keys(diff3.unchanged)).toEqual([
-				'first',
-				'second',
-				'third'
-			]);
+			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third']);
 		});
 
 		test('Remove start of segment', async () => {
@@ -200,11 +188,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.changed)).toEqual(['first']);
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff.removed)).toHaveLength(0);
-			expect(_.keys(diff.unchanged)).toEqual([
-				'second',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth']);
 
 			// Middle segment
 			const ingestSegments3 = clone(ingestSegments);
@@ -215,11 +199,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.changed)).toEqual(['second']);
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff2.removed)).toHaveLength(0);
-			expect(_.keys(diff2.unchanged)).toEqual([
-				'first',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth']);
 
 			// Last segment
 			const ingestSegments4 = clone(ingestSegments);
@@ -230,11 +210,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.changed)).toEqual(['fourth']);
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff3.removed)).toHaveLength(0);
-			expect(_.keys(diff3.unchanged)).toEqual([
-				'first',
-				'second',
-				'third'
-			]);
+			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third']);
 		});
 
 		test('Remove end of segment', async () => {
@@ -248,11 +224,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.changed)).toEqual(['first']);
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff.removed)).toHaveLength(0);
-			expect(_.keys(diff.unchanged)).toEqual([
-				'second',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth']);
 
 			// Middle segment
 			const ingestSegments3 = clone(ingestSegments);
@@ -263,11 +235,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.changed)).toEqual(['second']);
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff2.removed)).toHaveLength(0);
-			expect(_.keys(diff2.unchanged)).toEqual([
-				'first',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth']);
 
 			// Last segment
 			const ingestSegments4 = clone(ingestSegments);
@@ -278,11 +246,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.changed)).toEqual(['fourth']);
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff3.removed)).toHaveLength(0);
-			expect(_.keys(diff3.unchanged)).toEqual([
-				'first',
-				'second',
-				'third'
-			]);
+			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third']);
 		});
 
 		test('Remove whole segment', async () => {
@@ -330,11 +294,7 @@ describe('Ingest: MOS', () => {
 			// expect(_.keys(diff3.changed)).toHaveLength(3)
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff3.removed)).toEqual(['fourth']);
-			expect(_.keys(diff3.unchanged)).toEqual([
-				'first',
-				'second',
-				'third'
-			]);
+			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third']);
 		});
 		test('Remove to combine segments', async () => {
 			const segmentEntries = compileSegmentEntries(ingestSegments);
@@ -367,11 +327,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.added)).toEqual(['NEW']);
 			expect(_.keys(diff.changed)).toEqual([]);
 			expect(_.keys(diff.removed)).toEqual(['first']);
-			expect(_.keys(diff.unchanged)).toEqual([
-				'second',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth']);
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0);
 			expect(diff.onlyExternalIdChanged).toEqual({
 				first: 'NEW'
@@ -386,11 +342,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.added)).toEqual(['NEW']);
 			expect(_.keys(diff2.changed)).toEqual([]);
 			expect(_.keys(diff2.removed)).toEqual(['second']);
-			expect(_.keys(diff2.unchanged)).toEqual([
-				'first',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth']);
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0);
 			expect(diff2.onlyExternalIdChanged).toEqual({
 				second: 'NEW'
@@ -405,11 +357,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.added)).toEqual(['NEW']);
 			expect(_.keys(diff3.changed)).toEqual([]);
 			expect(_.keys(diff3.removed)).toEqual(['fourth']);
-			expect(_.keys(diff3.unchanged)).toEqual([
-				'first',
-				'second',
-				'third'
-			]);
+			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third']);
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0);
 			expect(diff3.onlyExternalIdChanged).toEqual({
 				fourth: 'NEW'
@@ -432,11 +380,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.changed)).toEqual(['first']);
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff.removed)).toHaveLength(0);
-			expect(_.keys(diff.unchanged)).toEqual([
-				'second',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth']);
 
 			// Middle segment
 			const ingestSegments3 = clone(ingestSegments);
@@ -452,11 +396,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.changed)).toEqual(['second']);
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff2.removed)).toHaveLength(0);
-			expect(_.keys(diff2.unchanged)).toEqual([
-				'first',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth']);
 
 			// Last segment
 			const ingestSegments4 = clone(ingestSegments);
@@ -472,11 +412,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.changed)).toEqual(['fourth']);
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0);
 			expect(_.keys(diff3.removed)).toHaveLength(0);
-			expect(_.keys(diff3.unchanged)).toEqual([
-				'first',
-				'second',
-				'third'
-			]);
+			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third']);
 		});
 
 		test('Insert new segment', async () => {
@@ -521,11 +457,7 @@ describe('Ingest: MOS', () => {
 			const segmentEntries3 = compileSegmentEntries(ingestSegments3);
 
 			const diff2 = diffSegmentEntries(segmentEntries, segmentEntries3);
-			expect(_.keys(diff2.changed)).toEqual([
-				'second',
-				'third',
-				'fourth'
-			]);
+			expect(_.keys(diff2.changed)).toEqual(['second', 'third', 'fourth']);
 			expect(diff2.onlyRankChanged).toEqual({
 				second: 2,
 				third: 3,

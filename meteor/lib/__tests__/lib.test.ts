@@ -57,21 +57,16 @@ describe('lib/lib', () => {
 				return v;
 			}
 		});
-		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch(
-			(e) => {
-				throw e;
-			}
-		);
+		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch((e) => {
+			throw e;
+		});
 		expect(pValue).toHaveProperty('then'); // be a promise
 		const value = waitForPromise(pValue);
 		expect(value).toEqual('myValue');
 	});
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439;
-		expect(getCurrentTime() / 1000).toBeCloseTo(
-			(Date.now() - 5439) / 1000,
-			1
-		);
+		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1);
 	});
 	testInFiber('saveIntoDb', () => {
 		Timeline.insert({
@@ -449,13 +444,9 @@ describe('lib/lib', () => {
 		).toHaveLength(4);
 
 		expect(MyCollection.find({ rank: { $gt: 2 } }).fetch()).toHaveLength(3);
-		expect(MyCollection.find({ rank: { $gte: 2 } }).fetch()).toHaveLength(
-			4
-		);
+		expect(MyCollection.find({ rank: { $gte: 2 } }).fetch()).toHaveLength(4);
 
 		expect(MyCollection.find({ rank: { $lt: 3 } }).fetch()).toHaveLength(3);
-		expect(MyCollection.find({ rank: { $lte: 3 } }).fetch()).toHaveLength(
-			4
-		);
+		expect(MyCollection.find({ rank: { $lte: 3 } }).fetch()).toHaveLength(4);
 	});
 });

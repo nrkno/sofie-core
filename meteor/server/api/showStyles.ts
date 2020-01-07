@@ -35,10 +35,7 @@ export function insertShowStyleVariant(
 
 	let showStyleBase = ShowStyleBases.findOne(showStyleBaseId);
 	if (!showStyleBase)
-		throw new Meteor.Error(
-			404,
-			`showStyleBase "${showStyleBaseId}" not found`
-		);
+		throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`);
 
 	return ShowStyleVariants.insert({
 		_id: Random.id(),

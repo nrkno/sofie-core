@@ -101,26 +101,11 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 						<div className="flex-col c12 rm-c11 status-dialog">
 							<Switch>
 								{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
-								<Route
-									path="/status/messages"
-									component={ExternalMessages}
-								/>
-								<Route
-									path="/status/media"
-									component={MediaManagerStatus}
-								/>
-								<Route
-									path="/status/system"
-									component={SystemStatus}
-								/>
-								<Route
-									path="/status/userLog"
-									component={UserActivity}
-								/>
-								<Route
-									path="/status/evaluations"
-									component={EvaluationView}
-								/>
+								<Route path="/status/messages" component={ExternalMessages} />
+								<Route path="/status/media" component={MediaManagerStatus} />
+								<Route path="/status/system" component={SystemStatus} />
+								<Route path="/status/userLog" component={UserActivity} />
+								<Route path="/status/evaluations" component={EvaluationView} />
 								<Redirect to="/status/system" />
 							</Switch>
 						</div>

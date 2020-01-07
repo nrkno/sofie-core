@@ -80,8 +80,7 @@ export class CustomLayerItemRenderer<
 		return {
 			left:
 				(
-					this.props.elementPosition.left +
-					this.props.cursorPosition.left
+					this.props.elementPosition.left + this.props.cursorPosition.left
 				).toString() + 'px',
 			top: this.props.elementPosition.top + 'px'
 		};

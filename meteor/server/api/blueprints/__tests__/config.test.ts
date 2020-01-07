@@ -77,11 +77,7 @@ describe('Test blueprint config', () => {
 
 			try {
 				expect(
-					ConfigRef.retrieveRefs(
-						'${studio.one.two}_extra',
-						modifier,
-						true
-					)
+					ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)
 				).toEqual('undefined_extra');
 				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
@@ -91,11 +87,7 @@ describe('Test blueprint config', () => {
 			}
 			try {
 				expect(
-					ConfigRef.retrieveRefs(
-						'${showStyle.one.two}_extra',
-						modifier,
-						true
-					)
+					ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier, true)
 				).toEqual('undefined_extra');
 				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {

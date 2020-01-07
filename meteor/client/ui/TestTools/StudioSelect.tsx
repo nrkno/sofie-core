@@ -50,9 +50,7 @@ const StudioSelect = translateWithTracker<
 							{_.map(this.props.studios, (studio) => {
 								return (
 									<li key={studio._id}>
-										<Link to={`${path}/${studio._id}`}>
-											{studio.name}
-										</Link>
+										<Link to={`${path}/${studio._id}`}>{studio.name}</Link>
 									</li>
 								);
 							})}

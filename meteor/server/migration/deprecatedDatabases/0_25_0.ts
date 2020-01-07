@@ -32,13 +32,9 @@ export function getDeprecatedDatabases(): DeprecatedDatabases | null {
 			RunningOrderBaselineItems: new Mongo.Collection(
 				'runningOrderBaselineItems'
 			),
-			RunningOrderDataCache: new Mongo.Collection(
-				'runningorderdatacache'
-			),
+			RunningOrderDataCache: new Mongo.Collection('runningorderdatacache'),
 			// RunningOrders: new Mongo.Collection('rundowns'),
-			SegmentLineAdLibItems: new Mongo.Collection(
-				'segmentLineAdLibItems'
-			),
+			SegmentLineAdLibItems: new Mongo.Collection('segmentLineAdLibItems'),
 			SegmentLineItems: new Mongo.Collection('segmentLineItems'),
 			SegmentLines: new Mongo.Collection('segmentLines'),
 			StudioInstallations: new Mongo.Collection('studioInstallation')

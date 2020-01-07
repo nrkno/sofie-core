@@ -214,8 +214,7 @@ const WarningDisplay = translate()(
 					// but it's not horribly in the past
 					getCurrentTime() <
 						this.props.rundown.expectedStart +
-							(this.props.rundown.expectedDuration ||
-								60 * 60 * 1000) &&
+							(this.props.rundown.expectedDuration || 60 * 60 * 1000) &&
 					!this.props.inActiveRundownView &&
 					!this.state.plannedStartCloseShown
 				) {
@@ -256,10 +255,7 @@ const WarningDisplay = translate()(
 						show={
 							this.props.studioMode &&
 							this.state.plannedStartCloseShow &&
-							!(
-								this.props.rundown.active &&
-								!this.props.rundown.rehearsal
-							) &&
+							!(this.props.rundown.active && !this.props.rundown.rehearsal) &&
 							this.props.rundown.active
 						}>
 						<p>
@@ -305,9 +301,7 @@ export enum RundownViewKbdShortcuts {
 
 const TimingDisplay = translate()(
 	withTiming<ITimingDisplayProps, {}>()(
-		class extends React.Component<
-			Translated<WithTiming<ITimingDisplayProps>>
-		> {
+		class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			render() {
 				const { t } = this.props;
 
@@ -319,9 +313,7 @@ const TimingDisplay = translate()(
 						this.props.rundown.active &&
 						!this.props.rundown.rehearsal ? (
 							<span className="timing-clock plan-start left">
-								<span className="timing-clock-label left">
-									{t('Started')}
-								</span>
+								<span className="timing-clock-label left">{t('Started')}</span>
 								<Moment
 									interval={0}
 									format="HH:mm:ss"
@@ -352,8 +344,7 @@ const TimingDisplay = translate()(
 										</span>
 										{RundownUtils.formatDiffToTimecode(
 											this.props.rundown.startedPlayback -
-												this.props.rundown
-													.expectedStart,
+												this.props.rundown.expectedStart,
 											true,
 											false,
 											true,
@@ -369,9 +360,7 @@ const TimingDisplay = translate()(
 											'timing-clock countdown plan-start left',
 											{
 												heavy:
-													getCurrentTime() >
-													this.props.rundown
-														.expectedStart
+													getCurrentTime() > this.props.rundown.expectedStart
 											}
 										)}>
 										<span
@@ -380,9 +369,7 @@ const TimingDisplay = translate()(
 											{this.props.rundown.name}
 										</span>
 										{RundownUtils.formatDiffToTimecode(
-											getCurrentTime() -
-												this.props.rundown
-													.expectedStart,
+											getCurrentTime() - this.props.rundown.expectedStart,
 											true,
 											false,
 											true,
@@ -393,24 +380,17 @@ const TimingDisplay = translate()(
 							  )) ||
 							  undefined}
 						<span className="timing-clock time-now">
-							<Moment
-								interval={0}
-								format="HH:mm:ss"
-								date={getCurrentTime()}
-							/>
+							<Moment interval={0} format="HH:mm:ss" date={getCurrentTime()} />
 						</span>
 						{this.props.rundown.currentPartId && (
 							<span className="timing-clock current-remaining">
 								<CurrentPartRemaining
-									currentPartId={
-										this.props.rundown.currentPartId
-									}
+									currentPartId={this.props.rundown.currentPartId}
 									heavyClassName="overtime"
 								/>
 								<AutoNextStatus />
 								{this.props.rundown.holdState &&
-								this.props.rundown.holdState !==
-									RundownHoldState.COMPLETE ? (
+								this.props.rundown.holdState !== RundownHoldState.COMPLETE ? (
 									<div className="rundown__header-status rundown__header-status--hold">
 										{t('Hold')}
 									</div>
@@ -429,10 +409,8 @@ const TimingDisplay = translate()(
 												interval={0}
 												format="HH:mm:ss"
 												date={
-													this.props.rundown
-														.expectedStart +
-													this.props.rundown
-														.expectedDuration
+													this.props.rundown.expectedStart +
+													this.props.rundown.expectedDuration
 												}
 											/>
 										</span>
@@ -442,10 +420,8 @@ const TimingDisplay = translate()(
 										<span className="timing-clock countdown plan-end right">
 											{RundownUtils.formatDiffToTimecode(
 												getCurrentTime() -
-													(this.props.rundown
-														.expectedStart +
-														this.props.rundown
-															.expectedDuration),
+													(this.props.rundown.expectedStart +
+														this.props.rundown.expectedDuration),
 												true,
 												true,
 												true
@@ -454,31 +430,20 @@ const TimingDisplay = translate()(
 									)}
 								{this.props.rundown.expectedDuration && (
 									<span
-										className={ClassNames(
-											'timing-clock heavy-light right',
-											{
-												heavy:
-													(this.props.timingDurations
-														.asPlayedRundownDuration ||
-														0) <
-													(this.props.rundown
-														.expectedDuration || 0),
-												light:
-													(this.props.timingDurations
-														.asPlayedRundownDuration ||
-														0) >
-													(this.props.rundown
-														.expectedDuration || 0)
-											}
-										)}>
+										className={ClassNames('timing-clock heavy-light right', {
+											heavy:
+												(this.props.timingDurations.asPlayedRundownDuration ||
+													0) < (this.props.rundown.expectedDuration || 0),
+											light:
+												(this.props.timingDurations.asPlayedRundownDuration ||
+													0) > (this.props.rundown.expectedDuration || 0)
+										})}>
 										<span className="timing-clock-label right">
 											{t('Diff')}
 										</span>
 										{RundownUtils.formatDiffToTimecode(
-											(this.props.timingDurations
-												.asPlayedRundownDuration || 0) -
-												this.props.rundown
-													.expectedDuration,
+											(this.props.timingDurations.asPlayedRundownDuration ||
+												0) - this.props.rundown.expectedDuration,
 											true,
 											false,
 											true,
@@ -502,41 +467,30 @@ const TimingDisplay = translate()(
 											format="HH:mm:ss"
 											date={
 												getCurrentTime() +
-												(this.props.timingDurations
-													.totalRundownDuration || 0)
+												(this.props.timingDurations.totalRundownDuration || 0)
 											}
 										/>
 									</span>
 								) : null}
 								{this.props.timingDurations ? (
 									<span
-										className={ClassNames(
-											'timing-clock heavy-light right',
-											{
-												heavy:
-													(this.props.timingDurations
-														.asPlayedRundownDuration ||
-														0) <
-													(this.props.timingDurations
-														.totalRundownDuration ||
-														0),
-												light:
-													(this.props.timingDurations
-														.asPlayedRundownDuration ||
-														0) >
-													(this.props.timingDurations
-														.totalRundownDuration ||
-														0)
-											}
-										)}>
+										className={ClassNames('timing-clock heavy-light right', {
+											heavy:
+												(this.props.timingDurations.asPlayedRundownDuration ||
+													0) <
+												(this.props.timingDurations.totalRundownDuration || 0),
+											light:
+												(this.props.timingDurations.asPlayedRundownDuration ||
+													0) >
+												(this.props.timingDurations.totalRundownDuration || 0)
+										})}>
 										<span className="timing-clock-label right">
 											{t('Diff')}
 										</span>
 										{RundownUtils.formatDiffToTimecode(
-											(this.props.timingDurations
-												.asPlayedRundownDuration || 0) -
-												(this.props.timingDurations
-													.totalRundownDuration || 0),
+											(this.props.timingDurations.asPlayedRundownDuration ||
+												0) -
+												(this.props.timingDurations.totalRundownDuration || 0),
 											true,
 											false,
 											true,
@@ -683,14 +637,12 @@ const RundownHeader = translate()(
 						global: true
 					},
 					{
-						key:
-							RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
+						key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
 						up: this.keyDisableNextPiece,
 						label: t('Disable the next element')
 					},
 					{
-						key:
-							RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
+						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
 						up: this.keyDisableNextPieceUndo,
 						label: t('Undo Disable the next element')
 					},
@@ -728,11 +680,7 @@ const RundownHeader = translate()(
 						k.key,
 						(e: KeyboardEvent) => {
 							preventDefault(e);
-							if (
-								k.coolDown &&
-								lastUsed > Date.now() - k.coolDown
-							)
-								return;
+							if (k.coolDown && lastUsed > Date.now() - k.coolDown) return;
 							if (k.up) k.up(e);
 							lastUsed = Date.now();
 						},
@@ -753,11 +701,7 @@ const RundownHeader = translate()(
 						k.key,
 						(e: KeyboardEvent) => {
 							preventDefault(e);
-							if (
-								k.coolDown &&
-								lastUsed > Date.now() - k.coolDown
-							)
-								return;
+							if (k.coolDown && lastUsed > Date.now() - k.coolDown) return;
 							if (k.down) k.down(e);
 							lastUsed = Date.now();
 						},
@@ -882,10 +826,7 @@ const RundownHeader = translate()(
 						(err, response) => {
 							if (!err && response) {
 								const partId = response.result;
-								if (partId)
-									scrollToPart(partId).catch(
-										() => console.error
-									);
+								if (partId) scrollToPart(partId).catch(() => console.error);
 							}
 						}
 					);
@@ -1032,10 +973,7 @@ const RundownHeader = translate()(
 										false,
 										err,
 										() => {
-											if (
-												typeof this.props.onActivate ===
-												'function'
-											)
+											if (typeof this.props.onActivate === 'function')
 												this.props.onActivate(false);
 										}
 									);
@@ -1060,9 +998,7 @@ const RundownHeader = translate()(
 								(err, response) => {
 									if (!err) {
 										onSuccess();
-									} else if (
-										ClientAPI.isClientResponseError(err)
-									) {
+									} else if (ClientAPI.isClientResponseError(err)) {
 										if (err.error === 409) {
 											this.handleAnotherRundownActive(
 												this.props.rundown._id,
@@ -1101,8 +1037,7 @@ const RundownHeader = translate()(
 			if (
 				this.props.studioMode &&
 				(!this.props.rundown.active ||
-					(this.props.rundown.active &&
-						!this.props.rundown.rehearsal))
+					(this.props.rundown.active && !this.props.rundown.rehearsal))
 			) {
 				const onSuccess = () => {
 					if (typeof this.props.onActivate === 'function')
@@ -1143,9 +1078,7 @@ const RundownHeader = translate()(
 							(err, response) => {
 								if (!err) {
 									onSuccess();
-								} else if (
-									ClientAPI.isClientResponseError(err)
-								) {
+								} else if (ClientAPI.isClientResponseError(err)) {
 									if (err.error === 409) {
 										this.handleAnotherRundownActive(
 											this.props.rundown._id,
@@ -1162,9 +1095,7 @@ const RundownHeader = translate()(
 						// Active, and not in rehearsal
 						doModalDialog({
 							title: this.props.rundown.name,
-							message: t(
-								'Are you sure you want to activate Rehearsal Mode?'
-							),
+							message: t('Are you sure you want to activate Rehearsal Mode?'),
 							onAccept: (e) => {
 								doActivateRehersal(e);
 							}
@@ -1178,9 +1109,7 @@ const RundownHeader = translate()(
 						// We are in the broadcast
 						doModalDialog({
 							title: this.props.rundown.name,
-							message: t(
-								'Are you sure you want to activate Rehearsal Mode?'
-							),
+							message: t('Are you sure you want to activate Rehearsal Mode?'),
 							onAccept: (e) => {
 								doActivateRehersal(e);
 							}
@@ -1211,12 +1140,9 @@ const RundownHeader = translate()(
 							),
 							warning: true,
 							onAccept: () => {
-								doUserAction(
-									t,
-									e,
-									UserActionAPI.methods.deactivate,
-									[this.props.rundown._id]
-								);
+								doUserAction(t, e, UserActionAPI.methods.deactivate, [
+									this.props.rundown._id
+								]);
 							}
 						});
 					}
@@ -1249,9 +1175,7 @@ const RundownHeader = translate()(
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.rundown.name,
-					message: t(
-						'The rundown can not be reset while it is active'
-					),
+					message: t('The rundown can not be reset while it is active'),
 					onAccept: () => {
 						// nothing
 					},
@@ -1280,13 +1204,10 @@ const RundownHeader = translate()(
 									response.result
 								)
 							) {
-								if (
-									this.props.rundown &&
-									this.props.rundown.nextPartId
-								) {
-									scrollToPart(
-										this.props.rundown.nextPartId
-									).catch(() => console.error);
+								if (this.props.rundown && this.props.rundown.nextPartId) {
+									scrollToPart(this.props.rundown.nextPartId).catch(
+										() => console.error
+									);
 								}
 							}
 						}
@@ -1359,36 +1280,25 @@ const RundownHeader = translate()(
 							{this.props.studioMode ? (
 								<React.Fragment>
 									{!(
-										this.props.rundown.active &&
-										this.props.rundown.rehearsal
+										this.props.rundown.active && this.props.rundown.rehearsal
 									) ? (
 										!this.rundownShouldHaveStarted() &&
 										!this.props.rundown.active ? (
-											<MenuItem
-												onClick={(e) =>
-													this.activateRehearsal(e)
-												}>
-												{t(
-													'Prepare Studio and Activate (Rehearsal)'
-												)}
+											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+												{t('Prepare Studio and Activate (Rehearsal)')}
 											</MenuItem>
 										) : (
-											<MenuItem
-												onClick={(e) =>
-													this.activateRehearsal(e)
-												}>
+											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
 												{t('Activate (Rehearsal)')}
 											</MenuItem>
 										)
 									) : (
-										<MenuItem
-											onClick={(e) => this.activate(e)}>
+										<MenuItem onClick={(e) => this.activate(e)}>
 											{t('Activate')}
 										</MenuItem>
 									)}
 									{this.props.rundown.active ? (
-										<MenuItem
-											onClick={(e) => this.deactivate(e)}>
+										<MenuItem onClick={(e) => this.deactivate(e)}>
 											{t('Deactivate')}
 										</MenuItem>
 									) : null}
@@ -1403,32 +1313,22 @@ const RundownHeader = translate()(
 										</MenuItem>
 									) : null}
 									{!(
-										this.props.rundown.active &&
-										!this.props.rundown.rehearsal
+										this.props.rundown.active && !this.props.rundown.rehearsal
 									) ? (
-										<MenuItem
-											onClick={(e) =>
-												this.resetRundown(e)
-											}>
+										<MenuItem onClick={(e) => this.resetRundown(e)}>
 											{t('Reset Rundown')}
 										</MenuItem>
 									) : null}
-									<MenuItem
-										onClick={(e) => this.reloadRundown(e)}>
+									<MenuItem onClick={(e) => this.reloadRundown(e)}>
 										{t('Reload ENPS Data')}
 									</MenuItem>
-									<MenuItem
-										onClick={(e) =>
-											this.takeRundownSnapshot(e)
-										}>
+									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>
 										{t('Store Snapshot')}
 									</MenuItem>
 								</React.Fragment>
 							) : (
 								<React.Fragment>
-									<MenuItem>
-										{t('No actions available')}
-									</MenuItem>
+									<MenuItem>{t('No actions available')}</MenuItem>
 								</React.Fragment>
 							)}
 						</ContextMenu>
@@ -1443,18 +1343,13 @@ const RundownHeader = translate()(
 						<ContextMenuTrigger
 							id="rundown-context-menu"
 							attributes={{
-								className:
-									'flex-col col-timing horizontal-align-center'
+								className: 'flex-col col-timing horizontal-align-center'
 							}}>
 							<WarningDisplay
 								studioMode={this.props.studioMode}
-								inActiveRundownView={
-									this.props.inActiveRundownView
-								}
+								inActiveRundownView={this.props.inActiveRundownView}
 								rundown={this.props.rundown}
-								oneMinuteBeforeAction={
-									this.resetAndActivateRundown
-								}
+								oneMinuteBeforeAction={this.resetAndActivateRundown}
 							/>
 							<div className="row first-row super-dark">
 								<div className="flex-col left horizontal-align-left">
@@ -1463,10 +1358,7 @@ const RundownHeader = translate()(
 											overlay={t(
 												'Add ?studio=1 to the URL to enter studio mode'
 											)}
-											visible={
-												getHelpMode() &&
-												!getAllowStudio()
-											}
+											visible={getHelpMode() && !getAllowStudio()}
 											placement="bottom">
 											<div className="media-elem mrs sofie-logo" />
 										</Tooltip>
@@ -1493,9 +1385,7 @@ const RundownHeader = translate()(
 							<div className="row dark">
 								<div className="col c12 rundown-overview">
 									{this.props.rundown && (
-										<RundownOverview
-											rundownId={this.props.rundown._id}
-										/>
+										<RundownOverview rundownId={this.props.rundown._id} />
 									)}
 								</div>
 							</div>
@@ -1588,8 +1478,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 				  ).fetch()
 				: [],
 			studio: studio,
-			showStyleBase:
-				rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
+			showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 			rundownLayouts:
 				rundown &&
 				RundownLayouts.find({
@@ -1809,15 +1698,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 			window.addEventListener(RundownViewEvents.goToTop, this.onGoToTop);
 		}
 
-		componentDidUpdate(
-			prevProps: IProps & ITrackedProps,
-			prevState: IState
-		) {
+		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
 			if (
 				this.props.rundown &&
 				prevProps.rundown &&
-				prevProps.rundown.currentPartId !==
-					this.props.rundown.currentPartId &&
+				prevProps.rundown.currentPartId !== this.props.rundown.currentPartId &&
 				this.state.manualSetAsNext
 			) {
 				this.setState({
@@ -1840,15 +1725,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 				this.props.rundown.active &&
 				this.props.rundown.nextPartId
 			) {
-				scrollToPart(this.props.rundown.nextPartId).catch(
-					() => console.error
-				);
+				scrollToPart(this.props.rundown.nextPartId).catch(() => console.error);
 			} else if (
 				// after take
 				this.props.rundown &&
 				prevProps.rundown &&
-				this.props.rundown.currentPartId !==
-					prevProps.rundown.currentPartId &&
+				this.props.rundown.currentPartId !== prevProps.rundown.currentPartId &&
 				this.props.rundown.currentPartId &&
 				this.state.followLiveSegments
 			) {
@@ -1863,12 +1745,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 				!prevState.subsReady
 			) {
 				// allow for some time for the Rundown to render
-				maintainFocusOnPart(
-					this.props.rundown.currentPartId,
-					7000,
-					true,
-					true
-				);
+				maintainFocusOnPart(this.props.rundown.currentPartId, 7000, true, true);
 			}
 
 			if (
@@ -1885,23 +1762,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 					this.state.studioMode &&
 					!getAllowDeveloper()
 				) {
-					window.addEventListener(
-						'beforeunload',
-						this.onBeforeUnload
-					);
+					window.addEventListener('beforeunload', this.onBeforeUnload);
 				} else {
-					window.removeEventListener(
-						'beforeunload',
-						this.onBeforeUnload
-					);
+					window.removeEventListener('beforeunload', this.onBeforeUnload);
 				}
 			}
 
 			if (
-				typeof this.props.showStyleBase !==
-					typeof prevProps.showStyleBase ||
-				(this.props.showStyleBase &&
-					this.props.showStyleBase.runtimeArguments)
+				typeof this.props.showStyleBase !== typeof prevProps.showStyleBase ||
+				(this.props.showStyleBase && this.props.showStyleBase.runtimeArguments)
 			) {
 				this.refreshHotkeys();
 			}
@@ -1921,18 +1790,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 			this.usedArgumentKeys.forEach((k) => {
 				if (k.up) {
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup');
-					mousetrapHelper.unbind(
-						k.key,
-						'RuntimeArguments',
-						'keydown'
-					);
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown');
 				}
 				if (k.down) {
-					mousetrapHelper.unbind(
-						k.key,
-						'RuntimeArguments',
-						'keydown'
-					);
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown');
 				}
 			});
 			this.usedArgumentKeys = [];
@@ -1946,32 +1807,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 							this.props.rundown.active &&
 							this.props.rundown.nextPartId
 						) {
-							doUserAction(
-								t,
-								e,
-								UserActionAPI.methods.togglePartArgument,
-								[
-									this.props.rundown._id,
-									this.props.rundown.nextPartId,
-									i.property,
-									i.value
-								]
-							);
+							doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
+								this.props.rundown._id,
+								this.props.rundown.nextPartId,
+								i.property,
+								i.value
+							]);
 						}
 					};
 					_.each(combos, (combo: string) => {
-						mousetrapHelper.bind(
-							combo,
-							handler,
-							'keyup',
-							'RuntimeArguments'
-						);
-						mousetrapHelper.bind(
-							combo,
-							noOp,
-							'keydown',
-							'RuntimeArguments'
-						);
+						mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments');
+						mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments');
 						this.usedArgumentKeys.push({
 							up: handler,
 							key: combo,
@@ -1982,19 +1828,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 			}
 		};
 
-		onSelectPiece = (
-			piece: PieceUi,
-			e: React.MouseEvent<HTMLDivElement>
-		) => {
+		onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			if (
 				piece &&
 				piece.content &&
 				(piece.content as VTContent).editable &&
 				(((piece.content as VTContent).editable as VTEditableParameters)
 					.editorialDuration !== undefined ||
-					((piece.content as VTContent)
-						.editable as VTEditableParameters).editorialStart !==
-						undefined)
+					((piece.content as VTContent).editable as VTEditableParameters)
+						.editorialStart !== undefined)
 			) {
 				this.setState({
 					isClipTrimmerOpen: true,
@@ -2022,18 +1864,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 			_.each(this.usedArgumentKeys, (k) => {
 				if (k.up) {
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup');
-					mousetrapHelper.unbind(
-						k.key,
-						'RuntimeArguments',
-						'keydown'
-					);
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown');
 				}
 				if (k.down) {
-					mousetrapHelper.unbind(
-						k.key,
-						'RuntimeArguments',
-						'keydown'
-					);
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown');
 				}
 			});
 
@@ -2041,10 +1875,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 				RundownViewEvents.goToLiveSegment,
 				this.onGoToLiveSegment
 			);
-			window.removeEventListener(
-				RundownViewEvents.goToTop,
-				this.onGoToTop
-			);
+			window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop);
 		}
 
 		onBeforeUnload = (e: any) => {
@@ -2105,10 +1936,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 				e.deltaY !== 0
 			) {
 				this.onTimeScaleChange(
-					Math.min(
-						500,
-						this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))
-					)
+					Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1)))
 				);
 				e.preventDefault();
 			}
@@ -2147,9 +1975,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 					this.setState({
 						followLiveSegments: true
 					});
-					window.dispatchEvent(
-						new Event(RundownViewEvents.rewindsegments)
-					);
+					window.dispatchEvent(new Event(RundownViewEvents.rewindsegments));
 				}, 2000);
 			} else if (
 				this.props.rundown &&
@@ -2171,9 +1997,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 					this.setState({
 						followLiveSegments: true
 					});
-					window.dispatchEvent(
-						new Event(RundownViewEvents.rewindsegments)
-					);
+					window.dispatchEvent(new Event(RundownViewEvents.rewindsegments));
 				}, 2000);
 			} else {
 				this.setState({
@@ -2194,12 +2018,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 
 		onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
 			const { t } = this.props;
-			if (
-				this.state.studioMode &&
-				part &&
-				part._id &&
-				this.props.rundown
-			) {
+			if (this.state.studioMode && part && part._id && this.props.rundown) {
 				doUserAction(
 					t,
 					e,
@@ -2292,48 +2111,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 						return (
 							<ErrorBoundary key={segment._id}>
 								<VirtualElement
-									id={
-										SEGMENT_TIMELINE_ELEMENT_ID +
-										segment._id
-									}
+									id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 									margin={'100% 0px 100% 0px'}
-									initialShow={
-										index < window.innerHeight / 260
-									}
+									initialShow={index < window.innerHeight / 260}
 									placeholderHeight={260}
 									placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
 									width="auto">
 									<SegmentTimelineContainer
-										id={
-											SEGMENT_TIMELINE_ELEMENT_ID +
-											segment._id
-										}
+										id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 										studio={this.props.studio}
 										showStyleBase={this.props.showStyleBase}
-										followLiveSegments={
-											this.state.followLiveSegments
-										}
+										followLiveSegments={this.state.followLiveSegments}
 										segmentId={segment._id}
 										rundown={this.props.rundown}
 										liveLineHistorySize={100}
 										timeScale={this.state.timeScale}
-										onTimeScaleChange={
-											this.onTimeScaleChange
-										}
+										onTimeScaleChange={this.onTimeScaleChange}
 										onContextMenu={this.onContextMenu}
 										onSegmentScroll={this.onSegmentScroll}
-										isLastSegment={
-											index === array.length - 1
-										}
+										isLastSegment={index === array.length - 1}
 										onPieceClick={this.onSelectPiece}
-										onPieceDoubleClick={
-											this.onPieceDoubleClick
-										}
+										onPieceDoubleClick={this.onPieceDoubleClick}
 										onHeaderNoteClick={(level) =>
-											this.onHeaderNoteClick(
-												segment._id,
-												level
-											)
+											this.onHeaderNoteClick(segment._id, level)
 										}
 									/>
 								</VirtualElement>
@@ -2388,10 +2188,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 
 		onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
 			if (!this.state.isNotificationsCenterOpen === true) {
-				NotificationCenter.highlightSource(
-					undefined,
-					NoticeLevel.CRITICAL
-				);
+				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL);
 			}
 
 			NotificationCenter.isOpen = !this.state.isNotificationsCenterOpen;
@@ -2477,10 +2274,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 
 			doModalDialog({
 				title: t('Restart CasparCG Server'),
-				message: t(
-					'Do you want to restart CasparCG Server "{{device}}"?',
-					{ device: device.name }
-				),
+				message: t('Do you want to restart CasparCG Server "{{device}}"?', {
+					device: device.name
+				}),
 				onAccept: (event: any) => {
 					callPeripheralDeviceFunction(
 						event,
@@ -2509,10 +2305,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 									new Notification(
 										undefined,
 										NoticeLevel.NOTIFICATION,
-										t(
-											'CasparCG on device "{{deviceName}}" restarting...',
-											{ deviceName: device.name }
-										),
+										t('CasparCG on device "{{deviceName}}" restarting...', {
+											deviceName: device.name
+										}),
 										'SystemStatus'
 									)
 								);
@@ -2530,10 +2325,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 					t,
 					e,
 					UserActionAPI.methods.storeRundownSnapshot,
-					[
-						this.props.rundown._id,
-						'User requested log at' + getCurrentTime()
-					],
+					[this.props.rundown._id, 'User requested log at' + getCurrentTime()],
 					undefined,
 					t(
 						'A snapshot of the current Running\xa0Order has been created for troubleshooting.'
@@ -2585,36 +2377,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 								className={ClassNames('rundown-view', {
 									'notification-center-open': this.state
 										.isNotificationsCenterOpen,
-									'rundown-view--studio-mode': this.state
-										.studioMode
+									'rundown-view--studio-mode': this.state.studioMode
 								})}
 								style={this.getStyle()}
 								onWheelCapture={this.onWheel}
 								onContextMenu={this.onContextMenuTop}>
 								<ErrorBoundary>
-									{this.state.studioMode && (
-										<KeyboardFocusMarker />
-									)}
+									{this.state.studioMode && <KeyboardFocusMarker />}
 								</ErrorBoundary>
 								<ErrorBoundary>
 									<RundownFullscreenControls
-										isFollowingOnAir={
-											this.state.followLiveSegments
-										}
+										isFollowingOnAir={this.state.followLiveSegments}
 										onFollowOnAir={this.onGoToLiveSegment}
 										onRewindSegments={this.onRewindSegments}
 										isNotificationCenterOpen={
 											this.state.isNotificationsCenterOpen
 										}
-										onToggleNotifications={
-											this.onToggleNotifications
-										}
-										isSupportPanelOpen={
-											this.state.isSupportPanelOpen
-										}
-										onToggleSupportPanel={
-											this.onToggleSupportPanel
-										}
+										onToggleNotifications={this.onToggleNotifications}
+										isSupportPanelOpen={this.state.isSupportPanelOpen}
+										onToggleSupportPanel={this.onToggleSupportPanel}
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
 									/>
@@ -2635,8 +2416,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 											easing: 'ease-in',
 											duration: 500
 										}}>
-										{this.state
-											.isNotificationsCenterOpen && (
+										{this.state.isNotificationsCenterOpen && (
 											<NotificationCenterPanel />
 										)}
 									</VelocityReact.VelocityTransitionGroup>
@@ -2659,52 +2439,33 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 											<SupportPopUp>
 												<button
 													className="btn btn-primary"
-													onClick={
-														this.onToggleHotkeys
-													}>
+													onClick={this.onToggleHotkeys}>
 													{t('Show Hotkeys')}
 												</button>
 												<button
 													className="btn btn-primary"
-													onClick={
-														this
-															.onTakeRundownSnapshot
-													}>
+													onClick={this.onTakeRundownSnapshot}>
 													{t('Take a Snapshot')}
 												</button>
 												{this.state.studioMode && (
 													<button
 														className="btn btn-primary"
-														onClick={
-															this
-																.onRestartPlayout
-														}>
+														onClick={this.onRestartPlayout}>
 														{t('Restart Playout')}
 													</button>
 												)}
 												{this.state.studioMode &&
-													this.props
-														.casparCGPlayoutDevices &&
-													this.props.casparCGPlayoutDevices.map(
-														(i) => (
-															<button
-																className="btn btn-primary"
-																onClick={() =>
-																	this.onRestartCasparCG(
-																		i
-																	)
-																}
-																key={i._id}>
-																{t(
-																	'Restart {{device}}',
-																	{
-																		device:
-																			i.name
-																	}
-																)}
-															</button>
-														)
-													)}
+													this.props.casparCGPlayoutDevices &&
+													this.props.casparCGPlayoutDevices.map((i) => (
+														<button
+															className="btn btn-primary"
+															onClick={() => this.onRestartCasparCG(i)}
+															key={i._id}>
+															{t('Restart {{device}}', {
+																device: i.name
+															})}
+														</button>
+													))}
 											</SupportPopUp>
 										)}
 									</VelocityReact.VelocityTransitionGroup>
@@ -2712,10 +2473,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 								<ErrorBoundary>
 									{this.state.studioMode && (
 										<Prompt
-											when={
-												this.props.rundown.active ||
-												false
-											}
+											when={this.props.rundown.active || false}
 											message={t(
 												'This rundown is now active. Are you sure you want to exit this screen?'
 											)}
@@ -2728,12 +2486,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 										studio={this.props.studio}
 										onActivate={this.onActivate}
 										studioMode={this.state.studioMode}
-										onRegisterHotkeys={
-											this.onRegisterHotkeys
-										}
-										inActiveRundownView={
-											this.props.inActiveRundownView
-										}
+										onRegisterHotkeys={this.onRegisterHotkeys}
+										inActiveRundownView={this.props.inActiveRundownView}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2741,9 +2495,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 								</ErrorBoundary>
 								<ErrorBoundary>
 									<SegmentContextMenu
-										contextMenuContext={
-											this.state.contextMenuContext
-										}
+										contextMenuContext={this.state.contextMenuContext}
 										rundown={this.props.rundown}
 										onSetNext={this.onSetNext}
 										studioMode={this.state.studioMode}
@@ -2756,9 +2508,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 											<ClipTrimDialog
 												studio={this.props.studio}
 												rundownId={this.props.rundownId}
-												selectedPiece={
-													this.state.selectedPiece
-												}
+												selectedPiece={this.state.selectedPiece}
 												onClose={() =>
 													this.setState({
 														isClipTrimmerOpen: false
@@ -2769,33 +2519,22 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 								</ErrorBoundary>
 								{this.renderSegmentsList()}
 								<ErrorBoundary>
-									{this.props.segments &&
-										this.props.segments.length > 0 && (
-											<AfterBroadcastForm
-												rundown={this.props.rundown}
-											/>
-										)}
+									{this.props.segments && this.props.segments.length > 0 && (
+										<AfterBroadcastForm rundown={this.props.rundown} />
+									)}
 								</ErrorBoundary>
 								<ErrorBoundary>
 									<Shelf
 										ref={this.setInspectorShelf}
-										isExpanded={
-											this.state.isInspectorShelfExpanded
-										}
-										onChangeExpanded={
-											this.onShelfChangeExpanded
-										}
+										isExpanded={this.state.isInspectorShelfExpanded}
+										onChangeExpanded={this.onShelfChangeExpanded}
 										segments={this.props.segments}
 										hotkeys={this.state.usedHotkeys}
 										rundown={this.props.rundown}
 										showStyleBase={this.props.showStyleBase}
 										studioMode={this.state.studioMode}
-										onChangeBottomMargin={
-											this.onChangeBottomMargin
-										}
-										onRegisterHotkeys={
-											this.onRegisterHotkeys
-										}
+										onChangeBottomMargin={this.onChangeBottomMargin}
+										onRegisterHotkeys={this.onRegisterHotkeys}
 										rundownLayout={this.state.rundownLayout}
 									/>
 								</ErrorBoundary>
@@ -2804,13 +2543,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 										this.props.studio &&
 										this.props.showStyleBase && (
 											<RundownNotifier
-												rundownId={
-													this.props.rundown._id
-												}
+												rundownId={this.props.rundown._id}
 												studio={this.props.studio}
-												showStyleBase={
-													this.props.showStyleBase
-												}
+												showStyleBase={this.props.showStyleBase}
 											/>
 										)}
 								</ErrorBoundary>
@@ -2860,17 +2595,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>(
 							<div className="rundown-view__label">
 								<p>
 									{!this.props.rundown
-										? t(
-												'This rundown has been unpublished from Sofie.'
-										  )
+										? t('This rundown has been unpublished from Sofie.')
 										: !this.props.studio
-										? t(
-												'Error: The studio of this Rundown was not found.'
-										  )
+										? t('Error: The studio of this Rundown was not found.')
 										: !this.props.showStyleBase
-										? t(
-												'Error: The ShowStyle of this Rundown was not found.'
-										  )
+										? t('Error: The ShowStyle of this Rundown was not found.')
 										: t('Unknown error')}
 								</p>
 								<p>
@@ -2913,10 +2642,9 @@ export function handleRundownReloadResponse(
 			new Notification(
 				undefined,
 				NoticeLevel.CRITICAL,
-				t(
-					'Rundown {{rundownName}} is missing, what do you want to do?',
-					{ rundownName: rundown.name }
-				),
+				t('Rundown {{rundownName}} is missing, what do you want to do?', {
+					rundownName: rundown.name
+				}),
 				'userAction',
 				undefined,
 				true,

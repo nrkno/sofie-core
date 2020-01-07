@@ -240,9 +240,7 @@ describe('Expected Media Items', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
 			expect(Rundowns.findOne(rdId1)).toBeTruthy();
 			expect(Parts.findOne(rdId1 + '_' + mockPart0)).toBeTruthy();
-			expect(
-				Pieces.find({ partId: rdId1 + '_' + mockPart0 }).count()
-			).toBe(1);
+			expect(Pieces.find({ partId: rdId1 + '_' + mockPart0 }).count()).toBe(1);
 
 			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart0);
 

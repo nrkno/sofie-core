@@ -139,10 +139,7 @@ function evaluateFunctions() {
 
 		if (startNext) {
 			const nextFcn = _.max(
-				_.filter(
-					group,
-					(fcn) => fcn.status === syncFunctionFcnStatus.WAITING
-				),
+				_.filter(group, (fcn) => fcn.status === syncFunctionFcnStatus.WAITING),
 				(fcn) => fcn.priority
 			);
 			if (_.isObject(nextFcn)) {
@@ -156,9 +153,7 @@ function evaluateFunctions() {
 						nextFcn.cb(e);
 					}
 					if (nextFcn.status === syncFunctionFcnStatus.TIMEOUT) {
-						const duration = nextFcn.started
-							? Date.now() - nextFcn.started
-							: 0;
+						const duration = nextFcn.started ? Date.now() - nextFcn.started : 0;
 						logger.error(
 							`syncFunction ${nextFcn.id} "${nextFcn.name}" completed after timeout. took ${duration}ms`
 						);

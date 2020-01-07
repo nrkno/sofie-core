@@ -35,9 +35,7 @@ export class KeyboardController extends ControllerAbstract {
 		this._prompterView = view;
 
 		// Recall mode:
-		const recalledMode: string | null = localStorage.getItem(
-			LOCALSTORAGE_MODE
-		);
+		const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE);
 		this._mode = (recalledMode as Mode) || Mode.NORMAL;
 	}
 	public destroy() {
@@ -164,8 +162,7 @@ export class KeyboardController extends ControllerAbstract {
 		let timeToStop = currentSpeed / normalStopAcceleration; // (not in seconds, but frames!)
 		if (!timeToStop) return 0;
 		return (
-			(2 * (distanceLeft - currentSpeed * timeToStop)) /
-			Math.pow(timeToStop, 2)
+			(2 * (distanceLeft - currentSpeed * timeToStop)) / Math.pow(timeToStop, 2)
 		);
 	}
 	private _updateScrollPosition() {
@@ -195,10 +192,7 @@ export class KeyboardController extends ControllerAbstract {
 						stopAcceleration,
 						dp
 					);
-					if (
-						Math.abs(this._currentSpeed) <
-						Math.abs(actualStopAcceleration)
-					) {
+					if (Math.abs(this._currentSpeed) < Math.abs(actualStopAcceleration)) {
 						this._currentSpeed = 0;
 					} else {
 						this._currentSpeed += actualStopAcceleration;
@@ -246,12 +240,10 @@ export class KeyboardController extends ControllerAbstract {
 					this._currentPosition = scrollPosition;
 				}
 				if (speed !== 0) {
-					this._updateSpeedHandle = window.requestAnimationFrame(
-						() => {
-							this._updateSpeedHandle = null;
-							this._updateScrollPosition();
-						}
-					);
+					this._updateSpeedHandle = window.requestAnimationFrame(() => {
+						this._updateSpeedHandle = null;
+						this._updateScrollPosition();
+					});
 				}
 			}
 		}

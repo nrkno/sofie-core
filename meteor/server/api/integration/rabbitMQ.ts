@@ -146,9 +146,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		this.channel = await this.initializing;
 		delete this.initializing;
 	}
-	async initChannel(
-		connection: AMQP.Connection
-	): Promise<AMQP.ConfirmChannel> {
+	async initChannel(connection: AMQP.Connection): Promise<AMQP.ConfirmChannel> {
 		try {
 			const channel = await connection.createConfirmChannel();
 
@@ -221,9 +219,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 	handleOutgoingQueue() {
-		let firstMessageInQueue:
-			| Message
-			| undefined = this.outgoingQueue.shift();
+		let firstMessageInQueue: Message | undefined = this.outgoingQueue.shift();
 
 		if (firstMessageInQueue) {
 			let messageToSend: Message = firstMessageInQueue;

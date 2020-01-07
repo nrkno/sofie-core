@@ -90,8 +90,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		partId?: string
 	) {
 		super(
-			rundownId +
-				(partId ? '_' + partId : segmentId ? '_' + segmentId : '')
+			rundownId + (partId ? '_' + partId : segmentId ? '_' + segmentId : '')
 		);
 		this._contextName = contextName;
 
@@ -239,10 +238,7 @@ export class ShowStyleContext extends StudioContext
 		return res;
 	}
 	getShowStyleConfigRef(configKey: string): string {
-		return ConfigRef.getShowStyleConfigRef(
-			this.showStyleVariantId,
-			configKey
-		);
+		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey);
 	}
 
 	/** NotesContext */
@@ -442,10 +438,7 @@ export class AsRunEventContext extends RundownContext
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown(): IngestRundown | undefined {
 		try {
-			return loadCachedRundownData(
-				this.rundown._id,
-				this.rundown.externalId
-			);
+			return loadCachedRundownData(this.rundown._id, this.rundown.externalId);
 		} catch (e) {
 			return undefined;
 		}
@@ -494,8 +487,7 @@ export class AsRunEventContext extends RundownContext
 		if (this.rundownId) ids.push('rundownId: ' + this.rundownId);
 		if (this.asRunEvent.segmentId)
 			ids.push('segmentId: ' + this.asRunEvent.segmentId);
-		if (this.asRunEvent.partId)
-			ids.push('partId: ' + this.asRunEvent.partId);
+		if (this.asRunEvent.partId) ids.push('partId: ' + this.asRunEvent.partId);
 		if (this.asRunEvent.pieceId)
 			ids.push('pieceId: ' + this.asRunEvent.pieceId);
 		if (this.asRunEvent.timelineObjectId)

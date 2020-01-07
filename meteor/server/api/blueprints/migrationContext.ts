@@ -45,10 +45,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		let mapping = this.studio.mappings[mappingId];
 		if (mapping) return _.clone(mapping);
 	}
-	insertMapping(
-		mappingId: string,
-		mapping: OmitId<BlueprintMapping>
-	): string {
+	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String);
 		if (this.studio.mappings[mappingId]) {
 			throw new Meteor.Error(
@@ -108,10 +105,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		value = trimIfString(value);
 
-		const configItem = _.find(
-			this.studio.config,
-			(c) => c._id === configId
-		);
+		const configItem = _.find(this.studio.config, (c) => c._id === configId);
 		if (configItem) {
 			let modifier: Mongo.Modifier<DBStudio> = {};
 			if (value === undefined) {
@@ -195,9 +189,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		});
 
 		if (!parentDevice || !parentDevice.settings) return undefined;
-		return (parentDevice.settings as PlayoutDeviceSettings).devices[
-			deviceId
-		];
+		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId];
 	}
 	insertDevice(deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String);
@@ -224,9 +216,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			);
 		}
 
-		const settings = parentDevice.settings as
-			| PlayoutDeviceSettings
-			| undefined;
+		const settings = parentDevice.settings as PlayoutDeviceSettings | undefined;
 		if (settings && settings.devices[deviceId]) {
 			throw new Meteor.Error(
 				404,
@@ -243,10 +233,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		return deviceId;
 	}
-	updateDevice(
-		deviceId: string,
-		device: Partial<TSR.DeviceOptionsAny>
-	): void {
+	updateDevice(deviceId: string, device: Partial<TSR.DeviceOptionsAny>): void {
 		check(deviceId, String);
 
 		if (!deviceId) {
@@ -423,15 +410,11 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 				}
 			}
 		);
-		if (!this.showStyleBase.sourceLayers)
-			this.showStyleBase.sourceLayers = [];
+		if (!this.showStyleBase.sourceLayers) this.showStyleBase.sourceLayers = [];
 		this.showStyleBase.sourceLayers.push(fullLayer); // Update local
 		return fullLayer._id;
 	}
-	updateSourceLayer(
-		sourceLayerId: string,
-		layer: Partial<ISourceLayer>
-	): void {
+	updateSourceLayer(sourceLayerId: string, layer: Partial<ISourceLayer>): void {
 		check(sourceLayerId, String);
 		if (!sourceLayerId) {
 			throw new Meteor.Error(
@@ -546,15 +529,11 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 				}
 			}
 		);
-		if (!this.showStyleBase.outputLayers)
-			this.showStyleBase.outputLayers = [];
+		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = [];
 		this.showStyleBase.outputLayers.push(fullLayer); // Update local
 		return fullLayer._id;
 	}
-	updateOutputLayer(
-		outputLayerId: string,
-		layer: Partial<IOutputLayer>
-	): void {
+	updateOutputLayer(outputLayerId: string, layer: Partial<IOutputLayer>): void {
 		check(outputLayerId, String);
 		if (!outputLayerId) {
 			throw new Meteor.Error(
@@ -710,10 +689,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			showStyleBaseId: this.showStyleBase._id
 		}) as ShowStyleVariant;
 		if (!variant)
-			throw new Meteor.Error(
-				404,
-				`ShowStyleVariant "${variantId}" not found`
-			);
+			throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`);
 
 		const configItem = _.find(variant.config, (c) => c._id === configId);
 		if (configItem) return trimIfString(configItem.value);
@@ -744,10 +720,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			showStyleBaseId: this.showStyleBase._id
 		});
 		if (!variant)
-			throw new Meteor.Error(
-				404,
-				`ShowStyleVariant "${variantId}" not found`
-			);
+			throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`);
 
 		const configItem = _.find(variant.config, (c) => c._id === configId);
 		if (configItem) {

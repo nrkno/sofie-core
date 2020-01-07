@@ -223,10 +223,7 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps &
 		criticalSteps.length === 0
 			? false
 			: criticalSteps.reduce((memo, item) => {
-					return (
-						memo &&
-						item.status === MediaManagerAPI.WorkStepStatus.DONE
-					);
+					return memo && item.status === MediaManagerAPI.WorkStepStatus.DONE;
 			  }, true);
 	const currentTask = i.steps
 		.sort((a, b) => b.priority - a.priority)
@@ -261,9 +258,7 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps &
 			<div className="workflow__header pas">
 				<div className="workflow__header__progress">
 					<VelocityReact.VelocityComponent
-						animation={
-							finishedOK ? iconEnterAnimation : iconLeaveAnimation
-						}
+						animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation}
 						duration={300}
 						easing="easeIn">
 						<div className="big-status ok">
@@ -271,11 +266,7 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps &
 						</div>
 					</VelocityReact.VelocityComponent>
 					<VelocityReact.VelocityComponent
-						animation={
-							finishedError
-								? iconEnterAnimation
-								: iconLeaveAnimation
-						}
+						animation={finishedError ? iconEnterAnimation : iconLeaveAnimation}
 						duration={300}
 						easing="easeIn">
 						<div className="big-status error">
@@ -422,17 +413,9 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps &
 							.map((j) => (
 								<div
 									className={ClassNames('workflow__step', {
-										ok:
-											j.status ===
-											MediaManagerAPI.WorkStepStatus.DONE,
-										error:
-											j.status ===
-											MediaManagerAPI.WorkStepStatus
-												.ERROR,
-										working:
-											j.status ===
-											MediaManagerAPI.WorkStepStatus
-												.WORKING
+										ok: j.status === MediaManagerAPI.WorkStepStatus.DONE,
+										error: j.status === MediaManagerAPI.WorkStepStatus.ERROR,
+										working: j.status === MediaManagerAPI.WorkStepStatus.WORKING
 									})}
 									key={j._id}>
 									<div className="workflow__step__action pas">
@@ -445,9 +428,7 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps &
 										<div
 											className="pb-indicator"
 											style={{
-												width:
-													(j.progress || 0) * 100 +
-													'%'
+												width: (j.progress || 0) * 100 + '%'
 											}}
 										/>
 									</div>

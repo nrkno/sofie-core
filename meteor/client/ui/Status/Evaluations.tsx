@@ -91,12 +91,8 @@ const EvaluationView = translateWithTracker<
 			return (
 				<thead>
 					<tr>
-						<th className="c3 user-action-log__timestamp">
-							{t('Timestamp')}
-						</th>
-						<th className="c1 user-action-log__userId">
-							{t('User Name')}
-						</th>
+						<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
+						<th className="c1 user-action-log__userId">{t('User Name')}</th>
 						<th>{t('Rundown')}</th>
 						<th colSpan={99} className="c8">
 							{t('Answers')}
@@ -135,21 +131,15 @@ const EvaluationView = translateWithTracker<
 								}),
 								(e) => {
 									let tds = [
-										<td
-											key="c0"
-											className="user-action-log__timestamp">
+										<td key="c0" className="user-action-log__timestamp">
 											<Moment format="YYYY/MM/DD HH:mm:ss">
 												{e.timestamp}
 											</Moment>
 										</td>,
-										<td
-											key="c1"
-											className="user-action-log__userId">
+										<td key="c1" className="user-action-log__userId">
 											{e.answers && e.answers.q2}
 										</td>,
-										<td
-											key="c2"
-											className="user-action-log__rundown">
+										<td key="c2" className="user-action-log__rundown">
 											{e.rundownId}
 										</td>
 									];
@@ -157,20 +147,15 @@ const EvaluationView = translateWithTracker<
 										_.map(e.answers, (answer, key) => {
 											let str: string = answer;
 											if (key === 'q0') {
-												_.find(
-													getQuestionOptions(t),
-													(o) => {
-														if (o.value === str) {
-															str = o.name;
-															return true;
-														}
+												_.find(getQuestionOptions(t), (o) => {
+													if (o.value === str) {
+														str = o.name;
+														return true;
 													}
-												);
+												});
 											}
 											return (
-												<td
-													key={key}
-													className="user-action-log__answer">
+												<td key={key} className="user-action-log__answer">
 													{str}
 												</td>
 											);

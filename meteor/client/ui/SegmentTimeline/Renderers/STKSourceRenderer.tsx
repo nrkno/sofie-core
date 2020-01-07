@@ -67,10 +67,7 @@ export const STKSourceRenderer = translate()(
 										key={i}
 										style={{
 											left:
-												(
-													(i - seek) *
-													this.props.timeScale
-												).toString() + 'px'
+												((i - seek) * this.props.timeScale).toString() + 'px'
 										}}></span>
 								)
 						)}
@@ -84,18 +81,12 @@ export const STKSourceRenderer = translate()(
 										key={i.start}
 										style={{
 											left:
-												(
-													(i.start - seek) *
-													this.props.timeScale
-												).toString() + 'px',
+												((i.start - seek) * this.props.timeScale).toString() +
+												'px',
 											width:
 												(
-													Math.min(
-														i.duration,
-														itemDuration -
-															i.start +
-															seek
-													) * this.props.timeScale
+													Math.min(i.duration, itemDuration - i.start + seek) *
+													this.props.timeScale
 												).toString() + 'px'
 										}}></span>
 								)
@@ -110,18 +101,12 @@ export const STKSourceRenderer = translate()(
 										key={i.start}
 										style={{
 											left:
-												(
-													(i.start - seek) *
-													this.props.timeScale
-												).toString() + 'px',
+												((i.start - seek) * this.props.timeScale).toString() +
+												'px',
 											width:
 												(
-													Math.min(
-														i.duration,
-														itemDuration -
-															i.start +
-															seek
-													) * this.props.timeScale
+													Math.min(i.duration, itemDuration - i.start + seek) *
+													this.props.timeScale
 												).toString() + 'px'
 										}}></span>
 								)
@@ -131,12 +116,9 @@ export const STKSourceRenderer = translate()(
 						ref={this.setLeftLabelRef}
 						style={this.getItemLabelOffsetLeft()}>
 						<span
-							className={ClassNames(
-								'segment-timeline__piece__label',
-								{
-									'overflow-label': this.end !== ''
-								}
-							)}
+							className={ClassNames('segment-timeline__piece__label', {
+								'overflow-label': this.end !== ''
+							})}
 							key={this.props.piece._id + '-start'}>
 							{this.begin}
 						</span>
@@ -149,9 +131,7 @@ export const STKSourceRenderer = translate()(
 										options={defaultOptions}
 										width={24}
 										height={24}
-										isStopped={
-											!this.props.showMiniInspector
-										}
+										isStopped={!this.props.showMiniInspector}
 										isPaused={false}
 									/>
 								</div>
@@ -170,9 +150,7 @@ export const STKSourceRenderer = translate()(
 										options={defaultOptions}
 										width={24}
 										height={24}
-										isStopped={
-											!this.props.showMiniInspector
-										}
+										isStopped={!this.props.showMiniInspector}
 										isPaused={false}
 									/>
 								</div>
@@ -211,15 +189,12 @@ export const STKSourceRenderer = translate()(
 										true
 									)}
 								</span>
-								{this.getInspectorWarnings(
-									realCursorTimePosition
-								)}
+								{this.getInspectorWarnings(realCursorTimePosition)}
 							</div>
 						) : (
 							<div
 								className={
-									'segment-timeline__mini-inspector ' +
-									this.props.typeClass
+									'segment-timeline__mini-inspector ' + this.props.typeClass
 								}
 								style={this.getFloatingInspectorStyle()}>
 								<div>

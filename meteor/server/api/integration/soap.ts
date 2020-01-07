@@ -23,20 +23,14 @@ export async function sendSOAPMessage(
 ) {
 	logger.info('sendSOAPMessage ' + msg._id);
 	if (!msg.receiver)
-		throwFatalError(
-			msg,
-			new Meteor.Error(401, 'attribute .receiver missing!')
-		);
+		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'));
 	if (!msg.receiver.url)
 		throwFatalError(
 			msg,
 			new Meteor.Error(401, 'attribute .receiver.url missing!')
 		);
 	if (!msg.message)
-		throwFatalError(
-			msg,
-			new Meteor.Error(401, 'attribute .message missing!')
-		);
+		throwFatalError(msg, new Meteor.Error(401, 'attribute .message missing!'));
 	if (!msg.message.fcn)
 		throwFatalError(
 			msg,
@@ -134,25 +128,20 @@ async function resolveSOAPFcnData(
 				let args = fetchFrom.attrs;
 				// console.log('SOAP', fetchFrom.fcn, args)
 
-				fcn(
-					args,
-					(err: any, result: any, raw: any, soapHeader: any) => {
-						if (err) {
-							reject(err);
-						} else {
-							// console.log('reply', result)
-							let resultValue = result[fetchFrom.fcn + 'Result'];
-							resolve(resultValue);
-						}
+				fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+					if (err) {
+						reject(err);
+					} else {
+						// console.log('reply', result)
+						let resultValue = result[fetchFrom.fcn + 'Result'];
+						resolve(resultValue);
 					}
-				);
+				});
 			} else {
 				reject(
 					new Meteor.Error(
 						401,
-						'SOAP method "' +
-							fetchFrom.fcn +
-							'" missing on endpoint!'
+						'SOAP method "' + fetchFrom.fcn + '" missing on endpoint!'
 					)
 				);
 			}
@@ -184,10 +173,7 @@ async function resolveSOAPFcnData(
 			resolve(xml);
 		} else {
 			reject(
-				new Meteor.Error(
-					401,
-					'Unknown SOAP function: ' + _.keys(valFcn._fcn)
-				)
+				new Meteor.Error(401, 'Unknown SOAP function: ' + _.keys(valFcn._fcn))
 			);
 		}
 	});

@@ -46,8 +46,7 @@ postRoute.route(
 );
 export function ingestMOSRundown(studioId: string, ingestRundown: any) {
 	const studio = Studios.findOne(studioId);
-	if (!studio)
-		throw new Meteor.Error(404, `Studio ${studioId} does not exist`);
+	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`);
 
 	const rundownId = getRundownId(studio, ingestRundown.externalId);
 

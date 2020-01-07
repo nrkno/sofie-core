@@ -139,8 +139,7 @@ export class MouseIshController extends ControllerAbstract {
 			e.preventDefault();
 
 			const delta: number = e.deltaY || 0;
-			let delta2: number =
-				Math.sign(delta) * Math.sqrt(Math.abs(delta) / 150);
+			let delta2: number = Math.sign(delta) * Math.sqrt(Math.abs(delta) / 150);
 			if (Math.sign(this._scrollSpeedTarget) < 0) {
 				// Make scrolling up faster than down
 				delta2 *= 2;
@@ -156,9 +155,7 @@ export class MouseIshController extends ControllerAbstract {
 			const delta: number = e.deltaY || 0;
 
 			if (delta) {
-				if (
-					Math.sign(this._scrollDownDeltaTracker) === Math.sign(delta)
-				) {
+				if (Math.sign(this._scrollDownDeltaTracker) === Math.sign(delta)) {
 					this._scrollDownDeltaTracker += delta;
 				} else {
 					this._scrollDownDeltaTracker = delta;
@@ -241,8 +238,7 @@ export class MouseIshController extends ControllerAbstract {
 		if (this._destroyed) return;
 		if (this._updateSpeedHandle !== null) return;
 		this._updateSpeedHandle = null;
-		if (this._mode !== Mode.SPEED && this._mode !== Mode.SMOOTHSCROLL)
-			return;
+		if (this._mode !== Mode.SPEED && this._mode !== Mode.SMOOTHSCROLL) return;
 
 		let scrollPosition = window.scrollY;
 
@@ -251,8 +247,7 @@ export class MouseIshController extends ControllerAbstract {
 			this._nextPausePosition &&
 			this._scrollingDown &&
 			!this._scrollingDownHold &&
-			scrollPosition >
-				this._nextPausePosition - 5 * this._scrollSpeedCurrent
+			scrollPosition > this._nextPausePosition - 5 * this._scrollSpeedCurrent
 		) {
 			// stop
 			this._scrollingDown = false;
@@ -262,8 +257,7 @@ export class MouseIshController extends ControllerAbstract {
 
 		if (this._scrollingUp) {
 			targetSpeed =
-				-Math.sign(targetSpeed) *
-				Math.max(10, Math.abs(targetSpeed) * 4);
+				-Math.sign(targetSpeed) * Math.max(10, Math.abs(targetSpeed) * 4);
 		} else if (this._scrollingDown) {
 			targetSpeed = targetSpeed * 1;
 		} else {

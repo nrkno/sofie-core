@@ -47,18 +47,13 @@ export const ClipTrimDialog = translate()(
 		};
 		handleAccept = (e) => {
 			this.props.onClose && this.props.onClose();
-			doUserAction(
-				this.props.t,
-				e,
-				UserActionAPI.methods.setInOutPoints,
-				[
-					this.props.rundownId,
-					this.props.selectedPiece.partId,
-					this.props.selectedPiece._id,
-					this.state.inPoint,
-					this.state.duration
-				]
-			);
+			doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
+				this.props.rundownId,
+				this.props.selectedPiece.partId,
+				this.props.selectedPiece._id,
+				this.state.inPoint,
+				this.state.duration
+			]);
 		};
 		render() {
 			const { t } = this.props;
@@ -71,12 +66,8 @@ export const ClipTrimDialog = translate()(
 					acceptText={t('OK')}
 					secondaryText={t('Cancel')}
 					onAccept={this.handleAccept}
-					onDiscard={(e) =>
-						this.props.onClose && this.props.onClose()
-					}
-					onSecondary={(e) =>
-						this.props.onClose && this.props.onClose()
-					}>
+					onDiscard={(e) => this.props.onClose && this.props.onClose()}
+					onSecondary={(e) => this.props.onClose && this.props.onClose()}>
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						rundownId={this.props.rundownId}

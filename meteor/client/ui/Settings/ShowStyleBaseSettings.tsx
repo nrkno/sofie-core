@@ -146,14 +146,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 					<div>
 						<label className="field">
 							{t('Show Style Base Name')}
-							{!(
-								this.props.showStyleBase &&
-								this.props.showStyleBase.name
-							) ? (
+							{!(this.props.showStyleBase && this.props.showStyleBase.name) ? (
 								<div className="error-notice inline">
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>{' '}
+									<FontAwesomeIcon icon={faExclamationTriangle} />{' '}
 									{t('No name set')}
 								</div>
 							) : null}
@@ -171,14 +166,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 						<label className="field">
 							{t('Blueprint')}
 							{!(
-								this.props.showStyleBase &&
-								this.props.showStyleBase.blueprintId
+								this.props.showStyleBase && this.props.showStyleBase.blueprintId
 							) ? (
 								<div className="error-notice inline">
 									{t('Blueprint not set')}{' '}
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>
+									<FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
 							) : null}
 							<div className="mdi">
@@ -199,9 +191,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 						</label>
 					</div>
 					<div>
-						<p className="mod mhn mvs">
-							{t('Compatible Studios:')}
-						</p>
+						<p className="mod mhn mvs">{t('Compatible Studios:')}</p>
 						<p className="mod mhn mvs">
 							{this.props.compatibleStudios.length > 0
 								? this.props.compatibleStudios.map((i) => (
@@ -213,16 +203,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 											</Link>
 										</span>
 								  ))
-								: t(
-										'This Show Style is not compatible with any Studio'
-								  )}
+								: t('This Show Style is not compatible with any Studio')}
 						</p>
 					</div>
 					<div className="row">
 						<div className="col c12 rl-c6">
-							<SourceLayerSettings
-								showStyleBase={showStyleBase}
-							/>
+							<SourceLayerSettings showStyleBase={showStyleBase} />
 						</div>
 						<div className="col c12 rl-c6">
 							<OutputSettings showStyleBase={showStyleBase} />
@@ -230,23 +216,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<HotkeyLegendSettings
-								showStyleBase={showStyleBase}
-							/>
+							<HotkeyLegendSettings showStyleBase={showStyleBase} />
 						</div>
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<StudioRuntimeArgumentsSettings
-								showStyleBase={showStyleBase}
-							/>
+							<StudioRuntimeArgumentsSettings showStyleBase={showStyleBase} />
 						</div>
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<RundownLayoutEditor
-								showStyleBase={showStyleBase}
-							/>
+							<RundownLayoutEditor showStyleBase={showStyleBase} />
 						</div>
 					</div>
 					<div className="row">
@@ -386,9 +366,7 @@ const StudioRuntimeArgumentsSettings = translate()(
 									hl: this.isItemEdited(item)
 								})}>
 								<th className="settings-studio-custom-config-table__name c2">
-									{mousetrapHelper.shortcutLabel(
-										item.hotkeys
-									)}
+									{mousetrapHelper.shortcutLabel(item.hotkeys)}
 								</th>
 								<td className="settings-studio-custom-config-table__value c3">
 									{item.property}
@@ -404,9 +382,7 @@ const StudioRuntimeArgumentsSettings = translate()(
 									</button>
 									<button
 										className="action-btn"
-										onClick={(e) =>
-											this.confirmDelete(item)
-										}>
+										onClick={(e) => this.confirmDelete(item)}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 								</td>
@@ -420,19 +396,10 @@ const StudioRuntimeArgumentsSettings = translate()(
 													{t('Hotkeys')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'runtimeArguments.' +
-															index +
-															'.hotkeys'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'runtimeArguments.' + index + '.hotkeys'}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -442,18 +409,11 @@ const StudioRuntimeArgumentsSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'runtimeArguments.' +
-															index +
-															'.property'
+															'runtimeArguments.' + index + '.property'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -462,19 +422,10 @@ const StudioRuntimeArgumentsSettings = translate()(
 													{t('Value')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'runtimeArguments.' +
-															index +
-															'.value'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'runtimeArguments.' + index + '.value'}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -482,12 +433,8 @@ const StudioRuntimeArgumentsSettings = translate()(
 										<div className="mod alright">
 											<button
 												className="btn btn-primary"
-												onClick={(e) =>
-													this.finishEditItem(item)
-												}>
-												<FontAwesomeIcon
-													icon={faCheck}
-												/>
+												onClick={(e) => this.finishEditItem(item)}>
+												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
 									</td>
@@ -503,16 +450,12 @@ const StudioRuntimeArgumentsSettings = translate()(
 			const { t } = this.props;
 			return (
 				<div>
-					<h2 className="mhn">
-						{t('Runtime Arguments for Blueprints')}
-					</h2>
+					<h2 className="mhn">{t('Runtime Arguments for Blueprints')}</h2>
 					<table className="expando settings-studio-custom-config-table">
 						<tbody>{this.renderItems()}</tbody>
 					</table>
 					<div className="mod mhs">
-						<button
-							className="btn btn-primary"
-							onClick={this.onAddROArgument}>
+						<button className="btn btn-primary" onClick={this.onAddROArgument}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 					</div>
@@ -605,9 +548,7 @@ const SourceLayerSettings = translate()(
 			}
 		}
 		onAddSource = () => {
-			const maxRank = findHighestRank(
-				this.props.showStyleBase.sourceLayers
-			);
+			const maxRank = findHighestRank(this.props.showStyleBase.sourceLayers);
 			const { t } = this.props;
 
 			const newSource = literal<ISourceLayer>({
@@ -659,16 +600,13 @@ const SourceLayerSettings = translate()(
 		renderInputSources() {
 			const { t } = this.props;
 
-			return _.map(
-				this.props.showStyleBase.sourceLayers,
-				(item, index) => {
-					let newItem = _.clone(item) as ISourceLayer & {
-						index: number;
-					};
-					newItem.index = index;
-					return newItem;
-				}
-			)
+			return _.map(this.props.showStyleBase.sourceLayers, (item, index) => {
+				let newItem = _.clone(item) as ISourceLayer & {
+					index: number;
+				};
+				newItem.index = index;
+				return newItem;
+			})
 				.sort((a, b) => {
 					return a._rank - b._rank;
 				})
@@ -687,10 +625,7 @@ const SourceLayerSettings = translate()(
 								</td>
 								<td className="settings-studio-source-table__type c3">
 									{this.sourceLayerString(
-										Number.parseInt(
-											item.type.toString(),
-											10
-										) as SourceLayerType
+										Number.parseInt(item.type.toString(), 10) as SourceLayerType
 									)}
 								</td>
 								<td className="settings-studio-source-table__actions table-item-actions c3">
@@ -701,9 +636,7 @@ const SourceLayerSettings = translate()(
 									</button>
 									<button
 										className="action-btn"
-										onClick={(e) =>
-											this.confirmDelete(item)
-										}>
+										onClick={(e) => this.confirmDelete(item)}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 								</td>
@@ -717,19 +650,10 @@ const SourceLayerSettings = translate()(
 													{t('Source Name')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.name'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'sourceLayers.' + item.index + '.name'}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -739,18 +663,11 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.abbreviation'
+															'sourceLayers.' + item.index + '.abbreviation'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -759,19 +676,10 @@ const SourceLayerSettings = translate()(
 													{t('Internal ID')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'sourceLayers.' +
-															item.index +
-															'._id'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'sourceLayers.' + item.index + '._id'}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -781,23 +689,12 @@ const SourceLayerSettings = translate()(
 													<div className="select focusable">
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={
-																'sourceLayers.' +
-																item.index +
-																'.type'
-															}
-															obj={
-																this.props
-																	.showStyleBase
-															}
+															attribute={'sourceLayers.' + item.index + '.type'}
+															obj={this.props.showStyleBase}
 															type="dropdown"
-															options={
-																SourceLayerType
-															}
+															options={SourceLayerType}
 															optionsAreNumbers
-															collection={
-																ShowStyleBases
-															}
+															collection={ShowStyleBases}
 															className="focusable-main input-l"></EditAttribute>
 													</div>
 												</label>
@@ -807,22 +704,13 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.isRemoteInput'
+															'sourceLayers.' + item.index + '.isRemoteInput'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
-													{t(
-														'Is a Live Remote Input'
-													)}
+													{t('Is a Live Remote Input')}
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -830,18 +718,11 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.isGuestInput'
+															'sourceLayers.' + item.index + '.isGuestInput'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
 													{t('Is a Guest Input')}
 												</label>
@@ -851,18 +732,11 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.isHidden'
+															'sourceLayers.' + item.index + '.isHidden'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
 													{t('Is hidden')}
 												</label>
@@ -872,19 +746,10 @@ const SourceLayerSettings = translate()(
 													{t('Display Rank')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'sourceLayers.' +
-															item.index +
-															'._rank'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'sourceLayers.' + item.index + '._rank'}
+														obj={this.props.showStyleBase}
 														type="int"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -897,18 +762,11 @@ const SourceLayerSettings = translate()(
 															item.index +
 															'.onPresenterScreen'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
-													{t(
-														"Display on Presenter's Screen"
-													)}
+													{t("Display on Presenter's Screen")}
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -921,14 +779,9 @@ const SourceLayerSettings = translate()(
 															item.index +
 															'.activateKeyboardHotkeys'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -942,14 +795,9 @@ const SourceLayerSettings = translate()(
 															item.index +
 															'.clearKeyboardHotkey'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -962,18 +810,11 @@ const SourceLayerSettings = translate()(
 															item.index +
 															'.assignHotkeysToGlobalAdlibs'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
-													{t(
-														'Assign Hotkeys to Global AdLibs'
-													)}
+													{t('Assign Hotkeys to Global AdLibs')}
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -981,29 +822,18 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.isSticky'
+															'sourceLayers.' + item.index + '.isSticky'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
-													{t(
-														'Items on this layer are sticky'
-													)}
+													{t('Items on this layer are sticky')}
 												</label>
 											</div>
 											<div className="mod mvs mhs">
 												<label className="field">
-													{t(
-														'Activate Sticky Item Shortcut'
-													)}
+													{t('Activate Sticky Item Shortcut')}
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
@@ -1011,14 +841,9 @@ const SourceLayerSettings = translate()(
 															item.index +
 															'.activateStickyKeyboardHotkey'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -1027,23 +852,14 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.allowDisable'
+															'sourceLayers.' + item.index + '.allowDisable'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""
 													/>
-													{t(
-														'Allow disabling of elements'
-													)}
+													{t('Allow disabling of elements')}
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -1051,22 +867,13 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.isQueueable'
+															'sourceLayers.' + item.index + '.isQueueable'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="checkbox"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className=""></EditAttribute>
-													{t(
-														'Adlibs on this layer can be queued'
-													)}
+													{t('Adlibs on this layer can be queued')}
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -1075,18 +882,11 @@ const SourceLayerSettings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'sourceLayers.' +
-															item.index +
-															'.exclusiveGroup'
+															'sourceLayers.' + item.index + '.exclusiveGroup'
 														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -1094,12 +894,8 @@ const SourceLayerSettings = translate()(
 										<div className="mod alright">
 											<button
 												className="btn btn-primary"
-												onClick={(e) =>
-													this.finishEditItem(item)
-												}>
-												<FontAwesomeIcon
-													icon={faCheck}
-												/>
+												onClick={(e) => this.finishEditItem(item)}>
+												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
 									</td>
@@ -1120,8 +916,7 @@ const SourceLayerSettings = translate()(
 								'Add some source layers (e.g. Graphics) for your ENPS data to appear in rundowns'
 							)}
 							visible={
-								getHelpMode() &&
-								!this.props.showStyleBase.sourceLayers.length
+								getHelpMode() && !this.props.showStyleBase.sourceLayers.length
 							}
 							placement="bottom">
 							<span>{t('Source Layers')}</span>
@@ -1139,9 +934,7 @@ const SourceLayerSettings = translate()(
 						<tbody>{this.renderInputSources()}</tbody>
 					</table>
 					<div className="mod mhs">
-						<button
-							className="btn btn-primary"
-							onClick={this.onAddSource}>
+						<button className="btn btn-primary" onClick={this.onAddSource}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 					</div>
@@ -1174,9 +967,8 @@ const OutputSettings = translate()(
 		isPGMChannelSet() {
 			if (!this.props.showStyleBase.outputLayers) return false;
 			return (
-				this.props.showStyleBase.outputLayers.filter(
-					(layer) => layer.isPGM
-				).length > 0
+				this.props.showStyleBase.outputLayers.filter((layer) => layer.isPGM)
+					.length > 0
 			);
 		}
 
@@ -1228,9 +1020,7 @@ const OutputSettings = translate()(
 			});
 		};
 		onAddOutput = () => {
-			const maxRank = findHighestRank(
-				this.props.showStyleBase.outputLayers
-			);
+			const maxRank = findHighestRank(this.props.showStyleBase.outputLayers);
 			const { t } = this.props;
 
 			const newOutput = literal<IOutputLayer>({
@@ -1260,16 +1050,13 @@ const OutputSettings = translate()(
 
 		renderOutputs() {
 			const { t } = this.props;
-			return _.map(
-				this.props.showStyleBase.outputLayers,
-				(item, index) => {
-					let newItem = _.clone(item) as IOutputLayer & {
-						index: number;
-					};
-					newItem.index = index;
-					return newItem;
-				}
-			)
+			return _.map(this.props.showStyleBase.outputLayers, (item, index) => {
+				let newItem = _.clone(item) as IOutputLayer & {
+					index: number;
+				};
+				newItem.index = index;
+				return newItem;
+			})
 				.sort((a, b) => {
 					return a._rank - b._rank;
 				})
@@ -1288,13 +1075,9 @@ const OutputSettings = translate()(
 							</td>
 							<td className="settings-studio-output-table__isPGM c3">
 								<div
-									className={ClassNames(
-										'switch',
-										'switch-tight',
-										{
-											'switch-active': item.isPGM
-										}
-									)}>
+									className={ClassNames('switch', 'switch-tight', {
+										'switch-active': item.isPGM
+									})}>
 									PGM
 								</div>
 							</td>
@@ -1312,9 +1095,7 @@ const OutputSettings = translate()(
 							</td>
 						</tr>,
 						this.isItemEdited(item) ? (
-							<tr
-								className="expando-details hl"
-								key={item._id + '-details'}>
+							<tr className="expando-details hl" key={item._id + '-details'}>
 								<td colSpan={4}>
 									<div>
 										<div className="mod mvs mhs">
@@ -1322,14 +1103,8 @@ const OutputSettings = translate()(
 												{t('Channel Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'outputLayers.' +
-														item.index +
-														'.name'
-													}
-													obj={
-														this.props.showStyleBase
-													}
+													attribute={'outputLayers.' + item.index + '.name'}
+													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
 													className="input text-input input-l"></EditAttribute>
@@ -1340,14 +1115,8 @@ const OutputSettings = translate()(
 												{t('Internal ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'outputLayers.' +
-														item.index +
-														'._id'
-													}
-													obj={
-														this.props.showStyleBase
-													}
+													attribute={'outputLayers.' + item.index + '._id'}
+													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
 													className="input text-input input-l"></EditAttribute>
@@ -1357,14 +1126,8 @@ const OutputSettings = translate()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'outputLayers.' +
-														item.index +
-														'.isPGM'
-													}
-													obj={
-														this.props.showStyleBase
-													}
+													attribute={'outputLayers.' + item.index + '.isPGM'}
+													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
 													className=""></EditAttribute>
@@ -1376,14 +1139,8 @@ const OutputSettings = translate()(
 												{t('Display Rank')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'outputLayers.' +
-														item.index +
-														'._rank'
-													}
-													obj={
-														this.props.showStyleBase
-													}
+													attribute={'outputLayers.' + item.index + '._rank'}
+													obj={this.props.showStyleBase}
 													type="int"
 													collection={ShowStyleBases}
 													className="input text-input input-l"></EditAttribute>
@@ -1393,9 +1150,7 @@ const OutputSettings = translate()(
 									<div className="mod alright">
 										<button
 											className="btn btn-primary"
-											onClick={(e) =>
-												this.finishEditItem(item)
-											}>
+											onClick={(e) => this.finishEditItem(item)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -1416,8 +1171,7 @@ const OutputSettings = translate()(
 								'Output channels are required for your studio to work'
 							)}
 							visible={
-								getHelpMode() &&
-								!this.props.showStyleBase.outputLayers.length
+								getHelpMode() && !this.props.showStyleBase.outputLayers.length
 							}
 							placement="top">
 							<span>{t('Output channels')}</span>
@@ -1441,9 +1195,7 @@ const OutputSettings = translate()(
 						<tbody>{this.renderOutputs()}</tbody>
 					</table>
 					<div className="mod mhs">
-						<button
-							className="btn btn-primary"
-							onClick={this.onAddOutput}>
+						<button className="btn btn-primary" onClick={this.onAddOutput}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 					</div>
@@ -1563,19 +1315,10 @@ const HotkeyLegendSettings = translate()(
 													{t('Key')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'hotkeyLegend.' +
-															index +
-															'.key'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'hotkeyLegend.' + index + '.key'}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -1584,19 +1327,10 @@ const HotkeyLegendSettings = translate()(
 													{t('Value')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'hotkeyLegend.' +
-															index +
-															'.label'
-														}
-														obj={
-															this.props
-																.showStyleBase
-														}
+														attribute={'hotkeyLegend.' + index + '.label'}
+														obj={this.props.showStyleBase}
 														type="text"
-														collection={
-															ShowStyleBases
-														}
+														collection={ShowStyleBases}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -1604,12 +1338,8 @@ const HotkeyLegendSettings = translate()(
 										<div className="mod alright">
 											<button
 												className="btn btn-primary"
-												onClick={(e) =>
-													this.finishEditItem(item)
-												}>
-												<FontAwesomeIcon
-													icon={faCheck}
-												/>
+												onClick={(e) => this.finishEditItem(item)}>
+												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
 									</td>
@@ -1718,90 +1448,73 @@ const ShowStyleVariantsSettings = translate()(
 		renderShowStyleVariants() {
 			const { t } = this.props;
 
-			return this.props.showStyleVariants.map(
-				(showStyleVariant, index) => {
-					return (
-						<React.Fragment key={showStyleVariant._id}>
-							<tr
-								className={ClassNames({
-									hl: this.isItemEdited(showStyleVariant._id)
-								})}>
-								<th className="settings-studio-showStyleVariant__name c3">
-									{showStyleVariant.name ||
-										t('Unnamed variant')}
-								</th>
-								<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
-									<button
-										className="action-btn"
-										onClick={(e) =>
-											this.editItem(showStyleVariant._id)
-										}>
-										<FontAwesomeIcon icon={faPencilAlt} />
-									</button>
-									<button
-										className="action-btn"
-										onClick={(e) =>
-											this.confirmRemove(showStyleVariant)
-										}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
+			return this.props.showStyleVariants.map((showStyleVariant, index) => {
+				return (
+					<React.Fragment key={showStyleVariant._id}>
+						<tr
+							className={ClassNames({
+								hl: this.isItemEdited(showStyleVariant._id)
+							})}>
+							<th className="settings-studio-showStyleVariant__name c3">
+								{showStyleVariant.name || t('Unnamed variant')}
+							</th>
+							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
+								<button
+									className="action-btn"
+									onClick={(e) => this.editItem(showStyleVariant._id)}>
+									<FontAwesomeIcon icon={faPencilAlt} />
+								</button>
+								<button
+									className="action-btn"
+									onClick={(e) => this.confirmRemove(showStyleVariant)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>
+						{this.isItemEdited(showStyleVariant._id) && (
+							<tr className="expando-details hl">
+								<td colSpan={5}>
+									<div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Variant Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'name'}
+													obj={showStyleVariant}
+													type="text"
+													collection={ShowStyleVariants}
+													className="input text-input input-l"></EditAttribute>
+											</label>
+										</div>
+									</div>
+									<div className="row">
+										<div className="col c12 r1-c12 phs">
+											<ConfigManifestSettings
+												t={this.props.t}
+												manifest={collectConfigs(showStyleVariant)}
+												collection={ShowStyleVariants}
+												configPath={'config'}
+												object={showStyleVariant}
+												subPanel={true}
+											/>
+										</div>
+									</div>
+									<div className="mod alright">
+										<button
+											className="btn btn-primary"
+											onClick={(e) =>
+												this.finishEditItem(showStyleVariant._id)
+											}>
+											<FontAwesomeIcon icon={faCheck} />
+										</button>
+									</div>
 								</td>
 							</tr>
-							{this.isItemEdited(showStyleVariant._id) && (
-								<tr className="expando-details hl">
-									<td colSpan={5}>
-										<div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Variant Name')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'name'}
-														obj={showStyleVariant}
-														type="text"
-														collection={
-															ShowStyleVariants
-														}
-														className="input text-input input-l"></EditAttribute>
-												</label>
-											</div>
-										</div>
-										<div className="row">
-											<div className="col c12 r1-c12 phs">
-												<ConfigManifestSettings
-													t={this.props.t}
-													manifest={collectConfigs(
-														showStyleVariant
-													)}
-													collection={
-														ShowStyleVariants
-													}
-													configPath={'config'}
-													object={showStyleVariant}
-													subPanel={true}
-												/>
-											</div>
-										</div>
-										<div className="mod alright">
-											<button
-												className="btn btn-primary"
-												onClick={(e) =>
-													this.finishEditItem(
-														showStyleVariant._id
-													)
-												}>
-												<FontAwesomeIcon
-													icon={faCheck}
-												/>
-											</button>
-										</div>
-									</td>
-								</tr>
-							)}
-						</React.Fragment>
-					);
-				}
-			);
+						)}
+					</React.Fragment>
+				);
+			});
 		}
 
 		render() {

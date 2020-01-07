@@ -88,8 +88,7 @@ export function matchFilter(
 			filter.currentSegment === true &&
 			item.partId &&
 			((liveSegment &&
-				liveSegment.parts.find((i) => item.partId === i._id) ===
-					undefined) ||
+				liveSegment.parts.find((i) => item.partId === i._id) === undefined) ||
 				!liveSegment)
 		) {
 			return false;
@@ -193,8 +192,7 @@ const AdLibListView = translate()(
 					segmentSelector
 				);
 				if (segment) {
-					const targetPosition =
-						segment.offsetTop + this.table.scrollTop;
+					const targetPosition = segment.offsetTop + this.table.scrollTop;
 					Velocity(
 						this.table,
 						{
@@ -229,20 +227,11 @@ const AdLibListView = translate()(
 									item={item}
 									selected={
 										(this.props.selectedPart &&
-											this.props.selectedPart._id ===
-												item._id) ||
+											this.props.selectedPart._id === item._id) ||
 										false
 									}
-									layer={
-										this.state.sourceLayers[
-											item.sourceLayerId
-										]
-									}
-									outputLayer={
-										this.state.outputLayers[
-											item.outputLayerId
-										]
-									}
+									layer={this.state.sourceLayers[item.sourceLayerId]}
+									outputLayer={this.state.outputLayers[item.outputLayerId]}
 									onToggleAdLib={this.props.onToggleAdLib}
 									onSelectAdLib={this.props.onSelectAdLib}
 									rundown={this.props.rundown}
@@ -273,8 +262,7 @@ const AdLibListView = translate()(
 									next: seg.isNext && !seg.isLive,
 									past:
 										seg.parts.reduce((memo, item) => {
-											return item.startedPlayback &&
-												item.duration
+											return item.startedPlayback && item.duration
 												? memo
 												: false;
 										}, true) === true
@@ -300,26 +288,13 @@ const AdLibListView = translate()(
 											item={item}
 											selected={
 												(this.props.selectedPart &&
-													this.props.selectedPart
-														._id === item._id) ||
+													this.props.selectedPart._id === item._id) ||
 												false
 											}
-											layer={
-												this.state.sourceLayers[
-													item.sourceLayerId
-												]
-											}
-											outputLayer={
-												this.state.outputLayers[
-													item.outputLayerId
-												]
-											}
-											onToggleAdLib={
-												this.props.onToggleAdLib
-											}
-											onSelectAdLib={
-												this.props.onSelectAdLib
-											}
+											layer={this.state.sourceLayers[item.sourceLayerId]}
+											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											onToggleAdLib={this.props.onToggleAdLib}
+											onSelectAdLib={this.props.onSelectAdLib}
 											rundown={this.props.rundown}
 										/>
 									))}
@@ -336,8 +311,7 @@ const AdLibListView = translate()(
 			return (
 				<div
 					className={ClassNames('adlib-panel__list-view__list', {
-						'adlib-panel__list-view__list--no-segments': this.props
-							.noSegments
+						'adlib-panel__list-view__list--no-segments': this.props.noSegments
 					})}>
 					<table
 						id={'adlib-panel__list-view__table__' + Random.id()}
@@ -401,8 +375,8 @@ export const AdLibPanelToolbar = translate()(
 			return (
 				<div
 					className={ClassNames('adlib-panel__list-view__toolbar', {
-						'adlib-panel__list-view__toolbar--no-segments': this
-							.props.noSegments
+						'adlib-panel__list-view__toolbar--no-segments': this.props
+							.noSegments
 					})}>
 					<div className="adlib-panel__list-view__toolbar__filter">
 						<input
@@ -488,10 +462,7 @@ export function fetchAndFilter(
 	const sourceLayerLookup: ISourceLayerLookup =
 		props.showStyleBase && props.showStyleBase.sourceLayers
 			? _.object(
-					_.map(props.showStyleBase.sourceLayers, (item) => [
-						item._id,
-						item
-					])
+					_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])
 			  )
 			: {};
 	// a hash to store various indices of the used hotkey lists
@@ -516,9 +487,7 @@ export function fetchAndFilter(
 					if (part._id === props.rundown.nextPartId) {
 						seg.isNext = true;
 					}
-					segmentAdLibPieces = segmentAdLibPieces.concat(
-						part.getAdLibPieces()
-					);
+					segmentAdLibPieces = segmentAdLibPieces.concat(part.getAdLibPieces());
 				});
 				seg.pieces = segmentAdLibPieces;
 
@@ -526,34 +495,26 @@ export function fetchAndFilter(
 				if (seg.isLive) {
 					seg.pieces.forEach((item) => {
 						let sourceLayer =
-							item.sourceLayerId &&
-							sourceLayerLookup[item.sourceLayerId];
+							item.sourceLayerId && sourceLayerLookup[item.sourceLayerId];
 
-						if (
-							sourceLayer &&
-							sourceLayer.activateKeyboardHotkeys
-						) {
+						if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
 							let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(
 								','
 							);
 							const sourceHotKeyUseLayerId =
-								sharedHotkeyList[
-									sourceLayer.activateKeyboardHotkeys
-								][0]._id || item.sourceLayerId;
+								sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id ||
+								item.sourceLayerId;
 							if (
 								(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) <
 								keyboardHotkeysList.length
 							) {
 								item.hotkey =
 									keyboardHotkeysList[
-										sourceHotKeyUse[
-											sourceHotKeyUseLayerId
-										] || 0
+										sourceHotKeyUse[sourceHotKeyUseLayerId] || 0
 									];
 								// add one to the usage hash table
 								sourceHotKeyUse[sourceHotKeyUseLayerId] =
-									(sourceHotKeyUse[sourceHotKeyUseLayerId] ||
-										0) + 1;
+									(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1;
 							}
 						}
 					});
@@ -597,16 +558,14 @@ export function fetchAndFilter(
 						','
 					);
 					const sourceHotKeyUseLayerId =
-						sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]
-							._id || item.sourceLayerId;
+						sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id ||
+						item.sourceLayerId;
 					if (
 						(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) <
 						keyboardHotkeysList.length
 					) {
 						uiAdLib.hotkey =
-							keyboardHotkeysList[
-								sourceHotKeyUse[sourceHotKeyUseLayerId] || 0
-							];
+							keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0];
 						// add one to the usage hash table
 						sourceHotKeyUse[sourceHotKeyUseLayerId] =
 							(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1;
@@ -628,9 +587,7 @@ export function fetchAndFilter(
 						literal<AdLibPieceUi>({
 							_id: `sticky_${layer._id}`,
 							hotkey: layer.activateStickyKeyboardHotkey
-								? layer.activateStickyKeyboardHotkey.split(
-										','
-								  )[0]
+								? layer.activateStickyKeyboardHotkey.split(',')[0]
 								: '',
 							name: t('Last {{layerName}}', {
 								layerName: layer.abbreviation || layer.name
@@ -653,10 +610,7 @@ export function fetchAndFilter(
 			uiSegments.length = 0;
 		}
 
-		if (
-			(props.filter as DashboardLayoutFilter)
-				.includeClearInRundownBaseline
-		) {
+		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(
 				props.showStyleBase.sourceLayers
 					.filter((i) => !!i.clearKeyboardHotkey)
@@ -713,9 +667,7 @@ export const AdLibPanel = translateWithTracker<
 	> {
 		usedHotkeys: Array<string> = [];
 
-		constructor(
-			props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>
-		) {
+		constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 			super(props);
 
 			this.state = {
@@ -757,9 +709,7 @@ export const AdLibPanel = translateWithTracker<
 			this.refreshKeyboardHotkeys();
 		}
 
-		componentDidUpdate(
-			prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps
-		) {
+		componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
 			mousetrapHelper.unbindAll(
 				this.usedHotkeys,
 				'keyup',
@@ -880,9 +830,7 @@ export const AdLibPanel = translateWithTracker<
 					new Notification(
 						t('Invalid AdLib'),
 						NoticeLevel.WARNING,
-						t(
-							'Cannot play this AdLib because it is marked as Invalid'
-						),
+						t('Cannot play this AdLib because it is marked as Invalid'),
 						'toggleAdLib'
 					)
 				);
@@ -893,9 +841,7 @@ export const AdLibPanel = translateWithTracker<
 					new Notification(
 						t('Floated AdLib'),
 						NoticeLevel.WARNING,
-						t(
-							'Cannot play this AdLib because it is marked as Floated'
-						),
+						t('Cannot play this AdLib because it is marked as Floated'),
 						'toggleAdLib'
 					)
 				);
@@ -915,29 +861,19 @@ export const AdLibPanel = translateWithTracker<
 			}
 			if (this.props.rundown && this.props.rundown.currentPartId) {
 				if (!piece.isGlobal) {
-					doUserAction(
-						t,
-						e,
-						UserActionAPI.methods.segmentAdLibPieceStart,
-						[
-							this.props.rundown._id,
-							this.props.rundown.currentPartId,
-							piece._id,
-							queue || false
-						]
-					);
+					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
+						this.props.rundown._id,
+						this.props.rundown.currentPartId,
+						piece._id,
+						queue || false
+					]);
 				} else if (piece.isGlobal && !piece.isSticky) {
-					doUserAction(
-						t,
-						e,
-						UserActionAPI.methods.baselineAdLibPieceStart,
-						[
-							this.props.rundown._id,
-							this.props.rundown.currentPartId,
-							piece._id,
-							queue || false
-						]
-					);
+					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
+						this.props.rundown._id,
+						this.props.rundown.currentPartId,
+						piece._id,
+						queue || false
+					]);
 				} else if (piece.isSticky) {
 					doUserAction(
 						t,
@@ -953,16 +889,11 @@ export const AdLibPanel = translateWithTracker<
 			// console.log(sourceLayer)
 			const { t } = this.props;
 			if (this.props.rundown && this.props.rundown.currentPartId) {
-				doUserAction(
-					t,
-					e,
-					UserActionAPI.methods.sourceLayerOnPartStop,
-					[
-						this.props.rundown._id,
-						this.props.rundown.currentPartId,
-						sourceLayer._id
-					]
-				);
+				doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
+					this.props.rundown._id,
+					this.props.rundown.currentPartId,
+					sourceLayer._id
+				]);
 			}
 		};
 
@@ -980,20 +911,14 @@ export const AdLibPanel = translateWithTracker<
 			return this.props.uiSegments.map((item) => {
 				return (
 					<li
-						className={ClassNames(
-							'adlib-panel__segments__segment',
-							{
-								live: item.isLive,
-								next: item.isNext && !item.isLive,
-								past:
-									item.parts.reduce((memo, part) => {
-										return part.startedPlayback &&
-											part.duration
-											? memo
-											: false;
-									}, true) === true
-							}
-						)}
+						className={ClassNames('adlib-panel__segments__segment', {
+							live: item.isLive,
+							next: item.isNext && !item.isLive,
+							past:
+								item.parts.reduce((memo, part) => {
+									return part.startedPlayback && part.duration ? memo : false;
+								}, true) === true
+						})}
 						onClick={(e) => this.onSelectSegment(item)}
 						key={item._id}
 						tabIndex={0}>
@@ -1043,9 +968,7 @@ export const AdLibPanel = translateWithTracker<
 									{this.renderSegmentList()}
 								</ul>
 							)}
-							{this.renderListView(
-								this.props.uiSegments.length > 30
-							)}
+							{this.renderListView(this.props.uiSegments.length > 30)}
 						</div>
 					);
 				}

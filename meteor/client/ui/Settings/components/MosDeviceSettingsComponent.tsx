@@ -94,8 +94,7 @@ export const MosDeviceSettingsComponent = translate()(
 		};
 
 		addNewDevice = () => {
-			let settings =
-				(this.props.device.settings as MosDeviceSettings) || {};
+			let settings = (this.props.device.settings as MosDeviceSettings) || {};
 			// find free key name
 			let newDeviceId = 'mosDevice';
 			let iter = 0;
@@ -174,16 +173,10 @@ export const MosDeviceSettingsComponent = translate()(
 											{(device.primary || { id: '' }).id}
 										</td>
 										<td className="settings-studio-device__primary_host c2">
-											{
-												(device.primary || { host: '' })
-													.host
-											}
+											{(device.primary || { host: '' }).host}
 										</td>
 										<td className="settings-studio-device__secondary_id c3">
-											{
-												(device.secondary || { id: '' })
-													.id
-											}
+											{(device.secondary || { id: '' }).id}
 										</td>
 										<td className="settings-studio-device__secondary_host c2">
 											{
@@ -197,21 +190,13 @@ export const MosDeviceSettingsComponent = translate()(
 										<td className="settings-studio-device__actions table-item-actions c1">
 											<button
 												className="action-btn"
-												onClick={(e) =>
-													this.editItem(deviceId)
-												}>
-												<FontAwesomeIcon
-													icon={faPencilAlt}
-												/>
+												onClick={(e) => this.editItem(deviceId)}>
+												<FontAwesomeIcon icon={faPencilAlt} />
 											</button>
 											<button
 												className="action-btn"
-												onClick={(e) =>
-													this.confirmRemove(deviceId)
-												}>
-												<FontAwesomeIcon
-													icon={faTrash}
-												/>
+												onClick={(e) => this.confirmRemove(deviceId)}>
+												<FontAwesomeIcon icon={faTrash} />
 											</button>
 										</td>
 									</tr>
@@ -226,55 +211,32 @@ export const MosDeviceSettingsComponent = translate()(
 															{t('Device ID')}
 															<EditAttribute
 																modifiedClassName="bghl"
-																attribute={
-																	'settings.devices'
-																}
-																overrideDisplayValue={
-																	deviceId
-																}
-																obj={
-																	this.props
-																		.device
-																}
+																attribute={'settings.devices'}
+																overrideDisplayValue={deviceId}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
-																updateFunction={
-																	this
-																		.updateDeviceId
-																}
+																collection={PeripheralDevices}
+																updateFunction={this.updateDeviceId}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Primary ID (Newsroom System MOS ID)'
-															)}
+															{t('Primary ID (Newsroom System MOS ID)')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
-																	'settings.devices.' +
-																	deviceId +
-																	'.primary.id'
+																	'settings.devices.' + deviceId + '.primary.id'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Primary Host (IP or Hostname)'
-															)}
+															{t('Primary Host (IP or Hostname)')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
@@ -282,22 +244,15 @@ export const MosDeviceSettingsComponent = translate()(
 																	deviceId +
 																	'.primary.host'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Secondary ID (Newsroom System MOS ID)'
-															)}
+															{t('Secondary ID (Newsroom System MOS ID)')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
@@ -305,22 +260,15 @@ export const MosDeviceSettingsComponent = translate()(
 																	deviceId +
 																	'.secondary.id'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Secondary Host (IP Address or Hostname)'
-															)}
+															{t('Secondary Host (IP Address or Hostname)')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
@@ -328,31 +276,18 @@ export const MosDeviceSettingsComponent = translate()(
 																	deviceId +
 																	'.secondary.host'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 												</div>
 												<div className="mod alright">
 													<button
-														className={ClassNames(
-															'btn btn-primary'
-														)}
-														onClick={(e) =>
-															this.finishEditItem(
-																deviceId
-															)
-														}>
-														<FontAwesomeIcon
-															icon={faCheck}
-														/>
+														className={ClassNames('btn btn-primary')}
+														onClick={(e) => this.finishEditItem(deviceId)}>
+														<FontAwesomeIcon icon={faCheck} />
 													</button>
 												</div>
 											</td>
@@ -404,14 +339,11 @@ export const MosDeviceSettingsComponent = translate()(
 						onAccept={(e) => this.handleConfirmRemoveAccept(e)}
 						onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 						<p>
-							{t(
-								'Are you sure you want to remove device "{{deviceId}}"?',
-								{
-									deviceId:
-										this.state.deleteConfirmDeviceId &&
-										this.state.deleteConfirmDeviceId
-								}
-							)}
+							{t('Are you sure you want to remove device "{{deviceId}}"?', {
+								deviceId:
+									this.state.deleteConfirmDeviceId &&
+									this.state.deleteConfirmDeviceId
+							})}
 						</p>
 					</ModalDialog>
 

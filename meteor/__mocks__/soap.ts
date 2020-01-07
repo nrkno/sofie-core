@@ -27,10 +27,7 @@ export async function sendSOAPMessage(
 				try {
 					throwFatalError(
 						msg,
-						new Meteor.Error(
-							401,
-							'Fatal error sending SOAP message.'
-						)
+						new Meteor.Error(401, 'Fatal error sending SOAP message.')
 					);
 				} catch (e) {
 					reject(e);

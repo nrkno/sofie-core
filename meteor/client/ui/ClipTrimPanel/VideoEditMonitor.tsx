@@ -77,16 +77,12 @@ export const VideoEditMonitor = translate()(
 
 				const delta =
 					(e.pageX - this.lastPosition) /
-					Math.min(
-						document.body.clientWidth,
-						this.videoEl.clientWidth * 3
-					);
+					Math.min(document.body.clientWidth, this.videoEl.clientWidth * 3);
 				const targetTime = Math.max(
 					0,
 					Math.min(
 						this.internalTime +
-							(this.props.duration || this.videoEl.duration) *
-								delta,
+							(this.props.duration || this.videoEl.duration) * delta,
 						(this.props.duration || this.videoEl.duration) - 0.001
 					)
 				);
@@ -103,10 +99,7 @@ export const VideoEditMonitor = translate()(
 
 		handleStepBack = (e: React.MouseEvent<HTMLButtonElement>) => {
 			if (this.props.fps) {
-				this.internalTime = Math.max(
-					0,
-					this.internalTime - 1 / this.props.fps
-				);
+				this.internalTime = Math.max(0, this.internalTime - 1 / this.props.fps);
 				this.videoEl.currentTime = this.internalTime;
 				if (this.props.onCurrentTimeChange) {
 					this.props.onCurrentTimeChange(this.internalTime);
@@ -160,8 +153,7 @@ export const VideoEditMonitor = translate()(
 				<div className="video-edit-monitor">
 					<div
 						className={classNames('video-edit-monitor__monitor', {
-							'video-edit-monitor__monitor--mouse-down': this
-								.state.isMouseDown
+							'video-edit-monitor__monitor--mouse-down': this.state.isMouseDown
 						})}
 						onMouseDown={this.videoMouseDown}>
 						<video

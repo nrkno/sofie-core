@@ -71,11 +71,7 @@ export const L3rdSourceRenderer = translate()(
 			const noraContent = this.props.piece.content as NoraContent;
 
 			let properties: Array<KeyValue> = [];
-			if (
-				noraContent &&
-				noraContent.payload &&
-				noraContent.payload.content
-			) {
+			if (noraContent && noraContent.payload && noraContent.payload.content) {
 				// @ts-ignore
 				properties = _.compact(
 					_.map(noraContent.payload.content, (value, key: string):
@@ -85,11 +81,7 @@ export const L3rdSourceRenderer = translate()(
 						  }
 						| undefined => {
 						let str: string;
-						if (
-							key.startsWith('_') ||
-							key.startsWith('@') ||
-							value === ''
-						) {
+						if (key.startsWith('_') || key.startsWith('@') || value === '') {
 							return undefined;
 						} else {
 							if (_.isObject(value)) {
@@ -108,11 +100,7 @@ export const L3rdSourceRenderer = translate()(
 			}
 
 			let changed: Time | undefined = undefined;
-			if (
-				noraContent &&
-				noraContent.payload &&
-				noraContent.payload.changed
-			) {
+			if (noraContent && noraContent.payload && noraContent.payload.changed) {
 				changed = noraContent.payload.changed;
 			}
 
@@ -170,8 +158,7 @@ export const L3rdSourceRenderer = translate()(
 						) : (
 							<div
 								className={
-									'segment-timeline__mini-inspector ' +
-									this.props.typeClass
+									'segment-timeline__mini-inspector ' + this.props.typeClass
 								}
 								style={this.getFloatingInspectorStyle()}>
 								{templateName && (
@@ -188,12 +175,8 @@ export const L3rdSourceRenderer = translate()(
 									<tbody>
 										{properties.map((item) => (
 											<tr key={item.key}>
-												<td className="mini-inspector__label">
-													{item.key}
-												</td>
-												<td className="mini-inspector__value">
-													{item.value}
-												</td>
+												<td className="mini-inspector__label">{item.key}</td>
+												<td className="mini-inspector__value">{item.value}</td>
 											</tr>
 										))}
 										<tr>
@@ -201,33 +184,23 @@ export const L3rdSourceRenderer = translate()(
 											<td className="mini-inspector__row--timing">
 												<span className="mini-inspector__in-point">
 													{RundownUtils.formatTimeToShortTime(
-														this.props.piece
-															.renderedInPoint ||
-															0
+														this.props.piece.renderedInPoint || 0
 													)}
 												</span>
-												{this.props.piece
-													.infiniteMode ? (
-													(this.props.piece
-														.infiniteMode ===
+												{this.props.piece.infiniteMode ? (
+													(this.props.piece.infiniteMode ===
 														PieceLifespan.OutOnNextPart && (
 														<span className="mini-inspector__duration">
-															{t(
-																'Until next take'
-															)}
+															{t('Until next take')}
 														</span>
 													)) ||
-													(this.props.piece
-														.infiniteMode ===
+													(this.props.piece.infiniteMode ===
 														PieceLifespan.OutOnNextSegment && (
 														<span className="mini-inspector__duration">
-															{t(
-																'Until next segment'
-															)}
+															{t('Until next segment')}
 														</span>
 													)) ||
-													(this.props.piece
-														.infiniteMode ===
+													(this.props.piece.infiniteMode ===
 														PieceLifespan.Infinite && (
 														<span className="mini-inspector__duration">
 															{t('Infinite')}
@@ -236,19 +209,10 @@ export const L3rdSourceRenderer = translate()(
 												) : (
 													<span className="mini-inspector__duration">
 														{RundownUtils.formatTimeToShortTime(
-															this.props.piece
-																.renderedDuration ||
-																(_.isNumber(
-																	this.props
-																		.piece
-																		.enable
-																		.duration
-																)
+															this.props.piece.renderedDuration ||
+																(_.isNumber(this.props.piece.enable.duration)
 																	? parseFloat(
-																			(this
-																				.props
-																				.piece
-																				.enable
+																			(this.props.piece.enable
 																				.duration as any) as string
 																	  )
 																	: 0)
@@ -257,10 +221,7 @@ export const L3rdSourceRenderer = translate()(
 												)}
 												{changed && (
 													<span className="mini-inspector__changed">
-														<Moment
-															date={changed}
-															calendar={true}
-														/>
+														<Moment date={changed} calendar={true} />
 													</span>
 												)}
 											</td>

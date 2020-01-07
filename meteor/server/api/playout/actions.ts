@@ -135,10 +135,7 @@ export function prepareStudioForBroadcast(studio: Studio) {
 	]);
 	if (ssrcBgs.length > 1)
 		logger.info(
-			ssrcBgs[0].value +
-				' and ' +
-				ssrcBgs[1].value +
-				' will be loaded to atems'
+			ssrcBgs[0].value + ' and ' + ssrcBgs[1].value + ' will be loaded to atems'
 		);
 	if (ssrcBgs.length > 0)
 		logger.info(ssrcBgs[0].value + ' will be loaded to atems');

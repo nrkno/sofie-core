@@ -109,10 +109,7 @@ describe('Test blueprint management api', () => {
 			// Ensure starts off 'wrong'
 			expect(getActiveSystemBlueprintId()).not.toEqual(blueprint._id);
 
-			Meteor.call(
-				BlueprintAPI.methods.assignSystemBlueprint,
-				blueprint._id
-			);
+			Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, blueprint._id);
 
 			// Ensure ends up good
 			expect(getActiveSystemBlueprintId()).toEqual(blueprint._id);
@@ -137,10 +134,7 @@ describe('Test blueprint management api', () => {
 			expect(initialBlueprintId).not.toEqual(blueprint._id);
 
 			try {
-				Meteor.call(
-					BlueprintAPI.methods.assignSystemBlueprint,
-					blueprint._id
-				);
+				Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, blueprint._id);
 				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not of type SYSTEM`);
@@ -157,9 +151,7 @@ describe('Test blueprint management api', () => {
 				Meteor.call(BlueprintAPI.methods.removeBlueprint);
 				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(
-					`Match error: Expected string, got undefined`
-				);
+				expect(e.message).toBe(`Match error: Expected string, got undefined`);
 			}
 		});
 
@@ -173,10 +165,7 @@ describe('Test blueprint management api', () => {
 		});
 		testInFiber('missing id', () => {
 			// Should not error
-			Meteor.call(
-				BlueprintAPI.methods.removeBlueprint,
-				'not_a_real_blueprint'
-			);
+			Meteor.call(BlueprintAPI.methods.removeBlueprint, 'not_a_real_blueprint');
 		});
 		testInFiber('good', () => {
 			const blueprint = ensureSystemBlueprint();
@@ -244,9 +233,7 @@ describe('Test blueprint management api', () => {
 				uploadBlueprint('blueprint99', '');
 				expect(true).toBe(false); // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(
-					`[400] Blueprint blueprint99 failed to parse`
-				);
+				expect(e.message).toBe(`[400] Blueprint blueprint99 failed to parse`);
 			}
 		});
 		testInFiber('body not a manifest', () => {
@@ -341,9 +328,7 @@ describe('Test blueprint management api', () => {
 			const blueprint = uploadBlueprint('tmp_showstyle', blueprintStr);
 			expect(blueprint).toBeTruthy();
 			expect(blueprint).toMatchObject(
-				literal<
-					Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>
-				>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: 'tmp_showstyle',
 					name: 'tmp_showstyle',
 					blueprintType: BLUEPRINT_TYPE,
@@ -377,16 +362,10 @@ describe('Test blueprint management api', () => {
 				}
 			);
 
-			const blueprint = uploadBlueprint(
-				'tmp_studio',
-				blueprintStr,
-				'tmp name'
-			);
+			const blueprint = uploadBlueprint('tmp_studio', blueprintStr, 'tmp name');
 			expect(blueprint).toBeTruthy();
 			expect(blueprint).toMatchObject(
-				literal<
-					Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>
-				>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: 'tmp_studio',
 					name: 'tmp name',
 					blueprintId: '',
@@ -421,16 +400,10 @@ describe('Test blueprint management api', () => {
 				}
 			);
 
-			const blueprint = uploadBlueprint(
-				'tmp_system',
-				blueprintStr,
-				'tmp name'
-			);
+			const blueprint = uploadBlueprint('tmp_system', blueprintStr, 'tmp name');
 			expect(blueprint).toBeTruthy();
 			expect(blueprint).toMatchObject(
-				literal<
-					Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>
-				>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: 'tmp_system',
 					name: 'tmp name',
 					blueprintId: 'sys',
@@ -470,15 +443,10 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy();
 			expect(existingBlueprint.blueprintId).toBeFalsy();
 
-			const blueprint = uploadBlueprint(
-				existingBlueprint._id,
-				blueprintStr
-			);
+			const blueprint = uploadBlueprint(existingBlueprint._id, blueprintStr);
 			expect(blueprint).toBeTruthy();
 			expect(blueprint).toMatchObject(
-				literal<
-					Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>
-				>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
 					blueprintId: '',
@@ -520,15 +488,10 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy();
 			expect(existingBlueprint.blueprintId).toBeTruthy();
 
-			const blueprint = uploadBlueprint(
-				existingBlueprint._id,
-				blueprintStr
-			);
+			const blueprint = uploadBlueprint(existingBlueprint._id, blueprintStr);
 			expect(blueprint).toBeTruthy();
 			expect(blueprint).toMatchObject(
-				literal<
-					Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>
-				>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
 					blueprintId: 'ss1',

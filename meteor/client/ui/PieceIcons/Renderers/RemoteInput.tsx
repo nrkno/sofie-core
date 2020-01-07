@@ -40,12 +40,8 @@ export default class RemoteInputIcon extends React.Component<{
 							fontSize: '62px',
 							fontWeight: 100
 						}}>
-						{this.props.abbreviation
-							? this.props.abbreviation
-							: 'LIVE'}
-						{this.props.inputIndex !== undefined
-							? this.props.inputIndex
-							: ''}
+						{this.props.abbreviation ? this.props.abbreviation : 'LIVE'}
+						{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
 					</tspan>
 				</text>
 			</svg>

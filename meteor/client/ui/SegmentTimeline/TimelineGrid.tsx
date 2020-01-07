@@ -54,10 +54,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.pixelRatio = devicePixelRatio / backingStoreRatio;
 
-			this.width =
-				(this.canvasElement.scrollWidth || 0) * this.pixelRatio;
-			this.height =
-				(this.canvasElement.scrollHeight || 0) * this.pixelRatio;
+			this.width = (this.canvasElement.scrollWidth || 0) * this.pixelRatio;
+			this.height = (this.canvasElement.scrollHeight || 0) * this.pixelRatio;
 			this.canvasElement.width = this.width;
 			this.canvasElement.height = this.height;
 
@@ -148,8 +146,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				interStep = fps || 25;
 			}
 
-			let step =
-				(secondsStep * secondTimeScale * this.pixelRatio) / interStep;
+			let step = (secondsStep * secondTimeScale * this.pixelRatio) / interStep;
 			let pixelOffset =
 				this.props.scrollLeft * this.props.timeScale * this.pixelRatio;
 
@@ -160,8 +157,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
 			let maxTicks =
-				Math.ceil(this.width / (step * interStep)) * interStep +
-				interStep;
+				Math.ceil(this.width / (step * interStep)) * interStep + interStep;
 			const scrollLeftSec = this.props.scrollLeft / 1000;
 			let base = Math.floor(scrollLeftSec / maxTicks) * maxTicks;
 			const baseN = (Math.floor(scrollLeftSec / maxTicks) + 1) * maxTicks;
@@ -177,8 +173,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
 				let xPosition =
-					this.ring(i * step - pixelOffset, maxTicks * step) -
-					step * interStep;
+					this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep;
 				if (i === 0) breakX = xPosition;
 
 				let isLabel = i % interStep === 0;
@@ -186,11 +181,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				if (isLabel === true) {
 					this.ctx.strokeStyle = LARGE_STEP_GRID_COLOR;
 					let t =
-						(xPosition > breakX && this.props.scrollLeft > 0
-							? baseN
-							: base) +
-						this.ring(i - interStep, maxTicks) *
-							(secondsStep / interStep);
+						(xPosition > breakX && this.props.scrollLeft > 0 ? baseN : base) +
+						this.ring(i - interStep, maxTicks) * (secondsStep / interStep);
 
 					this.ctx.fillText(
 						RundownUtils.formatDiffToTimecode(
@@ -224,9 +216,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	render() {
 		return (
-			<div
-				className="segment-timeline__timeline-grid"
-				ref={this.setParentRef}>
+			<div className="segment-timeline__timeline-grid" ref={this.setParentRef}>
 				<canvas
 					className="segment-timeline__timeline-grid__canvas"
 					ref={this.setCanvasRef}></canvas>

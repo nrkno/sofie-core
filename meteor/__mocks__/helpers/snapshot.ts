@@ -80,10 +80,7 @@ function isRundown(o): o is DBRundown {
 }
 function isSegment(o): o is DBSegment {
 	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'name')
+		o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'name')
 	);
 }
 function isPart(o): o is Part {

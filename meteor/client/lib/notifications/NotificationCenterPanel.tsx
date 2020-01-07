@@ -74,9 +74,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					'is-highlighted': this.props.isHighlighted
 				})}
 				onClick={
-					defaultAction
-						? (e) => this.triggerEvent(defaultAction, e)
-						: undefined
+					defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined
 				}>
 				<div className="notification-pop-up__header">
 					<WarningIcon />
@@ -85,28 +83,21 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					{item.message}
 					{!defaultAction && allActions.length ? (
 						<div className="notification-pop-up__actions">
-							{_.map(
-								allActions,
-								(action: NotificationAction, i: number) => {
-									return (
-										<button
-											key={i}
-											className={ClassNames(
-												'btn',
-												['default', 'primary'].indexOf(
-													action.type
-												)
-													? 'btn-primary'
-													: 'btn-default'
-											)}
-											onClick={(e) =>
-												this.triggerEvent(action, e)
-											}>
-											{action.label}
-										</button>
-									);
-								}
-							)}
+							{_.map(allActions, (action: NotificationAction, i: number) => {
+								return (
+									<button
+										key={i}
+										className={ClassNames(
+											'btn',
+											['default', 'primary'].indexOf(action.type)
+												? 'btn-primary'
+												: 'btn-default'
+										)}
+										onClick={(e) => this.triggerEvent(action, e)}>
+										{action.label}
+									</button>
+								);
+							})}
 						</div>
 					) : null}
 				</div>
@@ -255,9 +246,7 @@ export const NotificationCenterPopUps = translateWithTracker<
 						}
 						item={item}
 						onDismiss={() => this.dismissNotification(item)}
-						showDismiss={
-							!item.persistent || !this.props.showSnoozed
-						}
+						showDismiss={!item.persistent || !this.props.showSnoozed}
 						isHighlighted={
 							item.source === highlightedSource &&
 							item.status === highlightedLevel
@@ -282,12 +271,11 @@ export const NotificationCenterPopUps = translateWithTracker<
 								display: 'flex'
 							}}>
 							{displayList}
-							{this.props.showEmptyListLabel &&
-								displayList.length === 0 && (
-									<div className="notification-pop-ups__empty-list">
-										{t('No notifications')}
-									</div>
-								)}
+							{this.props.showEmptyListLabel && displayList.length === 0 && (
+								<div className="notification-pop-ups__empty-list">
+									{t('No notifications')}
+								</div>
+							)}
 						</VelocityReact.VelocityTransitionGroup>
 
 						<ContextMenu id="context-menu-dissmiss-all">
@@ -362,8 +350,7 @@ export const NotificationCenterPanelToggle = withTracker<
 						'status-bar__controls__button',
 						'notifications__toggle-button',
 						{
-							'status-bar__controls__button--open': this.props
-								.isOpen,
+							'status-bar__controls__button--open': this.props.isOpen,
 							'has-items': this.props.count > 0
 						}
 					)}

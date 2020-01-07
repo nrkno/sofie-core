@@ -50,8 +50,7 @@ export const MicSourceRenderer = translate()(
 				const content = this.props.piece.content as ScriptContent;
 				let scriptReadTime = 0;
 				if (content && content.sourceDuration) {
-					scriptReadTime =
-						content.sourceDuration * this.props.timeScale;
+					scriptReadTime = content.sourceDuration * this.props.timeScale;
 					this.readTime = content.sourceDuration;
 				} else {
 					scriptReadTime = getElementWidth(this.itemElement);
@@ -87,9 +86,7 @@ export const MicSourceRenderer = translate()(
 				this.itemElement = this.props.itemElement;
 				this.itemElement.parentNode &&
 					this.itemElement.parentNode.parentNode &&
-					this.itemElement.parentNode.parentNode.appendChild(
-						this.lineItem
-					);
+					this.itemElement.parentNode.parentNode.appendChild(this.lineItem);
 				this.refreshLine();
 			}
 		}
@@ -116,12 +113,10 @@ export const MicSourceRenderer = translate()(
 
 			if (
 				prevProps.partDuration !== this.props.partDuration ||
-				prevProps.piece.renderedInPoint !==
-					this.props.piece.renderedInPoint ||
+				prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint ||
 				prevProps.piece.renderedDuration !==
 					this.props.piece.renderedDuration ||
-				prevProps.piece.playoutDuration !==
-					this.props.piece.playoutDuration ||
+				prevProps.piece.playoutDuration !== this.props.piece.playoutDuration ||
 				!_.isEqual(
 					prevProps.piece.userDuration,
 					this.props.piece.userDuration
@@ -140,18 +135,13 @@ export const MicSourceRenderer = translate()(
 				if (this.itemElement) {
 					this.itemElement.parentNode &&
 						this.itemElement.parentNode.parentNode &&
-						this.itemElement.parentNode.parentNode.appendChild(
-							this.lineItem
-						);
+						this.itemElement.parentNode.parentNode.appendChild(this.lineItem);
 					this._forceSizingRecheck = true;
 				}
 			}
 
 			const content = this.props.piece.content as ScriptContent;
-			if (
-				content.sourceDuration &&
-				content.sourceDuration !== this.readTime
-			) {
+			if (content.sourceDuration && content.sourceDuration !== this.readTime) {
 				_forceSizingRecheck = true;
 			}
 
@@ -195,10 +185,7 @@ export const MicSourceRenderer = translate()(
 				endOfScript = endOfScript.substring(
 					endOfScript.indexOf(
 						' ',
-						Math.max(
-							cutLength,
-							endOfScript.length - SCRIPT_PART_LENGTH
-						)
+						Math.max(cutLength, endOfScript.length - SCRIPT_PART_LENGTH)
 					),
 					endOfScript.length
 				);
@@ -265,10 +252,7 @@ export const MicSourceRenderer = translate()(
 							{content && content.lastModified ? (
 								<div className="mini-inspector__footer">
 									<span className="mini-inspector__changed">
-										<Moment
-											date={content.lastModified}
-											calendar={true}
-										/>
+										<Moment date={content.lastModified} calendar={true} />
 									</span>
 								</div>
 							) : null}

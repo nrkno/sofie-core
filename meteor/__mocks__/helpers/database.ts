@@ -252,9 +252,7 @@ export function setupMockStudioBlueprint(showStyleBaseId: string): Blueprint {
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (
-					context: IStudioContext
-				): TSR.TSRTimelineObjBase[] => {
+				getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
 					return [];
 				},
 				getShowStyleId: (

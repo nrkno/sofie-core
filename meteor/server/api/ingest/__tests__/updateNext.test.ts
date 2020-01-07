@@ -256,16 +256,13 @@ describe('Test mos update next part helpers', () => {
 			expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled();
 		}
 	);
-	testInFiber(
-		'ensureNextPartIsValid: Ensure manual part doesnt change',
-		() => {
-			resetPartIds('mock_part3', 'mock_part5', true);
+	testInFiber('ensureNextPartIsValid: Ensure manual part doesnt change', () => {
+		resetPartIds('mock_part3', 'mock_part5', true);
 
-			UpdateNext.ensureNextPartIsValid(getRundown());
+		UpdateNext.ensureNextPartIsValid(getRundown());
 
-			expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled();
-		}
-	);
+		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled();
+	});
 	testInFiber(
 		'ensureNextPartIsValid: Ensure non-manual part does change',
 		() => {

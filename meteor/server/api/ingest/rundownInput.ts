@@ -161,11 +161,7 @@ export namespace RundownInput {
 		);
 		logger.info('dataRundownCreate', ingestRundown);
 		check(ingestRundown, Object);
-		handleUpdatedRundown(
-			peripheralDevice,
-			ingestRundown,
-			'dataRundownCreate'
-		);
+		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownCreate');
 	}
 	export function dataRundownUpdate(
 		self: any,
@@ -180,11 +176,7 @@ export namespace RundownInput {
 		);
 		logger.info('dataRundownUpdate', ingestRundown);
 		check(ingestRundown, Object);
-		handleUpdatedRundown(
-			peripheralDevice,
-			ingestRundown,
-			'dataRundownUpdate'
-		);
+		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownUpdate');
 	}
 	// Delete, Create & Update Segment (and it's contents):
 	export function dataSegmentDelete(
@@ -223,11 +215,7 @@ export namespace RundownInput {
 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment);
 		check(rundownExternalId, String);
 		check(ingestSegment, Object);
-		handleUpdatedSegment(
-			peripheralDevice,
-			rundownExternalId,
-			ingestSegment
-		);
+		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment);
 	}
 	export function dataSegmentUpdate(
 		self: any,
@@ -244,11 +232,7 @@ export namespace RundownInput {
 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment);
 		check(rundownExternalId, String);
 		check(ingestSegment, Object);
-		handleUpdatedSegment(
-			peripheralDevice,
-			rundownExternalId,
-			ingestSegment
-		);
+		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment);
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
@@ -349,10 +333,7 @@ function getIngestRundown(
 		externalId: rundownExternalId
 	});
 	if (!rundown) {
-		throw new Meteor.Error(
-			404,
-			`Rundown ${rundownExternalId} does not exist`
-		);
+		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`);
 	}
 
 	return loadCachedRundownData(rundown._id, rundown.externalId);
@@ -491,8 +472,7 @@ function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown');
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
-		.blueprint;
+	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint;
 	const blueprintContext = new ShowStyleContext(
 		studio,
 		showStyle.base._id,
@@ -643,10 +623,7 @@ function updateRundownFromIngestData(
 			(p) => p.segmentId === segmentId
 		);
 
-		ingestSegment.parts = _.sortBy(
-			ingestSegment.parts,
-			(part) => part.rank
-		);
+		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank);
 
 		const context = new SegmentContext(
 			dbRundown,
@@ -807,10 +784,7 @@ function handleRemovedSegment(
 			const segmentId = getSegmentId(rundown._id, segmentExternalId);
 			if (canBeUpdated(rundown, segmentId)) {
 				if (removeSegments(rundownId, [segmentId]) === 0) {
-					throw new Meteor.Error(
-						404,
-						`Segment ${segmentExternalId} not found`
-					);
+					throw new Meteor.Error(404, `Segment ${segmentExternalId} not found`);
 				}
 			}
 		}
@@ -829,10 +803,7 @@ function handleUpdatedSegment(
 		RundownSyncFunctionPriority.Ingest,
 		() => {
 			const rundown = getRundown(rundownId, rundownExternalId);
-			const segmentId = getSegmentId(
-				rundown._id,
-				ingestSegment.externalId
-			);
+			const segmentId = getSegmentId(rundown._id, ingestSegment.externalId);
 			if (!canBeUpdated(rundown, segmentId)) return;
 
 			saveSegmentCache(rundown._id, segmentId, ingestSegment);
@@ -1095,12 +1066,7 @@ export function handleUpdatedPart(
 		() => {
 			const rundown = getRundown(rundownId, rundownExternalId);
 
-			handleUpdatedPartInner(
-				studio,
-				rundown,
-				segmentExternalId,
-				ingestPart
-			);
+			handleUpdatedPartInner(studio, rundown, segmentExternalId, ingestPart);
 		}
 	);
 }
@@ -1168,8 +1134,7 @@ function generateSegmentContents(
 	const segmentNotes = _.filter(
 		allNotes,
 		(note) =>
-			!note.origin.partId ||
-			knownPartIds.indexOf(note.origin.partId) === -1
+			!note.origin.partId || knownPartIds.indexOf(note.origin.partId) === -1
 	);
 
 	const newSegment = literal<DBSegment>({

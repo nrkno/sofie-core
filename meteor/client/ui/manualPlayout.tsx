@@ -92,12 +92,7 @@ export class ManualPlayout extends MeteorReactComponent<
 				}
 			}
 		};
-		callMethod(
-			e,
-			ManualPlayoutAPI.methods.insertTimelineObject,
-			studio._id,
-			o
-		);
+		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o);
 	}
 	getManualLayers(studio: Studio) {
 		let mappings: { [layer: string]: MappingExt } = {};
@@ -131,12 +126,7 @@ export class ManualPlayout extends MeteorReactComponent<
 				file: file + ''
 			}
 		};
-		callMethod(
-			e,
-			ManualPlayoutAPI.methods.insertTimelineObject,
-			studio._id,
-			o
-		);
+		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o);
 	}
 	casparcgClear(
 		e: React.MouseEvent<HTMLElement>,
@@ -179,12 +169,7 @@ export class ManualPlayout extends MeteorReactComponent<
 			// studioId: 'studio0'
 		};
 
-		callMethod(
-			e,
-			ManualPlayoutAPI.methods.insertTimelineObject,
-			studio._id,
-			o
-		);
+		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o);
 	}
 	quantelClear(
 		e: React.MouseEvent<HTMLElement>,
@@ -218,49 +203,31 @@ export class ManualPlayout extends MeteorReactComponent<
 							<h3 className="mhs">ATEM Control</h3>
 							<table>
 								<tbody>
-									{_.map(
-										this.getAtemMEs(studio),
-										(mapping, mappingLayerId) => {
-											return (
-												<tr key={mappingLayerId}>
-													<th>{mappingLayerId}</th>
-													{_.map(
-														[
-															1,
-															2,
-															3,
-															4,
-															5,
-															6,
-															7,
-															8
-														],
-														(cam) => {
-															return (
-																<td key={cam}>
-																	<button
-																		className="btn btn-primary"
-																		onClick={(
-																			e
-																		) =>
-																			this.atemCamera(
-																				e,
-																				studio,
-																				mappingLayerId,
-																				cam
-																			)
-																		}>
-																		Camera{' '}
-																		{cam}
-																	</button>
-																</td>
-															);
-														}
-													)}
-												</tr>
-											);
-										}
-									)}
+									{_.map(this.getAtemMEs(studio), (mapping, mappingLayerId) => {
+										return (
+											<tr key={mappingLayerId}>
+												<th>{mappingLayerId}</th>
+												{_.map([1, 2, 3, 4, 5, 6, 7, 8], (cam) => {
+													return (
+														<td key={cam}>
+															<button
+																className="btn btn-primary"
+																onClick={(e) =>
+																	this.atemCamera(
+																		e,
+																		studio,
+																		mappingLayerId,
+																		cam
+																	)
+																}>
+																Camera {cam}
+															</button>
+														</td>
+													);
+												})}
+											</tr>
+										);
+									})}
 								</tbody>
 							</table>
 							<h3 className="mhs">CasparCG Control</h3>
@@ -272,39 +239,26 @@ export class ManualPlayout extends MeteorReactComponent<
 											if (mappingIsCasparCG(mapping)) {
 												return (
 													<tr key={mappingLayerId}>
-														<th>
-															{mappingLayerId}
-														</th>
+														<th>{mappingLayerId}</th>
 														<td>
 															<button
 																className="btn btn-primary"
 																onClick={(e) =>
-																	this.casparcgPlay(
-																		e,
-																		studio,
-																		mappingLayerId
-																	)
+																	this.casparcgPlay(e, studio, mappingLayerId)
 																}>
 																Caspar Play
 															</button>
 															<button
 																className="btn btn-primary"
 																onClick={(e) =>
-																	this.casparcgClear(
-																		e,
-																		studio,
-																		mappingLayerId
-																	)
+																	this.casparcgClear(e, studio, mappingLayerId)
 																}>
 																Clear
 															</button>
 														</td>
 														<td>
 															<EditAttribute
-																updateFunction={(
-																	_edit,
-																	value
-																) =>
+																updateFunction={(_edit, value) =>
 																	this.onInputChange(
 																		mappingLayerId,
 																		'file',
@@ -313,53 +267,35 @@ export class ManualPlayout extends MeteorReactComponent<
 																}
 																type="text"
 																overrideDisplayValue={
-																	this.state
-																		.inputValues[
-																		mappingLayerId
-																	]
+																	this.state.inputValues[mappingLayerId]
 																}
 															/>
 														</td>
 													</tr>
 												);
-											} else if (
-												mappingIsQuantel(mapping)
-											) {
+											} else if (mappingIsQuantel(mapping)) {
 												return (
 													<tr key={mappingLayerId}>
-														<th>
-															{mappingLayerId}
-														</th>
+														<th>{mappingLayerId}</th>
 														<td>
 															<button
 																className="btn btn-primary"
 																onClick={(e) =>
-																	this.quantelPlay(
-																		e,
-																		studio,
-																		mappingLayerId
-																	)
+																	this.quantelPlay(e, studio, mappingLayerId)
 																}>
 																Quantel Play
 															</button>
 															<button
 																className="btn btn-primary"
 																onClick={(e) =>
-																	this.quantelClear(
-																		e,
-																		studio,
-																		mappingLayerId
-																	)
+																	this.quantelClear(e, studio, mappingLayerId)
 																}>
 																Clear
 															</button>
 														</td>
 														<td>
 															<EditAttribute
-																updateFunction={(
-																	_edit,
-																	value
-																) =>
+																updateFunction={(_edit, value) =>
 																	this.onInputChange(
 																		mappingLayerId,
 																		'title',
@@ -368,22 +304,14 @@ export class ManualPlayout extends MeteorReactComponent<
 																}
 																type="text"
 																overrideDisplayValue={
-																	(
-																		this
-																			.state
-																			.inputValues[
-																			mappingLayerId
-																		] || {}
-																	).title
+																	(this.state.inputValues[mappingLayerId] || {})
+																		.title
 																}
 															/>
 														</td>
 														<td>
 															<EditAttribute
-																updateFunction={(
-																	_edit,
-																	value
-																) =>
+																updateFunction={(_edit, value) =>
 																	this.onInputChange(
 																		mappingLayerId,
 																		'guid',
@@ -392,13 +320,8 @@ export class ManualPlayout extends MeteorReactComponent<
 																}
 																type="text"
 																overrideDisplayValue={
-																	(
-																		this
-																			.state
-																			.inputValues[
-																			mappingLayerId
-																		] || {}
-																	).guid
+																	(this.state.inputValues[mappingLayerId] || {})
+																		.guid
 																}
 															/>
 														</td>

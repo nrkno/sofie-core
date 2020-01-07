@@ -144,24 +144,16 @@ describe('Test blueprint api context', () => {
 			const studio = mockStudio();
 			const context = new StudioConfigContext(studio);
 
-			const getStudioConfigRef = jest.spyOn(
-				ConfigRef,
-				'getStudioConfigRef'
-			);
+			const getStudioConfigRef = jest.spyOn(ConfigRef, 'getStudioConfigRef');
 			getStudioConfigRef.mockImplementation(() => {
 				return 'configVal1';
 			});
 
 			try {
-				expect(context.getStudioConfigRef('conf1')).toEqual(
-					'configVal1'
-				);
+				expect(context.getStudioConfigRef('conf1')).toEqual('configVal1');
 
 				expect(getStudioConfigRef).toHaveBeenCalledTimes(1);
-				expect(getStudioConfigRef).toHaveBeenCalledWith(
-					studio._id,
-					'conf1'
-				);
+				expect(getStudioConfigRef).toHaveBeenCalledWith(studio._id, 'conf1');
 			} finally {
 				getStudioConfigRef.mockRestore();
 			}
@@ -306,9 +298,7 @@ describe('Test blueprint api context', () => {
 			});
 
 			try {
-				expect(context.getShowStyleConfigRef('conf1')).toEqual(
-					'configVal1'
-				);
+				expect(context.getShowStyleConfigRef('conf1')).toEqual('configVal1');
 
 				expect(getShowStyleConfigRef).toHaveBeenCalledTimes(1);
 				expect(getShowStyleConfigRef).toHaveBeenCalledWith(
@@ -345,9 +335,7 @@ describe('Test blueprint api context', () => {
 
 			context.warning('this is an warning');
 			expect(fakeNotes.warning).toHaveBeenCalledTimes(1);
-			expect(fakeNotes.warning).toHaveBeenCalledWith(
-				'this is an warning'
-			);
+			expect(fakeNotes.warning).toHaveBeenCalledWith('this is an warning');
 
 			const notes = context.getNotes();
 			expect(notes).toEqual([1, 2, 3]);
@@ -528,11 +516,7 @@ describe('Test blueprint api context', () => {
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK
 			};
 
-			const context = new AsRunEventContext(
-				rundown,
-				undefined,
-				mockEvent
-			);
+			const context = new AsRunEventContext(rundown, undefined, mockEvent);
 			expect(context.getStudio()).toBeTruthy();
 			expect(context.asRunEvent).toEqual(mockEvent);
 
@@ -783,9 +767,7 @@ describe('Test blueprint api context', () => {
 				// Should not get here
 				expect(false).toBeTruthy();
 			} catch (e) {
-				expect(e.message).toEqual(
-					"Cannot read property '_id' of undefined"
-				);
+				expect(e.message).toEqual("Cannot read property '_id' of undefined");
 			}
 		});
 		test('getIngestDataForPart - no id', () => {
@@ -1026,9 +1008,7 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown);
 
 			const d = new Date('2019-01-01 18:33:34:896');
-			expect(context.formatDateAsTimecode(d.getTime())).toEqual(
-				'18:33:34:22'
-			);
+			expect(context.formatDateAsTimecode(d.getTime())).toEqual('18:33:34:22');
 		});
 
 		test('formatDurationAsTimecode', () => {
@@ -1039,12 +1019,8 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown);
 
 			expect(context.formatDurationAsTimecode(0)).toEqual('00:00:00:00');
-			expect(context.formatDurationAsTimecode(10000)).toEqual(
-				'00:00:10:00'
-			);
-			expect(context.formatDurationAsTimecode(12345678)).toEqual(
-				'03:25:45:16'
-			);
+			expect(context.formatDurationAsTimecode(10000)).toEqual('00:00:10:00');
+			expect(context.formatDurationAsTimecode(12345678)).toEqual('03:25:45:16');
 		});
 	});
 });

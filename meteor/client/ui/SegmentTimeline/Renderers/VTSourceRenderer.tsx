@@ -67,13 +67,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 				0;
 			let targetTime = this.props.cursorTimePosition;
 			let seek =
-				(piece.content ? (piece.content.seek as number) : undefined) ||
-				0;
-			if (
-				piece.content &&
-				piece.content.loop &&
-				this.vPreview.duration > 0
-			) {
+				(piece.content ? (piece.content.seek as number) : undefined) || 0;
+			if (piece.content && piece.content.loop && this.vPreview.duration > 0) {
 				targetTime =
 					targetTime %
 					((itemDuration > 0
@@ -148,11 +143,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 		if (this.props.piece) {
 			const item = this.props.piece;
 			const metadata = item.contentMetaData as MediaObject;
-			if (
-				metadata &&
-				metadata.previewPath &&
-				this.props.mediaPreviewUrl
-			) {
+			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 				return (
 					this.props.mediaPreviewUrl +
 					'media/preview/' +
@@ -333,11 +324,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 									className="segment-timeline__piece__scene-marker"
 									key={i}
 									style={{
-										left:
-											(
-												(i - seek) *
-												this.props.timeScale
-											).toString() + 'px'
+										left: ((i - seek) * this.props.timeScale).toString() + 'px'
 									}}></span>
 							)
 					)}
@@ -351,18 +338,12 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 									key={i.start}
 									style={{
 										left:
-											(
-												(i.start - seek) *
-												this.props.timeScale
-											).toString() + 'px',
+											((i.start - seek) * this.props.timeScale).toString() +
+											'px',
 										width:
 											(
-												Math.min(
-													itemDuration -
-														i.start +
-														seek,
-													i.duration
-												) * this.props.timeScale
+												Math.min(itemDuration - i.start + seek, i.duration) *
+												this.props.timeScale
 											).toString() + 'px'
 									}}></span>
 							)
@@ -377,18 +358,12 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 									key={i.start}
 									style={{
 										left:
-											(
-												(i.start - seek) *
-												this.props.timeScale
-											).toString() + 'px',
+											((i.start - seek) * this.props.timeScale).toString() +
+											'px',
 										width:
 											(
-												Math.min(
-													itemDuration -
-														i.start +
-														seek,
-													i.duration
-												) * this.props.timeScale
+												Math.min(itemDuration - i.start + seek, i.duration) *
+												this.props.timeScale
 											).toString() + 'px'
 									}}></span>
 							)
@@ -398,28 +373,22 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 					ref={this.setLeftLabelRef}
 					style={this.getItemLabelOffsetLeft()}>
 					<span
-						className={ClassNames(
-							'segment-timeline__piece__label',
-							{
-								'overflow-label': this.end !== ''
-							}
-						)}>
+						className={ClassNames('segment-timeline__piece__label', {
+							'overflow-label': this.end !== ''
+						})}>
 						{this.begin}
 					</span>
-					{this.begin &&
-						this.end === '' &&
-						vtContent &&
-						vtContent.loop && (
-							<div className="segment-timeline__piece__label label-icon label-loop-icon">
-								<Lottie
-									options={defaultOptions}
-									width={24}
-									height={24}
-									isStopped={!this.props.showMiniInspector}
-									isPaused={false}
-								/>
-							</div>
-						)}
+					{this.begin && this.end === '' && vtContent && vtContent.loop && (
+						<div className="segment-timeline__piece__label label-icon label-loop-icon">
+							<Lottie
+								options={defaultOptions}
+								width={24}
+								height={24}
+								isStopped={!this.props.showMiniInspector}
+								isPaused={false}
+							/>
+						</div>
+					)}
 					{this.renderContentTrimmed()}
 				</span>
 				<span
@@ -447,8 +416,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 				</span>
 				<FloatingInspector
 					shown={
-						this.props.showMiniInspector &&
-						this.props.itemElement !== undefined
+						this.props.showMiniInspector && this.props.itemElement !== undefined
 					}>
 					{this.getPreviewUrl() ? (
 						<div
@@ -478,14 +446,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<
 					) : (
 						<div
 							className={
-								'segment-timeline__mini-inspector ' +
-								this.props.typeClass
+								'segment-timeline__mini-inspector ' + this.props.typeClass
 							}
 							style={this.getFloatingInspectorStyle()}>
 							<div>
-								<span className="mini-inspector__label">
-									{t('File name')}
-								</span>
+								<span className="mini-inspector__label">{t('File name')}</span>
 								<span className="mini-inspector__value">
 									{this.props.piece.content &&
 										this.props.piece.content.fileName}

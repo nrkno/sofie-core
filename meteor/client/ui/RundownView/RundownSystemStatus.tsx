@@ -71,8 +71,7 @@ export const MOSLastUpdateStatus = translate()(
 					{timeDiff >= 5 * 60 * 60 * 1000 &&
 						timeDiff < 24 * 60 * 60 * 1000 &&
 						t('More than 5 hours ago')}
-					{timeDiff >= 24 * 60 * 60 * 1000 &&
-						t('More than a day ago')}
+					{timeDiff >= 24 * 60 * 60 * 1000 && t('More than a day ago')}
 				</span>
 			);
 		}
@@ -157,10 +156,7 @@ export const RundownSystemStatus = translateWithTracker(
 			(devices) => {
 				const status = _.reduce(
 					devices.filter((i) => !i.ignore),
-					(
-						memo: PeripheralDeviceAPI.StatusCode,
-						device: PeripheralDevice
-					) => {
+					(memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
 						if (
 							device.connected &&
 							memo.valueOf() < device.status.statusCode.valueOf()
@@ -351,61 +347,39 @@ export const RundownSystemStatus = translateWithTracker(
 									'warning',
 									this.state.displayNotes ? 'display' : ''
 								)}>
-								<img
-									className="icon"
-									src="/icons/warning_icon.svg"
-								/>
-								<div className="count">
-									{this.props.notes.length}
-								</div>
+								<img className="icon" src="/icons/warning_icon.svg" />
+								<div className="count">{this.props.notes.length}</div>
 
 								<div className="notes-tooltip">
 									<table>
 										<tbody>
-											{_.map(
-												this.props.notes,
-												(note, key) => {
-													return (
-														<tr key={key}>
-															<th className="notes-tooltip__header">
-																<img
-																	className="icon"
-																	src="/icons/warning_icon.svg"
-																/>
-																{note.type ===
-																NoteType.WARNING
-																	? 'Warning: '
-																	: note.type ===
-																	  NoteType.ERROR
-																	? 'Error: '
-																	: ''}
-															</th>
-															<td className="notes-tooltip__source">
-																{
-																	note.origin
-																		.name
-																}
-															</td>
-															<td className="notes-tooltip__message">
-																<a
-																	href="#"
-																	onClick={(
-																		e
-																	) =>
-																		this.clickNote(
-																			e,
-																			note
-																		)
-																	}>
-																	{
-																		note.message
-																	}
-																</a>
-															</td>
-														</tr>
-													);
-												}
-											)}
+											{_.map(this.props.notes, (note, key) => {
+												return (
+													<tr key={key}>
+														<th className="notes-tooltip__header">
+															<img
+																className="icon"
+																src="/icons/warning_icon.svg"
+															/>
+															{note.type === NoteType.WARNING
+																? 'Warning: '
+																: note.type === NoteType.ERROR
+																? 'Error: '
+																: ''}
+														</th>
+														<td className="notes-tooltip__source">
+															{note.origin.name}
+														</td>
+														<td className="notes-tooltip__message">
+															<a
+																href="#"
+																onClick={(e) => this.clickNote(e, note)}>
+																{note.message}
+															</a>
+														</td>
+													</tr>
+												);
+											})}
 										</tbody>
 									</table>
 								</div>
@@ -414,90 +388,50 @@ export const RundownSystemStatus = translateWithTracker(
 						<div
 							className={ClassNames('indicator', 'mos', {
 								good:
-									this.props.mosStatus ===
-									PeripheralDeviceAPI.StatusCode.GOOD,
+									this.props.mosStatus === PeripheralDeviceAPI.StatusCode.GOOD,
 								minor:
 									this.props.mosStatus ===
-									PeripheralDeviceAPI.StatusCode
-										.WARNING_MINOR,
+									PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
 								major:
 									this.props.mosStatus ===
-									PeripheralDeviceAPI.StatusCode
-										.WARNING_MAJOR,
+									PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 								bad:
-									this.props.mosStatus ===
-									PeripheralDeviceAPI.StatusCode.BAD,
+									this.props.mosStatus === PeripheralDeviceAPI.StatusCode.BAD,
 								fatal:
-									this.props.mosStatus ===
-									PeripheralDeviceAPI.StatusCode.FATAL
+									this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL
 							})}>
 							<div className="indicator__tooltip">
 								<h4>{t('MOS Connection')}</h4>
 								<div>
 									<h5>{t('Last update')}</h5>
-									<MOSLastUpdateStatus
-										lastUpdate={this.props.mosLastUpdate}
-									/>
+									<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />
 								</div>
 								<div>
-									{this.props.mosDevices.offLine.length >
-									0 ? (
+									{this.props.mosDevices.offLine.length > 0 ? (
 										<React.Fragment>
 											{mosDisconnected.length ? (
 												<React.Fragment>
-													<h5>
-														{t('Off-line devices')}
-													</h5>
+													<h5>{t('Off-line devices')}</h5>
 													<ul>
-														{mosDisconnected.map(
-															(dev) => {
-																return (
-																	<li
-																		key={
-																			dev._id
-																		}>
-																		{
-																			dev.name
-																		}
-																	</li>
-																);
-															}
-														)}
+														{mosDisconnected.map((dev) => {
+															return <li key={dev._id}>{dev.name}</li>;
+														})}
 													</ul>
 												</React.Fragment>
 											) : null}
 											{mosDevicesIssues.length ? (
 												<React.Fragment>
-													<h5>
-														{t(
-															'Devices with issues'
-														)}
-													</h5>
+													<h5>{t('Devices with issues')}</h5>
 													<ul>
-														{mosDevicesIssues.map(
-															(dev) => {
-																return (
-																	<li
-																		key={
-																			dev._id
-																		}>
-																		{
-																			dev.name
-																		}
-																	</li>
-																);
-															}
-														)}
+														{mosDevicesIssues.map((dev) => {
+															return <li key={dev._id}>{dev.name}</li>;
+														})}
 													</ul>
 												</React.Fragment>
 											) : null}
 										</React.Fragment>
 									) : (
-										<span>
-											{t(
-												'All connections working correctly'
-											)}
-										</span>
+										<span>{t('All connections working correctly')}</span>
 									)}
 								</div>
 							</div>
@@ -509,12 +443,10 @@ export const RundownSystemStatus = translateWithTracker(
 									PeripheralDeviceAPI.StatusCode.GOOD,
 								minor:
 									this.props.playoutStatus ===
-									PeripheralDeviceAPI.StatusCode
-										.WARNING_MINOR,
+									PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
 								major:
 									this.props.playoutStatus ===
-									PeripheralDeviceAPI.StatusCode
-										.WARNING_MAJOR,
+									PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 								bad:
 									this.props.playoutStatus ===
 									PeripheralDeviceAPI.StatusCode.BAD,
@@ -525,62 +457,31 @@ export const RundownSystemStatus = translateWithTracker(
 							<div className="indicator__tooltip">
 								<h4>{t('Play-out')}</h4>
 								<div>
-									{this.props.playoutDevices.offLine.length >
-									0 ? (
+									{this.props.playoutDevices.offLine.length > 0 ? (
 										<React.Fragment>
 											{playoutDisconnected.length ? (
 												<React.Fragment>
-													<h5>
-														{t('Off-line devices')}
-													</h5>
+													<h5>{t('Off-line devices')}</h5>
 													<ul>
-														{playoutDisconnected.map(
-															(dev) => {
-																return (
-																	<li
-																		key={
-																			dev._id
-																		}>
-																		{
-																			dev.name
-																		}
-																	</li>
-																);
-															}
-														)}
+														{playoutDisconnected.map((dev) => {
+															return <li key={dev._id}>{dev.name}</li>;
+														})}
 													</ul>
 												</React.Fragment>
 											) : null}
 											{playoutDevicesIssues.length ? (
 												<React.Fragment>
-													<h5>
-														{t(
-															'Devices with issues'
-														)}
-													</h5>
+													<h5>{t('Devices with issues')}</h5>
 													<ul>
-														{playoutDevicesIssues.map(
-															(dev) => {
-																return (
-																	<li
-																		key={
-																			dev._id
-																		}>
-																		{
-																			dev.name
-																		}
-																	</li>
-																);
-															}
-														)}
+														{playoutDevicesIssues.map((dev) => {
+															return <li key={dev._id}>{dev.name}</li>;
+														})}
 													</ul>
 												</React.Fragment>
 											) : null}
 										</React.Fragment>
 									) : (
-										<span>
-											{t('All devices working correctly')}
-										</span>
+										<span>{t('All devices working correctly')}</span>
 									)}
 								</div>
 							</div>

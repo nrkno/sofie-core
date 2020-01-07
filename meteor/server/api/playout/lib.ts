@@ -194,20 +194,14 @@ export function refreshPart(dbRundown: DBRundown, dbPart: DBPart) {
 
 	const studio = Studios.findOne(dbRundown.studioId);
 	if (!studio)
-		throw new Meteor.Error(
-			404,
-			`Studio ${dbRundown.studioId} was not found`
-		);
+		throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`);
 	const rundown = new Rundown(dbRundown);
 
 	updateSegmentsFromIngestData(studio, rundown, [ingestSegment]);
 
 	const segment = Segments.findOne(dbPart.segmentId);
 	if (!segment)
-		throw new Meteor.Error(
-			404,
-			`Segment ${dbPart.segmentId} was not found`
-		);
+		throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`);
 
 	const prevPart = getPreviousPartForSegment(dbRundown._id, segment);
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart);
@@ -368,10 +362,7 @@ function resetPart(part: DBPart): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const rundown = Rundowns.findOne(part.rundownId);
 			if (!rundown)
-				throw new Meteor.Error(
-					404,
-					`Rundown "${part.rundownId}" not found!`
-				);
+				throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`);
 
 			Promise.all(ps)
 				.then(() => {
@@ -383,10 +374,7 @@ function resetPart(part: DBPart): Promise<void> {
 	} else {
 		const rundown = Rundowns.findOne(part.rundownId);
 		if (!rundown)
-			throw new Meteor.Error(
-				404,
-				`Rundown "${part.rundownId}" not found!`
-			);
+			throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`);
 		const prevPart = getPreviousPart(part);
 
 		return Promise.all(ps).then(() => {
@@ -397,11 +385,7 @@ function resetPart(part: DBPart): Promise<void> {
 }
 export function onPartHasStoppedPlaying(part: Part, stoppedPlayingTime: Time) {
 	const lastStartedPlayback = part.getLastStartedPlayback();
-	if (
-		part.startedPlayback &&
-		lastStartedPlayback &&
-		lastStartedPlayback > 0
-	) {
+	if (part.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
 		Parts.update(part._id, {
 			$set: {
 				duration: stoppedPlayingTime - lastStartedPlayback

@@ -200,9 +200,7 @@ function updateServerTime(retries: number = 0) {
 					updateServerTime(retries - 1);
 				}, 1 * 1000);
 			} else {
-				logger.info(
-					'Unable to set system time (' + (err.reason || err) + ')'
-				);
+				logger.info('Unable to set system time (' + (err.reason || err) + ')');
 				setSystemStatus('systemTime', {
 					statusCode: StatusCode.BAD,
 					messages: [`Error message: ${err.toString()}`]

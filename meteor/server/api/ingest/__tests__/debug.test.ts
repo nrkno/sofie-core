@@ -70,9 +70,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call('debug_rundownRunBlueprints', rundown._id, false);
 
 		// Ensure they were recreated
-		expect(Segments.find({ rundownId: rundown._id }).count()).not.toEqual(
-			0
-		);
+		expect(Segments.find({ rundownId: rundown._id }).count()).not.toEqual(0);
 		expect(Parts.find({ rundownId: rundown._id }).count()).not.toEqual(0);
 	});
 });

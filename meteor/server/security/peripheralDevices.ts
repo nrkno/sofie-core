@@ -25,10 +25,7 @@ export namespace PeripheralDeviceSecurity {
 
 		let peripheralDevice = PeripheralDevices.findOne(id);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				'PeripheralDevice "' + id + '" not found'
-			);
+			throw new Meteor.Error(404, 'PeripheralDevice "' + id + '" not found');
 		// if (!peripheralDevice) return null
 
 		if (peripheralDevice.token === token) return peripheralDevice;

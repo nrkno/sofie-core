@@ -212,9 +212,7 @@ class NotificationCenter0 {
 
 		return _.flatten(
 			_.map(notifiers, (item, key) => {
-				item.result.forEach(
-					(i) => this._isOpen && !i.snoozed && i.snooze()
-				);
+				item.result.forEach((i) => this._isOpen && !i.snoozed && i.snooze());
 				return item.result;
 			}).concat(_.map(notifications, (item, key) => item))
 		);
@@ -421,11 +419,6 @@ export class Notification extends EventEmitter {
 
 window['testNotification'] = function() {
 	NotificationCenter.push(
-		new Notification(
-			undefined,
-			NoticeLevel.TIP,
-			'Notification test',
-			'test'
-		)
+		new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test')
 	);
 };

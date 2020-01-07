@@ -125,10 +125,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									new Notification(
 										undefined,
 										NoticeLevel.WARNING,
-										t(
-											'Snapshot restore failed: {{errorMessage}}',
-											{ errorMessage: err + '' }
-										),
+										t('Snapshot restore failed: {{errorMessage}}', {
+											errorMessage: err + ''
+										}),
 										'RestoreSnapshot'
 									)
 								);
@@ -279,9 +278,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 						<div>
 							<h2 className="mhn mtn">{t('Take a Snapshot')}</h2>
 							<div>
-								<h3 className="mhn">
-									{t('Full System Snapshot')}
-								</h3>
+								<h3 className="mhn">{t('Full System Snapshot')}</h3>
 								<p className="mhn">
 									<i>
 										{t(
@@ -300,9 +297,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								</div>
 								{this.props.studios.length > 1 ? (
 									<div>
-										<h3 className="mhn">
-											{t('Studio Snapshot')}
-										</h3>
+										<h3 className="mhn">{t('Studio Snapshot')}</h3>
 										<p className="mhn">
 											<i>
 												{t(
@@ -316,15 +311,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 													<button
 														className="btn btn-primary"
 														onClick={() => {
-															this.takeSystemSnapshot(
-																studio._id
-															);
+															this.takeSystemSnapshot(studio._id);
 														}}>
 														{t(
 															'Take a Snapshot for studio "{{studioName}}" only',
 															{
-																studioName:
-																	studio.name
+																studioName: studio.name
 															}
 														)}
 													</button>
@@ -335,9 +327,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								) : null}
 							</div>
 						</div>
-						<h2 className="mhn">
-							{t('Restore from Snapshot File')}
-						</h2>
+						<h2 className="mhn">{t('Restore from Snapshot File')}</h2>
 						<div className="mdi">
 							<UploadButton
 								accept="application/json,.json"
@@ -348,9 +338,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								<span>{t('Upload Snapshot')}</span>
 							</UploadButton>
 						</div>
-						<h2 className="mhn">
-							{t('Restore from Stored Snapshots')}
-						</h2>
+						<h2 className="mhn">{t('Restore from Stored Snapshots')}</h2>
 						<div>
 							<table className="table">
 								<tbody>
@@ -359,9 +347,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 										<th>Type</th>
 										<th>Name</th>
 										<th>Comment</th>
-										{this.state.removeSnapshots ? (
-											<th></th>
-										) : null}
+										{this.state.removeSnapshots ? <th></th> : null}
 									</tr>
 									{_.map(this.props.snapshots, (snapshot) => {
 										return (
@@ -370,9 +356,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 													<button
 														className="btn mod mhm"
 														onClick={() => {
-															this.restoreStoredSnapshot(
-																snapshot._id
-															);
+															this.restoreStoredSnapshot(snapshot._id);
 														}}>
 														{t('Restore')}
 													</button>
@@ -386,30 +370,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 													</a>
 												</td>
 												<td>
-													{this.state
-														.editSnapshotId ===
-													snapshot._id ? (
+													{this.state.editSnapshotId === snapshot._id ? (
 														[
 															<EditAttribute
-																collection={
-																	Snapshots
-																}
+																collection={Snapshots}
 																obj={snapshot}
 																attribute="comment"
 																type="multiline"
 															/>,
 															<button
 																className="action-btn"
-																onClick={() =>
-																	this.editSnapshot(
-																		snapshot._id
-																	)
-																}>
-																<FontAwesomeIcon
-																	icon={
-																		faWindowClose
-																	}
-																/>
+																onClick={() => this.editSnapshot(snapshot._id)}>
+																<FontAwesomeIcon icon={faWindowClose} />
 															</button>
 														]
 													) : (
@@ -417,15 +389,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 															href="#"
 															onClick={(e) => {
 																e.preventDefault();
-																this.editSnapshot(
-																	snapshot._id
-																);
+																this.editSnapshot(snapshot._id);
 															}}>
-															<i>
-																{multilineText(
-																	snapshot.comment
-																)}
-															</i>
+															<i>{multilineText(snapshot.comment)}</i>
 														</a>
 													)}
 												</td>
@@ -434,9 +400,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 														<button
 															className="btn mod mhm btn-secondary"
 															onClick={() => {
-																this.removeStoredSnapshot(
-																	snapshot._id
-																);
+																this.removeStoredSnapshot(snapshot._id);
 															}}>
 															{t('Remove')}
 														</button>

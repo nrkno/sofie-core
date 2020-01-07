@@ -8,9 +8,7 @@
  * @returns the calculated width of the element excluding padding
  */
 export function getElementWidth(element: HTMLElement): number {
-	const { width, paddingLeft, paddingRight } = window.getComputedStyle(
-		element
-	);
+	const { width, paddingLeft, paddingRight } = window.getComputedStyle(element);
 	const computedWidth = Number(width);
 
 	if (!Number.isNaN(computedWidth)) {

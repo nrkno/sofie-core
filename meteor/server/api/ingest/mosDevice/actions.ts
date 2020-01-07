@@ -32,55 +32,31 @@ export namespace MOSDeviceActions {
 				peripheralDevice._id,
 				(err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
 					if (err) {
-						if (
-							_.isString(err) &&
-							err.match(/rundown does not exist/i)
-						) {
+						if (_.isString(err) && err.match(/rundown does not exist/i)) {
 							// Don't throw an error, instead return MISSING value
-							cb(
-								null,
-								UserActionAPI.ReloadRundownResponse.MISSING
-							);
+							cb(null, UserActionAPI.ReloadRundownResponse.MISSING);
 						} else {
-							logger.error(
-								'Error in MOSDeviceActions.reloadRundown',
-								err
-							);
+							logger.error('Error in MOSDeviceActions.reloadRundown', err);
 							cb(err);
 						}
 					} else {
 						try {
-							logger.info(
-								'triggerGetRunningOrder reply ' +
-									mosRunningOrder.ID
-							);
+							logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID);
 							logger.debug(mosRunningOrder);
 
-							if (
-								parseMosString(mosRunningOrder.ID) !==
-								rundown.externalId
-							) {
+							if (parseMosString(mosRunningOrder.ID) !== rundown.externalId) {
 								throw new Meteor.Error(
 									401,
 									`Expected triggerGetRunningOrder reply for ${
 										rundown.externalId
-									} but got ${parseMosString(
-										mosRunningOrder.ID
-									)}`
+									} but got ${parseMosString(mosRunningOrder.ID)}`
 								);
 							}
 
-							handleMosRundownData(
-								peripheralDevice,
-								mosRunningOrder,
-								false
-							);
+							handleMosRundownData(peripheralDevice, mosRunningOrder, false);
 
 							// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
-							cb(
-								null,
-								UserActionAPI.ReloadRundownResponse.WORKING
-							);
+							cb(null, UserActionAPI.ReloadRundownResponse.WORKING);
 						} catch (e) {
 							cb(e);
 						}
@@ -168,8 +144,7 @@ export namespace MOSDeviceActions {
 
 			const story = mosPayload.Body.filter(
 				(item) =>
-					item.Type === 'storyItem' &&
-					item.Content.ID === piece.externalId
+					item.Type === 'storyItem' && item.Content.ID === piece.externalId
 			)[0].Content;
 			const timeBase = story.TimeBase || 1;
 			story.EditorialStart = inPoint * timeBase;
@@ -182,9 +157,7 @@ export namespace MOSDeviceActions {
 			if (!peripheralDevice)
 				throw new Meteor.Error(
 					404,
-					'PeripheralDevice "' +
-						rundown.peripheralDeviceId +
-						'" not found'
+					'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found'
 				);
 
 			PeripheralDeviceAPI.executeFunction(

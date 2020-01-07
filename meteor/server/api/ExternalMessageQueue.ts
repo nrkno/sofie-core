@@ -36,8 +36,7 @@ export function queueExternalMessages(
 		if (!message.type) throw new Meteor.Error('attribute .type missing!');
 		if (!message.receiver)
 			throw new Meteor.Error('attribute .receiver missing!');
-		if (!message.message)
-			throw new Meteor.Error('attribute .message missing!');
+		if (!message.message) throw new Meteor.Error('attribute .message missing!');
 
 		// Save the output into the message queue, for later processing:
 		let now = getCurrentTime();
@@ -142,20 +141,14 @@ function doMessageQueue() {
 				let p: Promise<any>;
 				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
 					p = sendSOAPMessage(
-						msg as ExternalMessageQueueObjSOAP &
-							ExternalMessageQueueObj
+						msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj
 					);
-				} else if (
-					msg.type === IBlueprintExternalMessageQueueType.SLACK
-				) {
+				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
 					// let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
 					p = sendSlackMessageToWebhook(msg.message, msg.receiver);
-				} else if (
-					msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ
-				) {
+				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
 					p = sendRabbitMQMessage(
-						msg as ExternalMessageQueueObjRabbitMQ &
-							ExternalMessageQueueObj
+						msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj
 					);
 				} else {
 					throw new Meteor.Error(
@@ -246,9 +239,7 @@ function updateExternalMessageQueueStatus(): void {
 					messages: [
 						`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${
 							messagesOnQueueExample.errorMessage
-						}", to receiver "${
-							messagesOnQueueExample.type
-						}", "${JSON.stringify(
+						}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(
 							messagesOnQueueExample.receiver
 						)}")`
 					]
@@ -305,9 +296,7 @@ methods[ExternalMessageQueueAPI.methods.retry] = (id: string) => {
 			hold: false,
 			errorFatal: false,
 			lastTry:
-				m.lastTry !== undefined && m.lastTry > tryGap
-					? tryGap
-					: m.lastTry
+				m.lastTry !== undefined && m.lastTry > tryGap ? tryGap : m.lastTry
 		}
 	});
 	triggerdoMessageQueue(1000);

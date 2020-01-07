@@ -16,8 +16,7 @@ export namespace UIStateStorage {
 	// Remove legacy storage for collapsedItems
 	localStorage.removeItem('collapsedItems');
 	try {
-		_collapsedState =
-			JSON.parse(localStorage.getItem(NAMESPACE) || '') || {};
+		_collapsedState = JSON.parse(localStorage.getItem(NAMESPACE) || '') || {};
 	} catch (e) {
 		_collapsedState = {};
 	}

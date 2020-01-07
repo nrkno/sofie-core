@@ -34,9 +34,7 @@ export default class VTInputIcon extends React.Component<{
 							fontSize: '75px',
 							fontWeight: 100
 						}}>
-						{this.props.abbreviation
-							? this.props.abbreviation
-							: 'VT'}
+						{this.props.abbreviation ? this.props.abbreviation : 'VT'}
 					</tspan>
 				</text>
 			</svg>

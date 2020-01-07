@@ -34,9 +34,7 @@ describe('Test blueprint http api', () => {
 			const res = new MockResponse();
 			const req = new MockRequest({
 				method: 'POST',
-				url:
-					`/blueprints/restore/${blueprintId}?` +
-					queryParams.join('&')
+				url: `/blueprints/restore/${blueprintId}?` + queryParams.join('&')
 			});
 			(req as any).body = body;
 
@@ -166,12 +164,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('');
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1);
-			expect(api.uploadBlueprint).toHaveBeenCalledWith(
-				id,
-				body,
-				name,
-				false
-			);
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, name, false);
 		});
 	});
 

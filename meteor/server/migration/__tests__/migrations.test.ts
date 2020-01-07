@@ -176,8 +176,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				id: 'myCoreMockStep2',
 				canBeRunAutomatically: true,
 				validate: () => {
-					if (!Studios.findOne('studioMock2'))
-						return 'No Studio found';
+					if (!Studios.findOne('studioMock2')) return 'No Studio found';
 					return false;
 				},
 				migrate: () => {
@@ -201,8 +200,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				id: 'myCoreMockStep3',
 				canBeRunAutomatically: true,
 				validate: () => {
-					if (!Studios.findOne('studioMock3'))
-						return 'No Studio found';
+					if (!Studios.findOne('studioMock3')) return 'No Studio found';
 					return false;
 				},
 				migrate: () => {
@@ -226,8 +224,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				id: 'myCoreMockStep1',
 				canBeRunAutomatically: true,
 				validate: () => {
-					if (!Studios.findOne('studioMock1'))
-						return 'No Studio found';
+					if (!Studios.findOne('studioMock1')) return 'No Studio found';
 					return false;
 				},
 				migrate: () => {

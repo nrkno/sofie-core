@@ -91,9 +91,7 @@ class SpeechSynthesisClass {
 	private selectVoice(): SpeechSynthesisVoice | undefined {
 		const voices = _.map(speechSynthesis.getVoices(), (voice) => {
 			const voiceName =
-				voice.name +
-				` (${voice.lang})` +
-				(voice.default ? ' -default' : '');
+				voice.name + ` (${voice.lang})` + (voice.default ? ' -default' : '');
 
 			let weight = 999;
 			_.each(VOICE_PREFERENCE, (n, i) => {

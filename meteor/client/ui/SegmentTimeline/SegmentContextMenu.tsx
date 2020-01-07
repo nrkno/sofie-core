@@ -42,18 +42,11 @@ export const SegmentContextMenu = translate()(
 							<React.Fragment>
 								{startsAt !== null && (
 									<MenuItem
-										onClick={(e) =>
-											this.props.onSetNext(part, e)
-										}
-										disabled={
-											part._id ===
-											this.props.rundown.currentPartId
-										}>
+										onClick={(e) => this.props.onSetNext(part, e)}
+										disabled={part._id === this.props.rundown.currentPartId}>
 										<span
 											dangerouslySetInnerHTML={{
-												__html: t(
-													'Set this part as <strong>Next</strong>'
-												)
+												__html: t('Set this part as <strong>Next</strong>')
 											}}></span>{' '}
 										(
 										{RundownUtils.formatTimeToShortTime(
@@ -65,47 +58,28 @@ export const SegmentContextMenu = translate()(
 								{startsAt !== null && part ? (
 									<React.Fragment>
 										<MenuItem
-											onClick={(e) =>
-												this.onSetAsNextFromHere(
-													part,
-													e
-												)
-											}
-											disabled={
-												part._id ===
-												this.props.rundown.currentPartId
-											}>
+											onClick={(e) => this.onSetAsNextFromHere(part, e)}
+											disabled={part._id === this.props.rundown.currentPartId}>
 											<span
 												dangerouslySetInnerHTML={{
-													__html: t(
-														'Set <strong>Next</strong> Here'
-													)
+													__html: t('Set <strong>Next</strong> Here')
 												}}></span>{' '}
 											(
 											{RundownUtils.formatTimeToShortTime(
-												Math.floor(
-													(startsAt + timecode) / 1000
-												) * 1000
+												Math.floor((startsAt + timecode) / 1000) * 1000
 											)}
 											)
 										</MenuItem>
 										<MenuItem
-											onClick={(e) =>
-												this.onPlayFromHere(part, e)
-											}
-											disabled={
-												part._id ===
-												this.props.rundown.currentPartId
-											}>
+											onClick={(e) => this.onPlayFromHere(part, e)}
+											disabled={part._id === this.props.rundown.currentPartId}>
 											<span
 												dangerouslySetInnerHTML={{
 													__html: t('Play from Here')
 												}}></span>{' '}
 											(
 											{RundownUtils.formatTimeToShortTime(
-												Math.floor(
-													(startsAt + timecode) / 1000
-												) * 1000
+												Math.floor((startsAt + timecode) / 1000) * 1000
 											)}
 											)
 										</MenuItem>
@@ -116,15 +90,10 @@ export const SegmentContextMenu = translate()(
 						{part && timecode === null && (
 							<MenuItem
 								onClick={(e) => this.props.onSetNext(part, e)}
-								disabled={
-									part._id ===
-									this.props.rundown.currentPartId
-								}>
+								disabled={part._id === this.props.rundown.currentPartId}>
 								<span
 									dangerouslySetInnerHTML={{
-										__html: t(
-											'Set segment as <strong>Next</strong>'
-										)
+										__html: t('Set segment as <strong>Next</strong>')
 									}}></span>
 							</MenuItem>
 						)}
@@ -134,10 +103,7 @@ export const SegmentContextMenu = translate()(
 		}
 
 		getPartFromContext = (): Part | null => {
-			if (
-				this.props.contextMenuContext &&
-				this.props.contextMenuContext.part
-			) {
+			if (this.props.contextMenuContext && this.props.contextMenuContext.part) {
 				return this.props.contextMenuContext.part;
 			} else {
 				return null;
@@ -170,11 +136,11 @@ export const SegmentContextMenu = translate()(
 				this.props.contextMenuContext &&
 				this.props.contextMenuContext.partDocumentOffset
 			) {
-				const left =
-					this.props.contextMenuContext.partDocumentOffset.left || 0;
+				const left = this.props.contextMenuContext.partDocumentOffset.left || 0;
 				const timeScale = this.props.contextMenuContext.timeScale || 1;
-				const menuPosition = this.props.contextMenuContext
-					.mousePosition || { left };
+				const menuPosition = this.props.contextMenuContext.mousePosition || {
+					left
+				};
 				offset = (menuPosition.left - left) / timeScale;
 				return offset;
 			}

@@ -89,8 +89,7 @@ export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 						'status-bar__controls__button',
 						'support__toggle-button',
 						{
-							'status-bar__controls__button--open': this.props
-								.isOpen,
+							'status-bar__controls__button--open': this.props.isOpen,
 							'status-bar__controls__button--has-messages':
 								this.getMessages() !== ''
 						}

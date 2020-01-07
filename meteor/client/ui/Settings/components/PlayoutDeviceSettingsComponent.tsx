@@ -148,10 +148,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 						</tr>
 						{_.map(
 							settings.devices,
-							(
-								subDevice: TSR.DeviceOptionsAny,
-								deviceId: string
-							) => {
+							(subDevice: TSR.DeviceOptionsAny, deviceId: string) => {
 								return (
 									<React.Fragment key={deviceId}>
 										<tr
@@ -168,38 +165,24 @@ export const PlayoutDeviceSettingsComponent = translate()(
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={
-														'settings.devices.' +
-														deviceId +
-														'.disable'
+														'settings.devices.' + deviceId + '.disable'
 													}
 													obj={this.props.device}
 													type="checkbox"
 													options={TSR.DeviceType}
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input"></EditAttribute>
 											</td>
 											<td className="settings-studio-device__actions table-item-actions c3">
 												<button
 													className="action-btn"
-													onClick={(e) =>
-														this.editItem(deviceId)
-													}>
-													<FontAwesomeIcon
-														icon={faPencilAlt}
-													/>
+													onClick={(e) => this.editItem(deviceId)}>
+													<FontAwesomeIcon icon={faPencilAlt} />
 												</button>
 												<button
 													className="action-btn"
-													onClick={(e) =>
-														this.confirmRemove(
-															deviceId
-														)
-													}>
-													<FontAwesomeIcon
-														icon={faTrash}
-													/>
+													onClick={(e) => this.confirmRemove(deviceId)}>
+													<FontAwesomeIcon icon={faTrash} />
 												</button>
 											</td>
 										</tr>
@@ -214,156 +197,99 @@ export const PlayoutDeviceSettingsComponent = translate()(
 																{t('Device ID')}
 																<EditAttribute
 																	modifiedClassName="bghl"
-																	attribute={
-																		'settings.devices'
-																	}
-																	overrideDisplayValue={
-																		deviceId
-																	}
-																	obj={
-																		this
-																			.props
-																			.device
-																	}
+																	attribute={'settings.devices'}
+																	overrideDisplayValue={deviceId}
+																	obj={this.props.device}
 																	type="text"
-																	collection={
-																		PeripheralDevices
-																	}
-																	updateFunction={
-																		this
-																			.updateDeviceId
-																	}
+																	collection={PeripheralDevices}
+																	updateFunction={this.updateDeviceId}
 																	className="input text-input input-l"></EditAttribute>
 															</label>
 														</div>
 														<div className="mod mvs mhs">
 															<label className="field">
-																{t(
-																	'Device Type'
-																)}
+																{t('Device Type')}
 																<EditAttribute
 																	modifiedClassName="bghl"
 																	attribute={
-																		'settings.devices.' +
-																		deviceId +
-																		'.type'
+																		'settings.devices.' + deviceId + '.type'
 																	}
-																	obj={
-																		this
-																			.props
-																			.device
-																	}
+																	obj={this.props.device}
 																	type="dropdown"
-																	options={
-																		TSR.DeviceType
-																	}
-																	optionsAreNumbers={
-																		true
-																	}
-																	collection={
-																		PeripheralDevices
-																	}
+																	options={TSR.DeviceType}
+																	optionsAreNumbers={true}
+																	collection={PeripheralDevices}
 																	className="input text-input input-l"></EditAttribute>
 															</label>
 														</div>
 														<div className="mod mvs mhs">
 															<label className="field">
-																{t(
-																	'Thread Usage'
-																)}
+																{t('Thread Usage')}
 																<EditAttribute
 																	modifiedClassName="bghl"
 																	attribute={`settings.devices.${deviceId}.threadUsage`}
-																	obj={
-																		this
-																			.props
-																			.device
-																	}
+																	obj={this.props.device}
 																	type="float"
-																	collection={
-																		PeripheralDevices
-																	}
+																	collection={PeripheralDevices}
 																	className="input text-input input-l"></EditAttribute>
 															</label>
 														</div>
-														{subDevice.type ===
-														TSR.DeviceType.CASPARCG
+														{subDevice.type === TSR.DeviceType.CASPARCG
 															? this.renderCasparCGDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.ATEM
+															: subDevice.type === TSR.DeviceType.ATEM
 															? this.renderAtemDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.LAWO
+															: subDevice.type === TSR.DeviceType.LAWO
 															? this.renderLawoDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.HTTPSEND
+															: subDevice.type === TSR.DeviceType.HTTPSEND
 															? this.renderHTTPSendDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.PANASONIC_PTZ
+															: subDevice.type === TSR.DeviceType.PANASONIC_PTZ
 															? this.renderPanasonicPTZDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.TCPSEND
+															: subDevice.type === TSR.DeviceType.TCPSEND
 															? this.renderTCPSendDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.HYPERDECK
+															: subDevice.type === TSR.DeviceType.HYPERDECK
 															? this.renderHyperdeckDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.PHAROS
+															: subDevice.type === TSR.DeviceType.PHAROS
 															? this.renderPharosDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType.OSC
+															: subDevice.type === TSR.DeviceType.OSC
 															? this.renderOSCDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.HTTPWATCHER
+															: subDevice.type === TSR.DeviceType.HTTPWATCHER
 															? this.renderHTTPWatcherDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.SISYFOS
+															: subDevice.type === TSR.DeviceType.SISYFOS
 															? this.renderSisyfosDeviceSettings(
 																	subDevice,
 																	deviceId
 															  )
-															: subDevice.type ===
-															  TSR.DeviceType
-																	.QUANTEL
+															: subDevice.type === TSR.DeviceType.QUANTEL
 															? this.renderQuantelDeviceSettings(
 																	subDevice,
 																	deviceId
@@ -372,17 +298,9 @@ export const PlayoutDeviceSettingsComponent = translate()(
 													</div>
 													<div className="mod alright">
 														<button
-															className={ClassNames(
-																'btn btn-primary'
-															)}
-															onClick={(e) =>
-																this.finishEditItem(
-																	deviceId
-																)
-															}>
-															<FontAwesomeIcon
-																icon={faCheck}
-															/>
+															className={ClassNames('btn btn-primary')}
+															onClick={(e) => this.finishEditItem(deviceId)}>
+															<FontAwesomeIcon icon={faCheck} />
 														</button>
 													</div>
 												</td>
@@ -408,11 +326,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -424,11 +338,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -441,9 +351,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.launcherHost'
+									'settings.devices.' + deviceId + '.options.launcherHost'
 								}
 								obj={this.props.device}
 								type="text"
@@ -457,9 +365,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.launcherPort'
+									'settings.devices.' + deviceId + '.options.launcherPort'
 								}
 								obj={this.props.device}
 								type="int"
@@ -482,11 +388,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -498,11 +400,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -524,11 +422,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -540,11 +434,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -557,9 +447,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.sourcesPath'
+									'settings.devices.' + deviceId + '.options.sourcesPath'
 								}
 								obj={this.props.device}
 								type="text"
@@ -588,11 +476,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Priority')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.priority'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.priority'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -626,11 +510,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -642,11 +522,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -668,11 +544,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -684,11 +556,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -701,9 +569,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.bufferEncoding'
+									'settings.devices.' + deviceId + '.options.bufferEncoding'
 								}
 								obj={this.props.device}
 								type="text"
@@ -726,11 +592,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -742,11 +604,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -759,9 +617,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.minRecordingTime'
+									'settings.devices.' + deviceId + '.options.minRecordingTime'
 								}
 								obj={this.props.device}
 								type="int"
@@ -784,11 +640,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -800,11 +652,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Enable SSL')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.spart'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.spart'}
 								obj={this.props.device}
 								type="checkbox"
 								collection={PeripheralDevices}
@@ -826,11 +674,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -842,11 +686,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -868,11 +708,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('URI')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.uri'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.uri'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -885,9 +721,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.httpMethod'
+									'settings.devices.' + deviceId + '.options.httpMethod'
 								}
 								obj={this.props.device}
 								type="text"
@@ -916,11 +750,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Keyword')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.keyword'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.keyword'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -932,11 +762,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Interval')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.interval'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.interval'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -958,11 +784,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Host')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.host'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.host'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -974,11 +796,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Port')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.port'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.port'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -1001,9 +819,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.gatewayUrl'
+									'settings.devices.' + deviceId + '.options.gatewayUrl'
 								}
 								obj={this.props.device}
 								type="text"
@@ -1016,11 +832,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('ISA URL')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.ISAUrl'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.ISAUrl'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -1032,11 +844,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Zone ID')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.zoneId'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.zoneId'}
 								obj={this.props.device}
 								type="text"
 								collection={PeripheralDevices}
@@ -1048,11 +856,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 							{t('Quantel Server ID')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'settings.devices.' +
-									deviceId +
-									'.options.serverId'
-								}
+								attribute={'settings.devices.' + deviceId + '.options.serverId'}
 								obj={this.props.device}
 								type="int"
 								collection={PeripheralDevices}
@@ -1064,8 +868,7 @@ export const PlayoutDeviceSettingsComponent = translate()(
 		}
 		render() {
 			const { t, subDevices } = this.props;
-			const settings = this.props.device
-				.settings as PlayoutDeviceSettings;
+			const settings = this.props.device.settings as PlayoutDeviceSettings;
 			return (
 				<div>
 					<div className="mod mvs mhs">
@@ -1150,14 +953,11 @@ export const PlayoutDeviceSettingsComponent = translate()(
 						onAccept={(e) => this.handleConfirmRemoveAccept(e)}
 						onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 						<p>
-							{t(
-								'Are you sure you want to remove device "{{deviceId}}"?',
-								{
-									deviceId:
-										this.state.deleteConfirmDeviceId &&
-										this.state.deleteConfirmDeviceId
-								}
-							)}
+							{t('Are you sure you want to remove device "{{deviceId}}"?', {
+								deviceId:
+									this.state.deleteConfirmDeviceId &&
+									this.state.deleteConfirmDeviceId
+							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
@@ -1181,12 +981,8 @@ export const PlayoutDeviceSettingsComponent = translate()(
 						<React.Fragment>
 							<h2 className="mhn">
 								<Tooltip
-									overlay={t(
-										'Connect some devices to the playout gateway'
-									)}
-									visible={
-										getHelpMode() && !subDevices.length
-									}
+									overlay={t('Connect some devices to the playout gateway')}
+									visible={getHelpMode() && !subDevices.length}
 									placement="right">
 									<span>{t('Attached Subdevices')}</span>
 								</Tooltip>

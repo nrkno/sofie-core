@@ -121,9 +121,7 @@ const Blueprint = wrapSettingsNavigation(
 									this.redirectUser(
 										'/settings/blueprint/' +
 											(this.props.attribute
-												? this.props.obj[
-														this.props.attribute
-												  ]
+												? this.props.obj[this.props.attribute]
 												: '')
 									);
 								}}>
@@ -163,9 +161,7 @@ const ShowStyle = wrapSettingsNavigation(
 						after.map((a) => a._id),
 						before.map((b) => b._id)
 					)[0];
-					this.redirectUser(
-						'/settings/showStyleBase/' + newShowStyle
-					);
+					this.redirectUser('/settings/showStyleBase/' + newShowStyle);
 				}, 1000);
 			}
 
@@ -173,17 +169,12 @@ const ShowStyle = wrapSettingsNavigation(
 				if (this.props.obj && this.props.attribute) {
 					return (
 						<button
-							key={
-								'button-navigate-' +
-								this.props.obj[this.props.attribute]
-							}
+							key={'button-navigate-' + this.props.obj[this.props.attribute]}
 							className="btn btn-primary btn-add-new"
 							onClick={(e) => {
 								this.redirectUser(
 									'/settings/showStyleBase/' +
-										(this.props.attribute
-											? this.props.obj['_id']
-											: '')
+										(this.props.attribute ? this.props.obj['_id'] : '')
 								);
 							}}>
 							Edit {this.props.obj[this.props.attribute]}
@@ -212,9 +203,7 @@ const NewShowStyle = wrapSettingsNavigation(
 						after.map((a) => a._id),
 						before.map((b) => b._id)
 					)[0];
-					this.redirectUser(
-						'/settings/showStyleBase/' + newShowStyle
-					);
+					this.redirectUser('/settings/showStyleBase/' + newShowStyle);
 				}, 1000);
 			}
 

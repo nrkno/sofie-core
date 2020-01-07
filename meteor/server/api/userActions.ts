@@ -163,9 +163,7 @@ export function moveNext(
 	}
 
 	if (!rundown.nextPartId && !rundown.currentPartId) {
-		return ClientAPI.responseError(
-			'Rundown has no next and no current part!'
-		);
+		return ClientAPI.responseError('Rundown has no next and no current part!');
 	}
 
 	return ClientAPI.responseSuccess(
@@ -445,12 +443,7 @@ export function segmentAdLibPieceStart(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibPieceStart(
-			rundownId,
-			partId,
-			slaiId,
-			queue
-		)
+		ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, slaiId, queue)
 	);
 }
 export function sourceLayerOnPartStop(
@@ -570,10 +563,7 @@ export function activateHold(rundownId: string, undo?: boolean) {
 
 	let currentPart = Parts.findOne({ _id: rundown.currentPartId });
 	if (!currentPart)
-		throw new Meteor.Error(
-			404,
-			`Part "${rundown.currentPartId}" not found!`
-		);
+		throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`);
 	let nextPart = Parts.findOne({ _id: rundown.nextPartId });
 	if (!nextPart)
 		throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`);
@@ -582,9 +572,7 @@ export function activateHold(rundownId: string, undo?: boolean) {
 	}
 	if (undo && rundown.holdState !== RundownHoldState.PENDING) {
 		return ClientAPI.responseError(
-			`Can't undo hold from state: ${
-				RundownHoldState[rundown.holdState || 0]
-			}`
+			`Can't undo hold from state: ${RundownHoldState[rundown.holdState || 0]}`
 		);
 	}
 
@@ -593,9 +581,7 @@ export function activateHold(rundownId: string, undo?: boolean) {
 			ServerPlayoutAPI.deactivateHold(rundownId)
 		);
 	} else {
-		return ClientAPI.responseSuccess(
-			ServerPlayoutAPI.activateHold(rundownId)
-		);
+		return ClientAPI.responseSuccess(ServerPlayoutAPI.activateHold(rundownId));
 	}
 }
 export function userSaveEvaluation(
@@ -680,9 +666,7 @@ export function recordDelete(id: string) {
 	return ClientAPI.responseSuccess(ServerTestToolsAPI.recordDelete(id));
 }
 export function mediaRestartWorkflow(workflowId: string) {
-	return ClientAPI.responseSuccess(
-		MediaManagerAPI.restartWorkflow(workflowId)
-	);
+	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(workflowId));
 }
 export function mediaAbortWorkflow(workflowId: string) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortWorkflow(workflowId));
@@ -702,8 +686,7 @@ export function regenerateRundown(rundownId: string) {
 	check(rundownId, String);
 
 	const rundown = Rundowns.findOne(rundownId);
-	if (!rundown)
-		throw new Meteor.Error(404, `Rundown "${rundownId}" not found`);
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`);
 
 	if (rundown.active) {
 		return ClientAPI.responseError(
@@ -711,9 +694,7 @@ export function regenerateRundown(rundownId: string) {
 		);
 	}
 
-	return ClientAPI.responseSuccess(
-		IngestActions.regenerateRundown(rundownId)
-	);
+	return ClientAPI.responseSuccess(IngestActions.regenerateRundown(rundownId));
 }
 
 let restartToken: string | undefined = undefined;

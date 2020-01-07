@@ -230,10 +230,9 @@ export const DeviceItem = i18next.translate()(
 									new Notification(
 										undefined,
 										NoticeLevel.NOTIFICATION,
-										t(
-											'CasparCG on device "{{deviceName}}" restarting...',
-											{ deviceName: device.name }
-										),
+										t('CasparCG on device "{{deviceName}}" restarting...', {
+											deviceName: device.name
+										}),
 										'SystemStatus'
 									)
 								);
@@ -262,10 +261,9 @@ export const DeviceItem = i18next.translate()(
 									new Notification(
 										undefined,
 										NoticeLevel.WARNING,
-										t(
-											'Failed to restart Quantel Gateway: {{errorMessage}}',
-											{ errorMessage: err + '' }
-										),
+										t('Failed to restart Quantel Gateway: {{errorMessage}}', {
+											errorMessage: err + ''
+										}),
 										'SystemStatus'
 									)
 								);
@@ -356,9 +354,7 @@ export const DeviceItem = i18next.translate()(
 					</div>
 					<div className="device-item__id">
 						<Tooltip
-							overlay={t(
-								'Connect some devices to the playout gateway'
-							)}
+							overlay={t('Connect some devices to the playout gateway')}
 							visible={
 								getHelpMode() &&
 								this.props.device.type ===
@@ -371,17 +367,12 @@ export const DeviceItem = i18next.translate()(
 							{getAllowConfigure() ? (
 								<div className="value">
 									<Link
-										to={
-											'/settings/peripheralDevice/' +
-											this.props.device._id
-										}>
+										to={'/settings/peripheralDevice/' + this.props.device._id}>
 										{this.props.device.name}
 									</Link>
 								</div>
 							) : (
-								<div className="value">
-									{this.props.device.name}
-								</div>
+								<div className="value">{this.props.device.name}</div>
 							)}
 						</Tooltip>
 					</div>
@@ -390,8 +381,7 @@ export const DeviceItem = i18next.translate()(
 							<label>{t('Version')}: </label>
 							<div className="value">
 								<a title={this.deviceVersions()} href="#">
-									{this.props.device.versions._process ||
-										'N/A'}
+									{this.props.device.versions._process || 'N/A'}
 								</a>
 							</div>
 						</div>
@@ -401,17 +391,14 @@ export const DeviceItem = i18next.translate()(
 						<div className="device-item__actions">
 							{this.props.device.type ===
 								PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-							this.props.device.subType ===
-								TSR.DeviceType.CASPARCG ? (
+							this.props.device.subType === TSR.DeviceType.CASPARCG ? (
 								<React.Fragment>
 									<button
 										className="btn btn-secondary"
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											this.onRestartCasparCG(
-												this.props.device
-											);
+											this.onRestartCasparCG(this.props.device);
 										}}>
 										{t('Restart')}
 										{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
@@ -420,17 +407,14 @@ export const DeviceItem = i18next.translate()(
 							) : null}
 							{this.props.device.type ===
 								PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-							this.props.device.subType ===
-								TSR.DeviceType.HYPERDECK ? (
+							this.props.device.subType === TSR.DeviceType.HYPERDECK ? (
 								<React.Fragment>
 									<button
 										className="btn btn-secondary"
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											this.onFormatHyperdeck(
-												this.props.device
-											);
+											this.onFormatHyperdeck(this.props.device);
 										}}>
 										{t('Format disks')}
 									</button>
@@ -438,17 +422,14 @@ export const DeviceItem = i18next.translate()(
 							) : null}
 							{this.props.device.type ===
 								PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-							this.props.device.subType ===
-								TSR.DeviceType.QUANTEL ? (
+							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
 								<React.Fragment>
 									<button
 										className="btn btn-secondary"
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											this.onRestartQuantel(
-												this.props.device
-											);
+											this.onRestartQuantel(this.props.device);
 										}}>
 										{t('Restart Quantel Gateway')}
 									</button>
@@ -460,25 +441,16 @@ export const DeviceItem = i18next.translate()(
 								acceptText={t('Delete')}
 								secondaryText={t('Cancel')}
 								show={!!this.state.showDeleteDeviceConfirm}
-								onAccept={(e) =>
-									this.handleConfirmDeleteShowStyleAccept(e)
-								}
-								onSecondary={(e) =>
-									this.handleConfirmDeleteShowStyleCancel(e)
-								}>
+								onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
+								onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 								<p>
 									{t(
 										'Are you sure you want to delete this device: "{{deviceId}}"?',
 										{
 											deviceId:
-												this.state
-													.showDeleteDeviceConfirm &&
-												(this.state
-													.showDeleteDeviceConfirm
-													.name ||
-													this.state
-														.showDeleteDeviceConfirm
-														._id)
+												this.state.showDeleteDeviceConfirm &&
+												(this.state.showDeleteDeviceConfirm.name ||
+													this.state.showDeleteDeviceConfirm._id)
 										}
 									)}
 								</p>
@@ -516,29 +488,17 @@ export const DeviceItem = i18next.translate()(
 										title={t('Restart this device?')}
 										acceptText={t('Restart')}
 										secondaryText={t('Cancel')}
-										show={
-											!!this.state.showKillDeviceConfirm
-										}
-										onAccept={(e) =>
-											this.handleConfirmKillAccept(e)
-										}
-										onSecondary={(e) =>
-											this.handleConfirmKillCancel(e)
-										}>
-										<p>
-											{t(
-												'Are you sure you want to restart this device?'
-											)}
-										</p>
+										show={!!this.state.showKillDeviceConfirm}
+										onAccept={(e) => this.handleConfirmKillAccept(e)}
+										onSecondary={(e) => this.handleConfirmKillCancel(e)}>
+										<p>{t('Are you sure you want to restart this device?')}</p>
 									</ModalDialog>
 									<button
 										className="btn btn-secondary"
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											this.onKillDevice(
-												this.props.device
-											);
+											this.onKillDevice(this.props.device);
 										}}>
 										{t('Restart')}
 									</button>
@@ -615,10 +575,7 @@ export const CoreItem = i18next.translate()(
 										new Notification(
 											undefined,
 											NoticeLevel.CRITICAL,
-											t(
-												'Could not generate restart core: {{err}}',
-												{ err }
-											),
+											t('Could not generate restart core: {{err}}', { err }),
 											'SystemStatus'
 										)
 									);
@@ -668,17 +625,13 @@ export const CoreItem = i18next.translate()(
 								this.props.systemStatus &&
 									this.props.systemStatus.status && {
 										'device-status--unknown':
-											this.props.systemStatus.status ===
-											'UNDEFINED',
+											this.props.systemStatus.status === 'UNDEFINED',
 										'device-status--good':
-											this.props.systemStatus.status ===
-											'OK',
+											this.props.systemStatus.status === 'OK',
 										'device-status--warning':
-											this.props.systemStatus.status ===
-											'WARNING',
+											this.props.systemStatus.status === 'WARNING',
 										'device-status--fatal':
-											this.props.systemStatus.status ===
-											'FAIL'
+											this.props.systemStatus.status === 'FAIL'
 									}
 							)}>
 							<div className="value">
@@ -687,15 +640,11 @@ export const CoreItem = i18next.translate()(
 										href="#"
 										title={
 											this.props.systemStatus &&
-											this.props.systemStatus._internal
-												.messages
-												? this.props.systemStatus._internal.messages.join(
-														'\n'
-												  )
+											this.props.systemStatus._internal.messages
+												? this.props.systemStatus._internal.messages.join('\n')
 												: undefined
 										}>
-										{this.props.systemStatus &&
-											this.props.systemStatus.status}
+										{this.props.systemStatus && this.props.systemStatus.status}
 									</a>
 								</span>
 							</div>
@@ -710,9 +659,7 @@ export const CoreItem = i18next.translate()(
 					</div>
 					<div className="device-item__version">
 						<label>{t('Version')}: </label>
-						<div className="value">
-							{PackageInfo.version || 'UNSTABLE'}
-						</div>
+						<div className="value">{PackageInfo.version || 'UNSTABLE'}</div>
 					</div>
 
 					{(getAllowConfigure() || getAllowDeveloper()) && (
@@ -724,19 +671,13 @@ export const CoreItem = i18next.translate()(
 									acceptText={t('Restart')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillCoreConfirm}
-									onAccept={(e) =>
-										this.handleConfirmKillAccept(e)
-									}
-									onSecondary={(e) =>
-										this.handleConfirmKillCancel(e)
-									}>
+									onAccept={(e) => this.handleConfirmKillAccept(e)}
+									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
 									<p>
 										{t(
 											'Are you sure you want to restart this Sofie Automation Server Core: {{name}}?',
 											{
-												name:
-													this.props.coreSystem
-														.name || 'unnamed'
+												name: this.props.coreSystem.name || 'unnamed'
 											}
 										)}
 									</p>
@@ -785,10 +726,7 @@ export default translateWithTracker<
 
 	return {
 		coreSystem: CoreSystem.findOne(),
-		devices: PeripheralDevices.find(
-			{},
-			{ sort: { lastConnected: -1 } }
-		).fetch()
+		devices: PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch()
 	};
 })(
 	class SystemStatus extends MeteorReactComponent<
@@ -863,8 +801,7 @@ export default translateWithTracker<
 			// Then, map and add devices:
 			_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 				if (d.device.parentDeviceId) {
-					let parent: DeviceInHierarchy =
-						refs[d.device.parentDeviceId];
+					let parent: DeviceInHierarchy = refs[d.device.parentDeviceId];
 					if (parent) {
 						parent.children.push(d);
 					} else {
@@ -900,17 +837,13 @@ export default translateWithTracker<
 						)
 					);
 					content.push(
-						<div
-							key={d.device._id + '_children'}
-							className="children">
+						<div key={d.device._id + '_children'} className="children">
 							<ul className="childlist">{children}</ul>
 						</div>
 					);
 				}
 				return (
-					<div
-						key={d.device._id + '_parent'}
-						className="device-item-container">
+					<div key={d.device._id + '_parent'} className="device-item-container">
 						{content}
 					</div>
 				);
@@ -937,9 +870,7 @@ export default translateWithTracker<
 					<header className="mbs">
 						<h1>{t('System Status')}</h1>
 					</header>
-					<div className="mod mvl">
-						{this.renderPeripheralDevices()}
-					</div>
+					<div className="mod mvl">{this.renderPeripheralDevices()}</div>
 				</div>
 			);
 		}
@@ -968,16 +899,14 @@ export const PeripheralDeviceStatus = i18next.translate()(
 				: t('Not Connected');
 		}
 		statusMessages() {
-			let messages =
-				((this.props.device || {}).status || {}).messages || [];
+			let messages = ((this.props.device || {}).status || {}).messages || [];
 			return messages.length ? '"' + messages.join(', ') + '"' : '';
 		}
 		render() {
 			const statusClassNames = [
 				'device-status',
 				this.props.device.status.statusCode ===
-					PeripheralDeviceAPI.StatusCode.UNKNOWN ||
-				!this.props.device.connected
+					PeripheralDeviceAPI.StatusCode.UNKNOWN || !this.props.device.connected
 					? 'device-status--unknown'
 					: this.props.device.status.statusCode ===
 					  PeripheralDeviceAPI.StatusCode.GOOD

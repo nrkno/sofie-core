@@ -164,10 +164,7 @@ export function handleMosRundownData(
 				});
 			}
 
-			const ingestSegments = groupedPartsToSegments(
-				rundownId,
-				groupedStories
-			);
+			const ingestSegments = groupedPartsToSegments(rundownId, groupedStories);
 
 			const ingestRundown = literal<IngestRundown>({
 				externalId: parseMosString(mosRunningOrder.ID),
@@ -205,9 +202,7 @@ export function handleMosRundownMetadata(
 			if (!canBeUpdated(rundown)) return;
 
 			// Load the blueprint to process the data
-			const showStyleBase = ShowStyleBases.findOne(
-				rundown.showStyleBaseId
-			);
+			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId);
 			if (!showStyleBase) {
 				throw new Meteor.Error(
 					500,
@@ -310,10 +305,7 @@ export function handleMosDeleteStory(
 		rundownId,
 		RundownSyncFunctionPriority.Ingest,
 		() => {
-			const rundown = getRundown(
-				rundownId,
-				parseMosString(runningOrderMosId)
-			);
+			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId));
 			if (!canBeUpdated(rundown)) return;
 
 			const ingestRundown = loadCachedRundownData(
@@ -325,9 +317,7 @@ export function handleMosDeleteStory(
 
 			const storyIds = _.map(stories, parseMosString);
 
-			logger.debug(
-				`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`
-			);
+			logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`);
 
 			const missingIds = _.filter(
 				storyIds,
@@ -389,10 +379,7 @@ export function handleInsertParts(
 		rundownId,
 		RundownSyncFunctionPriority.Ingest,
 		() => {
-			const rundown = getRundown(
-				rundownId,
-				parseMosString(runningOrderMosId)
-			);
+			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId));
 			if (!canBeUpdated(rundown)) return;
 
 			const ingestRundown = loadCachedRundownData(
@@ -435,9 +422,9 @@ export function handleInsertParts(
 			if (collidingPartIds.length > 0) {
 				throw new Meteor.Error(
 					500,
-					`Parts ${collidingPartIds.join(
-						', '
-					)} already exist in rundown ${rundown.externalId}`
+					`Parts ${collidingPartIds.join(', ')} already exist in rundown ${
+						rundown.externalId
+					}`
 				);
 			}
 
@@ -474,10 +461,7 @@ export function handleSwapStories(
 		rundownId,
 		RundownSyncFunctionPriority.Ingest,
 		() => {
-			const rundown = getRundown(
-				rundownId,
-				parseMosString(runningOrderMosId)
-			);
+			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId));
 			if (!canBeUpdated(rundown)) return;
 
 			const ingestRundown = loadCachedRundownData(
@@ -530,10 +514,7 @@ export function handleMoveStories(
 		rundownId,
 		RundownSyncFunctionPriority.Ingest,
 		() => {
-			const rundown = getRundown(
-				rundownId,
-				parseMosString(runningOrderMosId)
-			);
+			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId));
 			if (!canBeUpdated(rundown)) return;
 
 			const ingestRundown = loadCachedRundownData(
@@ -545,9 +526,7 @@ export function handleMoveStories(
 			// Get story data
 			const storyIds = _.map(stories, parseMosString);
 			const movingParts = _.sortBy(
-				ingestParts.filter(
-					(p) => storyIds.indexOf(p.externalId) !== -1
-				),
+				ingestParts.filter((p) => storyIds.indexOf(p.externalId) !== -1),
 				(p) => storyIds.indexOf(p.externalId)
 			);
 
@@ -606,10 +585,7 @@ function diffAndApplyChanges(
 
 	const oldSegmentEntries = compileSegmentEntries(ingestRundown.segments);
 	const newSegmentEntries = compileSegmentEntries(ingestSegments);
-	const segmentDiff = diffSegmentEntries(
-		oldSegmentEntries,
-		newSegmentEntries
-	);
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries);
 
 	// Check if operation affect currently playing Part:
 	if (rundown.active && rundown.currentPartId) {
@@ -663,17 +639,11 @@ function diffAndApplyChanges(
 					Parts,
 					{
 						rundownId: rundown._id,
-						segmentId: getSegmentId(
-							rundown._id,
-							oldSegmentExternalId
-						)
+						segmentId: getSegmentId(rundown._id, oldSegmentExternalId)
 					},
 					{
 						$set: {
-							segmentId: getSegmentId(
-								rundown._id,
-								newSegmentExternalId
-							)
+							segmentId: getSegmentId(rundown._id, newSegmentExternalId)
 						}
 					},
 					{
@@ -770,8 +740,7 @@ export function diffSegmentEntries(
 					)
 				) {
 					// Only the rank changed
-					diff.onlyRankChanged[segmentExternalId] =
-						newSegmentEntry.rank;
+					diff.onlyRankChanged[segmentExternalId] = newSegmentEntry.rank;
 				}
 				diff.changed[segmentExternalId] = newSegmentEntry;
 			}
@@ -804,10 +773,7 @@ export function diffSegmentEntries(
 				_.each(segmentEntry.parts, (part) => {
 					if (
 						found ||
-						_.find(
-							se.parts,
-							(p) => p.externalId === part.externalId
-						)
+						_.find(se.parts, (p) => p.externalId === part.externalId)
 					) {
 						found = true;
 					}

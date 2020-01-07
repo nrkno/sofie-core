@@ -229,8 +229,7 @@ describe('Test sending messages to mocked endpoints', () => {
 
 			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2);
 			try {
-				await (sendSlackMessageToWebhook as jest.Mock).mock.results[1]
-					.value;
+				await (sendSlackMessageToWebhook as jest.Mock).mock.results[1].value;
 				fail('promise should reject');
 			} catch (e) {
 				expect(e.message).toBe('[500] Failed to send slack message');
@@ -239,9 +238,7 @@ describe('Test sending messages to mocked endpoints', () => {
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 			expect(message).toBeTruthy();
 			expect(message.errorMessage).toBe('Failed to send slack message');
-			expect(message.errorMessageTime).toBeGreaterThan(
-				getCurrentTime() - 100
-			);
+			expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100);
 			expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100);
 			expect(message.tryCount).toBe(1);
 			expect(message.sent).toBeUndefined();
@@ -259,9 +256,7 @@ describe('Test sending messages to mocked endpoints', () => {
 			// Reset the last try clock
 			ExternalMessageQueue.update(message._id, {
 				$set: {
-					lastTry: message.lastTry
-						? message.lastTry - 1.2 * 60 * 1000
-						: 0
+					lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0
 				}
 			});
 			jest.runOnlyPendingTimers();
@@ -270,9 +265,7 @@ describe('Test sending messages to mocked endpoints', () => {
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 			expect(message).toBeTruthy();
 			expect(message.errorMessage).toBe('Failed to send slack message');
-			expect(message.errorMessageTime).toBeGreaterThan(
-				getCurrentTime() - 100
-			);
+			expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100);
 			expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100);
 			expect(message.tryCount).toBe(2);
 			expect(message.sent).toBeUndefined();
@@ -281,28 +274,20 @@ describe('Test sending messages to mocked endpoints', () => {
 		test('does not retry to send if on hold', () => {
 			// setLoggerLevel('debug')
 
-			Meteor.call(
-				ExternalMessageQueueAPI.methods.toggleHold,
-				message._id
-			);
+			Meteor.call(ExternalMessageQueueAPI.methods.toggleHold, message._id);
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 			expect(message).toBeTruthy();
 			expect(message.hold).toBe(true);
 
 			ExternalMessageQueue.update(message._id, {
 				$set: {
-					lastTry: message.lastTry
-						? message.lastTry - 1.2 * 60 * 1000
-						: 0
+					lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0
 				}
 			});
 			jest.runOnlyPendingTimers();
 			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3);
 
-			Meteor.call(
-				ExternalMessageQueueAPI.methods.toggleHold,
-				message._id
-			);
+			Meteor.call(ExternalMessageQueueAPI.methods.toggleHold, message._id);
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 			expect(message).toBeTruthy();
 			expect(message.hold).toBe(false);
@@ -313,9 +298,7 @@ describe('Test sending messages to mocked endpoints', () => {
 
 			ExternalMessageQueue.update(message._id, {
 				$set: {
-					lastTry: message.lastTry
-						? message.lastTry - 1.2 * 60 * 1000
-						: 0,
+					lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0,
 					retryUntil: getCurrentTime() - 10
 				}
 			});
@@ -326,10 +309,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		test('can be forced to retry manually once', () => {
 			// setLoggerLevel('debug')
 
-			Meteor.call(
-				ExternalMessageQueueAPI.methods.toggleHold,
-				message._id
-			);
+			Meteor.call(ExternalMessageQueueAPI.methods.toggleHold, message._id);
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 			expect(message).toBeTruthy();
 			expect(message.hold).toBe(true);
@@ -413,9 +393,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 		expect(message).toBeTruthy();
 		expect(message.errorMessage).toBe('Failed to send SOAP message');
-		expect(message.errorMessageTime).toBeGreaterThan(
-			getCurrentTime() - 100
-		);
+		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100);
 		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100);
 		expect(message.tryCount).toBe(1);
 		expect(message.sent).toBeUndefined();
@@ -456,9 +434,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 		expect(message).toBeTruthy();
 		expect(message.errorMessage).toBe('Fatal error sending SOAP message.');
-		expect(message.errorMessageTime).toBeGreaterThan(
-			getCurrentTime() - 100
-		);
+		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100);
 		expect(message.errorFatal).toBe(true);
 		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100);
 		expect(message.tryCount).toBe(1);
@@ -541,19 +517,13 @@ describe('Test sending messages to mocked endpoints', () => {
 			await (sendRabbitMQMessage as jest.Mock).mock.results[1].value;
 			fail('promise should reject');
 		} catch (e) {
-			expect(e.message).toBe(
-				'[500] Failed to send slack rabbitMQ message'
-			);
+			expect(e.message).toBe('[500] Failed to send slack rabbitMQ message');
 		}
 
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj;
 		expect(message).toBeTruthy();
-		expect(message.errorMessage).toBe(
-			'Failed to send slack rabbitMQ message'
-		);
-		expect(message.errorMessageTime).toBeGreaterThan(
-			getCurrentTime() - 100
-		);
+		expect(message.errorMessage).toBe('Failed to send slack rabbitMQ message');
+		expect(message.errorMessageTime).toBeGreaterThan(getCurrentTime() - 100);
 		expect(message.lastTry).toBeGreaterThan(getCurrentTime() - 100);
 		expect(message.tryCount).toBe(1);
 		expect(message.sent).toBeUndefined();

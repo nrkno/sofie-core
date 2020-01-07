@@ -130,8 +130,7 @@ const SettingsMenu = translateWithTracker<
 			if (!peripherals.length) return true;
 			if (
 				!peripherals.filter(
-					(device) =>
-						device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+					(device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
 				).length
 			)
 				return true;
@@ -143,8 +142,7 @@ const SettingsMenu = translateWithTracker<
 			if (!showstyle.outputLayers) return true;
 			if (!showstyle.sourceLayers.length) return true;
 			if (!showstyle.outputLayers.length) return true;
-			if (!showstyle.outputLayers.filter((l) => l.isPGM).length)
-				return true;
+			if (!showstyle.outputLayers.filter((l) => l.isPGM).length) return true;
 			return false;
 		}
 
@@ -205,10 +203,9 @@ const SettingsMenu = translateWithTracker<
 				message: (
 					<React.Fragment>
 						<p>
-							{t(
-								'Are you sure you want to delete the studio "{{studioId}}"?',
-								{ studioId: studio.name }
-							)}
+							{t('Are you sure you want to delete the studio "{{studioId}}"?', {
+								studioId: studio.name
+							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
@@ -332,21 +329,14 @@ const SettingsMenu = translateWithTracker<
 								</button>
 								{this.studioHasError(studio) ? (
 									<button className="action-btn right error-notice">
-										<FontAwesomeIcon
-											icon={faExclamationTriangle}
-										/>
+										<FontAwesomeIcon icon={faExclamationTriangle} />
 									</button>
 								) : null}
 								<div className="selectable clickable">
-									<h3>
-										{studio.name || t('Unnamed Studio')}
-									</h3>
+									<h3>{studio.name || t('Unnamed Studio')}</h3>
 								</div>
 							</NavLink>,
-							<hr
-								className="vsubtle man"
-								key={studio._id + '-hr'}
-							/>
+							<hr className="vsubtle man" key={studio._id + '-hr'} />
 						];
 					})}
 					<h2 className="mhs">
@@ -364,48 +354,34 @@ const SettingsMenu = translateWithTracker<
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
 								key={showStyleBase._id}
-								to={
-									'/settings/showStyleBase/' +
-									showStyleBase._id
-								}>
+								to={'/settings/showStyleBase/' + showStyleBase._id}>
 								<div className="selectable clickable">
 									<button
 										className="action-btn right"
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											this.onDeleteShowStyleBase(
-												showStyleBase
-											);
+											this.onDeleteShowStyleBase(showStyleBase);
 										}}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									{this.showStyleHasError(showStyleBase) ? (
 										<button className="action-btn right error-notice">
-											<FontAwesomeIcon
-												icon={faExclamationTriangle}
-											/>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
 										</button>
 									) : null}
-									<h3>
-										{showStyleBase.name ||
-											t('Unnamed Show Style')}
-									</h3>
-									{showStyleBase.sourceLayers &&
-										showStyleBase.outputLayers && (
-											<p>
-												{t('Source Layers')}:{' '}
-												{showStyleBase.sourceLayers.length.toString()}{' '}
-												{t('Output Channels')}:{' '}
-												{showStyleBase.outputLayers.length.toString()}
-											</p>
-										)}
+									<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
+									{showStyleBase.sourceLayers && showStyleBase.outputLayers && (
+										<p>
+											{t('Source Layers')}:{' '}
+											{showStyleBase.sourceLayers.length.toString()}{' '}
+											{t('Output Channels')}:{' '}
+											{showStyleBase.outputLayers.length.toString()}
+										</p>
+									)}
 								</div>
 							</NavLink>,
-							<hr
-								className="vsubtle man"
-								key={showStyleBase._id + '-hr'}
-							/>
+							<hr className="vsubtle man" key={showStyleBase._id + '-hr'} />
 						];
 					})}
 					<h2 className="mhs">
@@ -436,24 +412,15 @@ const SettingsMenu = translateWithTracker<
 									</button>
 									{this.blueprintHasError(blueprint) ? (
 										<button className="action-btn right error-notice">
-											<FontAwesomeIcon
-												icon={faExclamationTriangle}
-											/>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
 										</button>
 									) : null}
-									<h3>
-										{blueprint.name ||
-											t('Unnamed blueprint')}
-									</h3>
+									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
 									<p>
-										{t('Type')}{' '}
-										{(
-											blueprint.blueprintType || ''
-										).toUpperCase()}
+										{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
 									</p>
 									<p>
-										{t('Version')}{' '}
-										{blueprint.blueprintVersion}
+										{t('Version')} {blueprint.blueprintVersion}
 									</p>
 								</div>
 								<hr className="vsubtle man" />
@@ -464,10 +431,7 @@ const SettingsMenu = translateWithTracker<
 					<hr className="vsubtle man" />
 					{this.props.peripheralDevices
 						.filter((device) => {
-							return (
-								device.subType ===
-								PeripheralDeviceAPI.SUBTYPE_PROCESS
-							);
+							return device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS;
 						})
 						.map((item) => {
 							return [
@@ -475,9 +439,7 @@ const SettingsMenu = translateWithTracker<
 									activeClassName="selectable-selected"
 									className="settings-menu__settings-menu-item selectable clickable"
 									key={item._id}
-									to={
-										'/settings/peripheralDevice/' + item._id
-									}>
+									to={'/settings/peripheralDevice/' + item._id}>
 									<button
 										className="action-btn right"
 										onClick={(e) => {
@@ -489,26 +451,17 @@ const SettingsMenu = translateWithTracker<
 									</button>
 									{this.peripheralDeviceHasError(item) ? (
 										<button className="action-btn right error-notice">
-											<FontAwesomeIcon
-												icon={faExclamationTriangle}
-											/>
+											<FontAwesomeIcon icon={faExclamationTriangle} />
 										</button>
 									) : null}
 									<h3>{item.name}</h3>
 									<p>
-										{item.connected
-											? t('Connected')
-											: t('Disconnected')}
-										, {t('Status')}:{' '}
-										{this.statusCodeString(
-											item.status.statusCode
-										)}
+										{item.connected ? t('Connected') : t('Disconnected')},{' '}
+										{t('Status')}:{' '}
+										{this.statusCodeString(item.status.statusCode)}
 									</p>
 								</NavLink>,
-								<hr
-									className="vsubtle man"
-									key={item._id + '-hr'}
-								/>
+								<hr className="vsubtle man" key={item._id + '-hr'} />
 							];
 						})}
 					<h2 className="mhs">{t('Tools')}</h2>
@@ -566,11 +519,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 						<div className="col c12 rm-c9 settings-dialog">
 							<ErrorBoundary>
 								<Switch>
-									<Route
-										path="/settings"
-										exact
-										component={WelcomeToSettings}
-									/>
+									<Route path="/settings" exact component={WelcomeToSettings} />
 									<Route
 										path="/settings/studio/:studioId"
 										component={StudioSettings}

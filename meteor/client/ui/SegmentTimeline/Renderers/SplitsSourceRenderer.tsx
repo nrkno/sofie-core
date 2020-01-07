@@ -79,18 +79,15 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<
 		let subItems: Array<SplitSubItem> = [];
 		if (props.piece.content) {
 			const splitContent = props.piece.content as SplitsContent;
-			subItems = _.map(
-				splitContent.boxSourceConfiguration,
-				(item, index) => {
-					return literal<SplitSubItem>({
-						_id: item.studioLabel + '_' + index,
-						type: item.type,
-						label: item.studioLabel,
-						role: SplitRole.BOX,
-						content: item.geometry || DEFAULT_POSITIONS[index]
-					});
-				}
-			);
+			subItems = _.map(splitContent.boxSourceConfiguration, (item, index) => {
+				return literal<SplitSubItem>({
+					_id: item.studioLabel + '_' + index,
+					type: item.type,
+					label: item.studioLabel,
+					role: SplitRole.BOX,
+					content: item.geometry || DEFAULT_POSITIONS[index]
+				});
+			});
 		}
 
 		return {
@@ -117,10 +114,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth);
 	};
 
-	componentDidUpdate(
-		prevProps: Readonly<IProps>,
-		prevState: Readonly<IState>
-	) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (
 			super.componentDidUpdate &&
 			typeof super.componentDidUpdate === 'function'
@@ -177,37 +171,21 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<
 							)}
 							key={item._id + '-preview'}
 							style={{
-								left:
-									(
-										(item.content && item.content.x) * 100
-									).toString() + '%',
-								top:
-									(
-										(item.content && item.content.y) * 100
-									).toString() + '%',
+								left: ((item.content && item.content.x) * 100).toString() + '%',
+								top: ((item.content && item.content.y) * 100).toString() + '%',
 								width:
-									(
-										(item.content && item.content.scale) *
-										100
-									).toString() + '%',
+									((item.content && item.content.scale) * 100).toString() + '%',
 								height:
-									(
-										(item.content && item.content.scale) *
-										100
-									).toString() + '%',
+									((item.content && item.content.scale) * 100).toString() + '%',
 								clipPath:
 									item.content && item.content.crop
-										? `inset(${item.content.crop.top *
-												100}% ${item.content.crop
-												.right * 100}% ${item.content
-												.crop.bottom * 100}% ${item
+										? `inset(${item.content.crop.top * 100}% ${item.content.crop
+												.right * 100}% ${item.content.crop.bottom * 100}% ${item
 												.content.crop.left * 100}%)`
 										: undefined
 							}}>
 							{item.role === SplitRole.BOX && (
-								<div className="video-preview__label">
-									{item.label}
-								</div>
+								<div className="video-preview__label">{item.label}</div>
 							)}
 						</div>
 					);
@@ -244,8 +222,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<
 				</span>
 				<FloatingInspector
 					shown={
-						this.props.showMiniInspector &&
-						this.props.itemElement !== undefined
+						this.props.showMiniInspector && this.props.itemElement !== undefined
 					}>
 					<div
 						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"

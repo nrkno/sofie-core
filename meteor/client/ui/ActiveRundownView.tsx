@@ -170,9 +170,7 @@ export const ActiveRundownView = translateWithTracker<
 				} else if (this.props.studioId) {
 					return this.renderMessage(t("This studio doesn't exist."));
 				} else {
-					return this.renderMessage(
-						t('There are no active rundowns.')
-					);
+					return this.renderMessage(t('There are no active rundowns.'));
 				}
 			}
 		}

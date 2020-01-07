@@ -64,12 +64,9 @@ function eventContextForLog(e: any): string {
 			': ' +
 			e.currentTarget.localName +
 			(e.currentTarget.id ? '#' + e.currentTarget.id : '') +
-			(e.currentTarget.innerText
-				? ` "${e.currentTarget.innerText}"`
-				: '');
+			(e.currentTarget.innerText ? ` "${e.currentTarget.innerText}"` : '');
 	} else if (e.key && e.code) {
-		str =
-			e.type + ': ' + keyboardEventToShortcut(e as ExtendedKeyboardEvent);
+		str = e.type + ': ' + keyboardEventToShortcut(e as ExtendedKeyboardEvent);
 	} else {
 		str = e.type;
 	}

@@ -168,10 +168,7 @@ function createRundownSnapshot(rundownId: string): RundownSnapshot {
 			.filter((piece) => piece.content && piece.content.fileName)
 			.map((piece) => (piece.content as AudioContent).fileName),
 		...adLibPieces
-			.filter(
-				(adLibPiece) =>
-					adLibPiece.content && adLibPiece.content.fileName
-			)
+			.filter((adLibPiece) => adLibPiece.content && adLibPiece.content.fileName)
 			.map((adLibPiece) => (adLibPiece.content as AudioContent).fileName)
 	];
 	const mediaObjects = MediaObjects.find({
@@ -242,9 +239,7 @@ function createSystemSnapshot(studioId: string | null): SystemSnapshot {
 	if (studioId) {
 		let showStyleBaseIds: string[] = [];
 		_.each(studios, (studio) => {
-			showStyleBaseIds = showStyleBaseIds.concat(
-				studio.supportedShowStyleBase
-			);
+			showStyleBaseIds = showStyleBaseIds.concat(studio.supportedShowStyleBase);
 		});
 		queryShowStyleBases._id = '';
 		queryShowStyleBases = {
@@ -388,9 +383,7 @@ function handleResponse(
 		response.setHeader('Content-Type', 'application/json');
 		response.setHeader(
 			'Content-Disposition',
-			`attachment; filename*=UTF-8''${encodeURIComponent(
-				s.snapshot.name
-			)}.json`
+			`attachment; filename*=UTF-8''${encodeURIComponent(s.snapshot.name)}.json`
 		);
 
 		let content = _.isString(s) ? s : JSON.stringify(s, null, 4);
@@ -510,10 +503,7 @@ function restoreFromRundownSnapshot(snapshot: RundownSnapshot) {
 	let dbRundown = Rundowns.findOne(rundownId);
 
 	if (dbRundown && !dbRundown.unsynced)
-		throw new Meteor.Error(
-			500,
-			`Not allowed to restore into synked Rundown!`
-		);
+		throw new Meteor.Error(500, `Not allowed to restore into synked Rundown!`);
 
 	if (!snapshot.rundown.unsynced) {
 		snapshot.rundown.unsynced = true;
@@ -557,10 +547,7 @@ function restoreFromRundownSnapshot(snapshot: RundownSnapshot) {
 		MediaObjects,
 		{
 			_id: {
-				$in: _.map(
-					snapshot.mediaObjects,
-					(mediaObject) => mediaObject._id
-				)
+				$in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id)
 			}
 		},
 		snapshot.mediaObjects
@@ -584,11 +571,7 @@ function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 		);
 	}
 	let changes = sumChanges(
-		saveIntoDb(
-			Studios,
-			studioId ? { _id: studioId } : {},
-			snapshot.studios
-		),
+		saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
 		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
 		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
 		snapshot.blueprints

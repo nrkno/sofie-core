@@ -132,9 +132,7 @@ export const DashboardPanel = translateWithTracker<
 	> {
 		usedHotkeys: Array<string> = [];
 
-		constructor(
-			props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>
-		) {
+		constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 			super(props);
 
 			this.state = {
@@ -217,9 +215,7 @@ export const DashboardPanel = translateWithTracker<
 			this.refreshKeyboardHotkeys();
 		}
 
-		componentDidUpdate(
-			prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps
-		) {
+		componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
 			mousetrapHelper.unbindAll(
 				this.usedHotkeys,
 				'keyup',
@@ -370,49 +366,45 @@ export const DashboardPanel = translateWithTracker<
 			if (this.props.sourceLayerLookup) {
 				_.each(this.props.sourceLayerLookup, (item) => {
 					if (item.clearKeyboardHotkey) {
-						item.clearKeyboardHotkey
-							.split(',')
-							.forEach((element) => {
-								mousetrapHelper.bind(
-									element,
-									preventDefault,
-									'keydown',
-									this.constructor.name
-								);
-								mousetrapHelper.bind(
-									element,
-									(e: ExtendedKeyboardEvent) => {
-										preventDefault(e);
-										this.onClearAllSourceLayer(item, e);
-									},
-									'keyup',
-									this.constructor.name
-								);
-								this.usedHotkeys.push(element);
-							});
+						item.clearKeyboardHotkey.split(',').forEach((element) => {
+							mousetrapHelper.bind(
+								element,
+								preventDefault,
+								'keydown',
+								this.constructor.name
+							);
+							mousetrapHelper.bind(
+								element,
+								(e: ExtendedKeyboardEvent) => {
+									preventDefault(e);
+									this.onClearAllSourceLayer(item, e);
+								},
+								'keyup',
+								this.constructor.name
+							);
+							this.usedHotkeys.push(element);
+						});
 					}
 
 					if (item.isSticky && item.activateStickyKeyboardHotkey) {
-						item.activateStickyKeyboardHotkey
-							.split(',')
-							.forEach((element) => {
-								mousetrapHelper.bind(
-									element,
-									preventDefault,
-									'keydown',
-									this.constructor.name
-								);
-								mousetrapHelper.bind(
-									element,
-									(e: ExtendedKeyboardEvent) => {
-										preventDefault(e);
-										this.onToggleSticky(item._id, e);
-									},
-									'keyup',
-									this.constructor.name
-								);
-								this.usedHotkeys.push(element);
-							});
+						item.activateStickyKeyboardHotkey.split(',').forEach((element) => {
+							mousetrapHelper.bind(
+								element,
+								preventDefault,
+								'keydown',
+								this.constructor.name
+							);
+							mousetrapHelper.bind(
+								element,
+								(e: ExtendedKeyboardEvent) => {
+									preventDefault(e);
+									this.onToggleSticky(item._id, e);
+								},
+								'keyup',
+								this.constructor.name
+							);
+							this.usedHotkeys.push(element);
+						});
 					}
 				});
 			}
@@ -426,9 +418,7 @@ export const DashboardPanel = translateWithTracker<
 					new Notification(
 						t('Invalid AdLib'),
 						NoticeLevel.WARNING,
-						t(
-							'Cannot play this AdLib because it is marked as Invalid'
-						),
+						t('Cannot play this AdLib because it is marked as Invalid'),
 						'toggleAdLib'
 					)
 				);
@@ -439,9 +429,7 @@ export const DashboardPanel = translateWithTracker<
 					new Notification(
 						t('Floated AdLib'),
 						NoticeLevel.WARNING,
-						t(
-							'Cannot play this AdLib because it is marked as Floated'
-						),
+						t('Cannot play this AdLib because it is marked as Floated'),
 						'toggleAdLib'
 					)
 				);
@@ -461,29 +449,19 @@ export const DashboardPanel = translateWithTracker<
 			if (this.props.rundown && this.props.rundown.currentPartId) {
 				if (!this.isAdLibOnAir(piece)) {
 					if (!piece.isGlobal) {
-						doUserAction(
-							t,
-							e,
-							UserActionAPI.methods.segmentAdLibPieceStart,
-							[
-								this.props.rundown._id,
-								this.props.rundown.currentPartId,
-								piece._id,
-								queue || false
-							]
-						);
+						doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
+							this.props.rundown._id,
+							this.props.rundown.currentPartId,
+							piece._id,
+							queue || false
+						]);
 					} else if (piece.isGlobal && !piece.isSticky) {
-						doUserAction(
-							t,
-							e,
-							UserActionAPI.methods.baselineAdLibPieceStart,
-							[
-								this.props.rundown._id,
-								this.props.rundown.currentPartId,
-								piece._id,
-								queue || false
-							]
-						);
+						doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
+							this.props.rundown._id,
+							this.props.rundown.currentPartId,
+							piece._id,
+							queue || false
+						]);
 					} else if (piece.isSticky) {
 						this.onToggleSticky(piece.sourceLayerId, e);
 					}
@@ -502,12 +480,10 @@ export const DashboardPanel = translateWithTracker<
 				this.props.rundown.active
 			) {
 				const { t } = this.props;
-				doUserAction(
-					t,
-					e,
-					UserActionAPI.methods.sourceLayerStickyPieceStart,
-					[this.props.rundown._id, sourceLayerId]
-				);
+				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
+					this.props.rundown._id,
+					sourceLayerId
+				]);
 			}
 		};
 
@@ -515,16 +491,11 @@ export const DashboardPanel = translateWithTracker<
 			// console.log(sourceLayer)
 			const { t } = this.props;
 			if (this.props.rundown && this.props.rundown.currentPartId) {
-				doUserAction(
-					t,
-					e,
-					UserActionAPI.methods.sourceLayerOnPartStop,
-					[
-						this.props.rundown._id,
-						this.props.rundown.currentPartId,
-						sourceLayer._id
-					]
-				);
+				doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
+					this.props.rundown._id,
+					this.props.rundown.currentPartId,
+					sourceLayer._id
+				]);
 			}
 		};
 
@@ -535,11 +506,7 @@ export const DashboardPanel = translateWithTracker<
 		};
 
 		render() {
-			if (
-				this.props.visible &&
-				this.props.showStyleBase &&
-				this.props.filter
-			) {
+			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter;
 				if (!this.props.uiSegments || !this.props.rundown) {
 					return <Spinner />;
@@ -591,18 +558,12 @@ export const DashboardPanel = translateWithTracker<
 								{this.props.filter.name}
 							</h4>
 							{filter.enableSearch && (
-								<AdLibPanelToolbar
-									onFilterChange={this.onFilterChange}
-								/>
+								<AdLibPanelToolbar onFilterChange={this.onFilterChange} />
 							)}
 							<div className="dashboard-panel__panel">
 								{this.props.rundownBaselineAdLibs
 									.concat(
-										_.flatten(
-											this.props.uiSegments.map(
-												(seg) => seg.pieces
-											)
-										)
+										_.flatten(this.props.uiSegments.map((seg) => seg.pieces))
 									)
 									.filter((item) =>
 										matchFilter(
@@ -618,40 +579,23 @@ export const DashboardPanel = translateWithTracker<
 											<DashboardPieceButton
 												key={item._id}
 												item={item}
-												layer={
-													this.state.sourceLayers[
-														item.sourceLayerId
-													]
-												}
+												layer={this.state.sourceLayers[item.sourceLayerId]}
 												outputLayer={
-													this.state.outputLayers[
-														item.outputLayerId
-													]
+													this.state.outputLayers[item.outputLayerId]
 												}
-												onToggleAdLib={
-													this.onToggleAdLib
-												}
+												onToggleAdLib={this.onToggleAdLib}
 												rundown={this.props.rundown}
-												isOnAir={this.isAdLibOnAir(
-													item
-												)}
+												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={
 													this.props.studio
 														? ensureHasTrailingSlash(
-																this.props
-																	.studio
-																	.settings
-																	.mediaPreviewsUrl +
+																this.props.studio.settings.mediaPreviewsUrl +
 																	'' || ''
 														  ) || ''
 														: ''
 												}
-												widthScale={
-													filter.buttonWidthScale
-												}
-												heightScale={
-													filter.buttonHeightScale
-												}>
+												widthScale={filter.buttonWidthScale}
+												heightScale={filter.buttonHeightScale}>
 												{item.name}
 											</DashboardPieceButton>
 										);

@@ -61,10 +61,7 @@ export namespace MediaManagerAPI {
 
 		const workflow = MediaWorkFlows.findOne(workflowId);
 		if (!workflow)
-			throw new Meteor.Error(
-				404,
-				`MediaWorkFlow "${workflowId}" not found`
-			);
+			throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`);
 
 		return waitForPromise(
 			new Promise((resolve, reject) => {
@@ -85,10 +82,7 @@ export namespace MediaManagerAPI {
 
 		const workflow = MediaWorkFlows.findOne(workflowId);
 		if (!workflow)
-			throw new Meteor.Error(
-				404,
-				`MediaWorkFlow "${workflowId}" not found`
-			);
+			throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`);
 
 		return waitForPromise(
 			new Promise((resolve, reject) => {
@@ -109,10 +103,7 @@ export namespace MediaManagerAPI {
 
 		const workflow = MediaWorkFlows.findOne(workflowId);
 		if (!workflow)
-			throw new Meteor.Error(
-				404,
-				`MediaWorkFlow "${workflowId}" not found`
-			);
+			throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`);
 
 		return waitForPromise(
 			new Promise((resolve, reject) => {

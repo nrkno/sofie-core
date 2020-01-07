@@ -60,13 +60,9 @@ export function postProcessPieces(
 			piece.content.timelineObjects = _.map(
 				_.compact(piece.content.timelineObjects),
 				(o: TimelineObjectCoreExt) => {
-					const obj = convertTimelineObject(
-						innerContext.rundown._id,
-						o
-					);
+					const obj = convertTimelineObject(innerContext.rundown._id, o);
 
-					if (!obj.id)
-						obj.id = innerContext.getHashId(piece._id + '_' + i++);
+					if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_' + i++);
 
 					if (timelineUniqueIds[obj.id])
 						throw new Meteor.Error(
@@ -128,15 +124,10 @@ export function postProcessAdLibPieces(
 			piece.content.timelineObjects = _.map(
 				_.compact(piece.content.timelineObjects),
 				(o: TimelineObjectCoreExt) => {
-					const obj = convertTimelineObject(
-						innerContext.rundown._id,
-						o
-					);
+					const obj = convertTimelineObject(innerContext.rundown._id, o);
 
 					if (!obj.id)
-						obj.id = innerContext.getHashId(
-							piece._id + '_adlib_' + i++
-						);
+						obj.id = innerContext.getHashId(piece._id + '_adlib_' + i++);
 
 					if (timelineUniqueIds[obj.id])
 						throw new Meteor.Error(

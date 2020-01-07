@@ -435,10 +435,7 @@ export namespace ClientRundownAPI {
 
 		const blueprint = Blueprints.findOne(showStyleBase.blueprintId);
 		if (!blueprint) return 'missing blueprint';
-		if (
-			rundown.importVersions.blueprint !==
-			(blueprint.blueprintVersion || 0)
-		)
+		if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0))
 			return 'blueprint';
 
 		const studio = Studios.findOne(rundown.studioId);

@@ -47,11 +47,7 @@ export namespace PrompterAPI {
 				if (piece.content) {
 					const content = piece.content as ScriptContent;
 					if (content.fullScript) {
-						if (
-							piecesIncluded.indexOf(
-								piece.continuesRefId || piece._id
-							) > 0
-						) {
+						if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
 							return; // piece already included in prompter script
 						}
 						piecesIncluded.push(piece.continuesRefId || piece._id);

@@ -162,29 +162,29 @@ export function createPieceGroup(
 	piece: Piece,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
-	return literal<
-		TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj
-	>({
-		id: getPieceGroupId(piece),
-		_id: '', // set later
-		studioId: '', // set later
-		content: {
-			deviceType: TSR.DeviceType.ABSTRACT,
-			type: TimelineContentTypeOther.GROUP
-		},
-		children: [],
-		inGroup: partGroup && partGroup.id,
-		isGroup: true,
-		rundownId: piece.rundownId,
-		pieceId: piece._id,
-		infinitePieceId: piece.infiniteId,
-		objectType: TimelineObjType.RUNDOWN,
-		enable: calculatePieceTimelineEnable(piece),
-		layer: piece.sourceLayerId,
-		metadata: {
-			pieceId: piece._id
+	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>(
+		{
+			id: getPieceGroupId(piece),
+			_id: '', // set later
+			studioId: '', // set later
+			content: {
+				deviceType: TSR.DeviceType.ABSTRACT,
+				type: TimelineContentTypeOther.GROUP
+			},
+			children: [],
+			inGroup: partGroup && partGroup.id,
+			isGroup: true,
+			rundownId: piece.rundownId,
+			pieceId: piece._id,
+			infinitePieceId: piece.infiniteId,
+			objectType: TimelineObjType.RUNDOWN,
+			enable: calculatePieceTimelineEnable(piece),
+			layer: piece.sourceLayerId,
+			metadata: {
+				pieceId: piece._id
+			}
 		}
-	});
+	);
 }
 export function getResolvedPieces(part: Part): Piece[] {
 	// TODO - was this mangled for endState and could it have broken something else?
@@ -197,8 +197,7 @@ export function getResolvedPieces(part: Part): Piece[] {
 	objs.forEach((o) => {
 		if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
 			// Emulate playout starting now. TODO - ensure didnt break other uses
-			o.enable.start =
-				getCurrentTime() - (part.getLastStartedPlayback() || 0);
+			o.enable.start = getCurrentTime() - (part.getLastStartedPlayback() || 0);
 		} else if (o.enable.start === 0 || o.enable.start === 'now') {
 			o.enable.start = 1;
 		}
@@ -245,9 +244,7 @@ export function getResolvedPieces(part: Part): Piece[] {
 		logger.warn(
 			`Got ${
 				tlResolved.statistics.unresolvedCount
-			} unresolved pieces for piece #${part._id} (${unresolvedIds.join(
-				', '
-			)})`
+			} unresolved pieces for piece #${part._id} (${unresolvedIds.join(', ')})`
 		);
 	}
 	if (pieces.length !== events.length) {
@@ -278,8 +275,7 @@ export function getResolvedPieces(part: Part): Piece[] {
 			enable: {
 				start: Math.max(0, event.start - 1)
 			},
-			playoutDuration:
-				Math.max(0, (event.end || 0) - event.start) || undefined
+			playoutDuration: Math.max(0, (event.end || 0) - event.start) || undefined
 		});
 	});
 
@@ -428,8 +424,7 @@ export function getResolvedPiecesFromFullTimeline(
 			enable: {
 				start: Math.max(0, event.start - 1)
 			},
-			playoutDuration:
-				Math.max(0, (event.end || 0) - event.start) || undefined
+			playoutDuration: Math.max(0, (event.end || 0) - event.start) || undefined
 		});
 	});
 
@@ -494,14 +489,14 @@ export function convertPieceToAdLibPiece(piece: Piece): AdLibPiece {
 		const objs = prefixAllObjectIds(
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
-					return extendMandadory<
-						TimelineObjectCoreExt,
-						TimelineObjGeneric
-					>(obj, {
-						_id: '', // set later
-						studioId: '', // set later
-						objectType: TimelineObjType.RUNDOWN
-					});
+					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(
+						obj,
+						{
+							_id: '', // set later
+							studioId: '', // set later
+							objectType: TimelineObjType.RUNDOWN
+						}
+					);
 				})
 			),
 			newId + '_'
@@ -557,14 +552,14 @@ export function convertAdLibToPiece(
 		const objs = prefixAllObjectIds(
 			_.compact(
 				_.map(contentObjects, (obj) => {
-					return extendMandadory<
-						TimelineObjectCoreExt,
-						TimelineObjGeneric
-					>(obj, {
-						_id: '', // set later
-						studioId: '', // set later
-						objectType: TimelineObjType.RUNDOWN
-					});
+					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(
+						obj,
+						{
+							_id: '', // set later
+							studioId: '', // set later
+							objectType: TimelineObjType.RUNDOWN
+						}
+					);
 				})
 			),
 			newId + '_'

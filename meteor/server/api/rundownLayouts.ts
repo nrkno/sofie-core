@@ -119,9 +119,7 @@ getJsRoute.route(
 			content = JSON.stringify(layout, undefined, 2);
 			res.setHeader(
 				'Content-Disposition',
-				`attachment; filename*=UTF-8''${encodeURIComponent(
-					layout.name
-				)}.json`
+				`attachment; filename*=UTF-8''${encodeURIComponent(layout.name)}.json`
 			);
 			res.setHeader('Content-Type', 'application/json');
 			res.statusCode = 200;

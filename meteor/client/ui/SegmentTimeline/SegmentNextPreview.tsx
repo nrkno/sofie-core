@@ -49,11 +49,9 @@ export const SegmentNextPreview = translate()(
 											// filter only pieces belonging to this part
 											return (
 												this.props.part &&
-												(piece.partId ===
-												this.props.part._id
+												(piece.partId === this.props.part._id
 													? // filter only pieces, that have not yet been linked to parent items
-													  (piece as PieceUi)
-															.linked !== true
+													  (piece as PieceUi).linked !== true
 														? true
 														: // (this.props.scrollLeft >= ((this.props.part.startsAt || 0) + ((piece as PieceUi).renderedInPoint || 0)))
 														  true
@@ -70,22 +68,16 @@ export const SegmentNextPreview = translate()(
 														isLiveLine={false}
 														isNextLine={false}
 														outputGroupCollapsed={
-															this.props
-																.collapsedOutputs[
-																outputLayer._id
-															] === true
+															this.props.collapsedOutputs[outputLayer._id] ===
+															true
 														}
 														followLiveLine={false}
 														liveLineHistorySize={0}
 														livePosition={0}
-														rundown={
-															this.props.rundown
-														}
+														rundown={this.props.rundown}
 														piece={piece}
 														layer={layer}
-														outputLayer={
-															outputLayer
-														}
+														outputLayer={outputLayer}
 														part={this.props.part}
 														partStartsAt={0}
 														partDuration={1}
@@ -118,23 +110,13 @@ export const SegmentNextPreview = translate()(
 					(layer, id) => {
 						return (
 							<div
-								className={ClassNames(
-									'segment-timeline__output-group',
-									{
-										collapsable:
-											layer.sourceLayers &&
-											layer.sourceLayers.length > 1,
-										collapsed:
-											this.props.collapsedOutputs[
-												layer._id
-											] === true
-									}
-								)}
+								className={ClassNames('segment-timeline__output-group', {
+									collapsable:
+										layer.sourceLayers && layer.sourceLayers.length > 1,
+									collapsed: this.props.collapsedOutputs[layer._id] === true
+								})}
 								key={id}>
-								{this.renderSourceLayers(
-									layer,
-									layer.sourceLayers
-								)}
+								{this.renderSourceLayers(layer, layer.sourceLayers)}
 							</div>
 						);
 					}
@@ -147,9 +129,7 @@ export const SegmentNextPreview = translate()(
 			return (
 				<div
 					className="segment-timeline__part"
-					data-obj-id={
-						this.props.part ? this.props.part._id : '(NONE)'
-					}>
+					data-obj-id={this.props.part ? this.props.part._id : '(NONE)'}>
 					{this.renderOutputGroups()}
 				</div>
 			);

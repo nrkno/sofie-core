@@ -89,41 +89,26 @@ const ClockComponent = translate()(
 						items: _.map(parts, (part, index) => {
 							if (
 								part.displayDurationGroup &&
-								(displayDurationGroups[
-									part.displayDurationGroup
-								] ||
+								(displayDurationGroups[part.displayDurationGroup] ||
 									// or there is a following member of this displayDurationGroup
 									(parts[index + 1] &&
-										parts[index + 1]
-											.displayDurationGroup ===
+										parts[index + 1].displayDurationGroup ===
 											part.displayDurationGroup))
 							) {
-								displayDurationGroups[
-									part.displayDurationGroup
-								] =
-									(displayDurationGroups[
-										part.displayDurationGroup
-									] || 0) +
-									((part.expectedDuration || 0) -
-										(part.duration || 0));
+								displayDurationGroups[part.displayDurationGroup] =
+									(displayDurationGroups[part.displayDurationGroup] || 0) +
+									((part.expectedDuration || 0) - (part.duration || 0));
 								displayDuration = Math.max(
 									0,
 									Math.min(
-										part.displayDuration ||
-											part.expectedDuration ||
-											0,
+										part.displayDuration || part.expectedDuration || 0,
 										part.expectedDuration || 0
-									) ||
-										displayDurationGroups[
-											part.displayDurationGroup
-										]
+									) || displayDurationGroups[part.displayDurationGroup]
 								);
 							}
 							return extendMandadory<Part, PartUi>(part, {
 								pieces: [],
-								renderedDuration: part.expectedDuration
-									? 0
-									: displayDuration,
+								renderedDuration: part.expectedDuration ? 0 : displayDuration,
 								startsAt: 0,
 								willProbablyAutoNext: false
 							});
@@ -159,11 +144,7 @@ const ClockComponent = translate()(
 				render() {
 					const { rundown, segments } = this.props;
 
-					if (
-						rundown &&
-						this.props.rundownId &&
-						this.props.segments
-					) {
+					if (rundown && this.props.rundownId && this.props.segments) {
 						let currentPart: PartUi | undefined;
 						let currentSegment: SegmentUi | undefined;
 						for (const segment of segments) {
@@ -182,17 +163,12 @@ const ClockComponent = translate()(
 								currentPart.renderedDuration ||
 								currentPart.expectedDuration ||
 								0;
-							currentSegmentDuration +=
-								-1 * (currentPart.duration || 0);
-							if (
-								!currentPart.duration &&
-								currentPart.startedPlayback
-							) {
+							currentSegmentDuration += -1 * (currentPart.duration || 0);
+							if (!currentPart.duration && currentPart.startedPlayback) {
 								currentSegmentDuration +=
 									-1 *
 									(getCurrentTime() -
-										(currentPart.getLastStartedPlayback() ||
-											0));
+										(currentPart.getLastStartedPlayback() || 0));
 							}
 						}
 
@@ -218,13 +194,10 @@ const ClockComponent = translate()(
 						// }
 
 						const overUnderClock = rundown.expectedDuration
-							? (this.props.timingDurations
-									.asPlayedRundownDuration || 0) -
+							? (this.props.timingDurations.asPlayedRundownDuration || 0) -
 							  rundown.expectedDuration
-							: (this.props.timingDurations
-									.asPlayedRundownDuration || 0) -
-							  (this.props.timingDurations
-									.totalRundownDuration || 0);
+							: (this.props.timingDurations.asPlayedRundownDuration || 0) -
+							  (this.props.timingDurations.totalRundownDuration || 0);
 
 						return (
 							<div className="clocks-full-screen">
@@ -234,9 +207,7 @@ const ClockComponent = translate()(
 											<div className="clocks-part-icon clocks-current-segment-icon">
 												<PieceIconContainer
 													partId={currentPart._id}
-													showStyleBaseId={
-														rundown.showStyleBaseId
-													}
+													showStyleBaseId={rundown.showStyleBaseId}
 													rundownId={rundown._id}
 												/>
 											</div>
@@ -247,28 +218,19 @@ const ClockComponent = translate()(
 												<PieceNameContainer
 													partSlug={currentPart.title}
 													partId={currentPart._id}
-													showStyleBaseId={
-														rundown.showStyleBaseId
-													}
+													showStyleBaseId={rundown.showStyleBaseId}
 													rundownId={rundown._id}
 												/>
 											</div>
 											<div className="clocks-current-segment-countdown clocks-segment-countdown">
-												<Timediff
-													time={
-														currentSegmentDuration
-													}
-												/>
+												<Timediff time={currentSegmentDuration} />
 											</div>
 										</React.Fragment>
 									) : (
 										rundown.expectedStart && (
 											<div className="clocks-rundown-countdown clocks-segment-countdown">
 												<Timediff
-													time={
-														rundown.expectedStart -
-														getCurrentTime()
-													}
+													time={rundown.expectedStart - getCurrentTime()}
 												/>
 											</div>
 										)
@@ -279,9 +241,7 @@ const ClockComponent = translate()(
 										{nextPart ? (
 											<PieceIconContainer
 												partId={nextPart._id}
-												showStyleBaseId={
-													rundown.showStyleBaseId
-												}
+												showStyleBaseId={rundown.showStyleBaseId}
 												rundownId={rundown._id}
 											/>
 										) : (
@@ -290,8 +250,7 @@ const ClockComponent = translate()(
 									</div>
 									<div className="clocks-bottom-top">
 										<div className="clocks-part-title">
-											{currentPart &&
-											currentPart.autoNext ? (
+											{currentPart && currentPart.autoNext ? (
 												<div
 													style={{
 														display: 'inline-block',
@@ -317,9 +276,7 @@ const ClockComponent = translate()(
 												<PieceNameContainer
 													partSlug={nextPart.title}
 													partId={nextPart._id}
-													showStyleBaseId={
-														rundown.showStyleBaseId
-													}
+													showStyleBaseId={rundown.showStyleBaseId}
 													rundownId={rundown._id}
 												/>
 											) : (
@@ -332,16 +289,9 @@ const ClockComponent = translate()(
 											{rundown ? rundown.name : 'UNKNOWN'}
 										</div>
 										<div
-											className={ClassNames(
-												'clocks-rundown-total',
-												{
-													over:
-														Math.floor(
-															overUnderClock /
-																1000
-														) >= 0
-												}
-											)}>
+											className={ClassNames('clocks-rundown-total', {
+												over: Math.floor(overUnderClock / 1000) >= 0
+											})}>
 											{RundownUtils.formatDiffToTimecode(
 												overUnderClock,
 												true,
@@ -416,16 +366,10 @@ export const ClockView = translate()(
 			parts
 		};
 	})(
-		class extends MeteorReactComponent<
-			WithTiming<IPropsHeader>,
-			IStateHeader
-		> {
+		class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 			componentDidMount() {
 				document.body.classList.add('dark', 'xdark');
-				let studioId = objectPathGet(
-					this.props,
-					'match.params.studioId'
-				);
+				let studioId = objectPathGet(this.props, 'match.params.studioId');
 				if (studioId) {
 					this.subscribe(PubSub.studios, {
 						_id: studioId
@@ -469,20 +413,14 @@ export const ClockView = translate()(
 				if (this.props.rundown) {
 					return (
 						<RundownTimingProvider rundown={this.props.rundown}>
-							<ClockComponent
-								rundownId={this.props.rundown._id}
-							/>
+							<ClockComponent rundownId={this.props.rundown._id} />
 						</RundownTimingProvider>
 					);
 				} else {
 					return (
 						<div className="rundown-view rundown-view--unpublished">
 							<div className="rundown-view__label">
-								<p>
-									{t(
-										'There is no rundown active in this studio.'
-									)}
-								</p>
+								<p>{t('There is no rundown active in this studio.')}</p>
 							</div>
 						</div>
 					);

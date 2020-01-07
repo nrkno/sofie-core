@@ -81,15 +81,11 @@ export namespace UpdateNext {
 				if (!currentNextPart) {
 					// Set to the first of the inserted parts
 					const firstNewPart = allValidParts.find(
-						(part) =>
-							newPartExternalIds.indexOf(part.externalId) !== -1
+						(part) => newPartExternalIds.indexOf(part.externalId) !== -1
 					);
 					if (firstNewPart) {
 						// Matched a part that replaced the old, so set to it
-						ServerPlayoutAPI.setNextPartInner(
-							rundown,
-							firstNewPart
-						);
+						ServerPlayoutAPI.setNextPartInner(rundown, firstNewPart);
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
 						UpdateNext.ensureNextPartIsValid(rundown);

@@ -24,9 +24,7 @@ export function getShowStyleCompound(
 ): ShowStyleCompound | undefined {
 	let showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId);
 	if (!showStyleVariant) return undefined;
-	let showStyleBase = ShowStyleBases.findOne(
-		showStyleVariant.showStyleBaseId
-	);
+	let showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId);
 	if (!showStyleBase) return undefined;
 
 	let configs: { [id: string]: IConfigItem } = {};

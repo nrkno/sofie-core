@@ -121,38 +121,22 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					{/* Header switch - render the usual header for all pages but the rundown view */}
 					<ErrorBoundary>
 						<Switch>
-							<Route
-								path="/rundown/:rundownId"
-								component={NullComponent}
-							/>
+							<Route path="/rundown/:rundownId" component={NullComponent} />
 							<Route
 								path="/countdowns/:studioId/presenter"
 								component={NullComponent}
 							/>
-							<Route
-								path="/countdowns/presenter"
-								component={NullComponent}
-							/>
-							<Route
-								path="/activeRundown"
-								component={NullComponent}
-							/>
-							<Route
-								path="/prompter/:studioId"
-								component={NullComponent}
-							/>
+							<Route path="/countdowns/presenter" component={NullComponent} />
+							<Route path="/activeRundown" component={NullComponent} />
+							<Route path="/prompter/:studioId" component={NullComponent} />
 							<Route
 								path="/"
 								render={(props) => (
 									<Header
 										{...props}
-										allowConfigure={
-											this.state.allowConfigure
-										}
+										allowConfigure={this.state.allowConfigure}
 										allowTesting={this.state.allowTesting}
-										allowDeveloper={
-											this.state.allowDeveloper
-										}
+										allowDeveloper={this.state.allowDeveloper}
 									/>
 								)}
 							/>
@@ -164,18 +148,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							{/* <Route exact path='/' component={Dashboard} /> */}
 							<Route exact path="/" component={RundownList} />
 							<Route path="/rundowns" component={RundownList} />
-							<Route
-								path="/rundown/:rundownId"
-								component={RundownView}
-							/>
+							<Route path="/rundown/:rundownId" component={RundownView} />
 							<Route
 								path="/activeRundown/:studioId"
 								component={ActiveRundownView}
 							/>
-							<Route
-								path="/prompter/:studioId"
-								component={PrompterView}
-							/>
+							<Route path="/prompter/:studioId" component={PrompterView} />
 							<Route
 								path="/countdowns/:studioId/presenter"
 								component={ClockView}
@@ -193,19 +171,10 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 								path="/countdowns/:studioId/presenter"
 								component={NullComponent}
 							/>
-							<Route
-								path="/countdowns/presenter"
-								component={NullComponent}
-							/>
-							<Route
-								path="/prompter/:studioId"
-								component={NullComponent}
-							/>
+							<Route path="/countdowns/presenter" component={NullComponent} />
+							<Route path="/prompter/:studioId" component={NullComponent} />
 
-							<Route
-								path="/"
-								component={ConnectionStatusNotification}
-							/>
+							<Route path="/" component={ConnectionStatusNotification} />
 						</Switch>
 					</ErrorBoundary>
 					<ErrorBoundary>

@@ -16,10 +16,7 @@ export function withRenderLimiter<IProps, IState>(
 			IProps,
 			IState
 		> {
-			shouldComponentUpdate(
-				nextProps: IProps,
-				nextState: IState
-			): boolean {
+			shouldComponentUpdate(nextProps: IProps, nextState: IState): boolean {
 				return shouldComponentUpdate(this.props, nextProps);
 			}
 

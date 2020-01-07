@@ -114,18 +114,18 @@ describe('User Actions', () => {
 		});
 
 		// Take the first Part:
-		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
-		).toMatchObject({ success: 200 });
+		expect(Meteor.call(UserActionAPI.methods.take, rundownId0)).toMatchObject({
+			success: 200
+		});
 		expect(getRundown0()).toMatchObject({
 			currentPartId: parts[0]._id,
 			nextPartId: parts[1]._id
 		});
 
 		// Take the second Part:
-		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
-		).toMatchObject({ success: 200 });
+		expect(Meteor.call(UserActionAPI.methods.take, rundownId0)).toMatchObject({
+			success: 200
+		});
 		expect(getRundown0()).toMatchObject({
 			currentPartId: parts[1]._id,
 			nextPartId: parts[2]._id
@@ -153,18 +153,18 @@ describe('User Actions', () => {
 		});
 
 		// Take the Nexted Part:
-		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
-		).toMatchObject({ success: 200 });
+		expect(Meteor.call(UserActionAPI.methods.take, rundownId0)).toMatchObject({
+			success: 200
+		});
 		expect(getRundown0()).toMatchObject({
 			currentPartId: parts[parts.length - 2]._id,
 			nextPartId: parts[parts.length - 1]._id
 		});
 
 		// Take the last Part:
-		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
-		).toMatchObject({ success: 200 });
+		expect(Meteor.call(UserActionAPI.methods.take, rundownId0)).toMatchObject({
+			success: 200
+		});
 		expect(getRundown0()).toMatchObject({
 			currentPartId: parts[parts.length - 1]._id,
 			nextPartId: null
@@ -188,9 +188,9 @@ describe('User Actions', () => {
 		});
 
 		// Take the nexted Part:
-		expect(
-			Meteor.call(UserActionAPI.methods.take, rundownId0)
-		).toMatchObject({ success: 200 });
+		expect(Meteor.call(UserActionAPI.methods.take, rundownId0)).toMatchObject({
+			success: 200
+		});
 		expect(getRundown0()).toMatchObject({
 			currentPartId: parts[parts.length - 3]._id,
 			nextPartId: parts[parts.length - 2]._id

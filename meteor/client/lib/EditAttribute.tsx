@@ -136,9 +136,7 @@ export class EditAttributeBase extends React.Component<
 		} else {
 			v = this.deepAttribute(this.props.myObject, this.props.attribute);
 		}
-		return this.props.mutateDisplayValue
-			? this.props.mutateDisplayValue(v)
-			: v;
+		return this.props.mutateDisplayValue ? this.props.mutateDisplayValue(v) : v;
 	}
 	getAttributeText() {
 		return this.getAttribute() + '';
@@ -229,9 +227,7 @@ const EditAttributeText = wrapEditAttribute(
 						(this.state.valueError ? 'error ' : '') +
 						(this.props.className || '') +
 						' ' +
-						(this.state.editing
-							? this.props.modifiedClassName || ''
-							: '')
+						(this.state.editing ? this.props.modifiedClassName || '' : '')
 					}
 					placeholder={this.props.label}
 					value={this.getEditAttribute() || ''}
@@ -273,9 +269,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 						(this.state.valueError ? 'error ' : '') +
 						(this.props.className || '') +
 						' ' +
-						(this.state.editing
-							? this.props.modifiedClassName || ''
-							: '')
+						(this.state.editing ? this.props.modifiedClassName || '' : '')
 					}
 					value={this.getEditAttribute() || ''}
 					onChange={this.handleChange}
@@ -321,9 +315,7 @@ const EditAttributeInt = wrapEditAttribute(
 						' ' +
 						(this.props.className || '') +
 						' ' +
-						(this.state.editing
-							? this.props.modifiedClassName || ''
-							: '')
+						(this.state.editing ? this.props.modifiedClassName || '' : '')
 					}
 					value={this.getEditAttributeNumber()}
 					onChange={this.handleChange}
@@ -368,9 +360,7 @@ const EditAttributeFloat = wrapEditAttribute(
 						' ' +
 						(this.props.className || '') +
 						' ' +
-						(this.state.editing
-							? this.props.modifiedClassName || ''
-							: '')
+						(this.state.editing ? this.props.modifiedClassName || '' : '')
 					}
 					value={this.getEditAttributeNumber()}
 					onChange={this.handleChange}
@@ -402,9 +392,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 							' ' +
 							(this.props.className || '') +
 							' ' +
-							(this.state.editing
-								? this.props.modifiedClassName || ''
-								: '')
+							(this.state.editing ? this.props.modifiedClassName || '' : '')
 						}>
 						<input
 							type="checkbox"
@@ -447,9 +435,7 @@ const EditAttributeSwitch = wrapEditAttribute(
 						' ' +
 						(this.props.className || '') +
 						' ' +
-						(this.state.editing
-							? this.props.modifiedClassName || ''
-							: '') +
+						(this.state.editing ? this.props.modifiedClassName || '' : '') +
 						' ' +
 						(this.isChecked() ? 'switch-active' : '')
 					}
@@ -554,9 +540,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 						' ' +
 						(this.props.className || '') +
 						' ' +
-						(this.state.editing
-							? this.props.modifiedClassName || ''
-							: '')
+						(this.state.editing ? this.props.modifiedClassName || '' : '')
 					}
 					value={this.getAttributeText()}
 					onChange={this.handleChange}>

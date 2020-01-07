@@ -50,10 +50,7 @@ export interface ISourceLayerItemProps {
 	isNextLine: boolean;
 	onFollowLiveLine?: (state: boolean, event: any) => void;
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void;
-	onDoubleClick?: (
-		item: PieceUi,
-		e: React.MouseEvent<HTMLDivElement>
-	) => void;
+	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void;
 	relative?: boolean;
 	followLiveLine: boolean;
 	autoNextPart: boolean;
@@ -132,22 +129,17 @@ export const SourceLayerItem = translate()(
 							: 0;
 
 					const inPoint = piece.renderedInPoint || 0;
-					const duration = Number.isFinite(
-						piece.renderedDuration || 0
-					)
+					const duration = Number.isFinite(piece.renderedDuration || 0)
 						? piece.renderedDuration ||
 						  this.props.partDuration ||
 						  this.props.part.renderedDuration ||
 						  0
-						: this.props.partDuration ||
-						  this.props.part.renderedDuration ||
-						  0;
+						: this.props.partDuration || this.props.part.renderedDuration || 0;
 
 					const widthConstrictedMode =
 						this.state.leftAnchoredWidth > 0 &&
 						this.state.rightAnchoredWidth > 0 &&
-						this.state.leftAnchoredWidth +
-							this.state.rightAnchoredWidth >
+						this.state.leftAnchoredWidth + this.state.rightAnchoredWidth >
 							this.state.elementWidth;
 
 					const nextIsTouching = !!(
@@ -161,16 +153,13 @@ export const SourceLayerItem = translate()(
 							this.props.liveLineHistorySize - 10;
 						if (
 							this.props.scrollLeft +
-								liveLineHistoryWithMargin /
-									this.props.timeScale >
+								liveLineHistoryWithMargin / this.props.timeScale >
 								inPoint +
 									this.props.partStartsAt +
 									inTransitionDuration +
-									this.state.leftAnchoredWidth /
-										this.props.timeScale &&
+									this.state.leftAnchoredWidth / this.props.timeScale &&
 							this.props.scrollLeft +
-								liveLineHistoryWithMargin /
-									this.props.timeScale <
+								liveLineHistoryWithMargin / this.props.timeScale <
 								inPoint +
 									duration +
 									this.props.partStartsAt -
@@ -190,14 +179,10 @@ export const SourceLayerItem = translate()(
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (
-												this.state.elementWidth -
-												this.state.rightAnchoredWidth
+												this.state.elementWidth - this.state.rightAnchoredWidth
 										  ).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (
-												maxLabelWidth *
-												this.props.timeScale
-										  ).toString() + 'px'
+										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -209,17 +194,14 @@ export const SourceLayerItem = translate()(
 											: Math.min(
 													targetPos,
 													this.state.elementWidth -
-														this.state
-															.rightAnchoredWidth -
+														this.state.rightAnchoredWidth -
 														liveLineHistoryWithMargin -
 														10
 											  )
 									).toString() +
 									'px, 0, 0) ' +
 									'translate3d(' +
-									Math.floor(
-										liveLineHistoryWithMargin
-									).toString() +
+									Math.floor(liveLineHistoryWithMargin).toString() +
 									'px, 0, 0) ' +
 									'translate3d(-100%, 0, 5px)',
 								willChange: 'transform'
@@ -227,13 +209,10 @@ export const SourceLayerItem = translate()(
 
 							return styleObj;
 						} else if (
-							this.state.rightAnchoredWidth <
-								this.state.elementWidth &&
-							this.state.leftAnchoredWidth <
-								this.state.elementWidth &&
+							this.state.rightAnchoredWidth < this.state.elementWidth &&
+							this.state.leftAnchoredWidth < this.state.elementWidth &&
 							this.props.scrollLeft +
-								liveLineHistoryWithMargin /
-									this.props.timeScale >=
+								liveLineHistoryWithMargin / this.props.timeScale >=
 								inPoint +
 									duration +
 									this.props.partStartsAt -
@@ -250,14 +229,10 @@ export const SourceLayerItem = translate()(
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (
-												this.state.elementWidth -
-												this.state.rightAnchoredWidth
+												this.state.elementWidth - this.state.rightAnchoredWidth
 										  ).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (
-												maxLabelWidth *
-												this.props.timeScale
-										  ).toString() + 'px'
+										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -274,9 +249,7 @@ export const SourceLayerItem = translate()(
 									).toString() +
 									'px, 0, 0) ' +
 									'translate3d(' +
-									Math.floor(
-										liveLineHistoryWithMargin
-									).toString() +
+									Math.floor(liveLineHistoryWithMargin).toString() +
 									'px, 0, 0) ' +
 									'translate3d(-100%, 0, 5px)',
 								willChange: 'transform'
@@ -287,9 +260,7 @@ export const SourceLayerItem = translate()(
 					} else {
 						if (
 							this.props.scrollLeft >
-								inPoint +
-									this.props.partStartsAt +
-									inTransitionDuration &&
+								inPoint + this.props.partStartsAt + inTransitionDuration &&
 							this.props.scrollLeft <
 								inPoint +
 									duration +
@@ -307,14 +278,10 @@ export const SourceLayerItem = translate()(
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (
-												this.state.elementWidth -
-												this.state.rightAnchoredWidth
+												this.state.elementWidth - this.state.rightAnchoredWidth
 										  ).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (
-												maxLabelWidth *
-												this.props.timeScale
-										  ).toString() + 'px'
+										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -322,17 +289,14 @@ export const SourceLayerItem = translate()(
 									'translate3d(' +
 									Math.floor(
 										widthConstrictedMode ||
-											this.state.leftAnchoredWidth ===
-												0 ||
+											this.state.leftAnchoredWidth === 0 ||
 											this.state.rightAnchoredWidth === 0
 											? targetPos
 											: Math.min(
 													targetPos,
 													this.state.elementWidth -
-														this.state
-															.leftAnchoredWidth -
-														this.state
-															.rightAnchoredWidth
+														this.state.leftAnchoredWidth -
+														this.state.rightAnchoredWidth
 											  )
 									).toString() +
 									'px,  0, 5px)',
@@ -345,14 +309,10 @@ export const SourceLayerItem = translate()(
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (
-												this.state.elementWidth -
-												this.state.rightAnchoredWidth
+												this.state.elementWidth - this.state.rightAnchoredWidth
 										  ).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (
-												maxLabelWidth *
-												this.props.timeScale
-										  ).toString() + 'px'
+										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none'
@@ -394,9 +354,7 @@ export const SourceLayerItem = translate()(
 
 					if (
 						this.props.scrollLeft + this.props.scrollWidth <
-							outPoint -
-								outTransitionDuration +
-								this.props.partStartsAt &&
+							outPoint - outTransitionDuration + this.props.partStartsAt &&
 						this.props.scrollLeft + this.props.scrollWidth >
 							inPoint + this.props.partStartsAt
 					) {
@@ -435,8 +393,7 @@ export const SourceLayerItem = translate()(
 					? piece.enable.duration || 0
 					: 0;
 			const userDurationNumber =
-				piece.userDuration &&
-				typeof piece.userDuration.duration === 'number'
+				piece.userDuration && typeof piece.userDuration.duration === 'number'
 					? piece.userDuration.duration || 0
 					: 0;
 			let itemDuration = Math.min(
@@ -458,8 +415,7 @@ export const SourceLayerItem = translate()(
 				!piece.playoutDuration &&
 				!piece.userDuration
 			) {
-				itemDuration =
-					this.props.partDuration - (piece.renderedInPoint || 0);
+				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0);
 				// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 			}
 
@@ -491,29 +447,23 @@ export const SourceLayerItem = translate()(
 					// also: don't render transitions in relative mode
 					left:
 						(
-							((piece.renderedInPoint || 0) /
-								(this.props.partDuration || 1)) *
+							((piece.renderedInPoint || 0) / (this.props.partDuration || 1)) *
 							100
 						).toString() + '%',
 					width:
-						(
-							(itemDuration / (this.props.partDuration || 1)) *
-							100
-						).toString() + '%'
+						((itemDuration / (this.props.partDuration || 1)) * 100).toString() +
+						'%'
 				};
 			} else {
 				return {
 					left:
 						Math.floor(
-							((piece.renderedInPoint || 0) +
-								inTransitionDuration) *
+							((piece.renderedInPoint || 0) + inTransitionDuration) *
 								this.props.timeScale
 						).toString() + 'px',
 					width:
 						Math.round(
-							(itemDuration -
-								inTransitionDuration -
-								outTransitionDuration) *
+							(itemDuration - inTransitionDuration - outTransitionDuration) *
 								this.props.timeScale
 						).toString() + 'px'
 				};
@@ -572,18 +522,13 @@ export const SourceLayerItem = translate()(
 				// acceptOnly?: boolean
 				onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
 					console.log('accept', inputResult);
-					doUserAction(
-						this.props.t,
-						e,
-						UserActionAPI.methods.setInOutPoints,
-						[
-							this.props.part.rundownId,
-							this.props.part._id,
-							this.props.piece._id,
-							inputResult.inPoint,
-							inputResult.outPoint
-						]
-					);
+					doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
+						this.props.part.rundownId,
+						this.props.part._id,
+						this.props.piece._id,
+						inputResult.inPoint,
+						inputResult.outPoint
+					]);
 				},
 				inputs: {
 					inPoint: {
@@ -625,9 +570,7 @@ export const SourceLayerItem = translate()(
 				showMiniInspector: v
 			});
 			// console.log($(this.itemElement).offset())
-			const elementPos = getElementDocumentOffset(
-				this.state.itemElement
-			) || {
+			const elementPos = getElementDocumentOffset(this.state.itemElement) || {
 				top: 0,
 				left: 0
 			};
@@ -658,10 +601,7 @@ export const SourceLayerItem = translate()(
 				this.state.scrollLeftOffset;
 
 			this.setState({
-				cursorPosition: _.extend(
-					this.state.cursorPosition,
-					cursorPosition
-				),
+				cursorPosition: _.extend(this.state.cursorPosition, cursorPosition),
 				cursorTimePosition
 			});
 		};
@@ -686,9 +626,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -701,9 +639,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -717,9 +653,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -732,9 +666,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -749,9 +681,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -765,9 +695,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -780,9 +708,7 @@ export const SourceLayerItem = translate()(
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-							getItemLabelOffsetRight={
-								this.getItemLabelOffsetRight
-							}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
@@ -816,58 +742,45 @@ export const SourceLayerItem = translate()(
 
 				return (
 					<div
-						className={ClassNames(
-							'segment-timeline__piece',
-							typeClass,
-							{
-								'with-in-transition':
-									!this.props.relative &&
-									this.props.piece.transitions &&
-									this.props.piece.transitions.inTransition &&
-									(this.props.piece.transitions.inTransition
-										.duration || 0) > 0,
-								'with-out-transition':
-									!this.props.relative &&
-									this.props.piece.transitions &&
-									this.props.piece.transitions
-										.outTransition &&
-									(this.props.piece.transitions.outTransition
-										.duration || 0) > 0,
+						className={ClassNames('segment-timeline__piece', typeClass, {
+							'with-in-transition':
+								!this.props.relative &&
+								this.props.piece.transitions &&
+								this.props.piece.transitions.inTransition &&
+								(this.props.piece.transitions.inTransition.duration || 0) > 0,
+							'with-out-transition':
+								!this.props.relative &&
+								this.props.piece.transitions &&
+								this.props.piece.transitions.outTransition &&
+								(this.props.piece.transitions.outTransition.duration || 0) > 0,
 
-								'hide-overflow-labels':
-									this.state.leftAnchoredWidth > 0 &&
-									this.state.rightAnchoredWidth > 0 &&
-									this.state.leftAnchoredWidth +
-										this.state.rightAnchoredWidth >
-										this.state.elementWidth,
+							'hide-overflow-labels':
+								this.state.leftAnchoredWidth > 0 &&
+								this.state.rightAnchoredWidth > 0 &&
+								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth >
+									this.state.elementWidth,
 
-								infinite: (this.props.piece.playoutDuration ===
-									undefined &&
-									this.props.piece.userDuration ===
-										undefined &&
-									this.props.piece.infiniteMode) as boolean, // 0 is a special value
-								'next-is-touching': !!(
-									this.props.piece.cropped ||
-									(this.props.piece.enable.end &&
-										_.isString(this.props.piece.enable.end))
-								),
+							infinite: (this.props.piece.playoutDuration === undefined &&
+								this.props.piece.userDuration === undefined &&
+								this.props.piece.infiniteMode) as boolean, // 0 is a special value
+							'next-is-touching': !!(
+								this.props.piece.cropped ||
+								(this.props.piece.enable.end &&
+									_.isString(this.props.piece.enable.end))
+							),
 
-								'source-missing':
-									this.props.piece.status ===
-										RundownAPI.PieceStatusCode
-											.SOURCE_MISSING ||
-									this.props.piece.status ===
-										RundownAPI.PieceStatusCode
-											.SOURCE_NOT_SET,
-								'source-broken':
-									this.props.piece.status ===
-									RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-								'unknown-state':
-									this.props.piece.status ===
-									RundownAPI.PieceStatusCode.UNKNOWN,
-								disabled: this.props.piece.disabled
-							}
-						)}
+							'source-missing':
+								this.props.piece.status ===
+									RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+								this.props.piece.status ===
+									RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
+							'source-broken':
+								this.props.piece.status ===
+								RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+							'unknown-state':
+								this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
+							disabled: this.props.piece.disabled
+						})}
 						data-obj-id={this.props.piece._id}
 						ref={this.setRef}
 						onClick={this.itemClick}
@@ -894,8 +807,7 @@ export const SourceLayerItem = translate()(
 									  ).substr(-5)
 									: 'X'}{' '}
 								/{' '}
-								{typeof this.props.piece.enable.duration ===
-								'number'
+								{typeof this.props.piece.enable.duration === 'number'
 									? RundownUtils.formatTimeToTimecode(
 											this.props.piece.enable.duration
 									  ).substr(-5)
@@ -904,58 +816,50 @@ export const SourceLayerItem = translate()(
 						)}
 						{this.props.piece.transitions &&
 						this.props.piece.transitions.inTransition &&
-						(this.props.piece.transitions.inTransition.duration ||
-							0) > 0 ? (
+						(this.props.piece.transitions.inTransition.duration || 0) > 0 ? (
 							<div
 								className={ClassNames(
 									'segment-timeline__piece__transition',
 									'in',
 									{
 										mix:
-											this.props.piece.transitions
-												.inTransition.type ===
+											this.props.piece.transitions.inTransition.type ===
 											PieceTransitionType.MIX,
 										wipe:
-											this.props.piece.transitions
-												.inTransition.type ===
+											this.props.piece.transitions.inTransition.type ===
 											PieceTransitionType.WIPE
 									}
 								)}
 								style={{
 									width:
 										(
-											(this.props.piece.transitions
-												.inTransition.duration || 0) *
-											this.props.timeScale
+											(this.props.piece.transitions.inTransition.duration ||
+												0) * this.props.timeScale
 										).toString() + 'px'
 								}}
 							/>
 						) : null}
 						{this.props.piece.transitions &&
 						this.props.piece.transitions.outTransition &&
-						(this.props.piece.transitions.outTransition.duration ||
-							0) > 0 ? (
+						(this.props.piece.transitions.outTransition.duration || 0) > 0 ? (
 							<div
 								className={ClassNames(
 									'segment-timeline__piece__transition',
 									'out',
 									{
 										mix:
-											this.props.piece.transitions
-												.outTransition.type ===
+											this.props.piece.transitions.outTransition.type ===
 											PieceTransitionType.MIX,
 										wipe:
-											this.props.piece.transitions
-												.outTransition.type ===
+											this.props.piece.transitions.outTransition.type ===
 											PieceTransitionType.WIPE
 									}
 								)}
 								style={{
 									width:
 										(
-											(this.props.piece.transitions
-												.outTransition.duration || 0) *
-											this.props.timeScale
+											(this.props.piece.transitions.outTransition.duration ||
+												0) * this.props.timeScale
 										).toString() + 'px'
 								}}
 							/>

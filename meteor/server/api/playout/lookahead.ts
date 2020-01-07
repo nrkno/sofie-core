@@ -89,10 +89,7 @@ export function getLookeaheadObjects(
 				enable = calculateStartAfterPreviousObj(prevObj);
 			}
 			if (!entry.obj.id)
-				throw new Meteor.Error(
-					500,
-					'lookahead: timeline obj id not set'
-				);
+				throw new Meteor.Error(500, 'lookahead: timeline obj id not set');
 
 			const finiteDuration =
 				entry.partId === activeRundown.currentPartId ||
@@ -112,18 +109,13 @@ export function getLookeaheadObjects(
 
 		// Add each of the future objects, that have no end point
 		const futureObjCount = lookaheadObjs.future.length;
-		const futurePriorityScale =
-			LOOKAHEAD_OBJ_PRIORITY / (futureObjCount + 1);
+		const futurePriorityScale = LOOKAHEAD_OBJ_PRIORITY / (futureObjCount + 1);
 		_.each(lookaheadObjs.future, (entry, i) => {
 			if (!entry.obj.id)
-				throw new Meteor.Error(
-					500,
-					'lookahead: timeline obj id not set'
-				);
+				throw new Meteor.Error(500, 'lookahead: timeline obj id not set');
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
-			const singleFutureObj =
-				mapping.lookahead !== LookaheadMode.WHEN_CLEAR;
+			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR;
 			if (singleFutureObj && i !== 0) {
 				return;
 			}
@@ -140,13 +132,7 @@ export function getLookeaheadObjects(
 			const priority = singleFutureObj
 				? LOOKAHEAD_OBJ_PRIORITY
 				: futurePriorityScale * (futureObjCount - i);
-			mutateAndPushObject(
-				entry.obj,
-				`future${i}`,
-				enable,
-				mapping,
-				priority
-			);
+			mutateAndPushObject(entry.obj, `future${i}`, enable, mapping, priority);
 		});
 	});
 	return timelineObjs;
@@ -206,9 +192,7 @@ export function findLookaheadForlayer(
 				fixTimelineId(obj);
 				return {
 					timed: [], // TODO - is this correct?
-					future: [
-						{ obj: obj as TimelineObjRundown, partId: piece.partId }
-					]
+					future: [{ obj: obj as TimelineObjRundown, partId: piece.partId }]
 				};
 			}
 		}
@@ -307,8 +291,7 @@ export function findLookaheadForlayer(
 		);
 
 		if (nextPartOnLayerIndex !== -1) {
-			const nextPartOnLayer =
-				timeOrderedPartsWithPieces[nextPartOnLayerIndex];
+			const nextPartOnLayer = timeOrderedPartsWithPieces[nextPartOnLayerIndex];
 			const partId = nextPartOnLayer.partId;
 			findObjectsForPart(
 				rundownData,
@@ -434,8 +417,7 @@ function findObjectsForPart(
 				const prevPieceGroup =
 					timeOrderedPartsWithPieces[startingPartOnLayerIndex - 1];
 				allowTransition = !prevPieceGroup.part.disableOutTransition;
-				classesFromPreviousPart =
-					prevPieceGroup.part.classesForNext || [];
+				classesFromPreviousPart = prevPieceGroup.part.classesForNext || [];
 			}
 
 			const transObj = orderedItems.find((i) => !!i.isTransition);
@@ -453,21 +435,12 @@ function findObjectsForPart(
 
 			const res: TimelineObjRundown[] = [];
 			orderedItems.forEach((i) => {
-				if (
-					!startingPartOnLayer ||
-					(!allowTransition && i.isTransition)
-				) {
+				if (!startingPartOnLayer || (!allowTransition && i.isTransition)) {
 					return;
 				}
 
-				const piece = startingPartOnLayer.pieces.find(
-					(l) => l._id === i._id
-				);
-				if (
-					!piece ||
-					!piece.content ||
-					!piece.content.timelineObjects
-				) {
+				const piece = startingPartOnLayer.pieces.find((l) => l._id === i._id);
+				if (!piece || !piece.content || !piece.content.timelineObjects) {
 					return;
 				}
 
@@ -506,9 +479,7 @@ function findObjectsForPart(
 							transitionKF = _.find(obj.keyframes || [], (kf) =>
 								_.any(
 									classesFromPreviousPart,
-									(cl) =>
-										kf.enable.while ===
-										`.is_transition & .${cl}`
+									(cl) => kf.enable.while === `.is_transition & .${cl}`
 								)
 							);
 						}

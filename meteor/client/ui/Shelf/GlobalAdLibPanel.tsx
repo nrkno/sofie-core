@@ -117,9 +117,7 @@ const AdLibListView = translate()(
 				<tbody
 					id={'adlib-panel__list-view__globals'}
 					key="globals"
-					className={ClassNames(
-						'adlib-panel__list-view__list__segment'
-					)}>
+					className={ClassNames('adlib-panel__list-view__list__segment')}>
 					{itemList
 						.concat(this.props.rundownAdLibs)
 						.concat(
@@ -134,16 +132,12 @@ const AdLibListView = translate()(
 									>({
 										_id: layer._id,
 										hotkey: layer.activateStickyKeyboardHotkey
-											? layer.activateStickyKeyboardHotkey.split(
-													','
-											  )[0]
+											? layer.activateStickyKeyboardHotkey.split(',')[0]
 											: '',
 										name: t('Last {{layerName}}', {
-											layerName:
-												layer.abbreviation || layer.name
+											layerName: layer.abbreviation || layer.name
 										}),
-										status:
-											RundownAPI.PieceStatusCode.UNKNOWN,
+										status: RundownAPI.PieceStatusCode.UNKNOWN,
 										layer: layer,
 										isSticky: true
 									})
@@ -157,9 +151,7 @@ const AdLibListView = translate()(
 									(!this.props.searchFilter ||
 										item.name
 											.toUpperCase()
-											.indexOf(
-												this.props.searchFilter.toUpperCase()
-											) >= 0)
+											.indexOf(this.props.searchFilter.toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
@@ -167,17 +159,12 @@ const AdLibListView = translate()(
 											item={item}
 											selected={
 												(this.props.selectedPiece &&
-													this.props.selectedPiece
-														._id === item._id) ||
+													this.props.selectedPiece._id === item._id) ||
 												false
 											}
 											layer={item.layer}
-											onToggleAdLib={
-												this.props.onToggleSticky
-											}
-											onSelectAdLib={
-												this.props.onSelectAdLib
-											}
+											onToggleAdLib={this.props.onToggleSticky}
+											onSelectAdLib={this.props.onSelectAdLib}
 											rundown={this.props.rundown}
 										/>
 									);
@@ -187,9 +174,7 @@ const AdLibListView = translate()(
 									(!this.props.searchFilter ||
 										item.name
 											.toUpperCase()
-											.indexOf(
-												this.props.searchFilter.toUpperCase()
-											) >= 0)
+											.indexOf(this.props.searchFilter.toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
@@ -197,26 +182,13 @@ const AdLibListView = translate()(
 											item={item}
 											selected={
 												(this.props.selectedPiece &&
-													this.props.selectedPiece
-														._id === item._id) ||
+													this.props.selectedPiece._id === item._id) ||
 												false
 											}
-											layer={
-												this.state.sourceLayers[
-													item.sourceLayerId
-												]
-											}
-											outputLayer={
-												this.state.outputLayers[
-													item.outputLayerId
-												]
-											}
-											onToggleAdLib={
-												this.props.onToggleAdLib
-											}
-											onSelectAdLib={
-												this.props.onSelectAdLib
-											}
+											layer={this.state.sourceLayers[item.sourceLayerId]}
+											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											onToggleAdLib={this.props.onToggleAdLib}
+											onSelectAdLib={this.props.onSelectAdLib}
 											rundown={this.props.rundown}
 										/>
 									);
@@ -379,10 +351,7 @@ export const GlobalAdLibPanel = translateWithTracker<
 	const sourceLayerLookup: ISourceLayerLookup =
 		props.showStyleBase && props.showStyleBase.sourceLayers
 			? _.object(
-					_.map(props.showStyleBase.sourceLayers, (item) => [
-						item._id,
-						item
-					])
+					_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])
 			  )
 			: {};
 	// a hash to store various indices of the used hotkey lists
@@ -416,16 +385,14 @@ export const GlobalAdLibPanel = translateWithTracker<
 					','
 				);
 				const sourceHotKeyUseLayerId =
-					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]
-						._id || item.sourceLayerId;
+					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id ||
+					item.sourceLayerId;
 				if (
 					(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) <
 					keyboardHotkeysList.length
 				) {
 					uiAdLib.hotkey =
-						keyboardHotkeysList[
-							sourceHotKeyUse[sourceHotKeyUseLayerId] || 0
-						];
+						keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0];
 					// add one to the usage hash table
 					sourceHotKeyUse[sourceHotKeyUseLayerId] =
 						(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1;
@@ -558,49 +525,45 @@ export const GlobalAdLibPanel = translateWithTracker<
 			if (this.props.sourceLayerLookup) {
 				_.each(this.props.sourceLayerLookup, (item) => {
 					if (item.clearKeyboardHotkey) {
-						item.clearKeyboardHotkey
-							.split(',')
-							.forEach((element) => {
-								mousetrapHelper.bind(
-									element,
-									preventDefault,
-									'keydown',
-									this.constructor.name
-								);
-								mousetrapHelper.bind(
-									element,
-									(e: ExtendedKeyboardEvent) => {
-										preventDefault(e);
-										this.onClearAllSourceLayer(item, e);
-									},
-									'keyup',
-									this.constructor.name
-								);
-								this.usedHotkeys.push(element);
-							});
+						item.clearKeyboardHotkey.split(',').forEach((element) => {
+							mousetrapHelper.bind(
+								element,
+								preventDefault,
+								'keydown',
+								this.constructor.name
+							);
+							mousetrapHelper.bind(
+								element,
+								(e: ExtendedKeyboardEvent) => {
+									preventDefault(e);
+									this.onClearAllSourceLayer(item, e);
+								},
+								'keyup',
+								this.constructor.name
+							);
+							this.usedHotkeys.push(element);
+						});
 					}
 
 					if (item.isSticky && item.activateStickyKeyboardHotkey) {
-						item.activateStickyKeyboardHotkey
-							.split(',')
-							.forEach((element) => {
-								mousetrapHelper.bind(
-									element,
-									preventDefault,
-									'keydown',
-									this.constructor.name
-								);
-								mousetrapHelper.bind(
-									element,
-									(e: ExtendedKeyboardEvent) => {
-										preventDefault(e);
-										this.onToggleSticky(item._id, e);
-									},
-									'keyup',
-									this.constructor.name
-								);
-								this.usedHotkeys.push(element);
-							});
+						item.activateStickyKeyboardHotkey.split(',').forEach((element) => {
+							mousetrapHelper.bind(
+								element,
+								preventDefault,
+								'keydown',
+								this.constructor.name
+							);
+							mousetrapHelper.bind(
+								element,
+								(e: ExtendedKeyboardEvent) => {
+									preventDefault(e);
+									this.onToggleSticky(item._id, e);
+								},
+								'keyup',
+								this.constructor.name
+							);
+							this.usedHotkeys.push(element);
+						});
 					}
 				});
 			}
@@ -623,12 +586,10 @@ export const GlobalAdLibPanel = translateWithTracker<
 				this.props.rundown.active
 			) {
 				const { t } = this.props;
-				doUserAction(
-					t,
-					e,
-					UserActionAPI.methods.sourceLayerStickyPieceStart,
-					[this.props.rundown._id, sourceLayerId]
-				);
+				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
+					this.props.rundown._id,
+					sourceLayerId
+				]);
 			}
 		};
 
@@ -647,9 +608,7 @@ export const GlobalAdLibPanel = translateWithTracker<
 					new Notification(
 						t('Invalid AdLib'),
 						NoticeLevel.WARNING,
-						t(
-							'Cannot play this AdLib becasue it is marked as Invalid'
-						),
+						t('Cannot play this AdLib becasue it is marked as Invalid'),
 						'toggleAdLib'
 					)
 				);
@@ -660,9 +619,7 @@ export const GlobalAdLibPanel = translateWithTracker<
 					new Notification(
 						t('Floated AdLib'),
 						NoticeLevel.WARNING,
-						t(
-							'Cannot play this AdLib becasue it is marked as Floated'
-						),
+						t('Cannot play this AdLib becasue it is marked as Floated'),
 						'toggleAdLib'
 					)
 				);
@@ -686,17 +643,12 @@ export const GlobalAdLibPanel = translateWithTracker<
 				piece.isGlobal
 			) {
 				const { t } = this.props;
-				doUserAction(
-					t,
-					e,
-					UserActionAPI.methods.baselineAdLibPieceStart,
-					[
-						this.props.rundown._id,
-						this.props.rundown.currentPartId,
-						piece._id,
-						queue || false
-					]
-				);
+				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
+					this.props.rundown._id,
+					this.props.rundown.currentPartId,
+					piece._id,
+					queue || false
+				]);
 			}
 		};
 
@@ -705,16 +657,11 @@ export const GlobalAdLibPanel = translateWithTracker<
 
 			if (this.props.rundown && this.props.rundown.currentPartId) {
 				const { t } = this.props;
-				doUserAction(
-					t,
-					e,
-					UserActionAPI.methods.sourceLayerOnPartStop,
-					[
-						this.props.rundown._id,
-						this.props.rundown.currentPartId,
-						sourceLayer._id
-					]
-				);
+				doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
+					this.props.rundown._id,
+					this.props.rundown.currentPartId,
+					sourceLayer._id
+				]);
 			}
 		};
 

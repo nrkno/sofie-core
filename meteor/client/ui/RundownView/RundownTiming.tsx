@@ -160,8 +160,7 @@ export const RundownTimingProvider = withTracker<
 			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
-		implements
-			React.ChildContextProvider<IRundownTimingProviderChildContext> {
+		implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
 		static childContextTypes = {
 			durations: PropTypes.object.isRequired
 		};
@@ -196,8 +195,7 @@ export const RundownTimingProvider = withTracker<
 		private displayDurationGroups: _.Dictionary<number> = {};
 
 		constructor(
-			props: IRundownTimingProviderProps &
-				IRundownTimingProviderTrackedProps
+			props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps
 		) {
 			super(props);
 
@@ -246,8 +244,7 @@ export const RundownTimingProvider = withTracker<
 				this.refreshTimer
 			) {
 				this.refreshTimerInterval =
-					this.props.refreshInterval ||
-					TIMING_DEFAULT_REFRESH_INTERVAL;
+					this.props.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL;
 				Meteor.clearInterval(this.refreshTimer);
 				this.refreshTimer = Meteor.setInterval(
 					this.onRefreshTimer,
@@ -312,8 +309,7 @@ export const RundownTimingProvider = withTracker<
 			if (rundown && parts) {
 				parts.forEach((part, itIndex) => {
 					// add piece to accumulator
-					const aIndex =
-						this.linearParts.push([part._id, waitAccumulator]) - 1;
+					const aIndex = this.linearParts.push([part._id, waitAccumulator]) - 1;
 
 					// if this is next segementLine, clear previous countdowns and clear accumulator
 					if (rundown.nextPartId === part._id) {
@@ -360,9 +356,8 @@ export const RundownTimingProvider = withTracker<
 					if (
 						part.displayDurationGroup &&
 						// either this is not the first element of the displayDurationGroup
-						(this.displayDurationGroups[
-							part.displayDurationGroup
-						] !== undefined ||
+						(this.displayDurationGroups[part.displayDurationGroup] !==
+							undefined ||
 							// or there is a following member of this displayDurationGroup
 							(parts[itIndex + 1] &&
 								parts[itIndex + 1].displayDurationGroup ===
@@ -370,25 +365,18 @@ export const RundownTimingProvider = withTracker<
 						!part.floated
 					) {
 						this.displayDurationGroups[part.displayDurationGroup] =
-							(this.displayDurationGroups[
-								part.displayDurationGroup
-							] || 0) + (part.expectedDuration || 0);
+							(this.displayDurationGroups[part.displayDurationGroup] || 0) +
+							(part.expectedDuration || 0);
 						displayDurationFromGroup =
 							part.displayDuration ||
 							Math.max(
 								0,
-								this.displayDurationGroups[
-									part.displayDurationGroup
-								],
+								this.displayDurationGroups[part.displayDurationGroup],
 								this.props.defaultDuration || DEFAULT_DURATION
 							);
 						memberOfDisplayDurationGroup = true;
 					}
-					if (
-						part.startedPlayback &&
-						lastStartedPlayback &&
-						!part.duration
-					) {
+					if (part.startedPlayback && lastStartedPlayback && !part.duration) {
 						currentRemaining = Math.max(
 							0,
 							(part.duration ||
@@ -415,8 +403,7 @@ export const RundownTimingProvider = withTracker<
 						this.partPlayed[part._id] = now - lastStartedPlayback;
 					} else {
 						partDuration =
-							(part.duration || part.expectedDuration || 0) -
-							playOffset;
+							(part.duration || part.expectedDuration || 0) - playOffset;
 						partDisplayDuration = Math.max(
 							0,
 							(part.duration && part.duration + playOffset) ||
@@ -425,8 +412,7 @@ export const RundownTimingProvider = withTracker<
 								this.props.defaultDuration ||
 								DEFAULT_DURATION
 						);
-						this.partPlayed[part._id] =
-							(part.duration || 0) - playOffset;
+						this.partPlayed[part._id] = (part.duration || 0) - playOffset;
 					}
 
 					// the part is the current part but has not yet started playback
@@ -451,23 +437,18 @@ export const RundownTimingProvider = withTracker<
 						!part.floated
 					) {
 						this.displayDurationGroups[part.displayDurationGroup] =
-							this.displayDurationGroups[
-								part.displayDurationGroup
-							] - partDisplayDuration;
+							this.displayDurationGroups[part.displayDurationGroup] -
+							partDisplayDuration;
 					}
 
 					this.partExpectedDurations[part._id] =
 						part.expectedDuration || part.duration || 0;
 					this.partStartsAt[part._id] = startsAtAccumulator;
-					this.partDisplayStartsAt[
-						part._id
-					] = displayStartsAtAccumulator;
+					this.partDisplayStartsAt[part._id] = displayStartsAtAccumulator;
 					this.partDurations[part._id] = partDuration;
 					this.partDisplayDurations[part._id] = partDisplayDuration;
 					startsAtAccumulator += this.partDurations[part._id];
-					displayStartsAtAccumulator += this.partDisplayDurations[
-						part._id
-					]; // || this.props.defaultDuration || 3000
+					displayStartsAtAccumulator += this.partDisplayDurations[part._id]; // || this.props.defaultDuration || 3000
 					// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 					// always add the full duration, in case by some manual intervention this segment should play twice
 					// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
@@ -478,8 +459,7 @@ export const RundownTimingProvider = withTracker<
 							part.expectedDuration ||
 							0;
 					} else {
-						waitAccumulator +=
-							part.duration || part.expectedDuration || 0;
+						waitAccumulator += part.duration || part.expectedDuration || 0;
 					}
 
 					// remaining is the sum of unplayed lines + whatever is left of the current segment
@@ -495,8 +475,7 @@ export const RundownTimingProvider = withTracker<
 					) {
 						// console.log((now - item.startedPlayback))
 						remainingRundownDuration +=
-							(part.expectedDuration || 0) -
-							(now - lastStartedPlayback);
+							(part.expectedDuration || 0) - (now - lastStartedPlayback);
 					}
 				});
 
@@ -518,9 +497,7 @@ export const RundownTimingProvider = withTracker<
 						// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 						// this away from this line.
 						this.linearParts[i][1] =
-							(this.linearParts[i][1] || 0) -
-							localAccum +
-							currentRemaining;
+							(this.linearParts[i][1] || 0) - localAccum + currentRemaining;
 					}
 				}
 
@@ -538,16 +515,13 @@ export const RundownTimingProvider = withTracker<
 				const lastStartedPlayback = currentLivePart.getLastStartedPlayback();
 
 				let onAirPartDuration =
-					currentLivePart.duration ||
-					currentLivePart.expectedDuration ||
-					0;
+					currentLivePart.duration || currentLivePart.expectedDuration || 0;
 				if (
 					currentLivePart.displayDurationGroup &&
 					!currentLivePart.displayDuration
 				) {
 					onAirPartDuration =
-						this.partDisplayDurations[currentLivePart._id] ||
-						onAirPartDuration;
+						this.partDisplayDurations[currentLivePart._id] || onAirPartDuration;
 				}
 
 				remainingTimeOnCurrentPart =
@@ -649,18 +623,13 @@ export function withTiming<IProps, IState>(
 				super(props, context);
 
 				if (typeof options === 'function') {
-					expandedOptions = _.extend(
-						expandedOptions,
-						options(this.props)
-					);
+					expandedOptions = _.extend(expandedOptions, options(this.props));
 				}
 
 				if (typeof expandedOptions.filter === 'function') {
 					this.filterGetter = expandedOptions.filter;
 				} else if (expandedOptions.filter) {
-					this.filterGetter = _.property(
-						expandedOptions.filter as string
-					);
+					this.filterGetter = _.property(expandedOptions.filter as string);
 				}
 			}
 
@@ -696,8 +665,8 @@ export function withTiming<IProps, IState>(
 			};
 
 			render() {
-				const durations: RundownTiming.RundownTimingContext = this
-					.context.durations;
+				const durations: RundownTiming.RundownTimingContext = this.context
+					.durations;
 
 				// If the timing HOC is supposed to be low resolution and we are rendering
 				// during a high resolution tick, the WrappedComponent will render using
@@ -708,18 +677,12 @@ export function withTiming<IProps, IState>(
 				// the filter says.
 				if (
 					this.filterGetter &&
-					durations.isLowResolution !==
-						!expandedOptions.isHighResolution
+					durations.isLowResolution !== !expandedOptions.isHighResolution
 				) {
 					this.isDirty = true;
 				}
 
-				return (
-					<WrappedComponent
-						{...this.props}
-						timingDurations={durations}
-					/>
-				);
+				return <WrappedComponent {...this.props} timingDurations={durations} />;
 			}
 		};
 	};
@@ -736,26 +699,20 @@ interface IPartCountdownProps {
  * @extends React.Component<WithTiming<IPartCountdownProps>>
  */
 export const PartCountdown = withTiming<IPartCountdownProps, {}>()(
-	class PartCountdown extends React.Component<
-		WithTiming<IPartCountdownProps>
-	> {
+	class PartCountdown extends React.Component<WithTiming<IPartCountdownProps>> {
 		render() {
 			return (
 				<span>
 					{this.props.partId &&
 						this.props.timingDurations &&
 						this.props.timingDurations.partCountdown &&
-						this.props.timingDurations.partCountdown[
-							this.props.partId
-						] !== undefined &&
+						this.props.timingDurations.partCountdown[this.props.partId] !==
+							undefined &&
 						(this.props.hideOnZero !== true ||
-							this.props.timingDurations.partCountdown[
-								this.props.partId
-							] > 0) &&
+							this.props.timingDurations.partCountdown[this.props.partId] >
+								0) &&
 						RundownUtils.formatTimeToShortTime(
-							this.props.timingDurations.partCountdown[
-								this.props.partId
-							]
+							this.props.timingDurations.partCountdown[this.props.partId]
 						)}
 				</span>
 			);
@@ -927,8 +884,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(
 						? memo +
 								Math.max(
 									0,
-									partExpectedDurations[item] -
-										(partPlayed[item] || 0)
+									partExpectedDurations[item] - (partPlayed[item] || 0)
 								)
 						: memo;
 				}, 0);

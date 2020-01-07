@@ -51,24 +51,19 @@ export const SpreadsheetSettingsComponent = translate()(
 
 				let uploadFileContents = (e2.target as any).result;
 
-				fetchFrom(
-					`/devices/${this.props.device._id}/uploadCredentials`,
-					{
-						method: 'POST',
-						body: uploadFileContents,
-						headers: {
-							'content-type': 'text/javascript'
-						}
+				fetchFrom(`/devices/${this.props.device._id}/uploadCredentials`, {
+					method: 'POST',
+					body: uploadFileContents,
+					headers: {
+						'content-type': 'text/javascript'
 					}
-				)
+				})
 					.then((res) => {
 						NotificationCenter.push(
 							new Notification(
 								undefined,
 								NoticeLevel.NOTIFICATION,
-								t(
-									'Spreadsheet credentials succesfully uploaded.'
-								),
+								t('Spreadsheet credentials succesfully uploaded.'),
 								'SpreadsheetSettingsComponent'
 							)
 						);
@@ -183,17 +178,14 @@ export const SpreadsheetSettingsComponent = translate()(
 										<input
 											type="file"
 											accept="application/json,.json"
-											onChange={(e) =>
-												this.onUploadCredentialsFile(e)
-											}
+											onChange={(e) => this.onUploadCredentialsFile(e)}
 										/>
 										<span className="mdfx"></span>
 									</div>
 								</div>
 							</label>
 						) : null}
-						{settings.secretCredentials &&
-						!settings.secretAccessToken ? (
+						{settings.secretCredentials && !settings.secretAccessToken ? (
 							<label className="field">
 								{t('Access token')}
 								<div className="mdi">
@@ -204,15 +196,11 @@ export const SpreadsheetSettingsComponent = translate()(
 									</div>
 									<div>
 										{device.accessTokenUrl ? (
-											<a
-												href={device.accessTokenUrl}
-												target="_blank">
+											<a href={device.accessTokenUrl} target="_blank">
 												{device.accessTokenUrl}
 											</a>
 										) : (
-											t(
-												'Waiting for gateway to generate URL...'
-											)
+											t('Waiting for gateway to generate URL...')
 										)}
 									</div>
 									<EditAttribute
@@ -239,9 +227,7 @@ export const SpreadsheetSettingsComponent = translate()(
 									visible={
 										getHelpMode() &&
 										(!this.props.device.settings ||
-											!this.props.device.settings[
-												'folderPath'
-											])
+											!this.props.device.settings['folderPath'])
 									}
 									placement="top">
 									<EditAttribute

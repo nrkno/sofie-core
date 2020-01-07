@@ -52,10 +52,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<
 		});
 	};
 
-	componentDidUpdate(
-		prevProps: Readonly<IProps>,
-		prevState: Readonly<IState>
-	) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (
 			super.componentDidUpdate &&
 			typeof super.componentDidUpdate === 'function'
@@ -96,11 +93,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<
 							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 							style={this.getFloatingInspectorStyle()}>
 							<img
-								src={
-									'/transition-icons/preview/' +
-									content.icon +
-									'.png'
-								}
+								src={'/transition-icons/preview/' + content.icon + '.png'}
 								className="thumbnail"
 							/>
 						</div>

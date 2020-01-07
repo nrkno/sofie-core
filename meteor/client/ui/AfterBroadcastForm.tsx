@@ -18,10 +18,7 @@ interface IState {
 }
 // export default translate()(class Dashboard extends React.Component<Translated<IProps>, IState> {
 export const AfterBroadcastForm = translate()(
-	class AfterBroadcastForm extends React.Component<
-		Translated<IProps>,
-		IState
-	> {
+	class AfterBroadcastForm extends React.Component<Translated<IProps>, IState> {
 		constructor(props: Translated<IProps>) {
 			super(props);
 			this.state = {
@@ -43,9 +40,7 @@ export const AfterBroadcastForm = translate()(
 				if (snapshotId && evaluation.snapshots)
 					evaluation.snapshots.push(snapshotId);
 
-				doUserAction(t, e, UserActionAPI.methods.saveEvaluation, [
-					evaluation
-				]);
+				doUserAction(t, e, UserActionAPI.methods.saveEvaluation, [evaluation]);
 
 				doUserAction(t, e, UserActionAPI.methods.deactivate, [
 					this.props.rundown._id
@@ -96,20 +91,12 @@ export const AfterBroadcastForm = translate()(
 						<h2>{t('Evaluation')}</h2>
 
 						<p>
-							<em>
-								{t(
-									'Please take a minute to fill in this form.'
-								)}
-							</em>
+							<em>{t('Please take a minute to fill in this form.')}</em>
 						</p>
 
 						<div className="form">
 							<div className="question">
-								<p>
-									{t(
-										'Did you have any problems with the broadcast?'
-									)}
-								</p>
+								<p>{t('Did you have any problems with the broadcast?')}</p>
 								<div className="input q0">
 									<EditAttribute
 										obj={obj}
@@ -147,9 +134,7 @@ export const AfterBroadcastForm = translate()(
 								</div>
 							</div>
 
-							<button
-								className="btn btn-primary"
-								onClick={this.saveForm}>
+							<button className="btn btn-primary" onClick={this.saveForm}>
 								{t('Save message and Deactivate Rundown')}
 							</button>
 						</div>

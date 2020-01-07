@@ -82,10 +82,7 @@ export function createMongoCollection<T>(
 			} catch (e) {
 				throw new Meteor.Error(
 					(e && e.error) || 500,
-					(e && e.reason) ||
-						e.toString() ||
-						e ||
-						'Unknown MongoDB Error'
+					(e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
 				);
 			}
 		};

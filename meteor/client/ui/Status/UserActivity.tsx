@@ -32,30 +32,18 @@ export const UserActionsList = translate()(
 			return (
 				<thead>
 					<tr>
-						<th className="c3 user-action-log__timestamp">
-							{t('Timestamp')}
-						</th>
+						<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
 						<th className="c3 user-action-log__executionTime">
 							{t('Execution time')}
 						</th>
-						<th className="c1 user-action-log__userId">
-							{t('User ID')}
-						</th>
+						<th className="c1 user-action-log__userId">{t('User ID')}</th>
 						<th className="c2 user-action-log__clientAddress">
 							{t('Client IP')}
 						</th>
-						<th className="c3 user-action-log__context">
-							{t('Action')}
-						</th>
-						<th className="c3 user-action-log__method">
-							{t('Method')}
-						</th>
-						<th className="c1 user-action-log__status">
-							{t('Status')}
-						</th>
-						<th className="c1 user-action-log__args">
-							{t('Parameters')}
-						</th>
+						<th className="c3 user-action-log__context">{t('Action')}</th>
+						<th className="c3 user-action-log__method">{t('Method')}</th>
+						<th className="c1 user-action-log__status">{t('Status')}</th>
+						<th className="c1 user-action-log__args">{t('Parameters')}</th>
 						{this.props.renderButtons ? (
 							<th className="c1 user-action-log__buttons"></th>
 						) : null}
@@ -72,15 +60,10 @@ export const UserActionsList = translate()(
 						{_.map(this.props.items, (msg) => {
 							return (
 								<tr
-									className={
-										this.props.onItemClick
-											? 'clickable'
-											: undefined
-									}
+									className={this.props.onItemClick ? 'clickable' : undefined}
 									key={msg._id}
 									onClick={(e) =>
-										this.props.onItemClick &&
-										this.props.onItemClick(msg)
+										this.props.onItemClick && this.props.onItemClick(msg)
 									}>
 									<td className="user-action-log__timestamp">
 										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">
@@ -88,22 +71,14 @@ export const UserActionsList = translate()(
 										</Moment>
 									</td>
 									<td className="user-action-log__executionTime">
-										{msg.executionTime
-											? msg.executionTime + 'ms'
-											: ''}
+										{msg.executionTime ? msg.executionTime + 'ms' : ''}
 									</td>
-									<td className="user-action-log__userId">
-										{msg.userId}
-									</td>
+									<td className="user-action-log__userId">{msg.userId}</td>
 									<td className="user-action-log__clientAddress">
 										{msg.clientAddress}
 									</td>
-									<td className="user-action-log__context">
-										{msg.context}
-									</td>
-									<td className="user-action-log__method">
-										{msg.method}
-									</td>
+									<td className="user-action-log__context">{msg.context}</td>
+									<td className="user-action-log__method">{msg.method}</td>
 									<td className="user-action-log__status">
 										{msg.success
 											? 'Success'
@@ -111,9 +86,7 @@ export const UserActionsList = translate()(
 											? 'Error: ' + msg.errorMessage
 											: ''}
 									</td>
-									<td className="user-action-log__args">
-										{msg.args}
-									</td>
+									<td className="user-action-log__args">{msg.args}</td>
 									{this.props.renderButtons ? (
 										<td className="user-action-log__buttons">
 											{this.props.renderButtons(msg)}

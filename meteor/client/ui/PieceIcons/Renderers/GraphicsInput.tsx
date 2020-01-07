@@ -34,9 +34,7 @@ export default class GraphicsInputIcon extends React.Component<{
 							fontSize: '75px',
 							fontWeight: 100
 						}}>
-						{this.props.abbreviation
-							? this.props.abbreviation
-							: 'G '}
+						{this.props.abbreviation ? this.props.abbreviation : 'G '}
 					</tspan>
 				</text>
 			</svg>

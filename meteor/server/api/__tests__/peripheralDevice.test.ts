@@ -111,14 +111,10 @@ describe('test peripheralDevice general API methods', () => {
 			device.token,
 			options
 		);
-		let initDevice = PeripheralDevices.findOne(
-			device._id
-		) as PeripheralDevice;
+		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice;
 		expect(initDevice).toBeTruthy();
 		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100);
-		expect(initDevice.lastConnected).toBeGreaterThan(
-			getCurrentTime() - 100
-		);
+		expect(initDevice.lastConnected).toBeGreaterThan(getCurrentTime() - 100);
 		expect(initDevice.subType).toBe(options.subType);
 	});
 
@@ -158,9 +154,8 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('ping', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy();
-		let lastSeen = (PeripheralDevices.findOne(
-			device._id
-		) as PeripheralDevice).lastSeen;
+		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice)
+			.lastSeen;
 		Meteor.call(PeripheralDeviceAPI.methods.ping, device._id, device.token);
 		expect(
 			(PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
@@ -355,9 +350,9 @@ describe('test peripheralDevice general API methods', () => {
 		);
 		let deviceWithAccessToken = PeripheralDevices.findOne(device._id);
 		expect(deviceWithAccessToken).toBeTruthy();
-		expect(
-			(deviceWithAccessToken as SpreadsheetDevice).accessTokenUrl
-		).toBe('http://auth.url/');
+		expect((deviceWithAccessToken as SpreadsheetDevice).accessTokenUrl).toBe(
+			'http://auth.url/'
+		);
 
 		PeripheralDevices.update(device._id, {
 			$set: {
@@ -398,16 +393,14 @@ describe('test peripheralDevice general API methods', () => {
 		let deviceWithSecretToken = PeripheralDevices.findOne(device._id);
 		// console.log(deviceWithSecretToken)
 		expect(deviceWithSecretToken).toBeTruthy();
+		expect((deviceWithSecretToken as SpreadsheetDevice).accessTokenUrl).toBe(
+			''
+		);
 		expect(
-			(deviceWithSecretToken as SpreadsheetDevice).accessTokenUrl
-		).toBe('');
-		expect(
-			(deviceWithSecretToken as SpreadsheetDevice).secretSettings!
-				.accessToken
+			(deviceWithSecretToken as SpreadsheetDevice).secretSettings!.accessToken
 		).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 		expect(
-			(deviceWithSecretToken as SpreadsheetDevice).settings!
-				.secretAccessToken
+			(deviceWithSecretToken as SpreadsheetDevice).settings!.secretAccessToken
 		).toBe(true);
 	});
 
@@ -453,9 +446,7 @@ describe('test peripheralDevice general API methods', () => {
 			);
 			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(
-				`[401] Not allowed access to peripheralDevice`
-			);
+			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`);
 		}
 	});
 
@@ -481,9 +472,7 @@ describe('test peripheralDevice general API methods', () => {
 			);
 			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(
-				`[401] Not allowed access to peripheralDevice`
-			);
+			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`);
 		}
 
 		try {
@@ -603,8 +592,7 @@ let xmlApiData = {
 							literal<MOS.IMOSObjectPath>({
 								Type: MOS.IMOSObjectPathType.PATH,
 								Description: 'MPEG2 Video',
-								Target:
-									'\\server\\media\\clip392028cd2320s0d.mxf'
+								Target: '\\server\\media\\clip392028cd2320s0d.mxf'
 							}),
 							literal<MOS.IMOSObjectPath>({
 								Type: MOS.IMOSObjectPathType.PROXY_PATH,

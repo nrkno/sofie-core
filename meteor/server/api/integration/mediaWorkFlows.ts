@@ -82,10 +82,7 @@ export namespace MediaManagerIntegration {
 			token,
 			this
 		);
-		if (
-			peripheralDevice.type !==
-			PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
-		)
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
 				`Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `
@@ -131,10 +128,7 @@ export namespace MediaManagerIntegration {
 			token,
 			this
 		);
-		if (
-			peripheralDevice.type !==
-			PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
-		)
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
 				`Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `
@@ -155,10 +149,7 @@ export namespace MediaManagerIntegration {
 			const workflow = MediaWorkFlows.findOne(obj.workFlowId);
 
 			if (!workflow)
-				throw new Meteor.Error(
-					404,
-					`Workflow "${obj.workFlowId}" not found`
-				);
+				throw new Meteor.Error(404, `Workflow "${obj.workFlowId}" not found`);
 
 			obj.workFlowId = workflow._id;
 			obj.deviceId = peripheralDevice._id;

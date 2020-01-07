@@ -76,9 +76,7 @@ export const HttpSendDeviceSettingsComponent = translate()(
 			// TODO this
 			let unsetObject = {};
 			unsetObject[
-				'settings.devices.' +
-					this.props.deviceId +
-					'.options.makeReadyCommands'
+				'settings.devices.' + this.props.deviceId + '.options.makeReadyCommands'
 			] = { id: rowId };
 			PeripheralDevices.update(this.props.parentDevice._id, {
 				$pull: unsetObject
@@ -101,8 +99,7 @@ export const HttpSendDeviceSettingsComponent = translate()(
 		}
 		renderHttpSendCommands() {
 			const { t, device, deviceId } = this.props;
-			const commands =
-				((device.options as any) || {}).makeReadyCommands || [];
+			const commands = ((device.options as any) || {}).makeReadyCommands || [];
 			return commands.map((cmd: any, i) => {
 				return (
 					<React.Fragment key={i}>
@@ -130,9 +127,7 @@ export const HttpSendDeviceSettingsComponent = translate()(
 							</td>
 						</tr>
 						{this.isItemEdited(cmd.id) && (
-							<tr
-								className="expando-details hl"
-								key={cmd.id + '-details'}>
+							<tr className="expando-details hl" key={cmd.id + '-details'}>
 								<td colSpan={5}>
 									<div>
 										<div className="mod mvs mhs">
@@ -147,13 +142,9 @@ export const HttpSendDeviceSettingsComponent = translate()(
 														i +
 														'.url'
 													}
-													obj={
-														this.props.parentDevice
-													}
+													obj={this.props.parentDevice}
 													type="text"
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -169,16 +160,10 @@ export const HttpSendDeviceSettingsComponent = translate()(
 														i +
 														'.type'
 													}
-													obj={
-														this.props.parentDevice
-													}
+													obj={this.props.parentDevice}
 													type="dropdown"
-													options={
-														TSR.TimelineContentTypeHTTP
-													}
-													collection={
-														PeripheralDevices
-													}
+													options={TSR.TimelineContentTypeHTTP}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -195,34 +180,20 @@ export const HttpSendDeviceSettingsComponent = translate()(
 														'.params'
 													}
 													mutateDisplayValue={(v) =>
-														JSON.stringify(
-															v,
-															undefined,
-															2
-														)
+														JSON.stringify(v, undefined, 2)
 													}
-													mutateUpdateValue={(v) =>
-														JSON.parse(v)
-													}
-													obj={
-														this.props.parentDevice
-													}
+													mutateUpdateValue={(v) => JSON.parse(v)}
+													obj={this.props.parentDevice}
 													type="multiline"
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
 									</div>
 									<div className="mod alright">
 										<button
-											className={ClassNames(
-												'btn btn-primary'
-											)}
-											onClick={(e) =>
-												this.finishEditItem(cmd.id)
-											}>
+											className={ClassNames('btn btn-primary')}
+											onClick={(e) => this.finishEditItem(cmd.id)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -249,9 +220,7 @@ export const HttpSendDeviceSettingsComponent = translate()(
 						show={this.state.showDeleteConfirmMakeReady}
 						onAccept={(e) => this.handleConfirmRemoveAccept(e)}
 						onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-						<p>
-							{t('Are you sure you want to remove this command?')}
-						</p>
+						<p>{t('Are you sure you want to remove this command?')}</p>
 					</ModalDialog>
 
 					<div className="mod mhs">

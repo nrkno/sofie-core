@@ -90,8 +90,6 @@ function deleteMessage(id: string): ServiceMessage {
 		}
 	} catch (error) {
 		logger.error(error.message);
-		throw new Error(
-			`Unable to delete service message ${id}: ${error.message}`
-		);
+		throw new Error(`Unable to delete service message ${id}: ${error.message}`);
 	}
 }

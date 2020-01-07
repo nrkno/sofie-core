@@ -192,9 +192,7 @@ let monitorPerformance = () => {
 			let runningMethods = getRunningMethods();
 			if (!_.isEmpty(runningMethods)) {
 				_.each(runningMethods, (m) => {
-					trace.push(
-						m.method + ': ' + (Date.now() - m.startTime) + ' ms ago'
-					);
+					trace.push(m.method + ': ' + (Date.now() - m.startTime) + ' ms ago');
 				});
 			}
 			resetRunningMethods();

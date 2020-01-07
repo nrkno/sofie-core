@@ -213,9 +213,7 @@ export namespace ServerTestToolsAPI {
 
 		const id = Random.id(7);
 		const path =
-			(config.recordings.filePrefix || defaultConfig.prefix) +
-			id +
-			'.mp4';
+			(config.recordings.filePrefix || defaultConfig.prefix) + id + '.mp4';
 
 		RecordedFiles.insert({
 			_id: id,
@@ -234,15 +232,11 @@ export namespace ServerTestToolsAPI {
 	export function recordDelete(id: string) {
 		check(id, String);
 		const file = RecordedFiles.findOne(id);
-		if (!file)
-			throw new Meteor.Error(404, `Recording "${id}" was not found!`);
+		if (!file) throw new Meteor.Error(404, `Recording "${id}" was not found!`);
 
 		const studio = Studios.findOne(file.studioId);
 		if (!studio)
-			throw new Meteor.Error(
-				404,
-				`Studio "${file.studioId}" was not found!`
-			);
+			throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`);
 
 		const config = getStudioConfig(studio);
 		if (!config.recordings.urlPrefix)
@@ -256,10 +250,7 @@ export namespace ServerTestToolsAPI {
 		}).then((res) => {
 			// 404 is ok, as it means file already doesnt exist. 200 is also good
 			if (res.statusCode !== 404 && res.statusCode !== 200) {
-				throw new Meteor.Error(
-					500,
-					`Failed to delete recording "${id}"!`
-				);
+				throw new Meteor.Error(500, `Failed to delete recording "${id}"!`);
 			}
 
 			RecordedFiles.remove(id);

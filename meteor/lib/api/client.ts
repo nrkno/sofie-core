@@ -57,9 +57,7 @@ export namespace ClientAPI {
 		};
 	}
 	export type ClientResponse = ClientResponseError | ClientResponseSuccess;
-	export function isClientResponseError(
-		res: any
-	): res is ClientResponseError {
+	export function isClientResponseError(res: any): res is ClientResponseError {
 		return _.isObject(res) && !_.isArray(res) && res.error !== undefined;
 	}
 	export function isClientResponseSuccess(

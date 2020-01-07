@@ -173,10 +173,7 @@ export class Rundown implements DBRundown {
 		if (studio) {
 			return studio;
 		} else
-			throw new Meteor.Error(
-				404,
-				'Studio "' + this.studioId + '" not found!'
-			);
+			throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!');
 	}
 	getSegments(selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {};

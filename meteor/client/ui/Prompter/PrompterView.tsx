@@ -148,9 +148,7 @@ export class PrompterViewInner extends MeteorReactComponent<
 			'dark',
 			'xdark',
 			'prompter-scrollbar',
-			this.configOptions.showScroll
-				? 'vertical-overflow-only'
-				: 'no-overflow'
+			this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
 		);
 		window.addEventListener('scroll', this.onWindowScroll);
 
@@ -165,9 +163,7 @@ export class PrompterViewInner extends MeteorReactComponent<
 			'dark',
 			'xdark',
 			'prompter-scrollbar',
-			this.configOptions.showScroll
-				? 'vertical-overflow-only'
-				: 'no-overflow'
+			this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
 		);
 		window.removeEventListener('scroll', this.onWindowScroll);
 	}
@@ -277,17 +273,14 @@ export class PrompterViewInner extends MeteorReactComponent<
 		let foundPositions: [number, Element][] = [];
 		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
-		Array.from(
-			document.querySelectorAll('.prompter .scroll-anchor')
-		).forEach((anchor) => {
-			const { top } = anchor.getBoundingClientRect();
-			if (
-				(startY === -1 || top > startY) &&
-				(endY === -1 || top <= endY)
-			) {
-				foundPositions.push([top, anchor]);
+		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(
+			(anchor) => {
+				const { top } = anchor.getBoundingClientRect();
+				if ((startY === -1 || top > startY) && (endY === -1 || top <= endY)) {
+					foundPositions.push([top, anchor]);
+				}
 			}
-		});
+		);
 
 		foundPositions = _.sortBy(foundPositions, (v) => sortDirection * v[0]);
 
@@ -299,8 +292,8 @@ export class PrompterViewInner extends MeteorReactComponent<
 		sortDirection: number = 1
 	): number | null {
 		return (
-			(this.listAnchorPositions(startY, endY, sortDirection)[0] ||
-				[])[0] || null
+			(this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] ||
+			null
 		);
 	}
 	onWindowScroll = () => {
@@ -334,8 +327,7 @@ export class PrompterViewInner extends MeteorReactComponent<
 
 			for (let index = 0; index < anchors.length; index++) {
 				const current = anchors[index];
-				const next =
-					index + 1 < anchors.length ? anchors[index + 1] : null;
+				const next = index + 1 < anchors.length ? anchors[index + 1] : null;
 
 				if (
 					rundown.currentPartId &&
@@ -356,8 +348,7 @@ export class PrompterViewInner extends MeteorReactComponent<
 				? currentPartElement.getBoundingClientRect().top + positionTop
 				: null;
 			const currentPositionEnd = currentPartElementAfter
-				? currentPartElementAfter.getBoundingClientRect().top +
-				  positionTop
+				? currentPartElementAfter.getBoundingClientRect().top + positionTop
 				: null;
 
 			const nextPositionEnd = nextPartElementAfter
@@ -434,9 +425,7 @@ export class PrompterViewInner extends MeteorReactComponent<
 						config={this.configOptions}
 					/>
 				) : this.props.studio ? (
-					this.renderMessage(
-						t('There is no rundown active in this studio.')
-					)
+					this.renderMessage(t('There is no rundown active in this studio.'))
 				) : this.props.studioId ? (
 					this.renderMessage(t("This studio doesn't exist."))
 				) : (
@@ -545,16 +534,16 @@ export const Prompter = translateWithTracker<
 			let foundPositions: [number, string][] = [];
 			// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
-			Array.from(
-				document.querySelectorAll('.prompter .scroll-anchor')
-			).forEach((anchor) => {
-				const { top } = anchor.getBoundingClientRect();
-				if (top + readPosition <= 10)
-					foundPositions.push([
-						top,
-						'.' + anchor.className.replace(/\s/g, '.')
-					]);
-			});
+			Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(
+				(anchor) => {
+					const { top } = anchor.getBoundingClientRect();
+					if (top + readPosition <= 10)
+						foundPositions.push([
+							top,
+							'.' + anchor.className.replace(/\s/g, '.')
+						]);
+				}
+			);
 
 			foundPositions = _.sortBy(foundPositions, (v) => 1 * v[0]);
 
@@ -578,8 +567,7 @@ export const Prompter = translateWithTracker<
 					this._scrollAnchor = undefined;
 				} else {
 					console.warn(
-						'Read anchor could not be found: ' +
-							this._scrollAnchor[1]
+						'Read anchor could not be found: ' + this._scrollAnchor[1]
 					);
 				}
 			}
@@ -649,14 +637,7 @@ export const Prompter = translateWithTracker<
 
 				lines.push(
 					<div
-						key={
-							'line_' +
-							line.partId +
-							'_' +
-							line.segmentId +
-							'_' +
-							line.id
-						}
+						key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
 						className={ClassNames(
 							'prompter-line',
 							!line.text ? 'empty' : undefined
@@ -730,9 +711,7 @@ export const Prompter = translateWithTracker<
 							{this.renderPrompterData(this.props.prompterData)}
 
 							{this.props.prompterData.lines.length ? (
-								<div className="prompter-break end">
-									—{t('End of script')}—
-								</div>
+								<div className="prompter-break end">—{t('End of script')}—</div>
 							) : null}
 						</div>
 					</div>

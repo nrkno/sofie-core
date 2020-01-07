@@ -170,9 +170,7 @@ describe('Test blueprint migrationContext', () => {
 
 			testInFiber('updateMapping: good', () => {
 				const ctx = getContext();
-				const existingMapping = ctx.getMapping(
-					'mapping2'
-				) as BlueprintMapping;
+				const existingMapping = ctx.getMapping('mapping2') as BlueprintMapping;
 				expect(existingMapping).toBeTruthy();
 
 				const rawMapping = {
@@ -196,9 +194,7 @@ describe('Test blueprint migrationContext', () => {
 			});
 			testInFiber('updateMapping: no props', () => {
 				const ctx = getContext();
-				const existingMapping = ctx.getMapping(
-					'mapping2'
-				) as BlueprintMapping;
+				const existingMapping = ctx.getMapping('mapping2') as BlueprintMapping;
 				expect(existingMapping).toBeTruthy();
 
 				// Should not error
@@ -261,9 +257,7 @@ describe('Test blueprint migrationContext', () => {
 				ctx.removeMapping('');
 
 				// ensure other mappings still exist
-				expect(
-					getMappingFromDb(getStudio(ctx), 'mapping2')
-				).toBeTruthy();
+				expect(getMappingFromDb(getStudio(ctx), 'mapping2')).toBeTruthy();
 			});
 			testInFiber('removeMapping: good', () => {
 				const ctx = getContext();
@@ -273,9 +267,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// check was removed
 				expect(ctx.getMapping('mapping2')).toBeFalsy();
-				expect(
-					getMappingFromDb(getStudio(ctx), 'mapping2')
-				).toBeFalsy();
+				expect(getMappingFromDb(getStudio(ctx), 'mapping2')).toBeFalsy();
 			});
 		});
 
@@ -542,9 +534,7 @@ describe('Test blueprint migrationContext', () => {
 				}
 
 				expect(ctx.getDevice('')).toBeFalsy();
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 			// testInFiber('insertDevice: no parent', () => { TODO
 			// 	const ctx = getContext()
@@ -578,9 +568,7 @@ describe('Test blueprint migrationContext', () => {
 					);
 				}
 
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 			testInFiber('insertDevice: ok', () => {
 				const ctx = getContext();
@@ -595,9 +583,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(deviceId).toEqual('device11');
 
 				initialSettings.devices[deviceId] = rawDevice;
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 
 				const device = ctx.getDevice(deviceId);
 				expect(device).toEqual(rawDevice);
@@ -617,9 +603,7 @@ describe('Test blueprint migrationContext', () => {
 				}
 
 				expect(ctx.getDevice('')).toBeFalsy();
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 			// testInFiber('updateDevice: no parent', () => { TODO
 			// 	const ctx = getContext()
@@ -651,9 +635,7 @@ describe('Test blueprint migrationContext', () => {
 					);
 				}
 
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 			testInFiber('Device: good', () => {
 				const ctx = getContext();
@@ -675,9 +657,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toEqual(expectedDevice);
 
 				initialSettings.devices['device01'] = expectedDevice;
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 
 			testInFiber('removeDevice: no id', () => {
@@ -694,9 +674,7 @@ describe('Test blueprint migrationContext', () => {
 				}
 
 				expect(ctx.getDevice('')).toBeFalsy();
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 			// testInFiber('removeDevice: no parent', () => { TODO
 			// 	const ctx = getContext()
@@ -722,9 +700,7 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeDevice('device22');
 
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 			testInFiber('removeDevice: good', () => {
 				const ctx = getContext();
@@ -738,9 +714,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(ctx.getDevice('device01')).toBeFalsy();
 				delete initialSettings.devices['device01'];
-				expect(getPlayoutDevice(studio).settings).toEqual(
-					initialSettings
-				);
+				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings);
 			});
 		});
 	});
@@ -751,9 +725,7 @@ describe('Test blueprint migrationContext', () => {
 			expect(showStyle).toBeTruthy();
 			return new MigrationContextShowStyle(showStyle);
 		}
-		function getShowStyle(
-			context: MigrationContextShowStyle
-		): ShowStyleBase {
+		function getShowStyle(context: MigrationContextShowStyle): ShowStyleBase {
 			const showStyleBase = (context as any).showStyleBase;
 			expect(showStyleBase).toBeTruthy();
 			return showStyleBase;
@@ -998,9 +970,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.getSourceLayer('');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] SourceLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`);
 				}
 			});
 			testInFiber('getSourceLayer: missing', () => {
@@ -1034,14 +1004,10 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] SourceLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`);
 				}
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1059,14 +1025,10 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] SourceLayer "vt0" already exists`
-					);
+					expect(e.message).toBe(`[500] SourceLayer "vt0" already exists`);
 				}
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1088,9 +1050,7 @@ describe('Test blueprint migrationContext', () => {
 					...rawLayer,
 					_id: 'lay1'
 				});
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1109,14 +1069,10 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] SourceLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`);
 				}
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1139,9 +1095,7 @@ describe('Test blueprint migrationContext', () => {
 					);
 				}
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1167,9 +1121,7 @@ describe('Test blueprint migrationContext', () => {
 						};
 					}
 				});
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1184,14 +1136,10 @@ describe('Test blueprint migrationContext', () => {
 					ctx.removeSourceLayer('');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] SourceLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`);
 				}
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1205,9 +1153,7 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeSourceLayer('fake99');
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					initialSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					initialSourceLayers
 				);
@@ -1225,9 +1171,7 @@ describe('Test blueprint migrationContext', () => {
 					initialSourceLayers,
 					(layer) => layer._id !== 'lay1'
 				);
-				expect(getShowStyle(ctx).sourceLayers).toEqual(
-					expectedSourceLayers
-				);
+				expect(getShowStyle(ctx).sourceLayers).toEqual(expectedSourceLayers);
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(
 					expectedSourceLayers
 				);
@@ -1252,9 +1196,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.getOutputLayer('');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] OutputLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`);
 				}
 			});
 			testInFiber('getOutputLayer: missing', () => {
@@ -1284,14 +1226,10 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] OutputLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`);
 				}
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1309,14 +1247,10 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] OutputLayer "pgm" already exists`
-					);
+					expect(e.message).toBe(`[500] OutputLayer "pgm" already exists`);
 				}
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1338,9 +1272,7 @@ describe('Test blueprint migrationContext', () => {
 					...rawLayer,
 					_id: 'lay1'
 				});
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1359,14 +1291,10 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] OutputLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`);
 				}
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1389,9 +1317,7 @@ describe('Test blueprint migrationContext', () => {
 					);
 				}
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1416,9 +1342,7 @@ describe('Test blueprint migrationContext', () => {
 						};
 					}
 				});
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1433,14 +1357,10 @@ describe('Test blueprint migrationContext', () => {
 					ctx.removeOutputLayer('');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] OutputLayer id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`);
 				}
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1454,9 +1374,7 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeOutputLayer('fake99');
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					initialOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					initialOutputLayers
 				);
@@ -1474,9 +1392,7 @@ describe('Test blueprint migrationContext', () => {
 					initialOutputLayers,
 					(layer) => layer._id !== 'lay1'
 				);
-				expect(getShowStyle(ctx).outputLayers).toEqual(
-					expectedOutputLayers
-				);
+				expect(getShowStyle(ctx).outputLayers).toEqual(expectedOutputLayers);
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(
 					expectedOutputLayers
 				);
@@ -1484,9 +1400,7 @@ describe('Test blueprint migrationContext', () => {
 		});
 
 		describe('base-config', () => {
-			function getAllBaseConfigFromDb(
-				showStyle: ShowStyleBase
-			): IConfigItem[] {
+			function getAllBaseConfigFromDb(showStyle: ShowStyleBase): IConfigItem[] {
 				const showStyle2 = ShowStyleBases.findOne(
 					showStyle._id
 				) as ShowStyleBase;
@@ -1535,9 +1449,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should not have changed
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 			testInFiber('setBaseConfig: insert', () => {
 				const ctx = getContext();
@@ -1556,9 +1468,7 @@ describe('Test blueprint migrationContext', () => {
 				// BaseConfig should have changed
 				initialBaseConfig.push(expectedItem);
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 			testInFiber('setBaseConfig: insert undefined', () => {
 				const ctx = getContext();
@@ -1577,9 +1487,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should not have changed
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 
 			testInFiber('setBaseConfig: update', () => {
@@ -1599,9 +1507,7 @@ describe('Test blueprint migrationContext', () => {
 				// BaseConfig should have changed
 				initialBaseConfig[0] = expectedItem;
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 			testInFiber('setBaseConfig: update undefined', () => {
 				const ctx = getContext();
@@ -1620,9 +1526,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should not have changed
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 
 			testInFiber('removeBaseConfig: no id', () => {
@@ -1637,9 +1541,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should not have changed
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 			testInFiber('removeBaseConfig: missing', () => {
 				const ctx = getContext();
@@ -1653,9 +1555,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should not have changed
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 			testInFiber('removeBaseConfig: good', () => {
 				const ctx = getContext();
@@ -1669,9 +1569,7 @@ describe('Test blueprint migrationContext', () => {
 				// BaseConfig should have changed
 				initialBaseConfig.shift();
 				expect(showStyle.config).toEqual(initialBaseConfig);
-				expect(getAllBaseConfigFromDb(showStyle)).toEqual(
-					initialBaseConfig
-				);
+				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig);
 			});
 		});
 		describe('variant-config', () => {
@@ -1693,9 +1591,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.getVariantConfig('', 'conf1');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[404] ShowStyleVariant \"\" not found`
-					);
+					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`);
 				}
 			});
 			testInFiber('getVariantConfig: missing variant', () => {
@@ -1723,20 +1619,14 @@ describe('Test blueprint migrationContext', () => {
 					}
 				]);
 
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf11')
-				).toBeFalsy();
+				expect(ctx.getVariantConfig('configVariant', 'conf11')).toBeFalsy();
 			});
 			testInFiber('getVariantConfig: good', () => {
 				const ctx = getContext();
 				expect(ctx.getVariant('configVariant')).toBeTruthy();
 
-				expect(ctx.getVariantConfig('configVariant', 'conf1')).toEqual(
-					5
-				);
-				expect(ctx.getVariantConfig('configVariant', 'conf2')).toEqual(
-					'af'
-				);
+				expect(ctx.getVariantConfig('configVariant', 'conf1')).toEqual(5);
+				expect(ctx.getVariantConfig('configVariant', 'conf2')).toEqual('af');
 			});
 
 			testInFiber('setVariantConfig: no variant id', () => {
@@ -1746,9 +1636,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.setVariantConfig('', 'conf1', 5);
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[404] ShowStyleVariant \"\" not found`
-					);
+					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`);
 				}
 			});
 			testInFiber('setVariantConfig: missing variant', () => {
@@ -1787,9 +1675,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf19')
-				).toBeFalsy();
+				expect(ctx.getVariantConfig('configVariant', 'conf19')).toBeFalsy();
 
 				ctx.setVariantConfig('configVariant', 'conf19', 34);
 
@@ -1812,16 +1698,10 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'confUndef')
-				).toBeFalsy();
+				expect(ctx.getVariantConfig('configVariant', 'confUndef')).toBeFalsy();
 
 				try {
-					ctx.setVariantConfig(
-						'configVariant',
-						'confUndef',
-						undefined as any
-					);
+					ctx.setVariantConfig('configVariant', 'confUndef', undefined as any);
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(
@@ -1840,9 +1720,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf1')
-				).toBeTruthy();
+				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy();
 
 				ctx.setVariantConfig('configVariant', 'conf1', 'hello');
 
@@ -1865,16 +1743,10 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf1')
-				).toBeTruthy();
+				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy();
 
 				try {
-					ctx.setVariantConfig(
-						'configVariant',
-						'conf1',
-						undefined as any
-					);
+					ctx.setVariantConfig('configVariant', 'conf1', undefined as any);
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(
@@ -1895,9 +1767,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.removeVariantConfig('', 'conf1');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[404] ShowStyleVariant \"\" not found`
-					);
+					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`);
 				}
 			});
 			testInFiber('removeVariantConfig: missing variant', () => {
@@ -1918,9 +1788,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf1')
-				).toBeTruthy();
+				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy();
 
 				// Should not error
 				ctx.removeVariantConfig('configVariant', '');
@@ -1935,12 +1803,8 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf1')
-				).toBeTruthy();
-				expect(
-					ctx.getVariantConfig('configVariant', 'fake_conf')
-				).toBeFalsy();
+				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy();
+				expect(ctx.getVariantConfig('configVariant', 'fake_conf')).toBeFalsy();
 
 				// Should not error
 				ctx.removeVariantConfig('configVariant', 'fake_conf');
@@ -1955,9 +1819,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(
 					getAllVariantConfigFromDb(ctx, 'configVariant')
 				);
-				expect(
-					ctx.getVariantConfig('configVariant', 'conf1')
-				).toBeTruthy();
+				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy();
 
 				// Should not error
 				ctx.removeVariantConfig('configVariant', 'conf1');
@@ -1988,9 +1850,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.getRuntimeArgument('');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] RuntimeArgument id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`);
 				}
 			});
 			testInFiber('getRuntimeArgument: missing', () => {
@@ -2012,9 +1872,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertRuntimeArgument: no id', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 
 				try {
 					ctx.insertRuntimeArgument('', {
@@ -2024,9 +1882,7 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] RuntimeArgument id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`);
 				}
 
 				expect(getShowStyle(ctx).runtimeArguments).toEqual(
@@ -2039,9 +1895,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertRuntimeArgument: existing', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 
 				try {
 					ctx.insertRuntimeArgument('ra0', {
@@ -2051,9 +1905,7 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] RuntimeArgument "ra0" already exists`
-					);
+					expect(e.message).toBe(`[500] RuntimeArgument "ra0" already exists`);
 				}
 
 				expect(getShowStyle(ctx).runtimeArguments).toEqual(
@@ -2066,9 +1918,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertRuntimeArgument: good', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 
 				const rawRa = {
 					hotkeys: 'test',
@@ -2093,9 +1943,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('updateRuntimeArgument: no id', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 
 				try {
 					ctx.updateRuntimeArgument('', {
@@ -2104,9 +1952,7 @@ describe('Test blueprint migrationContext', () => {
 					});
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] RuntimeArgument id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`);
 				}
 
 				expect(getShowStyle(ctx).runtimeArguments).toEqual(
@@ -2119,9 +1965,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('updateRuntimeArgument: missing', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 
 				try {
 					ctx.updateRuntimeArgument('fake99', {
@@ -2145,9 +1989,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('updateRuntimeArgument: good', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 				expect(ctx.getRuntimeArgument('lay1')).toBeTruthy();
 
 				const rawRa = {
@@ -2176,17 +2018,13 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeRuntimeArgument: no id', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 
 				try {
 					ctx.removeRuntimeArgument('');
 					expect(true).toBe(false); // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(
-						`[500] RuntimeArgument id "" is invalid`
-					);
+					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`);
 				}
 
 				expect(getShowStyle(ctx).runtimeArguments).toEqual(
@@ -2199,9 +2037,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeRuntimeArgument: missing', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 				expect(ctx.getRuntimeArgument('fake99')).toBeFalsy();
 
 				// Should not error
@@ -2217,9 +2053,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeRuntimeArgument: good', () => {
 				const ctx = getContext();
 				const showStyle = getShowStyle(ctx);
-				const initialRuntimeArguments = _.clone(
-					showStyle.runtimeArguments
-				);
+				const initialRuntimeArguments = _.clone(showStyle.runtimeArguments);
 				expect(ctx.getRuntimeArgument('lay1')).toBeTruthy();
 
 				// Should not error

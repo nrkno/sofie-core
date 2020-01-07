@@ -30,18 +30,13 @@ export const HotkeyHelpPanel = translate()(
 					<div className="adlib-panel super-dark">
 						<div className="adlib-panel__hotkeys">
 							{this.props.hotkeys
-								.concat(
-									this.props.showStyleBase.hotkeyLegend || []
-								)
+								.concat(this.props.showStyleBase.hotkeyLegend || [])
 								.map((hotkey) => (
 									<div
 										className="adlib-panel__hotkeys__hotkey"
 										key={hotkey.key}>
 										<div className="adlib-panel__hotkeys__hotkey__keys">
-											{mousetrapHelper.shortcutLabel(
-												hotkey.key,
-												_isMacLike
-											)}
+											{mousetrapHelper.shortcutLabel(hotkey.key, _isMacLike)}
 										</div>
 										<div className="adlib-panel__hotkeys__hotkey__action">
 											{hotkey.label}

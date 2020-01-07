@@ -71,8 +71,7 @@ export class RundownListItem extends React.Component<
 	getStudioLink(studioId) {
 		// double encoding so that "/" are handled correctly
 		return (
-			'/settings/studio/' +
-			encodeURIComponent(encodeURIComponent(studioId))
+			'/settings/studio/' + encodeURIComponent(encodeURIComponent(studioId))
 		);
 	}
 	getshowStyleBaseLink(showStyleBaseId) {
@@ -91,9 +90,7 @@ export class RundownListItem extends React.Component<
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRundown, [
-					rundown._id
-				]);
+				doUserAction(t, e, UserActionAPI.methods.removeRundown, [rundown._id]);
 			},
 			message:
 				t('Are you sure you want to delete the "{{name}}" rundown?', {
@@ -111,9 +108,7 @@ export class RundownListItem extends React.Component<
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [
-					rundown._id
-				]);
+				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [rundown._id]);
 			},
 			message:
 				t(
@@ -150,10 +145,7 @@ export class RundownListItem extends React.Component<
 					</th>
 					<td className="rundown-list-item__studio">
 						{getAllowConfigure() ? (
-							<Link
-								to={this.getStudioLink(
-									this.props.rundown.studioId
-								)}>
+							<Link to={this.getStudioLink(this.props.rundown.studioId)}>
 								{this.props.rundown.studioName}
 							</Link>
 						) : (
@@ -171,9 +163,7 @@ export class RundownListItem extends React.Component<
 						)}
 					</td>
 					<td className="rundown-list-item__created">
-						<MomentFromNow>
-							{this.props.rundown.created}
-						</MomentFromNow>
+						<MomentFromNow>{this.props.rundown.created}</MomentFromNow>
 					</td>
 					<td className="rundown-list-item__airTime">
 						{this.props.rundown.expectedStart && (
@@ -206,22 +196,16 @@ export class RundownListItem extends React.Component<
 							<Tooltip overlay={t('Delete')} placement="top">
 								<button
 									className="action-btn"
-									onClick={(e) =>
-										this.confirmDelete(this.props.rundown)
-									}>
+									onClick={(e) => this.confirmDelete(this.props.rundown)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</Tooltip>
 						) : null}
 						{this.props.rundown.unsynced ? (
-							<Tooltip
-								overlay={t('Re-sync with MOS')}
-								placement="top">
+							<Tooltip overlay={t('Re-sync with MOS')} placement="top">
 								<button
 									className="action-btn"
-									onClick={(e) =>
-										this.confirmReSyncRO(this.props.rundown)
-									}>
+									onClick={(e) => this.confirmReSyncRO(this.props.rundown)}>
 									<FontAwesomeIcon icon={faSync} />
 								</button>
 							</Tooltip>
@@ -233,9 +217,7 @@ export class RundownListItem extends React.Component<
 					this.props.rundown.active && (
 						<tr className="hl expando-addon">
 							<td colSpan={8}>
-								<ActiveProgressBar
-									rundown={this.props.rundown}
-								/>
+								<ActiveProgressBar rundown={this.props.rundown} />
 							</td>
 						</tr>
 					)}
@@ -278,10 +260,7 @@ export const RundownList = translateWithTracker(() => {
 		rundowns: _.map(
 			Rundowns.find({}, { sort: { created: -1 } }).fetch(),
 			(rundown) => {
-				const studio = _.find(
-					studios,
-					(s) => s._id === rundown.studioId
-				);
+				const studio = _.find(studios, (s) => s._id === rundown.studioId);
 				const showStyleBase = _.find(
 					showStyleBases,
 					(s) => s._id === rundown.showStyleBaseId
@@ -294,8 +273,7 @@ export const RundownList = translateWithTracker(() => {
 				return {
 					...rundown,
 					studioName: (studio && studio.name) || 'N/A',
-					showStyleBaseName:
-						(showStyleBase && showStyleBase.name) || 'N/A',
+					showStyleBaseName: (showStyleBase && showStyleBase.name) || 'N/A',
 					showStyleVariantName:
 						(showStyleVariant && showStyleVariant.name) || 'N/A'
 				};
@@ -368,10 +346,7 @@ export const RundownList = translateWithTracker(() => {
 
 			this.autorun(() => {
 				const showStyleBaseIds = _.uniq(
-					_.map(
-						Rundowns.find().fetch(),
-						(rundown) => rundown.showStyleBaseId
-					)
+					_.map(Rundowns.find().fetch(), (rundown) => rundown.showStyleBaseId)
 				);
 				const showStyleVariantIds = _.uniq(
 					_.map(
@@ -430,9 +405,7 @@ export const RundownList = translateWithTracker(() => {
 								literal<NotificationAction>({
 									label: 'Go to migrations',
 									action: () => {
-										window.location.assign(
-											'/settings/tools/migration'
-										);
+										window.location.assign('/settings/tools/migration');
 									},
 									type: 'button'
 								})
@@ -469,9 +442,7 @@ export const RundownList = translateWithTracker(() => {
 				))
 			) : (
 				<tr>
-					<td colSpan={9}>
-						{t('There are no rundowns ingested into Sofie.')}
-					</td>
+					<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>
 				</tr>
 			);
 		}
@@ -503,13 +474,10 @@ export const RundownList = translateWithTracker(() => {
 										<Tooltip
 											overlay={t('Start Here!')}
 											visible={
-												this.tooltipStep() ===
-												ToolTipStep.TOOLTIP_START_HERE
+												this.tooltipStep() === ToolTipStep.TOOLTIP_START_HERE
 											}
 											placement="top">
-											<a href="?configure=1">
-												?configure=1
-											</a>
+											<a href="?configure=1">?configure=1</a>
 										</Tooltip>
 										{this.tooltipStep}
 									</li>
@@ -517,17 +485,13 @@ export const RundownList = translateWithTracker(() => {
 										{t('Then, run the migrations script:')}
 										&nbsp;
 										<Tooltip
-											overlay={t(
-												'Run Migrations to get set up'
-											)}
+											overlay={t('Run Migrations to get set up')}
 											visible={
 												this.tooltipStep() ===
 												ToolTipStep.TOOLTIP_RUN_MIGRATIONS
 											}
 											placement="bottom">
-											<a href="/settings/tools/migration">
-												{t('Migrations')}
-											</a>
+											<a href="/settings/tools/migration">{t('Migrations')}</a>
 										</Tooltip>
 									</li>
 								</ul>
@@ -557,27 +521,13 @@ export const RundownList = translateWithTracker(() => {
 													<span>{t('Rundown')}</span>
 												</Tooltip>
 											</th>
-											<th className="c2">
-												{t('Studio')}
-											</th>
-											<th className="c2">
-												{t('Show style')}
-											</th>
-											<th className="c2">
-												{t('Created')}
-											</th>
-											<th className="c2">
-												{t('On Air Start Time')}
-											</th>
-											<th className="c1">
-												{t('Duration')}
-											</th>
-											<th className="c1">
-												{t('Status')}
-											</th>
-											<th className="c1">
-												{t('Air Status')}
-											</th>
+											<th className="c2">{t('Studio')}</th>
+											<th className="c2">{t('Show style')}</th>
+											<th className="c2">{t('Created')}</th>
+											<th className="c2">{t('On Air Start Time')}</th>
+											<th className="c1">{t('Duration')}</th>
+											<th className="c1">{t('Status')}</th>
+											<th className="c1">{t('Air Status')}</th>
 											<th className="c1">&nbsp;</th>
 										</tr>
 									</thead>
@@ -585,9 +535,7 @@ export const RundownList = translateWithTracker(() => {
 									{unsynced.length > 0 && (
 										<tbody>
 											<tr className="hl">
-												<th
-													colSpan={8}
-													className="pvn phn">
+												<th colSpan={8} className="pvn phn">
 													<h2 className="mtm mbs mhn">
 														{t('Unsynced from MOS')}
 													</h2>
@@ -596,9 +544,7 @@ export const RundownList = translateWithTracker(() => {
 										</tbody>
 									)}
 									{unsynced.length > 0 && (
-										<tbody>
-											{this.renderRundowns(unsynced)}
-										</tbody>
+										<tbody>{this.renderRundowns(unsynced)}</tbody>
 									)}
 								</table>
 							</div>
@@ -617,40 +563,26 @@ export const RundownList = translateWithTracker(() => {
 									<div>
 										{t('System Status')}:&nbsp;
 										<Tooltip
-											overlay={t(
-												'System has issues which need to be resolved'
-											)}
+											overlay={t('System has issues which need to be resolved')}
 											visible={
-												this.state.systemStatus
-													.status === 'FAIL' &&
+												this.state.systemStatus.status === 'FAIL' &&
 												getHelpMode()
 											}
 											placement="top">
-											<span>
-												{this.state.systemStatus.status}
-											</span>
+											<span>{this.state.systemStatus.status}</span>
 										</Tooltip>
 										&nbsp;/&nbsp;
-										{
-											this.state.systemStatus._internal
-												.statusCodeString
-										}
+										{this.state.systemStatus._internal.statusCodeString}
 									</div>
 									<div>
-										{this.state.systemStatus._internal
-											.messages.length ? (
+										{this.state.systemStatus._internal.messages.length ? (
 											<div>
 												{t('Status Messages:')}
 												<ul>
 													{_.map(
-														this.state.systemStatus
-															._internal.messages,
+														this.state.systemStatus._internal.messages,
 														(message, i) => {
-															return (
-																<li key={i}>
-																	{message}
-																</li>
-															);
+															return <li key={i}>{message}</li>;
 														}
 													)}
 												</ul>
@@ -660,9 +592,7 @@ export const RundownList = translateWithTracker(() => {
 								</React.Fragment>
 							) : null}
 						</div>
-						{getAllowDeveloper() ? (
-							<ManualPlayout></ManualPlayout>
-						) : null}
+						{getAllowDeveloper() ? <ManualPlayout></ManualPlayout> : null}
 					</div>
 				</React.Fragment>
 			);
@@ -685,8 +615,7 @@ const ActiveProgressBar = timer(1000)(
 						style={{
 							width:
 								Math.min(
-									((getCurrentTime() -
-										this.props.rundown.startedPlayback) /
+									((getCurrentTime() - this.props.rundown.startedPlayback) /
 										this.props.rundown.expectedDuration) *
 										100,
 									100

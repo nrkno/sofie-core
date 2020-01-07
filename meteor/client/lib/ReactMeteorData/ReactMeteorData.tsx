@@ -224,13 +224,8 @@ export function withTracker<IProps, IState, TrackedProps>(
 			// This hook allows lower-level components to do smart optimization,
 			// without running a potentially heavy recomputation of the getMeteorData.
 			// This is potentially very dangerous, so use with caution.
-			shouldComponentUpdate(
-				nextProps: IProps,
-				nextState: IState
-			): boolean {
-				if (
-					typeof expandedOptions.shouldComponentUpdate === 'function'
-				) {
+			shouldComponentUpdate(nextProps: IProps, nextState: IState): boolean {
+				if (typeof expandedOptions.shouldComponentUpdate === 'function') {
 					return expandedOptions.shouldComponentUpdate(
 						this.data,
 						this.props,
@@ -242,9 +237,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return true;
 			}
 			render() {
-				let content = (
-					<WrappedComponent {...this.props} {...this.data} />
-				);
+				let content = <WrappedComponent {...this.props} {...this.data} />;
 				this._renderedContent = content;
 				return content;
 			}

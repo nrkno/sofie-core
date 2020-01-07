@@ -80,11 +80,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _unsentExternalMessagesStatus: Notification | undefined = undefined;
 	private _unsentExternalMessageStatusDep: Tracker.Dependency;
 
-	constructor(
-		rundownId: string,
-		showStyleBase: ShowStyleBase,
-		studio: Studio
-	) {
+	constructor(rundownId: string, showStyleBase: ShowStyleBase, studio: Studio) {
 		super();
 		this._notificationList = new NotificationList([]);
 		this._mediaStatusDep = new Tracker.Dependency();
@@ -111,11 +107,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				this.autorun(() => {
 					// console.log('RundownViewNotifier 1-1')
 					if (showStyleBase && studio) {
-						this.reactiveMediaStatus(
-							rRundownId,
-							showStyleBase,
-							studio
-						);
+						this.reactiveMediaStatus(rRundownId, showStyleBase, studio);
 						this.reactivePartNotes(rRundownId);
 						this.reactivePeripheralDeviceStatus(studio._id);
 						this.reactiveQueueStatus(studio._id, rRundownId);
@@ -202,8 +194,7 @@ class RundownViewNotifier extends WithManagedTracker {
 											doUserAction(
 												t,
 												event,
-												UserActionAPI.methods
-													.resyncRundown,
+												UserActionAPI.methods.resyncRundown,
 												[rundownId],
 												(err, response) => {
 													if (!err && response) {
@@ -237,10 +228,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				) {
 					this._rundownStatus[unsyncedId] = newNotification;
 					this._rundownStatusDep.changed();
-				} else if (
-					!newNotification &&
-					this._rundownStatus[unsyncedId]
-				) {
+				} else if (!newNotification && this._rundownStatus[unsyncedId]) {
 					delete this._rundownStatus[unsyncedId];
 					this._rundownStatusDep.changed();
 				}
@@ -275,9 +263,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								newNotification
 							)
 						) {
-							this._rundownStatus[
-								rundownNoteId
-							] = newNotification;
+							this._rundownStatus[rundownNoteId] = newNotification;
 							this._rundownStatusDep.changed();
 						}
 						newNoteIds.push(rundownNoteId);
@@ -303,9 +289,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, {
 				studioId: studioId
 			});
-			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(
-				studioId
-			);
+			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId);
 		}
 		this.autorun(() => {
 			// console.log('RundownViewNotifier 3')
@@ -319,13 +303,10 @@ class RundownViewNotifier extends WithManagedTracker {
 				.forEach((item) => {
 					let newNotification: Notification | undefined = undefined;
 
-					const parent = devices.find(
-						(i) => i._id === item.parentDeviceId
-					);
+					const parent = devices.find((i) => i._id === item.parentDeviceId);
 
 					if (
-						item.status.statusCode !==
-							PeripheralDeviceAPI.StatusCode.GOOD ||
+						item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD ||
 						!item.connected
 					) {
 						newNotification = new Notification(
@@ -342,10 +323,9 @@ class RundownViewNotifier extends WithManagedTracker {
 											type: 'primary',
 											action: () => {
 												doModalDialog({
-													title: t(
-														'Restart {{device}}',
-														{ device: parent.name }
-													),
+													title: t('Restart {{device}}', {
+														device: parent.name
+													}),
 													message: t(
 														'Fixing this problem requires a restart to the host device. Are you sure you want to restart {{device}}?\n(This might affect output)',
 														{ device: parent.name }
@@ -353,22 +333,15 @@ class RundownViewNotifier extends WithManagedTracker {
 													yes: t('Restart'),
 													no: t('Cancel'),
 													onAccept: (e) => {
-														PeripheralDevicesAPI.restartDevice(
-															parent,
-															e
-														)
+														PeripheralDevicesAPI.restartDevice(parent, e)
 															.then(() => {
 																NotificationCenter.push(
 																	new Notification(
 																		undefined,
 																		NoticeLevel.NOTIFICATION,
-																		t(
-																			'Device "{{deviceName}}" restarting...',
-																			{
-																				deviceName:
-																					parent.name
-																			}
-																		),
+																		t('Device "{{deviceName}}" restarting...', {
+																			deviceName: parent.name
+																		}),
 																		'RundownNotifier'
 																	)
 																);
@@ -381,11 +354,8 @@ class RundownViewNotifier extends WithManagedTracker {
 																		t(
 																			'Failed to restart device: "{{deviceName}}": {{errorMessage}}',
 																			{
-																				deviceName:
-																					parent.name,
-																				errorMessage:
-																					err +
-																					''
+																				deviceName: parent.name,
+																				errorMessage: err + ''
 																			}
 																		),
 																		'RundownNotifier'
@@ -403,17 +373,11 @@ class RundownViewNotifier extends WithManagedTracker {
 					}
 					if (
 						newNotification &&
-						!Notification.isEqual(
-							this._deviceStatus[item._id],
-							newNotification
-						)
+						!Notification.isEqual(this._deviceStatus[item._id], newNotification)
 					) {
 						this._deviceStatus[item._id] = newNotification;
 						this._deviceStatusDep.changed();
-					} else if (
-						!newNotification &&
-						this._deviceStatus[item._id]
-					) {
+					} else if (!newNotification && this._deviceStatus[item._id]) {
 						delete this._deviceStatus[item._id];
 						this._deviceStatusDep.changed();
 					}
@@ -465,8 +429,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					item.type === NoteType.ERROR
 						? NoticeLevel.CRITICAL
 						: NoticeLevel.WARNING,
-					(item.origin.name ? item.origin.name + ': ' : '') +
-						item.message,
+					(item.origin.name ? item.origin.name + ': ' : '') + item.message,
 					item.origin.segmentId || 'unknown',
 					getCurrentTime(),
 					true,
@@ -525,16 +488,11 @@ class RundownViewNotifier extends WithManagedTracker {
 					(i) => i._id === piece.sourceLayerId
 				);
 				const part = Parts.findOne(piece.partId);
-				const segment = part
-					? Segments.findOne(part.segmentId)
-					: undefined;
+				const segment = part ? Segments.findOne(part.segmentId) : undefined;
 				if (sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
-						const mediaId = getMediaObjectMediaId(
-							piece,
-							sourceLayer
-						);
+						const mediaId = getMediaObjectMediaId(piece, sourceLayer);
 						if (mediaId) {
 							this.subscribe(PubSub.mediaObjects, studio._id, {
 								mediaId: mediaId.toUpperCase()
@@ -545,9 +503,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							sourceLayer,
 							studio.settings
 						);
-						let newNotification:
-							| Notification
-							| undefined = undefined;
+						let newNotification: Notification | undefined = undefined;
 						if (
 							status !== RundownAPI.PieceStatusCode.OK &&
 							status !== RundownAPI.PieceStatusCode.UNKNOWN &&
@@ -568,29 +524,22 @@ class RundownViewNotifier extends WithManagedTracker {
 								],
 								part._rank
 							);
-							newNotification.on(
-								'action',
-								(notification, type, e) => {
-									switch (type) {
-										case 'default':
-											const handler = onRONotificationClick.get();
-											if (
-												handler &&
-												typeof handler === 'function'
-											) {
-												handler({
-													sourceLocator: {
-														name: piece.name,
-														rundownId:
-															piece.rundownId,
-														pieceId: piece._id,
-														partId: piece.partId
-													}
-												});
-											}
-									}
+							newNotification.on('action', (notification, type, e) => {
+								switch (type) {
+									case 'default':
+										const handler = onRONotificationClick.get();
+										if (handler && typeof handler === 'function') {
+											handler({
+												sourceLocator: {
+													name: piece.name,
+													rundownId: piece.rundownId,
+													pieceId: piece._id,
+													partId: piece.partId
+												}
+											});
+										}
 								}
-							);
+							});
 						}
 
 						if (
@@ -602,10 +551,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						) {
 							this._mediaStatus[piece._id] = newNotification;
 							this._mediaStatusDep.changed();
-						} else if (
-							!newNotification &&
-							this._mediaStatus[piece._id]
-						) {
+						} else if (!newNotification && this._mediaStatus[piece._id]) {
 							delete this._mediaStatus[piece._id];
 							this._mediaStatusDep.changed();
 						}
@@ -704,9 +650,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					newNotification = new Notification(
 						'rundown_importVersions',
 						NoticeLevel.WARNING,
-						t(
-							'Unable to check the system configuration for changes'
-						),
+						t('Unable to check the system configuration for changes'),
 						'rundown_' + rundownId,
 						getCurrentTime(),
 						true,
@@ -748,10 +692,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				) {
 					this._rundownImportVersionStatus = newNotification;
 					this._rundownImportVersionStatusDep.changed();
-				} else if (
-					!newNotification &&
-					this._rundownImportVersionStatus
-				) {
+				} else if (!newNotification && this._rundownImportVersionStatus) {
 					this._rundownImportVersionStatus = undefined;
 					this._rundownImportVersionStatusDep.changed();
 				}

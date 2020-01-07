@@ -180,9 +180,7 @@ export function saveIntoDb<
 		} else {
 			if (!_.isNull(oldObj)) {
 				let p: Promise<any> | undefined;
-				let oInsert = options.beforeInsert
-					? options.beforeInsert(o)
-					: o;
+				let oInsert = options.beforeInsert ? options.beforeInsert(o) : o;
 				if (options.insert) {
 					options.insert(oInsert);
 				} else {
@@ -275,17 +273,11 @@ function compareObjs(
 
 		if (_.isObject(a)) {
 			if (_.isObject(b)) {
-				let keys = onlyKeysFromA
-					? _.keys(a)
-					: _.union(_.keys(a), _.keys(b));
+				let keys = onlyKeysFromA ? _.keys(a) : _.union(_.keys(a), _.keys(b));
 
 				_.each(keys, (key) => {
 					if (different === false) {
-						different = simpleCompare(
-							a[key],
-							b[key],
-							trace + '.' + key
-						);
+						different = simpleCompare(a[key], b[key], trace + '.' + key);
 					}
 				});
 			} else different = trace + '>object';
@@ -293,11 +285,7 @@ function compareObjs(
 			if (_.isArray(b) && a.length === b.length) {
 				_.each(a, (val0, key) => {
 					if (different === false) {
-						different = simpleCompare(
-							a[key],
-							b[key],
-							trace + '[' + key + ']'
-						);
+						different = simpleCompare(a[key], b[key], trace + '[' + key + ']');
 					}
 				});
 			} else different = trace + '>array';
@@ -565,10 +553,7 @@ export function rateLimit(name: string, f1: Function, f2: Function, t: number) {
 	// if time t has passed since last call, run f1(), otherwise run f2()
 	if (Math.random() < 0.05) Meteor.setTimeout(cleanUpRateLimit, 10000);
 
-	if (
-		rateLimitCache[name] &&
-		Math.abs(Date.now() - rateLimitCache[name]) < t
-	) {
+	if (rateLimitCache[name] && Math.abs(Date.now() - rateLimitCache[name]) < t) {
 		if (f2) return f2();
 		return null;
 	}
@@ -670,10 +655,7 @@ export function rateLimitIgnore(name: string, f1: Function, limit: number) {
 function cleanUprateLimitIgnore() {
 	const now = Date.now();
 	for (const name in rateLimitIgnoreCache) {
-		if (
-			rateLimitIgnoreCache[name] &&
-			rateLimitIgnoreCache[name] < now - 100
-		) {
+		if (rateLimitIgnoreCache[name] && rateLimitIgnoreCache[name] < now - 100) {
 			delete rateLimitIgnoreCache[name];
 		}
 	}
@@ -1014,10 +996,7 @@ export function mutatePath<T>(
 		);
 		if (keys.length === 0) {
 			// This might be a bad assumption, but as this is for tests, lets go with it for now
-			throw new Meteor.Error(
-				500,
-				`missing parameters for $ in "${path}"`
-			);
+			throw new Meteor.Error(500, `missing parameters for $ in "${path}"`);
 		}
 
 		const query: any = {};

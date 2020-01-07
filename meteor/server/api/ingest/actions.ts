@@ -105,9 +105,7 @@ export namespace IngestActions {
 			rundown.peripheralDeviceId
 		);
 		if (!peripheralDevice) {
-			logger.info(
-				`Rundown has no valid PeripheralDevices. Running without`
-			);
+			logger.info(`Rundown has no valid PeripheralDevices. Running without`);
 		}
 		const studio = Studios.findOne(rundown.studioId);
 		if (!studio) {
@@ -117,10 +115,7 @@ export namespace IngestActions {
 			);
 		}
 
-		const ingestRundown = loadCachedRundownData(
-			rundownId,
-			rundown.externalId
-		);
+		const ingestRundown = loadCachedRundownData(rundownId, rundown.externalId);
 		if (purgeExisting) {
 			rundown.remove();
 		} else {

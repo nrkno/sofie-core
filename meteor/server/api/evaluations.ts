@@ -22,10 +22,7 @@ export function saveEvaluation(evaluation: EvaluationBase): void {
 	Meteor.defer(() => {
 		let studio = Studios.findOne(evaluation.studioId);
 		if (!studio)
-			throw new Meteor.Error(
-				500,
-				`Studio ${evaluation.studioId} not found!`
-			);
+			throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`);
 
 		const webhookUrls = _.compact(
 			(studio.settings.slackEvaluationUrls || '').split(',')
@@ -36,18 +33,12 @@ export function saveEvaluation(evaluation: EvaluationBase): void {
 			let evaluationLevel = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q0';
 			});
-			let evaluationMessage = _.find(
-				evaluation.answers,
-				(_answer, key) => {
-					return key === 'q1';
-				}
-			);
-			let evaluationProducer = _.find(
-				evaluation.answers,
-				(_answer, key) => {
-					return key === 'q2';
-				}
-			);
+			let evaluationMessage = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q1';
+			});
+			let evaluationProducer = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q2';
+			});
 
 			let slackMessage = 'Evaluation!';
 			switch (evaluationLevel) {

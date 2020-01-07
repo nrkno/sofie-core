@@ -36,10 +36,7 @@ export const DatePickerFromTo = translate()(
 			};
 		}
 		triggerOnchange = (state: IState) => {
-			this.props.onChange(
-				state.dateFrom.valueOf(),
-				state.dateTo.valueOf()
-			);
+			this.props.onChange(state.dateFrom.valueOf(), state.dateTo.valueOf());
 		};
 		updateData = (o) => {
 			this.setState(o);
@@ -81,9 +78,7 @@ export const DatePickerFromTo = translate()(
 			const { t } = this.props;
 			return (
 				<div className="datepicker-from-to">
-					<button
-						className="action-btn mod mhm"
-						onClick={this.onClickPrevious}>
+					<button className="action-btn mod mhm" onClick={this.onClickPrevious}>
 						<FontAwesomeIcon icon={faChevronLeft} />
 					</button>
 					<label className="mod mhs mvn">
@@ -108,9 +103,7 @@ export const DatePickerFromTo = translate()(
 							/>
 						</div>
 					</label>
-					<button
-						className="action-btn mod mhm"
-						onClick={this.onClickNext}>
+					<button className="action-btn mod mhm" onClick={this.onClickNext}>
 						<FontAwesomeIcon icon={faChevronRight} />
 					</button>
 				</div>

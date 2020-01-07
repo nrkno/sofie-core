@@ -176,9 +176,7 @@ export namespace MosIntegration {
 			token,
 			this
 		);
-		logger.info(
-			`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories}`
-		);
+		logger.info(`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories}`);
 		// @ts-ignore
 		logger.debug(Action, Stories);
 

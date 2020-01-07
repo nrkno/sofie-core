@@ -39,11 +39,7 @@ interface IListViewItemProps {
 	layer: ISourceLayer;
 	outputLayer?: IOutputLayer;
 	onSelectAdLib: (aSLine: IAdLibListItem) => void;
-	onToggleAdLib: (
-		aSLine: IAdLibListItem,
-		queue: boolean,
-		context: any
-	) => void;
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void;
 	rundown: Rundown;
 }
 
@@ -96,33 +92,23 @@ export const AdLibListItem = translateWithTracker<
 				if (objId && objId !== this.objId) {
 					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 					this.objId = objId;
-					this.subscribe(
-						PubSub.mediaObjects,
-						this.props.rundown.studioId,
-						{
-							mediaId: this.objId
-						}
-					);
+					this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+						mediaId: this.objId
+					});
 				}
 			} else {
-				console.error(
-					"One of the Piece's is invalid:",
-					this.props.item
-				);
+				console.error("One of the Piece's is invalid:", this.props.item);
 			}
 		}
 
 		render() {
 			return (
 				<tr
-					className={ClassNames(
-						'adlib-panel__list-view__list__segment__item',
-						{
-							selected: this.props.selected,
-							invalid: this.props.item.invalid,
-							floated: this.props.item.floated
-						}
-					)}
+					className={ClassNames('adlib-panel__list-view__list__segment__item', {
+						selected: this.props.selected,
+						invalid: this.props.item.invalid,
+						floated: this.props.item.floated
+					})}
 					key={this.props.item._id}
 					onClick={(e) => this.props.onSelectAdLib(this.props.item)}
 					onDoubleClick={(e) =>
@@ -132,9 +118,7 @@ export const AdLibListItem = translateWithTracker<
 					<td
 						className={ClassNames(
 							'adlib-panel__list-view__list__table__cell--icon',
-							RundownUtils.getSourceLayerClassName(
-								this.props.layer.type
-							),
+							RundownUtils.getSourceLayerClassName(this.props.layer.type),
 							{
 								'source-missing':
 									this.props.status ===
@@ -143,20 +127,15 @@ export const AdLibListItem = translateWithTracker<
 									this.props.status ===
 									RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 								'unknown-state':
-									this.props.status ===
-									RundownAPI.PieceStatusCode.UNKNOWN
+									this.props.status === RundownAPI.PieceStatusCode.UNKNOWN
 							}
 						)}>
 						{this.props.layer &&
-							(this.props.layer.abbreviation ||
-								this.props.layer.name)}
+							(this.props.layer.abbreviation || this.props.layer.name)}
 					</td>
 					<td className="adlib-panel__list-view__list__table__cell--shortcut">
 						{this.props.item.hotkey &&
-							mousetrapHelper.shortcutLabel(
-								this.props.item.hotkey,
-								_isMacLike
-							)}
+							mousetrapHelper.shortcutLabel(this.props.item.hotkey, _isMacLike)}
 					</td>
 					<td className="adlib-panel__list-view__list__table__cell--output">
 						{this.props.outputLayer && this.props.outputLayer.name}

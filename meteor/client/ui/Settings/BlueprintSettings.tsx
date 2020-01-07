@@ -104,9 +104,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									{ fileName: file.name }
 								)}
 							</p>
-							<p>
-								{t('Please note: This action is irreversible!')}
-							</p>
+							<p>{t('Please note: This action is irreversible!')}</p>
 						</React.Fragment>
 					),
 					onAccept: () => {
@@ -123,19 +121,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 										new Notification(
 											undefined,
 											NoticeLevel.NOTIFICATION,
-											t(
-												'Blueprints updated successfully.'
-											),
+											t('Blueprints updated successfully.'),
 											'BlueprintSettings'
 										)
 									);
 									// console.log('Blueprint restore success')
 								})
 								.catch((err) => {
-									if (
-										err &&
-										err.toString().endsWith('[422]')
-									) {
+									if (err && err.toString().endsWith('[422]')) {
 										// Needs a force flag
 
 										// Try again as a replace
@@ -150,31 +143,24 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 														{t(
 															'Are you sure you want to replace the blueprints with the file "{{fileName}}"?',
 															{
-																fileName:
-																	file.name
+																fileName: file.name
 															}
 														)}
 													</p>
 													<p>
-														{t(
-															'Please note: This action is irreversible!'
-														)}
+														{t('Please note: This action is irreversible!')}
 													</p>
 												</React.Fragment>
 											),
 											onAccept: () => {
-												if (
-													uploadFileContents &&
-													blueprint
-												) {
+												if (uploadFileContents && blueprint) {
 													fetchFrom(
 														`/blueprints/restore/${blueprint._id}?force=1`,
 														{
 															method: 'POST',
 															body: uploadFileContents,
 															headers: {
-																'content-type':
-																	'text/javascript'
+																'content-type': 'text/javascript'
 															}
 														}
 													)
@@ -183,34 +169,28 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 																new Notification(
 																	undefined,
 																	NoticeLevel.NOTIFICATION,
-																	t(
-																		'Blueprints updated successfully.'
-																	),
+																	t('Blueprints updated successfully.'),
 																	'BlueprintSettings'
 																)
 															);
 															// console.log('Blueprint restore success')
 														})
-														.catch(
-															(err: string) => {
-																// console.error('Blueprint restore failure: ', err)
-																NotificationCenter.push(
-																	new Notification(
-																		undefined,
-																		NoticeLevel.WARNING,
-																		t(
-																			'Failed to update blueprints: {{errorMessage}}',
-																			{
-																				errorMessage:
-																					err +
-																					''
-																			}
-																		),
-																		'BlueprintSettings'
-																	)
-																);
-															}
-														);
+														.catch((err: string) => {
+															// console.error('Blueprint restore failure: ', err)
+															NotificationCenter.push(
+																new Notification(
+																	undefined,
+																	NoticeLevel.WARNING,
+																	t(
+																		'Failed to update blueprints: {{errorMessage}}',
+																		{
+																			errorMessage: err + ''
+																		}
+																	),
+																	'BlueprintSettings'
+																)
+															);
+														});
 												}
 											},
 											onSecondary: () => {
@@ -225,10 +205,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 											new Notification(
 												undefined,
 												NoticeLevel.WARNING,
-												t(
-													'Failed to update blueprints: {{errorMessage}}',
-													{ errorMessage: err + '' }
-												),
+												t('Failed to update blueprints: {{errorMessage}}', {
+													errorMessage: err + ''
+												}),
 												'BlueprintSettings'
 											)
 										);
@@ -257,9 +236,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 				case BlueprintManifestType.SHOWSTYLE:
 					return (
 						<div>
-							<p className="mod mhn mvs">
-								{t('Assigned Show Styles:')}
-							</p>
+							<p className="mod mhn mvs">{t('Assigned Show Styles:')}</p>
 							<p className="mod mhn mvs">
 								{this.props.assignedShowStyles.length > 0
 									? this.props.assignedShowStyles.map((i) => (
@@ -271,18 +248,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 												</Link>
 											</span>
 									  ))
-									: t(
-											'This Blueprint is not being used by any Show Style'
-									  )}
+									: t('This Blueprint is not being used by any Show Style')}
 							</p>
 						</div>
 					);
 				case BlueprintManifestType.STUDIO:
 					return (
 						<div>
-							<p className="mod mhn mvs">
-								{t('Assigned Studios:')}
-							</p>
+							<p className="mod mhn mvs">{t('Assigned Studios:')}</p>
 							<p className="mod mhn mvs">
 								{this.props.assignedStudios.length > 0
 									? this.props.assignedStudios.map((i) => (
@@ -294,9 +267,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 												</Link>
 											</span>
 									  ))
-									: t(
-											'This Blueprint is not compatible with any Studio'
-									  )}
+									: t('This Blueprint is not compatible with any Studio')}
 							</p>
 						</div>
 					);
@@ -308,14 +279,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									className="btn btn-primary"
 									onClick={(e) =>
 										this.assignSystemBlueprint(
-											this.props.assignedSystem
-												? undefined
-												: blueprint._id
+											this.props.assignedSystem ? undefined : blueprint._id
 										)
 									}>
-									{this.props.assignedSystem
-										? t('Unassign')
-										: t('Assign')}
+									{this.props.assignedSystem ? t('Unassign') : t('Assign')}
 								</button>
 							</p>
 						</div>
@@ -339,9 +306,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 							{!blueprint.name ? (
 								<div className="error-notice inline">
 									{t('No name set')}{' '}
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>
+									<FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
 							) : null}
 							<div className="mdi">
@@ -357,15 +322,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 						</label>
 						<div className="mod mvs mhn">
 							{t('Blueprint Type')}:{' '}
-							<i>
-								{(blueprint.blueprintType || '').toUpperCase()}
-							</i>
+							<i>{(blueprint.blueprintType || '').toUpperCase()}</i>
 							{!blueprint.blueprintType ? (
 								<div className="error-notice inline">
 									{t('Upload a new blueprint')}{' '}
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>
+									<FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
 							) : null}
 						</div>
@@ -388,8 +349,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 						{blueprint.blueprintVersion ? (
 							<div className="mod mvs mhn">
 								<p className="mhn">
-									{t('Blueprint Version')}:{' '}
-									{blueprint.blueprintVersion}
+									{t('Blueprint Version')}: {blueprint.blueprintVersion}
 								</p>
 							</div>
 						) : null}

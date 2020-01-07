@@ -97,11 +97,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				id: this.el.id
 			});
 			this.props.debug &&
-				console.log(
-					this.props.id,
-					'Re-measuring child',
-					this.el.clientHeight
-				);
+				console.log(this.props.id, 'Re-measuring child', this.el.clientHeight);
 		}
 	};
 
@@ -153,8 +149,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				this.state.inView,
 				this.props.initialShow,
 				this.state.isMeasured,
-				!this.state.inView &&
-					(!this.props.initialShow || this.state.isMeasured)
+				!this.state.inView && (!this.props.initialShow || this.state.isMeasured)
 			);
 		return (
 			<InView

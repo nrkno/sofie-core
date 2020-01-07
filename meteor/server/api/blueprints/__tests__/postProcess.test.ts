@@ -115,10 +115,7 @@ describe('Test blueprint post-process', () => {
 
 			// TODO - mock getHash?
 
-			const res = postProcessStudioBaselineObjects(
-				studio,
-				_.clone(rawObjects)
-			);
+			const res = postProcessStudioBaselineObjects(studio, _.clone(rawObjects));
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -129,9 +126,7 @@ describe('Test blueprint post-process', () => {
 
 			// Certain fields should be defined by simple rules
 			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0);
-			expect(
-				_.filter(res, (r) => r.objectType !== 'rundown')
-			).toHaveLength(0);
+			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0);
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj.id);
@@ -241,17 +236,14 @@ describe('Test blueprint post-process', () => {
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2'];
-			const expectedIds = _.compact(
-				_.map(rawObjects, (obj) => obj.id)
-			).concat(mockedIds);
-			jest.spyOn(context, 'getHashId').mockImplementation(
-				() => mockedIds.shift() || ''
+			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(
+				mockedIds
 			);
+			jest
+				.spyOn(context, 'getHashId')
+				.mockImplementation(() => mockedIds.shift() || '');
 
-			const res = postProcessRundownBaselineItems(
-				context,
-				_.clone(rawObjects)
-			);
+			const res = postProcessRundownBaselineItems(context, _.clone(rawObjects));
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -262,9 +254,7 @@ describe('Test blueprint post-process', () => {
 
 			// Certain fields should be defined by simple rules
 			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0);
-			expect(
-				_.filter(res, (r) => r.objectType !== 'rundown')
-			).toHaveLength(0);
+			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0);
 
 			// Ensure getHashId was called as expected
 			expect(context.getHashId).toHaveBeenCalledTimes(2);
@@ -348,11 +338,7 @@ describe('Test blueprint post-process', () => {
 			const context = getContext();
 
 			// Ensure that a null object gets dropped
-			const res = postProcessAdLibPieces(
-				context,
-				[null as any],
-				'blueprint9'
-			);
+			const res = postProcessAdLibPieces(context, [null as any], 'blueprint9');
 			expect(res).toHaveLength(0);
 		});
 		testInFiber('various pieces', () => {
@@ -399,9 +385,9 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2', 'mocked3', 'mocked4'];
 			const expectedIds = _.clone(mockedIds);
-			jest.spyOn(context, 'getHashId').mockImplementation(
-				() => mockedIds.shift() || ''
-			);
+			jest
+				.spyOn(context, 'getHashId')
+				.mockImplementation(() => mockedIds.shift() || '');
 
 			const res = postProcessAdLibPieces(context, pieces, 'blueprint9');
 			// expect(res).toHaveLength(3)
@@ -543,19 +529,14 @@ describe('Test blueprint post-process', () => {
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2'];
-			const expectedIds = _.compact(
-				_.map(pieces, (obj) => obj._id)
-			).concat(mockedIds);
-			jest.spyOn(context, 'getHashId').mockImplementation(
-				() => mockedIds.shift() || ''
+			const expectedIds = _.compact(_.map(pieces, (obj) => obj._id)).concat(
+				mockedIds
 			);
+			jest
+				.spyOn(context, 'getHashId')
+				.mockImplementation(() => mockedIds.shift() || '');
 
-			const res = postProcessPieces(
-				context,
-				pieces,
-				'blueprint9',
-				'part8'
-			);
+			const res = postProcessPieces(context, pieces, 'blueprint9', 'part8');
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')));
 
 			// Ensure all required keys are defined
@@ -611,12 +592,7 @@ describe('Test blueprint post-process', () => {
 				}
 			});
 
-			const res = postProcessPieces(
-				context,
-				[piece],
-				'blueprint9',
-				'part6'
-			);
+			const res = postProcessPieces(context, [piece], 'blueprint9', 'part6');
 			expect(res).toHaveLength(1);
 			expect(res).toMatchObject([_.omit(piece, '_id')]);
 

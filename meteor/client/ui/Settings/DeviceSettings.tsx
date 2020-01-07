@@ -58,8 +58,7 @@ export default translateWithTracker<
 		renderSpecifics() {
 			if (
 				this.props.device &&
-				this.props.device.subType ===
-					PeripheralDeviceAPI.SUBTYPE_PROCESS
+				this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 			) {
 				switch (this.props.device.type) {
 					case PeripheralDeviceAPI.DeviceType.MOS:
@@ -84,11 +83,7 @@ export default translateWithTracker<
 							/>
 						);
 					case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
-						return (
-							<SpreadsheetSettingsComponent
-								device={this.props.device}
-							/>
-						);
+						return <SpreadsheetSettingsComponent device={this.props.device} />;
 				}
 			}
 			return null;
@@ -144,19 +139,13 @@ export default translateWithTracker<
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">
 						<div className="col c12 rl-c6">
-							<h2 className="mhn mtn">
-								{t('Generic Properties')}
-							</h2>
+							<h2 className="mhn mtn">{t('Generic Properties')}</h2>
 							<label className="field">
 								{t('Device Name')}
-								{!(
-									this.props.device && this.props.device.name
-								) ? (
+								{!(this.props.device && this.props.device.name) ? (
 									<div className="error-notice inline">
 										{t('No name set')}{' '}
-										<FontAwesomeIcon
-											icon={faExclamationTriangle}
-										/>
+										<FontAwesomeIcon icon={faExclamationTriangle} />
 									</div>
 								) : null}
 								<div className="mdi">
@@ -175,9 +164,7 @@ export default translateWithTracker<
 							<div className="mbs">
 								<button
 									className="btn btn-secondary btn-tight"
-									onClick={(e) =>
-										device && this.restartDevice(device)
-									}>
+									onClick={(e) => device && this.restartDevice(device)}>
 									{t('Restart Device')}
 								</button>
 							</div>

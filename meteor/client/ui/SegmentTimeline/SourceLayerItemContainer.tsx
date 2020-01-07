@@ -40,10 +40,7 @@ interface IPropsHeader {
 	isNextLine: boolean;
 	onFollowLiveLine?: (state: boolean, event: any) => void;
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void;
-	onDoubleClick?: (
-		item: PieceUi,
-		e: React.MouseEvent<HTMLDivElement>
-	) => void;
+	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void;
 	relative?: boolean;
 	outputGroupCollapsed: boolean;
 	followLiveLine: boolean;
@@ -83,13 +80,9 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId;
-				this.subscribe(
-					PubSub.mediaObjects,
-					this.props.rundown.studioId,
-					{
-						mediaId: this.objId
-					}
-				);
+				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+					mediaId: this.objId
+				});
 			}
 		} else {
 			console.error("One of the Piece's is invalid:", this.props.piece);
@@ -120,9 +113,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<
 				});
 
 				if (timelineObj) {
-					let pieceCopy = _.clone(
-						overrides.piece || props.piece
-					) as PieceUi;
+					let pieceCopy = _.clone(overrides.piece || props.piece) as PieceUi;
 
 					pieceCopy.enable = timelineObj.enable;
 					if (_.isNumber(timelineObj.enable.start)) {
@@ -136,8 +127,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<
 							props.part.getLastStartedPlayback()
 						) {
 							pieceCopy.renderedInPoint =
-								getCurrentTime() -
-								(props.part.getLastStartedPlayback() || 0);
+								getCurrentTime() - (props.part.getLastStartedPlayback() || 0);
 						} else {
 							pieceCopy.renderedInPoint = 0;
 						}
@@ -152,15 +142,12 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<
 						pieceCopy.renderedDuration =
 							(timelineObj.enable.duration !== 0
 								? timelineObj.enable.duration
-								: props.partDuration -
-								  (pieceCopy.renderedInPoint || 0)) || null;
+								: props.partDuration - (pieceCopy.renderedInPoint || 0)) ||
+							null;
 					}
 					// console.log(segmentCopy.renderedDuration)
 
-					overrides.piece = _.extend(
-						overrides.piece || {},
-						pieceCopy
-					);
+					overrides.piece = _.extend(overrides.piece || {}, pieceCopy);
 				}
 			}
 
@@ -172,17 +159,12 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<
 					props.rundown.getStudio().settings
 				);
 				if (status !== props.piece.status || metadata) {
-					let pieceCopy = _.clone(
-						overrides.piece || props.piece
-					) as PieceUi;
+					let pieceCopy = _.clone(overrides.piece || props.piece) as PieceUi;
 
 					pieceCopy.status = status;
 					pieceCopy.contentMetaData = metadata;
 
-					overrides.piece = _.extend(
-						overrides.piece || {},
-						pieceCopy
-					);
+					overrides.piece = _.extend(overrides.piece || {}, pieceCopy);
 				}
 			} else {
 				console.error(

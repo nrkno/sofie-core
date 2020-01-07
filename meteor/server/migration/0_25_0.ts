@@ -87,9 +87,7 @@ addMigrationSteps('0.25.0', [
 				dbs.SegmentLineAdLibItems.remove({});
 
 				dbs.RunningOrderBaselineItems.find().forEach((doc) => {
-					ps.push(
-						asyncCollectionInsertIgnore(RundownBaselineObjs, doc)
-					);
+					ps.push(asyncCollectionInsertIgnore(RundownBaselineObjs, doc));
 				});
 				dbs.RunningOrderBaselineItems.remove({});
 
@@ -357,8 +355,7 @@ addMigrationSteps('0.25.0', [
 						m.type = PeripheralDeviceAPI.DeviceType.PLAYOUT;
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS;
 					} else if (oldDeviceType === OLDDeviceType.MEDIA_MANAGER) {
-						m.category =
-							PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER;
+						m.category = PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER;
 						m.type = PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER;
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS;
 					} else if (oldDeviceType === OLDDeviceType.OTHER) {

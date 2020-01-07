@@ -30,9 +30,7 @@ describe('ClientAPI', () => {
 		MeteorMock.methods(mockMethods);
 
 		it('Exports a Meteor method to the client', () => {
-			expect(
-				MeteorMock.mockMethods[ClientAPI.methods.execMethod]
-			).toBeTruthy();
+			expect(MeteorMock.mockMethods[ClientAPI.methods.execMethod]).toBeTruthy();
 		});
 
 		describe('Execute and log Meteor method calls', () => {
@@ -45,13 +43,11 @@ describe('ClientAPI', () => {
 
 			it('Allows executing Meteor methods', () => {
 				// make sure that it's only called once
-				expect(
-					mockMethods[UserActionAPI.methods.activate]
-				).toBeCalledTimes(1);
+				expect(mockMethods[UserActionAPI.methods.activate]).toBeCalledTimes(1);
 				// make sure that the arguments are passed in correctly
-				expect(
-					mockMethods[UserActionAPI.methods.activate]
-				).toBeCalledWith(...mockArgs);
+				expect(mockMethods[UserActionAPI.methods.activate]).toBeCalledWith(
+					...mockArgs
+				);
 			});
 
 			it('Logs each call', () => {
@@ -105,9 +101,7 @@ describe('ClientAPI', () => {
 			};
 
 			expect(f).toThrow();
-			expect(mockMethods[UserActionAPI.methods.setNext]).toBeCalledTimes(
-				1
-			);
+			expect(mockMethods[UserActionAPI.methods.setNext]).toBeCalledTimes(1);
 
 			const logItem = UserActionsLog.findOne({
 				method: UserActionAPI.methods.setNext
@@ -155,9 +149,7 @@ describe('ClientAPI', () => {
 
 		it('Exports a Meteor method to the client', () => {
 			expect(
-				MeteorMock.mockMethods[
-					ClientAPI.methods.callPeripheralDeviceFunction
-				]
+				MeteorMock.mockMethods[ClientAPI.methods.callPeripheralDeviceFunction]
 			).toBeTruthy();
 		});
 

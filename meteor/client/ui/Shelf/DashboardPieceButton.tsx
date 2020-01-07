@@ -38,11 +38,7 @@ interface IDashboardButtonProps {
 	item: IAdLibListItem;
 	layer: ISourceLayer;
 	outputLayer?: IOutputLayer;
-	onToggleAdLib: (
-		aSLine: IAdLibListItem,
-		queue: boolean,
-		context: any
-	) => void;
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void;
 	rundown: Rundown;
 	mediaPreviewUrl?: string;
 	isOnAir?: boolean;
@@ -101,30 +97,19 @@ export const DashboardPieceButton = translateWithTracker<
 				if (objId && objId !== this.objId) {
 					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 					this.objId = objId;
-					this.subscribe(
-						PubSub.mediaObjects,
-						this.props.rundown.studioId,
-						{
-							mediaId: this.objId
-						}
-					);
+					this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+						mediaId: this.objId
+					});
 				}
 			} else {
-				console.error(
-					"One of the Piece's is invalid:",
-					this.props.item
-				);
+				console.error("One of the Piece's is invalid:", this.props.item);
 			}
 		}
 
 		getPreviewUrl = (): string | undefined => {
 			const { metadata } = this.props;
 			if (this.props.mediaPreviewUrl && metadata) {
-				if (
-					metadata &&
-					metadata.previewPath &&
-					this.props.mediaPreviewUrl
-				) {
+				if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
 					return (
 						this.props.mediaPreviewUrl +
 						'media/thumbnail/' +
@@ -174,29 +159,22 @@ export const DashboardPieceButton = translateWithTracker<
 							floated: this.props.item.floated,
 
 							'source-missing':
-								this.props.status ===
-								RundownAPI.PieceStatusCode.SOURCE_MISSING,
+								this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 							'source-broken':
-								this.props.status ===
-								RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+								this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 							'unknown-state':
-								this.props.status ===
-								RundownAPI.PieceStatusCode.UNKNOWN,
+								this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 							live: this.props.isOnAir
 						},
-						RundownUtils.getSourceLayerClassName(
-							this.props.layer.type
-						)
+						RundownUtils.getSourceLayerClassName(this.props.layer.type)
 					)}
 					style={{
 						width: this.props.widthScale
-							? this.props.widthScale * DEFAULT_BUTTON_WIDTH +
-							  'em'
+							? this.props.widthScale * DEFAULT_BUTTON_WIDTH + 'em'
 							: undefined,
 						height: this.props.heightScale
-							? this.props.heightScale * DEFAULT_BUTTON_HEIGHT +
-							  'em'
+							? this.props.heightScale * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined
 					}}
 					onClick={(e) =>

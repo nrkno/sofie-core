@@ -94,8 +94,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 })(
 	class TimelineVisualizerInStudio extends MeteorReactComponent<
 		Translated<
-			ITimelineVisualizerInStudioProps &
-				ITimelineVisualizerInStudioTrackedProps
+			ITimelineVisualizerInStudioProps & ITimelineVisualizerInStudioTrackedProps
 		>,
 		ITimelineVisualizerInStudioState
 	> {
@@ -192,8 +191,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 					let o = _.clone(obj);
 					delete o._id;
 
-					if (o.enable.start === 'now')
-						o.enable.start = getCurrentTime(); // tmp
+					if (o.enable.start === 'now') o.enable.start = getCurrentTime(); // tmp
 
 					return o;
 				})
@@ -203,10 +201,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 
 			return (
 				<div>
-					<canvas
-						width="1280"
-						height="3000"
-						id="timeline-visualizer"></canvas>
+					<canvas width="1280" height="3000" id="timeline-visualizer"></canvas>
 				</div>
 			);
 		}
@@ -216,11 +211,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 					{/* <script src='/script/timeline-visualizer.js'></script> */}
 					<div>Studio: {this.props.studioId}</div>
 					<div>Timeline objects: {this.props.timeline.length}</div>
-					{this.state.errorMsg ? (
-						<div>{this.state.errorMsg}</div>
-					) : (
-						''
-					)}
+					{this.state.errorMsg ? <div>{this.state.errorMsg}</div> : ''}
 					<div className="timeline">
 						{this.state.scriptLoaded ? (
 							this.renderTimeline()
@@ -236,13 +227,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 									onClick={() => this.closeDetails()}>
 									Close
 								</button>
-								<pre>
-									{JSON.stringify(
-										this.state.showDetails,
-										null,
-										2
-									)}
-								</pre>
+								<pre>{JSON.stringify(this.state.showDetails, null, 2)}</pre>
 							</div>
 						) : null}
 					</div>
@@ -309,11 +294,7 @@ export const ComponentTimelineSimulate = withTracker<
 						<td>{o.layer}</td>
 						<td>{o.id}</td>
 						<td>{makeTableOfObject(o.enable)}</td>
-						<td>
-							{o.instance.end
-								? o.instance.end - o.instance.start
-								: ''}
-						</td>
+						<td>{o.instance.end ? o.instance.end - o.instance.start : ''}</td>
 						<td>{o.content.type}</td>
 						<td>{makeTableOfObject(o.classes || [])}</td>
 						<td>{makeTableOfObject(o.content)}</td>
@@ -343,9 +324,7 @@ export const ComponentTimelineSimulate = withTracker<
 											<th>content</th>
 										</tr>
 										{this.props.state
-											? this.renderTimelineState(
-													this.props.state
-											  )
+											? this.renderTimelineState(this.props.state)
 											: ''}
 									</tbody>
 								</table>

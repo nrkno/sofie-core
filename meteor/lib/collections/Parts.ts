@@ -238,8 +238,7 @@ export class Part implements DBPart {
 			const studio = rundown && rundown.getStudio();
 			const showStyleBase = rundown && rundown.getShowStyleBase();
 			const partLookup =
-				showStyleBase &&
-				normalizeArray(showStyleBase.sourceLayers, '_id');
+				showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id');
 			_.each(pieces, (piece) => {
 				// TODO: check statuses (like media availability) here
 
@@ -255,8 +254,7 @@ export class Part implements DBPart {
 						studio ? studio.settings : undefined
 					);
 					if (
-						st.status ===
-							RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+						st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
 						st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
 					) {
 						notes.push({
@@ -279,8 +277,7 @@ export class Part implements DBPart {
 	getLastTake() {
 		if (!this.timings) return undefined;
 
-		if (!this.timings.take || this.timings.take.length === 0)
-			return undefined;
+		if (!this.timings.take || this.timings.take.length === 0) return undefined;
 
 		return this.timings.take[this.timings.take.length - 1];
 	}

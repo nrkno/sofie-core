@@ -48,10 +48,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const rundown = Rundowns.findOne(rundownId);
 				if (!rundown)
-					throw new Meteor.Error(
-						404,
-						`Rundown "${rundownId}" not found!`
-					);
+					throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`);
 				if (!rundown.active)
 					throw new Meteor.Error(
 						403,
@@ -63,17 +60,13 @@ export namespace ServerPlayoutAdLibAPI {
 					rundownId: rundownId
 				}) as Piece;
 				if (!piece)
-					throw new Meteor.Error(
-						404,
-						`Piece "${pieceId}" not found!`
-					);
+					throw new Meteor.Error(404, `Piece "${pieceId}" not found!`);
 
 				const part = Parts.findOne({
 					_id: partId,
 					rundownId: rundownId
 				});
-				if (!part)
-					throw new Meteor.Error(404, `Part "${partId}" not found!`);
+				if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`);
 				if (rundown.currentPartId !== part._id)
 					throw new Meteor.Error(
 						403,
@@ -121,8 +114,7 @@ export namespace ServerPlayoutAdLibAPI {
 							resPiece &&
 							resPiece.playoutDuration !== undefined &&
 							(piece.infiniteMode ||
-								piece.startedPlayback +
-									resPiece.playoutDuration >=
+								piece.startedPlayback + resPiece.playoutDuration >=
 									getCurrentTime())
 						) {
 							// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
@@ -143,11 +135,7 @@ export namespace ServerPlayoutAdLibAPI {
 				Pieces.insert(newPiece);
 
 				cropInfinitesOnLayer(rundown, part, newPiece);
-				stopInfinitesRunningOnLayer(
-					rundown,
-					part,
-					newPiece.sourceLayerId
-				);
+				stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId);
 				updateTimeline(rundown.studioId);
 			}
 		);
@@ -164,10 +152,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const rundown = Rundowns.findOne(rundownId);
 				if (!rundown)
-					throw new Meteor.Error(
-						404,
-						`Rundown "${rundownId}" not found!`
-					);
+					throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`);
 				if (!rundown.active)
 					throw new Meteor.Error(
 						403,
@@ -226,10 +211,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const rundown = Rundowns.findOne(rundownId);
 				if (!rundown)
-					throw new Meteor.Error(
-						404,
-						`Rundown "${rundownId}" not found!`
-					);
+					throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`);
 				if (!rundown.active)
 					throw new Meteor.Error(
 						403,
@@ -348,10 +330,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const rundown = Rundowns.findOne(rundownId);
 				if (!rundown)
-					throw new Meteor.Error(
-						404,
-						`Rundown "${rundownId}" not found!`
-					);
+					throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`);
 				if (!rundown.active)
 					throw new Meteor.Error(
 						403,
@@ -367,8 +346,7 @@ export namespace ServerPlayoutAdLibAPI {
 					_id: partId,
 					rundownId: rundownId
 				});
-				if (!part)
-					throw new Meteor.Error(404, `Part "${partId}" not found!`);
+				if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`);
 
 				const piece = Pieces.findOne({
 					_id: pieceId,
@@ -403,14 +381,12 @@ export namespace ServerPlayoutAdLibAPI {
 				// The ad-lib item positioning will be relative to the startedPlayback of the part
 				let parentOffset = 0;
 				if (part.startedPlayback) {
-					parentOffset =
-						part.getLastStartedPlayback() || parentOffset;
+					parentOffset = part.getLastStartedPlayback() || parentOffset;
 				}
 
 				let newExpectedDuration = 0;
 				if (piece.startedPlayback) {
-					newExpectedDuration =
-						getCurrentTime() - piece.startedPlayback;
+					newExpectedDuration = getCurrentTime() - piece.startedPlayback;
 				} else if (_.isNumber(tlObj.enable.start)) {
 					// If start is absolute within the part, we can do a better estimate
 					const actualStartTime = parentOffset + tlObj.enable.start;

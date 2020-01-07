@@ -141,8 +141,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 					if (
 						piece.enable &&
 						foundPiece.enable &&
-						(piece.enable.start || 0) >
-							(foundPiece.enable.start || 0) // TODO: look into this, what should the do, really?
+						(piece.enable.start || 0) > (foundPiece.enable.start || 0) // TODO: look into this, what should the do, really?
 					) {
 						foundPiece = piece;
 					}
@@ -179,17 +178,13 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 					case SourceLayerType.GRAPHICS:
 						return (
 							<GraphicsInputIcon
-								abbreviation={
-									this.props.sourceLayer.abbreviation
-								}
+								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						);
 					case SourceLayerType.LIVE_SPEAK:
 						return (
 							<LiveSpeakInputIcon
-								abbreviation={
-									this.props.sourceLayer.abbreviation
-								}
+								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						);
 					case SourceLayerType.REMOTE:
@@ -202,27 +197,19 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 										.slice(-1)[0],
 									10
 								)}
-								abbreviation={
-									this.props.sourceLayer.abbreviation
-								}
+								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						);
 					case SourceLayerType.SPLITS:
 						return (
 							<SplitInputIcon
-								abbreviation={
-									this.props.sourceLayer.abbreviation
-								}
+								abbreviation={this.props.sourceLayer.abbreviation}
 								piece={this.props.piece}
 							/>
 						);
 					case SourceLayerType.VT:
 						return (
-							<VTInputIcon
-								abbreviation={
-									this.props.sourceLayer.abbreviation
-								}
-							/>
+							<VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 						);
 					case SourceLayerType.CAMERA:
 						return (
@@ -234,9 +221,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 										.slice(-1)[0],
 									10
 								)}
-								abbreviation={
-									this.props.sourceLayer.abbreviation
-								}
+								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						);
 				}

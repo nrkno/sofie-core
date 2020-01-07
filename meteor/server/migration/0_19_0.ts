@@ -35,8 +35,7 @@ addMigrationSteps('0.19.0', [
 			if (studios.length === 1) {
 				let studio = studios[0];
 
-				let showstyle: any =
-					showStyles.length === 1 ? showStyles[0] : {};
+				let showstyle: any = showStyles.length === 1 ? showStyles[0] : {};
 
 				let id = showstyle.id || 'show0';
 				ShowStyleBases.insert({
@@ -129,17 +128,14 @@ addMigrationSteps('0.19.0', [
 
 							(siItem as any).runtimeArguments.forEach((item) => {
 								// const bItem: IBlueprintRuntimeArgumentsItem = item
-								const exisitng = ssb.runtimeArguments.find(
-									(ssbItem) => {
-										return (
-											ssbItem.hotkeys === item.hotkeys &&
-											ssbItem.label === item.label &&
-											ssbItem.property ===
-												item.property &&
-											ssbItem.value === item.value
-										);
-									}
-								);
+								const exisitng = ssb.runtimeArguments.find((ssbItem) => {
+									return (
+										ssbItem.hotkeys === item.hotkeys &&
+										ssbItem.label === item.label &&
+										ssbItem.property === item.property &&
+										ssbItem.value === item.value
+									);
+								});
 								if (!exisitng) {
 									ssb.runtimeArguments.push(item);
 								}
@@ -237,12 +233,7 @@ addMigrationSteps('0.19.0', [
 			let validate: boolean | string = false;
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
-					if (
-						_.find(
-							studio.config,
-							(c) => c._id === 'media_previews_url'
-						)
-					) {
+					if (_.find(studio.config, (c) => c._id === 'media_previews_url')) {
 						validate = `mediaPreviewsUrl not set on studio ${studio._id}`;
 					}
 				}
@@ -292,10 +283,7 @@ addMigrationSteps('0.19.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
-					const value = _.find(
-						studio.config,
-						(c) => c._id === 'sofie_url'
-					);
+					const value = _.find(studio.config, (c) => c._id === 'sofie_url');
 					if (value) {
 						// Update the studio
 						Studios.update(studio._id, {
@@ -344,10 +332,7 @@ addMigrationSteps('0.19.0', [
 		validate: () => {
 			let validate: boolean | string = false;
 			Blueprints.find({}).forEach((blueprint) => {
-				if (
-					!blueprint.databaseVersion ||
-					_.isString(blueprint.databaseVersion)
-				)
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
 					validate = true;
 			});
 			return validate;

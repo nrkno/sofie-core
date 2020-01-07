@@ -74,9 +74,7 @@ setMeteorMethods({
 		const rundown = Rundowns.findOne(rundownId);
 		if (!rundown) throw new Meteor.Error(404, 'Rundown not found');
 
-		const prevPart = previousPartId
-			? Parts.findOne(previousPartId)
-			: undefined;
+		const prevPart = previousPartId ? Parts.findOne(previousPartId) : undefined;
 
 		updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd);
 

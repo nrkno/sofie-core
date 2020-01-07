@@ -21,9 +21,7 @@ export default class SplitInputIcon extends React.Component<{
 				const label = camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/);
 				return (
 					<React.Fragment>
-						{label && label[1]
-							? label[1].substr(0, 1).toUpperCase() + ' '
-							: ''}
+						{label && label[1] ? label[1].substr(0, 1).toUpperCase() + ' ' : ''}
 						<tspan
 							style={{
 								fontFamily: 'Roboto',
@@ -34,9 +32,7 @@ export default class SplitInputIcon extends React.Component<{
 					</React.Fragment>
 				);
 			} else {
-				return this.props.abbreviation
-					? this.props.abbreviation
-					: 'Spl';
+				return this.props.abbreviation ? this.props.abbreviation : 'Spl';
 			}
 		} else {
 			return this.props.abbreviation ? this.props.abbreviation : 'Spl';
@@ -59,8 +55,7 @@ export default class SplitInputIcon extends React.Component<{
 		if (piece && piece.content) {
 			let c = piece.content as SplitsContent;
 			const left =
-				(c.boxSourceConfiguration[0] || {}).type ||
-				SourceLayerType.CAMERA;
+				(c.boxSourceConfiguration[0] || {}).type || SourceLayerType.CAMERA;
 			return this.getSourceType(left);
 		}
 		return 'camera';
@@ -70,8 +65,7 @@ export default class SplitInputIcon extends React.Component<{
 		if (piece && piece.content) {
 			let c = piece.content as SplitsContent;
 			const right =
-				(c.boxSourceConfiguration[1] || {}).type ||
-				SourceLayerType.REMOTE;
+				(c.boxSourceConfiguration[1] || {}).type || SourceLayerType.REMOTE;
 			const sourceType = this.getSourceType(right);
 			return (
 				sourceType +

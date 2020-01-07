@@ -35,9 +35,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>(
 					<div>
 						<h2 className="mhn mtn">{t('Installation name')}</h2>
 						<label className="field">
-							{t(
-								'This name will be shown in the title bar of the window'
-							)}
+							{t('This name will be shown in the title bar of the window')}
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -50,9 +48,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>(
 								<span className="mdfx"></span>
 							</div>
 						</label>
-						<h2 className="mhn mtn">
-							{t('System-wide Notification Message')}
-						</h2>
+						<h2 className="mhn mtn">{t('System-wide Notification Message')}</h2>
 						<label className="field">
 							{t('Message')}
 							<div className="mdi">

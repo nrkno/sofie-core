@@ -108,9 +108,7 @@ const ReactiveComponent = withTracker<
 		ReactiveComponentProps & ReactiveComponentTrackedProps,
 		ReactiveComponentState
 	> {
-		constructor(
-			props: ReactiveComponentProps & ReactiveComponentTrackedProps
-		) {
+		constructor(props: ReactiveComponentProps & ReactiveComponentTrackedProps) {
 			super(props);
 			this.state = {
 				myState0: ''
@@ -158,8 +156,7 @@ const TranslatedReactiveComponent = translateWithTracker<
 })(
 	class TranslatedReactiveComponent extends MeteorReactComponent<
 		Translated<
-			TranslatedReactiveComponentProps &
-				TranslatedReactiveComponentTrackedProps
+			TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps
 		>,
 		TranslatedReactiveComponentState
 	> {

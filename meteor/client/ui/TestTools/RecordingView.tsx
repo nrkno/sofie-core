@@ -122,18 +122,9 @@ const RecordingView = translateWithTracker<
 					</header>
 					<div className="mod mvl">
 						{file.stoppedAt ? (
-							<video
-								width="960"
-								height="540"
-								controls
-								ref={this.setPlayerRef}>
-								<source
-									src={`${urlPrefix}${file.path}`}
-									type="video/mp4"
-								/>
-								{t(
-									'Your browser does not support video playback'
-								)}
+							<video width="960" height="540" controls ref={this.setPlayerRef}>
+								<source src={`${urlPrefix}${file.path}`} type="video/mp4" />
+								{t('Your browser does not support video playback')}
 							</video>
 						) : (
 							t('Recording still in progress')

@@ -13,20 +13,14 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice';
 export function getRundownId(studio: Studio, rundownExternalId: string) {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!');
 	if (!rundownExternalId)
-		throw new Meteor.Error(
-			401,
-			'getRundownId: rundownExternalId must be set!'
-		);
+		throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!');
 	return getHash(`${studio._id}_${rundownExternalId}`);
 }
 export function getSegmentId(rundownId: string, segmentExternalId: string) {
 	if (!rundownId)
 		throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!');
 	if (!segmentExternalId)
-		throw new Meteor.Error(
-			401,
-			'getSegmentId: segmentExternalId must be set!'
-		);
+		throw new Meteor.Error(401, 'getSegmentId: segmentExternalId must be set!');
 	return getHash(`${rundownId}_segment_${segmentExternalId}`);
 }
 export function getPartId(rundownId: string, partExternalId: string) {
@@ -60,10 +54,7 @@ export function getRundown(
 ): Rundown {
 	const rundown = Rundowns.findOne(rundownId);
 	if (!rundown)
-		throw new Meteor.Error(
-			404,
-			'Rundown ' + externalRundownId + ' not found'
-		);
+		throw new Meteor.Error(404, 'Rundown ' + externalRundownId + ' not found');
 	rundown.touch();
 	return rundown;
 }

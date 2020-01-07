@@ -99,10 +99,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		// TODO: Add an authorization for this?
 
@@ -131,10 +128,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		// check if we have to update something:
 		if (!_.isEqual(status, peripheralDevice.status)) {
@@ -162,10 +156,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		// Update lastSeen
 		PeripheralDevices.update(id, {
@@ -177,79 +168,72 @@ export namespace ServerPeripheralDeviceAPI {
 	export function getPeripheralDevice(id: string, token: string) {
 		return PeripheralDeviceSecurity.getPeripheralDevice(id, token, this);
 	}
-	export const timelineTriggerTime = syncFunction(
-		function timelineTriggerTime(
-			id: string,
-			token: string,
-			results: PeripheralDeviceAPI.TimelineTriggerTimeResult
-		) {
-			let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(
-				id,
-				token,
-				this
+	export const timelineTriggerTime = syncFunction(function timelineTriggerTime(
+		id: string,
+		token: string,
+		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
+	) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(
+			id,
+			token,
+			this
+		);
+		if (!peripheralDevice)
+			throw new Meteor.Error(404, `peripheralDevice "${id}" not found!`);
+		if (!peripheralDevice.studioId)
+			throw new Meteor.Error(
+				401,
+				`peripheralDevice "${id}" not attached to a studio`
 			);
-			if (!peripheralDevice)
-				throw new Meteor.Error(
-					404,
-					`peripheralDevice "${id}" not found!`
-				);
-			if (!peripheralDevice.studioId)
-				throw new Meteor.Error(
-					401,
-					`peripheralDevice "${id}" not attached to a studio`
-				);
 
-			const studioId = peripheralDevice.studioId;
+		const studioId = peripheralDevice.studioId;
 
-			// check(r.time, Number)
-			check(results, Array);
-			_.each(results, (o) => {
-				check(o.id, String);
-				check(o.time, Number);
-			});
+		// check(r.time, Number)
+		check(results, Array);
+		_.each(results, (o) => {
+			check(o.id, String);
+			check(o.time, Number);
+		});
 
-			_.each(results, (o) => {
-				check(o.id, String);
+		_.each(results, (o) => {
+			check(o.id, String);
 
-				// check(o.time, Number)
-				logger.info(
-					'Timeline: Setting time: "' + o.id + '": ' + o.time
-				);
+			// check(o.time, Number)
+			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time);
 
-				const id = getTimelineId(studioId, o.id);
-				const obj = Timeline.findOne(id);
-				if (obj) {
-					Timeline.update(
-						{
-							_id: id
-						},
-						{
-							$set: {
-								'enable.start': o.time,
-								'enable.setFromNow': true
-							}
+			const id = getTimelineId(studioId, o.id);
+			const obj = Timeline.findOne(id);
+			if (obj) {
+				Timeline.update(
+					{
+						_id: id
+					},
+					{
+						$set: {
+							'enable.start': o.time,
+							'enable.setFromNow': true
 						}
-					);
+					}
+				);
 
-					obj.enable.start = o.time;
-					obj.enable.setFromNow = true;
+				obj.enable.start = o.time;
+				obj.enable.setFromNow = true;
 
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(
-						obj.studioId,
-						obj,
-						o.time
-					);
-				}
-			});
-
-			// After we've updated the timeline, we must call afterUpdateTimeline!
-			const studio = Studios.findOne(studioId);
-			if (studio) {
-				afterUpdateTimeline(studio);
+				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(
+					obj.studioId,
+					obj,
+					o.time
+				);
 			}
-		},
-		'timelineTriggerTime$0,$1'
-	);
+		});
+
+		// After we've updated the timeline, we must call afterUpdateTimeline!
+		const studio = Studios.findOne(studioId);
+		if (studio) {
+			afterUpdateTimeline(studio);
+		}
+	},
+	'timelineTriggerTime$0,$1');
 	export function partPlaybackStarted(
 		id: string,
 		token: string,
@@ -263,10 +247,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		check(r.time, Number);
 		check(r.rundownId, String);
@@ -287,10 +268,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		check(r.time, Number);
 		check(r.rundownId, String);
@@ -310,10 +288,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		check(r.time, Number);
 		check(r.rundownId, String);
@@ -334,10 +309,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		check(r.time, Number);
 		check(r.rundownId, String);
@@ -358,10 +330,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		PeripheralDeviceAPI.executeFunction(
 			peripheralDevice._id,
@@ -386,10 +355,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		// Make sure this never runs if this server isn't empty:
 		if (Rundowns.find().count())
@@ -430,10 +396,7 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
 
 		if (throwError) {
 			throw new Meteor.Error(418, 'Error thrown, as requested');
@@ -449,12 +412,7 @@ export namespace ServerPeripheralDeviceAPI {
 		(deviceId: string, functionName: string, ...args: any[]) => {
 			let args0 = args.slice(0, -1);
 			let cb = args.slice(-1)[0]; // the last argument in ...args
-			PeripheralDeviceAPI.executeFunction(
-				deviceId,
-				cb,
-				functionName,
-				...args0
-			);
+			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0);
 		}
 	);
 
@@ -469,13 +427,8 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
-		if (
-			peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET
-		) {
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
 			throw new Meteor.Error(
 				400,
 				'can only request user auth token for peripheral device of spreadsheet type'
@@ -500,13 +453,8 @@ export namespace ServerPeripheralDeviceAPI {
 			this
 		);
 		if (!peripheralDevice)
-			throw new Meteor.Error(
-				404,
-				"peripheralDevice '" + id + "' not found!"
-			);
-		if (
-			peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET
-		) {
+			throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!");
+		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
 			throw new Meteor.Error(
 				400,
 				'can only store access token for peripheral device of spreadsheet type'
@@ -552,23 +500,14 @@ postRoute.route(
 		try {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId); // TODO: a better security model is needed here. Token is a no-go, but something else to verify the user?
 			if (!peripheralDevice)
-				throw new Meteor.Error(
-					404,
-					`PeripheralDevice ${deviceId} not found`
-				);
+				throw new Meteor.Error(404, `PeripheralDevice ${deviceId} not found`);
 
 			const body = (req as any).body;
 			if (!body)
-				throw new Meteor.Error(
-					400,
-					'Upload credentials: Missing request body'
-				);
+				throw new Meteor.Error(400, 'Upload credentials: Missing request body');
 
 			if (typeof body !== 'string' || body.length < 10)
-				throw new Meteor.Error(
-					400,
-					'Upload credentials: Invalid request body'
-				);
+				throw new Meteor.Error(400, 'Upload credentials: Invalid request body');
 
 			logger.info('Upload credentails, ' + body.length + ' bytes');
 

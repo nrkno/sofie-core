@@ -80,9 +80,7 @@ export function updateSourceLayerInfinitesAfterPartInner(
 	waitForPromiseAll(ps);
 
 	if (previousPart) {
-		partsToProcess = partsToProcess.filter(
-			(l) => l._rank > previousPart._rank
-		);
+		partsToProcess = partsToProcess.filter((l) => l._rank > previousPart._rank);
 	}
 
 	// Prepare pieces:
@@ -179,8 +177,7 @@ export function updateSourceLayerInfinitesAfterPartInner(
 			if (existingItems && existingItems.length > 0) {
 				// remove the existing, as we need to update its contents
 				const existInf = existingItems.findIndex(
-					(e) =>
-						!!e.infiniteId && e.infiniteId === newPiece.infiniteId
+					(e) => !!e.infiniteId && e.infiniteId === newPiece.infiniteId
 				);
 				if (existInf >= 0) {
 					existingPiece = existingItems[existInf];
@@ -194,17 +191,12 @@ export function updateSourceLayerInfinitesAfterPartInner(
 					delete activeInfinitePieces[k];
 					delete activeInfiniteItemsSegmentId[k];
 
-					const lastExistingPiece = _.last(
-						existingItems
-					) as PieceResolved;
-					const firstExistingPiece = _.first(
-						existingItems
-					) as PieceResolved;
+					const lastExistingPiece = _.last(existingItems) as PieceResolved;
+					const firstExistingPiece = _.first(existingItems) as PieceResolved;
 					// if we matched with an infinite, then make sure that infinite is kept going
 					if (
 						lastExistingPiece.infiniteMode &&
-						lastExistingPiece.infiniteMode !==
-							PieceLifespan.OutOnNextPart
+						lastExistingPiece.infiniteMode !== PieceLifespan.OutOnNextPart
 					) {
 						activeInfinitePieces[k] = existingItems[0];
 						activeInfiniteItemsSegmentId[k] = part.segmentId;
@@ -227,9 +219,7 @@ export function updateSourceLayerInfinitesAfterPartInner(
 			newPiece.timings = undefined;
 
 			if (existingItems && existingItems.length) {
-				newPiece.enable.end = `#${getPieceGroupId(
-					existingItems[0]
-				)}.start`;
+				newPiece.enable.end = `#${getPieceGroupId(existingItems[0])}.start`;
 				delete newPiece.enable.duration;
 				newPiece.infiniteMode = PieceLifespan.Normal; // it is no longer infinite, and the ui needs this to draw properly
 			}
@@ -264,11 +254,7 @@ export function updateSourceLayerInfinitesAfterPartInner(
 			) {
 				// same _id; we can do an update:
 				ps.push(
-					asyncCollectionUpdate(
-						Pieces,
-						pieceToInsert._id,
-						pieceToInsert
-					)
+					asyncCollectionUpdate(Pieces, pieceToInsert._id, pieceToInsert)
 				); // note; not a $set, because we want to replace the object
 				//    logger.debug(`updateSourceLayerInfinitesAfterPart: updated infinite continuation "${pieceToInsert._id}"`)
 			} else {
@@ -311,8 +297,7 @@ export function updateSourceLayerInfinitesAfterPartInner(
 				}
 
 				activeInfinitePieces[piece.sourceLayerId] = piece;
-				activeInfiniteItemsSegmentId[piece.sourceLayerId] =
-					part.segmentId;
+				activeInfiniteItemsSegmentId[piece.sourceLayerId] = part.segmentId;
 			}
 		}
 	}
@@ -371,9 +356,7 @@ export const stopInfinitesRunningOnLayer = syncFunction(
 		part: Part,
 		sourceLayer: string
 	) {
-		let remainingParts = rundown
-			.getParts()
-			.filter((l) => l._rank > part._rank);
+		let remainingParts = rundown.getParts().filter((l) => l._rank > part._rank);
 		for (let line of remainingParts) {
 			let continuations = line
 				.getAllPieces()

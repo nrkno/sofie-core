@@ -113,10 +113,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(
-			'resize',
-			this.throttledRefreshFullScreenState
-		);
+		window.removeEventListener('resize', this.throttledRefreshFullScreenState);
 	}
 
 	checkFullScreen() {
@@ -245,8 +242,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 					{!this.state.isFullscreen && (
 						<div className="status-bar__controls__label">
 							<div className="status-bar__controls__button__label">
-								<span className="keyboard_key">F11</span>{' '}
-								Fullscreen
+								<span className="keyboard_key">F11</span> Fullscreen
 							</div>
 						</div>
 					)}

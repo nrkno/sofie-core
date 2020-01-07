@@ -181,8 +181,7 @@ export const MediaManagerSettingsComponent = translate()(
 		};
 		addNewStorage = () => {
 			let settings =
-				(this.props.device.settings as MediaManagerDeviceSettings) ||
-				{};
+				(this.props.device.settings as MediaManagerDeviceSettings) || {};
 			// find free key name
 			let newDeviceId = 'storage';
 			let iter = 0;
@@ -208,8 +207,7 @@ export const MediaManagerSettingsComponent = translate()(
 			});
 		};
 		renderStorages() {
-			let settings = this.props.device
-				.settings as MediaManagerDeviceSettings;
+			let settings = this.props.device.settings as MediaManagerDeviceSettings;
 			const { t } = this.props;
 			return settings.storages.map((storage: StorageSettings, index) => {
 				return (
@@ -219,33 +217,25 @@ export const MediaManagerSettingsComponent = translate()(
 							className={ClassNames({
 								hl: this.isStorageItemEdited(storage.id)
 							})}>
-							<th className="settings-studio-device__name c5">
-								{storage.id}
-							</th>
+							<th className="settings-studio-device__name c5">{storage.id}</th>
 							<td className="settings-studio-device__id c4">
 								{StorageType[storage.type]}
 							</td>
 							<td className="settings-studio-device__actions table-item-actions c3">
 								<button
 									className="action-btn"
-									onClick={(e) =>
-										this.editStorageItem(storage.id)
-									}>
+									onClick={(e) => this.editStorageItem(storage.id)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
 								<button
 									className="action-btn"
-									onClick={(e) =>
-										this.confirmRemoveStorage(storage.id)
-									}>
+									onClick={(e) => this.confirmRemoveStorage(storage.id)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
 						</tr>
 						{this.isStorageItemEdited(storage.id) && (
-							<tr
-								className="expando-details hl"
-								key={storage.id + '-details'}>
+							<tr className="expando-details hl" key={storage.id + '-details'}>
 								<td colSpan={5}>
 									<div>
 										<div className="mod mvs mhs">
@@ -253,16 +243,10 @@ export const MediaManagerSettingsComponent = translate()(
 												{t('Storage ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'settings.storages.' +
-														index +
-														'.id'
-													}
+													attribute={'settings.storages.' + index + '.id'}
 													obj={this.props.device}
 													type="text"
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -271,17 +255,11 @@ export const MediaManagerSettingsComponent = translate()(
 												{t('Storage Type')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'settings.storages.' +
-														index +
-														'.type'
-													}
+													attribute={'settings.storages.' + index + '.type'}
 													obj={this.props.device}
 													type="dropdown"
 													options={StorageType}
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -291,15 +269,11 @@ export const MediaManagerSettingsComponent = translate()(
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={
-														'settings.storages.' +
-														index +
-														'.support.read'
+														'settings.storages.' + index + '.support.read'
 													}
 													obj={this.props.device}
 													type="checkbox"
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -309,20 +283,15 @@ export const MediaManagerSettingsComponent = translate()(
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={
-														'settings.storages.' +
-														index +
-														'.support.write'
+														'settings.storages.' + index + '.support.write'
 													}
 													obj={this.props.device}
 													type="checkbox"
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input input-l"></EditAttribute>
 											</label>
 										</div>
-										{(storage.type ===
-											StorageType.FILE_SHARE && (
+										{(storage.type === StorageType.FILE_SHARE && (
 											<React.Fragment>
 												<div className="mod mvs mhs">
 													<label className="field">
@@ -334,14 +303,9 @@ export const MediaManagerSettingsComponent = translate()(
 																index +
 																'.options.basePath'
 															}
-															obj={
-																this.props
-																	.device
-															}
+															obj={this.props.device}
 															type="text"
-															collection={
-																PeripheralDevices
-															}
+															collection={PeripheralDevices}
 															className="input text-input input-l"></EditAttribute>
 													</label>
 												</div>
@@ -355,22 +319,15 @@ export const MediaManagerSettingsComponent = translate()(
 																index +
 																'.options.mediaPath'
 															}
-															obj={
-																this.props
-																	.device
-															}
+															obj={this.props.device}
 															type="text"
-															collection={
-																PeripheralDevices
-															}
+															collection={PeripheralDevices}
 															className="input text-input input-l"></EditAttribute>
 													</label>
 												</div>
 												<div className="mod mvs mhs">
 													<label className="field">
-														{t(
-															'Mapped Networked Drive'
-														)}
+														{t('Mapped Networked Drive')}
 														<EditAttribute
 															modifiedClassName="bghl"
 															attribute={
@@ -378,14 +335,9 @@ export const MediaManagerSettingsComponent = translate()(
 																index +
 																'.options.mappedNetworkedDriveTarget'
 															}
-															obj={
-																this.props
-																	.device
-															}
+															obj={this.props.device}
 															type="text"
-															collection={
-																PeripheralDevices
-															}
+															collection={PeripheralDevices}
 															className="input text-input input-l"></EditAttribute>
 													</label>
 												</div>
@@ -399,14 +351,9 @@ export const MediaManagerSettingsComponent = translate()(
 																index +
 																'.options.username'
 															}
-															obj={
-																this.props
-																	.device
-															}
+															obj={this.props.device}
 															type="text"
-															collection={
-																PeripheralDevices
-															}
+															collection={PeripheralDevices}
 															className="input text-input input-l"></EditAttribute>
 													</label>
 												</div>
@@ -420,22 +367,15 @@ export const MediaManagerSettingsComponent = translate()(
 																index +
 																'.options.password'
 															}
-															obj={
-																this.props
-																	.device
-															}
+															obj={this.props.device}
 															type="text"
-															collection={
-																PeripheralDevices
-															}
+															collection={PeripheralDevices}
 															className="input text-input input-l"></EditAttribute>
 													</label>
 												</div>
 												<div className="mod mvs mhs">
 													<label className="field">
-														{t(
-															"Don't Scan Entire Storage"
-														)}
+														{t("Don't Scan Entire Storage")}
 														<EditAttribute
 															modifiedClassName="bghl"
 															attribute={
@@ -443,21 +383,15 @@ export const MediaManagerSettingsComponent = translate()(
 																index +
 																'.options.onlySelectedFiles'
 															}
-															obj={
-																this.props
-																	.device
-															}
+															obj={this.props.device}
 															type="checkbox"
-															collection={
-																PeripheralDevices
-															}
+															collection={PeripheralDevices}
 															className="input input-l"></EditAttribute>
 													</label>
 												</div>
 											</React.Fragment>
 										)) ||
-											(storage.type ===
-												StorageType.LOCAL_FOLDER && (
+											(storage.type === StorageType.LOCAL_FOLDER && (
 												<React.Fragment>
 													<div className="mod mvs mhs">
 														<label className="field">
@@ -469,14 +403,9 @@ export const MediaManagerSettingsComponent = translate()(
 																	index +
 																	'.options.basePath'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
@@ -490,22 +419,15 @@ export const MediaManagerSettingsComponent = translate()(
 																	index +
 																	'.options.mediaPath'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Base path is a network share'
-															)}
+															{t('Base path is a network share')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
@@ -513,14 +435,9 @@ export const MediaManagerSettingsComponent = translate()(
 																	index +
 																	'.options.usePolling'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="checkbox"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input input-l"></EditAttribute>
 														</label>
 													</div>
@@ -529,14 +446,8 @@ export const MediaManagerSettingsComponent = translate()(
 									</div>
 									<div className="mod alright">
 										<button
-											className={ClassNames(
-												'btn btn-primary'
-											)}
-											onClick={(e) =>
-												this.finishEditStorageItem(
-													storage.id
-												)
-											}>
+											className={ClassNames('btn btn-primary')}
+											onClick={(e) => this.finishEditStorageItem(storage.id)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -549,8 +460,7 @@ export const MediaManagerSettingsComponent = translate()(
 		}
 		addNewFlow = () => {
 			let settings =
-				(this.props.device.settings as MediaManagerDeviceSettings) ||
-				{};
+				(this.props.device.settings as MediaManagerDeviceSettings) || {};
 			// find free key name
 			let newFlowId = 'flow';
 			let iter = 0;
@@ -572,8 +482,7 @@ export const MediaManagerSettingsComponent = translate()(
 			});
 		};
 		renderFlows() {
-			let settings = this.props.device
-				.settings as MediaManagerDeviceSettings;
+			let settings = this.props.device.settings as MediaManagerDeviceSettings;
 			const { t } = this.props;
 			return settings.mediaFlows.map((flow: MediaFlow, index) => {
 				return (
@@ -583,9 +492,7 @@ export const MediaManagerSettingsComponent = translate()(
 							className={ClassNames({
 								hl: this.isFlowItemEdited(flow.id)
 							})}>
-							<th className="settings-studio-device__name c5">
-								{flow.id}
-							</th>
+							<th className="settings-studio-device__name c5">{flow.id}</th>
 							<td className="settings-studio-device__id c4">
 								{MediaFlowType[flow.mediaFlowType]}
 							</td>
@@ -597,17 +504,13 @@ export const MediaManagerSettingsComponent = translate()(
 								</button>
 								<button
 									className="action-btn"
-									onClick={(e) =>
-										this.confirmRemoveFlow(flow.id)
-									}>
+									onClick={(e) => this.confirmRemoveFlow(flow.id)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
 						</tr>
 						{this.isFlowItemEdited(flow.id) && (
-							<tr
-								className="expando-details hl"
-								key={flow.id + '-details'}>
+							<tr className="expando-details hl" key={flow.id + '-details'}>
 								<td colSpan={5}>
 									<div>
 										<div className="mod mvs mhs">
@@ -615,16 +518,10 @@ export const MediaManagerSettingsComponent = translate()(
 												{t('Media Flow ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={
-														'settings.mediaFlows.' +
-														index +
-														'.id'
-													}
+													attribute={'settings.mediaFlows.' + index + '.id'}
 													obj={this.props.device}
 													type="text"
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -634,16 +531,12 @@ export const MediaManagerSettingsComponent = translate()(
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={
-														'settings.mediaFlows.' +
-														index +
-														'.mediaFlowType'
+														'settings.mediaFlows.' + index + '.mediaFlowType'
 													}
 													obj={this.props.device}
 													type="dropdown"
 													options={MediaFlowType}
-													collection={
-														PeripheralDevices
-													}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
@@ -653,43 +546,29 @@ export const MediaManagerSettingsComponent = translate()(
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={
-														'settings.mediaFlows.' +
-														index +
-														'.sourceId'
+														'settings.mediaFlows.' + index + '.sourceId'
 													}
 													obj={this.props.device}
 													type="dropdown"
-													options={settings.storages.map(
-														(i) => i.id
-													)}
-													collection={
-														PeripheralDevices
-													}
+													options={settings.storages.map((i) => i.id)}
+													collection={PeripheralDevices}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
-										{(flow.mediaFlowType ===
-											MediaFlowType.EXPECTED_ITEMS ||
-											flow.mediaFlowType ===
-												MediaFlowType.WATCH_FOLDER) && (
+										{(flow.mediaFlowType === MediaFlowType.EXPECTED_ITEMS ||
+											flow.mediaFlowType === MediaFlowType.WATCH_FOLDER) && (
 											<div className="mod mvs mhs">
 												<label className="field">
 													{t('Target Storage')}
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'settings.mediaFlows.' +
-															index +
-															'.destinationId'
+															'settings.mediaFlows.' + index + '.destinationId'
 														}
 														obj={this.props.device}
 														type="dropdown"
-														options={settings.storages.map(
-															(i) => i.id
-														)}
-														collection={
-															PeripheralDevices
-														}
+														options={settings.storages.map((i) => i.id)}
+														collection={PeripheralDevices}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -697,12 +576,8 @@ export const MediaManagerSettingsComponent = translate()(
 									</div>
 									<div className="mod alright">
 										<button
-											className={ClassNames(
-												'btn btn-primary'
-											)}
-											onClick={(e) =>
-												this.finishEditFlowItem(flow.id)
-											}>
+											className={ClassNames('btn btn-primary')}
+											onClick={(e) => this.finishEditFlowItem(flow.id)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -715,8 +590,7 @@ export const MediaManagerSettingsComponent = translate()(
 		}
 		addNewMonitor = () => {
 			let settings =
-				(this.props.device.settings as MediaManagerDeviceSettings) ||
-				{};
+				(this.props.device.settings as MediaManagerDeviceSettings) || {};
 
 			// Find free key name:
 			let iter = 0;
@@ -766,10 +640,7 @@ export const MediaManagerSettingsComponent = translate()(
 				)
 			});
 		};
-		onEditMonitorId = (
-			edit: EditAttributeBase,
-			newMonitorId: any
-		): void => {
+		onEditMonitorId = (edit: EditAttributeBase, newMonitorId: any): void => {
 			const oldMonitorId = edit.props.attribute;
 			if (oldMonitorId && newMonitorId) {
 				// @ts-ignore
@@ -817,8 +688,7 @@ export const MediaManagerSettingsComponent = translate()(
 			}
 		};
 		renderMonitors() {
-			let settings = this.props.device
-				.settings as MediaManagerDeviceSettings;
+			let settings = this.props.device.settings as MediaManagerDeviceSettings;
 			const { t } = this.props;
 			return _.map(
 				settings.monitors || {},
@@ -830,33 +700,25 @@ export const MediaManagerSettingsComponent = translate()(
 								className={ClassNames({
 									hl: this.isMonitorItemEdited(monitorId)
 								})}>
-								<th className="settings-studio-device__name c5">
-									{monitorId}
-								</th>
+								<th className="settings-studio-device__name c5">{monitorId}</th>
 								<td className="settings-studio-device__id c4">
 									{MonitorSettingsType[monitor.type]}
 								</td>
 								<td className="settings-studio-device__actions table-item-actions c3">
 									<button
 										className="action-btn"
-										onClick={(e) =>
-											this.editMonitorItem(monitorId)
-										}>
+										onClick={(e) => this.editMonitorItem(monitorId)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 									<button
 										className="action-btn"
-										onClick={(e) =>
-											this.removeMonitor(monitorId)
-										}>
+										onClick={(e) => this.removeMonitor(monitorId)}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 								</td>
 							</tr>
 							{this.isMonitorItemEdited(monitorId) && (
-								<tr
-									className="expando-details hl"
-									key={monitorId + '-details'}>
+								<tr className="expando-details hl" key={monitorId + '-details'}>
 									<td colSpan={5}>
 										<div>
 											<div className="mod mvs mhs">
@@ -867,13 +729,9 @@ export const MediaManagerSettingsComponent = translate()(
 														attribute={monitorId}
 														obj={this.props.device}
 														type="text"
-														collection={
-															PeripheralDevices
-														}
+														collection={PeripheralDevices}
 														className="input text-input input-l"
-														overrideDisplayValue={
-															monitorId
-														}
+														overrideDisplayValue={monitorId}
 														updateFunction={
 															this.onEditMonitorId
 														}></EditAttribute>
@@ -885,18 +743,12 @@ export const MediaManagerSettingsComponent = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'settings.monitors.' +
-															monitorId +
-															'.type'
+															'settings.monitors.' + monitorId + '.type'
 														}
 														obj={this.props.device}
 														type="dropdown"
-														options={
-															MonitorSettingsType
-														}
-														collection={
-															PeripheralDevices
-														}
+														options={MonitorSettingsType}
+														collection={PeripheralDevices}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
@@ -906,77 +758,51 @@ export const MediaManagerSettingsComponent = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={
-															'settings.monitors.' +
-															monitorId +
-															'.storageId'
+															'settings.monitors.' + monitorId + '.storageId'
 														}
 														obj={this.props.device}
 														type="text"
-														collection={
-															PeripheralDevices
-														}
+														collection={PeripheralDevices}
 														className="input text-input input-l"></EditAttribute>
 												</label>
 											</div>
 
-											{monitor.type ===
-											MonitorSettingsType.MEDIA_SCANNER ? (
+											{monitor.type === MonitorSettingsType.MEDIA_SCANNER ? (
 												<React.Fragment>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Media Scanner Host'
-															)}
+															{t('Media Scanner Host')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
-																	'settings.monitors.' +
-																	monitorId +
-																	'.host'
+																	'settings.monitors.' + monitorId + '.host'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Media Scanner Port'
-															)}
+															{t('Media Scanner Port')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
-																	'settings.monitors.' +
-																	monitorId +
-																	'.port'
+																	'settings.monitors.' + monitorId + '.port'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="int"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 												</React.Fragment>
-											) : monitor.type ===
-											  MonitorSettingsType.QUANTEL ? (
+											) : monitor.type === MonitorSettingsType.QUANTEL ? (
 												<React.Fragment>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Quantel Gateway URL'
-															)}
+															{t('Quantel Gateway URL')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
@@ -984,83 +810,51 @@ export const MediaManagerSettingsComponent = translate()(
 																	monitorId +
 																	'.gatewayUrl'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Quantel ISA URL'
-															)}
+															{t('Quantel ISA URL')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
-																	'settings.monitors.' +
-																	monitorId +
-																	'.ISAUrl'
+																	'settings.monitors.' + monitorId + '.ISAUrl'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Zone ID (leave blank for default)'
-															)}
+															{t('Zone ID (leave blank for default)')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
-																	'settings.monitors.' +
-																	monitorId +
-																	'.zoneId'
+																	'settings.monitors.' + monitorId + '.zoneId'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="text"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
 													<div className="mod mvs mhs">
 														<label className="field">
-															{t(
-																'Quantel Server ID'
-															)}
+															{t('Quantel Server ID')}
 															<EditAttribute
 																modifiedClassName="bghl"
 																attribute={
-																	'settings.monitors.' +
-																	monitorId +
-																	'.serverId'
+																	'settings.monitors.' + monitorId + '.serverId'
 																}
-																obj={
-																	this.props
-																		.device
-																}
+																obj={this.props.device}
 																type="int"
-																collection={
-																	PeripheralDevices
-																}
+																collection={PeripheralDevices}
 																className="input text-input input-l"></EditAttribute>
 														</label>
 													</div>
@@ -1069,17 +863,9 @@ export const MediaManagerSettingsComponent = translate()(
 										</div>
 										<div className="mod alright">
 											<button
-												className={ClassNames(
-													'btn btn-primary'
-												)}
-												onClick={(e) =>
-													this.finishEditMonitorItem(
-														monitorId
-													)
-												}>
-												<FontAwesomeIcon
-													icon={faCheck}
-												/>
+												className={ClassNames('btn btn-primary')}
+												onClick={(e) => this.finishEditMonitorItem(monitorId)}>
+												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
 									</td>
@@ -1093,8 +879,7 @@ export const MediaManagerSettingsComponent = translate()(
 
 		render() {
 			const { t, subDevices } = this.props;
-			let settings = this.props.device
-				.settings as MediaManagerDeviceSettings;
+			let settings = this.props.device.settings as MediaManagerDeviceSettings;
 			return (
 				<div>
 					<div className="mod mvs mhn">
@@ -1187,17 +972,12 @@ export const MediaManagerSettingsComponent = translate()(
 						acceptText={t('Remove')}
 						secondaryText={t('Cancel')}
 						show={this.state.showDeleteStorageConfirm}
-						onAccept={(e) =>
-							this.handleConfirmRemoveStorageAccept(e)
-						}
-						onSecondary={(e) =>
-							this.handleConfirmRemoveStorageCancel(e)
-						}>
+						onAccept={(e) => this.handleConfirmRemoveStorageAccept(e)}
+						onSecondary={(e) => this.handleConfirmRemoveStorageCancel(e)}>
 						<p>
-							{t(
-								'Are you sure you want to remove storage "{{storageId}}"?',
-								{ storageId: this.state.deleteConfirmStorageId }
-							)}
+							{t('Are you sure you want to remove storage "{{storageId}}"?', {
+								storageId: this.state.deleteConfirmStorageId
+							})}
 						</p>
 					</ModalDialog>
 
@@ -1207,14 +987,11 @@ export const MediaManagerSettingsComponent = translate()(
 						secondaryText={t('Cancel')}
 						show={this.state.showDeleteFlowConfirm}
 						onAccept={(e) => this.handleConfirmRemoveFlowAccept(e)}
-						onSecondary={(e) =>
-							this.handleConfirmRemoveFlowCancel(e)
-						}>
+						onSecondary={(e) => this.handleConfirmRemoveFlowCancel(e)}>
 						<p>
-							{t(
-								'Are you sure you want to remove flow "{{flowId}}"?',
-								{ flowId: this.state.deleteConfirmFlowId }
-							)}
+							{t('Are you sure you want to remove flow "{{flowId}}"?', {
+								flowId: this.state.deleteConfirmFlowId
+							})}
 						</p>
 					</ModalDialog>
 

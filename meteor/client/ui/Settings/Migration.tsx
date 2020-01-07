@@ -139,17 +139,12 @@ export const MigrationView = translateWithTracker<
 								) {
 									let stepId = manualInput.stepId;
 
-									if (!inputValues[stepId])
-										inputValues[stepId] = {};
+									if (!inputValues[stepId]) inputValues[stepId] = {};
 
-									let value =
-										inputValues[stepId][
-											manualInput.attribute
-										];
+									let value = inputValues[stepId][manualInput.attribute];
 									if (_.isUndefined(value)) {
-										inputValues[stepId][
-											manualInput.attribute
-										] = manualInput.defaultValue;
+										inputValues[stepId][manualInput.attribute] =
+											manualInput.defaultValue;
 									}
 								}
 							}
@@ -252,18 +247,15 @@ export const MigrationView = translateWithTracker<
 					'Are you sure you want to reset the database version?\nOnly do this if you plan on running the migration right after.'
 				),
 				onAccept: () => {
-					Meteor.call(
-						MigrationMethods.resetDatabaseVersions,
-						(err) => {
-							if (err) {
-								logger.error(err);
-								// todo: notify user
-								this.setErrorMessage(err);
-							} else {
-								this.updateVersions();
-							}
+					Meteor.call(MigrationMethods.resetDatabaseVersions, (err) => {
+						if (err) {
+							logger.error(err);
+							// todo: notify user
+							this.setErrorMessage(err);
+						} else {
+							this.updateVersions();
 						}
-					);
+					});
 				}
 			});
 		}
@@ -308,33 +300,22 @@ export const MigrationView = translateWithTracker<
 							}
 							return (
 								<div key={rank++}>
-									<h3 className="mhn mbsx mtl">
-										{manualInput.label}
-									</h3>
+									<h3 className="mhn mbsx mtl">{manualInput.label}</h3>
 									<div>{manualInput.description}</div>
 									<div>
-										{manualInput.inputType &&
-										manualInput.attribute ? (
+										{manualInput.inputType && manualInput.attribute ? (
 											<EditAttribute
 												type={manualInput.inputType}
 												className="input-full mtxs"
-												options={
-													manualInput.dropdownOptions
-												}
+												options={manualInput.dropdownOptions}
 												overrideDisplayValue={value}
 												updateFunction={(
 													edit: EditAttributeBase,
 													newValue: any
 												) => {
 													if (manualInput.attribute) {
-														let inputValues = this
-															.state.inputValues;
-														if (
-															!inputValues[stepId]
-														)
-															inputValues[
-																stepId
-															] = {};
+														let inputValues = this.state.inputValues;
+														if (!inputValues[stepId]) inputValues[stepId] = {};
 														inputValues[stepId][
 															manualInput.attribute
 														] = newValue;
@@ -365,31 +346,25 @@ export const MigrationView = translateWithTracker<
 						<div>
 							<div>
 								{this.state.migration
-									? _.map(
-											this.state.migration.chunks,
-											(chunk, i) => {
-												let str = t(
-													'Version for {{name}}: From {{fromVersion}} to {{toVersion}}',
-													{
-														name: chunk.sourceName,
-														fromVersion:
-															chunk._dbVersion,
-														toVersion:
-															chunk._targetVersion
-													}
-												);
-												return (
-													<div key={i}>
-														{chunk._dbVersion ===
-														chunk._targetVersion ? (
-															<b>{str}</b>
-														) : (
-															str
-														)}
-													</div>
-												);
-											}
-									  )
+									? _.map(this.state.migration.chunks, (chunk, i) => {
+											let str = t(
+												'Version for {{name}}: From {{fromVersion}} to {{toVersion}}',
+												{
+													name: chunk.sourceName,
+													fromVersion: chunk._dbVersion,
+													toVersion: chunk._targetVersion
+												}
+											);
+											return (
+												<div key={i}>
+													{chunk._dbVersion === chunk._targetVersion ? (
+														<b>{str}</b>
+													) : (
+														str
+													)}
+												</div>
+											);
+									  })
 									: null}
 							</div>
 							<div>
@@ -450,26 +425,17 @@ export const MigrationView = translateWithTracker<
 											className={ClassNames({
 												hl: this.state.showAllSteps
 											})}>
-											<th className="c3">
-												{t('All steps')}
-											</th>
+											<th className="c3">{t('All steps')}</th>
 											<td className="table-item-actions c3">
 												<button
 													className="action-btn"
 													onClick={(e) =>
 														this.setState({
-															showAllSteps: !this
-																.state
-																.showAllSteps
+															showAllSteps: !this.state.showAllSteps
 														})
 													}>
 													<FontAwesomeIcon
-														icon={
-															this.state
-																.showAllSteps
-																? faEyeSlash
-																: faEye
-														}
+														icon={this.state.showAllSteps ? faEyeSlash : faEye}
 													/>
 												</button>
 											</td>
@@ -477,32 +443,16 @@ export const MigrationView = translateWithTracker<
 										{this.state.showAllSteps && (
 											<tr className="expando-details hl">
 												<td colSpan={2}>
-													{this.state.migration.chunks.map(
-														(c) => (
-															<div
-																key={
-																	c.sourceName
-																}>
-																<h3 className="mhs">
-																	{
-																		c.sourceName
-																	}
-																</h3>
-																{_.map(
-																	c._steps,
-																	(s) => (
-																		<p
-																			className="mod mhs"
-																			key={
-																				s
-																			}>
-																			{s}
-																		</p>
-																	)
-																)}
-															</div>
-														)
-													)}
+													{this.state.migration.chunks.map((c) => (
+														<div key={c.sourceName}>
+															<h3 className="mhs">{c.sourceName}</h3>
+															{_.map(c._steps, (s) => (
+																<p className="mod mhs" key={s}>
+																	{s}
+																</p>
+															))}
+														</div>
+													))}
 												</td>
 											</tr>
 										)}
@@ -516,27 +466,18 @@ export const MigrationView = translateWithTracker<
 										)}
 									</p>
 								) : null}
-								{this.state.migration
-									.canDoAutomaticMigration ? (
+								{this.state.migration.canDoAutomaticMigration ? (
 									<div>
 										<p className="mhn mvs">
-											{t(
-												'The migration can be completed automatically.'
-											)}
+											{t('The migration can be completed automatically.')}
 										</p>
 										<button
 											className="btn btn-primary"
 											onClick={() => {
 												this.runMigration();
 											}}>
-											<FontAwesomeIcon
-												icon={faDatabase}
-											/>
-											<span>
-												{t(
-													'Run automatic migration procedure'
-												)}
-											</span>
+											<FontAwesomeIcon icon={faDatabase} />
+											<span>{t('Run automatic migration procedure')}</span>
 										</button>
 									</div>
 								) : (
@@ -551,9 +492,7 @@ export const MigrationView = translateWithTracker<
 											className="btn btn-primary mtm"
 											onClick={() => {
 												doModalDialog({
-													title: t(
-														'Double-check Values'
-													),
+													title: t('Double-check Values'),
 													message: t(
 														'Are you sure the values you have entered are correct?'
 													),
@@ -562,34 +501,23 @@ export const MigrationView = translateWithTracker<
 													}
 												});
 											}}>
-											<FontAwesomeIcon
-												icon={faClipboardCheck}
-											/>
-											<span>
-												{t('Run Migration Procedure')}
-											</span>
+											<FontAwesomeIcon icon={faClipboardCheck} />
+											<span>{t('Run Migration Procedure')}</span>
 										</button>
 									</div>
 								)}
 
 								{this.state.warnings.length ? (
 									<div>
-										<h2 className="mhn">
-											{t('Warnings During Migration')}
-										</h2>
+										<h2 className="mhn">{t('Warnings During Migration')}</h2>
 										<ul>
-											{_.map(
-												this.state.warnings,
-												(warning, key) => {
-													return (
-														<li
-															className="mbm"
-															key={key}>
-															{warning}
-														</li>
-													);
-												}
-											)}
+											{_.map(this.state.warnings, (warning, key) => {
+												return (
+													<li className="mbm" key={key}>
+														{warning}
+													</li>
+												);
+											})}
 										</ul>
 									</div>
 								) : null}
@@ -607,9 +535,7 @@ export const MigrationView = translateWithTracker<
 												className="btn btn-secondary mtm"
 												onClick={() => {
 													doModalDialog({
-														title: t(
-															'Force Migration'
-														),
+														title: t('Force Migration'),
 														message: t(
 															'Are you sure you want to force the migration? This will bypass the migration checks, so be sure to verify that the values in the settings are correct!'
 														),
@@ -618,14 +544,8 @@ export const MigrationView = translateWithTracker<
 														}
 													});
 												}}>
-												<FontAwesomeIcon
-													icon={faDatabase}
-												/>
-												<span>
-													{t(
-														'Force Migration (unsafe)'
-													)}
-												</span>
+												<FontAwesomeIcon icon={faDatabase} />
+												<span>{t('Force Migration (unsafe)')}</span>
 											</button>
 										</div>
 									</div>
@@ -634,9 +554,7 @@ export const MigrationView = translateWithTracker<
 						) : null}
 
 						{this.state.migrationCompleted ? (
-							<div>
-								{t('The migration was completed successfully!')}
-							</div>
+							<div>{t('The migration was completed successfully!')}</div>
 						) : null}
 
 						{!this.state.migrationNeeded ? (

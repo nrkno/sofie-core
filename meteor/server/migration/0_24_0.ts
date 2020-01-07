@@ -13,10 +13,7 @@ addMigrationSteps('0.24.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const blueprintCount = Blueprints.find({
-				$and: [
-					{ code: { $exists: true } },
-					{ code: { $not: { $eq: '' } } }
-				],
+				$and: [{ code: { $exists: true } }, { code: { $not: { $eq: '' } } }],
 				blueprintType: { $exists: false }
 			}).count();
 			if (blueprintCount > 0)
@@ -26,10 +23,7 @@ addMigrationSteps('0.24.0', [
 		migrate: () => {
 			Blueprints.update(
 				{
-					$and: [
-						{ code: { $exists: true } },
-						{ code: { $not: { $eq: '' } } }
-					],
+					$and: [{ code: { $exists: true } }, { code: { $not: { $eq: '' } } }],
 					blueprintType: { $exists: false }
 				},
 				{

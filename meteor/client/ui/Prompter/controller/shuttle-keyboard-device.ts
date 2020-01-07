@@ -182,10 +182,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 
 		let scrollPosition = window.scrollY;
 		// check for reached end-of-scroll:
-		if (
-			this._currentPosition !== undefined &&
-			scrollPosition !== undefined
-		) {
+		if (this._currentPosition !== undefined && scrollPosition !== undefined) {
 			if (this._currentPosition === scrollPosition) {
 				// We tried to move, but haven't
 				this._lastSpeed = 0;

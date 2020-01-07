@@ -20,9 +20,7 @@ export function makeTableOfObject(o: any) {
 							}
 							if (json) {
 								// @ts-ignore
-								content = (
-									<pre>{JSON.stringify(json, '', ' ')}</pre>
-								);
+								content = <pre>{JSON.stringify(json, '', ' ')}</pre>;
 							}
 						}
 					}

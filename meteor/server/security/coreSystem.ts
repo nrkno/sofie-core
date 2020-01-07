@@ -7,9 +7,7 @@ CoreSystem.allow({
 		return false;
 	},
 	update(userId, doc, fields, modifier) {
-		if (
-			_.difference(fields, ['support', 'systemInfo', 'name']).length === 0
-		) {
+		if (_.difference(fields, ['support', 'systemInfo', 'name']).length === 0) {
 			return true;
 		}
 		return false;

@@ -190,12 +190,10 @@ const SegmentTimelineZoom = class extends React.Component<
 					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={
-						this.props.segment._id ===
-							this.props.rundown.currentPartId &&
+						this.props.segment._id === this.props.rundown.currentPartId &&
 						part.startedPlayback &&
 						part.getLastStartedPlayback()
-							? this.props.livePosition -
-							  (part.getLastStartedPlayback() || 0)
+							? this.props.livePosition - (part.getLastStartedPlayback() || 0)
 							: null
 					}
 					isLastInSegment={false}
@@ -234,16 +232,12 @@ const SegmentTimelineZoom = class extends React.Component<
 					</div>
 					<SegmentTimelineZoomControls
 						scrollLeft={this.props.scrollLeft}
-						scrollWidth={
-							this.props.timelineWidth / this.props.timeScale
-						}
+						scrollWidth={this.props.timelineWidth / this.props.timeScale}
 						onScroll={(left, e) => this.props.onScroll(left, e)}
 						segmentDuration={this.getSegmentDuration()}
 						liveLineHistorySize={this.props.liveLineHistorySize}
 						timeScale={this.props.timeScale}
-						onZoomChange={(newScale, e) =>
-							this.props.onZoomChange(newScale, e)
-						}
+						onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)}
 					/>
 					{this.renderMiniLiveLine()}
 				</div>
@@ -360,10 +354,7 @@ export class SegmentTimelineClass extends React.Component<
 		if (e.touches.length === 2) {
 			let newSize = e.touches[1].clientX - e.touches[0].clientX;
 			let prop = newSize / this._touchSize;
-			this.props.onZoomChange(
-				Math.min(500, this.props.timeScale * prop),
-				e
-			);
+			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e);
 			this._touchSize = newSize;
 		} else if (e.touches.length === 1 && this._lastTouch) {
 			let scrollAmount = this._lastTouch.clientX - e.touches[0].clientX;
@@ -385,20 +376,14 @@ export class SegmentTimelineClass extends React.Component<
 		if (e.touches.length === 2) {
 			// expect two touch points
 			if (!this._touchAttached) {
-				document.addEventListener(
-					'touchmove',
-					this.onTimelineTouchMove
-				);
+				document.addEventListener('touchmove', this.onTimelineTouchMove);
 				document.addEventListener('touchend', this.onTimelineTouchEnd);
 				this._touchAttached = true;
 			}
 			this._touchSize = e.touches[1].clientX - e.touches[0].clientX;
 		} else if (e.touches.length === 1) {
 			if (!this._touchAttached) {
-				document.addEventListener(
-					'touchmove',
-					this.onTimelineTouchMove
-				);
+				document.addEventListener('touchmove', this.onTimelineTouchMove);
 				document.addEventListener('touchend', this.onTimelineTouchEnd);
 				this._touchAttached = true;
 			}
@@ -420,10 +405,7 @@ export class SegmentTimelineClass extends React.Component<
 		) {
 			// ctrl + Scroll
 			this.props.onZoomChange(
-				Math.min(
-					500,
-					this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))
-				),
+				Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))),
 				e
 			);
 			e.preventDefault();
@@ -438,10 +420,7 @@ export class SegmentTimelineClass extends React.Component<
 		) {
 			// Alt + Scroll
 			this.props.onScroll(
-				Math.max(
-					0,
-					this.props.scrollLeft + e.deltaY / this.props.timeScale
-				),
+				Math.max(0, this.props.scrollLeft + e.deltaY / this.props.timeScale),
 				e
 			);
 			e.preventDefault();
@@ -450,10 +429,7 @@ export class SegmentTimelineClass extends React.Component<
 			// no modifier
 			if (e.deltaX !== 0) {
 				this.props.onScroll(
-					Math.max(
-						0,
-						this.props.scrollLeft + e.deltaX / this.props.timeScale
-					),
+					Math.max(0, this.props.scrollLeft + e.deltaX / this.props.timeScale),
 					e
 				);
 			}
@@ -478,8 +454,7 @@ export class SegmentTimelineClass extends React.Component<
 
 	getSegmentDuration() {
 		return (
-			(this.props.parts &&
-				RundownUtils.getSegmentDuration(this.props.parts)) ||
+			(this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) ||
 			0
 		);
 	}
@@ -488,9 +463,7 @@ export class SegmentTimelineClass extends React.Component<
 		return {
 			transform:
 				'translate3d(-' +
-				Math.floor(
-					this.props.scrollLeft * this.props.timeScale
-				).toString() +
+				Math.floor(this.props.scrollLeft * this.props.timeScale).toString() +
 				'px, 0, 0.1px)',
 			willChange: 'transform'
 		};
@@ -509,10 +482,7 @@ export class SegmentTimelineClass extends React.Component<
 			let lineStyle = {
 				left:
 					(this.props.followLiveLine
-						? Math.min(
-								pixelPostion,
-								this.props.liveLineHistorySize
-						  ).toString()
+						? Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
 						: pixelPostion.toString()) + 'px'
 			};
 
@@ -554,8 +524,7 @@ export class SegmentTimelineClass extends React.Component<
 							<div className="rundown-view__part__icon rundown-view__part__icon--next"></div>
 						)}
 						{this.props.rundown.holdState &&
-						this.props.rundown.holdState !==
-							RundownHoldState.COMPLETE ? (
+						this.props.rundown.holdState !== RundownHoldState.COMPLETE ? (
 							<div className="segment-timeline__liveline__status segment-timeline__liveline__status--hold">
 								{t('Hold')}
 							</div>
@@ -576,14 +545,10 @@ export class SegmentTimelineClass extends React.Component<
 							{...this.props}
 							onPieceClick={this.props.onItemClick}
 							onPieceDoubleClick={this.props.onItemDoubleClick}
-							scrollWidth={
-								this.state.timelineWidth / this.props.timeScale
-							}
+							scrollWidth={this.state.timelineWidth / this.props.timeScale}
 							firstPartInSegment={this.props.parts[0]}
 							isLastSegment={this.props.isLastSegment}
-							isLastInSegment={
-								index === this.props.parts.length - 1
-							}
+							isLastInSegment={index === this.props.parts.length - 1}
 							part={part}
 						/>
 					);
@@ -613,13 +578,10 @@ export class SegmentTimelineClass extends React.Component<
 									'segment-timeline__output-layer-control',
 									{
 										collapsable:
-											outputLayer.sourceLayers !==
-												undefined &&
+											outputLayer.sourceLayers !== undefined &&
 											outputLayer.sourceLayers.length > 1,
 										collapsed:
-											this.props.collapsedOutputs[
-												outputLayer._id
-											] === true
+											this.props.collapsedOutputs[outputLayer._id] === true
 									}
 								)}>
 								<div
@@ -628,10 +590,7 @@ export class SegmentTimelineClass extends React.Component<
 									tabIndex={0}
 									onClick={(e) =>
 										this.props.onCollapseOutputToggle &&
-										this.props.onCollapseOutputToggle(
-											outputLayer,
-											e
-										)
+										this.props.onCollapseOutputToggle(outputLayer, e)
 									}>
 									{outputLayer.name}
 								</div>
@@ -644,12 +603,9 @@ export class SegmentTimelineClass extends React.Component<
 												<div
 													key={sourceLayer._id}
 													className="segment-timeline__output-layer-control__layer"
-													data-source-id={
-														sourceLayer._id
-													}>
+													data-source-id={sourceLayer._id}>
 													{array.length === 1 ||
-													sourceLayer.name ===
-														outputLayer.name
+													sourceLayer.name === outputLayer.name
 														? ' '
 														: sourceLayer.name}
 												</div>
@@ -721,14 +677,9 @@ export class SegmentTimelineClass extends React.Component<
 									className="segment-timeline__title__notes__note"
 									onClick={(e) =>
 										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(
-											NoteType.ERROR
-										)
+										this.props.onHeaderNoteClick(NoteType.ERROR)
 									}>
-									<img
-										className="icon"
-										src="/icons/warning_icon.svg"
-									/>
+									<img className="icon" src="/icons/warning_icon.svg" />
 									<div>
 										{t('Critical Errors')}:&nbsp;
 										<b>{criticalNotes}</b>
@@ -740,14 +691,9 @@ export class SegmentTimelineClass extends React.Component<
 									className="segment-timeline__title__notes__note"
 									onClick={(e) =>
 										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(
-											NoteType.WARNING
-										)
+										this.props.onHeaderNoteClick(NoteType.WARNING)
 									}>
-									<img
-										className="icon"
-										src="/icons/warning_icon.svg"
-									/>
+									<img className="icon" src="/icons/warning_icon.svg" />
 									<div>
 										{t('Warnings')}:&nbsp;
 										<b>{warningNotes}</b>
@@ -772,9 +718,7 @@ export class SegmentTimelineClass extends React.Component<
 							this.props.isLiveSegment) && (
 							<SegmentDuration
 								partIds={this.props.parts
-									.filter(
-										(item) => item.duration === undefined
-									)
+									.filter((item) => item.duration === undefined)
 									.map((item) => item._id)}
 							/>
 						)}
@@ -807,10 +751,7 @@ export class SegmentTimelineClass extends React.Component<
 					{this.renderOutputLayerControls()}
 				</div>
 				<div className="segment-timeline__timeline-background" />
-				<TimelineGrid
-					{...this.props}
-					onResize={this.onTimelineResize}
-				/>
+				<TimelineGrid {...this.props} onResize={this.onTimelineResize} />
 				<div
 					className="segment-timeline__timeline-container"
 					onTouchStartCapture={this.onTimelineTouchStart}>

@@ -34,10 +34,7 @@ export namespace ConfigRef {
 				let value = retrieveRef(ref, bailOnError) + '';
 				if (value) {
 					if (modifier) value = modifier(value);
-					stringWithReferences = stringWithReferences.replace(
-						ref,
-						value
-					);
+					stringWithReferences = stringWithReferences.replace(ref, value);
 				}
 			}
 		});
@@ -69,16 +66,10 @@ export namespace ConfigRef {
 						404,
 						`Ref "${reference}": Studio "${studioId}" not found`
 					);
-			} else if (
-				m[1] === 'showStyle' &&
-				_.isString(m[2]) &&
-				_.isString(m[3])
-			) {
+			} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
 				const showStyleVariantId = m[2];
 				const configId = m[3];
-				const showStyleCompound = getShowStyleCompound(
-					showStyleVariantId
-				);
+				const showStyleCompound = getShowStyleCompound(showStyleVariantId);
 				if (showStyleCompound) {
 					const config = _.find(
 						showStyleCompound.config,

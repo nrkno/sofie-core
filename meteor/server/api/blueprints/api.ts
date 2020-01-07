@@ -70,10 +70,7 @@ export function uploadBlueprint(
 	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`);
 
 	if (!blueprintId) {
-		throw new Meteor.Error(
-			400,
-			`Blueprint id "${blueprintId}" is not valid`
-		);
+		throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`);
 	}
 
 	const existingBlueprint = Blueprints.findOne(blueprintId);
@@ -83,9 +80,7 @@ export function uploadBlueprint(
 		name: existingBlueprint
 			? existingBlueprint.name
 			: blueprintName || blueprintId,
-		created: existingBlueprint
-			? existingBlueprint.created
-			: getCurrentTime(),
+		created: existingBlueprint ? existingBlueprint.created : getCurrentTime(),
 		code: body,
 		modified: getCurrentTime(),
 		studioConfigManifest: [],
@@ -174,8 +169,7 @@ export function uploadBlueprint(
 			blueprintManifest.showStyleConfigManifest;
 	}
 	if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
-		newBlueprint.studioConfigManifest =
-			blueprintManifest.studioConfigManifest;
+		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest;
 	}
 
 	// Parse the versions, just to verify that the format is correct:

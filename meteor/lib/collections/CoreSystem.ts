@@ -94,10 +94,7 @@ export function setCoreSystemVersion(versionStr: string): string {
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found');
 
 	if (!Meteor.isServer)
-		throw new Meteor.Error(
-			500,
-			'This function can only be run server-side'
-		);
+		throw new Meteor.Error(500, 'This function can only be run server-side');
 
 	let version = parseVersion(versionStr);
 
@@ -131,10 +128,7 @@ export function setCoreSystemStorePath(storePath: string | undefined): void {
 	let system = getCoreSystem();
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found');
 	if (!Meteor.isServer)
-		throw new Meteor.Error(
-			500,
-			'This function can only be run server-side'
-		);
+		throw new Meteor.Error(500, 'This function can only be run server-side');
 
 	if (storePath) {
 		storePath = storePath.trim().replace(/(.*)[\/\\]$/, '$1'); // remove last "/" or "\"

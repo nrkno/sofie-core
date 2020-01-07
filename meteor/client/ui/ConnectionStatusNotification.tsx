@@ -71,9 +71,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			let systemNotification:
 				| Notification
 				| undefined = createSystemNotification(cs);
-			let newNotification = this.createNewStatusNotification(
-				meteorStatus
-			);
+			let newNotification = this.createNewStatusNotification(meteorStatus);
 
 			if (newNotification.persistent) {
 				this._notificationList.set(
@@ -142,18 +140,15 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			case 'failed':
 				return (
 					<span>
-						{t('Cannot connect to the')}{' '}
-						{t('Sofie Automation Server:')} + reason}
+						{t('Cannot connect to the')} {t('Sofie Automation Server:')} +
+						reason}
 					</span>
 				);
 			case 'waiting':
 				return (
 					<span>
-						{t('Reconnecting to the')}{' '}
-						{t('Sofie Automation Server')}{' '}
-						<MomentFromNow unit="seconds">
-							{retryTime}
-						</MomentFromNow>
+						{t('Reconnecting to the')} {t('Sofie Automation Server')}{' '}
+						<MomentFromNow unit="seconds">{retryTime}</MomentFromNow>
 					</span>
 				);
 			case 'offline':

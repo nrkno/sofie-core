@@ -166,9 +166,7 @@ export function checkPieceContentStatus(
 					// If media object not found, then...
 					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING;
-						messages.push(
-							t('Source is missing', { fileName: displayName })
-						);
+						messages.push(t('Source is missing', { fileName: displayName }));
 						// All VT content should have at least two streams
 					} else {
 						newStatus = RundownAPI.PieceStatusCode.OK;
@@ -177,9 +175,7 @@ export function checkPieceContentStatus(
 						if (mediaObject.mediainfo) {
 							if (mediaObject.mediainfo.streams) {
 								if (mediaObject.mediainfo.streams.length < 2) {
-									newStatus =
-										RundownAPI.PieceStatusCode
-											.SOURCE_BROKEN;
+									newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN;
 									messages.push(
 										t("Source doesn't have audio & video", {
 											fileName: displayName
@@ -191,11 +187,7 @@ export function checkPieceContentStatus(
 									? settings.supportedAudioStreams
 									: '';
 								const expectedAudioStreams = audioConfig
-									? new Set<string>(
-											audioConfig
-												.split(',')
-												.map((v) => v.trim())
-									  )
+									? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
 									: new Set<string>();
 
 								let timebase: number = 0;
@@ -203,18 +195,14 @@ export function checkPieceContentStatus(
 								let isStereo: boolean = false;
 
 								// check the streams for resolution info
-								for (const stream of mediaObject.mediainfo
-									.streams) {
+								for (const stream of mediaObject.mediainfo.streams) {
 									if (stream.width && stream.height) {
 										if (stream.codec.time_base) {
 											const formattedTimebase = /(\d+)\/(\d+)/.exec(
 												stream.codec.time_base
 											) as RegExpExecArray;
 											timebase =
-												(1000 *
-													Number(
-														formattedTimebase[1]
-													)) /
+												(1000 * Number(formattedTimebase[1])) /
 												Number(formattedTimebase[2]);
 										}
 
@@ -232,10 +220,7 @@ export function checkPieceContentStatus(
 										}
 									} else if (stream.codec.type === 'audio') {
 										// this is the first (and hopefully last) track of audio, and has 2 channels
-										if (
-											audioStreams === 0 &&
-											stream.channels === 2
-										) {
+										if (audioStreams === 0 && stream.channels === 2) {
 											isStereo = true;
 										}
 										audioStreams++;
@@ -246,19 +231,13 @@ export function checkPieceContentStatus(
 								}
 								if (
 									audioConfig &&
-									(!expectedAudioStreams.has(
-										audioStreams.toString()
-									) ||
-										(isStereo &&
-											!expectedAudioStreams.has(
-												'stereo'
-											)))
+									(!expectedAudioStreams.has(audioStreams.toString()) ||
+										(isStereo && !expectedAudioStreams.has('stereo')))
 								) {
 									messages.push(
-										t(
-											'Source has {{audioStreams}} audio streams',
-											{ audioStreams }
-										)
+										t('Source has {{audioStreams}} audio streams', {
+											audioStreams
+										})
 									);
 								}
 								if (timebase) {
@@ -266,91 +245,61 @@ export function checkPieceContentStatus(
 									const addFrameWarning = (
 										arr: Array<Anomaly>,
 										type: string,
-										t: i18next.TranslationFunction<
-											any,
-											object,
-											string
-										>
+										t: i18next.TranslationFunction<any, object, string>
 									) => {
 										if (arr.length === 1) {
 											const frames = Math.round(
-												(arr[0].duration * 1000) /
-													timebase
+												(arr[0].duration * 1000) / timebase
 											);
 											if (arr[0].start === 0) {
 												messages.push(
-													t(
-														'Clip starts with {{frames}} {{type}} frame',
-														{
-															frames,
-															type,
-															count: frames
-														}
-													)
+													t('Clip starts with {{frames}} {{type}} frame', {
+														frames,
+														type,
+														count: frames
+													})
 												);
 											} else if (
 												mediaObject.mediainfo &&
 												mediaObject.mediainfo.format &&
 												arr[0].end ===
-													Number(
-														mediaObject.mediainfo
-															.format.duration
-													)
+													Number(mediaObject.mediainfo.format.duration)
 											) {
 												messages.push(
-													t(
-														'Clip ends with {{frames}} {{type}} frame',
-														{
-															frames,
-															type,
-															count: frames
-														}
-													)
+													t('Clip ends with {{frames}} {{type}} frame', {
+														frames,
+														type,
+														count: frames
+													})
 												);
 											} else {
 												messages.push(
-													t(
-														'{{frames}} {{type}} frame detected in clip.',
-														{
-															frames,
-															type,
-															count: frames
-														}
-													)
+													t('{{frames}} {{type}} frame detected in clip.', {
+														frames,
+														type,
+														count: frames
+													})
 												);
 											}
 										} else if (arr.length > 0) {
 											const dur = arr
 												.map((b) => b.duration)
 												.reduce((a, b) => a + b, 0);
-											const frames = Math.round(
-												(dur * 1000) / timebase
-											);
+											const frames = Math.round((dur * 1000) / timebase);
 											messages.push(
-												t(
-													'{{frames}} {{type}} frame detected in clip.',
-													{
-														frames,
-														type,
-														count: frames
-													}
-												)
+												t('{{frames}} {{type}} frame detected in clip.', {
+													frames,
+													type,
+													count: frames
+												})
 											);
 										}
 									};
 									if (mediaObject.mediainfo.blacks) {
-										addFrameWarning(
-											mediaObject.mediainfo.blacks,
-											'black',
-											t
-										);
+										addFrameWarning(mediaObject.mediainfo.blacks, 'black', t);
 									}
 									if (mediaObject.mediainfo.freezes) {
-										addFrameWarning(
-											mediaObject.mediainfo.freezes,
-											'freeze',
-											t
-										);
+										addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t);
 									}
 								}
 							}
@@ -360,8 +309,7 @@ export function checkPieceContentStatus(
 									fileName: displayName
 								})
 							);
-							newStatus =
-								RundownAPI.PieceStatusCode.SOURCE_MISSING;
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING;
 						}
 
 						metadata = mediaObject;

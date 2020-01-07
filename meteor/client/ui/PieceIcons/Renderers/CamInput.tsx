@@ -38,17 +38,13 @@ export default class CamInputIcon extends React.Component<{
 							fontSize: '75px',
 							fontWeight: 100
 						}}>
-						{this.props.abbreviation
-							? this.props.abbreviation
-							: 'C'}
+						{this.props.abbreviation ? this.props.abbreviation : 'C'}
 						<tspan
 							style={{
 								fontFamily: 'Roboto',
 								fontWeight: 'normal'
 							}}>
-							{this.props.inputIndex !== undefined
-								? this.props.inputIndex
-								: ''}
+							{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
 						</tspan>
 					</tspan>
 				</text>

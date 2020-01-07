@@ -29,13 +29,7 @@ export function ensureCollectionProperty<T = any>(
 	selector: Mongo.Selector<T>,
 	property: string,
 	value: any | null, // null if manual
-	inputType?:
-		| 'text'
-		| 'multiline'
-		| 'int'
-		| 'checkbox'
-		| 'dropdown'
-		| 'switch', // EditAttribute types
+	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
 	label?: string,
 	description?: string,
 	defaultValue?: any,
@@ -66,10 +60,7 @@ export function ensureCollectionProperty<T = any>(
 			let inputs: Array<MigrationStepInput> = [];
 			_.each(objects, (obj: any) => {
 				let localLabel = (label + '').replace(/\$id/g, obj._id);
-				let localDescription = (description + '').replace(
-					/\$id/g,
-					obj._id
-				);
+				let localDescription = (description + '').replace(/\$id/g, obj._id);
 				if (inputType && !obj[property]) {
 					inputs.push({
 						label: localLabel,
@@ -141,10 +132,7 @@ export function setExpectedVersion(
 				if (expectedVersion) {
 					try {
 						if (
-							semver.lt(
-								expectedVersion,
-								semver.clean(versionStr) || '0.0.0'
-							)
+							semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')
 						) {
 							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`;
 						}
@@ -166,10 +154,7 @@ export function setExpectedVersion(
 				);
 				if (
 					!expectedVersion ||
-					semver.lt(
-						expectedVersion,
-						semver.clean(versionStr) || '0.0.0'
-					)
+					semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')
 				) {
 					let m = {};
 					m['expectedVersions.' + libraryName] = versionStr;
@@ -240,8 +225,7 @@ export function renamePropertiesInCollection<T extends any>(
 			collection.find(m).forEach((doc) => {
 				// Rename properties:
 				_.each(_.keys(renames), (newAttr) => {
-					const oldAttr: string | RenameContent | undefined =
-						renames[newAttr];
+					const oldAttr: string | RenameContent | undefined = renames[newAttr];
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
 						if (_.isString(oldAttr)) {
 							if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
@@ -253,20 +237,16 @@ export function renamePropertiesInCollection<T extends any>(
 				});
 				// Translate property contents:
 				_.each(_.keys(renames), (newAttr) => {
-					const oldAttr: string | RenameContent | undefined =
-						renames[newAttr];
+					const oldAttr: string | RenameContent | undefined = renames[newAttr];
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
 						if (!_.isString(oldAttr)) {
 							const oldAttrRenameContent: RenameContent = oldAttr; // for some reason, tsc complains otherwise
 
-							_.each(
-								oldAttrRenameContent.content,
-								(oldValue, newValue) => {
-									if (doc[newAttr] === oldValue) {
-										doc[newAttr] = newValue;
-									}
+							_.each(oldAttrRenameContent.content, (oldValue, newValue) => {
+								if (doc[newAttr] === oldValue) {
+									doc[newAttr] = newValue;
 								}
-							);
+							});
 						}
 					}
 				});

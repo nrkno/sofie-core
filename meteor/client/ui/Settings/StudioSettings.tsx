@@ -110,10 +110,9 @@ const StudioDevices = translate()(
 				},
 				message: (
 					<p>
-						{t(
-							'Are you sure you want to remove device "{{deviceId}}"?',
-							{ deviceId: device && (device.name || device._id) }
-						)}
+						{t('Are you sure you want to remove device "{{deviceId}}"?', {
+							deviceId: device && (device.name || device._id)
+						})}
 					</p>
 				)
 			});
@@ -124,14 +123,11 @@ const StudioDevices = translate()(
 				return (
 					<tr key={device._id}>
 						<th className="settings-studio-device__name c3">
-							<Link
-								to={'/settings/peripheralDevice/' + device._id}>
+							<Link to={'/settings/peripheralDevice/' + device._id}>
 								{device.name}
 							</Link>
 						</th>
-						<td className="settings-studio-device__id c3">
-							{device._id}
-						</td>
+						<td className="settings-studio-device__id c3">{device._id}</td>
 						<td className="settings-studio-device__id c3">
 							<MomentFromNow date={device.lastSeen} />
 						</td>
@@ -168,13 +164,8 @@ const StudioDevices = translate()(
 				<div>
 					<h2 className="mhn">
 						<Tooltip
-							overlay={t(
-								'Devices are needed to control your studio hardware'
-							)}
-							visible={
-								getHelpMode() &&
-								!this.props.studioDevices.length
-							}
+							overlay={t('Devices are needed to control your studio hardware')}
+							visible={getHelpMode() && !this.props.studioDevices.length}
 							placement="right">
 							<span>{t('Attached Devices')}</span>
 						</Tooltip>
@@ -204,24 +195,17 @@ const StudioDevices = translate()(
 						{this.state.showAvailableDevices && (
 							<div className="border-box text-s studio-devices-dropdown">
 								<div className="ctx-menu">
-									{this.props.availableDevices.map(
-										(device) => {
-											return (
-												<div
-													className="ctx-menu-item"
-													key={device._id}
-													onClick={(e) =>
-														this.onAddDevice(device)
-													}>
-													<b>{device.name}</b>{' '}
-													<MomentFromNow
-														date={device.lastSeen}
-													/>{' '}
-													({device._id})
-												</div>
-											);
-										}
-									)}
+									{this.props.availableDevices.map((device) => {
+										return (
+											<div
+												className="ctx-menu-item"
+												key={device._id}
+												onClick={(e) => this.onAddDevice(device)}>
+												<b>{device.name}</b>{' '}
+												<MomentFromNow date={device.lastSeen} /> ({device._id})
+											</div>
+										);
+									})}
 								</div>
 							</div>
 						)}
@@ -307,9 +291,7 @@ const StudioMappings = translate()(
 			let newLayerKeyName = 'newLayer';
 			let iter = 0;
 			while (
-				(this.props.studio.mappings || {})[
-					newLayerKeyName + iter.toString()
-				]
+				(this.props.studio.mappings || {})[newLayerKeyName + iter.toString()]
 			) {
 				iter++;
 			}
@@ -365,11 +347,7 @@ const StudioMappings = translate()(
 								type="int"
 								collection={Studios}
 								className="input text-input input-l"></EditAttribute>
-							<i>
-								{t(
-									'The CasparCG channel to use (1 is the first)'
-								)}
-							</i>
+							<i>{t('The CasparCG channel to use (1 is the first)')}</i>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -398,9 +376,7 @@ const StudioMappings = translate()(
 							{t('Mapping type')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'mappings.' + layerId + '.mappingType'
-								}
+								attribute={'mappings.' + layerId + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingAtemType}
@@ -433,9 +409,7 @@ const StudioMappings = translate()(
 							{t('Mapping type')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'mappings.' + layerId + '.mappingType'
-								}
+								attribute={'mappings.' + layerId + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingLawoType}
@@ -449,9 +423,7 @@ const StudioMappings = translate()(
 							{t('Identifier')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'mappings.' + layerId + '.identifier'
-								}
+								attribute={'mappings.' + layerId + '.identifier'}
 								obj={this.props.studio}
 								type="text"
 								collection={Studios}
@@ -482,9 +454,7 @@ const StudioMappings = translate()(
 							{t('Mapping type')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'mappings.' + layerId + '.mappingType'
-								}
+								attribute={'mappings.' + layerId + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingPanasonicPtzType}
@@ -510,9 +480,7 @@ const StudioMappings = translate()(
 							{t('Mapping type')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={
-									'mappings.' + layerId + '.mappingType'
-								}
+								attribute={'mappings.' + layerId + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingHyperdeckType}
@@ -579,11 +547,7 @@ const StudioMappings = translate()(
 								type="int"
 								collection={Studios}
 								className="input text-input input-l"></EditAttribute>
-							<i>
-								{t(
-									'The channel to use for output (0 is the first one)'
-								)}
-							</i>
+							<i>{t('The channel to use for output (0 is the first one)')}</i>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -620,9 +584,7 @@ const StudioMappings = translate()(
 								className={ClassNames({
 									hl: this.isItemEdited(layerId)
 								})}>
-								<th className="settings-studio-device__name c3">
-									{layerId}
-								</th>
+								<th className="settings-studio-device__name c3">{layerId}</th>
 								<td className="settings-studio-device__id c2">
 									{TSR.DeviceType[mapping.device]}
 								</td>
@@ -630,73 +592,47 @@ const StudioMappings = translate()(
 									{mapping.deviceId}
 								</td>
 								<td className="settings-studio-device__id c4">
-									{(mappingIsAbstract(mapping) && (
-										<span>-</span>
-									)) ||
+									{(mappingIsAbstract(mapping) && <span>-</span>) ||
 										(mappingIsCasparCG(mapping) && (
 											<span>
-												{mapping.channel} -{' '}
-												{mapping.layer}
+												{mapping.channel} - {mapping.layer}
 											</span>
 										)) ||
 										(mappingIsAtem(mapping) && (
 											<span>
-												{
-													TSR.MappingAtemType[
-														mapping.mappingType
-													]
-												}{' '}
+												{TSR.MappingAtemType[mapping.mappingType]}{' '}
 												{mapping.index}
 											</span>
 										)) ||
 										(mappingIsLawo(mapping) && (
 											<span>
-												{
-													TSR.MappingLawoType[
-														mapping.mappingType
-													]
-												}{' '}
+												{TSR.MappingLawoType[mapping.mappingType]}{' '}
 												{mapping.identifier}
 											</span>
 										)) ||
 										(mappingIsPanasonicPtz(mapping) && (
 											<span>
 												{mapping.mappingType ===
-												TSR.MappingPanasonicPtzType
-													.PRESET
+												TSR.MappingPanasonicPtzType.PRESET
 													? t('Preset')
 													: mapping.mappingType ===
-													  TSR
-															.MappingPanasonicPtzType
-															.PRESET_SPEED
-													? t(
-															'Preset Transition Speed'
-													  )
+													  TSR.MappingPanasonicPtzType.PRESET_SPEED
+													? t('Preset Transition Speed')
 													: mapping.mappingType ===
-													  TSR
-															.MappingPanasonicPtzType
-															.ZOOM
+													  TSR.MappingPanasonicPtzType.ZOOM
 													? t('Zoom')
 													: mapping.mappingType ===
-													  TSR
-															.MappingPanasonicPtzType
-															.ZOOM_SPEED
+													  TSR.MappingPanasonicPtzType.ZOOM_SPEED
 													? t('Zoom Speed')
 													: t('Unknown Mapping')}
 											</span>
 										)) ||
-										(mappingIsHTTPSend(mapping) && (
-											<span>-</span>
-										)) ||
+										(mappingIsHTTPSend(mapping) && <span>-</span>) ||
 										(mappingIsHyperdeck(mapping) && (
 											<span>{mapping.mappingType}</span>
 										)) ||
-										(mappingIsPharos(mapping) && (
-											<span>-</span>
-										)) ||
-										(mappingIsOSC(mapping) && (
-											<span>-</span>
-										)) ||
+										(mappingIsPharos(mapping) && <span>-</span>) ||
+										(mappingIsOSC(mapping) && <span>-</span>) ||
 										(mappingIsSisyfos(mapping) && (
 											<span>
 												{t('Channel: {{channel}}', {
@@ -706,26 +642,16 @@ const StudioMappings = translate()(
 										)) ||
 										(mappingIsQuantel(mapping) && (
 											<span>
-												{t(
-													'Port: {{port}}, Channel: {{channel}}',
-													{
-														port: mapping.portId,
-														channel:
-															mapping.channelId
-													}
-												)}
+												{t('Port: {{port}}, Channel: {{channel}}', {
+													port: mapping.portId,
+													channel: mapping.channelId
+												})}
 											</span>
 										)) || (
 											<span>
-												{t(
-													'Unknown device type: {{device}}',
-													{
-														device:
-															TSR.DeviceType[
-																mapping.device
-															]
-													}
-												)}{' '}
+												{t('Unknown device type: {{device}}', {
+													device: TSR.DeviceType[mapping.device]
+												})}{' '}
 											</span>
 										)}
 								</td>
@@ -738,9 +664,7 @@ const StudioMappings = translate()(
 									</button>
 									<button
 										className="action-btn"
-										onClick={(e) =>
-											this.confirmRemove(layerId)
-										}>
+										onClick={(e) => this.confirmRemove(layerId)}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 								</td>
@@ -755,15 +679,11 @@ const StudioMappings = translate()(
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={'mappings'}
-														overrideDisplayValue={
-															layerId
-														}
+														overrideDisplayValue={layerId}
 														obj={this.props.studio}
 														type="text"
 														collection={Studios}
-														updateFunction={
-															this.updateLayerId
-														}
+														updateFunction={this.updateLayerId}
 														className="input text-input input-l"></EditAttribute>
 													<i>
 														{t(
@@ -777,22 +697,14 @@ const StudioMappings = translate()(
 													{t('Device Type')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'mappings.' +
-															layerId +
-															'.device'
-														}
+														attribute={'mappings.' + layerId + '.device'}
 														obj={this.props.studio}
 														type="dropdown"
 														options={TSR.DeviceType}
 														optionsAreNumbers={true}
 														collection={Studios}
 														className="input text-input input-l"></EditAttribute>
-													<i>
-														{t(
-															'The type of device to use for the output'
-														)}
-													</i>
+													<i>{t('The type of device to use for the output')}</i>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -800,11 +712,7 @@ const StudioMappings = translate()(
 													{t('Device ID')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'mappings.' +
-															layerId +
-															'.deviceId'
-														}
+														attribute={'mappings.' + layerId + '.deviceId'}
 														obj={this.props.studio}
 														type="text"
 														collection={Studios}
@@ -821,11 +729,7 @@ const StudioMappings = translate()(
 													{t('Lookahead Mode')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={
-															'mappings.' +
-															layerId +
-															'.lookahead'
-														}
+														attribute={'mappings.' + layerId + '.lookahead'}
 														obj={this.props.studio}
 														type="dropdown"
 														options={LookaheadMode}
@@ -835,54 +739,30 @@ const StudioMappings = translate()(
 												</label>
 											</div>
 											{mappingIsCasparCG(mapping)
-												? this.renderCasparCGMappingSettings(
-														layerId
-												  )
+												? this.renderCasparCGMappingSettings(layerId)
 												: mappingIsAtem(mapping)
-												? this.renderAtemMappingSettings(
-														layerId
-												  )
+												? this.renderAtemMappingSettings(layerId)
 												: mappingIsLawo(mapping)
-												? this.renderLawoMappingSettings(
-														layerId
-												  )
+												? this.renderLawoMappingSettings(layerId)
 												: mappingIsPanasonicPtz(mapping)
-												? this.renderPanasonicPTZSettings(
-														layerId
-												  )
+												? this.renderPanasonicPTZSettings(layerId)
 												: mappingIsTCPSend(mapping)
-												? this.renderTCPSendSettings(
-														layerId
-												  )
+												? this.renderTCPSendSettings(layerId)
 												: mappingIsHyperdeck(mapping)
-												? this.renderHyperdeckMappingSettings(
-														layerId
-												  )
+												? this.renderHyperdeckMappingSettings(layerId)
 												: mappingIsPharos(mapping)
-												? this.renderPharosMappingSettings(
-														layerId
-												  )
+												? this.renderPharosMappingSettings(layerId)
 												: mappingIsSisyfos(mapping)
-												? this.renderSisyfosMappingSettings(
-														layerId
-												  )
+												? this.renderSisyfosMappingSettings(layerId)
 												: mappingIsQuantel(mapping)
-												? this.renderQuantelMappingSettings(
-														layerId
-												  )
+												? this.renderQuantelMappingSettings(layerId)
 												: null}
 										</div>
 										<div className="mod alright">
 											<button
-												className={ClassNames(
-													'btn btn-primary'
-												)}
-												onClick={(e) =>
-													this.finishEditItem(layerId)
-												}>
-												<FontAwesomeIcon
-													icon={faCheck}
-												/>
+												className={ClassNames('btn btn-primary')}
+												onClick={(e) => this.finishEditItem(layerId)}>
+												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
 									</td>
@@ -1081,9 +961,7 @@ class StudioBaselineStatus extends MeteorReactComponent<
 			studio._id,
 			(err, res) => {
 				if (err) {
-					console.log(
-						'Failed to update studio baseline status: ' + err
-					);
+					console.log('Failed to update studio baseline status: ' + err);
 					res = false;
 				}
 
@@ -1177,13 +1055,11 @@ export default translateWithTracker<
 		)
 			.fetch()
 			.map((variant) => {
-				const baseStyle = ShowStyleBases.findOne(
-					variant.showStyleBaseId
-				);
+				const baseStyle = ShowStyleBases.findOne(variant.showStyleBaseId);
 				return {
-					name: `${(baseStyle || { name: '' }).name}: ${
-						variant.name
-					} (${variant._id})`,
+					name: `${(baseStyle || { name: '' }).name}: ${variant.name} (${
+						variant._id
+					})`,
 					value: variant._id,
 					showStyleVariant: variant
 				};
@@ -1260,10 +1136,7 @@ export default translateWithTracker<
 					if (base) {
 						buttons.push(
 							<SettingsNavigation
-								key={
-									'settings-nevigation-' +
-									base.showStyleBase.name
-								}
+								key={'settings-nevigation-' + base.showStyleBase.name}
 								attribute="name"
 								obj={base.showStyleBase}
 								type="showstyle"></SettingsNavigation>
@@ -1286,9 +1159,7 @@ export default translateWithTracker<
 							{!this.props.studio.name ? (
 								<div className="error-notice inline">
 									{t('No name set')}{' '}
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>
+									<FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
 							) : null}
 							<div className="mdi">
@@ -1307,9 +1178,7 @@ export default translateWithTracker<
 							{!this.props.studio.blueprintId ? (
 								<div className="error-notice inline">
 									{t('Blueprint not set')}{' '}
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>
+									<FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
 							) : null}
 							<div className="mdi">
@@ -1320,9 +1189,7 @@ export default translateWithTracker<
 									type="dropdown"
 									options={this.getBlueprintOptions()}
 									mutateDisplayValue={(v) => v || ''}
-									mutateUpdateValue={(v) =>
-										v === '' ? undefined : v
-									}
+									mutateUpdateValue={(v) => (v === '' ? undefined : v)}
 									collection={Studios}
 									className="mdinput"></EditAttribute>
 								<SettingsNavigation
@@ -1334,13 +1201,10 @@ export default translateWithTracker<
 						</label>
 						<div className="field">
 							{t('Select Compatible Show Styles')}
-							{!this.props.studio.supportedShowStyleBase
-								.length ? (
+							{!this.props.studio.supportedShowStyleBase.length ? (
 								<div className="error-notice inline">
 									{t('Show style not set')}{' '}
-									<FontAwesomeIcon
-										icon={faExclamationTriangle}
-									/>
+									<FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
 							) : null}
 							<div className="mdi">
@@ -1348,9 +1212,7 @@ export default translateWithTracker<
 									attribute="supportedShowStyleBase"
 									obj={this.props.studio}
 									options={this.props.availableShowStyleBases}
-									label={t(
-										'Click to show available Show Styles'
-									)}
+									label={t('Click to show available Show Styles')}
 									type="multiselect"
 									collection={Studios}></EditAttribute>
 								{this.renderShowStyleEditButtons()}
@@ -1425,10 +1287,7 @@ export default translateWithTracker<
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<StudioBaselineStatus
-								studio={this.props.studio}
-								t={t}
-							/>
+							<StudioBaselineStatus studio={this.props.studio} t={t} />
 						</div>
 					</div>
 					<div className="row">
@@ -1458,9 +1317,7 @@ export default translateWithTracker<
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<TestToolsRecordingsSettings
-								studio={this.props.studio}
-							/>
+							<TestToolsRecordingsSettings studio={this.props.studio} />
 						</div>
 					</div>
 				</div>

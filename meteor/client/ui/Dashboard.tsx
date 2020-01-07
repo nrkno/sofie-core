@@ -27,29 +27,26 @@ export default translate()(
 		componentDidMount() {
 			const { t } = this.props;
 
-			Meteor.call(
-				'systemStatus.getSystemStatus',
-				(err: any, res: any) => {
-					if (err) {
-						// console.error(err)
-						NotificationCenter.push(
-							new Notification(
-								'systemStatus_failed',
-								NoticeLevel.CRITICAL,
-								t(
-									'Could not get system status. Please consult system administrator.'
-								),
-								'Dashboard'
-							)
-						);
-						return;
-					}
-
-					this.setState({
-						systemStatus: res.statusCode
-					});
+			Meteor.call('systemStatus.getSystemStatus', (err: any, res: any) => {
+				if (err) {
+					// console.error(err)
+					NotificationCenter.push(
+						new Notification(
+							'systemStatus_failed',
+							NoticeLevel.CRITICAL,
+							t(
+								'Could not get system status. Please consult system administrator.'
+							),
+							'Dashboard'
+						)
+					);
+					return;
 				}
-			);
+
+				this.setState({
+					systemStatus: res.statusCode
+				});
+			});
 		}
 
 		render() {
@@ -63,12 +60,8 @@ export default translate()(
 					<div className="mtl gutter version-info">
 						<p>
 							{t('Sofie Automation version')}:{' '}
-							{PackageInfo.version || 'UNSTABLE'},{' '}
-							{t('Sofie status')}:{' '}
-							{statusCodeToString(
-								t,
-								this.state.systemStatus || 0
-							)}
+							{PackageInfo.version || 'UNSTABLE'}, {t('Sofie status')}:{' '}
+							{statusCodeToString(t, this.state.systemStatus || 0)}
 						</p>
 					</div>
 				</div>

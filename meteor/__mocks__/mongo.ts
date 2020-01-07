@@ -123,9 +123,7 @@ export namespace MongoMock {
 					);
 					return {
 						stop() {
-							const index = observers.findIndex(
-								(o) => o.id === id
-							);
+							const index = observers.findIndex((o) => o.id === id);
 							if (index === -1)
 								throw new Meteor.Error(
 									500,
@@ -145,10 +143,7 @@ export namespace MongoMock {
 		}
 		update(query: any, modifier, options?: UpdateOptions, cb?: Function) {
 			try {
-				const unimplementedUsedOptions = _.without(
-					_.keys(options),
-					'multi'
-				);
+				const unimplementedUsedOptions = _.without(_.keys(options), 'multi');
 				if (unimplementedUsedOptions.length > 0) {
 					throw new Error(
 						`update being performed using unimplemented options: ${unimplementedUsedOptions}`
@@ -186,9 +181,7 @@ export namespace MongoMock {
 							});
 						} else {
 							if (key[0] === '$') {
-								throw Error(
-									`Update method "${key}" not implemented yet`
-								);
+								throw Error(`Update method "${key}" not implemented yet`);
 							} else {
 								replace = true;
 							}
@@ -232,11 +225,7 @@ export namespace MongoMock {
 					if (mongoWhere(d, obs.query)) {
 						const fields = _.keys(_.omit(d, '_id'));
 						if (obs.callbacks.addedBefore) {
-							obs.callbacks.addedBefore(
-								d._id,
-								fields,
-								null as any
-							);
+							obs.callbacks.addedBefore(d._id, fields, null as any);
 						}
 						if (obs.callbacks.added) {
 							obs.callbacks.added(d._id, fields);
@@ -309,9 +298,7 @@ export namespace MongoMock {
 			const collectionData = {};
 			_.each(data, (doc) => {
 				if (!doc._id)
-					throw Error(
-						`mockSetData: "${collectionName}": doc._id missing`
-					);
+					throw Error(`mockSetData: "${collectionName}": doc._id missing`);
 				collectionData[doc._id] = doc;
 			});
 			mockCollections[collectionName] = collectionData;

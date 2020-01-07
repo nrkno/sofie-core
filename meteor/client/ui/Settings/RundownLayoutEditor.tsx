@@ -130,11 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 			});
 		};
 
-		onToggleDefault = (
-			item: RundownLayout,
-			index: number,
-			value: boolean
-		) => {
+		onToggleDefault = (item: RundownLayout, index: number, value: boolean) => {
 			const obj = _.object(
 				item.filters.map((item, i) => [
 					`filters.${i}.default`,
@@ -251,19 +247,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 							</button>
 							{isRundownLayout && (
 								<button
-									className={ClassNames(
-										'action-btn right mod man pas',
-										{
-											star: (tab as RundownLayoutFilter)
-												.default
-										}
-									)}
+									className={ClassNames('action-btn right mod man pas', {
+										star: (tab as RundownLayoutFilter).default
+									})}
 									onClick={(e) =>
 										this.onToggleDefault(
 											item as RundownLayout,
 											index,
-											!(tab as RundownLayoutFilter)
-												.default
+											!(tab as RundownLayoutFilter).default
 										)
 									}>
 									<FontAwesomeIcon icon={faStar} />
@@ -392,9 +383,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
-									{t(
-										'Only Display AdLibs from Current Segment'
-									)}
+									{t('Only Display AdLibs from Current Segment')}
 									<EditAttribute
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.currentSegment`}
@@ -406,9 +395,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Include Global AdLibs')}
-								</label>
+								<label className="field">{t('Include Global AdLibs')}</label>
 								<EditAttribute
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.rundownBaseline`}
@@ -424,9 +411,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								<React.Fragment>
 									<div className="mod mvs mhs">
 										<label className="field">
-											{t(
-												'Include Clear Source Layer in Ad-Libs'
-											)}
+											{t('Include Clear Source Layer in Ad-Libs')}
 											<EditAttribute
 												modifiedClassName="bghl"
 												attribute={`filters.${index}.includeClearInRundownBaseline`}
@@ -440,9 +425,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								</React.Fragment>
 							)}
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Source Layers')}
-								</label>
+								<label className="field">{t('Source Layers')}</label>
 								<EditAttribute
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.sourceLayerIds`}
@@ -451,9 +434,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									collection={RundownLayouts}
 									className="mod mas"
 									mutateDisplayValue={(v) =>
-										v === undefined || v.length === 0
-											? false
-											: true
+										v === undefined || v.length === 0 ? false : true
 									}
 									mutateUpdateValue={(v) => undefined}
 								/>
@@ -461,27 +442,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.sourceLayerIds`}
 									obj={item}
-									options={this.props.showStyleBase.sourceLayers.map(
-										(l) => {
-											return {
-												name: l.name,
-												value: l._id
-											};
-										}
-									)}
+									options={this.props.showStyleBase.sourceLayers.map((l) => {
+										return {
+											name: l.name,
+											value: l._id
+										};
+									})}
 									type="multiselect"
 									label={t('Filter Disabled')}
 									collection={RundownLayouts}
 									className="input text-input input-l dropdown"
-									mutateUpdateValue={(v) =>
-										v && v.length > 0 ? v : undefined
-									}
+									mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Source Layer Types')}
-								</label>
+								<label className="field">{t('Source Layer Types')}</label>
 								<EditAttribute
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.sourceLayerTypes`}
@@ -490,9 +465,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									collection={RundownLayouts}
 									className="mod mas"
 									mutateDisplayValue={(v) =>
-										v === undefined || v.length === 0
-											? false
-											: true
+										v === undefined || v.length === 0 ? false : true
 									}
 									mutateUpdateValue={(v) => undefined}
 								/>
@@ -506,9 +479,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									label={t('Filter disabled')}
 									collection={RundownLayouts}
 									className="input text-input input-l dropdown"
-									mutateUpdateValue={(
-										v: string[] | undefined
-									) =>
+									mutateUpdateValue={(v: string[] | undefined) =>
 										v && v.length > 0
 											? v.map((a) => parseInt(a, 10))
 											: undefined
@@ -516,9 +487,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Output Channels')}
-								</label>
+								<label className="field">{t('Output Channels')}</label>
 								<EditAttribute
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.outputLayerIds`}
@@ -527,9 +496,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									collection={RundownLayouts}
 									className="mod mas"
 									mutateDisplayValue={(v) =>
-										v === undefined || v.length === 0
-											? false
-											: true
+										v === undefined || v.length === 0 ? false : true
 									}
 									mutateUpdateValue={(v) => undefined}
 								/>
@@ -537,21 +504,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.outputLayerIds`}
 									obj={item}
-									options={this.props.showStyleBase.outputLayers.map(
-										(l) => {
-											return {
-												name: l.name,
-												value: l._id
-											};
-										}
-									)}
+									options={this.props.showStyleBase.outputLayers.map((l) => {
+										return {
+											name: l.name,
+											value: l._id
+										};
+									})}
 									type="multiselect"
 									label={t('Filter Disabled')}
 									collection={RundownLayouts}
 									className="input text-input input-l dropdown"
-									mutateUpdateValue={(v) =>
-										v && v.length > 0 ? v : undefined
-									}
+									mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 								/>
 							</div>
 							<div className="mod mvs mhs">
@@ -565,9 +528,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 										collection={RundownLayouts}
 										className="mod mas"
 										mutateDisplayValue={(v) =>
-											v === undefined || v.length === 0
-												? false
-												: true
+											v === undefined || v.length === 0 ? false : true
 										}
 										mutateUpdateValue={(v) => undefined}
 									/>
@@ -587,9 +548,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 										mutateUpdateValue={(v) =>
 											v === undefined || v.length === 0
 												? undefined
-												: v
-														.split(',')
-														.map((i) => i.trim())
+												: v.split(',').map((i) => i.trim())
 										}
 									/>
 								</label>
@@ -598,9 +557,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 								<React.Fragment>
 									<div className="mod mvs mhs">
 										<label className="field">
-											{t(
-												'Register Shortcuts for this Panel'
-											)}
+											{t('Register Shortcuts for this Panel')}
 											<EditAttribute
 												modifiedClassName="bghl"
 												attribute={`filters.${index}.assignHotKeys`}
@@ -682,20 +639,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 									</div>
 								</div>
 								<div>
-									{item.type ===
-									RundownLayoutType.RUNDOWN_LAYOUT
+									{item.type === RundownLayoutType.RUNDOWN_LAYOUT
 										? this.renderFilters(item)
-										: item.type ===
-										  RundownLayoutType.DASHBOARD_LAYOUT
+										: item.type === RundownLayoutType.DASHBOARD_LAYOUT
 										? this.renderFilters(item)
 										: null}
 								</div>
 								<div className="mod mls">
 									<button
 										className="btn btn-primary right"
-										onClick={(e) =>
-											this.finishEditItem(item)
-										}>
+										onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 									<button
@@ -762,9 +715,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 										new Notification(
 											undefined,
 											NoticeLevel.NOTIFICATION,
-											t(
-												'Shelf layout uploaded successfully.'
-											),
+											t('Shelf layout uploaded successfully.'),
 											'RundownLayouts'
 										)
 									);
@@ -775,10 +726,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 										new Notification(
 											undefined,
 											NoticeLevel.WARNING,
-											t(
-												'Failed to upload shelf layout: {{errorMessage}}',
-												{ errorMessage: err + '' }
-											),
+											t('Failed to upload shelf layout: {{errorMessage}}', {
+												errorMessage: err + ''
+											}),
 											'RundownLayouts'
 										)
 									);
@@ -805,9 +755,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(
 						<tbody>{this.renderItems()}</tbody>
 					</table>
 					<div className="mod mhs">
-						<button
-							className="btn btn-primary"
-							onClick={this.onAddLayout}>
+						<button className="btn btn-primary" onClick={this.onAddLayout}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 						<UploadButton

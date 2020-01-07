@@ -41,10 +41,8 @@ export namespace mousetrapHelper {
 			// if not yet bound
 			_boundHotkeys[index] === undefined ||
 			// or bound so far were not globals
-			_boundHotkeys[index].reduce(
-				(mem, i) => mem || i.isGlobal,
+			_boundHotkeys[index].reduce((mem, i) => mem || i.isGlobal, false) ===
 				false
-			) === false
 		) {
 			if (_boundHotkeys[index] === undefined) _boundHotkeys[index] = [];
 			mousetrap.bindGlobal(

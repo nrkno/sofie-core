@@ -51,8 +51,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	private _show(noraContent: NoraContent, style: { [key: string]: any }) {
 		if (
 			this.state &&
-			JSON.stringify(this.state.noraContent) !==
-				JSON.stringify(noraContent)
+			JSON.stringify(this.state.noraContent) !== JSON.stringify(noraContent)
 		) {
 			if (this.iframeElement && this.iframeElement.contentWindow) {
 				this.iframeElement.contentWindow.postMessage(
@@ -149,17 +148,10 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics"
 						style={style}>
 						<div className="preview">
-							<img
-								width="100%"
-								src="../images/previewBG.png"
-								alt=""
-							/>
+							<img width="100%" src="../images/previewBG.png" alt="" />
 							<iframe
 								sandbox="allow-scripts"
-								src={
-									this.state.noraContent
-										.previewRenderer as string
-								}
+								src={this.state.noraContent.previewRenderer as string}
 								ref={this._setPreview}
 								width="1920"
 								height="1080"></iframe>

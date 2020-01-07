@@ -151,19 +151,16 @@ export function getResolvedSegment(
 					firstFollowingPart,
 					{
 						pieces: _.map(pieces, (piece) => {
-							return extendMandadory<Piece, PieceExtended>(
-								piece,
-								{
-									// sourceLayer: ISourceLayerExtended,
-									// outputLayer: IOutputLayerExtended,
-									renderedInPoint: null,
-									renderedDuration: null
-									// cropped: false,
-									// continuedByRef: PieceExtended,
-									// continuesRef: PieceExtended,
-									// maxLabelWidth: 0
-								}
-							);
+							return extendMandadory<Piece, PieceExtended>(piece, {
+								// sourceLayer: ISourceLayerExtended,
+								// outputLayer: IOutputLayerExtended,
+								renderedInPoint: null,
+								renderedDuration: null
+								// cropped: false,
+								// continuedByRef: PieceExtended,
+								// continuesRef: PieceExtended,
+								// maxLabelWidth: 0
+							});
 						}),
 						renderedDuration: 0, // ?
 						startsAt: 0, // ?
@@ -217,15 +214,12 @@ export function getResolvedSegment(
 
 			// extend objects to match the Extended interface
 			let partE: PartExtended = extendMandadory(part, {
-				pieces: _.map(
-					Pieces.find({ partId: part._id }).fetch(),
-					(piece) => {
-						return extendMandadory<Piece, PieceExtended>(piece, {
-							renderedDuration: 0,
-							renderedInPoint: 0
-						});
-					}
-				),
+				pieces: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
+					return extendMandadory<Piece, PieceExtended>(piece, {
+						renderedDuration: 0,
+						renderedInPoint: 0
+					});
+				}),
 				renderedDuration: 0,
 				startsAt: 0,
 				willProbablyAutoNext:
@@ -244,8 +238,7 @@ export function getResolvedSegment(
 			autoNextPart = !!(
 				currentLivePart &&
 				currentLivePart.autoNext &&
-				(currentLivePart &&
-				currentLivePart.expectedDuration !== undefined
+				(currentLivePart && currentLivePart.expectedDuration !== undefined
 					? currentLivePart.expectedDuration !== 0
 					: false)
 			);
@@ -257,10 +250,7 @@ export function getResolvedSegment(
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
 					id: getPieceGroupId(piece),
-					enable: calculatePieceTimelineEnable(
-						piece,
-						TIMELINE_TEMP_OFFSET
-					),
+					enable: calculatePieceTimelineEnable(piece, TIMELINE_TEMP_OFFSET),
 					layer: piece.outputLayerId,
 					content: {
 						id: piece._id
@@ -314,20 +304,16 @@ export function getResolvedSegment(
 
 				// add the piece to the map to make future searches quicker
 				piecesLookup[piece._id] = piece;
-				if (
-					piece.continuesRefId &&
-					piecesLookup[piece.continuesRefId]
-				) {
+				if (piece.continuesRefId && piecesLookup[piece.continuesRefId]) {
 					piecesLookup[piece.continuesRefId].continuedByRef = piece;
 					piece.continuesRef = piecesLookup[piece.continuesRefId];
 				}
 			});
 
 			// Use the SuperTimeline library to resolve all the items within the Part
-			let tlResolved = SuperTimeline.Resolver.resolveTimeline(
-				partTimeline,
-				{ time: 0 }
-			);
+			let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, {
+				time: 0
+			});
 			// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 			let furthestDuration = 0;
 			_.each(tlResolved.objects, (obj) => {
@@ -348,13 +334,11 @@ export function getResolvedSegment(
 						// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
 						if (
 							Number.isFinite(piece.renderedDuration || 0) &&
-							(piece.renderedInPoint || 0) +
-								(piece.renderedDuration || 0) >
+							(piece.renderedInPoint || 0) + (piece.renderedDuration || 0) >
 								furthestDuration
 						) {
 							furthestDuration =
-								(piece.renderedInPoint || 0) +
-								(piece.renderedDuration || 0);
+								(piece.renderedInPoint || 0) + (piece.renderedDuration || 0);
 						}
 					} else {
 						// TODO - should this piece be removed?
@@ -375,8 +359,7 @@ export function getResolvedSegment(
 			if (
 				partE.displayDurationGroup &&
 				// either this is not the first element of the displayDurationGroup
-				(displayDurationGroups[partE.displayDurationGroup] !==
-					undefined ||
+				(displayDurationGroups[partE.displayDurationGroup] !== undefined ||
 					// or there is a following member of this displayDurationGroup
 					(parts[itIndex + 1] &&
 						parts[itIndex + 1].displayDurationGroup ===
@@ -387,10 +370,7 @@ export function getResolvedSegment(
 					(partE.expectedDuration || 0);
 				partE.renderedDuration =
 					partE.duration ||
-					Math.min(
-						partE.displayDuration || 0,
-						partE.expectedDuration || 0
-					) ||
+					Math.min(partE.displayDuration || 0, partE.expectedDuration || 0) ||
 					displayDurationGroups[partE.displayDurationGroup];
 				displayDurationGroups[partE.displayDurationGroup] = Math.max(
 					0,
@@ -414,8 +394,7 @@ export function getResolvedSegment(
 					? item.enable.duration || 0
 					: 0;
 			const userDurationNumber =
-				item.userDuration &&
-				typeof item.userDuration.duration === 'number'
+				item.userDuration && typeof item.userDuration.duration === 'number'
 					? item.userDuration.duration || 0
 					: 0;
 			return (
@@ -456,24 +435,20 @@ export function getResolvedSegment(
 							currentItem.renderedDuration !== undefined
 						) {
 							if (
-								previousItem.renderedInPoint +
-									previousItem.renderedDuration >
+								previousItem.renderedInPoint + previousItem.renderedDuration >
 									currentItem.renderedInPoint ||
 								previousItem.infiniteMode
 							) {
 								previousItem.renderedDuration =
-									currentItem.renderedInPoint -
-									previousItem.renderedInPoint;
+									currentItem.renderedInPoint - previousItem.renderedInPoint;
 								previousItem.cropped = true;
 								if (previousItem.infiniteMode) {
-									previousItem.infiniteMode =
-										PieceLifespan.Normal;
+									previousItem.infiniteMode = PieceLifespan.Normal;
 								}
 							}
 
 							previousItem.maxLabelWidth =
-								currentItem.renderedInPoint -
-								previousItem.renderedInPoint;
+								currentItem.renderedInPoint - previousItem.renderedInPoint;
 						}
 					}
 				});
@@ -623,10 +598,7 @@ export function calculatePieceTimelineEnable(
 		if (piece.enable.start === 'now') {
 			enable.start = 'now';
 		} else {
-			enable.start = offsetTimelineEnableExpression(
-				piece.enable.start,
-				offset
-			);
+			enable.start = offsetTimelineEnableExpression(piece.enable.start, offset);
 		}
 
 		if (duration !== undefined) {
@@ -634,10 +606,7 @@ export function calculatePieceTimelineEnable(
 		} else if (end !== undefined) {
 			enable.end = end;
 		} else if (piece.enable.end !== undefined) {
-			enable.end = offsetTimelineEnableExpression(
-				piece.enable.end,
-				offset
-			);
+			enable.end = offsetTimelineEnableExpression(piece.enable.end, offset);
 		}
 		return enable;
 	} else {

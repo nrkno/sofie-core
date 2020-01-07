@@ -68,10 +68,7 @@ interface IProps {
 		item: PieceUi,
 		e: React.MouseEvent<HTMLDivElement>
 	) => void;
-	onPieceClick?: (
-		piece: PieceUi,
-		e: React.MouseEvent<HTMLDivElement>
-	) => void;
+	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void;
 	onTimeScaleChange?: (timeScaleVal: number) => void;
 	onContextMenu?: (contextMenuContext: any) => void;
 	onSegmentScroll?: () => void;
@@ -110,9 +107,7 @@ export const SegmentTimelineContainer = withTracker<
 	(props: IProps) => {
 		// console.log('PeripheralDevices',PeripheralDevices);
 		// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-		const segment = Segments.findOne(props.segmentId) as
-			| SegmentUi
-			| undefined;
+		const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined;
 
 		// We need the segment to do anything
 		if (!segment) {
@@ -134,10 +129,7 @@ export const SegmentTimelineContainer = withTracker<
 		let o = getResolvedSegment(props.showStyleBase, props.rundown, segment);
 		let notes: Array<PartNote> = [];
 		_.each(o.parts, (part) => {
-			notes = notes.concat(
-				part.getNotes(true),
-				part.getInvalidReasonNotes()
-			);
+			notes = notes.concat(part.getNotes(true), part.getInvalidReasonNotes());
 		});
 		notes = notes.concat(segment.notes || []);
 
@@ -196,10 +188,7 @@ export const SegmentTimelineContainer = withTracker<
 			typeof props.studio !== typeof nextProps.studio ||
 			!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
 			!_.isEqual(props.studio.config, nextProps.studio.config) ||
-			!_.isEqual(
-				props.showStyleBase.config,
-				nextProps.showStyleBase.config
-			) ||
+			!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 			!_.isEqual(
 				props.showStyleBase.sourceLayers,
 				nextProps.showStyleBase.sourceLayers
@@ -277,27 +266,19 @@ export const SegmentTimelineContainer = withTracker<
 					this.props.followLiveSegments &&
 					!this.isVisible
 				) {
-					scrollToSegment(this.props.segmentId, true).catch(
-						console.error
-					);
+					scrollToSegment(this.props.segmentId, true).catch(console.error);
 				}
 			});
 		}
 
 		componentDidUpdate(prevProps) {
 			this.rundownCurrentSegmentId = this.props.rundown.currentPartId;
-			if (
-				this.isLiveSegment === false &&
-				this.props.isLiveSegment === true
-			) {
+			if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 				this.isLiveSegment = true;
 				this.onFollowLiveLine(true, {});
 				this.startLive();
 			}
-			if (
-				this.isLiveSegment === true &&
-				this.props.isLiveSegment === false
-			) {
+			if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 				this.isLiveSegment = false;
 				this.stopLive();
 				if (Settings.autoRewindLeavingSegment) this.onRewindSegment();
@@ -324,10 +305,7 @@ export const SegmentTimelineContainer = withTracker<
 				});
 			}
 
-			if (
-				this.props.followLiveSegments &&
-				!prevProps.followLiveSegments
-			) {
+			if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
 				this.onFollowLiveLine(true, {});
 			}
 		}
@@ -404,11 +382,8 @@ export const SegmentTimelineContainer = withTracker<
 					this.props.currentLivePart.getLastPlayOffset() || 0;
 
 				let newLivePosition =
-					this.props.currentLivePart.startedPlayback &&
-					lastStartedPlayback
-						? e.detail.currentTime -
-						  lastStartedPlayback +
-						  partOffset
+					this.props.currentLivePart.startedPlayback && lastStartedPlayback
+						? e.detail.currentTime - lastStartedPlayback + partOffset
 						: partOffset + lastPlayOffset;
 
 				this.setState(
@@ -420,8 +395,7 @@ export const SegmentTimelineContainer = withTracker<
 							? {
 									scrollLeft: Math.max(
 										newLivePosition -
-											this.props.liveLineHistorySize /
-												this.props.timeScale,
+											this.props.liveLineHistorySize / this.props.timeScale,
 										0
 									)
 							  }
@@ -459,8 +433,7 @@ export const SegmentTimelineContainer = withTracker<
 					// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 					// is viewport. This seems like an implementation bug and IntersectionObserver is
 					// an Experimental Feature in Chrome, so this might change in the future.
-					rootMargin: `-${150 * zoomFactor}px 0px -${20 *
-						zoomFactor}px 0px`,
+					rootMargin: `-${150 * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 					threshold: [0, 0.25, 0.5, 0.75, 0.98]
 				}
 			);

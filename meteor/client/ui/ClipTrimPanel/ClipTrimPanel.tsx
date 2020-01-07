@@ -73,8 +73,7 @@ export const ClipTrimPanel = translateWithTracker<
 				inPoint: (this.props.inPoint * this.fps) / 1000,
 				duration: (this.props.duration * this.fps) / 1000,
 				outPoint:
-					((this.props.inPoint + this.props.duration) * this.fps) /
-					1000,
+					((this.props.inPoint + this.props.duration) * this.fps) / 1000,
 				maxDuration: (this.props.maxDuration * this.fps) / 1000
 			};
 		}
@@ -87,8 +86,7 @@ export const ClipTrimPanel = translateWithTracker<
 				inPoint: (props.inPoint * Settings.frameRate) / 1000,
 				duration: (props.duration * Settings.frameRate) / 1000,
 				outPoint:
-					((props.inPoint + props.duration) * Settings.frameRate) /
-					1000,
+					((props.inPoint + props.duration) * Settings.frameRate) / 1000,
 				maxDuration: (props.maxDuration * Settings.frameRate) / 1000
 			};
 		}
@@ -107,13 +105,9 @@ export const ClipTrimPanel = translateWithTracker<
 
 					if (objId) {
 						// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-						this.subscribe(
-							PubSub.mediaObjects,
-							this.props.studioId,
-							{
-								mediaId: objId
-							}
-						);
+						this.subscribe(PubSub.mediaObjects, this.props.studioId, {
+							mediaId: objId
+						});
 					}
 				}
 			});
@@ -154,10 +148,7 @@ export const ClipTrimPanel = translateWithTracker<
 			if (val > 0) {
 				const ns = {
 					duration: Math.min(val, this.state.maxDuration),
-					outPoint: Math.min(
-						this.state.inPoint + val,
-						this.state.maxDuration
-					)
+					outPoint: Math.min(this.state.inPoint + val, this.state.maxDuration)
 				};
 				this.setState(ns);
 				this.props.onChange(
@@ -221,9 +212,7 @@ export const ClipTrimPanel = translateWithTracker<
 								fps={this.fps}
 								currentTime={this.state.inPoint / this.fps}
 								duration={this.props.maxDuration / 1000}
-								onCurrentTimeChange={(time) =>
-									this.onInChange(time * this.fps)
-								}
+								onCurrentTimeChange={(time) => this.onInChange(time * this.fps)}
 							/>
 						</div>
 						<div className="clip-trim-panel__monitors__monitor">

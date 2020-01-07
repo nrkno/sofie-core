@@ -4,9 +4,7 @@ import { literal } from '../../../../../lib/lib';
 export const mockRO = {
 	roCreate: () =>
 		literal<MOS.IMOSRunningOrder>({
-			ID: new MOS.MosString128(
-				'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa'
-			),
+			ID: new MOS.MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa'),
 			Slug: new MOS.MosString128('All effect1 into clip combinations'),
 			EditorialStart: new MOS.MosTime('2018-11-07T07:00:00,000Z'),
 			EditorialDuration: new MOS.MosDuration('0:9:0'),

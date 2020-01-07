@@ -38,16 +38,10 @@ postJsRoute.route(
 		try {
 			const body = (req as any).body as string | undefined;
 			if (!body)
-				throw new Meteor.Error(
-					400,
-					'Restore Blueprint: Missing request body'
-				);
+				throw new Meteor.Error(400, 'Restore Blueprint: Missing request body');
 
 			if (!_.isString(body) || body.length < 10)
-				throw new Meteor.Error(
-					400,
-					'Restore Blueprint: Invalid request body'
-				);
+				throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body');
 
 			uploadBlueprint(blueprintId, body, blueprintName, force);
 
@@ -77,10 +71,7 @@ postJsonRoute.route(
 		try {
 			const body = (req as any).body;
 			if (!body)
-				throw new Meteor.Error(
-					400,
-					'Restore Blueprint: Missing request body'
-				);
+				throw new Meteor.Error(400, 'Restore Blueprint: Missing request body');
 
 			let collection = body;
 			if (_.isString(body)) {
@@ -98,16 +89,11 @@ postJsonRoute.route(
 					);
 				}
 			} else if (!_.isObject(body)) {
-				throw new Meteor.Error(
-					400,
-					'Restore Blueprint: Invalid request body'
-				);
+				throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body');
 			}
 
 			logger.info(
-				`Got blueprint collection. ${
-					Object.keys(body).length
-				} blueprints`
+				`Got blueprint collection. ${Object.keys(body).length} blueprints`
 			);
 
 			let errors: any[] = [];

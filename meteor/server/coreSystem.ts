@@ -114,10 +114,7 @@ function checkDatabaseVersions() {
 				blueprintIds[blueprint._id] = true;
 
 				// @ts-ignore
-				if (
-					!blueprint.databaseVersion ||
-					_.isString(blueprint.databaseVersion)
-				)
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
 					blueprint.databaseVersion = {
 						showStyle: {},
 						studio: {}
@@ -145,9 +142,8 @@ function checkDatabaseVersions() {
 								? parseVersion(blueprint.blueprintVersion)
 								: null,
 							parseRange(
-								blueprint.databaseVersion.showStyle[
-									showStyleBase._id
-								] || '0.0.0'
+								blueprint.databaseVersion.showStyle[showStyleBase._id] ||
+									'0.0.0'
 							),
 							'to fix, run migration',
 							'blueprint.blueprintVersion',
@@ -165,14 +161,10 @@ function checkDatabaseVersions() {
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion
-										? parseVersion(
-												blueprint.blueprintVersion
-										  )
+										? parseVersion(blueprint.blueprintVersion)
 										: null,
 									parseRange(
-										blueprint.databaseVersion.studio[
-											studio._id
-										] || '0.0.0'
+										blueprint.databaseVersion.studio[studio._id] || '0.0.0'
 									),
 									'to fix, run migration',
 									'blueprint.blueprintVersion',
@@ -231,10 +223,9 @@ function checkDatabaseVersion(
 				});
 
 				try {
-					const expectV = new semver.SemVer(
-						stripVersion(expectVersion),
-						{ includePrerelease: true }
-					);
+					const expectV = new semver.SemVer(stripVersion(expectVersion), {
+						includePrerelease: true
+					});
 
 					const message =
 						`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` +
@@ -260,9 +251,7 @@ function checkDatabaseVersion(
 							statusCode: StatusCode.WARNING_MINOR,
 							messages: [message]
 						};
-					} else if (
-						!_.isEqual(expectV.prerelease, currentV.prerelease)
-					) {
+					} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
 						return {
 							statusCode: StatusCode.WARNING_MINOR,
 							messages: [message]
@@ -312,9 +301,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 	let integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
 		parseRange(
-			PackageInfo.dependencies[
-				'tv-automation-sofie-blueprints-integration'
-			]
+			PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
 		),
 		'Blueprint has to be updated',
 		'blueprint.integrationVersion',
