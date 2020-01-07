@@ -467,10 +467,11 @@ describe('lib/lib', () => {
 		expect(partialExceptId(o)).toEqual(o) // The function only affects typings
 	})
 	testInFiber('formatDateTime', () => {
+
 		expect(formatDateTime(1578295344070)).toBe('2020-01-06 08:22:24')
-		expect(formatDateTime(2579292001000)).toBe('2051-09-26 00:00:01')
-		expect(formatDateTime(2579292000000)).toBe('2051-09-26 00:00:00')
-		expect(formatDateTime(2579295344070)).toBe('2051-09-26 00:55:44')
+		expect(formatDateTime(2579295601000)).toBe('2051-09-26 00:00:01')
+		expect(formatDateTime(2579295600000)).toBe('2051-09-26 00:00:00')
+		expect(formatDateTime(2579296344070)).toBe('2051-09-26 00:12:24')
 	})
 	testInFiber('escapeHtml', () => {
 		expect(escapeHtml(`<div>Hello & goodbye! Please use '"'-signs!</div>`))
