@@ -428,10 +428,31 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
+	convertHexToRgba = (hexColor: string): { red: number, green: number, blue: number } | undefined => {
+		if (hexColor.substr(0, 1) !== "#") return
+		if (hexColor.length !== 7) return
+
+		const red = parseInt(hexColor.substr(1, 2), 16)
+		const green = parseInt(hexColor.substr(3, 2), 16)
+		const blue = parseInt(hexColor.substr(5, 2), 16)
+
+		return {red, green, blue}
+	}
+
 	render () {
 		const { t } = this.props
 
 		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.rundown.nextPartId))
+		let invalidReasonColorVars: React.CSSProperties | undefined = undefined
+		if (this.props.part.invalidReason && this.props.part.invalidReason.color) {
+			const invalidColor = this.convertHexToRgba(this.props.part.invalidReason.color)
+			if (invalidColor) {
+				invalidReasonColorVars = {
+					'--invalid-reason-color-opaque': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
+					'--invalid-reason-color-transparent': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`
+				}
+			}
+		}
 
 		if (this.isInsideViewport()) {
 			return (
@@ -439,17 +460,20 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					'live': this.state.isLive,
 					'next': this.state.isNext,
 					'invalid': this.props.part.invalid,
+					'floated': this.props.part.floated,
 
 					'duration-settling': this.state.isDurationSettling
 				})} data-obj-id={this.props.part._id}
 					id={SegmentTimelinePartElementId + this.props.part._id}
-					style={this.getLayerStyle()}
+					style={_.extend(this.getLayerStyle(), invalidReasonColorVars)}
 				>
 					{this.props.part.invalid ? <div className='segment-timeline__part__invalid-cover'></div> : null}
+					{this.props.part.floated ? <div className='segment-timeline__part__floated-cover'></div> : null}
 
 					<div className={ClassNames('segment-timeline__part__nextline', { // This is the base, basic line
 						'auto-next': ((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)),
 						'invalid': this.props.part.invalid,
+						'floated': this.props.part.floated,
 						'offset': !!this.props.rundown.nextTimeOffset
 					})}>
 						<div className={ClassNames('segment-timeline__part__nextline__label', {
@@ -457,7 +481,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 						})}>
 							{(
 								this.props.part.invalid ?
-									t('Invalid') :
+									<span>{t('Invalid')}</span> :
 									<React.Fragment>
 										{((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)) && t('Auto') + ' '}
 										{this.state.isNext && t('Next')}
@@ -468,7 +492,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					{this.props.rundown.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__part__nextline', {
 							'auto-next': this.props.part.willProbablyAutoNext,
-							'invalid': this.props.part.invalid
+							'invalid': this.props.part.invalid,
+							'floated': this.props.part.floated
 						})} style={{
 							'left': (this.props.relative ?
 								((this.props.rundown.nextTimeOffset / (this.getPartDuration() || 1) * 100) + '%') :
@@ -479,11 +504,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							})}>
 								{(
 									this.props.part.invalid ?
-										t('Invalid') :
-									[
-										(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' ',
-										this.state.isNext && t('Next')
-									]
+										<span>{t('Invalid')}</span> :
+										<React.Fragment>
+											{(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' '}
+											{this.state.isNext && t('Next')}
+										</React.Fragment>
 								)}
 							</div>
 						</div>

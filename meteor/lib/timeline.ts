@@ -10,7 +10,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 
 	let transformObject = (obj: TimelineObjGeneric | TimelineObjGroup): TimelineContentObject => {
 		if (!obj.id) throw new Meteor.Error(500, `Timeline object missing id attribute (_id: "${obj._id}") `)
-		let transformedObj = clone(
+		let transformedObj: TimelineContentObject = clone(
 			_.omit(
 				{
 					...obj,
@@ -20,7 +20,6 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 	   )
 
 		if (!transformedObj.content) transformedObj.content = {}
-		if (!transformedObj.content.objects) transformedObj.content.objects = []
 
 		if (obj['partId']) {
 			// Will cause a callback to be called, when the object starts to play:

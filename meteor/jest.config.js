@@ -25,6 +25,7 @@ const commonConfig = {
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest'
 	},
+	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
 	coverageThreshold: {
 		global: {

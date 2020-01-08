@@ -59,9 +59,9 @@ export class Segment implements DBSegment {
 		let notes: Array<PartNote> = []
 
 		if (includeParts) {
-			const lines = this.getParts()
-			_.each(lines, l => {
-				notes = notes.concat(l.getNotes(runtimeNotes))
+			const parts = this.getParts()
+			_.each(parts, l => {
+				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
 			})
 		}
 

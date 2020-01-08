@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
@@ -10,6 +11,7 @@ export enum PrompterMethods {
 }
 
 export interface PrompterDataLine {
+	id: string
 	text: string
 	segmentId: string
 	partId: string
@@ -27,11 +29,17 @@ export namespace PrompterAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		let parts = rundown.getParts()
+		let parts = rundown.getParts({
+			floated: {
+				$ne: true
+			}
+		})
 
 		let data: PrompterData = {
 			lines: []
 		}
+
+		const piecesIncluded: string[] = []
 
 		_.each(parts, (part: Part) => {
 			let hasSentInThisLine = false
@@ -39,12 +47,16 @@ export namespace PrompterAPI {
 			_.each(part.getAllPieces(), (piece) => {
 
 				if (
-					piece.content &&
-					piece.content.fullScript
+					piece.content
 				) {
 					const content = piece.content as ScriptContent
 					if (content.fullScript) {
+						if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
+							return // piece already included in prompter script
+						}
+						piecesIncluded.push(piece.continuesRefId || piece._id)
 						data.lines.push({
+							id: piece._id,
 							text: content.fullScript,
 							segmentId: part.segmentId,
 							partId: part._id
@@ -57,6 +69,7 @@ export namespace PrompterAPI {
 			if (!hasSentInThisLine) {
 				// insert an empty line
 				data.lines.push({
+					id: Random.id(),
 					text: '',
 					segmentId: part.segmentId,
 					partId: part._id

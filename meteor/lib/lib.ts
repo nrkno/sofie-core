@@ -310,14 +310,14 @@ export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }
 export function formatDateAsTimecode (date: Date) {
-	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: date, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: date, drop_frame: !Number.isInteger(Settings.frameRate) })
 	return tc.toString()
 }
 /**
  * @param duration time in milliseconds
  */
 export function formatDurationAsTimecode (duration: Time) {
-	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: duration * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: duration * Settings.frameRate / 1000, drop_frame: !Number.isInteger(Settings.frameRate) })
 	return tc.toString()
 }
 /**
@@ -336,6 +336,7 @@ export function formatDateTime (time: Time) {
 	let ss: any = d.getSeconds()
 
 	if (mm < 10) mm = '0' + mm
+	if (dd < 10) dd = '0' + dd
 	if (hh < 10) hh = '0' + hh
 	if (ii < 10) ii = '0' + ii
 	if (ss < 10) ss = '0' + ss
@@ -446,18 +447,25 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before	Object before, null/undefined if inserted first
+ * @param after			Object after, null/undefined if inserted last
+ * @param i				If inserting multiple objects, this is the number of this object
+ * @param count			If inserting multiple objects, this is total count of objects
+ */
 export function getRank<T extends {_rank: number}> (
-	beforeOrLast: T | null | undefined,
+	before: T | null | undefined,
 	after: T | null | undefined,
-	i: number,
-	count: number
+	i: number = 0,
+	count: number = 1
 ): number {
 	let newRankMax
 	let newRankMin
 
 	if (after) {
-		if (beforeOrLast) {
-			newRankMin = beforeOrLast._rank
+		if (before) {
+			newRankMin = before._rank
 			newRankMax = after._rank
 		} else {
 			// First
@@ -465,10 +473,10 @@ export function getRank<T extends {_rank: number}> (
 			newRankMax = after._rank
 		}
 	} else {
-		if (beforeOrLast) {
+		if (before) {
 			// Last
-			newRankMin = beforeOrLast._rank
-			newRankMax = beforeOrLast._rank + 1
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
 		} else {
 			// Empty list
 			newRankMin = 0
@@ -1051,7 +1059,14 @@ export function trimIfString<T extends any> (value: T): T {
 	if (_.isString(value)) return value.trim()
 	return value
 }
-export const firstIfArray: ((<T>(value: T | T[] | null | undefined) => T | null | undefined) | (<T>(value: T | T[]) => T) | (<T>(value: T | T[] | undefined) => T | undefined))
-	= (value) => _.isArray(value) ? _.first(value) : value
+
+export function firstIfArray<T> (value: T | T[] | null | undefined): T | null | undefined
+export function firstIfArray<T> (value: T | T[] | null): T | null
+export function firstIfArray<T> (value: T | T[] | undefined): T | undefined
+export function firstIfArray<T> (value: T | T[]): T
+export function firstIfArray<T> (value: any): T {
+	return _.isArray(value) ? _.first(value) : value
+}
+
 
 export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)

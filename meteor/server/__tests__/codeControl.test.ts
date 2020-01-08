@@ -5,11 +5,11 @@ import { syncFunction, Callback, waitTime, syncFunctionIgnore } from '../codeCon
 import { RundownSyncFunctionPriority, rundownSyncFunction } from '../api/ingest/rundownInput'
 import { tic, toc, waitForPromise, makePromise, waitForPromiseAll } from '../../lib/lib'
 
-const TIME_FUZZY = 50
+const TIME_FUZZY = 200
 const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {
 	setTimeout(() => {
 		cb(null, 'result yo ' + name)
-	}, 100 - 5) // subtract to account for slowness in Jest
+	}, 300 - 5) // subtract to account for slowness in Jest
 })
 describe('codeControl rundown', () => {
 	beforeEach(() => {
@@ -31,18 +31,18 @@ describe('codeControl rundown', () => {
 			res.push(sync1('playout0', RundownSyncFunctionPriority.Playout))
 		}, 50)
 
-		jest.runTimersToTime(120)
+		jest.advanceTimersByTime(350)
 		expect(res).toEqual([
 			'result yo ingest0',
 		])
 
-		jest.runTimersToTime(100)
+		jest.advanceTimersByTime(300)
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1
 		])
 
-		jest.runTimersToTime(100)
+		jest.advanceTimersByTime(300)
 
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
@@ -66,7 +66,7 @@ describe('codeControl', () => {
 	const takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name: string, name2: string, cb: Callback) {
 		Meteor.setTimeout(() => {
 			cb(null, 'result yo ' + name + name2)
-		}, 100)
+		}, 300)
 	})
 	const takesALongTime3 = syncFunction((name: string, name2: string) => {
 		return takesALongTimeInner3(name, name2)
@@ -82,11 +82,11 @@ describe('codeControl', () => {
 
 		res.push(takesALongTime('run0'))
 
-		expect(toc()).toBeFuzzy(100, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(300, TIME_FUZZY)
 
 		res.push(takesALongTime('run0'))
 
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 	})
 
 	testInFiber('syncFunction, 2 queues', () => {
@@ -101,7 +101,7 @@ describe('codeControl', () => {
 		res.push(takesALongTime('run1'))
 		res.push(takesALongTime('run1'))
 
-		expect(toc()).toBeFuzzy(400, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(1200, TIME_FUZZY)
 
 		// Run them in parallell, the 2 queues should kick in now:
 		res.splice(0, 99)
@@ -118,7 +118,7 @@ describe('codeControl', () => {
 
 		waitForPromiseAll(ps)
 
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 		expect(res).toMatchObject([
 			'result yo run0',
 			'result yo run1',
@@ -135,13 +135,13 @@ describe('codeControl', () => {
 		res.push(takesALongTimeIgnore('run0'))
 		res.push(takesALongTimeIgnore('run0'))
 
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 		tic()
 
 		res.push(takesALongTimeIgnore('run1'))
 		res.push(takesALongTimeIgnore('run1'))
 
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 
 		// Run them in parallell, the 2 queues should kick in now:
 		res.splice(0, 99)
@@ -160,7 +160,7 @@ describe('codeControl', () => {
 
 		waitForPromiseAll(ps)
 
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 		expect(res).toMatchObject([
 			undefined,
 			undefined,
@@ -181,11 +181,11 @@ describe('codeControl', () => {
 
 		// Make sure that anonymous syncFunctions work
 		const fcn0 = syncFunction(() => {
-			waitTime(95)
+			waitTime(300 - 5)
 			return 'a'
 		})
 		const fcn1 = syncFunction(() => {
-			waitTime(95)
+			waitTime(300 - 5)
 			return 'b'
 		})
 		const res: any[] = []
@@ -200,7 +200,7 @@ describe('codeControl', () => {
 		expect(res).toHaveLength(0)
 
 		waitForPromiseAll(ps)
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 		expect(res).toMatchObject([
 			'a',
 			'b',
@@ -211,7 +211,7 @@ describe('codeControl', () => {
 	testInFiber('syncFunction, anonymous with arguments', () => {
 
 		const fcn = syncFunction((a: number) => {
-			waitTime(95)
+			waitTime(300 - 5)
 			return a
 		})
 		const res: any[] = []
@@ -228,7 +228,7 @@ describe('codeControl', () => {
 		expect(res).toHaveLength(0)
 
 		waitForPromiseAll(ps)
-		expect(toc()).toBeFuzzy(200, TIME_FUZZY)
+		expect(toc()).toBeFuzzy(600, TIME_FUZZY)
 		expect(res).toMatchObject([
 			1,
 			2,
@@ -239,7 +239,7 @@ describe('codeControl', () => {
 	testInFiber('syncFunction, too long running', () => {
 
 		const neverEnding = syncFunction(() => {
-			waitTime(1000) // 10s, is too long and should cause a timeout
+			waitTime(1000) // 1s, is too long and should cause a timeout
 			return 'a'
 		}, undefined, 500) // a timeout of 1000 ms
 

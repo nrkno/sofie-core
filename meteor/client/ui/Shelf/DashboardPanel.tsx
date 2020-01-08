@@ -165,7 +165,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -173,8 +174,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 
 		this.usedHotkeys.length = 0
 	}
@@ -197,21 +198,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', this.constructor.name)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -221,21 +222,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		if (this.props.rundownBaselineAdLibs) {
 			this.props.rundownBaselineAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', this.constructor.name)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -246,11 +247,11 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			_.each(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
 					item.clearKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onClearAllSourceLayer(item, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(element)
 					})
 
@@ -258,11 +259,11 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 				if (item.isSticky && item.activateStickyKeyboardHotkey) {
 					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleSticky(item._id, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(element)
 					})
 				}
@@ -278,6 +279,14 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				t('Invalid AdLib'),
 				NoticeLevel.WARNING,
 				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
+			return
+		}
+		if (piece.floated) {
+			NotificationCenter.push(new Notification(
+				t('Floated AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Floated'),
 				'toggleAdLib'))
 			return
 		}

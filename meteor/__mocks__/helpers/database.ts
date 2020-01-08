@@ -30,7 +30,8 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	IBlueprintRuntimeArgumentsItem
+	IBlueprintRuntimeArgumentsItem,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -39,8 +40,7 @@ import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime } from '../../lib/lib'
-import { TSRTimelineObjBase } from 'timeline-state-resolver-types'
-import { Rundown, DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -57,7 +57,7 @@ export function setupMockPeripheralDevice (
 	category: PeripheralDeviceAPI.DeviceCategory,
 	type: PeripheralDeviceAPI.DeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio: Studio,
+	studio?: Studio,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}
@@ -65,7 +65,7 @@ export function setupMockPeripheralDevice (
 	const defaultDevice: PeripheralDevice = {
 		_id: 'mockDevice' + (dbI++),
 		name: 'mockDevice',
-		studioId: studio._id,
+		studioId: studio ? studio._id : undefined,
 
 		category: category,
 		type: type,
@@ -146,17 +146,13 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_id: LAYER_IDS.SOURCE_CAM0,
 				_rank: 0,
 				name: 'Camera',
-				onPGMClean: true,
 				type: SourceLayerType.CAMERA,
-				unlimited: false
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
-				onPGMClean: true,
 				type: SourceLayerType.VT,
-				unlimited: false
 			})
 		],
 		config: [],
@@ -205,11 +201,12 @@ export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[
 }
 export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
-	const PackageInfo = require('../../package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
+	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.STUDIO
-	const INTEGRATION_VERSION: string			= PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
-	const TSR_VERSION: string					= PackageInfo.dependencies['timeline-state-resolver-types']
+	const INTEGRATION_VERSION: string			= IntegrationInfo.version
+	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_ID: string					= showStyleBaseId
 
@@ -230,7 +227,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 
 			studioConfigManifest: [],
 			studioMigrations: [],
-			getBaseline: (context: IStudioContext): TSRTimelineObjBase[] => {
+			getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
 				return []
 			},
 			getShowStyleId: (context: IStudioConfigContext, showStyles: Array<IBlueprintShowStyleBase>, ingestRundown: IngestRundown): string | null => {
@@ -242,15 +239,16 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
 
-	const PackageInfo = require('../../package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
+	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.SHOWSTYLE
-	const INTEGRATION_VERSION: string			= PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']
-	const TSR_VERSION: string					= PackageInfo.dependencies['timeline-state-resolver-types']
+	const INTEGRATION_VERSION: string			= IntegrationInfo.version
+	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_VARIANT_ID: string			= showStyleVariantId
 
@@ -351,7 +349,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const blueprintId = 'mockBlueprint' + (dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName)
+	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: string
@@ -399,6 +397,14 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 		studio,
 		core,
 		ingestDevice
+	}
+}
+export function setupEmptyEnvironment () {
+
+	const core = setupMockCore({})
+
+	return {
+		core
 	}
 }
 export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: string): string {
@@ -524,8 +530,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 
 		const part10: DBPart = {
 			_id: rundownId + '_part1_0',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
 			_rank: 10,
 			externalId: 'MOCK_PART_1_0',
 			title: 'Part 1 0',
@@ -535,8 +541,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 
 		const part11: DBPart = {
 			_id: rundownId + '_part1_1',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
 			_rank: 11,
 			externalId: 'MOCK_PART_1_1',
 			title: 'Part 1 1',
@@ -546,8 +552,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 
 		const part12: DBPart = {
 			_id: rundownId + '_part1_2',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
 			_rank: 12,
 			externalId: 'MOCK_PART_1_2',
 			title: 'Part 1 2',

@@ -4,10 +4,9 @@ import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/dat
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { literal } from '../../../../lib/lib'
-import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -53,7 +52,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE
 				}
@@ -71,7 +70,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE
 				}
@@ -91,7 +90,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE
 				}
@@ -117,7 +116,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeTruthy()
 
 				const rawMapping = {
-					device: DeviceType.ATEM,
+					device: TSR.DeviceType.ATEM,
 					deviceId: 'dev2',
 					lookahead: LookaheadMode.PRELOAD
 				}
@@ -145,7 +144,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeTruthy()
 
 				const rawMapping = {
-					device: DeviceType.HYPERDECK,
+					device: TSR.DeviceType.HYPERDECK,
 					deviceId: 'hyper0'
 				}
 				ctx.updateMapping('mapping2', rawMapping)
@@ -177,7 +176,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeFalsy()
 
 				try {
-					ctx.updateMapping('', { device: DeviceType.HYPERDECK })
+					ctx.updateMapping('', { device: TSR.DeviceType.HYPERDECK })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Mapping "" cannot be updated as it does not exist`)
@@ -188,7 +187,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getMapping('mapping1')).toBeFalsy()
 
 				const rawMapping = {
-					device: DeviceType.HYPERDECK,
+					device: TSR.DeviceType.HYPERDECK,
 					deviceId: 'hyper0'
 				}
 
@@ -435,7 +434,8 @@ describe('Test blueprint migrationContext', () => {
 						},
 						devices: {
 							'device01': {
-								type: DeviceType.ABSTRACT
+								type: TSR.DeviceType.ABSTRACT,
+								options: {}
 							}
 						}
 					}),
@@ -494,7 +494,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.insertDevice('', { type: DeviceType.ABSTRACT })
+					ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -509,7 +509,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.insertDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -525,7 +525,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				try {
-					ctx.insertDevice('device01', { type: DeviceType.CASPARCG })
+					ctx.insertDevice('device01', { type: TSR.DeviceType.CASPARCG } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device01" cannot be inserted as it already exists`)
@@ -539,7 +539,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
-				const rawDevice = { type: DeviceType.CASPARCG }
+				const rawDevice: any = { type: TSR.DeviceType.CASPARCG }
 
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
@@ -558,7 +558,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.updateDevice('', { type: DeviceType.ABSTRACT })
+					ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -573,7 +573,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.updateDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -589,7 +589,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device22')).toBeFalsy()
 
 				try {
-					ctx.updateDevice('device22', { type: DeviceType.ATEM })
+					ctx.updateDevice('device22', { type: TSR.DeviceType.ATEM })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device22" cannot be updated as it does not exist`)
@@ -603,8 +603,8 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
-				const rawDevice = {
-					type: DeviceType.HYPERDECK
+				const rawDevice: any = {
+					type: TSR.DeviceType.HYPERDECK
 				}
 				const expectedDevice = {
 					...initialSettings.devices['device01'],
@@ -641,7 +641,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.removeDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.removeDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -941,8 +941,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertSourceLayer('', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
@@ -962,8 +960,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertSourceLayer('vt0', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
@@ -982,8 +978,6 @@ describe('Test blueprint migrationContext', () => {
 				const rawLayer = {
 					name: 'test',
 					_rank: 10,
-					unlimited: true,
-					onPGMClean: true,
 					type: SourceLayerType.UNKNOWN
 				}
 
@@ -1006,8 +1000,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateSourceLayer('', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here
@@ -1027,8 +1019,6 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateSourceLayer('fake99', {
 						name: 'test',
 						_rank: 10,
-						unlimited: true,
-						onPGMClean: true,
 						type: SourceLayerType.UNKNOWN
 					})
 					expect(true).toBe(false) // Please throw and don't get here

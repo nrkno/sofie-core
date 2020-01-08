@@ -11,6 +11,42 @@
          url('/fonts/Overpass/Overpass-Regular.ttf')  format('truetype'); /* Safari, Android, iOS */
 }
 
+body.prompter-scrollbar {
+    &::-webkit-scrollbar {
+        width: 20px;
+        height: 20px;
+    }
+    &::-webkit-scrollbar-button {
+        width: 0px;
+        height: 0px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #888888;
+        border: 0px solid #ffffff;
+        border-radius: 31px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #ffffff;
+    }
+    &::-webkit-scrollbar-thumb:active {
+        background: #666666;
+    }
+    &::-webkit-scrollbar-track {
+        background: #000000;
+        border: 0px solid #ffffff;
+        border-radius: 50px;
+    }
+    &::-webkit-scrollbar-track:hover {
+        background: #444444;
+    }
+    &::-webkit-scrollbar-track:active {
+        background: #333333;
+    }
+    &::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+}
+
 .prompter {
     user-select: none;
     cursor: none;
@@ -50,6 +86,9 @@
         font-size: 50%;
         
     }
+    .overlay-fix {
+        pointer-events: none;
+    }
     .prompter-break {
         font-size: 75%;
         text-align: center;
@@ -83,7 +122,7 @@
         color: #000;
         font-weight: bold;
 
-        &.current {
+        &.live {
             //border-bottom: 0.2em solid #f55;
             background: $general-live-color;
             color: #fff;
@@ -115,12 +154,18 @@
             position: absolute;
             left: 0;
             right: 0;
+            width: 0;
+            height: 0;
+            border-left: 0.5em solid #bbb;
+            border-right: 0.5em solid transparent;
+            border-top: 0.5em solid transparent;
+            border-bottom: 0.5em solid transparent;
 
-            height: 2em;
+            height: 1em;
 
             &.center {
                 top: 50%;
-                margin-top: -1em;
+                transform: translateY(-50%);
             }
             &.top {
                 top: 0.2em;
@@ -130,25 +175,6 @@
             }
             &.hide {
                 display: none;
-            }
-
-            .side {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                width: 1em;
-                border-top: 0.1em solid rgba(255, 255, 255, 0.5);
-                border-bottom: 0.1em solid rgba(255, 255, 255, 0.5);
-
-                margin-top: -0.1em;
-                margin-bottom: -0.1em;
-    
-                &.left {
-                    left: 0
-                }
-                &.right {
-                    right: 0
-                }
             }
         }
 

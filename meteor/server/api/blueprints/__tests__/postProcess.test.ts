@@ -5,9 +5,8 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { postProcessStudioBaselineObjects, postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../postProcess'
-import { TSRTimelineObjBase, DeviceType } from 'timeline-state-resolver-types'
 import { RundownContext } from '../context'
-import { IBlueprintPiece, IBlueprintAdLibPiece, TimelineObjectCoreExt, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPiece, IBlueprintAdLibPiece, TimelineObjectCoreExt, IBlueprintPieceDB, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
@@ -67,13 +66,13 @@ describe('Test blueprint post-process', () => {
 		testInFiber('some no ids', () => {
 			const studio = getStudio()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
+						deviceType: TSR.DeviceType.ABSTRACT
 					}
 				},
 				{
@@ -81,7 +80,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
+						deviceType: TSR.DeviceType.CASPARCG
 					}
 				},
 				{
@@ -89,7 +88,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
+						deviceType: TSR.DeviceType.ATEM
 					}
 				},
 				{
@@ -97,7 +96,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
+						deviceType: TSR.DeviceType.HYPERDECK
 					}
 				}
 			])
@@ -124,13 +123,13 @@ describe('Test blueprint post-process', () => {
 		testInFiber('duplicate ids', () => {
 			const studio = getStudio()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
+						deviceType: TSR.DeviceType.ABSTRACT
 					}
 				},
 				{
@@ -138,7 +137,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
+						deviceType: TSR.DeviceType.CASPARCG
 					}
 				},
 				{
@@ -146,7 +145,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
+						deviceType: TSR.DeviceType.ATEM
 					}
 				},
 				{
@@ -154,7 +153,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
+						deviceType: TSR.DeviceType.HYPERDECK
 					}
 				}
 			])
@@ -186,13 +185,13 @@ describe('Test blueprint post-process', () => {
 		testInFiber('some no ids', () => {
 			const context = getContext()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
+						deviceType: TSR.DeviceType.ABSTRACT
 					}
 				},
 				{
@@ -200,7 +199,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
+						deviceType: TSR.DeviceType.CASPARCG
 					}
 				},
 				{
@@ -208,7 +207,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
+						deviceType: TSR.DeviceType.ATEM
 					}
 				},
 				{
@@ -216,7 +215,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
+						deviceType: TSR.DeviceType.HYPERDECK
 					}
 				}
 			])
@@ -263,13 +262,13 @@ describe('Test blueprint post-process', () => {
 		testInFiber('duplicate ids', () => {
 			const context = getContext()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
+						deviceType: TSR.DeviceType.ABSTRACT
 					}
 				},
 				{
@@ -277,7 +276,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
+						deviceType: TSR.DeviceType.CASPARCG
 					}
 				},
 				{
@@ -285,7 +284,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
+						deviceType: TSR.DeviceType.ATEM
 					}
 				},
 				{
@@ -293,7 +292,7 @@ describe('Test blueprint post-process', () => {
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
+						deviceType: TSR.DeviceType.HYPERDECK
 					}
 				}
 			])
@@ -415,7 +414,7 @@ describe('Test blueprint post-process', () => {
 							enable: {},
 							layer: 'four',
 							content: {
-								deviceType: DeviceType.HYPERDECK
+								deviceType: TSR.DeviceType.HYPERDECK
 							}
 						})
 					]
@@ -541,7 +540,7 @@ describe('Test blueprint post-process', () => {
 							enable: {},
 							layer: 'four',
 							content: {
-								deviceType: DeviceType.HYPERDECK
+								deviceType: TSR.DeviceType.HYPERDECK
 							}
 						})
 					]

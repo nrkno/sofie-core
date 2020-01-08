@@ -2,14 +2,14 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { literal } from '../../../../lib/lib'
-import { loadSystemBlueprints, loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown } from '../cache'
+import { loadSystemBlueprints, loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown, WrappedStudioBlueprint } from '../cache'
 import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
-import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, BlueprintResultRundown, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { generateFakeBlueprint } from './lib'
 
 // require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -18,31 +18,6 @@ describe('Test blueprint cache', () => {
 	beforeAll(() => {
 		setupDefaultStudioEnvironment()
 	})
-
-	function generateFakeBlueprint (id: string, type?: BlueprintManifestType, code?: string) {
-		return literal<Blueprint>({
-			_id: id,
-			name: 'Fake blueprint',
-			code: `{default: (${code || '() => 5'})()}`,
-			created: 0,
-			modified: 0,
-
-			blueprintType: type,
-
-			studioConfigManifest: [],
-			showStyleConfigManifest: [],
-
-			databaseVersion: {
-				showStyle: {},
-				studio: {},
-			},
-
-			blueprintVersion: '',
-			integrationVersion: '',
-			TSRVersion: '',
-			minimumCoreVersion: '',
-		})
-	}
 
 	describe('loadSystemBlueprints', () => {
 		function getCore (): ICoreSystem {
@@ -108,11 +83,20 @@ describe('Test blueprint cache', () => {
 			expect(core.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
-				blueprintType: 'studio'
+				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0',
+
+				studioConfigManifest: [],
+				studioMigrations: [],
+				getBaseline: () => [],
+				getShowStyleId: () => null
 			})
 
 			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest.toString()))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			try {
 				loadSystemBlueprints(core)
@@ -127,11 +111,16 @@ describe('Test blueprint cache', () => {
 			expect(core.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
-				blueprintType: 'system'
+				blueprintType: 'system' as BlueprintManifestType.SYSTEM,
+
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0'
 			})
 
 			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest.toString()))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			const blueprint = loadSystemBlueprints(core)
 			expect(blueprint).toBeTruthy()
@@ -203,11 +192,16 @@ describe('Test blueprint cache', () => {
 			expect(studio.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
-				blueprintType: 'system'
+				blueprintType: 'system' as BlueprintManifestType.SYSTEM,
+
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0'
 			})
 
 			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest.toString()))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			try {
 				loadStudioBlueprints(studio)
@@ -222,14 +216,26 @@ describe('Test blueprint cache', () => {
 			expect(studio.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
-				blueprintType: 'studio'
+				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0',
+
+				studioConfigManifest: [],
+				studioMigrations: [],
+				getBaseline: () => [],
+				getShowStyleId: () => null
 			})
 
 			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest.toString()))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
-			const blueprint = loadStudioBlueprints(studio)
+			const blueprint = loadStudioBlueprints(studio) as WrappedStudioBlueprint
 			expect(blueprint).toBeTruthy()
+
+
+			expect(blueprint.blueprint.blueprintType).toEqual('studio')
 		})
 	})
 
@@ -302,11 +308,16 @@ describe('Test blueprint cache', () => {
 			expect(showStyle.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
-				blueprintType: 'system'
+				blueprintType: 'system' as BlueprintManifestType.SYSTEM,
+
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0'
 			})
 
 			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest.toString()))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			try {
 				loadShowStyleBlueprints(showStyle)
@@ -321,11 +332,22 @@ describe('Test blueprint cache', () => {
 			expect(showStyle.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
-				blueprintType: 'showstyle'
+				blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
+
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0',
+
+				showStyleConfigManifest: [],
+				showStyleMigrations: [],
+				getShowStyleVariantId: () => null,
+				getRundown: () => null as any as BlueprintResultRundown,
+				getSegment: () => null as any as BlueprintResultSegment
 			})
 
 			Blueprints.remove('fake_id')
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest.toString()))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			const blueprint = loadShowStyleBlueprints(showStyle)
 			expect(blueprint).toBeTruthy()
