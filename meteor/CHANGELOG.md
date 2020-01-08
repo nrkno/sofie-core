@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.1...v1.5.0-0) (2020-01-08)
+
+
+### Bug Fixes
+
+* don't emit status.BAD for messages in queue. We no longer consider these to be critical to the broadcast. ([837ccd6](https://github.com/nrkno/tv-automation-server-core/commit/837ccd6))
+* resolve issues with hotkeys in ModialDialogs ([#132](https://github.com/nrkno/tv-automation-server-core/issues/132)) ([879bd8f](https://github.com/nrkno/tv-automation-server-core/commit/879bd8f))
+* warn even if there is only one unsent item in queue ([d01470a](https://github.com/nrkno/tv-automation-server-core/commit/d01470a))
+
+
+### Features
+
+* device config manifests ([#145](https://github.com/nrkno/tv-automation-server-core/issues/145)) ([2982dc8](https://github.com/nrkno/tv-automation-server-core/commit/2982dc8))
+* ignore piece media status ([fc6afab](https://github.com/nrkno/tv-automation-server-core/commit/fc6afab))
+
+
+
+## [1.4.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.3.0...v1.4.0) (2020-01-02)
+
+
+### Bug Fixes
+
+* allow Next:ing past an empty segment. ([115a922](https://github.com/nrkno/tv-automation-server-core/commit/115a922))
+* bugfix: not able to reset rundown when first part was playing ([d8f607f](https://github.com/nrkno/tv-automation-server-core/commit/d8f607f))
+* don't reset invalid part actual duration, only displayDuration ([#114](https://github.com/nrkno/tv-automation-server-core/issues/114)) ([298e005](https://github.com/nrkno/tv-automation-server-core/commit/298e005))
+* hotkey overlap crash ([#135](https://github.com/nrkno/tv-automation-server-core/issues/135)) ([c916dc3](https://github.com/nrkno/tv-automation-server-core/commit/c916dc3))
+* support rundown layouts in snapshots ([#137](https://github.com/nrkno/tv-automation-server-core/issues/137)) ([af9e0c4](https://github.com/nrkno/tv-automation-server-core/commit/af9e0c4))
+
+
+### Features
+
+* check blueprintId field before updating blueprint to ensure it is safe ([993fa50](https://github.com/nrkno/tv-automation-server-core/commit/993fa50))
+* prompt the user to replace blueprint if it can be forced ([b594279](https://github.com/nrkno/tv-automation-server-core/commit/b594279))
+
+
+
 ### [1.4.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.0-0...v1.4.1) (2020-01-02)
 
 
