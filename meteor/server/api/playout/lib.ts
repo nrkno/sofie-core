@@ -93,6 +93,7 @@ export function resetRundown (rundown: Rundown) {
 			playoutDuration: 1,
 			startedPlayback: 1,
 			userDuration: 1,
+			definitelyEnded: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -326,6 +327,7 @@ function resetPart (part: DBPart): Promise<void> {
 		$unset: {
 			startedPlayback: 1,
 			userDuration: 1,
+			definitelyEnded: 1,
 			disabled: 1,
 			hidden: 1
 		}
