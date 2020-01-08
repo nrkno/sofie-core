@@ -97,7 +97,10 @@ describe('test peripheralDevice general API methods', () => {
 		  type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
 		  name: 'test',
-		  connectionId: 'test'
+		  connectionId: 'test',
+		  configManifest: {
+			  deviceConfig: []
+		  }
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token, options)
 		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
@@ -318,7 +321,10 @@ describe('test peripheralDevice general API methods', () => {
 			type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
 			name: 'test',
-			connectionId: 'test'
+			connectionId: 'test',
+			configManifest: {
+				deviceConfig: []
+			}
 		}
 		try {
 			Meteor.call(PeripheralDeviceAPI.methods.initialize, 'wibbly', device.token, options)

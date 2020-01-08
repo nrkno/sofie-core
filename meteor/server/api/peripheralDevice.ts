@@ -52,6 +52,8 @@ export namespace ServerPeripheralDeviceAPI {
 					name: peripheralDevice.name || options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
+
+					configManifest: options.configManifest
 				}
 			})
 		} catch (e) {
@@ -76,7 +78,9 @@ export namespace ServerPeripheralDeviceAPI {
 					name: options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
-					// settings: {}
+					// settings: {},
+
+					configManifest: options.configManifest
 				})
 			} else {
 				throw e
