@@ -79,7 +79,10 @@ export function setupMockPeripheralDevice (
 		lastConnected: 1234,
 		connected: true,
 		connectionId: 'myConnectionId',
-		token: 'mockToken'
+		token: 'mockToken',
+		configManifest: {
+			deviceConfig: []
+		}
 	}
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
 	PeripheralDevices.insert(device)

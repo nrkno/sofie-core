@@ -3,6 +3,7 @@ import { Random } from 'meteor/random'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
+import { DeviceConfigManifest } from './deviceConfig'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
@@ -57,6 +58,7 @@ export interface InitOptions {
 	versions?: {
 		[libraryName: string]: string
 	}
+	configManifest: DeviceConfigManifest
 }
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 

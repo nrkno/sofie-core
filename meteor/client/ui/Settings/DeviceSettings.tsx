@@ -12,12 +12,13 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
-import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
+import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -47,6 +48,13 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 			this.props.device &&
 			this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 		) {
+			if (this.props.device.configManifest) {
+				return <GenericDeviceSettingsComponent
+						device={this.props.device}
+						subDevices={this.props.subDevices}
+					/>
+			}
+			// @todo: deprecate:
 			switch (this.props.device.type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:
 					return <MosDeviceSettingsComponent

@@ -8,6 +8,7 @@ import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { MosDeviceSettings } from './PeripheralDeviceSettings/mosDevice'
 import { SpreadsheetDeviceSettings, SpreadsheetDeviceSecretSettings } from './PeripheralDeviceSettings/spreadsheet'
 import { createMongoCollection } from './lib'
+import { DeviceConfigManifest } from '../api/deviceConfig'
 
 export interface PeripheralDevice {
 	_id: string
@@ -46,6 +47,8 @@ export interface PeripheralDevice {
 
 	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
 	ignore?: boolean
+
+	configManifest: DeviceConfigManifest
 }
 
 export interface MosParentDevice extends PeripheralDevice {
