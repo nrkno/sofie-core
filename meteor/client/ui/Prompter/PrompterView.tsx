@@ -418,8 +418,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	}
 
-	UNSAFE_componentWillUpdate () {
-		// TODO: find an element to anchor to
+	storeScrollAnchor = _.debounce(() => {
 		let readPosition = (this.props.config.margin || 0) * window.innerHeight / 100
 		switch (this.props.config.marker) {
 			case 'top':
@@ -446,11 +445,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		if (foundPositions.length > 0) {
 			this._scrollAnchor = foundPositions[foundPositions.length - 1]
 		}
-	}
+	}, 250, true)
 
-	componentDidUpdate () {
-		// TODO: Restore element's position
-
+	restoreScrollAnchor = _.debounce(() => {
 		if (this._scrollAnchor) {
 			const anchor = document.querySelector(this._scrollAnchor[1])
 			if (anchor) {
@@ -465,6 +462,14 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				console.warn('Read anchor could not be found: ' + this._scrollAnchor[1])
 			}
 		}
+	}, 150)
+
+	UNSAFE_componentWillUpdate () {
+		this.storeScrollAnchor()
+	}
+
+	componentDidUpdate () {
+		this.restoreScrollAnchor()
 	}
 
 	renderPrompterData (prompterData: PrompterData) {
