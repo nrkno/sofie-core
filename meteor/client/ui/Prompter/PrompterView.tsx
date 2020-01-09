@@ -464,7 +464,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	shouldComponentUpdate(nextProps, nextState): boolean {
 		clearTimeout(this._debounceUpdate)
-		setTimeout(() => this.forceUpdate(), 250)
+		this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 		return false
 	}
 
