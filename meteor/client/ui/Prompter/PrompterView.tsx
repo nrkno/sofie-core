@@ -383,7 +383,7 @@ interface IPrompterTrackedProps {
 	prompterData: PrompterData
 }
 
-type ScrollAnchor = [number, string] | undefined
+type ScrollAnchor = [number, string] | null
 
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 
@@ -411,7 +411,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		super.componentWillUnmount()
 	}
 
-	componentWillMount () {
+	componentDidMount () {
 		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
 		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })
 		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
@@ -445,11 +445,11 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		if (foundPositions.length > 0) {
 			return foundPositions[foundPositions.length - 1]
 		}
-		return undefined
+		return null
 	}
 
 	restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
-		if (scrollAnchor === undefined) return
+		if (scrollAnchor === null) return
 		const anchor = document.querySelector(scrollAnchor[1])
 		if (anchor) {
 			const { top } = anchor.getBoundingClientRect()
@@ -464,6 +464,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	shouldComponentUpdate(nextProps, nextState): boolean {
 		clearTimeout(this._debounceUpdate)
+		this.props = nextProps
 		this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 		return false
 	}
