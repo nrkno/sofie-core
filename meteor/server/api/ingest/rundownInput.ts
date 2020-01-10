@@ -838,6 +838,19 @@ export function isUpdateAllowed (
 			}
 		}
 	}
+	if (!allowed) {
+		logger.debug(`rundownChanges: ${printChanges(rundownChanges)}`)
+		logger.debug(`segmentChanges: ${printChanges(segmentChanges)}`)
+		logger.debug(`partChanges: ${printChanges(partChanges)}`)
+	}
 	return allowed
 }
+function printChanges (changes: Optional<PreparedChanges<{_id: string}>>): string {
+	let str = ''
 
+	if (changes.changed)	str += _.map(changes.changed,	doc => 'change:' + doc.doc._id).join(',')
+	if (changes.inserted)	str += _.map(changes.inserted,	doc => 'insert:' + doc._id).join(',')
+	if (changes.removed)	str += _.map(changes.removed,	doc => 'remove:' + doc._id).join(',')
+
+	return str
+}
