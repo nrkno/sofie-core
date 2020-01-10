@@ -92,12 +92,17 @@ export namespace mousetrapHelper {
 		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
 		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
 
+		if (!callback && !tag) {
+			throw new Error(`Need to provide either a callback or a tag`)
+		}
+
 		if (_boundHotkeys[index] === undefined) return
-		const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback || i.tag === tag)
-		if (callbackIndex >= 0) {
-			_boundHotkeys[index].splice(callbackIndex, 1)
-		} else {
-			console.log('Callback not found in list for ', index)
+		let callbackIndex = 0
+		while (callbackIndex >= 0) {
+			callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback || i.tag === tag)
+			if (callbackIndex >= 0) {
+				_boundHotkeys[index].splice(callbackIndex, 1)
+			}
 		}
 		if (_boundHotkeys[index].length === 0) {
 			delete _boundHotkeys[index]
