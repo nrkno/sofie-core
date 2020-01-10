@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-1...v1.5.0-2) (2020-01-10)
+
+
+### Bug Fixes
+
+* resolve mousetrapHelper hotkeys issue ([15e7755](https://github.com/nrkno/tv-automation-server-core/commit/15e7755))
+
+
+
 ## [1.5.0-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-0...v1.5.0-1) (2020-01-09)
 
 
