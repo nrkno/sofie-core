@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-2...v1.5.0-3) (2020-01-10)
+
+
+### Bug Fixes
+
+* change lifecycle hooks for Prompter, debounce collection updates ([afdeea3](https://github.com/nrkno/tv-automation-server-core/commit/afdeea3))
+* **prompter:** only use new lifecycle methods ([172db47](https://github.com/nrkno/tv-automation-server-core/commit/172db47))
+* **prompter:** resolve issue with updates messing up prompter ([f504caf](https://github.com/nrkno/tv-automation-server-core/commit/f504caf))
+* **prompter:** track timeout in _debounceUpdate ([d4e3f76](https://github.com/nrkno/tv-automation-server-core/commit/d4e3f76))
+
+
+
 ## [1.5.0-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-1...v1.5.0-2) (2020-01-10)
 
 
