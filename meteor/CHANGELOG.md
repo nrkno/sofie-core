@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.2-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.2-2...v1.4.2-3) (2020-01-10)
+
+
+### Bug Fixes
+
+* **prompter:** only use new lifecycle methods ([a86104f](https://github.com/nrkno/tv-automation-server-core/commit/a86104f))
+
+
+
 ### [1.4.2-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.1...v1.4.2-2) (2020-01-09)
 
 
