@@ -50,7 +50,7 @@ import {
 	onPartHasStoppedPlaying,
 	refreshPart,
 	getPreviousPartForSegment,
-	fetchAfterInPlaylist
+	selectNextPart
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -308,9 +308,7 @@ export namespace ServerPlayoutAPI {
 			let takePartInstance = rundownData.nextPartInstance
 			if (!takePartInstance) throw new Meteor.Error(404, 'takePart not found!')
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			let partAfter = fetchNext(_.filter(rundownData.parts, p => (p.rundownId === rundown._id && !p.invalid && !p.floated)), takePart)
-
-			let nextPart: DBPart | null = partAfter || null
+			const nextPart = selectNextPart(takePartInstance, rundownData.parts)
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPartInstance || null, takePartInstance)
@@ -400,7 +398,7 @@ export namespace ServerPlayoutAPI {
 				nextPartInstance: undefined
 			}
 
-			libSetNextPart(playlist, nextPart)
+			libSetNextPart(playlist, nextPart ? nextPart.part : null)
 			waitForPromiseAll(ps)
 			ps = []
 
@@ -662,7 +660,7 @@ export namespace ServerPlayoutAPI {
 		let part = parts[partIndex]
 		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-		if ((currentPartInstance && part._id === currentPartInstance.part._id && !nextPartId0) || part.invalid || part.floated) {
+		if ((currentPartInstance && part._id === currentPartInstance.part._id && !nextPartId0) || !part.isPlayable()) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			if (part._id !== nextPartId0) {
@@ -964,21 +962,8 @@ export namespace ServerPlayoutAPI {
 
 						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						// TODO - this is bad as it is not conisdering invalid/floated
-						// TODO-PartInstance - this will not work well with a partinstance without a backing part
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPartInstance.part._rank,
-							},
-							_id: { $ne: playingPartInstance.part._id }
-						}, {
-							limit: 1
-						})
-
-						let nextPart: Part | null = _.first(partsAfter) || null
-
 						const playlistChange = literal<Partial<RundownPlaylist>>({
-							previousPartInstanceId: rundown.currentPartInstanceId,
+							previousPartInstanceId: playlist.currentPartInstanceId,
 							currentPartInstanceId: playingPartInstance._id,
 							holdState: RundownHoldState.NONE,
 						})
@@ -988,20 +973,11 @@ export namespace ServerPlayoutAPI {
 						})
 						playlist = _.extend(playlist, playlistChange) as RundownPlaylist
 
-						libSetNextPart(playlist, nextPart)
+						const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
+						libSetNextPart(playlist, nextPart ? nextPart.part : null)
 					} else {
-						// TODO-ASAP - this is bad as it is not conisdering invalid/floated. also not considerign rank correctly
-						// TODO-PartInstance - this will not work well with a partinstance without a backing part
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPartInstance.part._rank,
-							},
-							_id: { $ne: playingPartInstance.part._id }
-						})
-
-						let nextPart: Part | null = partsAfter[0] || null
 
 						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
@@ -1014,7 +990,9 @@ export namespace ServerPlayoutAPI {
 							$set: playlistChange
 						})
 						playlist = _.extend(playlist, playlistChange)
-						libSetNextPart(playlist, nextPart)
+
+						const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
+						libSetNextPart(playlist, nextPart ? nextPart.part : null)
 
 						// TODO - should this even change the next?
 						logger.error(`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`)
@@ -1022,6 +1000,7 @@ export namespace ServerPlayoutAPI {
 
 					reportPartHasStarted(playingPartInstance, startedPlayback)
 
+					// Load the latest data and complete the take
 					const rundownPlaylist = RundownPlaylists.findOne(rundown.playlistId)
 					if (!rundownPlaylist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}", parent of rundown "${rundown._id}" not found!`)
 

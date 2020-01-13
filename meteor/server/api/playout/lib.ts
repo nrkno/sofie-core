@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { Pieces } from '../../../lib/collections/Pieces'
-import { Parts, DBPart, Part } from '../../../lib/collections/Parts'
+import { Parts, DBPart, Part, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	asyncCollectionUpdate,
 	getCurrentTime,
@@ -13,8 +13,6 @@ import {
 	Time,
 	pushOntoPath,
 	clone,
-	toc,
-	mongoWhere
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -23,7 +21,6 @@ import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { MongoSelector } from '../../../lib/typings/meteor'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 
 /**
@@ -212,7 +209,6 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 	const rundowns = rundownPlaylist.getRundowns()
 	const rundown = _.first(rundowns)
 	if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
-	const parts = rundown.getParts()
 
 	RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
@@ -231,7 +227,6 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 	delete rundownPlaylist.startedPlayback
 	delete rundownPlaylist.previousPersistentState
 
-
 	Rundowns.update({
 		playlistId: rundownPlaylist._id
 	}, {
@@ -248,8 +243,8 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 
 	if (rundownPlaylist.active) {
 		// put the first on queue:
-		// TODO-ASAP this could set to an invalid/floated part.. (or nothing if the first rundown is empty)
-		setNextPart(rundownPlaylist, _.first(parts) || null)
+		const firstPart = selectNextPart(null, rundownPlaylist.getParts())
+		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(rundownPlaylist, null)
 	}
@@ -288,6 +283,28 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	const prevPart = getPreviousPartForSegment(dbRundown._id, segment)
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
+
+export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[]): { part: Part, index: number} | undefined {
+	let possibleParts = parts
+
+	// TODO-ASAP refactor and reuse to select the next part for playout too
+	if (previousPartInstance !== null) {
+		const currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
+		// TODO - choose something better for next?
+		if (currentIndex !== -1) {
+			possibleParts = parts.slice(currentIndex + 1)
+		}
+	}
+
+	// Filter to after and find the first playabale
+	for (let index = 0; index < possibleParts.length; index ++) {
+		const part = possibleParts[index]
+		if (part.isPlayable()) {
+			return { part, index }
+		}
+	}
+	return undefined
+}
 export function setNextPart (
 	rundownPlaylist: RundownPlaylist,
 	nextPart: DBPart | null,
@@ -301,11 +318,8 @@ export function setNextPart (
 		if (nextPart._id === rundownPlaylist.currentPartId) {
 			throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
 		}
-		if (nextPart.invalid) {
-			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
-		}
-		if (nextPart.floated) {
-			throw new Meteor.Error(400, 'Part is marked as floated, cannot set as next.')
+		if (!isPartPlayable(nextPart)) {
+			throw new Meteor.Error(400, 'Part is unplabale, cannot set as next.')
 		}
 
 		ps.push(resetPart(nextPart))
@@ -484,66 +498,4 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 
 		return o
 	})
-}
-export function fetchAfterInPlaylist (
-	parts: Mongo.Collection<Part> | Array<Part>,
-	selector: MongoSelector<Part>,
-	playlist: RundownPlaylist,
-	partRundown: Rundown,
-	part: Part | undefined
-): Part | undefined {
-	let rank: number
-	let rundownId: string
-
-	rundownId = partRundown._id
-	if (part === undefined) {
-		rank = Number.NEGATIVE_INFINITY
-	} else {
-		rank = part._rank
-		if (part.rundownId !== partRundown._id) throw new Meteor.Error(501, `If provided, part must be a member of the partRundown.`)
-	}
-
-	selector = _.extend({}, selector, {
-		_rank: { $gt: rank },
-		rundownId: rundownId
-	})
-
-	let result: Part | undefined
-	if (_.isArray(parts)) {
-		result = _.find(parts, (o) => mongoWhere(o, selector))
-	} else {
-		result = parts.find(selector, {
-			sort: {
-				_rank: 1,
-				_id: 1
-			},
-			limit: 1
-		}).fetch()[0]
-	}
-
-	if (result) {
-		return result
-	} else {
-		const nextRundown: Rundown | undefined = playlist.getRundowns({
-			_rank: {
-				$gt: partRundown._rank
-			}
-		}, {
-			sort: {
-				_rank: 1,
-				_id: 1
-			},
-			limit: 1
-		})[0]
-
-		if (!nextRundown) return undefined // If there's no rundown after this, theres no part after either
-
-		return fetchAfterInPlaylist(
-			parts,
-			selector,
-			playlist,
-			nextRundown,
-			undefined
-		)
-	}
 }

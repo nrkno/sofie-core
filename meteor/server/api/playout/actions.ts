@@ -10,7 +10,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime } from '../../../lib/lib'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
-import { setNextPart, onPartHasStoppedPlaying } from './lib'
+import { setNextPart, onPartHasStoppedPlaying, selectNextPart } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { areThereActiveRundownPlaylistsInStudio } from './studio'
@@ -55,15 +55,8 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 	let rundown: Rundown | undefined
 
 	if (!rundownPlaylist.nextPartInstanceId) {
-		const rundowns = rundownPlaylist.getRundowns()
-		rundown = _.first(rundowns)
-		if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
-		let parts = rundown.getParts()
-		let firstPart = _.first(parts)
-		// TODO - shouldnt this find the first valid part, to try better to have soemthing set? also consider the playlist better
-		if (firstPart && !firstPart.invalid && !firstPart.floated) {
-			setNextPart(rundownPlaylist, firstPart)
-		}
+		const firstPart = selectNextPart(null, rundownPlaylist.getParts())
+		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
 		if (!nextPartInstance) throw new Meteor.Error(404, `Could not find nextPartInstanceId "${rundownPlaylist.nextPartInstanceId}"`)

@@ -249,8 +249,12 @@ export class Part implements DBPart {
 		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
 	isPlayable () { // TODO-ASAP use this in more places instead of specific invalid/floated checks
-		return !this.invalid && !this.floated
+		return isPartPlayable(this)
 	}
+}
+
+export function isPartPlayable (part: DBPart) {
+	return !part.invalid && !part.floated
 }
 
 export const Parts: TransformedCollection<Part, DBPart>

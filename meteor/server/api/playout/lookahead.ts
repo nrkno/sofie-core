@@ -8,8 +8,8 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { literal, clone } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance } from '../../../lib/collections/PartInstances'
 import type { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { selectNextPart } from './lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -178,8 +178,8 @@ export function findLookaheadForlayer (
 	}
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPartIndex = selectNextPartIndex(playoutData.nextPartInstance || playoutData.currentPartInstance || null, playoutData.parts)
-	const futureParts = nextPartIndex !== -1 ? playoutData.parts.slice(nextPartIndex) : []
+	const nextPart = selectNextPart(playoutData.nextPartInstance || playoutData.currentPartInstance || null, playoutData.parts)
+	const futureParts = nextPart ? playoutData.parts.slice(nextPart.index) : []
 	if (futureParts.length === 0) {
 		return res
 	}
@@ -211,25 +211,6 @@ export function findLookaheadForlayer (
 	}
 
 	return res
-}
-
-function selectNextPartIndex (currentPartInstance: PartInstance | null, parts: Part[]): number {
-	// TODO-ASAP refactor and reuse to select the next part for playout too
-	if (currentPartInstance === null) {
-		return parts.length ? 0 : -1
-	}
-
-	const currentIndex = parts.findIndex(p => p._id === currentPartInstance.part._id)
-	if (currentIndex === -1) return -1
-
-	// Filter to after and find the first playabale
-	const possibleParts = parts.slice(currentIndex + 1)
-	return possibleParts.findIndex(p => p.isPlayable())
-}
-
-function selectNextPart (currentPartInstance: PartInstance | null, parts: Part[]): Part | undefined {
-	const index = selectNextPartIndex(currentPartInstance, parts)
-	return index !== -1 ? parts[index] : undefined
 }
 
 function findObjectsForPart (
