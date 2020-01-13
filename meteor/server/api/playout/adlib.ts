@@ -64,7 +64,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 			// Disable the original piece if from the same Part
 			if (pieceInstanceToCopy.partInstanceId === partInstance._id) {
-				const pieces = getResolvedPieces(part) as PieceInstance[]
+				const pieces = getResolvedPieces(part)
 				const origResolvedPiece = pieces.find(p => p._id === pieceInstanceToCopy._id)
 
 				// Ensure the piece being copied isnt currently live

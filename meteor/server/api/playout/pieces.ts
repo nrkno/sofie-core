@@ -179,7 +179,7 @@ export function createPieceGroup (
 		}
 	})
 }
-export function getResolvedPieces (part: Part): Piece[] {
+export function getResolvedPieces (part: Part): PieceInstance[] {
 	// TODO - was this mangled for endState and could it have broken something else?
 	const pieces = part.getAllPieces()
 
