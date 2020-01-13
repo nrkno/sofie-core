@@ -18,7 +18,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 
 interface IPropsHeader {
 	partId: string
-	rundownId: string
+	rundownIds: string[]
 	showStyleBaseId: string
 }
 
@@ -68,7 +68,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 
 	componentWillMount () {
 		this.subscribe(PubSub.piecesSimple, {
-			rundownId: this.props.rundownId
+			rundownId: { $in: this.props.rundownIds }
 		})
 		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.showStyleBaseId
@@ -131,7 +131,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 
 	componentWillMount () {
 		this.subscribe(PubSub.piecesSimple, {
-			rundownId: this.props.rundownId
+			rundownId: { $in: this.props.rundownIds }
 		})
 		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.showStyleBaseId

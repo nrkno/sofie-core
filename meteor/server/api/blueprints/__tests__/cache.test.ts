@@ -358,6 +358,8 @@ describe('Test blueprint cache', () => {
 		function getRundown () {
 			return new Rundown(literal<DBRundown>({
 				_id: 'ro1',
+				playlistId: 'pls0',
+				_rank: 1,
 				externalId: 'ro1',
 				studioId: 'studio0',
 				showStyleBaseId: '',
@@ -368,10 +370,6 @@ describe('Test blueprint cache', () => {
 				modified: 0,
 				importVersions: {} as any,
 				name: 'test',
-
-				previousPartId: null,
-				currentPartId: null,
-				nextPartId: null
 			}))
 		}
 		testInFiber('Missing showStyleBaseId', () => {

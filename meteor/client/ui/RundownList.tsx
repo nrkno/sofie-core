@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime, literal } from '../../lib/lib'
@@ -31,9 +32,17 @@ import { Spinner } from '../lib/Spinner'
 
 const PackageInfo = require('../../package.json')
 
+interface RundownPlaylistUi extends RundownPlaylist {
+	status: string
+	airStatus: string
+	unsynced: boolean
+	studioName: string
+	showStyles: Array<{ id: string, baseName: string, variantName: string }>
+}
+
 interface IRundownListItemProps {
 	key: string,
-	rundown: RundownUI
+	rundown: RundownPlaylistUi
 }
 
 interface IRundownListItemStats {
@@ -44,20 +53,20 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
-	getRundownLink (rundownId) {
+	getRundownLink (rundownId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
 	}
-	getStudioLink (studioId) {
+	getStudioLink (studioId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(studioId))
 	}
-	getshowStyleBaseLink (showStyleBaseId) {
+	getshowStyleBaseLink (showStyleBaseId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
 	}
 
-	confirmDelete (rundown: Rundown) {
+	confirmDelete (rundown: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -74,7 +83,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		})
 	}
 
-	confirmReSyncRO (rundown: Rundown) {
+	confirmReSyncRO (rundown: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
 			title: t('Re-Sync this rundown?'),
@@ -119,8 +128,15 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<td className='rundown-list-item__showStyle'>
 						{
 							getAllowConfigure() ?
-							<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyleBaseId)}>{`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`}</Link> :
-							`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`
+								(
+									this.props.rundown.showStyles.length === 1 ?
+									<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyles[0].id)}>{`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}`}</Link> :
+									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+								) : (
+									this.props.rundown.showStyles.length === 1 ?
+									`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}` :
+									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+								)
 						}
 					</td>
 					<td className='rundown-list-item__created'>
@@ -188,7 +204,7 @@ enum ToolTipStep {
 
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
-	rundowns: Array<RundownUI>
+	rundowns: Array<RundownPlaylistUi>
 }
 
 interface IRundownsListState {
@@ -196,7 +212,7 @@ interface IRundownsListState {
 	subsReady: boolean
 }
 
-export const RundownList = translateWithTracker(() => {
+export const RundownList = translateWithTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -206,17 +222,28 @@ export const RundownList = translateWithTracker(() => {
 
 	return {
 		coreSystem: getCoreSystem(),
-		rundowns: _.map(Rundowns.find({}, { sort: { created: -1 } }).fetch(), (rundown) => {
-			const studio = _.find(studios, s => s._id === rundown.studioId)
-			const showStyleBase = _.find(showStyleBases, s => s._id === rundown.showStyleBaseId)
-			const showStyleVariant = _.find(showStyleVariants, s => s._id === rundown.showStyleVariantId)
+		rundowns: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((p: RundownPlaylistUi) => {
+			const rs = p.getRundowns()
+			p.airStatus = rs.map(r => r.airStatus).join(', ')
+			p.status = rs.map(r => r.status).join(', ')
+			p.unsynced = rs.reduce((p, v) => p || v.unsynced || false, false)
 
-			return {
-				...rundown,
-				studioName: studio && studio.name || 'N/A',
-				showStyleBaseName: showStyleBase && showStyleBase.name || 'N/A',
-				showStyleVariantName: showStyleVariant && showStyleVariant.name || 'N/A'
-			}
+			const studio = _.find(studios, s => s._id === p.studioId)
+
+			p.studioName = studio && studio.name || ''
+			p.showStyles = _.uniq(
+				rs.map(r => [r.showStyleBaseId, r.showStyleVariantId]), false, (t) => t[0] + '_' + t[1]
+				).map(combo => {
+					const showStyleBase = _.find(showStyleBases, s => s._id === combo[0])
+					const showStyleVariant = _.find(showStyleVariants, s => s._id === combo[1])
+
+					return {
+						id: showStyleBase && showStyleBase._id || '',
+						baseName: showStyleBase && showStyleBase.name || '',
+						variantName: showStyleVariant && showStyleVariant.name || ''
+					}
+				})
+			return p
 		})
 	}
 })(
@@ -264,19 +291,27 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				systemStatus: systemStatus
 			})
 		})
+	}
 
-		this.subscribe(PubSub.rundowns, {})
+	componentWillMount () {
+		// Subscribe to data:
+		// TODO: make something clever here, to not load ALL the rundowns
+		this.subscribe(PubSub.rundownPlaylists, {})
 		this.subscribe(PubSub.studios, {})
 
 		this.autorun(() => {
 			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
 			const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleVariantId))
+			const playlistIds = _.uniq(RundownPlaylists.find().fetch().map(i => i._id))
 
 			this.subscribe(PubSub.showStyleBases, {
 				_id: { $in: showStyleBaseIds }
 			})
 			this.subscribe(PubSub.showStyleVariants, {
 				_id: { $in: showStyleVariantIds }
+			})
+			this.subscribe(PubSub.rundowns, {
+				playlistId: { $in: playlistIds }
 			})
 		})
 
@@ -331,7 +366,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		</React.Fragment>
 	}
 
-	renderRundowns (list: RundownUI[]) {
+	renderRundowns (list: RundownPlaylistUi[]) {
 		const { t } = this.props
 
 		return list.length > 0 ?

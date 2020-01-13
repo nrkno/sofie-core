@@ -39,26 +39,28 @@ import {
 	reportPieceHasStopped
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
-	resetRundown as libResetRundown,
+	resetRundownPlaylist as libResetRundownPlaylist,
 	setNextPart as libSetNextPart,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPreviousPartForSegment
+	getPreviousPartForSegment,
+	fetchAfterInPlaylist
 } from './lib'
 import {
 	prepareStudioForBroadcast,
-	activateRundown as libActivateRundown,
-	deactivateRundown as libDeactivateRundown,
-	deactivateRundownInner
+	activateRundownPlaylist as libActivateRundownPlaylist,
+	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
+	deactivateRundownPlaylistInner
 } from './actions'
 import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece, resolveActivePieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { areThereActiveRundownsInStudio } from './studio'
+import { areThereActiveRundownPlaylistsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
@@ -70,37 +72,37 @@ export namespace ServerPlayoutAPI {
 	 * Prepare the rundown for transmission
 	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
 	 */
-	export function prepareRundownForBroadcast (rundownId: string) {
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (rundown.active) throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
+	export function prepareRundownForBroadcast (rundownPlaylistId: string) {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (playlist.active) throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
 
-			const anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+			const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
 			if (anyOtherActiveRundowns.length) {
 				// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 				throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 			}
 
-			libResetRundown(rundown)
-			prepareStudioForBroadcast(rundown.getStudio())
+			libResetRundownPlaylist(playlist)
+			prepareStudioForBroadcast(playlist.getStudio())
 
-			return libActivateRundown(rundown, true) // Activate rundown (rehearsal)
+			return libActivateRundownPlaylist(playlist, true) // Activate rundown (rehearsal)
 		})
 	}
 	/**
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
-	export function resetRundown (rundownId: string) {
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(401, `rundownResetBroadcast can only be run in rehearsal!`)
+	export function resetRundown (rundownPlaylistId: string) {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(401, `rundownResetBroadcast can only be run in rehearsal!`)
 
-			libResetRundown(rundown)
+			libResetRundownPlaylist(playlist)
 
-			updateTimeline(rundown.studioId)
+			updateTimeline(playlist.studioId)
 
 			return { success: 200 }
 		})
@@ -109,38 +111,38 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundown, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function resetAndActivateRundown (rundownId: string, rehearsal?: boolean) {
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(402, `rundownResetAndActivate cannot be run when active!`)
+	export function resetAndActivateRundown (rundownPlaylistId: string, rehearsal?: boolean) {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(402, `rundownResetAndActivate cannot be run when active!`)
 
-			libResetRundown(rundown)
+			libResetRundownPlaylist(playlist)
 
-			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
+			return libActivateRundownPlaylist(playlist, !!rehearsal) // Activate rundown
 		})
 	}
 	/**
-	 * Activate the rundown, decativate any other running rundowns
+	 * Activate the rundownPlaylist, decativate any other running rundowns
 	 */
-	export function forceResetAndActivateRundown (rundownId: string, rehearsal: boolean) {
+	export function forceResetAndActivateRundownPlaylist (rundownPlaylistId: string, rehearsal: boolean) {
 		check(rehearsal, Boolean)
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 
-			let anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+			let anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
 			let error: any
-			_.each(anyOtherActiveRundowns, (otherRundown) => {
+			_.each(anyOtherActiveRundowns, (otherRundownPlaylist) => {
 				try {
-					deactivateRundownInner(otherRundown)
+					deactivateRundownPlaylistInner(otherRundownPlaylist)
 				} catch (e) {
 					error = e
 				}
 			})
 			if (error) {
 				// Ok, something went wrong, but check if the active rundowns where deactivated?
-				anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+				anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
 				if (anyOtherActiveRundowns.length) {
 					// No they weren't, we can't continue..
 					throw error
@@ -150,70 +152,83 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 
-			libResetRundown(rundown)
+			libResetRundownPlaylist(playlist)
 
-			return libActivateRundown(rundown, rehearsal)
+			return libActivateRundownPlaylist(playlist, rehearsal)
 		})
 	}
 	/**
 	 * Only activate the rundown, don't reset anything
 	 */
-	export function activateRundown (rundownId: string, rehearsal: boolean) {
+	export function activateRundown (rundownPlaylistId: string, rehearsal: boolean) {
 		check(rehearsal, Boolean)
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 
-			return libActivateRundown(rundown, rehearsal)
+			return libActivateRundownPlaylist(playlist, rehearsal)
 		})
 	}
 	/**
 	 * Deactivate the rundown
 	 */
-	export function deactivateRundown (rundownId: string) {
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	export function deactivateRundown (rundownPlaylistId: string) {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 
-			return libDeactivateRundown(rundown)
+			return libDeactivateRundownPlaylist(playlist)
 		})
 	}
 	/**
 	 * Trigger a reload of data of the rundown
 	 */
-	export function reloadData (rundownId: string) {
+	export function reloadData (rundownPlaylistId: string) {
 		// Reload and reset the Rundown
-		check(rundownId, String)
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		check(rundownPlaylistId, String)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			const rundowns = Rundowns.find({
+				playlistId: playlist._id
+			}).fetch()
+
+			const all = rundowns.map(r => IngestActions.reloadRundown(r))
+
+			const response = all.join(', ')
 
 			return ClientAPI.responseSuccess(
-				IngestActions.reloadRundown(rundown)
+				response
 			)
 		})
 	}
 	/**
 	 * Take the currently Next:ed Part (start playing it)
 	 */
-	export function takeNextPart (rundownId: string): ClientAPI.ClientResponse {
+	export function takeNextPart (rundownPlaylistId: string): ClientAPI.ClientResponse {
 		let now = getCurrentTime()
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			let rundown = Rundowns.findOne(rundownId) as Rundown
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
-			if (!rundown.nextPartId) throw new Meteor.Error(500, 'nextPartId is not set!')
 
-			let timeOffset: number | null = rundown.nextTimeOffset || null
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+			if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
+			if (!playlist.nextPartId) throw new Meteor.Error(500, 'nextPartId is not set!')
 
-			let firstTake = !rundown.startedPlayback
-			let rundownData = rundown.fetchAllData()
+			let timeOffset: number | null = playlist.nextTimeOffset || null
 
-			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
+			let firstTake = !playlist.startedPlayback
+			let rundownData = playlist.fetchAllData()
 
-			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
+			const partId = playlist.currentPartId || playlist.nextPartId
+
+			const currentPart = partId ? Parts.findOne(partId) : undefined
+			const currentRundown = currentPart ? rundownData.rundownsMap[currentPart.rundownId] : undefined
+
+			if (!currentRundown) throw new Meteor.Error(404, `Rundown "${currentPart && currentPart.rundownId || ''}" could not be found!`)
+
+			let pBlueprint = makePromise(() => getBlueprintOfRundown(currentRundown))
 			if (currentPart && currentPart.transitionDuration) {
-				const prevPart = rundown.previousPartId ? rundownData.partsMap[rundown.previousPartId] : undefined
+				const prevPart = playlist.previousPartId ? rundownData.partsMap[playlist.previousPartId] : undefined
 				const allowTransition = prevPart && !prevPart.disableOutTransition
 
 				// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
@@ -225,23 +240,23 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 
-			if (rundown.holdState === RundownHoldState.COMPLETE) {
-				Rundowns.update(rundown._id, {
+			if (playlist.holdState === RundownHoldState.COMPLETE) {
+				RundownPlaylists.update(playlist._id, {
 					$set: {
 						holdState: RundownHoldState.NONE
 					}
 				})
 			// If hold is active, then this take is to clear it
-			} else if (rundown.holdState === RundownHoldState.ACTIVE) {
+			} else if (playlist.holdState === RundownHoldState.ACTIVE) {
 				const ps: Promise<any>[] = []
-				ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+				ps.push(asyncCollectionUpdate(RundownPlaylists, playlist._id, {
 					$set: {
 						holdState: RundownHoldState.COMPLETE
 					}
 				}))
 
-				if (rundown.currentPartId) {
-					const currentPart = rundownData.partsMap[rundown.currentPartId]
+				if (playlist.currentPartId) {
+					const currentPart = rundownData.partsMap[playlist.currentPartId]
 					if (!currentPart) throw new Meteor.Error(404, 'currentPart not found!')
 
 					// Remove the current extension line
@@ -251,8 +266,8 @@ export namespace ServerPlayoutAPI {
 						dynamicallyInserted: true
 					}))
 				}
-				if (rundown.previousPartId) {
-					const previousPart = rundownData.partsMap[rundown.previousPartId]
+				if (playlist.previousPartId) {
+					const previousPart = rundownData.partsMap[playlist.previousPartId]
 					if (!previousPart) throw new Meteor.Error(404, 'previousPart not found!')
 
 					// Clear the extended mark on the original
@@ -268,25 +283,32 @@ export namespace ServerPlayoutAPI {
 					}, { multi: true }))
 				}
 				waitForPromiseAll(ps)
-				updateTimeline(rundown.studioId)
+				updateTimeline(playlist.studioId)
 				return ClientAPI.responseSuccess()
 			}
 
-			let previousPart = (rundown.currentPartId ?
-				rundownData.partsMap[rundown.currentPartId]
+			let previousPart = (playlist.currentPartId ?
+				rundownData.partsMap[playlist.currentPartId]
 				: null
 			)
-			let takePart = rundownData.partsMap[rundown.nextPartId]
-			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
-			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			let partAfter = fetchAfter(rundownData.parts, {
-				rundownId: rundown._id,
-				invalid: { $ne: true }
-			}, takePart._rank)
+			let takePart = rundownData.partsMap[playlist.nextPartId]
+			if (!takePart) throw new Meteor.Error(404, `takePart not found! ("${playlist.nextPartId}")`)
+			const takeRundown: Rundown | undefined = rundownData.rundownsMap[takePart.rundownId]
+			if (!takeRundown) throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePart.rundownId}")`)
+
+			let partAfter = fetchAfterInPlaylist(
+				rundownData.parts,
+				{
+					rundownId: takePart.rundownId,
+					invalid: { $ne: true }
+				},
+				playlist,
+				takeRundown,
+				takePart
+			)
 
 			let nextPart: DBPart | null = partAfter || null
 
-			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
 
 
@@ -294,7 +316,7 @@ export namespace ServerPlayoutAPI {
 			if (blueprint.onPreTake) {
 				try {
 					waitForPromise(
-						Promise.resolve(blueprint.onPreTake(new PartEventContext(rundown, undefined, takePart)))
+						Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, undefined, takePart)))
 						.catch(logger.error)
 					)
 				} catch (e) {
@@ -307,17 +329,17 @@ export namespace ServerPlayoutAPI {
 				const time = getCurrentTime()
 				const resolvedPieces = getResolvedPieces(previousPart)
 
-				const context = new RundownContext(rundown)
-				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
+				const context = new RundownContext(takeRundown)
+				previousPartEndState = blueprint.getEndStateForPart(context, playlist.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
 			let ps: Array<Promise<any>> = []
-			let m: Partial<Rundown> = {
-				previousPartId: rundown.currentPartId,
+			let m: Partial<RundownPlaylist> = {
+				previousPartId: playlist.currentPartId,
 				currentPartId: takePart._id,
-				holdState: !rundown.holdState || rundown.holdState === RundownHoldState.COMPLETE ? RundownHoldState.NONE : rundown.holdState + 1,
+				holdState: !playlist.holdState || playlist.holdState === RundownHoldState.COMPLETE ? RundownHoldState.NONE : playlist.holdState + 1,
 			}
-			ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+			ps.push(asyncCollectionUpdate(RundownPlaylists, playlist._id, {
 				$set: m
 			}))
 
@@ -344,9 +366,9 @@ export namespace ServerPlayoutAPI {
 					}
 				}))
 			}
-			rundown = _.extend(rundown, m) as Rundown
+			playlist = _.extend(playlist, m) as RundownPlaylist
 
-			libSetNextPart(rundown, nextPart)
+			libSetNextPart(playlist, nextPart)
 			waitForPromiseAll(ps)
 			ps = []
 
@@ -400,7 +422,7 @@ export namespace ServerPlayoutAPI {
 				if (firstTake) {
 					if (blueprint.onRundownFirstTake) {
 						waitForPromise(
-							Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(rundown, undefined, takePart)))
+							Promise.resolve(blueprint.onRundownFirstTake(new PartEventContext(takeRundown, undefined, takePart)))
 							.catch(logger.error)
 						)
 					}
@@ -408,7 +430,7 @@ export namespace ServerPlayoutAPI {
 
 				if (blueprint.onPostTake) {
 					waitForPromise(
-						Promise.resolve(blueprint.onPostTake(new PartEventContext(rundown, undefined, takePart)))
+						Promise.resolve(blueprint.onPostTake(new PartEventContext(takeRundown, undefined, takePart)))
 						.catch(logger.error)
 					)
 				}
@@ -418,32 +440,32 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 	export function setNextPart (
-		rundownId: string,
+		rundownPlaylistId: string,
 		nextPartId: string | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
 	): ClientAPI.ClientResponse {
-		check(rundownId, String)
+		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 
-			setNextPartInner(rundown, nextPartId, setManually, nextTimeOffset)
+			setNextPartInner(playlist, nextPartId, setManually, nextTimeOffset)
 
 			return ClientAPI.responseSuccess()
 		})
 	}
 	export function setNextPartInner (
-		rundown: Rundown,
+		playlist: RundownPlaylist,
 		nextPartId: string | DBPart | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
 	) {
-		if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundown._id}" is not active!`)
+		if (!playlist.active) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
 
-		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundown._id}" cannot change next during hold!`)
+		if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${playlist._id}" cannot change next during hold!`)
 
 		let nextPart: DBPart | null = null
 		if (nextPartId) {
@@ -455,55 +477,55 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
-		libSetNextPart(rundown, nextPart, setManually, nextTimeOffset)
+		libSetNextPart(playlist, nextPart, setManually, nextTimeOffset)
 
 		// remove old auto-next from timeline, and add new one
-		updateTimeline(rundown.studioId)
+		updateTimeline(playlist.studioId)
 	}
 	export function moveNextPart (
-		rundownId: string,
-		horisontalDelta: number,
+		rundownPlaylistId: string,
+		horizontalDelta: number,
 		verticalDelta: number,
 		setManually: boolean
 	): string | null {
-		check(rundownId, String)
-		check(horisontalDelta, Number)
+		check(rundownPlaylistId, String)
+		check(horizontalDelta, Number)
 		check(verticalDelta, Number)
 
-		if (!horisontalDelta && !verticalDelta) throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horisontalDelta}, ${verticalDelta})`)
+		if (!horizontalDelta && !verticalDelta) throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horizontalDelta}, ${verticalDelta})`)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
 			return moveNextPartInner(
-				rundownId,
-				horisontalDelta,
+				rundownPlaylistId,
+				horizontalDelta,
 				verticalDelta,
 				setManually
 			)
 		})
 	}
 	function moveNextPartInner (
-		rundownId: string,
-		horisontalDelta: number,
+		rundownPlaylistId: string,
+		horizontalDelta: number,
 		verticalDelta: number,
 		setManually: boolean,
 		nextPartId0?: string
 	): string | null {
 
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
+		const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+		if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+		if (!playlist.active) throw new Meteor.Error(501, `Rundown "${rundownPlaylistId}" is not active!`)
 
-		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
+		if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownPlaylistId}" cannot change next during hold!`)
 
 		let nextPartId: string = ''
 		if (nextPartId0) {
 			nextPartId = nextPartId0
 		} else {
-			if (!rundown.nextPartId) {
-				if (!rundown.currentPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next and no current part!`)
-				nextPartId = rundown.currentPartId
+			if (!playlist.nextPartId) {
+				if (!playlist.currentPartId) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" has no next and no current part!`)
+				nextPartId = playlist.currentPartId
 			} else {
-				nextPartId = rundown.nextPartId
+				nextPartId = playlist.nextPartId
 			}
 		}
 		let currentNextPart: Part = Parts.findOne(nextPartId) as Part
@@ -512,14 +534,14 @@ export namespace ServerPlayoutAPI {
 		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
 		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
-		const parts = rundown.getParts()
 		const partsInSegments: {[segmentId: string]: Part[]} = {}
-		const segmentsWithParts: Segment[] = []
-		_.each(rundown.getSegments(), segment => {
+		const segmentsWithParts = playlist.getSegments()
+		const parts: Part[] = []
+		_.each(segmentsWithParts, segment => {
 			let partsInSegment = segment.getParts()
 			if (partsInSegment.length) {
-				segmentsWithParts.push(segment)
 				partsInSegments[segment._id] = partsInSegment
+				parts.push(...partsInSegment)
 			}
 		})
 
@@ -557,97 +579,99 @@ export namespace ServerPlayoutAPI {
 			})
 			if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
 		}
-		partIndex += horisontalDelta
+		partIndex += horizontalDelta
 
 		partIndex = Math.max(0, Math.min(parts.length - 1, partIndex))
 
 		let part = parts[partIndex]
 		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-		if ((part._id === rundown.currentPartId && !nextPartId0) || part.invalid || part.floated) {
+		if ((part._id === playlist.currentPartId && !nextPartId0) || part.invalid || part.floated) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			if (part._id !== nextPartId0) {
-				return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+				return moveNextPartInner(rundownPlaylistId, horizontalDelta, verticalDelta, setManually, part._id)
 			} else {
 				// Calling ourselves again at this point would result in an infinite loop
 				// There probably isn't any Part available to Next then...
-				setNextPartInner(rundown, null, setManually)
+				setNextPartInner(playlist, null, setManually)
 				return null
 			}
 		} else {
-			setNextPartInner(rundown, part, setManually)
+			setNextPartInner(playlist, part, setManually)
 			return part._id
 		}
 	}
-	export function activateHold (rundownId: string) {
-		check(rundownId, String)
+	export function activateHold (rundownPlaylistId: string) {
+		check(rundownPlaylistId, String)
 		logger.debug('rundownActivateHold')
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 
-			if (!rundown.currentPartId) throw new Meteor.Error(400, `Rundown "${rundownId}" no current part!`)
-			if (!rundown.nextPartId) throw new Meteor.Error(400, `Rundown "${rundownId}" no next part!`)
+			if (!playlist.currentPartId) throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" no current part!`)
+			if (!playlist.nextPartId) throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" no next part!`)
 
-			const currentPart = Parts.findOne({ _id: rundown.currentPartId })
-			if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
-			const nextPart = Parts.findOne({ _id: rundown.nextPartId })
-			if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
+			const currentPart = Parts.findOne({ _id: playlist.currentPartId })
+			if (!currentPart) throw new Meteor.Error(404, `Part "${playlist.currentPartId}" not found!`)
+			const nextPart = Parts.findOne({ _id: playlist.nextPartId })
+			if (!nextPart) throw new Meteor.Error(404, `Part "${playlist.nextPartId}" not found!`)
 
 			if (currentPart.holdMode !== PartHoldMode.FROM || nextPart.holdMode !== PartHoldMode.TO) {
-				throw new Meteor.Error(400, `Rundown "${rundownId}" incompatible pair of HoldMode!`)
+				throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
 			}
 
-			if (rundown.holdState) {
-				throw new Meteor.Error(400, `Rundown "${rundownId}" already doing a hold!`)
+			if (playlist.holdState) {
+				throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" already doing a hold!`)
 			}
 
-			Rundowns.update(rundownId, { $set: { holdState: RundownHoldState.PENDING } })
+			RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
 
-			updateTimeline(rundown.studioId)
+			updateTimeline(playlist.studioId)
 
 			return ClientAPI.responseSuccess()
 		})
 	}
-	export function deactivateHold (rundownId: string) {
-		check(rundownId, String)
-		logger.debug('rundownDeactivateHold')
+	export function deactivateHold (rundownPlaylistId: string) {
+		check(rundownPlaylistId, String)
+		logger.debug('deactivateHold')
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 
-			if (rundown.holdState !== RundownHoldState.PENDING) throw new Meteor.Error(400, `Rundown "${rundownId}" is not pending a hold!`)
+			if (playlist.holdState !== RundownHoldState.PENDING) throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" is not pending a hold!`)
 
-			Rundowns.update(rundownId, { $set: { holdState: RundownHoldState.NONE } })
+			Rundowns.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.NONE } })
 
-			updateTimeline(rundown.studioId)
+			updateTimeline(playlist.studioId)
 
 			return ClientAPI.responseSuccess()
 		})
 	}
-	export function disableNextPiece (rundownId: string, undo?: boolean) {
-		check(rundownId, String)
+	export function disableNextPiece (rundownPlaylistId: string, undo?: boolean) {
+		check(rundownPlaylistId, String)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.currentPartId) throw new Meteor.Error(401, `No current part!`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+			if (!playlist.currentPartId) throw new Meteor.Error(401, `No current part!`)
 
-			const studio = rundown.getStudio()
+			const studio = playlist.getStudio()
+
+			const currentPart = Parts.findOne(playlist.currentPartId)
+			if (!currentPart) throw new Meteor.Error(404, `Part "${playlist.currentPartId}" not found!`)
+			const rundown = currentPart.getRundown()
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPart.rundownId}" not found!`)
 			const showStyleBase = rundown.getShowStyleBase()
 
-			const currentPart = Parts.findOne(rundown.currentPartId)
-			if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
-
-			const nextPart = (rundown.nextPartId ? Parts.findOne(rundown.nextPartId) : undefined)
+			const nextPart = (playlist.nextPartId ? Parts.findOne(playlist.nextPartId) : undefined)
 
 			const currentSement = Segments.findOne(currentPart.segmentId)
 			if (!currentSement) throw new Meteor.Error(404, `Segment "${currentPart.segmentId}" not found!`)
 
-			let o = getResolvedSegment(showStyleBase, rundown, currentSement)
+			let o = getResolvedSegment(showStyleBase, playlist, currentSement)
 
 			// @ts-ignore stringify
 			// logger.info(o)
@@ -829,44 +853,45 @@ export namespace ServerPlayoutAPI {
 				if (!isPlaying) {
 					logger.info(`Playout reports part "${partId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
-					let rundown = Rundowns.findOne(rundownId) as Rundown
+					const rundown = Rundowns.findOne(rundownId)
 					if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-					if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
+					let playlist = rundown.getRundownPlaylist()
+					if (!playlist.active) throw new Meteor.Error(501, `Rundown "${rundownId}" is not active!`)
 
 					const currentPart = (
-						rundown.currentPartId ?
-						Parts.findOne(rundown.currentPartId) :
-						null
+						playlist.currentPartId ?
+						Parts.findOne(playlist.currentPartId)
+						: null
 					)
 
-					if (rundown.currentPartId === partId) {
+					if (playlist.currentPartId === partId) {
 						// this is the current part, it has just started playback
-						if (rundown.previousPartId) {
-							const prevPart = Parts.findOne(rundown.previousPartId)
+						if (playlist.previousPartId) {
+							const prevPart = Parts.findOne(playlist.previousPartId)
 
 							if (!prevPart) {
 								// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
-								logger.error(`Previous part "${rundown.previousPartId}" on rundown "${rundownId}" could not be found.`)
+								logger.error(`Previous part "${playlist.previousPartId}" on rundown "${rundownId}" could not be found.`)
 							} else if (!prevPart.duration) {
 								onPartHasStoppedPlaying(prevPart, startedPlayback)
 							}
 						}
 
-						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-					} else if (rundown.nextPartId === partId) {
+						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+					} else if (playlist.nextPartId === partId) {
 						// this is the next part, clearly an autoNext has taken place
-						if (rundown.currentPartId) {
+						if (playlist.currentPartId) {
 							// let currentPart = Parts.findOne(rundown.currentPartId)
 
 							if (!currentPart) {
 								// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
-								logger.error(`Previous part "${rundown.currentPartId}" on rundown "${rundownId}" could not be found.`)
+								logger.error(`Previous part "${playlist.currentPartId}" on rundown "${rundownId}" could not be found.`)
 							} else if (!currentPart.duration) {
 								onPartHasStoppedPlaying(currentPart, startedPlayback)
 							}
 						}
 
-						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
 						let partsAfter = rundown.getParts({
 							_rank: {
@@ -879,18 +904,18 @@ export namespace ServerPlayoutAPI {
 
 						let nextPart: Part | null = _.first(partsAfter) || null
 
-						const rundownChange = {
-							previousPartId: rundown.currentPartId,
+						const playlistChange = {
+							previousPartId: playlist.currentPartId,
 							currentPartId: playingPart._id,
 							holdState: RundownHoldState.NONE,
 						}
 
-						Rundowns.update(rundown._id, {
-							$set: rundownChange
+						RundownPlaylists.update(playlist._id, {
+							$set: playlistChange
 						})
-						rundown = _.extend(rundown, rundownChange) as Rundown
+						playlist = _.extend(playlist, playlistChange) as RundownPlaylist
 
-						libSetNextPart(rundown, nextPart)
+						libSetNextPart(playlist, nextPart)
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
@@ -903,27 +928,28 @@ export namespace ServerPlayoutAPI {
 
 						let nextPart: Part | null = partsAfter[0] || null
 
-						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						const rundownChange = {
+						const playlistChange = {
 							previousPartId: null,
 							currentPartId: playingPart._id,
 						}
 
-						Rundowns.update(rundown._id, {
-							$set: rundownChange
+						RundownPlaylists.update(playlist._id, {
+							$set: playlistChange
 						})
-						rundown = _.extend(rundown, rundownChange) as Rundown
-						libSetNextPart(rundown, nextPart)
+						playlist = _.extend(playlist, playlistChange)
+						libSetNextPart(playlist, nextPart)
 
 						logger.error(`Part "${playingPart._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
 
 					reportPartHasStarted(playingPart, startedPlayback)
 
-					const rundownData = rundown.fetchAllData()
+					const rundownPlaylist = RundownPlaylists.findOne(rundown.playlistId)
+					if (!rundownPlaylist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}", parent of rundown "${rundown._id}" not found!`)
 
-					afterTake(rundownData, playingPart)
+					afterTake(rundownPlaylist.fetchAllData(), playingPart)
 				}
 			} else {
 				throw new Meteor.Error(404, `Part "${partId}" in rundown "${rundownId}" not found!`)
@@ -976,36 +1002,45 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.pieceTakeNow(rundownId, partId, pieceId)
 	}
-	export function segmentAdLibPieceStart (rundownId: string, partId: string, adLibPieceId: string, queue: boolean) {
+	export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, adLibPieceId: string, queue: boolean) {
+		check(rundownPlaylistId, String)
 		check(rundownId, String)
 		check(partId, String)
 		check(adLibPieceId, String)
 
-		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(rundownId, partId, adLibPieceId, queue)
+		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partId, adLibPieceId, queue)
 	}
-	export function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
+	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
+		check(rundownPlaylistId, String)
 		check(rundownId, String)
 		check(partId, String)
 		check(baselineAdLibPieceId, String)
 
-		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownId, partId, baselineAdLibPieceId, queue)
+		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, baselineAdLibPieceId, queue)
 	}
-	export function stopAdLibPiece (rundownId: string, partId: string, pieceId: string) {
+	export function stopAdLibPiece (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string) {
+		check(rundownPlaylistId, String)
 		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
 
-		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownId, partId, pieceId)
+		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partId, pieceId)
 	}
-	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
-		check(rundownId, String)
+	export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
+		check(rundownPlaylistId, String)
 		check(sourceLayerId, String)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!rundown.currentPartId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			if (!playlist.currentPartId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+
+			const currentPart = Parts.findOne(playlist.currentPartId)
+			if (!currentPart) throw new Meteor.Error(501, `Current Part "${playlist.currentPartId}" could not be found.`)
+
+			const rundown = currentPart.getRundown()
+			if (!rundown) throw new Meteor.Error(501, `Current Rundown "${currentPart.rundownId}" could not be found`)
 
 			let showStyleBase = rundown.getShowStyleBase()
 
@@ -1027,8 +1062,6 @@ export namespace ServerPlayoutAPI {
 			}).fetch()
 
 			if (lastPieces.length > 0) {
-				const currentPart = Parts.findOne(rundown.currentPartId)
-				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
 
 				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
 				const newAdLibPiece = convertAdLibToPiece(lastPiece, currentPart, false)
@@ -1040,26 +1073,25 @@ export namespace ServerPlayoutAPI {
 				cropInfinitesOnLayer(rundown, currentPart, newAdLibPiece)
 				stopInfinitesRunningOnLayer(rundown, currentPart, newAdLibPiece.sourceLayerId)
 
-				updateTimeline(rundown.studioId)
+				updateTimeline(playlist.studioId)
 			}
 		})
 	}
-	export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerId: string) {
-		check(rundownId, String)
+	export function sourceLayerOnPartStop (rundownPlaylistId: string, partId: string, sourceLayerId: string) {
+		check(rundownPlaylistId, String)
 		check(partId, String)
 		check(sourceLayerId, String)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			const part = Parts.findOne({
-				_id: partId,
-				rundownId: rundownId
-			})
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			const part = Parts.findOne(partId)
 			if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
+			if (playlist.currentPartId !== part._id) throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
 			if (!part.getLastStartedPlayback()) throw new Meteor.Error(405, `Part "${partId}" has yet to start playback!`)
+			const rundown = part.getRundown()
+			if (!rundown) throw new Meteor.Error(501, `Rundown "${part.rundownId}" not found!`)
 
 			const now = getCurrentTime()
 			const relativeNow = now - (part.getLastStartedPlayback() || 0)
@@ -1103,17 +1135,17 @@ export namespace ServerPlayoutAPI {
 
 			updateSourceLayerInfinitesAfterPart(rundown, part)
 
-			updateTimeline(rundown.studioId)
+			updateTimeline(playlist.studioId)
 		})
 	}
-	export function rundownTogglePartArgument (rundownId: string, partId: string, property: string, value: string) {
-		check(rundownId, String)
+	export function rundownTogglePartArgument (rundownPlaylistId: string, partId: string, property: string, value: string) {
+		check(rundownPlaylistId, String)
 		check(partId, String)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw new Meteor.Error(403, `Part Arguments can not be toggled when hold is used!`)
 			}
 
@@ -1140,20 +1172,22 @@ export namespace ServerPlayoutAPI {
 			part = Parts.findOne(partId)
 
 			if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
+			const rundown = part.getRundown()
+			if (!rundown) throw new Meteor.Error(501, `Rundown "${part.rundownId}" not found!`)
 
 			refreshPart(rundown, part)
 
 			// Only take time to update the timeline if there's a point to do it
-			if (rundown.active) {
+			if (playlist.active) {
 				// If this part is rundown's next, check if current part has autoNext
-				if ((rundown.nextPartId === part._id) && rundown.currentPartId) {
-					const currentPart = Parts.findOne(rundown.currentPartId)
+				if ((playlist.nextPartId === part._id) && playlist.currentPartId) {
+					const currentPart = Parts.findOne(playlist.currentPartId)
 					if (currentPart && currentPart.autoNext) {
-						updateTimeline(rundown.studioId)
+						updateTimeline(playlist.studioId)
 					}
 				// If this is rundown's current part, update immediately
-				} else if (rundown.currentPartId === part._id) {
-					updateTimeline(rundown.studioId)
+				} else if (playlist.currentPartId === part._id) {
+					updateTimeline(playlist.studioId)
 				}
 			}
 			return ClientAPI.responseSuccess()
@@ -1184,7 +1218,7 @@ export namespace ServerPlayoutAPI {
 
 		// TODO - should there be a studio lock for activate/deactivate/this?
 
-		const activeRundowns = areThereActiveRundownsInStudio(studioId)
+		const activeRundowns = areThereActiveRundownPlaylistsInStudio(studioId)
 		if (activeRundowns.length === 0) {
 			// This is only run when there is no rundown active in the studio
 			updateTimeline(studioId)
@@ -1198,7 +1232,7 @@ export namespace ServerPlayoutAPI {
 		const studio = Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
-		const activeRundowns = areThereActiveRundownsInStudio(studio._id)
+		const activeRundowns = areThereActiveRundownPlaylistsInStudio(studio._id)
 
 		if (activeRundowns.length === 0) {
 			const markerId = `${studio._id}_baseline_version`
@@ -1223,7 +1257,7 @@ export namespace ServerPlayoutAPI {
 	}
 }
 
-function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPart: Part) {
+function beforeTake (rundownData: RundownPlaylistData, currentPart: Part | null, nextPart: Part) {
 	if (currentPart) {
 		const adjacentPart = _.find(rundownData.parts, (part) => {
 			return (
@@ -1266,7 +1300,7 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 }
 
 function afterTake (
-	rundownData: RundownData,
+	rundownData: RundownPlaylistData,
 	takePart: Part,
 	timeOffset: number | null = null
 ) {
@@ -1277,20 +1311,21 @@ function afterTake (
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(rundownData.rundown.studioId, forceNowTime, rundownData)
+	updateTimeline(rundownData.rundownPlaylist.studioId, forceNowTime, rundownData)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
 		if (takePart.shouldNotifyCurrentPlayingPart) {
-			IngestActions.notifyCurrentPlayingPart(rundownData.rundown, takePart)
+			const currentRundown = rundownData.rundownsMap[takePart.rundownId]
+			IngestActions.notifyCurrentPlayingPart(currentRundown, takePart)
 
 		}
 	}, 40)
 }
 
-function setRundownStartedPlayback (rundown: Rundown, startedPlayback: Time) {
+function setRundownStartedPlayback (playlist: RundownPlaylist, rundown: Rundown, startedPlayback: Time) {
 	if (!rundown.startedPlayback) { // Set startedPlayback on the rundown if this is the first item to be played
-		reportRundownHasStarted(rundown, startedPlayback)
+		reportRundownHasStarted(playlist, rundown, startedPlayback)
 	}
 }
 
@@ -1330,12 +1365,17 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 
 		const rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		const playlist = rundown.getRundownPlaylist()
+		if (!playlist) throw new Meteor.Error(501, `Rundown "${rundownId}" not a part of a playlist: "${rundown.playlistId}"`)
 
 		// TODO - test the input data for this
 		updateSourceLayerInfinitesAfterPart(rundown, prevPart, true)
 
-		if (rundown.active) {
-			updateTimeline(rundown.studioId)
+		if (playlist.active && playlist.currentPartId) {
+			const currentPart = Parts.findOne(playlist.currentPartId)
+			if (currentPart && currentPart.rundownId === rundown._id) {
+				updateTimeline(rundown.studioId)
+			}
 		}
 	}, 1000)
 

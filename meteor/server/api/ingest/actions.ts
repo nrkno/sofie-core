@@ -13,6 +13,7 @@ import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { UserActionAPI } from '../../../lib/api/userActions'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists';
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -41,8 +42,10 @@ export namespace IngestActions {
 	 */
 	export function notifyCurrentPlayingPart (rundown: Rundown, currentPlayingPart: Part | null) {
 		const device = getPeripheralDeviceFromRundown(rundown)
+		const playlist = RundownPlaylists.findOne(rundown.playlistId)
 
-		if (rundown.rehearsal) currentPlayingPart = null
+		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
+		if (playlist.rehearsal) currentPlayingPart = null
 
 		const currentPlayingPartExternalId: string | null = (
 			currentPlayingPart ?

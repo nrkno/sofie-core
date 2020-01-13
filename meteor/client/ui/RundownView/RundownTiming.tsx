@@ -5,9 +5,10 @@ import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part, Parts } from '../../../lib/collections/Parts'
-import { getCurrentTime, literal } from '../../../lib/lib'
+import { getCurrentTime, literal, normalizeArray } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import * as ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 
@@ -110,8 +111,9 @@ const DEFAULT_DURATION = 3000
  * @interface IRundownTimingProviderProps
  */
 interface IRundownTimingProviderProps {
-	/** Rundown that is to be used for generating the timing information. */
-	rundown?: Rundown
+	/** Rundown Playlist that is to be used for generating the timing information. */
+	playlist?: RundownPlaylist
+
 	/** Interval for high-resolution timing events. If undefined, it will fall back
 	 * onto TIMING_DEFAULT_REFRESH_INTERVAL.
 	 */
@@ -138,14 +140,26 @@ export const RundownTimingProvider =
 withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
 	let parts: Array<Part> = []
-	if (props.rundown) {
+	if (props.playlist) {
+		const rundowns = props.playlist.getRundowns()
+		const rundownsMap = normalizeArray(rundowns, '_id')
 		parts = Parts.find({
-			'rundownId': props.rundown._id,
+			'rundownId': {
+				$in: rundowns.map(i => i._id)
+			}
 		}, {
 			sort: {
 				'_rank': 1
 			}
-		}).fetch()
+		}).fetch().sort((a, b) => {
+			if (a.rundownId === b.rundownId) {
+				return a._rank - b._rank
+			} else {
+				const rdA = rundownsMap[a.rundownId]
+				const rdB = rundownsMap[b.rundownId]
+				return rdA._rank - rdB._rank
+			}
+		})
 	}
 	return {
 		parts
@@ -268,20 +282,20 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 		let debugConsole = ''
 
-		const { rundown, parts } = this.props
+		const { playlist, parts } = this.props
 
 		let nextAIndex = -1
 		let currentAIndex = -1
 
-		if (rundown && parts) {
+		if (playlist && parts) {
 			parts.forEach((part, itIndex) => {
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([part._id, waitAccumulator]) - 1
 
 				// if this is next segementLine, clear previous countdowns and clear accumulator
-				if (rundown.nextPartId === part._id) {
+				if (playlist.nextPartId === part._id) {
 					nextAIndex = aIndex
-				} else if (rundown.currentPartId === part._id) {
+				} else if (playlist.currentPartId === part._id) {
 					currentAIndex = aIndex
 				}
 
@@ -357,7 +371,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				}
 
 				// the part is the current part but has not yet started playback
-				if (this.props.rundown && this.props.rundown.currentPartId === part._id && !part.startedPlayback) {
+				if (playlist.currentPartId === part._id && !part.startedPlayback) {
 					currentRemaining = partDisplayDuration
 				}
 
@@ -396,7 +410,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					part.startedPlayback &&
 					lastStartedPlayback &&
 					!part.duration &&
-					rundown.currentPartId === part._id &&
+					playlist.currentPartId === part._id &&
 					lastStartedPlayback + (part.expectedDuration || 0) > now
 				) {
 					// console.log((now - item.startedPlayback))

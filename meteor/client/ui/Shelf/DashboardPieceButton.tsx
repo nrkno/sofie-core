@@ -12,6 +12,7 @@ import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakConten
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 
@@ -30,7 +31,7 @@ interface IDashboardButtonProps {
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
-	rundown: Rundown
+	playlist: RundownPlaylist
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
 	widthScale?: number
@@ -47,7 +48,7 @@ interface IDashboardButtonTrackedProps {
 export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
 	return {
 		status,
@@ -77,7 +78,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}

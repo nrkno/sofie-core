@@ -311,14 +311,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessAdLibPieces(context, [], 'blueprint9')
+			const res = postProcessAdLibPieces('', context, [], 'blueprint9')
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessAdLibPieces(context, [null as any], 'blueprint9')
+			const res = postProcessAdLibPieces('', context, [null as any], 'blueprint9')
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -369,7 +369,7 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.clone(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessAdLibPieces(context, pieces, 'blueprint9')
+			const res = postProcessAdLibPieces('', context, pieces, 'blueprint9')
 			// expect(res).toHaveLength(3)
 			expect(res).toMatchObject(pieces.map(p => _.omit(p, '_id')))
 
@@ -421,7 +421,7 @@ describe('Test blueprint post-process', () => {
 				}
 			})
 
-			const res = postProcessAdLibPieces(context, [piece], 'blueprint9')
+			const res = postProcessAdLibPieces('', context, [piece], 'blueprint9')
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
@@ -435,14 +435,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessPieces(context, [], 'blueprint9', 'part8')
+			const res = postProcessPieces('', context, [], 'blueprint9', 'part8')
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessPieces(context, [null as any], 'blueprint9', 'part8')
+			const res = postProcessPieces('', context, [null as any], 'blueprint9', 'part8')
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -497,7 +497,7 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.compact(_.map(pieces, obj => obj._id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessPieces(context, pieces, 'blueprint9', 'part8')
+			const res = postProcessPieces('', context, pieces, 'blueprint9', 'part8')
 			expect(res).toMatchObject(pieces.map(p => _.omit(p, '_id')))
 
 			// Ensure all required keys are defined
@@ -547,7 +547,7 @@ describe('Test blueprint post-process', () => {
 				}
 			})
 
-			const res = postProcessPieces(context, [piece], 'blueprint9', 'part6')
+			const res = postProcessPieces('', context, [piece], 'blueprint9', 'part6')
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([_.omit(piece, '_id')])
 

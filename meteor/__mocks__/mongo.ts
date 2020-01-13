@@ -42,7 +42,7 @@ export namespace MongoMock {
 			if (_.isString(query)) query = { _id: query }
 			query = query || {}
 
-			const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit')
+			const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'fields')
 			if (unimplementedUsedOptions.length > 0) {
 				throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
@@ -66,6 +66,10 @@ export namespace MongoMock {
 
 			if (options && options.limit !== undefined) {
 				docs = _.take(docs, options.limit)
+			}
+
+			if (options && options.fields !== undefined) {
+				docs = _.map(docs, doc => _.omit(doc, _.keys(options.fields).filter(key => options.fields![key] === 0)))
 			}
 
 			const observers = this.observers

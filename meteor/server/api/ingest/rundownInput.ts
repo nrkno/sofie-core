@@ -31,7 +31,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, produceRundownPlaylistInfo } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -42,7 +42,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../l
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
@@ -50,6 +50,8 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
+import { RundownPlaylists, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Mongo } from 'meteor/mongo'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -165,22 +167,30 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown) {
+		const playlist = getRundownPlaylist(rundown)
 
-			if (canBeUpdated(rundown)) {
-				if (rundown.active) {
-					// Don't allow removing currently playing rundowns:
-					logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
-					ServerRundownAPI.unsyncRundown(rundown._id)
-				} else {
-					logger.info(`Removing rundown "${rundown._id}"`)
-					rundown.remove()
+		if (canBeUpdated(rundown)) {
+			let okToRemove: boolean = true
+			if (playlist.active) {
+				if (playlist.currentPartId) {
+					const part = Parts.findOne(playlist.currentPartId)
+					if (part && part.rundownId === rundown._id) {
+						okToRemove = false
+					}
 				}
+			}
+			if (okToRemove) {
+				logger.info(`Removing rundown "${rundown._id}"`)
+				rundown.remove()
 			} else {
-				logger.info(`Rundown "${rundown._id}" cannot be updated`)
-				if (!rundown.unsynced) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
-				}
+				// Don't allow removing currently playing rundown playlists:
+				logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			}
+		 } else {
+			logger.info(`Rundown "${rundown._id}" cannot be updated`)
+			if (!rundown.unsynced) {
+				ServerRundownAPI.unsyncRundown(rundown._id)
 			}
 		}
 	})
@@ -265,16 +275,16 @@ function updateRundownFromIngestData (
 				core: PackageInfo.version,
 			},
 
-			// omit the below fields
-			previousPartId: null,
-			currentPartId: null,
-			nextPartId: null,
+			// omit the below fields:
 			created: 0,
 			modified: 0,
 
 			peripheralDeviceId: '', // added later
-			dataSource: '' // added later
-		}), ['previousPartId', 'currentPartId', 'nextPartId', 'created', 'modified', 'peripheralDeviceId', 'dataSource'])
+			dataSource: '', // added later
+
+			playlistId: '', // added later
+			_rank: 0 // added later
+		}), ['created', 'modified', 'peripheralDeviceId', 'dataSource'])
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
@@ -292,6 +302,22 @@ function updateRundownFromIngestData (
 		beforeInsert: (o) => {
 			o.modified = getCurrentTime()
 			o.created = getCurrentTime()
+			return o
+		},
+		beforeUpdate: (o) => {
+			o.modified = getCurrentTime()
+			return o
+		}
+	})
+
+	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
+
+	let playlistChanges = saveIntoDb(RundownPlaylists, {
+		_id: rundownPlaylistInfo.rundownPlaylist._id
+	}, [rundownPlaylistInfo.rundownPlaylist], {
+		beforeInsert: (o) => {
+			o.created = getCurrentTime()
+			o.modified = getCurrentTime()
 			o.previousPartId = null
 			o.currentPartId = null
 			o.nextPartId = null
@@ -306,6 +332,8 @@ function updateRundownFromIngestData (
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
+	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
+
 	// Save the baseline
 	const blueprintRundownContext = new RundownContext(dbRundown, studio)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
@@ -318,7 +346,7 @@ function updateRundownFromIngestData (
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
-	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
+	const adlibItems = postProcessAdLibPieces(blueprintRundownContext.rundown.playlistId, blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
 	const existingRundownParts = Parts.find({
 		rundownId: dbRundown._id,
@@ -353,6 +381,7 @@ function updateRundownFromIngestData (
 
 	changes = sumChanges(
 		changes,
+		playlistChanges,
 		// Save the baseline
 		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs, {
 			rundownId: dbRundown._id,
@@ -435,6 +464,34 @@ function updateRundownFromIngestData (
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
+}
+
+function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
+	let rundowns: DBRundown[] = []
+	let selector: Mongo.Selector<DBRundown> = {}
+	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
+		selector = { playlistExternalId: currentRundown.playlistExternalId }
+		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+	} else if (!currentRundown.playlistExternalId) {
+		selector = { _id: currentRundown._id }
+		rundowns = [ currentRundown ]
+	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
+		throw new Meteor.Error(501, `Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`)
+	} else {
+		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
+	}
+
+	const updated = rundowns.map(r => {
+		if (order[r._id] !== undefined) {
+			r.playlistId = playlist._id
+			r._rank = order[r._id]
+		} else {
+			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+		}
+		return r
+	})
+
+	saveIntoDb(Rundowns, selector, updated)
 }
 
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
@@ -718,10 +775,10 @@ function generateSegmentContents (
 		parts.push(part)
 
 		// Update pieces
-		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
+		const pieces = postProcessPieces(context.rundown.playlistId, context, blueprintPart.pieces, blueprintId, part._id)
 		segmentPieces.push(...pieces)
 
-		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
+		const adlibs = postProcessAdLibPieces(context.rundown.playlistId, context, blueprintPart.adLibPieces, blueprintId, part._id)
 		adlibPieces.push(...adlibs)
 	})
 

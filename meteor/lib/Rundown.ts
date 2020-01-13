@@ -11,6 +11,7 @@ import { normalizeArray, extendMandadory, literal } from './lib'
 import { Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
+import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
 
@@ -78,11 +79,16 @@ export interface PieceExtended extends Piece {
  *
  * @export
  * @param {ShowStyleBase} showStyleBase
- * @param {Rundown} rundown
+ * @param {RundownPlaylist} playlist
  * @param {Segment} segment
  * @param {boolean} [checkFollowingSegment]
  */
-export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundown, segment: Segment, checkFollowingSegment?: boolean): {
+export function getResolvedSegment (
+	showStyleBase: ShowStyleBase,
+	playlist: RundownPlaylist,
+	segment: Segment,
+	checkFollowingSegment?: boolean
+): {
 	/** A Segment with some additional information */
 	segmentExtended: SegmentExtended,
 	/** Parts in the segment, with additional information on the Part and the Pieces */
@@ -217,11 +223,11 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			})
 
 			// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
-			if (rundown.currentPartId === partE._id) {
+			if (playlist.currentPartId === partE._id) {
 				isLiveSegment = true
 				currentLivePart = partE
 			}
-			if (rundown.nextPartId === partE._id) {
+			if (playlist.nextPartId === partE._id) {
 				isNextSegment = true
 			}
 			autoNextPart = !!(
@@ -442,8 +448,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		segmentExtended.outputLayers = outputLayers
 		segmentExtended.sourceLayers = sourceLayers
 
-		if (isNextSegment && !isLiveSegment && !autoNextPart && rundown.currentPartId) {
-			const currentOtherPart = Parts.findOne(rundown.currentPartId)
+		if (isNextSegment && !isLiveSegment && !autoNextPart && playlist.currentPartId) {
+			const currentOtherPart = Parts.findOne(playlist.currentPartId)
 			if (currentOtherPart && currentOtherPart.expectedDuration && currentOtherPart.autoNext) {
 				autoNextPart = true
 			}

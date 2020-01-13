@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
 import { getHash, literal } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
 import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -296,8 +296,8 @@ describe('Test blueprint api context', () => {
 
 	describe('SegmentContext', () => {
 		test('getRuntimeArguments empty', () => {
-			const rundownId = setupDefaultRundown(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const defaultSetup = setupDefaultRundownPlaylist(env)
+			const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
 			const context = new SegmentContext(rundown, undefined, {}, '')
@@ -308,8 +308,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getRuntimeArguments with data', () => {
-			const rundownId = setupDefaultRundown(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const defaultSetup = setupDefaultRundownPlaylist(env)
+			const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
 			const context = new SegmentContext(rundown, undefined, {
@@ -331,7 +331,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getRuntimeArguments from parts data', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -365,7 +365,7 @@ describe('Test blueprint api context', () => {
 
 	describe('PartContext', () => {
 		test('getRuntimeArguments with data', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -382,7 +382,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getRuntimeArguments', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -395,7 +395,7 @@ describe('Test blueprint api context', () => {
 
 	describe('PartEventContext', () => {
 		test('get part', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -425,7 +425,7 @@ describe('Test blueprint api context', () => {
 			return new AsRunEventContext(rundown, undefined, mockEvent)
 		}
 		test('getAllAsRunEvents', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -474,7 +474,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getSegments', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -489,7 +489,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getSegment - no id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -505,7 +505,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 		test('getSegment - empty id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -520,7 +520,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 		test('getSegment - unknown id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -529,7 +529,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getSegment('not-a-real-segment')).toBeUndefined()
 		})
 		test('getSegment - good', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -540,7 +540,7 @@ describe('Test blueprint api context', () => {
 			expect(segment._id).toEqual(`${rundown._id}_segment1`)
 		})
 		test('getSegment - empty id with event segmentId', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -553,7 +553,7 @@ describe('Test blueprint api context', () => {
 			expect(segment._id).toEqual(`${rundown._id}_segment0`)
 		})
 		test('getSegment - good with event segmentId', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -567,7 +567,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getParts', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -584,7 +584,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPart - no id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -600,7 +600,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 		test('getPart - empty id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -615,7 +615,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 		test('getPart - unknown id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -624,7 +624,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPart('not-a-real-part')).toBeUndefined()
 		})
 		test('getPart - good', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -635,7 +635,7 @@ describe('Test blueprint api context', () => {
 			expect(part._id).toEqual(`${rundown._id}_part1_0`)
 		})
 		test('getPart - empty id with event partId', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -648,7 +648,7 @@ describe('Test blueprint api context', () => {
 			expect(part._id).toEqual(`${rundown._id}_part1_1`)
 		})
 		test('getPart - good with event partId', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -662,7 +662,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getIngestDataForPart - no part', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -677,7 +677,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 		test('getIngestDataForPart - no id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -692,7 +692,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 		test('getIngestDataForPart - no data', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -705,7 +705,7 @@ describe('Test blueprint api context', () => {
 			expect(ingestPart).toBeUndefined()
 		})
 		test('getIngestDataForPart - good', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -733,7 +733,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getIngestDataForRundown - no data', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -772,7 +772,7 @@ describe('Test blueprint api context', () => {
 		}
 
 		test('getPieces - good', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -791,7 +791,7 @@ describe('Test blueprint api context', () => {
 			])
 		})
 		test('getPieces - bad id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -804,7 +804,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPieces('not-a-real-part')).toHaveLength(0)
 		})
 		test('getPieces - empty id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -818,7 +818,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPiece - no id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -830,7 +830,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPiece()).toBeUndefined()
 		})
 		test('getPiece - empty id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -842,7 +842,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPiece('')).toBeUndefined()
 		})
 		test('getPiece - unknown id', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -854,7 +854,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPiece('not-a-real-piece')).toBeUndefined()
 		})
 		test('getPiece - good', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -868,7 +868,7 @@ describe('Test blueprint api context', () => {
 			expect(piece._id).toEqual(`${rundown._id}_part0_1_piece3`)
 		})
 		test('getPiece - empty id with event pieceId', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -884,7 +884,7 @@ describe('Test blueprint api context', () => {
 			expect(piece._id).toEqual(`${rundown._id}_part0_1_piece2`)
 		})
 		test('getPiece - good with event pieceId', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -901,7 +901,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('formatDateAsTimecode', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 
@@ -912,7 +912,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('formatDurationAsTimecode', () => {
-			const rundownId = setupDefaultRundown(env)
+			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 

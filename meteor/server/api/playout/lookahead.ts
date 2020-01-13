@@ -7,13 +7,14 @@ import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType 
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
-import { clone, literal } from '../../../lib/lib'
+import { literal, extendMandadory, clone } from '../../../lib/lib'
+import { RundownPlaylist, RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
-export function getLookeaheadObjects (rundownData: RundownData, studio: Studio): Array<TimelineObjGeneric> {
-	const activeRundown = rundownData.rundown
-	const currentPart = activeRundown.currentPartId ? rundownData.partsMap[activeRundown.currentPartId] : undefined
+export function getLookeaheadObjects (rundownData: RundownPlaylistData, studio: Studio): Array<TimelineObjGeneric> {
+	const activePlaylist = rundownData.rundownPlaylist
+	const currentPart = activePlaylist.currentPartId ? rundownData.partsMap[activePlaylist.currentPartId] : undefined
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	const mutateAndPushObject = (rawObj: TimelineObjRundown, i: string, enable: TimelineObjRundown['enable'], mapping: MappingExt, priority: number) => {
@@ -59,7 +60,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			}
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			const finiteDuration = entry.partId === activeRundown.currentPartId || (currentPart && currentPart.autoNext && entry.partId === activeRundown.nextPartId)
+			const finiteDuration = entry.partId === activePlaylist.currentPartId || (currentPart && currentPart.autoNext && entry.partId === activePlaylist.nextPartId)
 			enable.end = finiteDuration ? `#${entry.obj.id}.start` : undefined
 
 			mutateAndPushObject(entry.obj, `timed${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY)
@@ -110,12 +111,14 @@ export interface LookaheadResult {
 }
 
 export function findLookaheadForlayer (
-	rundownData: RundownData,
+	rundownData: RundownPlaylistData,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadDepth: number
-): LookaheadResult {
-	let activeRundown: Rundown = rundownData.rundown
+	): LookaheadResult {
+	let activePlaylist: RundownPlaylist = rundownData.rundownPlaylist
+	const currentPart = activePlaylist.currentPartId ? rundownData.partsMap[activePlaylist.currentPartId] : undefined
+	const currentRundown = currentPart ? rundownData.rundownsMap[currentPart.rundownId] : undefined
 
 	if (mode === undefined || mode === LookaheadMode.NONE) {
 		return { timed: [], future: [] }
@@ -212,7 +215,7 @@ export function findLookaheadForlayer (
 	}
 
 	const partId = startingPartOnLayer.partId
-	const startingPartIsFuture = startingPartOnLayer.partId !== activeRundown.currentPartId
+	const startingPartIsFuture = startingPartOnLayer.partId !== activePlaylist.currentPartId
 	findObjectsForPart(rundownData, layer, timeOrderedPartsWithPieces, startingPartOnLayerIndex, startingPartOnLayer)
 		.forEach(o => (startingPartIsFuture ? res.future : res.timed).push({ obj: o, partId: partId }))
 
@@ -232,9 +235,9 @@ export function findLookaheadForlayer (
 	return res
 }
 
-function getPartsOrderedByTime (rundownData: RundownData) {
+function getPartsOrderedByTime (rundownData: RundownPlaylistData) {
 	// This could be cached across all lookahead layers, as it doesnt care about layer
-	const activeRundown = rundownData.rundown
+	const activePlaylist = rundownData.rundownPlaylist
 
 	// calculate ordered list of parts, which can be cached for other layers
 	const parts = rundownData.parts.map(part => ({
@@ -256,7 +259,7 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 	let currentPartIndex = 0
 	let currentSegmentId: string | undefined
 
-	const currentIndex = parts.findIndex(l => l.partId === activeRundown.currentPartId)
+	const currentIndex = parts.findIndex(l => l.partId === activePlaylist.currentPartId)
 	let partInfos: PartInfo[] = []
 	if (currentIndex >= 0) {
 		// Find the current part, and the parts before
@@ -266,8 +269,8 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 	}
 
 	// Find the next part
-	const nextPartIndex = activeRundown.nextPartId
-		? parts.findIndex(l => l.partId === activeRundown.nextPartId)
+	const nextPartIndex = activePlaylist.nextPartId
+		? parts.findIndex(l => l.partId === activePlaylist.nextPartId)
 		: (currentIndex >= 0 ? currentIndex + 1 : -1)
 
 	if (nextPartIndex >= 0) {
@@ -288,8 +291,9 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 	}
 }
 
-function findObjectsForPart (rundownData: RundownData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
-	const activeRundown = rundownData.rundown
+function findObjectsForPart (rundownData: RundownPlaylistData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+	const activePlaylist = rundownData.rundownPlaylist
+	const activeRundown = rundownData.rundownsMap[startingPartOnLayer.part.rundownId]
 
 	// Sanity check, if no part to search, then abort
 	if (!startingPartOnLayer || startingPartOnLayer.pieces.length === 0) {
@@ -308,7 +312,8 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						rundownId: rundownData.rundown._id,
+						rundownId: activeRundown._id,
+						playlistId: activePlaylist._id,
 						pieceId: i._id,
 						infinitePieceId: i.infiniteId
 					}))
@@ -328,7 +333,7 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 
 			let allowTransition = false
 			let classesFromPreviousPart: string[] = []
-			if (startingPartOnLayerIndex >= 1 && activeRundown.currentPartId) {
+			if (startingPartOnLayerIndex >= 1 && activePlaylist.currentPartId) {
 				const prevPieceGroup = timeOrderedPartsWithPieces[startingPartOnLayerIndex - 1]
 				allowTransition = !prevPieceGroup.part.disableOutTransition
 				classesFromPreviousPart = prevPieceGroup.part.classesForNext || []
@@ -386,7 +391,8 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						rundownId: rundownData.rundown._id,
+						rundownId: activeRundown._id,
+						playlistId: rundownData.rundownPlaylist._id,
 						pieceId: piece._id,
 						infinitePieceId: piece.infiniteId,
 						content: newContent

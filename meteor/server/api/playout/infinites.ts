@@ -6,7 +6,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { getOrderedPiece, PieceResolved } from './pieces'
+import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
@@ -57,16 +57,23 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
 	}
 
+	let allPieces = Pieces.find({
+		partId: {
+			$in: partsToProcess.map(i => i._id)
+		}
+	}).fetch()
+
    // Prepare pieces:
 	let psPopulateCache: Array<Promise<any>> = []
 	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
 	   psPopulateCache.push(new Promise((resolve, reject) => {
-		   try {
-			   let currentItems = getOrderedPiece(part)
+			try {
+				const partStarted = part.getLastStartedPlayback()
+				let currentItems = orderPieces(allPieces.filter(p => p.partId === part._id), part._id, partStarted)
 
-			   currentItemsCache[part._id] = currentItems
-			   resolve()
+				currentItemsCache[part._id] = currentItems
+				resolve()
 		   } catch (e) {
 			   reject(e)
 		   }

@@ -41,8 +41,8 @@ methods[PlayoutAPI.methods.rundownMoveNext] = (rundownId: string, horisontalDelt
 methods[PlayoutAPI.methods.rundownActivateHold] = (rundownId: string) => {
 	return ServerPlayoutAPI.activateHold(rundownId)
 }
-methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownId: string, undo?: boolean) => {
-	return ServerPlayoutAPI.disableNextPiece(rundownId, undo)
+methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownPlaylistId: string, undo?: boolean) => {
+	return ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
 }
 // methods[PlayoutAPI.methods.partPlaybackStartedCallback] = (rundownId: string, partId: string, startedPlayback: number) => {
 // 	return ServerPlayoutAPI.onPartPlaybackStarted(rundownId, partId, startedPlayback)
@@ -50,17 +50,17 @@ methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownId: string, undo?:
 // methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
 // 	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
 // }
-methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownId: string, partId: string, pieceId: string, queue: boolean) => {
-	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, pieceId, queue)
+methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) => {
+	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownId: string, partId: string, pieceId: string, queue: boolean) => {
-	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownId, partId, pieceId, queue)
+methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) => {
+	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownId: string, partId: string, pieceId: string) => {
-	return ServerPlayoutAPI.stopAdLibPiece(rundownId, partId, pieceId)
+methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string) => {
+	return ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partId, pieceId)
 }
-methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownId: string, partId: string, sourceLayerId: string) => {
-	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownId, partId, sourceLayerId)
+methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownPlaylistId: string, partId: string, sourceLayerId: string) => {
+	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partId, sourceLayerId)
 }
 // methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: string, time: number) => {
 // 	return ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(timelineObjId, time)

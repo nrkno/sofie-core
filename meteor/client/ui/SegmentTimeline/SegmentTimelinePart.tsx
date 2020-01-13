@@ -3,6 +3,7 @@ import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import {
@@ -34,7 +35,7 @@ interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
@@ -139,7 +140,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
@@ -171,7 +172,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 					return <SourceLayer key={sourceLayer._id}
 						{...this.props}
 						layer={sourceLayer}
-						rundown={this.props.rundown}
+						playlist={this.props.playlist}
 						outputLayer={this.props.layer}
 						outputGroupCollapsed={this.props.collapsedOutputs[this.props.layer._id] === true}
 						segment={this.props.segment}
@@ -204,7 +205,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 
 interface IProps {
 	segment: SegmentUi
-	rundown: Rundown,
+	playlist: RundownPlaylist,
 	studio: Studio
 	part: PartUi
 	timeScale: number
@@ -260,8 +261,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
 
-		const isLive = (this.props.rundown.currentPartId === this.props.part._id)
-		const isNext = (this.props.rundown.nextPartId === this.props.part._id)
+		const isLive = (this.props.playlist.currentPartId === this.props.part._id)
+		const isNext = (this.props.playlist.nextPartId === this.props.part._id)
 		const startedPlayback = this.props.part.startedPlayback
 
 		this.state = {
@@ -283,13 +284,13 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
-		const isLive = (nextProps.rundown.currentPartId === nextProps.part._id)
-		const isNext = (nextProps.rundown.nextPartId === nextProps.part._id)
+	static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps) {
+		const isLive = (nextProps.playlist.currentPartId === nextProps.part._id)
+		const isNext = (nextProps.playlist.nextPartId === nextProps.part._id)
 
 		const startedPlayback = nextProps.part.startedPlayback
 
-		const isDurationSettling = !!nextProps.rundown.active && !isLive && !!startedPlayback && !nextProps.part.duration
+		const isDurationSettling = !!nextProps.playlist.active && !isLive && !!startedPlayback && !nextProps.part.duration
 
 		const liveDuration =
 			((isLive || isDurationSettling) && !nextProps.autoNextPart && !nextProps.part.autoNext) ?
@@ -403,11 +404,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							layer={layer}
 							segment={this.props.segment}
 							part={part}
-							rundown={this.props.rundown}
+							playlist={this.props.playlist}
 							startsAt={this.getPartStartsAt() || this.props.part.startsAt || 0}
 							duration={this.getPartDuration()}
-							isLiveLine={this.props.rundown.currentPartId === part._id ? true : false}
-							isNextLine={this.props.rundown.nextPartId === part._id ? true : false}
+							isLiveLine={this.props.playlist.currentPartId === part._id ? true : false}
+							isNextLine={this.props.playlist.nextPartId === part._id ? true : false}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale)} />
@@ -442,7 +443,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	render () {
 		const { t } = this.props
 
-		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.rundown.nextPartId))
+		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartId))
 		let invalidReasonColorVars: React.CSSProperties | undefined = undefined
 		if (this.props.part.invalidReason && this.props.part.invalidReason.color) {
 			const invalidColor = this.convertHexToRgba(this.props.part.invalidReason.color)
@@ -474,7 +475,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 						'auto-next': ((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)),
 						'invalid': this.props.part.invalid,
 						'floated': this.props.part.floated,
-						'offset': !!this.props.rundown.nextTimeOffset
+						'offset': !!this.props.playlist.nextTimeOffset
 					})}>
 						<div className={ClassNames('segment-timeline__part__nextline__label', {
 							'segment-timeline__part__nextline__label--thin': (this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext
@@ -489,15 +490,15 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							)}
 						</div>
 					</div>
-					{this.props.rundown.nextTimeOffset && this.state.isNext && // This is the off-set line
+					{this.props.playlist.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__part__nextline', {
 							'auto-next': this.props.part.willProbablyAutoNext,
 							'invalid': this.props.part.invalid,
 							'floated': this.props.part.floated
 						})} style={{
 							'left': (this.props.relative ?
-								((this.props.rundown.nextTimeOffset / (this.getPartDuration() || 1) * 100) + '%') :
-								((this.props.rundown.nextTimeOffset * this.props.timeScale) + 'px')),
+								((this.props.playlist.nextTimeOffset / (this.getPartDuration() || 1) * 100) + '%') :
+								((this.props.playlist.nextTimeOffset * this.props.timeScale) + 'px')),
 						}}>
 							<div className={ClassNames('segment-timeline__part__nextline__label', {
 								'segment-timeline__part__nextline__label--thin': (this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext
@@ -525,7 +526,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					{this.renderTimelineOutputGroups(this.props.part)}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
 						'auto-next': this.props.part.autoNext,
-						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.rundown.nextPartId),
+						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.playlist.nextPartId),
 						'show-end': isEndOfShow
 					})}>
 						<div className={ClassNames('segment-timeline__part__nextline__label', {

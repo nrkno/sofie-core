@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
@@ -12,7 +13,8 @@ import {
 	Time,
 	pushOntoPath,
 	clone,
-	toc
+	toc,
+	mongoWhere
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -20,6 +22,8 @@ import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { MongoSelector } from '../../../lib/typings/meteor'
 
 /**
  * Reset the rundown:
@@ -28,6 +32,7 @@ import { DBSegment, Segments } from '../../../lib/collections/Segments'
 export function resetRundown (rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
+
 	Pieces.remove({
 		rundownId: rundown._id,
 		dynamicallyInserted: true
@@ -57,9 +62,11 @@ export function resetRundown (rundown: Rundown) {
 	}).fetch()
 	dirtyParts.forEach(part => {
 		refreshPart(rundown, part)
-		Parts.update(part._id, {$unset: {
-			dirty: 1
-		}})
+		Parts.update(part._id, {
+			$unset: {
+				dirty: 1
+			}
+		})
 	})
 
 	// Reset all pieces that were modified for holds
@@ -99,13 +106,117 @@ export function resetRundown (rundown: Rundown) {
 	// ensure that any removed infinites are restored
 	updateSourceLayerInfinitesAfterPart(rundown)
 
-	resetRundownPlayhead(rundown)
+	const playlist = RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
+	resetRundownPlaylistPlayhead(playlist)
 }
-function resetRundownPlayhead (rundown: Rundown) {
-	logger.info('resetRundownPlayhead ' + rundown._id)
-	let parts = rundown.getParts()
 
-	Rundowns.update(rundown._id, {
+/**
+ * Reset the rundown playlist (all of the rundowns within the playlist):
+ * Remove all dynamically inserted/updated pieces, parts, timings etc..
+ */
+export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
+	logger.info('resetRundownPlaylist ' + rundownPlaylist._id)
+	// Remove all dunamically inserted pieces (adlibs etc)
+	const rundowns = rundownPlaylist.getRundowns()
+	const rundownIDs = rundowns.map(i => i._id)
+	const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
+
+	Pieces.remove({
+		rundownId: {
+			$in: rundownIDs
+		},
+		dynamicallyInserted: true
+	})
+
+	Parts.remove({
+		rundownId: {
+			$in: rundownIDs
+		},
+		dynamicallyInserted: true
+	})
+
+	Parts.update({
+		rundownId: {
+			$in: rundownIDs
+		}
+	}, {
+		$unset: {
+			duration: 1,
+			previousPartEndState: 1,
+			startedPlayback: 1,
+			timings: 1,
+			runtimeArguments: 1,
+			stoppedPlayback: 1
+		}
+	}, { multi: true })
+
+	const dirtyParts = Parts.find({
+		rundownId: {
+			$in: rundownIDs
+		},
+		dirty: true
+	}).fetch()
+	dirtyParts.forEach(part => {
+		refreshPart(rundownLookup[part.rundownId], part)
+		Parts.update(part._id, {$unset: {
+			dirty: 1
+		}})
+	})
+
+	// Reset all pieces that were modified for holds
+	Pieces.update({
+		rundownId: {
+			$in: rundownIDs
+		},
+		extendOnHold: true,
+		infiniteId: { $exists: true },
+	}, {
+		$unset: {
+			infiniteId: 0,
+			infiniteMode: 0,
+		}
+	}, { multi: true })
+
+	// Reset any pieces that were modified by inserted adlibs
+	Pieces.update({
+		rundownId: {
+			$in: rundownIDs
+		},
+		originalInfiniteMode: { $exists: true }
+	}, {
+		$rename: {
+			originalInfiniteMode: 'infiniteMode'
+		}
+	}, { multi: true })
+
+	Pieces.update({
+		rundownId: {
+			$in: rundownIDs
+		}
+	}, {
+		$unset: {
+			playoutDuration: 1,
+			startedPlayback: 1,
+			userDuration: 1,
+			disabled: 1,
+			hidden: 1
+		}
+	}, { multi: true })
+
+	// ensure that any removed infinites are restored
+	rundowns.map(r => updateSourceLayerInfinitesAfterPart(r))
+
+	resetRundownPlaylistPlayhead(rundownPlaylist)
+}
+function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
+	logger.info('resetRundownPlayhead ' + rundownPlaylist._id)
+	const rundowns = rundownPlaylist.getRundowns()
+	const rundown = _.first(rundowns)
+	if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
+	const parts = rundown.getParts()
+
+	RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
 			previousPartId: null,
 			currentPartId: null,
@@ -116,18 +227,32 @@ function resetRundownPlayhead (rundown: Rundown) {
 		}
 	})
 	// Also update locally:
-	rundown.previousPartId = null
-	rundown.currentPartId = null
-	rundown.holdState = RundownHoldState.NONE
-	delete rundown.startedPlayback
-	delete rundown.previousPersistentState
+	rundownPlaylist.previousPartId = null
+	rundownPlaylist.currentPartId = null
+	rundownPlaylist.holdState = RundownHoldState.NONE
+	delete rundownPlaylist.startedPlayback
+	delete rundownPlaylist.previousPersistentState
 
 
-	if (rundown.active) {
+	Rundowns.update({
+		playlistId: rundownPlaylist._id
+	}, {
+		$unset: {
+			startedPlayback: 1
+		}
+	}, {
+		multi: true
+	})
+	// Also update locally:
+	rundowns.forEach(rundown => {
+		delete rundown.startedPlayback
+	})
+
+	if (rundownPlaylist.active) {
 		// put the first on queue:
-		setNextPart(rundown, _.first(parts) || null)
+		setNextPart(rundownPlaylist, _.first(parts) || null)
 	} else {
-		setNextPart(rundown, null)
+		setNextPart(rundownPlaylist, null)
 	}
 }
 export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
@@ -165,16 +290,16 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
 export function setNextPart (
-	rundown: Rundown,
+	rundownPlaylist: RundownPlaylist,
 	nextPart: DBPart | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
 	let ps: Array<Promise<any>> = []
 	if (nextPart) {
-
-		if (nextPart.rundownId !== rundown._id) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of rundown "${rundown._id}"`)
-		if (nextPart._id === rundown.currentPartId) {
+		const acceptableRundowns = rundownPlaylist.getRundownIDs()
+		if (acceptableRundowns.indexOf(nextPart.rundownId) < 0) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of any rundown in playlist "${rundownPlaylist._id}"`)
+		if (nextPart._id === rundownPlaylist.currentPartId) {
 			throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
 		}
 		if (nextPart.invalid) {
@@ -186,16 +311,16 @@ export function setNextPart (
 
 		ps.push(resetPart(nextPart))
 
-		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
 			$set: {
 				nextPartId: nextPart._id,
 				nextPartManual: !!setManually,
 				nextTimeOffset: nextTimeOffset || null
 			}
 		}))
-		rundown.nextPartId = nextPart._id
-		rundown.nextPartManual = !!setManually
-		rundown.nextTimeOffset = nextTimeOffset || null
+		rundownPlaylist.nextPartId = nextPart._id
+		rundownPlaylist.nextPartManual = !!setManually
+		rundownPlaylist.nextTimeOffset = nextTimeOffset || null
 
 		ps.push(asyncCollectionUpdate(Parts, nextPart._id, {
 			$push: {
@@ -203,14 +328,14 @@ export function setNextPart (
 			}
 		}))
 	} else {
-		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
 			$set: {
 				nextPartId: null,
 				nextPartManual: !!setManually
 			}
 		}))
-		rundown.nextPartId = null
-		rundown.nextPartManual = !!setManually
+		rundownPlaylist.nextPartId = null
+		rundownPlaylist.nextPartManual = !!setManually
 	}
 
 	waitForPromiseAll(ps)
@@ -353,4 +478,66 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 
 		return o
 	})
+}
+export function fetchAfterInPlaylist (
+	parts: Mongo.Collection<Part> | Array<Part>,
+	selector: MongoSelector<Part>,
+	playlist: RundownPlaylist,
+	partRundown: Rundown,
+	part: Part | undefined
+): Part | undefined {
+	let rank: number
+	let rundownId: string
+
+	rundownId = partRundown._id
+	if (part === undefined) {
+		rank = Number.NEGATIVE_INFINITY
+	} else {
+		rank = part._rank
+		if (part.rundownId !== partRundown._id) throw new Meteor.Error(501, `If provided, part must be a member of the partRundown.`)
+	}
+
+	selector = _.extend({}, selector, {
+		_rank: { $gt: rank },
+		rundownId: rundownId
+	})
+
+	let result: Part | undefined
+	if (_.isArray(parts)) {
+		result = _.find(parts, (o) => mongoWhere(o, selector))
+	} else {
+		result = parts.find(selector, {
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			limit: 1
+		}).fetch()[0]
+	}
+
+	if (result) {
+		return result
+	} else {
+		const nextRundown: Rundown | undefined = playlist.getRundowns({
+			_rank: {
+				$gt: partRundown._rank
+			}
+		}, {
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			limit: 1
+		})[0]
+
+		if (!nextRundown) return undefined // If there's no rundown after this, theres no part after either
+
+		return fetchAfterInPlaylist(
+			parts,
+			selector,
+			playlist,
+			nextRundown,
+			undefined
+		)
+	}
 }

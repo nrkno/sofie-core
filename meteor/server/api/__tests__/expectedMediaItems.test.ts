@@ -13,9 +13,12 @@ import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
+	const rplId0 = 'playlist0'
+	const rplId1 = 'playlist1'
 	const rdId0 = 'rundown0'
 	const rdId1 = 'rundown1'
 	const mockPart0 = 'mockPart0'
@@ -34,7 +37,21 @@ describe('Expected Media Items', () => {
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
 
-	function setupRundown (rdId) {
+	function setupRundown (rdId, rplId) {
+		RundownPlaylists.insert({
+			_id: rplId,
+			externalId: 'mock_rpl',
+			name: 'Mock Playlist',
+			studioId: '',
+			peripheralDeviceId: '',
+			created: 0,
+			modified: 0,
+			currentPartId: '',
+			previousPartId: '',
+			nextPartId: '',
+			active: true
+		})
+
 		Rundowns.insert(literal<DBRundown>({
 			_id: rdId,
 			created: 0,
@@ -52,13 +69,12 @@ describe('Expected Media Items', () => {
 			metaData: {},
 			modified: 0,
 			name: 'Mock Rundown',
-			nextPartId: '',
 			peripheralDeviceId: env.ingestDevice._id,
-			currentPartId: '',
-			previousPartId: '',
 			showStyleBaseId: env.showStyleBaseId,
 			showStyleVariantId: env.showStyleVariantId,
-			studioId: env.studio._id
+			studioId: env.studio._id,
+			playlistId: rplId,
+			_rank: 0,
 		}))
 		Segments.insert(literal<DBSegment>({
 			_id: Random.id(),
@@ -176,8 +192,8 @@ describe('Expected Media Items', () => {
 	}
 
 	beforeAll(() => runInFiber(() => {
-		setupRundown(rdId0)
-		setupRundown(rdId1)
+		setupRundown(rdId0, rplId0)
+		setupRundown(rdId1, rplId1)
 	}))
 
 	describe('Based on a Rundown', () => {

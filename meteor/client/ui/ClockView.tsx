@@ -4,6 +4,7 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as _ from 'underscore'
 
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 
@@ -16,6 +17,7 @@ import { getCurrentTime, objectPathGet, extendMandadory } from '../../lib/lib'
 import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
+import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0';
 
 interface SegmentUi extends Segment {
 	items: Array<PartUi>
@@ -26,14 +28,16 @@ interface TimeMap {
 }
 
 interface RundownOverviewProps {
-	rundownId: string
+	playlistId: string
 	segmentLiveDurations?: TimeMap
 }
 interface RundownOverviewState {
 }
 interface RundownOverviewTrackedProps {
-	rundown?: Rundown
+	playlist?: RundownPlaylist
 	segments: Array<SegmentUi>
+	showStyleBaseId?: string
+	rundownIds: string[]
 }
 
 const Timediff = class extends React.Component<{ time: number }> {
@@ -58,11 +62,14 @@ const Timediff = class extends React.Component<{ time: number }> {
 const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverviewState>()(
 	withTracker<WithTiming<RundownOverviewProps & InjectedTranslateProps>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
 
-		let rundown: Rundown | undefined
-		if (props.rundownId) rundown = Rundowns.findOne(props.rundownId)
+		let playlist: RundownPlaylist | undefined
+		if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
 		let segments: Array<SegmentUi> = []
-		if (rundown) {
-			segments = _.map(rundown.getSegments(), (segment) => {
+		let showStyleBaseId: string | undefined = undefined
+		let rundownIds: string[] = []
+
+		if (playlist) {
+			segments = _.map(playlist.getSegments(), (segment) => {
 				const displayDurationGroups: _.Dictionary<number> = {}
 				const parts = segment.getParts()
 				let displayDuration = 0
@@ -86,35 +93,54 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 				})
 			})
 
+			if (playlist.currentPartId) {
+				const currentPart = Parts.findOne(playlist.currentPartId)
+				if (currentPart) {
+					const currentRundown = currentPart.getRundown()
+					if (currentRundown) {
+						showStyleBaseId = currentRundown.showStyleBaseId
+					}
+				}
+			}
+			if (!showStyleBaseId) {
+				showStyleBaseId = playlist.getRundowns()[0].showStyleBaseId
+			}
+
+			rundownIds = playlist.getRundownIDs()
 		}
 		return {
 			segments,
-			rundown: rundown
+			playlist,
+			showStyleBaseId,
+			rundownIds
 		}
 	})(
 		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
-			componentWillMount () {
+			componentWillMount() {
+				this.subscribe(PubSub.rundownPlaylists, {
+					_id: this.props.playlistId
+				})
 				this.subscribe(PubSub.rundowns, {
-					_id: this.props.rundownId
+					playlistId: this.props.playlistId
 				})
 				this.subscribe(PubSub.segments, {
-					rundownId: this.props.rundownId
+					rundownId: this.props.playlistId
 				})
 				this.subscribe(PubSub.parts, {
-					rundownId: this.props.rundownId
+					rundownId: this.props.playlistId
 				})
 			}
 
-			render () {
-				const { rundown, segments } = this.props
+			render() {
+				const { playlist, segments, showStyleBaseId } = this.props
 
-				if (rundown && this.props.rundownId && this.props.segments) {
+				if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
 					let currentPart: PartUi | undefined
 					let currentSegment: SegmentUi | undefined
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
-								if (item._id === rundown.currentPartId) {
+								if (item._id === playlist.currentPartId) {
 									currentSegment = segment
 									currentPart = item
 								}
@@ -135,7 +161,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 					for (const segment of segments) {
 						if (segment.items) {
 							for (const item of segment.items) {
-								if (item._id === rundown.nextPartId) {
+								if (item._id === playlist.nextPartId) {
 									nextSegment = segment
 									nextPart = item
 								}
@@ -151,8 +177,8 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 					// 	}
 					// }
 
-					const overUnderClock = rundown.expectedDuration ?
-						(this.props.timingDurations.asPlayedRundownDuration || 0) - rundown.expectedDuration
+					const overUnderClock = playlist.expectedDuration ?
+						(this.props.timingDurations.asPlayedRundownDuration || 0) - playlist.expectedDuration
 						: (this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0)
 
 					return (
@@ -161,27 +187,27 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 								{currentPart ?
 									<React.Fragment>
 										<div className='clocks-part-icon clocks-current-segment-icon'>
-											<PieceIconContainer partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+											<PieceIconContainer partId={currentPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
 										</div>
 										<div className='clocks-part-title clocks-current-segment-title'>
 											{currentSegment!.name}
 										</div>
 										<div className='clocks-part-title clocks-part-title clocks-current-segment-title'>
-											<PieceNameContainer partSlug={currentPart.title} partId={currentPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+											<PieceNameContainer partSlug={currentPart.title} partId={currentPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
 										</div>
 										<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 											<Timediff time={currentSegmentDuration} />
 										</div>
 									</React.Fragment> :
-									rundown.expectedStart && <div className='clocks-rundown-countdown clocks-segment-countdown'>
-										<Timediff time={rundown.expectedStart - getCurrentTime()} />
+									playlist.expectedStart && <div className='clocks-rundown-countdown clocks-segment-countdown'>
+										<Timediff time={playlist.expectedStart - getCurrentTime()} />
 									</div>
 								}
 							</div>
 							<div className='clocks-half clocks-bottom clocks-top-bar'>
 								<div className='clocks-part-icon'>
 									{nextPart ?
-										<PieceIconContainer partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+										<PieceIconContainer partId={nextPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
 										: ''}
 								</div>
 								<div className='clocks-bottom-top'>
@@ -194,13 +220,13 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 									</div>
 									<div className='clocks-part-title clocks-part-title'>
 										{nextPart && nextPart.title ?
-											<PieceNameContainer partSlug={nextPart.title} partId={nextPart._id} showStyleBaseId={rundown.showStyleBaseId} rundownId={rundown._id} />
+											<PieceNameContainer partSlug={nextPart.title} partId={nextPart._id} showStyleBaseId={showStyleBaseId} rundownIds={this.props.rundownIds} />
 											: '_'}
 									</div>
 								</div>
 								<div className='clocks-rundown-bottom-bar'>
 									<div className='clocks-rundown-title'>
-										{rundown ? rundown.name : 'UNKNOWN'}
+										{playlist ? playlist.name : 'UNKNOWN'}
 									</div>
 									<div className={ClassNames('clocks-rundown-total', {
 										'over': (Math.floor(overUnderClock / 1000) >= 0)
@@ -218,9 +244,10 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string
-	rundown: Rundown
-	segments: Array<Segment>
-	parts: Array<Part>
+	playlist: RundownPlaylist
+	rundowns: Array<Rundown> | undefined
+	segments: Array<Segment> | undefined
+	parts: Array<Part> | undefined
 	match: {
 		params: {
 			studioId: string
@@ -233,8 +260,8 @@ interface IStateHeader {
 
 export const ClockView = translate()(withTracker(function (props: IPropsHeader) {
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let rundown = (
-		Rundowns.findOne({
+	let playlist = (
+		RundownPlaylists.findOne({
 			active: true,
 			studioId: studioId
 		})
@@ -249,15 +276,13 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 	// 	console.log('a')
 	// 	dep.changed()
 	// }, 3000)
-	let segments = rundown ? Segments.find({ rundownId: rundown._id }, {
-		sort: {
-			'_rank': 1
-		}
-	}).fetch() : undefined
-	let parts = rundown ? Parts.find({ rundownId: rundown._id }).fetch() : undefined
+	let rundowns = playlist ? playlist.getRundowns() : undefined
+	let segments = playlist ? playlist.getSegments() : undefined
+	let parts = segments ? _.flatten(segments.map(s => s.getParts())) : undefined
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
-		rundown,
+		playlist,
+		rundowns,
 		segments,
 		parts
 	}
@@ -281,21 +306,22 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 					studioId: studioId
 				})
 			)
-			if (rundown) {
+			if (this.props.rundowns) {
+				const rundownIDs = this.props.rundowns.map(i => i._id)
 				this.subscribe(PubSub.segments, {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 				this.subscribe(PubSub.parts, {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 				this.subscribe(PubSub.pieces, {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 				this.subscribe(PubSub.showStyleBases, {
-					_id: rundown.showStyleBaseId
+					_id: { $in: _.uniq(this.props.rundowns.map(i => i.showStyleBaseId)) }
 				})
 				this.subscribe(PubSub.adLibPieces, {
-					rundownId: rundown._id
+					rundownId: { $in: rundownIDs }
 				})
 			}
 		}
@@ -308,10 +334,10 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 		render () {
 			const { t } = this.props
 
-			if (this.props.rundown) {
+			if (this.props.playlist) {
 				return (
-					<RundownTimingProvider rundown={this.props.rundown} >
-						<ClockComponent rundownId={this.props.rundown._id} />
+					<RundownTimingProvider playlist={this.props.playlist} >
+						<ClockComponent playlistId={this.props.playlist._id} />
 					</RundownTimingProvider>
 				)
 			} else {

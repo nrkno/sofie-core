@@ -59,9 +59,8 @@ interface IDashboardPanelTrackedProps {
 }
 
 export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
-		rundownId: props.rundown._id,
-		partId: props.rundown.currentPartId,
+	const unfinishedPieces = _.groupBy(props.playlist.currentPartId ? Pieces.find({
+		partId: props.playlist.currentPartId,
 		startedPlayback: {
 			$exists: true
 		},
@@ -80,7 +79,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}).fetch() : [], (piece) => piece.adLibSourceId)
 
 	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio(),
+		studio: props.playlist.getStudio(),
 		unfinishedPieces
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
@@ -124,41 +123,60 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	componentDidMount () {
-		this.subscribe(PubSub.segments, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.parts, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.pieces, {
-			rundownId: this.props.rundown._id,
-			startedPlayback: {
-				$exists: true
-			},
-			adLibSourceId: {
-				$exists: true
-			},
-			$or: [{
-				stoppedPlayback: {
-					$eq: 0
-				}
-			}, {
-				stoppedPlayback: {
-					$exists: false
-				}
-			}]
-		})
-		this.subscribe(PubSub.adLibPieces, {
-			rundownId: this.props.rundown._id
-		})
-		this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-			rundownId: this.props.rundown._id
+		this.subscribe(PubSub.rundowns, {
+			playlistId: this.props.playlist._id
 		})
 		this.subscribe(PubSub.studios, {
-			_id: this.props.rundown.studioId
+			_id: this.props.playlist.studioId
 		})
-		this.subscribe(PubSub.showStyleBases, {
-			_id: this.props.rundown.showStyleBaseId
+		this.autorun(() => {
+			const rundowns = this.props.playlist.getRundowns()
+			const rundownIds = rundowns.map(i => i._id)
+			if (rundowns.length > 0) {
+				this.subscribe(PubSub.segments, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.parts, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.adLibPieces, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: {
+						$in: rundownIds
+					}
+				})
+				this.subscribe(PubSub.showStyleBases, {
+					_id: rundowns[0].showStyleBaseId
+				})
+				this.subscribe(PubSub.pieces, {
+					rundownId: {
+						$in: rundownIds
+					},
+					startedPlayback: {
+						$exists: true
+					},
+					adLibSourceId: {
+						$exists: true
+					},
+					$or: [{
+						stoppedPlayback: {
+							$eq: 0
+						}
+					}, {
+						stoppedPlayback: {
+							$exists: false
+						}
+					}]
+				})
+			}
 		})
 
 		this.refreshKeyboardHotkeys()
@@ -297,15 +315,15 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartId) {
 			if (!this.isAdLibOnAir(piece)) {
 				if (!piece.isGlobal) {
 					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+						this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
 					])
 				} else if (piece.isGlobal && !piece.isSticky) {
 					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+						this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
 					])
 				} else if (piece.isSticky) {
 					this.onToggleSticky(piece.sourceLayerId, e)
@@ -319,18 +337,18 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
+		if (this.props.playlist && this.props.playlist.currentPartId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.rundown._id, sourceLayerId])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id
+				this.props.playlist._id, this.props.playlist.currentPartId, sourceLayer._id
 			])
 		}
 	}
@@ -344,7 +362,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
-			if (!this.props.uiSegments || !this.props.rundown) {
+			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
 			} else {
 				return (
@@ -396,7 +414,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												layer={this.state.sourceLayers[item.sourceLayerId]}
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
-												rundown={this.props.rundown}
+												playlist={this.props.playlist}
 												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}

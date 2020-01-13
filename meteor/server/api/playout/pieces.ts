@@ -28,7 +28,7 @@ import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownData } from '../../../lib/collections/Rundowns'
-import { postProcessAdLibPieces } from '../blueprints/postProcess'
+import { RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -36,20 +36,14 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-/**
- * Returns a list of the pieces in a Part, ordered in the order they will be played
- * @param part
- */
-export function getOrderedPiece (part: Part): Array<PieceResolved> {
-	const pieces = part.getAllPieces()
+export function orderPieces (pieces: Piece[], partId: string, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
-	const partStarted = part.getLastStartedPlayback()
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(i => itemMap[i._id] = i)
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = clone(createPieceGroup(piece))
+		const obj = clone(createPieceGroup(undefined, piece))
 
 		if (obj.enable.start === 0) {
 			if (piece.infiniteId && piece.infiniteId !== piece._id) {
@@ -97,10 +91,10 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	})
 
 	if (unresolvedCount > 0) {
-		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
+		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${partId} (${unresolvedIds.join(', ')})`)
 	}
 	if (pieces.length !== resolvedPieces.length) {
-		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${part._id}`)
+		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${partId}`)
 	}
 
 	resolvedPieces.sort((a, b) => {
@@ -114,7 +108,18 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 
 	return resolvedPieces
 }
+/**
+ * Returns a list of the pieces in a Part, ordered in the order they will be played
+ * @param part
+ */
+export function getOrderedPiece (part: Part): Array<PieceResolved> {
+	const pieces = part.getAllPieces()
+	const partStarted = part.getLastStartedPlayback()
+
+	return orderPieces(pieces, part._id, partStarted)
+}
 export function createPieceGroupFirstObject (
+	playlistId: string | undefined,
 	piece: Piece,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
@@ -123,6 +128,7 @@ export function createPieceGroupFirstObject (
 		id: getPieceFirstObjectId(piece),
 		_id: '', // set later
 		studioId: '', // set later
+		playlistId: playlistId || '',
 		rundownId: piece.rundownId,
 		pieceId: piece._id,
 		infinitePieceId: piece.infiniteId,
@@ -145,6 +151,7 @@ export function createPieceGroupFirstObject (
 	})
 }
 export function createPieceGroup (
+	playlistId: string | undefined,
 	piece: Piece,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
@@ -159,6 +166,7 @@ export function createPieceGroup (
 		children: [],
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
+		playlistId: playlistId || '',
 		rundownId: piece.rundownId,
 		pieceId: piece._id,
 		infinitePieceId: piece.infiniteId,
@@ -177,7 +185,7 @@ export function getResolvedPieces (part: Part): Piece[] {
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(piece => itemMap[piece._id] = piece)
 
-	const objs = pieces.map(piece => clone(createPieceGroup(piece)))
+	const objs = pieces.map(piece => clone(createPieceGroup(undefined, piece)))
 	objs.forEach(o => {
 		if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
 			// Emulate playout starting now. TODO - ensure didnt break other uses
@@ -270,18 +278,18 @@ export function getResolvedPieces (part: Part): Piece[] {
 	return processedPieces
 }
 
-export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, allObjs: TimelineObjGeneric[]): { pieces: Piece[], time: number } {
+export function getResolvedPiecesFromFullTimeline (rundownData: RundownPlaylistData, allObjs: TimelineObjGeneric[]): { pieces: Piece[], time: number } {
 	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId))))
 
 	const now = getCurrentTime()
 
-	const partIds = _.compact([rundownData.rundown.previousPartId, rundownData.rundown.currentPartId])
+	const partIds = _.compact([rundownData.rundownPlaylist.previousPartId, rundownData.rundownPlaylist.currentPartId])
 	const pieces: Piece[] = rundownData.pieces.filter(p => partIds.indexOf(p.partId) !== -1)
 
-	if (rundownData.rundown.currentPartId && rundownData.rundown.nextPartId) {
-		const part = rundownData.partsMap[rundownData.rundown.currentPartId]
+	if (rundownData.rundownPlaylist.currentPartId && rundownData.rundownPlaylist.nextPartId) {
+		const part = rundownData.partsMap[rundownData.rundownPlaylist.currentPartId]
 		if (part && part.autoNext) {
-			pieces.push(...rundownData.pieces.filter(p => p.partId === rundownData.rundown.nextPartId))
+			pieces.push(...rundownData.pieces.filter(p => p.partId === rundownData.rundownPlaylist.nextPartId))
 		}
 	}
 
@@ -477,7 +485,7 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 	return newPiece
 }
 
-export function resolveActivePieces (part: Part, now: number): Piece[] {
+export function resolveActivePieces (playlistId: string, part: Part, now: number): Piece[] {
 	const pieces = part.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
@@ -487,7 +495,7 @@ export function resolveActivePieces (part: Part, now: number): Piece[] {
 	const targetTime = part.startedPlayback ? now - partStartTime : 0
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = createPieceGroup(piece)
+		const obj = createPieceGroup(playlistId, piece)
 
 		// If start is now, then if the part is active set it to be now, or fallback to start of the part
 		if (piece.enable.start === 'now') {
