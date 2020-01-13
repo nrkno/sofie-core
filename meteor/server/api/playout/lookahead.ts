@@ -1,18 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { LookaheadMode, Timeline as TimelineTypes, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
-import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { literal, extendMandadory, clone } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
-export function getLookeaheadObjects (rundownData: RundownPlaylistData, studio: Studio): Array<TimelineObjGeneric> {
+export function getLookeaheadObjects (rundownData: RundownPlaylistPlayoutData, studio: Studio): Array<TimelineObjGeneric> {
 	const activePlaylist = rundownData.rundownPlaylist
 	const currentPart = activePlaylist.currentPartId ? rundownData.partsMap[activePlaylist.currentPartId] : undefined
 
@@ -111,7 +110,7 @@ export interface LookaheadResult {
 }
 
 export function findLookaheadForlayer (
-	rundownData: RundownPlaylistData,
+	rundownData: RundownPlaylistPlayoutData,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadDepth: number
@@ -235,7 +234,7 @@ export function findLookaheadForlayer (
 	return res
 }
 
-function getPartsOrderedByTime (rundownData: RundownPlaylistData) {
+function getPartsOrderedByTime (rundownData: RundownPlaylistPlayoutData) {
 	// This could be cached across all lookahead layers, as it doesnt care about layer
 	const activePlaylist = rundownData.rundownPlaylist
 
@@ -291,7 +290,7 @@ function getPartsOrderedByTime (rundownData: RundownPlaylistData) {
 	}
 }
 
-function findObjectsForPart (rundownData: RundownPlaylistData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+function findObjectsForPart (rundownData: RundownPlaylistPlayoutData, layer: string, timeOrderedPartsWithPieces: PartInfoWithPieces[], startingPartOnLayerIndex: number, startingPartOnLayer: PartInfoWithPieces): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activePlaylist = rundownData.rundownPlaylist
 	const activeRundown = rundownData.rundownsMap[startingPartOnLayer.part.rundownId]
 

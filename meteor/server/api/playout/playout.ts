@@ -2,7 +2,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
-import { Rundowns, Rundown, RundownHoldState, RundownData } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getCurrentTime,
@@ -39,7 +39,7 @@ import {
 	reportPieceHasStopped
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
@@ -1259,7 +1259,7 @@ export namespace ServerPlayoutAPI {
 	}
 }
 
-function beforeTake (rundownData: RundownPlaylistData, currentPart: Part | null, nextPart: Part) {
+function beforeTake (rundownData: RundownPlaylistPlayoutData, currentPart: Part | null, nextPart: Part) {
 	if (currentPart) {
 		const adjacentPart = _.find(rundownData.parts, (part) => {
 			return (
@@ -1302,7 +1302,7 @@ function beforeTake (rundownData: RundownPlaylistData, currentPart: Part | null,
 }
 
 function afterTake (
-	rundownData: RundownPlaylistData,
+	rundownData: RundownPlaylistPlayoutData,
 	takePart: Part,
 	timeOffset: number | null = null
 ) {

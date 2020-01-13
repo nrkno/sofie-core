@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { getHash, formatDateAsTimecode, formatDurationAsTimecode } from '../../../lib/lib'
-import { Part, DBPart } from '../../../lib/collections/Parts'
+import { DBPart } from '../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
 import {
@@ -19,11 +19,11 @@ import {
 	IStudioContext,
 	BlueprintMappings,
 	BlueprintRuntimeArguments,
-	IBlueprintPiece,
 	IBlueprintSegmentDB,
 	IngestRundown,
-	IBlueprintPartDB,
-	IngestPart
+	IngestPart,
+	IBlueprintPartInstance,
+	IBlueprintPieceInstance
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig } from './config'
@@ -31,11 +31,11 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
-import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
 
 /** Common */
 
@@ -305,9 +305,9 @@ export class EventContext extends CommonContext implements IEventContext {
 }
 
 export class PartEventContext extends RundownContext implements IPartEventContext {
-	readonly part: Readonly<IBlueprintPartDB>
+	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, part: IBlueprintPartDB) {
+	constructor (rundown: Rundown, studio: Studio | undefined, part: IBlueprintPartInstance) {
 		super(rundown, studio)
 
 		this.part = part
@@ -350,25 +350,25 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/** Get all parts in this rundown */
-	getParts (): Array<Part> {
-		return this.rundown.getParts()
+	getParts (): Array<IBlueprintPartInstance> {
+		return this.rundown.getAllPartInstances()
 	}
 	/** Get the part related to this AsRunEvent */
-	getPart (id?: string): Part | undefined {
-		id = id || this.asRunEvent.partId
-		check(id, String)
-		if (id) {
-			return this.rundown.getParts({
-				_id: id
+	getPart (partInstanceId?: string): IBlueprintPartInstance | undefined {
+		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
+		check(partInstanceId, String)
+		if (partInstanceId) {
+			return this.rundown.getAllPartInstances({
+				_id: partInstanceId
 			})[0]
 		}
 	}
 	/** Get the mos story related to a part */
-	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
-		check(part._id, String)
+	getIngestDataForPart (part: IBlueprintPartInstance): IngestPart | undefined {
+		check(part.part._id, String)
 
 		try {
-			return loadIngestDataCachePart(this.rundown._id, this.rundown.externalId, part._id, part.externalId).data
+			return loadIngestDataCachePart(this.rundown._id, this.rundown.externalId, part.part._id, part.part.externalId).data
 		} catch (e) {
 			return undefined
 		}
@@ -386,13 +386,13 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	 * Returns a piece.
 	 * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent
 	 */
-	getPiece (pieceId?: string): IBlueprintPiece | undefined {
-		check(pieceId, Match.Optional(String))
-		pieceId = pieceId || this.asRunEvent.pieceId
-		if (pieceId) {
-			return Pieces.findOne({
+	getPiece (pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
+		check(pieceInstanceId, Match.Optional(String))
+		pieceInstanceId = pieceInstanceId || this.asRunEvent.pieceInstanceId
+		if (pieceInstanceId) {
+			return PieceInstances.findOne({
 				rundownId: this.rundown._id,
-				_id: pieceId
+				_id: pieceInstanceId
 			})
 		}
 	}
@@ -400,12 +400,12 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	 * Returns pieces in a part
 	 * @param id Id of part to fetch pieces in
 	 */
-	getPieces (partId: string): Array<IBlueprintPiece> {
-		check(partId, String)
-		if (partId) {
-			return Pieces.find({
+	getPieces (partInstanceId: string): Array<IBlueprintPieceInstance> {
+		check(partInstanceId, String)
+		if (partInstanceId) {
+			return PieceInstances.find({
 				rundownId: this.rundown._id,
-				partId: partId
+				partInstanceId: partInstanceId
 			}).fetch()
 		}
 		return []

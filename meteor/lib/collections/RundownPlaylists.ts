@@ -9,6 +9,8 @@ import { Segments, Segment } from './Segments'
 import { Parts, Part } from './Parts'
 import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
+import { PartInstance, PartInstances } from './PartInstances'
+import { PieceInstance, PieceInstances } from './PieceInstances'
 
 export interface DBRundownPlaylist {
 	_id: string
@@ -25,21 +27,21 @@ export interface DBRundownPlaylist {
 
 	active?: boolean
 	/** the id of the Live Part - if empty, no part in this rundown is live */
-	currentPartId: string | null
+	currentPartInstanceId: string | null
 	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	nextPartId: string | null
+	nextPartInstanceId: string | null
 	/** The time offset of the next line */
 	nextTimeOffset?: number | null
 	/** if nextPartId was set manually (ie from a user action) */
 	nextPartManual?: boolean
 	/** the id of the Previous Part */
-	previousPartId: string | null
+	previousPartInstanceId: string | null
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 }
 
-export interface RundownPlaylistData {
+export interface RundownPlaylistPlayoutData {
 	rundownPlaylist: RundownPlaylist,
 	rundowns: Rundown[],
 	rundownsMap: { [key: string]: Rundown },
@@ -48,6 +50,11 @@ export interface RundownPlaylistData {
 	parts: Part[],
 	partsMap: { [key: string]: Part },
 	pieces: Piece[]
+
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
+	previousPartInstance: PartInstance | undefined
+	selectedInstancePieces: Array<PieceInstance>
 }
 
 export class RundownPlaylist implements DBRundownPlaylist {
@@ -64,11 +71,11 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public rehearsal?: boolean
 	public holdState?: RundownHoldState
 	public active?: boolean
-	public currentPartId: string | null
-	public nextPartId: string | null
+	public currentPartInstanceId: string | null
+	public nextPartInstanceId: string | null
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
-	public previousPartId: string | null
+	public previousPartInstanceId: string | null
 
 	public previousPersistentState?: TimelinePersistentState
 
@@ -250,7 +257,36 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			parts: RundownPlaylist._sortPartsInner(parts, segments)
 		}
 	}
-	fetchAllData (): RundownPlaylistData {
+	getSelectedPartInstances (rundownIds0?: string[]) {
+		let rundownIds = rundownIds0
+		if (!rundownIds) {
+			const rundowns = this.getRundowns(undefined, {
+				fields: {
+					_id: 1,
+					_rank: 1,
+					name: 1
+				}
+			})
+			rundownIds = rundowns.map(i => i._id)
+		}
+
+		const ids = _.compact([
+			this.currentPartInstanceId,
+			this.previousPartInstanceId,
+			this.nextPartInstanceId
+		])
+		const instances = ids.length > 0 ? PartInstances.find({
+			rundownId: this._id,
+			_id: { $in: ids }
+		}).fetch() : []
+
+		return {
+			currentPartInstance: instances.find(inst => inst._id === this.currentPartInstanceId),
+			nextPartInstance: instances.find(inst => inst._id === this.nextPartInstanceId),
+			previousPartInstance: instances.find(inst => inst._id === this.previousPartInstanceId)
+		}
+	}
+	fetchAllData (): RundownPlaylistPlayoutData {
 		const rundowns = Rundowns.find({ playlistId: this._id }, {
 			sort: {
 				_rank: 1
@@ -258,14 +294,27 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		}).fetch()
 		const rundownIds = rundowns.map(i => i._id)
 
+		const partInstanceIds = _.compact([
+			this.currentPartInstanceId,
+			this.previousPartInstanceId,
+			this.nextPartInstanceId
+		])
+
 		const pSegmentsAndParts = this.getSegmentsAndParts(rundowns)
 		const pPieces = asyncCollectionFindFetch(Pieces, { rundownId: { $in: rundownIds } })
+		const pSelectedInstancePieces = asyncCollectionFindFetch(PieceInstances, {
+			rundownId: { $in: rundownIds },
+			partInstanceId: { $in: partInstanceIds }
+		})
+		const pSelectedPartInstances = makePromise(() => this.getSelectedPartInstances(rundownIds))
 
 		// Do fetches in parallell:
 		const segmentsAndParts = waitForPromise(pSegmentsAndParts)
 		const pieces = waitForPromise(pPieces)
+		const selectedPartInstances = waitForPromise(pSelectedPartInstances)
+		const selectedInstancePieces = waitForPromise(pSelectedInstancePieces)
 
-		// Force parts to use preloaded pieces when possible
+		// Force to use preloaded pieces when possible
 		_.each(segmentsAndParts.parts, part => {
 			part.getAllPieces = () => {
 				return _.map(_.filter(pieces, (piece) => {
@@ -277,6 +326,19 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				})
 			}
 		})
+		_.each(_.values(selectedPartInstances), partInstance => {
+			if (partInstance) {
+				partInstance.getAllPieceInstances = () => {
+					return _.map(_.filter(selectedInstancePieces, (piece) => {
+						return (
+							piece.partInstanceId === partInstance._id
+						)
+					}), (piece) => {
+						return _.clone(piece)
+					})
+				}
+			}
+		})
 
 		return {
 			rundownPlaylist: this,
@@ -286,11 +348,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			segmentsMap: normalizeArray(segmentsAndParts.segments, '_id'),
 			parts: segmentsAndParts.parts,
 			partsMap: normalizeArray(segmentsAndParts.parts, '_id'),
-			pieces
+			pieces,
+			...selectedPartInstances,
+			selectedInstancePieces
 		}
 	}
 
-	static _sortSegments (segments: Segment[], rundowns: Rundown[]) {
+	static _sortSegments (segments: Segment[], rundowns: DBRundown[]) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
 			if (a.rundownId === b.rundownId) {
@@ -302,7 +366,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}
 		})
 	}
-	static _sortParts (parts: Part[], rundowns: Rundown[], segments: Segment[]) {
+	static _sortParts (parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
 	}
 	static _sortPartsInner (parts: Part[], sortedSegments: Segment[]) {

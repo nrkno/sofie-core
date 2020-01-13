@@ -43,7 +43,7 @@ import {
 	clone,
 	omit
 } from '../../../lib/lib'
-import { RundownPlaylistData, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistPlayoutData, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Rundowns, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -65,13 +65,13 @@ import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownPlaylistData | null) => void
-= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownPlaylistData | null) {
+export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownPlaylistPlayoutData | null) => void
+= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownPlaylistPlayoutData | null) {
 	logger.debug('updateTimeline running...')
 	let timelineObjs: Array<TimelineObjGeneric> = []
 	const pStudio = asyncCollectionFindOne(Studios, studioId)
 
-	let activeRundownData: RundownPlaylistData | null = null
+	let activeRundownData: RundownPlaylistPlayoutData | null = null
 
 	if (activeRundownData0 === undefined) {
 		// When activeRundownData0 is not provided:
@@ -201,7 +201,7 @@ function getActiveRundown (studioId: string): Promise<RundownPlaylist | undefine
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-function getTimelineRundown (studio: Studio, activeRundownData: RundownPlaylistData | null): Promise<TimelineObjRundown[]> {
+function getTimelineRundown (studio: Studio, activeRundownData: RundownPlaylistPlayoutData | null): Promise<TimelineObjRundown[]> {
 
 	return new Promise((resolve, reject) => {
 		try {
@@ -211,7 +211,7 @@ function getTimelineRundown (studio: Studio, activeRundownData: RundownPlaylistD
 			const activeRundown = activeRundownData && currentPart ? activeRundownData.rundownsMap[currentPart.rundownId] : undefined
 			if (activeRundown) {
 
-				const rundownData = activeRundownData as RundownPlaylistData
+				const rundownData = activeRundownData as RundownPlaylistPlayoutData
 				// Start with fetching stuff from database:
 
 				// Fetch showstyle blueprint:
@@ -399,7 +399,7 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Ti
 	})
 }
 
-function buildTimelineObjsForRundown (rundownData: RundownPlaylistData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+function buildTimelineObjsForRundown (rundownData: RundownPlaylistPlayoutData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 	let currentPartGroup: TimelineObjRundown | undefined
 	let previousPartGroup: TimelineObjRundown | undefined

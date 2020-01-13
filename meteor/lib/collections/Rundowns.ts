@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise, asyncCollectionFindFetch, waitForPromise } from '../lib'
+import { Time, applyClassToDocument, getCurrentTime, registerCollection, asyncCollectionFindFetch } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Studios, Studio } from './Studios'
-import { Pieces, Piece } from './Pieces'
+import { Pieces } from './Pieces'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
@@ -17,6 +17,8 @@ import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
+import { PartInstances, PartInstance } from './PartInstances'
+import { PieceInstances } from './PieceInstances'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -228,6 +230,25 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 	}
+	getAllPartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
+		return PartInstances.find(
+			_.extend({
+				rundownId: this._id,
+			}, selector),
+			_.extend({
+				sort: { takeCount: 1 }
+			}, options)
+		).fetch()
+	}
+	getActivePartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+		const newSelector = {
+			...selector,
+			reset: { $ne: true }
+		}
+		return this.getAllPartInstances(newSelector, options)
+	}
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		Rundowns.remove(this._id)
@@ -241,7 +262,9 @@ export class Rundown implements DBRundown {
 		}
 		Segments.remove({ rundownId: this._id })
 		Parts.remove({ rundownId: this._id })
+		PartInstances.remove({ rundownId: this._id })
 		Pieces.remove({ rundownId: this._id })
+		PieceInstances.remove({ rundownId: this._id })
 		AdLibPieces.remove({ rundownId: this._id })
 		RundownBaselineObjs.remove({ rundownId: this._id })
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
@@ -286,15 +309,6 @@ export class Rundown implements DBRundown {
 			notes: note
 		}})
 	}
-}
-export interface RundownData {
-	rundown: Rundown
-	rundownPlaylist: RundownPlaylist
-	segments: Array<Segment>
-	segmentsMap: {[id: string]: Segment}
-	parts: Array<Part>
-	partsMap: {[id: string]: Part}
-	pieces: Array<Piece>
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })

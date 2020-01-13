@@ -27,8 +27,8 @@ import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
-import { RundownData } from '../../../lib/collections/Rundowns'
-import { RundownPlaylistData } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
+import { postProcessAdLibPieces } from '../blueprints/postProcess'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -278,7 +278,7 @@ export function getResolvedPieces (part: Part): Piece[] {
 	return processedPieces
 }
 
-export function getResolvedPiecesFromFullTimeline (rundownData: RundownPlaylistData, allObjs: TimelineObjGeneric[]): { pieces: Piece[], time: number } {
+export function getResolvedPiecesFromFullTimeline (rundownData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: Piece[], time: number } {
 	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId))))
 
 	const now = getCurrentTime()
