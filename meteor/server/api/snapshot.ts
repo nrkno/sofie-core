@@ -118,8 +118,8 @@ function createRundownSnapshot (playlistId: string): RundownSnapshot {
 	const ingestData = IngestDataCache.find({ rundownId: { $in: rundownIds } }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
 	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join("|") + `).*` } }).fetch()
 
-	const segments = Segments.find({ rundownId: { $in: rundownIds } }).fetch()
-	const parts = Parts.find({ rundownId: { $in: rundownIds } }).fetch()
+	const segments = playlist.getSegments()
+	const parts = playlist.getParts()
 	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()

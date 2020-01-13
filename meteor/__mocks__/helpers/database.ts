@@ -580,7 +580,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			_id: rundownId + '_part1_0',
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
-			_rank: 10,
+			_rank: 0,
 			externalId: 'MOCK_PART_1_0',
 			title: 'Part 1 0',
 			typeVariant: ''
@@ -591,7 +591,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			_id: rundownId + '_part1_1',
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
-			_rank: 11,
+			_rank: 1,
 			externalId: 'MOCK_PART_1_1',
 			title: 'Part 1 1',
 			typeVariant: ''
@@ -602,7 +602,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			_id: rundownId + '_part1_2',
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
-			_rank: 12,
+			_rank: 2,
 			externalId: 'MOCK_PART_1_2',
 			title: 'Part 1 2',
 			typeVariant: ''

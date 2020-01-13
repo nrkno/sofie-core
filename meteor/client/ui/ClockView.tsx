@@ -270,16 +270,12 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 		_id: studioId
 	})
 
-	// let dep = new Tracker.Dependency()
-	// dep.depend()
-	// Meteor.setTimeout(() => {
-	// 	console.log('a')
-	// 	dep.changed()
-	// }, 3000)
-	let rundowns = playlist ? playlist.getRundowns() : undefined
-	let segments = playlist ? playlist.getSegments() : undefined
-	let parts = segments ? _.flatten(segments.map(s => s.getParts())) : undefined
-	// let rundownDurations = calculateDurations(rundown, parts)
+	const rundowns = playlist ? playlist.getRundowns() : undefined
+	const segmentsAndParts = playlist && playlist.getSegmentsAndPartsSync()
+
+	const segments = segmentsAndParts && segmentsAndParts.segments
+	const parts = segmentsAndParts && segmentsAndParts.parts
+
 	return {
 		playlist,
 		rundowns,

@@ -348,12 +348,10 @@ function updateRundownFromIngestData (
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext.rundown.playlistId, blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
-	const existingRundownParts = Parts.find({
-		rundownId: dbRundown._id,
-		dynamicallyInserted: { $ne: true }
-	}).fetch()
+	const segmentsAndParts = waitForPromise(dbRundown.getSegmentsAndParts())
+	const existingRundownParts = _.filter(segmentsAndParts.parts, part => part.dynamicallyInserted !== true)
+	const existingSegments = segmentsAndParts.segments
 
-	const existingSegments = Segments.find({ rundownId: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
@@ -559,11 +557,7 @@ function updateSegmentFromIngestData (
 		_id: segmentId,
 		rundownId: rundown._id,
 	})
-	const existingParts = Parts.find({
-		rundownId: rundown._id,
-		segmentId: segmentId,
-		dynamicallyInserted: { $ne: true }
-	}).fetch()
+	const existingParts = existingSegment && existingSegment.getParts({ dynamicallyInserted: { $ne: true } }) || []
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
@@ -650,7 +644,7 @@ function updateSegmentFromIngestData (
 export function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
-	updatePartRanks(rundown._id)
+	updatePartRanks(rundown)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	UpdateNext.ensureNextPartIsValid(rundown)
 	triggerUpdateTimelineAfterIngestData(rundown._id, changedSegmentIds)
@@ -769,7 +763,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: i, // This gets updated to a rundown unique rank as a later step
+			_rank: i, // This gets updated to a rank unique within its segment in a later step
 			notes: notes,
 		})
 		parts.push(part)

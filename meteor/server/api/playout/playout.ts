@@ -7,7 +7,7 @@ import { Part, Parts, DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getCurrentTime,
 	Time,
-	fetchAfter,
+	fetchNext,
 	asyncCollectionUpdate,
 	waitForPromiseAll,
 	asyncCollectionInsert,
@@ -528,6 +528,8 @@ export namespace ServerPlayoutAPI {
 				nextPartId = playlist.nextPartId
 			}
 		}
+		const pSegmentsAndParts = playlist.getSegmentsAndParts()
+
 		let currentNextPart: Part = Parts.findOne(nextPartId) as Part
 		if (!currentNextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 

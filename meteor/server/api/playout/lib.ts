@@ -56,10 +56,7 @@ export function resetRundown (rundown: Rundown) {
 		}
 	}, { multi: true })
 
-	const dirtyParts = Parts.find({
-		rundownId: rundown._id,
-		dirty: true
-	}).fetch()
+	const dirtyParts = rundown.getParts({ dirty: true })
 	dirtyParts.forEach(part => {
 		refreshPart(rundown, part)
 		Parts.update(part._id, {

@@ -196,7 +196,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate 4`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -207,7 +207,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -218,7 +218,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -240,7 +240,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -273,7 +273,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -473,7 +473,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 4`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 7,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -484,7 +484,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -495,7 +495,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 5,
+    "_rank": 2,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -517,7 +517,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 6,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -550,7 +550,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -768,7 +768,7 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 4`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -779,7 +779,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -790,7 +790,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -812,7 +812,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -854,7 +854,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1066,7 +1066,7 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 4`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1077,7 +1077,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1088,7 +1088,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1110,7 +1110,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1143,7 +1143,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1352,7 +1352,7 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 4`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1363,7 +1363,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1374,7 +1374,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1396,7 +1396,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1429,7 +1429,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1623,7 +1623,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 4`] 
 Array [
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 5,
+    "_rank": 2,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1634,7 +1634,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1679,7 +1679,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1891,7 +1891,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 4`] = 
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 7,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1902,7 +1902,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 8,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1923,7 +1923,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 5,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -1945,7 +1945,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 6,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -1979,7 +1979,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 4,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2199,7 +2199,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 4`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 7,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -2210,7 +2210,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 8,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2221,7 +2221,7 @@ Array [
   },
   Object {
     "_id": "ModDobC_qs2xy46g6PaY7uM33FM_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s1b;newPart1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2231,7 +2231,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 5,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -2253,7 +2253,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 6,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2287,7 +2287,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 4,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2499,7 +2499,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 3,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -2510,7 +2510,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 4,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2532,7 +2532,7 @@ Array [
   },
   Object {
     "_id": "JVcFyacYypoRSC7spru_RrvnDCQ_",
-    "_rank": 7,
+    "_rank": 2,
     "externalId": "ro1;s1;p3",
     "metaData": Object {},
     "notes": Array [],
@@ -2543,7 +2543,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 2,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2554,7 +2554,7 @@ Array [
   },
   Object {
     "_id": "GcMaXdvDQCZpQmHJduLP4GfJ5Dk_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s1;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2565,7 +2565,7 @@ Array [
   },
   Object {
     "_id": "EkhUUiK_CeS5dIs52jgOMcFmN7s_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s1;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -2788,7 +2788,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 4`] = 
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -2799,7 +2799,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2810,7 +2810,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -2832,7 +2832,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -2865,7 +2865,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3077,7 +3077,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 4`] =
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3088,7 +3088,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3109,7 +3109,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3131,7 +3131,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3154,7 +3154,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3353,7 +3353,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 3`] = `
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3364,7 +3364,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3375,7 +3375,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3397,7 +3397,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3431,7 +3431,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3635,7 +3635,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 0,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3646,7 +3646,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 5,
+    "_rank": 2,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3657,7 +3657,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3679,7 +3679,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 7,
+    "_rank": 1,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3712,7 +3712,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3948,7 +3948,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3959,7 +3959,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -3970,7 +3970,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 1,
+    "_rank": 0,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -3981,7 +3981,7 @@ Array [
   },
   Object {
     "_id": "JVcFyacYypoRSC7spru_RrvnDCQ_",
-    "_rank": 2,
+    "_rank": 0,
     "externalId": "ro1;s1;p3",
     "metaData": Object {},
     "notes": Array [],
@@ -3992,7 +3992,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4014,7 +4014,7 @@ Array [
   },
   Object {
     "_id": "EkhUUiK_CeS5dIs52jgOMcFmN7s_",
-    "_rank": 4,
+    "_rank": 0,
     "externalId": "ro1;s1;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -4025,7 +4025,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4237,7 +4237,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -4248,7 +4248,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4259,7 +4259,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -4281,7 +4281,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4315,7 +4315,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4527,7 +4527,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 4
 Array [
   Object {
     "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 6,
+    "_rank": 1,
     "externalId": "ro1;s3;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -4538,7 +4538,7 @@ Array [
   },
   Object {
     "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 7,
+    "_rank": 0,
     "externalId": "ro1;s4;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4549,7 +4549,7 @@ Array [
   },
   Object {
     "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 4,
+    "_rank": 1,
     "externalId": "ro1;s2;p2",
     "metaData": Object {},
     "notes": Array [],
@@ -4571,7 +4571,7 @@ Array [
   },
   Object {
     "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 5,
+    "_rank": 0,
     "externalId": "ro1;s3;p1",
     "metaData": Object {},
     "notes": Array [],
@@ -4605,7 +4605,7 @@ Array [
   },
   Object {
     "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 3,
+    "_rank": 0,
     "externalId": "ro1;s2;p1",
     "metaData": Object {},
     "notes": Array [],

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
-import { fetchAfter } from '../../../lib/lib'
+import { fetchNext } from '../../../lib/lib'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
 
@@ -34,7 +34,7 @@ export namespace UpdateNext {
 					ServerPlayoutAPI.setNextPartInner(playlist, null)
 				}
 			} else {
-				const expectedAutoNextPart = fetchAfter(allValidParts, {}, currentPart ? currentPart._rank : null)
+				const expectedAutoNextPart = fetchNext(allValidParts, currentPart)
 				const expectedAutoNextPartId = expectedAutoNextPart ? expectedAutoNextPart._id : null
 
 				// If not manually set, make sure that next is done by rank

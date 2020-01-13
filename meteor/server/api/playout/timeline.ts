@@ -76,9 +76,9 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 	if (activeRundownData0 === undefined) {
 		// When activeRundownData0 is not provided:
 
-		const activeRundown = waitForPromise(getActiveRundown(studioId))
-		if (activeRundown) {
-			activeRundownData = activeRundown.fetchAllData()
+		const activePlaylist = waitForPromise(getActiveRundown(studioId))
+		if (activePlaylist) {
+			activeRundownData = activePlaylist.fetchAllData()
 		}
 	} else {
 		activeRundownData = activeRundownData0

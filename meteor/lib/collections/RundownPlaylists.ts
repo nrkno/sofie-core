@@ -2,8 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, waitForPromiseAll, getCurrentTime } from '../lib'
-import { RundownHoldState, Rundowns, Rundown } from './Rundowns'
+import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, waitForPromiseAll, getCurrentTime, asyncCollectionFindFetch, waitForPromise } from '../lib'
+import { RundownHoldState, Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
 import { Segments, Segment } from './Segments'
 import { Parts, Part } from './Parts'
@@ -139,7 +139,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				playlistId: 1
 			}
 		})
-		let rundownsMap = normalizeArray(rundowns, '_id')
 		const segments = Segments.find(_.extend({
 			rundownId: {
 				$in: rundowns.map(i => i._id)
@@ -149,100 +148,90 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				rundownId: 1,
 				_rank: 1
 			}
-		}, options)).fetch().sort((a, b) => {
-			if (a.rundownId === b.rundownId) {
-				return a._rank - b._rank
-			} else {
-				const rdA = rundownsMap[a.rundownId]
-				const rdB = rundownsMap[b.rundownId]
-				return rdA._rank - rdB._rank
-			}
-		})
-		return segments
+		}, options)).fetch()
+		return RundownPlaylist._sortSegments(segments, rundowns)
 	}
-	getParts (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Part[] {
-		const rundowns = this.getRundowns(undefined, {
-			fields: {
-				_id: 1,
-				_rank: 1,
-				name: 1
-			}
-		})
-		let rundownsMap = normalizeArray(rundowns, '_id')
-		const parts = Parts.find(_.extend({
-			rundownId: {
-				$in: rundowns.map(i => i._id)
-			}
-		}, selector), {
+	getParts (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Part[] { // TODO - remove ordering, and rename to getUnorderedParts?
+		// const rundowns = this.getRundowns(undefined, {
+		// 	fields: {
+		// 		_id: 1,
+		// 		_rank: 1,
+		// 		name: 1
+		// 	}
+		// })
+		// const parts = Parts.find(_.extend({
+		// 	rundownId: {
+		// 		$in: rundowns.map(i => i._id)
+		// 	}
+		// }, selector), {
+		// 	sort: {
+		// 		rundownId: 1,
+		// 		_rank: 1
+		// 	}
+		// }).fetch()
+		// return RundownPlaylist._sortParts(parts, rundowns)
+		const { parts } = this.getSegmentsAndPartsSync()
+		return parts
+	}
+	/**
+	 * Return ordered lists of all Segments and Parts in the rundown
+	 */
+	async getSegmentsAndParts (rundowns0?: DBRundown[]): Promise<{ segments: Segment[], parts: Part[] }> {
+		let rundowns = rundowns0
+		if (!rundowns) {
+			rundowns = this.getRundowns(undefined, {
+				fields: {
+					_id: 1,
+					_rank: 1,
+					name: 1
+				}
+			})
+		}
+		const rundownIds = rundowns.map(i => i._id)
+
+		const pSegments = asyncCollectionFindFetch(Segments, {
+			$in: rundownIds
+		}, {
 			sort: {
 				rundownId: 1,
 				_rank: 1
 			}
-		}).fetch().sort((a, b) => {
-			if (a.rundownId === b.rundownId) {
-				return a._rank - b._rank
-			} else {
-				const rdA = rundownsMap[a.rundownId]
-				const rdB = rundownsMap[b.rundownId]
-				return rdA._rank - rdB._rank
+		})
+
+		const pParts = asyncCollectionFindFetch(Parts, {
+			$in: rundownIds
+		}, {
+			sort: {
+				rundownId: 1,
+				_rank: 1
 			}
 		})
-		return parts
+
+		const segments = RundownPlaylist._sortSegments(await pSegments, rundowns)
+		return {
+			segments: segments,
+			parts: RundownPlaylist._sortPartsInner(await pParts, segments)
+		}
 	}
-	fetchAllData (): RundownPlaylistData {
-		// Do fetches in parallell:
-		const rundowns = Rundowns.find({ playlistId: this._id }, {
+	/** Synchronous version of getSegmentsAndParts, to be used client-side */
+	getSegmentsAndPartsSync (): { segments: Segment[], parts: Part[] } {
+
+		const rundowns = this.getRundowns(undefined, {
+			fields: {
+				_rank: 1,
+				playlistId: 1
+			}
+		})
+		const segments = Segments.find({
+			rundownId: {
+				$in: rundowns.map(i => i._id)
+			}
+		}, {
 			sort: {
+				rundownId: 1,
 				_rank: 1
 			}
 		}).fetch()
-		const rundownIds = rundowns.map(i => i._id)
-		let ps: [
-			Promise<{ segments: Segment[], segmentsMap: any }>,
-			// Promise<{ parts: Part[], partsMap: any }>,
-			Promise<Piece[]>,
-			Promise<{ rundowns: Rundown[], rundownsMap: any }>
-		] = [
-			makePromise(() => {
-				let segments = Segments.find({ rundownId: { $in: rundownIds } }).fetch()
-				let segmentsMap = normalizeArray(segments, '_id')
-				return { segments, segmentsMap }
-			}),
-			// makePromise(() => {
-			// 	let parts = _.map(Parts.find({ rundownId: { $in: rundownIds } }).fetch(), (part) => {
-			// 		// Override member function to use cached data instead:
-			// 		part.getAllPieces = () => {
-			// 			return _.map(_.filter(pieces, (piece) => {
-			// 				return (
-			// 					piece.partId === part._id
-			// 				)
-			// 			}), (part) => {
-			// 				return _.clone(part)
-			// 			})
-			// 		}
-			// 		part.getRundown = () => {
-			// 			return rundowns[part.rundownId]
-			// 		}
-			// 		return part
-
-			// 	})
-			// 	let partsMap = normalizeArray(parts, '_id')
-			// 	return { parts, partsMap }
-			// }),
-			makePromise(() => {
-				return Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
-			}),
-			makePromise(() => {
-				return { rundowns, rundownsMap: normalizeArray(rundowns, '_id') }
-			})
-		]
-		const r = waitForPromiseAll(ps as any) as any[]
-		const segments: Segment[] = r[0].segments
-		const segmentsMap: { [key: string]: Segment } = r[0].segmentsMap
-		// let partsMap: { [key: string]: Part } = r[1].partsMap
-		// let parts: Part[] = r[1].parts
-		const pieces: Piece[] = r[1]
-		const rundownsMap: { [key: string]: Rundown } = r[2].rundownsMap
 
 		const parts = Parts.find({
 			rundownId: {
@@ -253,7 +242,57 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				rundownId: 1,
 				_rank: 1
 			}
-		}).fetch().sort((a, b) => {
+		}).fetch()
+
+		const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
+		return {
+			segments: sortedSegments,
+			parts: RundownPlaylist._sortPartsInner(parts, segments)
+		}
+	}
+	fetchAllData (): RundownPlaylistData {
+		const rundowns = Rundowns.find({ playlistId: this._id }, {
+			sort: {
+				_rank: 1
+			}
+		}).fetch()
+		const rundownIds = rundowns.map(i => i._id)
+
+		const pSegmentsAndParts = this.getSegmentsAndParts(rundowns)
+		const pPieces = asyncCollectionFindFetch(Pieces, { rundownId: { $in: rundownIds } })
+
+		// Do fetches in parallell:
+		const segmentsAndParts = waitForPromise(pSegmentsAndParts)
+		const pieces = waitForPromise(pPieces)
+
+		// Force parts to use preloaded pieces when possible
+		_.each(segmentsAndParts.parts, part => {
+			part.getAllPieces = () => {
+				return _.map(_.filter(pieces, (piece) => {
+					return (
+						piece.partId === part._id
+					)
+				}), (part) => {
+					return _.clone(part)
+				})
+			}
+		})
+
+		return {
+			rundownPlaylist: this,
+			rundowns,
+			rundownsMap: normalizeArray(rundowns, '_id'),
+			segments: segmentsAndParts.segments,
+			segmentsMap: normalizeArray(segmentsAndParts.segments, '_id'),
+			parts: segmentsAndParts.parts,
+			partsMap: normalizeArray(segmentsAndParts.parts, '_id'),
+			pieces
+		}
+	}
+
+	static _sortSegments (segments: Segment[], rundowns: Rundown[]) {
+		const rundownsMap = normalizeArray(rundowns, '_id')
+		return segments.sort((a, b) => {
 			if (a.rundownId === b.rundownId) {
 				return a._rank - b._rank
 			} else {
@@ -262,18 +301,23 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				return rdA._rank - rdB._rank
 			}
 		})
-		const partsMap = normalizeArray(parts, '_id')
+	}
+	static _sortParts (parts: Part[], rundowns: Rundown[], segments: Segment[]) {
+		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
+	}
+	static _sortPartsInner (parts: Part[], sortedSegments: Segment[]) {
+		const segmentRanks: {[segmentId: string]: number} = {}
+		_.each(sortedSegments, (segment, i) => segmentRanks[segment._id] = i)
 
-		return {
-			rundownPlaylist: this,
-			rundowns,
-			rundownsMap,
-			segments,
-			segmentsMap,
-			parts,
-			partsMap,
-			pieces
-		}
+		return parts.sort((a, b) => {
+			if (a.segmentId === b.segmentId) {
+				return a._rank - b._rank
+			} else {
+				const segA = segmentRanks[a.segmentId]
+				const segB = segmentRanks[b.segmentId]
+				return segA - segB
+			}
+		})
 	}
 }
 
