@@ -13,7 +13,7 @@ import type { PieceInstance } from '../../../lib/collections/PieceInstances'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
-export function getLookeaheadObjects (rundownData: RundownPlaylistPlayoutData, studio: Studio): Array<TimelineObjGeneric> {
+export function getLookeaheadObjects (playoutData: RundownPlaylistPlayoutData, studio: Studio): Array<TimelineObjGeneric> {
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	const mutateAndPushObject = (rawObj: TimelineObjRundown, i: string, enable: TimelineObjRundown['enable'], mapping: MappingExt, priority: number) => {
 		const obj: TimelineObjGeneric = clone(rawObj)
@@ -45,7 +45,7 @@ export function getLookeaheadObjects (rundownData: RundownPlaylistPlayoutData, s
 
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
 		const lookaheadDepth = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
-		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead, lookaheadDepth)
+		const lookaheadObjs = findLookaheadForlayer(playoutData, layerId, mapping.lookahead, lookaheadDepth)
 
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
@@ -104,7 +104,7 @@ export interface LookaheadResult {
 }
 
 export function findLookaheadForlayer (
-	rundownData: RundownPlaylistPlayoutData,
+	playoutData: RundownPlaylistPlayoutData,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadDepth: number
@@ -120,7 +120,7 @@ export function findLookaheadForlayer (
 	}
 
 	function getPartInstancePieces (partInstanceId: string) {
-		return _.filter(rundownData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
+		return _.filter(playoutData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
 			return !!(
 				pieceInstance.partInstanceId === partInstanceId &&
 				pieceInstance.piece.content &&
@@ -132,22 +132,22 @@ export function findLookaheadForlayer (
 
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartAndPieces | undefined
-	if (rundownData.previousPartInstance) {
-		const previousPieces = getPartInstancePieces(rundownData.previousPartInstance._id)
+	if (playoutData.previousPartInstance) {
+		const previousPieces = getPartInstancePieces(playoutData.previousPartInstance._id)
 		previousPartInfo = {
-			part: rundownData.previousPartInstance.part,
+			part: playoutData.previousPartInstance.part,
 			pieces: previousPieces.map(p => p.piece)
 		}
 	}
 
 	// Get the PieceInstances which are on the timeline
 	const partInstancesOnTimeline = _.compact([
-		rundownData.currentPartInstance,
-		rundownData.currentPartInstance && rundownData.currentPartInstance.part.autoNext ? rundownData.nextPartInstance : undefined
+		playoutData.currentPartInstance,
+		playoutData.currentPartInstance && playoutData.currentPartInstance.part.autoNext ? playoutData.nextPartInstance : undefined
 	])
 	// Generate timed objects for parts on the timeline
 	_.each(partInstancesOnTimeline, partInstance => {
-		const pieces = _.filter(rundownData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
+		const pieces = _.filter(playoutData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
 			return !!(
 				pieceInstance.partInstanceId === partInstance._id &&
 				pieceInstance.piece.content &&
@@ -160,13 +160,13 @@ export function findLookaheadForlayer (
 			pieces: pieces.map(p => p.piece)
 		}
 
-		findObjectsForPart(rundownData, layer, previousPartInfo, partInfo)
+		findObjectsForPart(playoutData, layer, previousPartInfo, partInfo)
 			.forEach(o => res.timed.push({ obj: o, partId: partInstance.part._id }))
 		previousPartInfo = partInfo
 	})
 
 	// find all pieces that touch the layer
-	const piecesUsingLayer = _.filter(rundownData.pieces, (piece: Piece) => {
+	const piecesUsingLayer = _.filter(playoutData.pieces, (piece: Piece) => {
 		return !!(
 			piece.content &&
 			piece.content.timelineObjects &&
@@ -178,8 +178,8 @@ export function findLookaheadForlayer (
 	}
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPartIndex = selectNextPartIndex(rundownData.nextPartInstance || rundownData.currentPartInstance || null, rundownData.parts)
-	const futureParts = nextPartIndex !== -1 ? rundownData.parts.slice(nextPartIndex) : []
+	const nextPartIndex = selectNextPartIndex(playoutData.nextPartInstance || playoutData.currentPartInstance || null, playoutData.parts)
+	const futureParts = nextPartIndex !== -1 ? playoutData.parts.slice(nextPartIndex) : []
 	if (futureParts.length === 0) {
 		return res
 	}
@@ -204,7 +204,7 @@ export function findLookaheadForlayer (
 		if (pieces.length > 0 && part.isPlayable()) {
 			const partInfo = { part, pieces }
 			// TODO
-			findObjectsForPart(rundownData, layer, previousPartInfo, partInfo)
+			findObjectsForPart(playoutData, layer, previousPartInfo, partInfo)
 				.forEach(o => res.future.push({ obj: o, partId: part._id }))
 			previousPartInfo = partInfo
 		}
@@ -233,13 +233,13 @@ function selectNextPart (currentPartInstance: PartInstance | null, parts: Part[]
 }
 
 function findObjectsForPart (
-	rundownData: RundownPlaylistPlayoutData,
+	playoutData: RundownPlaylistPlayoutData,
 	layer: string,
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
-	const activePlaylist = rundownData.rundownPlaylist
-	const activeRundown = rundownData.rundownsMap[partInfo.part.rundownId]
+	const activePlaylist = playoutData.rundownPlaylist
+	const activeRundown = playoutData.rundownsMap[partInfo.part.rundownId]
 
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {

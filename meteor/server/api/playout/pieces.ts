@@ -279,17 +279,17 @@ export function getResolvedPieces (part: Part): PieceInstance[] {
 	return processedPieces
 }
 
-export function getResolvedPiecesFromFullTimeline (rundownData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: PieceInstance[], time: number } {
+export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: PieceInstance[], time: number } {
 	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId))))
 
 	const now = getCurrentTime()
 
-	const partInstanceIds = _.compact([rundownData.rundownPlaylist.previousPartInstanceId, rundownData.rundownPlaylist.currentPartInstanceId])
+	const partInstanceIds = _.compact([playoutData.rundownPlaylist.previousPartInstanceId, playoutData.rundownPlaylist.currentPartInstanceId])
 
-	const pieceInstances: PieceInstance[] = rundownData.selectedInstancePieces.filter(p => partInstanceIds.indexOf(p.partInstanceId) !== -1)
+	const pieceInstances: PieceInstance[] = playoutData.selectedInstancePieces.filter(p => partInstanceIds.indexOf(p.partInstanceId) !== -1)
 
-	if (rundownData.currentPartInstance && rundownData.currentPartInstance.part.autoNext && rundownData.rundownPlaylist.nextPartInstanceId) {
-		pieceInstances.push(...rundownData.selectedInstancePieces.filter(p => p.partInstanceId === rundownData.rundownPlaylist.nextPartInstanceId))
+	if (playoutData.currentPartInstance && playoutData.currentPartInstance.part.autoNext && playoutData.rundownPlaylist.nextPartInstanceId) {
+		pieceInstances.push(...playoutData.selectedInstancePieces.filter(p => p.partInstanceId === playoutData.rundownPlaylist.nextPartInstanceId))
 	}
 
 	const itemMap: { [key: string]: PieceInstance } = {}

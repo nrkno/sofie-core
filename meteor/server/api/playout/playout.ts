@@ -217,7 +217,7 @@ export namespace ServerPlayoutAPI {
 			let timeOffset: number | null = playlist.nextTimeOffset || null
 
 			let firstTake = !playlist.startedPlayback
-			let rundownData = playlist.fetchAllData()
+			let rundownData = playlist.fetchAllPlayoutData()
 
 			const partInstance = rundownData.currentPartInstance || rundownData.nextPartInstance
 			const currentRundown = partInstance ? rundownData.rundownsMap[partInstance.rundownId] : undefined
@@ -1025,7 +1025,7 @@ export namespace ServerPlayoutAPI {
 					const rundownPlaylist = RundownPlaylists.findOne(rundown.playlistId)
 					if (!rundownPlaylist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}", parent of rundown "${rundown._id}" not found!`)
 
-					afterTake(rundownPlaylist.fetchAllData(), playingPartInstance)
+					afterTake(rundownPlaylist.fetchAllPlayoutData(), playingPartInstance)
 				}
 			} else {
 				throw new Meteor.Error(404, `PartInstance "${partInstanceId}" in rundown "${rundownId}" not found!`)
@@ -1360,10 +1360,10 @@ export namespace ServerPlayoutAPI {
 	}
 }
 
-function beforeTake (rundownData: RundownPlaylistPlayoutData, currentPartInstance: PartInstance | null, nextPartInstance: PartInstance) {
+function beforeTake (playoutData: RundownPlaylistPlayoutData, currentPartInstance: PartInstance | null, nextPartInstance: PartInstance) {
 	// TODO-PartInstance - is this going to work? It needs some work to handle part data changes
 	if (currentPartInstance) {
-		const adjacentPart = _.find(rundownData.parts, (part) => {
+		const adjacentPart = _.find(playoutData.parts, (part) => {
 			return (
 				part.segmentId === currentPartInstance.segmentId &&
 				part._rank > currentPartInstance.part._rank
@@ -1400,11 +1400,11 @@ function beforeTake (rundownData: RundownPlaylistPlayoutData, currentPartInstanc
 					})
 
 					ps.push(asyncCollectionInsert(PieceInstances, overflowedItem))
-					rundownData.selectedInstancePieces.push(overflowedItem) // update the cache
+					playoutData.selectedInstancePieces.push(overflowedItem) // update the cache
 
 					// TODO-PartInstance - pending new data flow
 					ps.push(asyncCollectionInsert(Pieces, overflowedItem.piece))
-					rundownData.pieces.push(overflowedItem.piece) // update the cache
+					playoutData.pieces.push(overflowedItem.piece) // update the cache
 				}
 			}
 		})
@@ -1413,7 +1413,7 @@ function beforeTake (rundownData: RundownPlaylistPlayoutData, currentPartInstanc
 }
 
 function afterTake (
-	rundownData: RundownPlaylistPlayoutData,
+	playoutData: RundownPlaylistPlayoutData,
 	takePartInstance: PartInstance,
 	timeOffset: number | null = null
 ) {
@@ -1424,12 +1424,12 @@ function afterTake (
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(rundownData.rundownPlaylist.studioId, forceNowTime, rundownData)
+	updateTimeline(playoutData.rundownPlaylist.studioId, forceNowTime, playoutData)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
 		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			const currentRundown = rundownData.rundownsMap[takePartInstance.rundownId]
+			const currentRundown = playoutData.rundownsMap[takePartInstance.rundownId]
 			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
 		}
 	}, 40)

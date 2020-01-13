@@ -24,6 +24,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MongoSelector } from '../../../lib/typings/meteor'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 
 /**
  * Reset the rundown:
@@ -422,16 +423,23 @@ function resetPart (part: DBPart): Promise<void> {
 		})
 	}
 }
-export function onPartHasStoppedPlaying (part: Part, stoppedPlayingTime: Time) {
-	const lastStartedPlayback = part.getLastStartedPlayback()
-	if (part.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
-		Parts.update(part._id, {
+export function onPartHasStoppedPlaying (partInstance: PartInstance, stoppedPlayingTime: Time) {
+	const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
+	if (partInstance.part.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
+		PartInstances.update(partInstance._id, {
+			$set: {
+				'part.duration': stoppedPlayingTime - lastStartedPlayback
+			}
+		})
+
+		// TODO-PartInstance - pending new data flow
+		Parts.update(partInstance.part._id, {
 			$set: {
 				duration: stoppedPlayingTime - lastStartedPlayback
 			}
 		})
-		part.duration = stoppedPlayingTime - lastStartedPlayback
-		pushOntoPath(part, 'timings.stoppedPlayback', stoppedPlayingTime)
+		partInstance.part.duration = stoppedPlayingTime - lastStartedPlayback
+		pushOntoPath(partInstance.part, 'timings.stoppedPlayback', stoppedPlayingTime)
 	} else {
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
 	}

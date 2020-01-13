@@ -66,26 +66,26 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownPlaylistPlayoutData | null) => void
-= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time, activeRundownData0?: RundownPlaylistPlayoutData | null) {
+export const updateTimeline: (studioId: string, forceNowToTime?: Time, playoutData0?: RundownPlaylistPlayoutData | null) => void
+= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time, playoutData0?: RundownPlaylistPlayoutData | null) {
 	logger.debug('updateTimeline running...')
 	let timelineObjs: Array<TimelineObjGeneric> = []
 	const pStudio = asyncCollectionFindOne(Studios, studioId)
 
-	let activeRundownData: RundownPlaylistPlayoutData | null = null
+	let playoutData: RundownPlaylistPlayoutData | null = null
 
-	if (activeRundownData0 === undefined) {
+	if (playoutData0 === undefined) {
 		// When activeRundownData0 is not provided:
 
 		const activePlaylist = waitForPromise(getActiveRundown(studioId))
 		if (activePlaylist) {
-			activeRundownData = activePlaylist.fetchAllData()
+			playoutData = activePlaylist.fetchAllPlayoutData()
 		}
 	} else {
-		activeRundownData = activeRundownData0
+		playoutData = playoutData0
 	}
 
-	const activeRundown = activeRundownData && activeRundownData.rundownPlaylist
+	const activeRundown = playoutData && playoutData.rundownPlaylist
 
 	let studio = waitForPromise(pStudio)
 
@@ -109,7 +109,7 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 		})))
 	}
 
-	ps.push(caught(getTimelineRundown(studio, activeRundownData).then(applyTimelineObjs)))
+	ps.push(caught(getTimelineRundown(studio, playoutData).then(applyTimelineObjs)))
 	ps.push(caught(getTimelineRecording(studio).then(applyTimelineObjs)))
 
 	waitForPromiseAll(ps)
@@ -202,17 +202,17 @@ function getActiveRundown (studioId: string): Promise<RundownPlaylist | undefine
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-function getTimelineRundown (studio: Studio, activeRundownData: RundownPlaylistPlayoutData | null): Promise<TimelineObjRundown[]> {
+function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayoutData | null): Promise<TimelineObjRundown[]> {
 
 	return new Promise((resolve, reject) => {
 		try {
 			let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
-			const currentPart = activeRundownData ? (activeRundownData.rundownPlaylist.currentPartId && activeRundownData.partsMap[activeRundownData.rundownPlaylist.currentPartId] || undefined) : undefined
-			const activeRundown = activeRundownData && currentPart ? activeRundownData.rundownsMap[currentPart.rundownId] : undefined
+			const partForRundown = playoutData ? playoutData.currentPartInstance || playoutData.nextPartInstance : undefined
+			const activeRundown = playoutData && partForRundown ? playoutData.rundownsMap[partForRundown.rundownId] : undefined
 			if (activeRundown) {
 
-				const rundownData = activeRundownData as RundownPlaylistPlayoutData
+				const rundownData = playoutData as RundownPlaylistPlayoutData
 				// Start with fetching stuff from database:
 
 				// Fetch showstyle blueprint:
@@ -400,10 +400,10 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Ti
 	})
 }
 
-function buildTimelineObjsForRundown (rundownData: RundownPlaylistPlayoutData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
-	const activePlaylist = rundownData.rundownPlaylist
-	const currentRundownPartInstance = rundownData.currentPartInstance || rundownData.nextPartInstance
-	const currentRundown = currentRundownPartInstance ? rundownData.rundownsMap[currentRundownPartInstance.rundownId] : undefined
+function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+	const activePlaylist = playoutData.rundownPlaylist
+	const currentRundownPartInstance = playoutData.currentPartInstance || playoutData.nextPartInstance
+	const currentRundown = currentRundownPartInstance ? playoutData.rundownsMap[currentRundownPartInstance.rundownId] : undefined
 	if (!currentRundown) throw new Meteor.Error(501, `Could not resolve current rundown and part for playlist "${activePlaylist._id}"`)
 
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
@@ -421,7 +421,7 @@ function buildTimelineObjsForRundown (rundownData: RundownPlaylistPlayoutData, b
 		_id: '', // set later
 		studioId: '', // set later
 		objectType: TimelineObjType.RUNDOWN,
-		playlistId: rundownData.rundownPlaylist._id,
+		playlistId: playoutData.rundownPlaylist._id,
 		rundownId: currentRundown._id,
 		enable: { while: 1 },
 		layer: 'rundown_status',
@@ -432,19 +432,19 @@ function buildTimelineObjsForRundown (rundownData: RundownPlaylistPlayoutData, b
 	}))
 
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
-	if (rundownData.rundownPlaylist.nextPartInstanceId) {
+	if (playoutData.rundownPlaylist.nextPartInstanceId) {
 		// We may be at the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-		nextPart = rundownData.nextPartInstance
-		if (!nextPart) throw new Meteor.Error(404, `Part "${rundownData.rundownPlaylist.nextPartInstanceId}" not found!`)
+		nextPart = playoutData.nextPartInstance
+		if (!nextPart) throw new Meteor.Error(404, `Part "${playoutData.rundownPlaylist.nextPartInstanceId}" not found!`)
 	}
 
-	if (rundownData.rundownPlaylist.currentPartInstanceId) {
-		currentPart = rundownData.currentPartInstance
-		if (!currentPart) throw new Meteor.Error(404, `Part "${rundownData.rundownPlaylist.currentPartInstanceId}" not found!`)
+	if (playoutData.rundownPlaylist.currentPartInstanceId) {
+		currentPart = playoutData.currentPartInstance
+		if (!currentPart) throw new Meteor.Error(404, `Part "${playoutData.rundownPlaylist.currentPartInstanceId}" not found!`)
 
-		if (rundownData.rundownPlaylist.previousPartInstanceId) {
-			previousPart = rundownData.previousPartInstance
-			if (!previousPart) throw new Meteor.Error(404, `Part "${rundownData.rundownPlaylist.previousPartInstanceId}" not found!`)
+		if (playoutData.rundownPlaylist.previousPartInstanceId) {
+			previousPart = playoutData.previousPartInstance
+			if (!previousPart) throw new Meteor.Error(404, `Part "${playoutData.rundownPlaylist.previousPartInstanceId}" not found!`)
 		}
 	}
 
@@ -516,7 +516,7 @@ function buildTimelineObjsForRundown (rundownData: RundownPlaylistPlayoutData, b
 
 			if (piece.piece.infiniteId) {
 				// TODO-PartInstance - this will be wrong once infinites work on only the instances
-				const originalItem = _.find(rundownData.pieces, (p => p._id === piece.piece.infiniteId))
+				const originalItem = _.find(playoutData.pieces, (p => p._id === piece.piece.infiniteId))
 
 				// If we are a continuation, set the same start point to ensure that anything timed is correct
 				if (originalItem && originalItem.startedPlayback) {

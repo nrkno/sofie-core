@@ -75,7 +75,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundownPlaylist).toMatchObject({
 			externalId: rundownData.externalId
 		})
-		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
@@ -145,7 +145,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: rundownData.externalId,
 			name: rundownData.name
 		})
-		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -316,7 +316,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundownPlaylist).toMatchObject({
 			externalId: rundownData.externalId
 		})
-		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -390,7 +390,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundownPlaylist).toMatchObject({
 			externalId: rundownData.externalId
 		})
-		expect(typeof rundownPlaylist.fetchAllData).toEqual('function')
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
