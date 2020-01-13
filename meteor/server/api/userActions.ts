@@ -18,7 +18,7 @@ import {
 	EvaluationBase
 } from '../../lib/collections/Evaluations'
 import { Studios } from '../../lib/collections/Studios'
-import { Pieces, Piece } from '../../lib/collections/Pieces'
+import { Pieces } from '../../lib/collections/Pieces'
 import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
@@ -32,6 +32,8 @@ import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -57,23 +59,23 @@ export function take (rundownPlaylistId: string): ClientAPI.ClientResponse {
 	if (!playlist.active) {
 		return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
 	}
-	if (!playlist.nextPartId) {
+	if (!playlist.nextPartInstanceId) {
 		return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
 	}
-	if (playlist.currentPartId) {
-		const currentPart = Parts.findOne(playlist.currentPartId)
-		if (currentPart && currentPart.timings) {
-			const lastStartedPlayback = currentPart.timings.startedPlayback ? currentPart.timings.startedPlayback[currentPart.timings.startedPlayback.length - 1] : 0
-			const lastTake = currentPart.timings.take ? currentPart.timings.take[currentPart.timings.take.length - 1] : 0
+	if (playlist.currentPartInstanceId) {
+		const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
+		if (currentPartInstance && currentPartInstance.part.timings) {
+			const lastStartedPlayback = _.last(currentPartInstance.part.timings.startedPlayback || []) || 0
+			const lastTake = _.last(currentPartInstance.part.timings.take || []) || 0
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
-				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPart._id}: ${getCurrentTime() - lastStartedPlayback}`)
+				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPartInstance._id}: ${getCurrentTime() - lastStartedPlayback}`)
 				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 			}
 		} else {
 			// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
-			logger.error(`Part "${playlist.currentPartId}", set as currentPart in "${rundownPlaylistId}", not found!`)
+			logger.error(`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`)
 		}
 	}
 	return ServerPlayoutAPI.takeNextPart(playlist._id)
@@ -114,7 +116,7 @@ export function moveNext (
 	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed during a Hold!')
 	}
-	if (!playlist.nextPartId && !playlist.currentPartId) {
+	if (!playlist.nextPartInstanceId && !playlist.currentPartInstanceId) {
 		return ClientAPI.responseError('RundownPlaylist has no next and no current part!')
 	}
 
@@ -215,41 +217,44 @@ export function disableNextPiece (rundownId: string, undo?: boolean) {
 		ServerPlayoutAPI.disableNextPiece(rundownId, undo)
 	)
 }
-export function togglePartArgument(rundownPlaylistId: string, partId: string, property: string, value: string) {
+export function togglePartArgument (rundownPlaylistId: string, partInstanceId: string, property: string, value: string) {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Part-arguments can't be toggled while Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownTogglePartArgument(rundownPlaylistId, partId, property, value)
+		ServerPlayoutAPI.rundownTogglePartArgument(rundownPlaylistId, partInstanceId, property, value)
 	)
 }
-export function pieceTakeNow (rundownPlaylistId: string, partId: string, pieceId: string) {
+export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdToCopy: string) {
 	check(rundownPlaylistId, String)
-	check(partId, String)
-	check(pieceId, String)
+	check(partInstanceId, String)
+	check(pieceInstanceIdToCopy, String)
 
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
+	if (playlist.currentPartInstanceId !== partInstanceId) return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
 
-	const piece = Pieces.findOne(pieceId)
-	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
+	const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdToCopy) as PieceInstance
+	if (!pieceInstanceToCopy) throw new Meteor.Error(404, `PieceInstance "${pieceInstanceIdToCopy}" not found!`)
 
-	const rundown = Rundowns.findOne(piece.rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${piece.rundownId}" not found!`)
+	const rundown = Rundowns.findOne(pieceInstanceToCopy.rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${pieceInstanceToCopy.rundownId}" not found!`)
 
-	const part = Parts.findOne(partId)
-	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-	if (playlist.currentPartId !== part._id) return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
+	const partInstance = PartInstances.findOne({
+		_id: partInstanceId,
+		rundownId: pieceInstanceToCopy.rundownId
+	})
+	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 	let showStyleBase = rundown.getShowStyleBase()
-	const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
-	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`Part "${pieceId}" is not a GRAPHICS piece!`)
+	const sourceL = showStyleBase.sourceLayers.find(i => i._id === pieceInstanceToCopy.piece.sourceLayerId)
+	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`PieceInstance "${pieceInstanceToCopy}" is not a GRAPHICS piece!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.pieceTakeNow(rundownPlaylistId, partId, pieceId)
+		ServerPlayoutAPI.pieceTakeNow(rundownPlaylistId, partInstanceId, pieceInstanceIdToCopy)
 	)
 }
 export function pieceSetInOutPoints (rundownPlaylistId: string, partId: string, pieceId: string, inPoint: number, duration: number) {
@@ -283,26 +288,26 @@ export function pieceSetInOutPoints (rundownPlaylistId: string, partId: string, 
 		.then((res) => ClientAPI.responseSuccess(res))
 		.catch((err) => ClientAPI.responseError(err))
 }
-export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, slaiId: string, queue: boolean) {
+export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partInstanceId: string, adlibPieceId: string, queue: boolean) {
 	check(rundownPlaylistId, String)
 	check(rundownId, String)
-	check(partId, String)
-	check(slaiId, String)
+	check(partInstanceId, String)
+	check(adlibPieceId, String)
 
-	let playlist = RundownPlaylists.findOne(rundownId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownId}" not found!`)
+	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partId, slaiId, queue)
+		ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partInstanceId, adlibPieceId, queue)
 	)
 }
-export function sourceLayerOnPartStop (rundownPlaylistId: string, partId: string, sourceLayerId: string) {
+export function sourceLayerOnPartStop (rundownPlaylistId: string, partInstanceId: string, sourceLayerId: string) {
 	check(rundownPlaylistId, String)
-	check(partId, String)
+	check(partInstanceId, String)
 	check(sourceLayerId, String)
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -310,13 +315,14 @@ export function sourceLayerOnPartStop (rundownPlaylistId: string, partId: string
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partId, sourceLayerId)
+		ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerId)
 	)
 }
-export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) {
+export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partInstanceId: string, adlibPieceId: string, queue: boolean) {
+	check(rundownPlaylistId, String)
 	check(rundownId, String)
-	check(partId, String)
-	check(pieceId, String)
+	check(partInstanceId, String)
+	check(adlibPieceId, String)
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownId}" not found!`)
@@ -325,20 +331,20 @@ export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundo
 		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
+		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partInstanceId, adlibPieceId, queue)
 	)
 }
-export function segmentAdLibPieceStop (rundownPlaylistId: string, rundownId, partId: string, pieceId: string) {
+export function segmentAdLibPieceStop (rundownPlaylistId: string, rundownId: string, partInstanceId: string, pieceInstanceId: string) {
 	check(rundownPlaylistId, String)
-	check(partId, String)
-	check(pieceId, String)
+	check(partInstanceId, String)
+	check(pieceInstanceId, String)
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partId, pieceId)
+		ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partInstanceId, pieceInstanceId)
 	)
 }
 export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
@@ -348,7 +354,7 @@ export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLa
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
-	if (!playlist.currentPartId) return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
+	if (!playlist.currentPartInstanceId) return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
 
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownPlaylistId, sourceLayerId)
@@ -360,13 +366,12 @@ export function activateHold (rundownPlaylistId: string, undo?: boolean) {
 	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 
-	if (!rundown.currentPartId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
-	if (!rundown.nextPartId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
+	if (!rundown.currentPartInstanceId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
+	if (!rundown.nextPartInstanceId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
 
-	let currentPart = Parts.findOne({ _id: rundown.currentPartId })
-	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
-	let nextPart = Parts.findOne({ _id: rundown.nextPartId })
-	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
+	const { currentPartInstance, nextPartInstance } = rundown.getSelectedPartInstances()
+	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${rundown.currentPartInstanceId}" not found!`)
+	if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${rundown.nextPartInstanceId}" not found!`)
 	if (!undo && rundown.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
 	}
@@ -553,26 +558,26 @@ methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): Cli
 methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
 	return disableNextPiece.call(this, rundownId, undo)
 }
-methods[UserActionAPI.methods.togglePartArgument] = function (rundownPlaylistId: string, partId: string, property: string, value: string): ClientAPI.ClientResponse {
-	return togglePartArgument.call(this, rundownPlaylistId, partId, property, value)
+methods[UserActionAPI.methods.togglePartArgument] = function (rundownPlaylistId: string, partInstanceId: string, property: string, value: string): ClientAPI.ClientResponse {
+	return togglePartArgument.call(this, rundownPlaylistId, partInstanceId, property, value)
 }
-methods[UserActionAPI.methods.pieceTakeNow] = function (rundownPlaylistId: string, partId: string, pieceId: string): ClientAPI.ClientResponse {
-	return pieceTakeNow.call(this, rundownPlaylistId, partId, pieceId)
+methods[UserActionAPI.methods.pieceTakeNow] = function (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdToCopy: string): ClientAPI.ClientResponse {
+	return pieceTakeNow.call(this, rundownPlaylistId, partInstanceId, pieceInstanceIdToCopy)
 }
 methods[UserActionAPI.methods.setInOutPoints] = function (rundownPlaylistId: string, partId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
 	return pieceSetInOutPoints.call(this, rundownPlaylistId, partId, pieceId, inPoint, duration)
 }
-methods[UserActionAPI.methods.segmentAdLibPieceStart] = function (rundownPlaylistId: string, rundownId: string, partId: string, salliId: string, queue: boolean) {
-	return segmentAdLibPieceStart.call(this, rundownPlaylistId, rundownId, partId, salliId, queue)
+methods[UserActionAPI.methods.segmentAdLibPieceStart] = function (rundownPlaylistId: string, rundownId: string, partInstanceId: string, salliId: string, queue: boolean) {
+	return segmentAdLibPieceStart.call(this, rundownPlaylistId, rundownId, partInstanceId, salliId, queue)
 }
-methods[UserActionAPI.methods.sourceLayerOnPartStop] = function (rundownPlaylistId: string, partId: string, sourceLayerId: string) {
-	return sourceLayerOnPartStop.call(this, rundownPlaylistId, partId, sourceLayerId)
+methods[UserActionAPI.methods.sourceLayerOnPartStop] = function (rundownPlaylistId: string, partInstanceId: string, sourceLayerId: string) {
+	return sourceLayerOnPartStop.call(this, rundownPlaylistId, partInstanceId, sourceLayerId)
 }
-methods[UserActionAPI.methods.baselineAdLibPieceStart] = function (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) {
-	return rundownBaselineAdLibPieceStart.call(this, rundownPlaylistId, rundownId, partId, pieceId, queue)
+methods[UserActionAPI.methods.baselineAdLibPieceStart] = function (rundownPlaylistId: string, rundownId: string, partInstanceId: string, adlibPieceId: string, queue: boolean) {
+	return rundownBaselineAdLibPieceStart.call(this, rundownPlaylistId, rundownId, partInstanceId, adlibPieceId, queue)
 }
-methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string) {
-	return segmentAdLibPieceStop.call(this, rundownPlaylistId, rundownId, partId, pieceId)
+methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownPlaylistId: string, rundownId: string, partInstanceId: string, pieceInstanceId: string) {
+	return segmentAdLibPieceStop.call(this, rundownPlaylistId, rundownId, partInstanceId, pieceInstanceId)
 }
 methods[UserActionAPI.methods.sourceLayerStickyPieceStart] = function (rundownPlaylistId: string, sourceLayerId: string) {
 	return sourceLayerStickyPieceStart.call(this, rundownPlaylistId, sourceLayerId)

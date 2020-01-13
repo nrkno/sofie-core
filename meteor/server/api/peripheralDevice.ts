@@ -18,6 +18,7 @@ import * as bodyParser from 'body-parser'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
+import { areThereActiveRundownsInStudio } from './playout/studio'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -153,28 +154,36 @@ export namespace ServerPeripheralDeviceAPI {
 			check(o.time, Number)
 		})
 
-		_.each(results, (o) => {
-			check(o.id, String)
+		if (results.length > 0) {
+			const activeRundownIds = _.map(areThereActiveRundownsInStudio(studioId), r => r._id)
 
-			// check(o.time, Number)
-			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+			_.each(results, (o) => {
+				check(o.id, String)
 
-			const id = getTimelineId(studioId, o.id)
-			const obj = Timeline.findOne(id)
-			if (obj) {
-				Timeline.update({
-					_id: id
-				}, {$set: {
-					'enable.start': o.time,
-					'enable.setFromNow': true
-				}})
+				// check(o.time, Number)
+				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
-				obj.enable.start = o.time
-				obj.enable.setFromNow = true
+				const id = getTimelineId(studioId, o.id)
+				const obj = Timeline.findOne({
+					_id: id,
+					studioId: studioId
+				})
+				if (obj) {
+					Timeline.update({
+						_id: id,
+						studioId: studioId
+					}, {$set: {
+						'enable.start': o.time,
+						'enable.setFromNow': true
+					}})
 
-				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(obj.studioId, obj, o.time)
-			}
-		})
+					obj.enable.start = o.time
+					obj.enable.setFromNow = true
+
+					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(activeRundownIds, obj, o.time)
+				}
+			})
+		}
 
 		// After we've updated the timeline, we must call afterUpdateTimeline!
 		const studio = Studios.findOne(studioId)

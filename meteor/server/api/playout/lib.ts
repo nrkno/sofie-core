@@ -215,8 +215,8 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 
 	RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
-			previousPartId: null,
-			currentPartId: null,
+			previousPartInstanceId: null,
+			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
 			startedPlayback: 1,
@@ -224,8 +224,8 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 		}
 	})
 	// Also update locally:
-	rundownPlaylist.previousPartId = null
-	rundownPlaylist.currentPartId = null
+	rundownPlaylist.previousPartInstanceId = null
+	rundownPlaylist.currentPartInstanceId = null
 	rundownPlaylist.holdState = RundownHoldState.NONE
 	delete rundownPlaylist.startedPlayback
 	delete rundownPlaylist.previousPersistentState
@@ -247,6 +247,7 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 
 	if (rundownPlaylist.active) {
 		// put the first on queue:
+		// TODO-ASAP this could set to an invalid/floated part.. (or nothing if the first rundown is empty)
 		setNextPart(rundownPlaylist, _.first(parts) || null)
 	} else {
 		setNextPart(rundownPlaylist, null)

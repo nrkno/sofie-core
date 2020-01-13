@@ -15,6 +15,7 @@ import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { areThereActiveRundownPlaylistsInStudio } from './studio'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstances } from '../../../lib/collections/PartInstances'
 
 export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehearsal: boolean) {
 	logger.info('Activating rundown ' + rundownPlaylist._id + (rehearsal ? ' (Rehearsal)' : ''))
@@ -50,23 +51,24 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 	// Update local object:
 	rundownPlaylist.active = true
 	rundownPlaylist.rehearsal = rehearsal
-	
+
 	let rundown: Rundown | undefined
 
-	if (!rundownPlaylist.nextPartId) {	
+	if (!rundownPlaylist.nextPartInstanceId) {
 		const rundowns = rundownPlaylist.getRundowns()
 		rundown = _.first(rundowns)
 		if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
 		let parts = rundown.getParts()
 		let firstPart = _.first(parts)
+		// TODO - shouldnt this find the first valid part, to try better to have soemthing set? also consider the playlist better
 		if (firstPart && !firstPart.invalid && !firstPart.floated) {
 			setNextPart(rundownPlaylist, firstPart)
 		}
 	} else {
-		const nextPart = Parts.findOne(rundownPlaylist.nextPartId)
-		if (!nextPart) throw new Meteor.Error(404, `Could not find nextPartId "${rundownPlaylist.nextPartId}"`)
-		rundown = Rundowns.findOne(nextPart.rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Could not find rundown "${nextPart.rundownId}"`)
+		const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+		if (!nextPartInstance) throw new Meteor.Error(404, `Could not find nextPartInstanceId "${rundownPlaylist.nextPartInstanceId}"`)
+		rundown = Rundowns.findOne(nextPartInstance.rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Could not find rundown "${nextPartInstance.rundownId}"`)
 	}
 
 	updateTimeline(studio._id)
@@ -100,49 +102,50 @@ export function deactivateRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 export function deactivateRundownPlaylistInner (rundownPlaylist: RundownPlaylist): Rundown | undefined {
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
-	const previousPart = (rundownPlaylist.currentPartId ?
-		Parts.findOne(rundownPlaylist.currentPartId)
-		: null
-	)
+	const { previousPartInstance, nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
+
 	let rundown: Rundown | undefined
-	if (previousPart) {
+	if (previousPartInstance) {
 
 		// defer so that an error won't prevent deactivate
 		Meteor.setTimeout(() => {
-			rundown = Rundowns.findOne(previousPart.rundownId)
+			rundown = Rundowns.findOne(previousPartInstance.rundownId)
 
 			if (rundown) {
 				IngestActions.notifyCurrentPlayingPart(rundown, null)
 			} else {
-				logger.error(`Could not find owner rundown "${previousPart.rundownId}" of part "${previousPart._id}"`)
+				logger.error(`Could not find owner Rundown "${previousPartInstance.rundownId}" of PartInstance "${previousPartInstance._id}"`)
 			}
 		}, 40)
 	} else {
-		let nextPart = (
-			rundownPlaylist.nextPartId ?
-			Parts.findOne(rundownPlaylist.nextPartId)
-			: null
-		)
-
-		if (nextPart) {
-			rundown = Rundowns.findOne(nextPart.rundownId)
+		if (nextPartInstance) {
+			rundown = Rundowns.findOne(nextPartInstance.rundownId)
 		}
 	}
 
-	if (previousPart) onPartHasStoppedPlaying(previousPart, getCurrentTime())
+	if (previousPartInstance) onPartHasStoppedPlaying(previousPartInstance, getCurrentTime())
 
 	RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
 			active: false,
-			previousPartId: null,
-			currentPartId: null,
+			previousPartInstanceId: null,
+			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
 		}
 	})
+	rundownPlaylist.currentPartInstanceId = null
+	rundownPlaylist.previousPartInstanceId = null
 	setNextPart(rundownPlaylist, null)
 
-	if (rundownPlaylist.currentPartId) {
-		Parts.update(rundownPlaylist.currentPartId, {
+	if (previousPartInstance) {
+		PartInstances.update(previousPartInstance._id, {
+			$push: {
+				'part.timings.takeOut': getCurrentTime()
+			}
+		})
+
+		// TODO-PartInstance - pending new data flow
+		Parts.update(previousPartInstance.part._id, {
 			$push: {
 				'timings.takeOut': getCurrentTime()
 			}

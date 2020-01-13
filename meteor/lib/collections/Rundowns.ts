@@ -18,7 +18,7 @@ import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
 import { PartInstances, PartInstance } from './PartInstances'
-import { PieceInstances } from './PieceInstances'
+import { PieceInstances, PieceInstance } from './PieceInstances'
 
 export enum RundownHoldState {
 	NONE = 0,

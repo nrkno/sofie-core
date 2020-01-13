@@ -23,8 +23,8 @@ methods[PlayoutAPI.methods.rundownDeactivate] = (rundownId: string) => {
 methods[PlayoutAPI.methods.reloadData] = (rundownId: string) => {
 	return ServerPlayoutAPI.reloadData(rundownId)
 }
-methods[PlayoutAPI.methods.pieceTakeNow] = (rundownId: string, partId: string, pieceId: string) => {
-	return ServerPlayoutAPI.pieceTakeNow(rundownId, partId, pieceId)
+methods[PlayoutAPI.methods.pieceTakeNow] = (rundownId: string, partInstanceId: string, pieceInstanceIdToCopy: string) => {
+	return ServerPlayoutAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdToCopy)
 }
 methods[PlayoutAPI.methods.rundownTake] = (rundownId: string) => {
 	return ServerPlayoutAPI.takeNextPart(rundownId)
@@ -56,8 +56,8 @@ methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownPlaylistId: string,
 methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) => {
 	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string) => {
-	return ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partId, pieceId)
+methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownPlaylistId: string, rundownId: string, partInstanceId: string, pieceInstanceId: string) => {
+	return ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partInstanceId, pieceInstanceId)
 }
 methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownPlaylistId: string, partId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partId, sourceLayerId)

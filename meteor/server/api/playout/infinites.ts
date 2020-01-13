@@ -7,7 +7,9 @@ import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
+import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise } from '../../../lib/lib'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
@@ -67,7 +69,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	let psPopulateCache: Array<Promise<any>> = []
 	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
-	   psPopulateCache.push(new Promise((resolve, reject) => {
+		psPopulateCache.push(new Promise((resolve, reject) => {
 			try {
 				const partStarted = part.getLastStartedPlayback()
 				let currentItems = orderPieces(allPieces.filter(p => p.partId === part._id), part._id, partStarted)
@@ -77,7 +79,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   } catch (e) {
 			   reject(e)
 		   }
-	   }))
+		}))
 	})
 	waitForPromiseAll(psPopulateCache)
 
@@ -242,39 +244,65 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	waitForPromiseAll(ps)
 }
 
-export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (rundown: Rundown, part: Part, newPiece: Piece) {
-	let showStyleBase = rundown.getShowStyleBase()
-	const sourceLayerLookup = normalizeArray(showStyleBase.sourceLayers, '_id')
-	const newItemExclusivityGroup = sourceLayerLookup[newPiece.sourceLayerId].exclusiveGroup
+export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (rundown: Rundown, partInstance: PartInstance, newPieceInstance: PieceInstance) {
+	const showStyleBase = rundown.getShowStyleBase()
+	const exclusiveGroup = _.find(showStyleBase.sourceLayers, sl => sl._id === newPieceInstance.piece.sourceLayerId)
+	const newItemExclusivityGroup = exclusiveGroup ? exclusiveGroup.exclusiveGroup : undefined
+	const layersInExclusivityGroup = newItemExclusivityGroup ? _.map(_.filter(showStyleBase.sourceLayers, sl => sl.exclusiveGroup === newItemExclusivityGroup), i => i._id) : [newPieceInstance.piece.sourceLayerId]
 
-	const pieces = part.getAllPieces().filter(i =>
-		(i.sourceLayerId === newPiece.sourceLayerId
-			|| (newItemExclusivityGroup && sourceLayerLookup[i.sourceLayerId] && sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup)
-		) && i._id !== newPiece._id && i.infiniteMode
+	const pieceInstances = partInstance.getAllPieceInstances().filter(i =>
+		i._id !== newPieceInstance._id && i.piece.infiniteMode &&
+		(i.piece.sourceLayerId === newPieceInstance.piece.sourceLayerId || layersInExclusivityGroup.indexOf(i.piece.sourceLayerId) !== -1)
 	)
 
 	let ps: Array<Promise<any>> = []
-	for (const piece of pieces) {
-		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
-			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
+	for (const instance of pieceInstances) {
+		ps.push(asyncCollectionUpdate(PieceInstances, instance._id, { $set: {
+			'piece.userDuration': { end: `#${getPieceGroupId(newPieceInstance)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+			'piece.infiniteMode': PieceLifespan.Normal,
+			'piece.originalInfiniteMode': newPieceInstance.piece.originalInfiniteMode !== undefined ? newPieceInstance.piece.originalInfiniteMode : newPieceInstance.piece.infiniteMode
+		}}))
+
+		// TODO-PartInstance - pending new data flow
+		ps.push(asyncCollectionUpdate(Pieces, instance.piece._id, { $set: {
+			userDuration: { end: `#${getPieceGroupId(newPieceInstance)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
 			infiniteMode: PieceLifespan.Normal,
-			originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
+			originalInfiniteMode: newPieceInstance.piece.originalInfiniteMode !== undefined ? newPieceInstance.piece.originalInfiniteMode : newPieceInstance.piece.infiniteMode
 		}}))
 	}
 	waitForPromiseAll(ps)
 })
 
-export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, part: Part, sourceLayer: string) {
-	let remainingParts = rundown.getParts().filter(l => l._rank > part._rank)
-	for (let line of remainingParts) {
-		let continuations = line.getAllPieces().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
+export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
+	// TODO-PartInstance - pending new data flow for this whole function
+
+	const ps: Array<Promise<void>> = []
+
+	// Cleanup any future parts
+	const remainingParts = rundown.getParts().filter(l => l._rank > partInstance.part._rank)
+	const affectedPartIds: string[] = []
+	for (let part of remainingParts) {
+		let continuations = part.getAllPieces().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
 		if (continuations.length === 0) {
+			// We can stop searching once a part doesnt include it
 			break
 		}
 
-		continuations.forEach(i => Pieces.remove(i))
+		affectedPartIds.push(part._id)
+		continuations.forEach(p => ps.push(asyncCollectionRemove(Pieces, p._id)))
 	}
 
+	// Also update the nextPartInstance
+	// TODO-ASAP - should this be done for the current one too, in case the stop was int he previous somehow?
+	const { nextPartInstance } = rundown.getSelectedPartInstances()
+	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
+		nextPartInstance.getAllPieceInstances()
+			.filter(p => p.piece.infiniteMode && p.piece.infiniteId && p.piece.infiniteId !== p.piece._id && p.piece.sourceLayerId === sourceLayer)
+			.forEach(p => ps.push(asyncCollectionRemove(PieceInstances, p._id)))
+	}
+
+	waitForPromiseAll(ps)
+
 	// ensure adlib is extended correctly if infinite
-	updateSourceLayerInfinitesAfterPart(rundown, part)
+	updateSourceLayerInfinitesAfterPart(rundown, partInstance)
 })
