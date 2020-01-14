@@ -1,10 +1,10 @@
-import * as _ from 'underscore'
-import { addMigrationSteps } from './databaseMigration'
-import { logger } from '../logging'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionProperty } from './lib'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import * as _ from 'underscore';
+import { addMigrationSteps } from './databaseMigration';
+import { logger } from '../logging';
+import { Studios, Studio } from '../../lib/collections/Studios';
+import { ensureCollectionProperty } from './lib';
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 /**
  * This file contains system specific migration steps.
@@ -17,12 +17,12 @@ addMigrationSteps('0.1.0', [
 		id: 'studio exists',
 		canBeRunAutomatically: true,
 		validate: () => {
-			if (!Studios.findOne()) return 'No Studio found'
-			return false
+			if (!Studios.findOne()) return 'No Studio found';
+			return false;
 		},
 		migrate: () => {
 			// create default studio
-			logger.info(`Migration: Add default studio`)
+			logger.info(`Migration: Add default studio`);
 			Studios.insert({
 				_id: 'studio0',
 				name: 'Default studio',
@@ -33,12 +33,19 @@ addMigrationSteps('0.1.0', [
 				},
 				mappings: {},
 				config: [],
-				_rundownVersionHash: '',
-			})
+				_rundownVersionHash: ''
+			});
 		}
 	},
-	ensureCollectionProperty('Studios', {}, 'name', null, 'text', 'Studio $id: Name',
-		'Enter the Name of the Studio "$id"'),
+	ensureCollectionProperty(
+		'Studios',
+		{},
+		'name',
+		null,
+		'text',
+		'Studio $id: Name',
+		'Enter the Name of the Studio "$id"'
+	),
 	ensureCollectionProperty('Studios', {}, 'mappings', {}),
 	ensureCollectionProperty('Studios', {}, 'config', []),
 
@@ -47,28 +54,30 @@ addMigrationSteps('0.1.0', [
 		canBeRunAutomatically: true,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
-
-			let missing: string | boolean = false
+			let missing: string | boolean = false;
 			PeripheralDevices.find({
 				parentDeviceId: { $exists: false }
 			}).forEach((device) => {
-				if (!device.studioId) missing = `PeripheralDevice ${device._id} has no studio`
-			})
-			return missing
+				if (!device.studioId) missing = `PeripheralDevice ${device._id} has no studio`;
+			});
+			return missing;
 		},
 		migrate: () => {
-			let studios = Studios.find().fetch()
+			let studios = Studios.find().fetch();
 			if (studios.length === 1) {
-				const studio = studios[0]
+				const studio = studios[0];
 
-				let missing: string | boolean = false
+				let missing: string | boolean = false;
 				PeripheralDevices.find({
 					parentDeviceId: { $exists: false }
 				}).forEach((device) => {
-					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id } })
-				})
+					if (!device.studioId)
+						PeripheralDevices.update(device._id, { $set: { studioId: studio._id } });
+				});
 			} else {
-				throw new Error(`Unable to automatically assign Peripheral-devices to a studio, since there are ${studios.length} studios. Please assign them manually`)
+				throw new Error(
+					`Unable to automatically assign Peripheral-devices to a studio, since there are ${studios.length} studios. Please assign them manually`
+				);
 			}
 		}
 	},
@@ -77,26 +86,28 @@ addMigrationSteps('0.1.0', [
 		canBeRunAutomatically: false,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
-			let studios = Studios.find().fetch()
-			let missing: string | boolean = false
+			let studios = Studios.find().fetch();
+			let missing: string | boolean = false;
 			_.each(studios, (studio: Studio) => {
 				const dev = PeripheralDevices.findOne({
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 					studioId: studio._id
-				})
+				});
 				if (!dev) {
-					missing = `Playout-device is missing on ${studio._id}`
+					missing = `Playout-device is missing on ${studio._id}`;
 				}
-			})
+			});
 
-			return missing
+			return missing;
 		},
 		// Note: No migrate() function, user must fix this him/herself
-		input: [{
-			label: 'Playout-device not set up for all studios',
-			description: 'Start up the Playout-gateway and make sure it\'s connected to Sofie',
-			inputType: null,
-			attribute: null
-		}]
+		input: [
+			{
+				label: 'Playout-device not set up for all studios',
+				description: "Start up the Playout-gateway and make sure it's connected to Sofie",
+				inputType: null,
+				attribute: null
+			}
+		]
 	}
-])
+]);

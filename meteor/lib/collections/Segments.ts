@@ -1,84 +1,92 @@
-import * as _ from 'underscore'
-import { applyClassToDocument, registerCollection } from '../lib'
-import { Parts } from './Parts'
-import { Rundowns } from './Rundowns'
-import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
-import { Meteor } from 'meteor/meteor'
-import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
-import { PartNote } from '../api/notes'
-import { createMongoCollection } from './lib'
+import * as _ from 'underscore';
+import { applyClassToDocument, registerCollection } from '../lib';
+import { Parts } from './Parts';
+import { Rundowns } from './Rundowns';
+import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor';
+import { Meteor } from 'meteor/meteor';
+import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration';
+import { PartNote } from '../api/notes';
+import { createMongoCollection } from './lib';
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends IBlueprintSegmentDB {
 	/** Position inside rundown */
-	_rank: number
+	_rank: number;
 	/** ID of the source object in the gateway */
-	externalId: string
+	externalId: string;
 	/** The rundown this segment belongs to */
-	rundownId: string
+	rundownId: string;
 
-	status?: string
-	expanded?: boolean
+	status?: string;
+	expanded?: boolean;
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<PartNote>
+	notes?: Array<PartNote>;
 }
 export class Segment implements DBSegment {
-	public _id: string
-	public _rank: number
-	public externalId: string
-	public rundownId: string
-	public name: string
-	public metaData?: { [key: string]: any }
-	public status?: string
-	public expanded?: boolean
-	public notes?: Array<PartNote>
+	public _id: string;
+	public _rank: number;
+	public externalId: string;
+	public rundownId: string;
+	public name: string;
+	public metaData?: { [key: string]: any };
+	public status?: string;
+	public expanded?: boolean;
+	public notes?: Array<PartNote>;
 
-	constructor (document: DBSegment) {
+	constructor(document: DBSegment) {
 		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+			this[key] = document[key];
+		});
 	}
-	getRundown () {
-		return Rundowns.findOne(this.rundownId)
+	getRundown() {
+		return Rundowns.findOne(this.rundownId);
 	}
-	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
-		selector = selector || {}
-		options = options || {}
+	getParts(selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+		selector = selector || {};
+		options = options || {};
 		return Parts.find(
-			_.extend({
-				rundownId: this.rundownId,
-				segmentId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
-		).fetch()
+			_.extend(
+				{
+					rundownId: this.rundownId,
+					segmentId: this._id
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 }
+				},
+				options
+			)
+		).fetch();
 	}
-	getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
-		let notes: Array<PartNote> = []
+	getNotes(includeParts?: boolean, runtimeNotes?: boolean) {
+		let notes: Array<PartNote> = [];
 
 		if (includeParts) {
-			const parts = this.getParts()
-			_.each(parts, l => {
-				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
-			})
+			const parts = this.getParts();
+			_.each(parts, (l) => {
+				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes());
+			});
 		}
 
-		notes = notes.concat(this.notes || [])
-		return notes
+		notes = notes.concat(this.notes || []);
+		return notes;
 	}
 }
 
 // export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
-export const Segments: TransformedCollection<Segment, DBSegment>
-	= createMongoCollection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
-registerCollection('Segments', Segments)
+export const Segments: TransformedCollection<Segment, DBSegment> = createMongoCollection<Segment>(
+	'segments',
+	{ transform: (doc) => applyClassToDocument(Segment, doc) }
+);
+registerCollection('Segments', Segments);
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
 			rundownId: 1,
 			_rank: 1
-		})
+		});
 	}
-})
+});

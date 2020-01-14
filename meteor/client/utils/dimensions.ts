@@ -7,18 +7,18 @@
  * @param element - the element to calculate width for
  * @returns the calculated width of the element excluding padding
  */
-export function getElementWidth (element: HTMLElement): number {
-	const { width, paddingLeft, paddingRight } = window.getComputedStyle(element)
-	const computedWidth = Number(width)
+export function getElementWidth(element: HTMLElement): number {
+	const { width, paddingLeft, paddingRight } = window.getComputedStyle(element);
+	const computedWidth = Number(width);
 
 	if (!Number.isNaN(computedWidth)) {
-		return computedWidth
+		return computedWidth;
 	}
 
-	const computedPaddingLeft = paddingLeft ? Number.parseInt(paddingLeft, 10) : 0
-	const computedPaddingRight = paddingRight ? Number.parseInt(paddingRight, 10) : 0
+	const computedPaddingLeft = paddingLeft ? Number.parseInt(paddingLeft, 10) : 0;
+	const computedPaddingRight = paddingRight ? Number.parseInt(paddingRight, 10) : 0;
 
-	return element.offsetWidth - computedPaddingLeft - computedPaddingRight
+	return element.offsetWidth - computedPaddingLeft - computedPaddingRight;
 }
 
 /**
@@ -30,16 +30,16 @@ export function getElementWidth (element: HTMLElement): number {
  * @param element - the element to calculate height for
  * @returns the calculated height of the element excluding padding
  */
-export function getElementHeight (element: HTMLElement): number {
-	const { height, paddingTop, paddingBottom } = window.getComputedStyle(element)
-	const computedHeight = Number(height)
+export function getElementHeight(element: HTMLElement): number {
+	const { height, paddingTop, paddingBottom } = window.getComputedStyle(element);
+	const computedHeight = Number(height);
 
 	if (!Number.isNaN(computedHeight)) {
-		return computedHeight
+		return computedHeight;
 	}
 
-	const computedPaddingTop = paddingTop ? Number.parseInt(paddingTop, 10) : 0
-	const computedPaddingBottom = paddingBottom ? Number.parseInt(paddingBottom, 10) : 0
+	const computedPaddingTop = paddingTop ? Number.parseInt(paddingTop, 10) : 0;
+	const computedPaddingBottom = paddingBottom ? Number.parseInt(paddingBottom, 10) : 0;
 
-	return element.scrollHeight - computedPaddingTop - computedPaddingBottom
+	return element.scrollHeight - computedPaddingTop - computedPaddingBottom;
 }

@@ -1,14 +1,14 @@
-import { Parts, Part } from '../../lib/collections/Parts'
+import { Parts, Part } from '../../lib/collections/Parts';
 
 // Setup rules:
 Parts.allow({
-	insert (userId: string, doc: Part): boolean {
-		return false
+	insert(userId: string, doc: Part): boolean {
+		return false;
 	},
-	update (userId, doc, fields, modifier) {
-		return false
+	update(userId, doc, fields, modifier) {
+		return false;
 	},
-	remove (userId, doc) {
-		return false
+	remove(userId, doc) {
+		return false;
 	}
-})
+});

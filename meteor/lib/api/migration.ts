@@ -1,30 +1,30 @@
-import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration'
+import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration';
 
 export enum MigrationMethods {
-	'getMigrationStatus' 	= 'migration.getMigrationStatus',
-	'runMigration' 			= 'migration.runMigration',
-	'forceMigration' 		= 'migration.forceMigration',
+	'getMigrationStatus' = 'migration.getMigrationStatus',
+	'runMigration' = 'migration.runMigration',
+	'forceMigration' = 'migration.forceMigration',
 	'resetDatabaseVersions' = 'migration.resetDatabaseVersions'
 }
 export interface GetMigrationStatusResult {
-	migrationNeeded: boolean
+	migrationNeeded: boolean;
 
 	migration: {
-		canDoAutomaticMigration: boolean
-		manualInputs: Array<MigrationStepInput>
-		hash: string
-		automaticStepCount: number
-		manualStepCount: number
-		ignoredStepCount: number
-		partialMigration: boolean
-		chunks: Array<MigrationChunk>
-	}
+		canDoAutomaticMigration: boolean;
+		manualInputs: Array<MigrationStepInput>;
+		hash: string;
+		automaticStepCount: number;
+		manualStepCount: number;
+		ignoredStepCount: number;
+		partialMigration: boolean;
+		chunks: Array<MigrationChunk>;
+	};
 }
 export interface RunMigrationResult {
-	migrationCompleted: boolean
-	partialMigration: boolean
-	warnings: Array<string>
-	snapshot: string
+	migrationCompleted: boolean;
+	partialMigration: boolean;
+	warnings: Array<string>;
+	snapshot: string;
 }
 export enum MigrationStepType {
 	CORE = 'core',
@@ -32,11 +32,11 @@ export enum MigrationStepType {
 	SHOWSTYLE = 'showstyle'
 }
 export interface MigrationChunk {
-	sourceType: MigrationStepType
-	sourceName: string
-	blueprintId?: string // blueprint id
-	sourceId?: string // id in blueprint databaseVersions
-	_dbVersion: string  // database version
-	_targetVersion: string  // target version
-	_steps: Array<string> // ref to step that use it
+	sourceType: MigrationStepType;
+	sourceName: string;
+	blueprintId?: string; // blueprint id
+	sourceId?: string; // id in blueprint databaseVersions
+	_dbVersion: string; // database version
+	_targetVersion: string; // target version
+	_steps: Array<string>; // ref to step that use it
 }

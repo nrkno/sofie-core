@@ -1,11 +1,7 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { logger } from './logging'
-import {
-	setMeteorMethods,
-	getRunningMethods,
-	resetRunningMethods
-} from './methods'
+import { Meteor } from 'meteor/meteor';
+import * as _ from 'underscore';
+import { logger } from './logging';
+import { setMeteorMethods, getRunningMethods, resetRunningMethods } from './methods';
 
 /**
  * The performanceMonotor runs at an interval, and when run it checks that it actually ran on time.
@@ -15,23 +11,23 @@ import {
  * the culprit.
  */
 
-const PERMORMANCE_CHECK_INTERVAL = 500 // how often to check
-const ACCEPTED_DELAY = 100 // how much delay to accept before logging a warning
-const statisticsDelays: Array<number> = []
-const statisticsCount = 10000 // how many to base each statistics on
+const PERMORMANCE_CHECK_INTERVAL = 500; // how often to check
+const ACCEPTED_DELAY = 100; // how much delay to accept before logging a warning
+const statisticsDelays: Array<number> = [];
+const statisticsCount = 10000; // how many to base each statistics on
 const statistics: Array<{
-	timestamp: number
-	count: number
-	average: number
-	min: number
-	max: number
-	warnings: number
-	halfWarnings: number
-	quarterWarnings: number
-	averageWarnings: number
-}> = []
+	timestamp: number;
+	count: number;
+	average: number;
+	min: number;
+	max: number;
+	warnings: number;
+	halfWarnings: number;
+	quarterWarnings: number;
+	averageWarnings: number;
+}> = [];
 
-function traceDebuggingData () {
+function traceDebuggingData() {
 	// Collect a set of data that can be useful for performance debugging
 
 	let debugData: any = {
@@ -42,68 +38,67 @@ function traceDebuggingData () {
 
 		subscriptions: {},
 		connections: []
-	}
+	};
 	// @ts-ignore
-	let connections = Meteor.server.stream_server.open_sockets
+	let connections = Meteor.server.stream_server.open_sockets;
 	_.each(connections, (connection: any) => {
-
-		debugData.connectionCount++
+		debugData.connectionCount++;
 
 		let conn = {
-			address:		connection.address,
-			clientAddress:	null,
-			clientPort:		connection.clientclientPort,
-			remoteAddress:	connection.remoteAddress,
-			remotePort:		connection.remotePort,
-			documentCount:		0
-		}
-		debugData.connections.push(conn)
+			address: connection.address,
+			clientAddress: null,
+			clientPort: connection.clientclientPort,
+			remoteAddress: connection.remoteAddress,
+			remotePort: connection.remotePort,
+			documentCount: 0
+		};
+		debugData.connections.push(conn);
 		// named subscriptions
 
 		// console.log(_.keys(connection._meteorSession))
 		// console.log(connection._meteorSession)
 
-		let session = connection._meteorSession
+		let session = connection._meteorSession;
 
 		if (session) {
-
 			// console.log(session.connectionHandle)
 
 			// if (session.clientAddress) conn.clientAddress = session.clientAddress()
-			if (session.connectionHandle) conn.clientAddress = session.connectionHandle.clientAddress
+			if (session.connectionHandle)
+				conn.clientAddress = session.connectionHandle.clientAddress;
 
 			_.each(session._namedSubs, (sub: any) => {
-				debugData.namedSubscriptionCount++
+				debugData.namedSubscriptionCount++;
 				// @ts-ignore
 				// console.log(sub._name)
 				if (!debugData.subscriptions[sub._name]) {
 					debugData.subscriptions[sub._name] = {
 						count: 0,
 						documents: {}
-					}
+					};
 				}
-				let sub0 = debugData.subscriptions[sub._name]
+				let sub0 = debugData.subscriptions[sub._name];
 
-				sub0.count++
+				sub0.count++;
 
 				_.each(sub._documents, (collection, collectionName: string) => {
-					if (!sub0.documents[collectionName]) sub0.documents[collectionName] = 0
-					let count = _.keys(collection).length || 0
-					sub0.documents[collectionName] += count
-					conn.documentCount += count
-				})
-			})
+					if (!sub0.documents[collectionName]) sub0.documents[collectionName] = 0;
+					let count = _.keys(collection).length || 0;
+					sub0.documents[collectionName] += count;
+					conn.documentCount += count;
+				});
+			});
 			_.each(session._namedSubs, (sub: any) => {
-				debugData.universalSubscriptionCount++
+				debugData.universalSubscriptionCount++;
 				// unsure what this is
-			})
+			});
 
-			debugData.documentCount += conn.documentCount
+			debugData.documentCount += conn.documentCount;
 		}
-	})
-	return debugData
+	});
+	return debugData;
 }
-function updateStatistics (onlyReturn?: boolean) {
+function updateStatistics(onlyReturn?: boolean) {
 	let stat = {
 		timestamp: Date.now(),
 		count: statisticsDelays.length,
@@ -114,30 +109,29 @@ function updateStatistics (onlyReturn?: boolean) {
 		averageWarnings: 0,
 		halfWarnings: 0,
 		quarterWarnings: 0
-	}
+	};
 	_.each(statisticsDelays, (d) => {
-		stat.average += d
-		if (d < stat.min) stat.min = d
-		if (d > stat.max) stat.max = d
+		stat.average += d;
+		if (d < stat.min) stat.min = d;
+		if (d > stat.max) stat.max = d;
 		if (d > ACCEPTED_DELAY) {
-			stat.warnings++
-			stat.averageWarnings += d
+			stat.warnings++;
+			stat.averageWarnings += d;
 		}
 
-		if (d > ACCEPTED_DELAY / 2) stat.halfWarnings++
-		if (d > ACCEPTED_DELAY / 4) stat.quarterWarnings++
-	})
-	if (stat.count) stat.average = stat.average / stat.count
-	if (stat.warnings) stat.averageWarnings = stat.averageWarnings / stat.warnings
+		if (d > ACCEPTED_DELAY / 2) stat.halfWarnings++;
+		if (d > ACCEPTED_DELAY / 4) stat.quarterWarnings++;
+	});
+	if (stat.count) stat.average = stat.average / stat.count;
+	if (stat.warnings) stat.averageWarnings = stat.averageWarnings / stat.warnings;
 
 	if (!onlyReturn) {
-		statisticsDelays.splice(0, statisticsDelays.length) // clear the array
-		statistics.push(stat)
+		statisticsDelays.splice(0, statisticsDelays.length); // clear the array
+		statistics.push(stat);
 	}
-	return stat
+	return stat;
 }
-function getStatistics () {
-
+function getStatistics() {
 	let stat = {
 		timestamp: Date.now(),
 		count: 0,
@@ -149,77 +143,77 @@ function getStatistics () {
 		halfWarnings: 0,
 		quarterWarnings: 0,
 		periods: []
-	}
+	};
 
-	let periods = [updateStatistics(true)]
+	let periods = [updateStatistics(true)];
 	_.each(statistics, (s) => {
-		periods.push(s)
-	})
+		periods.push(s);
+	});
 
 	_.each(periods, (s) => {
-		stat.count += s.count
-		stat.average += s.average * s.count
+		stat.count += s.count;
+		stat.average += s.average * s.count;
 
-		if (s.min < stat.min) stat.min = s.min
-		if (s.max > stat.max) stat.max = s.max
+		if (s.min < stat.min) stat.min = s.min;
+		if (s.max > stat.max) stat.max = s.max;
 
-		stat.warnings += s.warnings
-		stat.averageWarnings += s.averageWarnings * s.warnings
+		stat.warnings += s.warnings;
+		stat.averageWarnings += s.averageWarnings * s.warnings;
 
-		stat.halfWarnings += s.halfWarnings
-		stat.quarterWarnings += s.quarterWarnings
-	})
-	if (stat.count) stat.average = stat.average / stat.count
-	if (stat.warnings) stat.averageWarnings = stat.averageWarnings / stat.warnings
+		stat.halfWarnings += s.halfWarnings;
+		stat.quarterWarnings += s.quarterWarnings;
+	});
+	if (stat.count) stat.average = stat.average / stat.count;
+	if (stat.warnings) stat.averageWarnings = stat.averageWarnings / stat.warnings;
 
 	// @ts-ignore
-	stat.periods = statistics
+	stat.periods = statistics;
 
-	return stat
+	return stat;
 }
 
-let lastTime = 0
+let lastTime = 0;
 let monitorPerformance = () => {
 	if (lastTime) {
-		let timeSinceLast = Date.now() - lastTime
+		let timeSinceLast = Date.now() - lastTime;
 
-		let delayTime = timeSinceLast - PERMORMANCE_CHECK_INTERVAL
+		let delayTime = timeSinceLast - PERMORMANCE_CHECK_INTERVAL;
 
 		if (delayTime > ACCEPTED_DELAY) {
-			logger.warn('Main thread was blocked for ' + delayTime + ' ms')
-			let trace: string[] = []
-			let runningMethods = getRunningMethods()
+			logger.warn('Main thread was blocked for ' + delayTime + ' ms');
+			let trace: string[] = [];
+			let runningMethods = getRunningMethods();
 			if (!_.isEmpty(runningMethods)) {
 				_.each(runningMethods, (m) => {
-					trace.push(m.method + ': ' + (Date.now() - m.startTime) + ' ms ago')
-				})
+					trace.push(m.method + ': ' + (Date.now() - m.startTime) + ' ms ago');
+				});
 			}
-			resetRunningMethods()
-			logger.info('Running methods:', trace)
-			logger.info('traceDebuggingData:', traceDebuggingData())
+			resetRunningMethods();
+			logger.info('Running methods:', trace);
+			logger.info('traceDebuggingData:', traceDebuggingData());
 		}
 
-		statisticsDelays.push(delayTime)
+		statisticsDelays.push(delayTime);
 		if (statisticsDelays.length >= statisticsCount) {
-			updateStatistics()
+			updateStatistics();
 		}
 	}
-	lastTime = Date.now()
+	lastTime = Date.now();
 	Meteor.setTimeout(() => {
-		monitorPerformance()
-	}, PERMORMANCE_CHECK_INTERVAL)
-}
+		monitorPerformance();
+	}, PERMORMANCE_CHECK_INTERVAL);
+};
 Meteor.startup(() => {
 	Meteor.setTimeout(() => {
-		monitorPerformance()
-	}, 5000)
-})
+		monitorPerformance();
+	}, 5000);
+});
 
 setMeteorMethods({
-	'debug_traceDebuggingData': () => {
-		return traceDebuggingData()
+	debug_traceDebuggingData: () => {
+		return traceDebuggingData();
 	},
-	'debug_getPerformanceStatistics': () => {
-		return getStatistics()
+	debug_getPerformanceStatistics: () => {
+		return getStatistics();
 	}
-})
+});

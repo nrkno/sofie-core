@@ -1,6 +1,6 @@
 test('mockTest', () => {
-	expect(1).toEqual(1)
-})
+	expect(1).toEqual(1);
+});
 /*
 import * as chai from 'chai'
 import * as _ from 'underscore'

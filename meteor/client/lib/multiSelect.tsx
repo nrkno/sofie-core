@@ -1,135 +1,157 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import * as React from 'react';
+import * as _ from 'underscore';
+import * as ClassNames from 'classnames';
 
-import * as faCheckSquare from '@fortawesome/fontawesome-free-solid/faCheckSquare'
-import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare'
-import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import * as faCheckSquare from '@fortawesome/fontawesome-free-solid/faCheckSquare';
+import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare';
+import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp';
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 export interface MultiSelectEvent {
-	selectedValues: Array<string>
+	selectedValues: Array<string>;
 }
 
 interface IProps {
-	availableOptions: _.Dictionary<string>
-	placeholder?: string
-	className?: string
-	value?: Array<string>
-	onChange?: (event: MultiSelectEvent) => void
+	availableOptions: _.Dictionary<string>;
+	placeholder?: string;
+	className?: string;
+	value?: Array<string>;
+	onChange?: (event: MultiSelectEvent) => void;
 }
 
 interface IState {
-	checkedValues: _.Dictionary<boolean>
-	expanded: boolean
+	checkedValues: _.Dictionary<boolean>;
+	expanded: boolean;
 }
 
 export class MultiSelect extends React.Component<IProps, IState> {
-	constructor (props: IProps) {
-		super(props)
+	constructor(props: IProps) {
+		super(props);
 
 		this.state = {
 			checkedValues: {},
 			expanded: false
-		}
+		};
 	}
 
-	componentDidMount () {
-		this.refreshChecked()
+	componentDidMount() {
+		this.refreshChecked();
 	}
 
-	componentDidUpdate (prevProps: IProps) {
+	componentDidUpdate(prevProps: IProps) {
 		if (this.props.value !== prevProps.value) {
-			this.refreshChecked()
+			this.refreshChecked();
 		}
 	}
 
-	refreshChecked () {
+	refreshChecked() {
 		if (this.props.value && _.isArray(this.props.value)) {
-			const checkedValues: _.Dictionary<boolean> = {}
+			const checkedValues: _.Dictionary<boolean> = {};
 			_.forEach(this.props.value, (value, index) => {
-				checkedValues[value] = true
-			})
+				checkedValues[value] = true;
+			});
 
 			this.setState({
 				checkedValues
-			})
+			});
 		} else {
 			this.setState({
 				checkedValues: {}
-			})
+			});
 		}
 	}
 
 	handleChange = (item) => {
-		const obj = {}
-		obj[item] = !this.state.checkedValues[item]
-		const valueUpdate = _.extend(this.state.checkedValues, obj)
+		const obj = {};
+		obj[item] = !this.state.checkedValues[item];
+		const valueUpdate = _.extend(this.state.checkedValues, obj);
 
 		this.setState({
 			checkedValues: valueUpdate
-		})
+		});
 
 		if (this.props.onChange && typeof this.props.onChange === 'function') {
 			this.props.onChange({
-				selectedValues: _.compact(_.values(_.mapObject(valueUpdate, (value, key) => {
-					return value ? key : null
-				})))
-			})
+				selectedValues: _.compact(
+					_.values(
+						_.mapObject(valueUpdate, (value, key) => {
+							return value ? key : null;
+						})
+					)
+				)
+			});
 		}
-	}
+	};
 
 	isChecked = (key: string): boolean => {
-		return !!this.state.checkedValues[key]
-	}
+		return !!this.state.checkedValues[key];
+	};
 
 	generateSummary = () => {
-		return _.compact(_.values(_.mapObject(this.state.checkedValues, (value, key) => {
-			return value ? (this.props.availableOptions[key] || key) : null
-		}))).join(', ')
-	}
+		return _.compact(
+			_.values(
+				_.mapObject(this.state.checkedValues, (value, key) => {
+					return value ? this.props.availableOptions[key] || key : null;
+				})
+			)
+		).join(', ');
+	};
 
 	toggleExpco = () => {
 		this.setState({
 			expanded: !this.state.expanded
-		})
-	}
+		});
+	};
 
-	render () {
-		const summary = this.generateSummary()
+	render() {
+		const summary = this.generateSummary();
 		return (
-			<div className={ClassNames('expco focusable subtle', {
-				'expco-expanded': this.state.expanded
-			}, this.props.className)}>
-				<div className={ClassNames('expco-title focusable-main', {
-					'placeholder': !summary
-				})} onClick={this.toggleExpco}>{summary || this.props.placeholder || ''}</div>
-				<a className='action-btn right expco-expand subtle' onClick={this.toggleExpco}>
+			<div
+				className={ClassNames(
+					'expco focusable subtle',
+					{
+						'expco-expanded': this.state.expanded
+					},
+					this.props.className
+				)}>
+				<div
+					className={ClassNames('expco-title focusable-main', {
+						placeholder: !summary
+					})}
+					onClick={this.toggleExpco}>
+					{summary || this.props.placeholder || ''}
+				</div>
+				<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 					<FontAwesomeIcon icon={faChevronUp} />
 				</a>
-				<div className='expco-body bd'>
-					{
-						_.values(_.mapObject(this.props.availableOptions, (value, key) => {
+				<div className="expco-body bd">
+					{_.values(
+						_.mapObject(this.props.availableOptions, (value, key) => {
 							return (
-								<p className='expco-item' key={key}>
-									<label className='action-btn'>
-										<span className='checkbox'>
-											<input type='checkbox'
-												className='form-control'
+								<p className="expco-item" key={key}>
+									<label className="action-btn">
+										<span className="checkbox">
+											<input
+												type="checkbox"
+												className="form-control"
 												checked={this.isChecked(key)}
 												onChange={() => this.handleChange(key)}
 											/>
-											<span className='checkbox-checked'><FontAwesomeIcon icon={faCheckSquare} /></span>
-											<span className='checkbox-unchecked'><FontAwesomeIcon icon={faSquare} /></span>
+											<span className="checkbox-checked">
+												<FontAwesomeIcon icon={faCheckSquare} />
+											</span>
+											<span className="checkbox-unchecked">
+												<FontAwesomeIcon icon={faSquare} />
+											</span>
 										</span>
 										{value}
 									</label>
 								</p>
-							)
-						}))
-					}
+							);
+						})
+					)}
 				</div>
 			</div>
-		)
+		);
 	}
 }

@@ -1,13 +1,13 @@
 /// <reference path="../../../lib/typings/reactivearray.d.ts" />
 
-import { ReactiveVar } from 'meteor/reactive-var'
-import * as _ from 'underscore'
-import { Tracker } from 'meteor/tracker'
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { EventEmitter } from 'events'
-import { Time } from '../../../lib/lib'
-import { HTMLAttributes } from 'react'
+import { ReactiveVar } from 'meteor/reactive-var';
+import * as _ from 'underscore';
+import { Tracker } from 'meteor/tracker';
+import { Meteor } from 'meteor/meteor';
+import { Random } from 'meteor/random';
+import { EventEmitter } from 'events';
+import { Time } from '../../../lib/lib';
+import { HTMLAttributes } from 'react';
 
 /**
  * Priority level for Notifications.
@@ -34,26 +34,26 @@ export enum NoticeLevel {
  */
 export interface NotificationAction {
 	/** User-presented string label on the action button */
-	label: string
+	label: string;
 	/** Action type. If set to 'default', will attach this action to a click on the notification. */
-	type: string // for a default, use 'default'
+	type: string; // for a default, use 'default'
 	/** Icon shown on the action button. */
-	icon?: any
+	icon?: any;
 	/** The method that will be called when the user takes the aciton. */
-	action?: Function
+	action?: Function;
 }
 
 /** A source of notifications */
-export type Notifier = () => NotificationList
+export type Notifier = () => NotificationList;
 
-const notifiers: {[index: string]: NotifierHandle} = {}
+const notifiers: { [index: string]: NotifierHandle } = {};
 
-const notifications: {[index: string]: Notification} = {}
-const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
+const notifications: { [index: string]: Notification } = {};
+const notificationsDep: Tracker.Dependency = new Tracker.Dependency();
 
 interface NotificationHandle {
-	id: string,
-	stop: () => void
+	id: string;
+	stop: () => void;
 }
 
 /**
@@ -63,9 +63,7 @@ interface NotificationHandle {
  * @class NotificationList
  * @extends {ReactiveVar<Notification[]>}
  */
-export class NotificationList extends ReactiveVar<Notification[]> {
-
-}
+export class NotificationList extends ReactiveVar<Notification[]> {}
 
 /**
  * A handle object to a registered notifier.
@@ -74,10 +72,10 @@ export class NotificationList extends ReactiveVar<Notification[]> {
  * @class NotifierObject
  */
 export class NotifierHandle {
-	id: string
-	source: Notifier
-	handle: Tracker.Computation
-	result: Array<Notification> = []
+	id: string;
+	source: Notifier;
+	handle: Tracker.Computation;
+	result: Array<Notification> = [];
 
 	/**
 	 * Creates an instance of NotifierHandle. Used internally by the Notification Center singleton.
@@ -85,17 +83,17 @@ export class NotifierHandle {
 	 * @param {Notifier} source
 	 * @memberof NotifierHandle
 	 */
-	constructor (notifierId: string, source: Notifier) {
-		this.id = notifierId
-		this.source = source
-		this.handle = Tracker.nonreactive(() => {
+	constructor(notifierId: string, source: Notifier) {
+		this.id = notifierId;
+		this.source = source;
+		this.handle = (Tracker.nonreactive(() => {
 			return Tracker.autorun(() => {
-				this.result = source().get()
-				notificationsDep.changed()
-			})
-		}) as any as Tracker.Computation
+				this.result = source().get();
+				notificationsDep.changed();
+			});
+		}) as any) as Tracker.Computation;
 
-		notifiers[notifierId] = this
+		notifiers[notifierId] = this;
 	}
 
 	/**
@@ -103,12 +101,12 @@ export class NotifierHandle {
 	 *
 	 * @memberof NotifierHandle
 	 */
-	stop (): void {
-		this.handle.stop()
+	stop(): void {
+		this.handle.stop();
 
-		delete notifiers[this.id]
+		delete notifiers[this.id];
 
-		notificationsDep.changed()
+		notificationsDep.changed();
 	}
 }
 
@@ -119,27 +117,27 @@ export class NotifierHandle {
  */
 class NotificationCenter0 {
 	/** Default notification timeout for non-persistent notifications */
-	private NOTIFICATION_TIMEOUT = 5000
+	private NOTIFICATION_TIMEOUT = 5000;
 	/** The highlighted source of notifications */
-	private highlightedSource: ReactiveVar<string | undefined>
+	private highlightedSource: ReactiveVar<string | undefined>;
 	/** The highlighted level of highlighted level */
-	private highlightedLevel: ReactiveVar<NoticeLevel>
+	private highlightedLevel: ReactiveVar<NoticeLevel>;
 
-	private _isOpen: boolean = false
+	private _isOpen: boolean = false;
 
-	constructor () {
-		this.highlightedSource = new ReactiveVar<string>('')
-		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+	constructor() {
+		this.highlightedSource = new ReactiveVar<string>('');
+		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP);
 	}
 
-	get isOpen (): boolean {
-		return this._isOpen
+	get isOpen(): boolean {
+		return this._isOpen;
 	}
 
-	set isOpen (value: boolean) {
-		this._isOpen = value
+	set isOpen(value: boolean) {
+		this._isOpen = value;
 
-		if (value) NotificationCenter.snoozeAll()
+		if (value) NotificationCenter.snoozeAll();
 	}
 
 	/**
@@ -149,10 +147,10 @@ class NotificationCenter0 {
 	 * @returns {NotifierHandle} The handler than can be used to unregister a notifier.
 	 * @memberof NotificationCenter0
 	 */
-	registerNotifier (source: Notifier): NotifierHandle {
-		const notifierId = Random.id()
+	registerNotifier(source: Notifier): NotifierHandle {
+		const notifierId = Random.id();
 
-		return new NotifierHandle(notifierId, source)
+		return new NotifierHandle(notifierId, source);
 	}
 
 	/**
@@ -162,26 +160,26 @@ class NotificationCenter0 {
 	 * @returns {NotificationHandle} The handler that can be used to drop the notification.
 	 * @memberof NotificationCenter0
 	 */
-	push (notice: Notification): NotificationHandle {
-		const id = notice.id || Random.id()
-		notifications[id] = notice
-		notice.id = id
-		notificationsDep.changed()
+	push(notice: Notification): NotificationHandle {
+		const id = notice.id || Random.id();
+		notifications[id] = notice;
+		notice.id = id;
+		notificationsDep.changed();
 
 		if (!notice.persistent) {
-			this.timeout(notice)
+			this.timeout(notice);
 		}
 
 		if (!notice.snoozed && this._isOpen) {
-			notice.snooze()
+			notice.snooze();
 		}
 
 		return {
 			id,
 			stop: () => {
-				this.drop(id)
+				this.drop(id);
 			}
-		}
+		};
 	}
 
 	/**
@@ -190,13 +188,16 @@ class NotificationCenter0 {
 	 * @param {string} id The ID of a notification
 	 * @memberof NotificationCenter0
 	 */
-	drop (id: string): void {
+	drop(id: string): void {
 		if (notifications[id]) {
-			notifications[id].emit('dropped')
-			delete notifications[id]
-			notificationsDep.changed()
+			notifications[id].emit('dropped');
+			delete notifications[id];
+			notificationsDep.changed();
 		} else {
-			throw new Meteor.Error(404, `Notification "${id}" could not be found in the Notification Center`)
+			throw new Meteor.Error(
+				404,
+				`Notification "${id}" could not be found in the Notification Center`
+			);
 		}
 	}
 
@@ -206,14 +207,15 @@ class NotificationCenter0 {
 	 * @returns {Array<Notification>}
 	 * @memberof NotificationCenter0
 	 */
-	getNotifications (): Array<Notification> {
-		notificationsDep.depend()
+	getNotifications(): Array<Notification> {
+		notificationsDep.depend();
 
-		return _.flatten(_.map(notifiers, (item, key) => {
-			item.result.forEach(i => this._isOpen && !i.snoozed && i.snooze())
-			return item.result
-		})
-		.concat(_.map(notifications, (item, key) => item)))
+		return _.flatten(
+			_.map(notifiers, (item, key) => {
+				item.result.forEach((i) => this._isOpen && !i.snoozed && i.snooze());
+				return item.result;
+			}).concat(_.map(notifications, (item, key) => item))
+		);
 	}
 
 	/**
@@ -222,10 +224,16 @@ class NotificationCenter0 {
 	 * @returns {number}
 	 * @memberof NotificationCenter0
 	 */
-	count (): number {
-		notificationsDep.depend()
+	count(): number {
+		notificationsDep.depend();
 
-		return _.reduce(_.map(notifiers, (item) => item.result.length), (a, b) => a + b, 0) + _.values(notifications).length
+		return (
+			_.reduce(
+				_.map(notifiers, (item) => item.result.length),
+				(a, b) => a + b,
+				0
+			) + _.values(notifications).length
+		);
 	}
 
 	/**
@@ -233,9 +241,9 @@ class NotificationCenter0 {
 	 *
 	 * @memberof NotificationCenter0
 	 */
-	snoozeAll () {
-		const n = this.getNotifications()
-		n.forEach((item) => item.snooze())
+	snoozeAll() {
+		const n = this.getNotifications();
+		n.forEach((item) => item.snooze());
 	}
 
 	/**
@@ -245,9 +253,9 @@ class NotificationCenter0 {
 	 * @param {NoticeLevel} level
 	 * @memberof NotificationCenter0
 	 */
-	highlightSource (source: string | undefined, level: NoticeLevel) {
-		this.highlightedSource.set(source)
-		this.highlightedLevel.set(level)
+	highlightSource(source: string | undefined, level: NoticeLevel) {
+		this.highlightedSource.set(source);
+		this.highlightedLevel.set(level);
 	}
 
 	/**
@@ -256,8 +264,8 @@ class NotificationCenter0 {
 	 * @returns
 	 * @memberof NotificationCenter0
 	 */
-	getHighlightedSource () {
-		return this.highlightedSource.get()
+	getHighlightedSource() {
+		return this.highlightedSource.get();
 	}
 
 	/**
@@ -266,8 +274,8 @@ class NotificationCenter0 {
 	 * @returns
 	 * @memberof NotificationCenter0
 	 */
-	getHighlightedLevel () {
-		return this.highlightedLevel.get()
+	getHighlightedLevel() {
+		return this.highlightedLevel.get();
 	}
 
 	/**
@@ -276,19 +284,19 @@ class NotificationCenter0 {
 	 * @param {Notification} notice
 	 * @memberof NotificationCenter0
 	 */
-	private timeout (notice: Notification): void {
+	private timeout(notice: Notification): void {
 		Meteor.setTimeout(() => {
 			if (notice) {
-				const id = notice.id
+				const id = notice.id;
 				if (id && notifications[id]) {
-					this.drop(id)
+					this.drop(id);
 				}
 			}
-		}, notice.timeout || this.NOTIFICATION_TIMEOUT)
+		}, notice.timeout || this.NOTIFICATION_TIMEOUT);
 	}
 }
 
-export const NotificationCenter = new NotificationCenter0()
+export const NotificationCenter = new NotificationCenter0();
 
 /**
  * A Notification that can be presented to the user
@@ -298,18 +306,18 @@ export const NotificationCenter = new NotificationCenter0()
  * @extends {EventEmitter}
  */
 export class Notification extends EventEmitter {
-	id: string | undefined
-	status: NoticeLevel
-	message: string | React.ReactElement<HTMLElement> | null
-	source: string
-	persistent?: boolean
-	timeout?: number
-	snoozed?: boolean
-	actions?: Array<NotificationAction>
-	created: Time
-	rank: number
+	id: string | undefined;
+	status: NoticeLevel;
+	message: string | React.ReactElement<HTMLElement> | null;
+	source: string;
+	persistent?: boolean;
+	timeout?: number;
+	snoozed?: boolean;
+	actions?: Array<NotificationAction>;
+	created: Time;
+	rank: number;
 
-	constructor (
+	constructor(
 		id: string | undefined,
 		status: NoticeLevel,
 		message: string | React.ReactElement<HTMLElement> | null,
@@ -320,17 +328,17 @@ export class Notification extends EventEmitter {
 		rank?: number,
 		timeout?: number
 	) {
-		super()
+		super();
 
-		this.id = id
-		this.status = status
-		this.message = message
-		this.source = source
-		this.persistent = persistent || false
-		this.actions = actions || undefined
-		this.created = created || Date.now()
-		this.rank = rank || 0
-		this.timeout = timeout
+		this.id = id;
+		this.status = status;
+		this.message = message;
+		this.source = source;
+		this.persistent = persistent || false;
+		this.actions = actions || undefined;
+		this.created = created || Date.now();
+		this.rank = rank || 0;
+		this.timeout = timeout;
 	}
 
 	/**
@@ -342,9 +350,12 @@ export class Notification extends EventEmitter {
 	 * @returns {boolean}
 	 * @memberof Notification
 	 */
-	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
-		if ((typeof a) !== (typeof b)) return false
-		return _.isEqual(_.omit(a, ['created', 'snoozed', 'actions', '_events']), _.omit(b, ['created', 'snoozed', 'actions', '_events']))
+	static isEqual(a: Notification | undefined, b: Notification | undefined): boolean {
+		if (typeof a !== typeof b) return false;
+		return _.isEqual(
+			_.omit(a, ['created', 'snoozed', 'actions', '_events']),
+			_.omit(b, ['created', 'snoozed', 'actions', '_events'])
+		);
 	}
 
 	/**
@@ -356,9 +367,13 @@ export class Notification extends EventEmitter {
 	 * @returns {number}
 	 * @memberof Notification
 	 */
-	static compare (a: Notification, b: Notification): number {
-		return (!!a.persistent === !!b.persistent ? 0 : a.persistent && !b.persistent ? 1 : -1) ||
-			   (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
+	static compare(a: Notification, b: Notification): number {
+		return (
+			(!!a.persistent === !!b.persistent ? 0 : a.persistent && !b.persistent ? 1 : -1) ||
+			a.status - b.status ||
+			a.rank - b.rank ||
+			a.created - b.created
+		);
 	}
 
 	/**
@@ -366,10 +381,10 @@ export class Notification extends EventEmitter {
 	 *
 	 * @memberof Notification
 	 */
-	snooze () {
-		this.snoozed = true
-		notificationsDep.changed()
-		this.emit('snoozed', this)
+	snooze() {
+		this.snoozed = true;
+		notificationsDep.changed();
+		this.emit('snoozed', this);
 	}
 
 	/**
@@ -377,9 +392,9 @@ export class Notification extends EventEmitter {
 	 *
 	 * @memberof Notification
 	 */
-	drop () {
+	drop() {
 		if (this.id) {
-			NotificationCenter.drop(this.id)
+			NotificationCenter.drop(this.id);
 		}
 	}
 
@@ -390,12 +405,13 @@ export class Notification extends EventEmitter {
 	 * @param {*} event
 	 * @memberof Notification
 	 */
-	action (type: string, event: any) {
-		this.emit('action', this, type, event)
+	action(type: string, event: any) {
+		this.emit('action', this, type, event);
 	}
-
 }
 
-window['testNotification'] = function () {
-	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test'))
-}
+window['testNotification'] = function() {
+	NotificationCenter.push(
+		new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test')
+	);
+};

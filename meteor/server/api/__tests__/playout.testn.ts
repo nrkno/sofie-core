@@ -1,11 +1,10 @@
-
 // import * as chai from 'chai'
-import * as _ from 'underscore'
+import * as _ from 'underscore';
 // import {} from 'mocha'
 
-import { Rundown, DBRundown, RundownData } from '../../../lib/collections/Rundowns'
-import { Part, DBPart } from '../../../lib/collections/Parts'
-import { Piece } from '../../../lib/collections/Pieces'
+import { Rundown, DBRundown, RundownData } from '../../../lib/collections/Rundowns';
+import { Part, DBPart } from '../../../lib/collections/Parts';
+import { Piece } from '../../../lib/collections/Pieces';
 
 // import { buildTimelineObjsForRundown } from '../playout'
 // import { getPartGroupId, getPartFirstObjectId, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
@@ -15,10 +14,10 @@ import { Piece } from '../../../lib/collections/Pieces'
 // const expect = chai.expect
 // const assert = chai.assert
 
-describe('playout: buildTimelineObjsForRundown', function () {
+describe('playout: buildTimelineObjsForRundown', function() {
 	test('mockTest', () => {
-		expect(1).toEqual(1)
-	})
+		expect(1).toEqual(1);
+	});
 
 	// test('Empty rundown', function () {
 	// 	const rundownData = createEmptyRundownData()
@@ -609,7 +608,7 @@ describe('playout: buildTimelineObjsForRundown', function () {
 		expect(grpB1.duration).eql(0)
 	})
 	*/
-})
+});
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------

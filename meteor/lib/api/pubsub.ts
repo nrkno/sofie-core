@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor'
+import { Meteor } from 'meteor/meteor';
 
 export enum PubSub {
 	asRunLog = 'asRunLog',
@@ -33,8 +33,8 @@ export enum PubSub {
 	rundownLayouts = 'rundownLayouts'
 }
 
-export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
+export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
 	if (Meteor.isClient) {
-		return Meteor.subscribe(name, ...args)
-	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side')
+		return Meteor.subscribe(name, ...args);
+	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side');
 }

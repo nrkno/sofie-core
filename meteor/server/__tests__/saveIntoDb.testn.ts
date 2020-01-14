@@ -1,6 +1,6 @@
 test('mockTest', () => {
-	expect(1).toEqual(1)
-})
+	expect(1).toEqual(1);
+});
 /*
 import { Meteor } from 'meteor/meteor'
 import { saveIntoDb } from '../../lib/lib'

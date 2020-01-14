@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { createMongoCollection } from './lib'
+import { Meteor } from 'meteor/meteor';
+import { TransformedCollection } from '../typings/meteor';
+import { registerCollection } from '../lib';
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration';
+import { createMongoCollection } from './lib';
 
 /**
  * The view targeted by this layout:
@@ -37,55 +37,55 @@ export enum PieceDisplayStyle {
  * @interface RundownLayoutFilter
  */
 export interface RundownLayoutFilterBase {
-	_id: string
-	name: string
-	rank: number
-	sourceLayerIds: string[] | undefined
-	sourceLayerTypes: SourceLayerType[] | undefined
-	outputLayerIds: string[] | undefined
-	label: string[] | undefined
-	tags: string[] | undefined
-	displayStyle: PieceDisplayStyle
-	currentSegment: boolean
+	_id: string;
+	name: string;
+	rank: number;
+	sourceLayerIds: string[] | undefined;
+	sourceLayerTypes: SourceLayerType[] | undefined;
+	outputLayerIds: string[] | undefined;
+	label: string[] | undefined;
+	tags: string[] | undefined;
+	displayStyle: PieceDisplayStyle;
+	currentSegment: boolean;
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
 	 * false: do not include Rundown Baseline AdLib Pieces
 	 * 'only': show only Rundown Baseline AdLib Pieces matching this filter
 	 */
-	rundownBaseline: boolean | 'only'
+	rundownBaseline: boolean | 'only';
 }
 
 export interface RundownLayoutFilter extends RundownLayoutFilterBase {
-	default: boolean
+	default: boolean;
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
-	x: number
-	y: number
-	width: number
-	height: number
-	enableSearch: boolean
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	enableSearch: boolean;
 
-	buttonWidthScale: number
-	buttonHeightScale: number
+	buttonWidthScale: number;
+	buttonHeightScale: number;
 
-	includeClearInRundownBaseline: boolean
-	assignHotKeys: boolean
+	includeClearInRundownBaseline: boolean;
+	assignHotKeys: boolean;
 }
 
 export interface RundownLayoutBase {
-	_id: string
-	showStyleBaseId: string
-	blueprintId?: string
-	userId?: string
-	name: string
-	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
-	filters: RundownLayoutFilterBase[]
+	_id: string;
+	showStyleBaseId: string;
+	blueprintId?: string;
+	userId?: string;
+	name: string;
+	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT;
+	filters: RundownLayoutFilterBase[];
 }
 
 export interface RundownLayout extends RundownLayoutBase {
-	type: RundownLayoutType.RUNDOWN_LAYOUT
-	filters: RundownLayoutFilter[]
+	type: RundownLayoutType.RUNDOWN_LAYOUT;
+	filters: RundownLayoutFilter[];
 }
 
 export enum ActionButtonType {
@@ -100,27 +100,29 @@ export enum ActionButtonType {
 	DEACTIVATE = 'deactivate',
 	RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib' // The idea for it is that you would be able to press and hold this button
-								// and then click on whatever adlib you would like
+	// and then click on whatever adlib you would like
 }
 
 export interface DashboardLayoutActionButton {
-	type: ActionButtonType
-	x: number
-	y: number
-	width: number
-	height: number
+	type: ActionButtonType;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
 	// TODO: Interface to be defined later
-	type: RundownLayoutType.DASHBOARD_LAYOUT
-	filters: DashboardLayoutFilter[]
-	actionButtons: DashboardLayoutActionButton[]
+	type: RundownLayoutType.DASHBOARD_LAYOUT;
+	filters: DashboardLayoutFilter[];
+	actionButtons: DashboardLayoutActionButton[];
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>
-	= createMongoCollection<RundownLayoutBase>('rundownLayouts')
-registerCollection('RundownLayouts', RundownLayouts)
+export const RundownLayouts: TransformedCollection<
+	RundownLayoutBase,
+	RundownLayoutBase
+> = createMongoCollection<RundownLayoutBase>('rundownLayouts');
+registerCollection('RundownLayouts', RundownLayouts);
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		// RundownLayouts._ensureIndex({
@@ -131,6 +133,6 @@ Meteor.startup(() => {
 		// })
 		RundownLayouts._ensureIndex({
 			showStyleBaseId: 1
-		})
+		});
 	}
-})
+});

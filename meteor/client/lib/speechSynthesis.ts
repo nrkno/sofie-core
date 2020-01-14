@@ -1,109 +1,108 @@
-import * as _ from 'underscore'
+import * as _ from 'underscore';
 
-const speechSynthesis = window.speechSynthesis
+const speechSynthesis = window.speechSynthesis;
 
-const VOICE_PREFERENCE = [ // ordered in preferred order (best first)
+const VOICE_PREFERENCE = [
+	// ordered in preferred order (best first)
 	'Google uk English Female',
 	'Google uk English Male',
 	'en-gb',
 	'en-us',
-	'-default',
-]
-const VOICE_PITCH = 0.9
-const VOICE_RATE = 1 // speed
+	'-default'
+];
+const VOICE_PITCH = 0.9;
+const VOICE_RATE = 1; // speed
 
 interface TextCommand {
-	text: string
-	category: string
+	text: string;
+	category: string;
 }
 class SpeechSynthesisClass {
-	private _isInitialized: boolean = false
-	private _voice: SpeechSynthesisVoice | undefined
+	private _isInitialized: boolean = false;
+	private _voice: SpeechSynthesisVoice | undefined;
 
-	private _queue: Array<TextCommand> = []
-	init () {
+	private _queue: Array<TextCommand> = [];
+	init() {
 		if (!this._isInitialized) {
-			this._isInitialized = true
+			this._isInitialized = true;
 
 			if (speechSynthesis) {
-				this._voice = this.selectVoice()
+				this._voice = this.selectVoice();
 			} else {
-				console.warn('Speech synthesis not available')
+				console.warn('Speech synthesis not available');
 			}
 		}
 	}
-	speak (textToSpeak: string, category?: string) {
+	speak(textToSpeak: string, category?: string) {
 		return this._speak({
 			text: textToSpeak,
 			category: category || ''
-		})
+		});
 	}
-	_speak (textCommand: TextCommand, fromQueue?: boolean) {
+	_speak(textCommand: TextCommand, fromQueue?: boolean) {
 		if (!this._isInitialized) {
-			console.warn('Speech synthesis not initialized')
-			return
+			console.warn('Speech synthesis not initialized');
+			return;
 		}
 		if (!this._voice) {
-			console.warn('SpeechSynthesis: No voice found')
-			return
+			console.warn('SpeechSynthesis: No voice found');
+			return;
 		}
 		if (!textCommand.text) {
 			// do nothing
-			return
+			return;
 		}
 		if (speechSynthesis.speaking) {
 			// Put on queue
 			if (fromQueue) {
 				// it came from the queue, put it back there
-				this._queue.unshift(textCommand)
+				this._queue.unshift(textCommand);
 			} else {
 				if (this._queue.length && textCommand.category) {
 					// filter out queued ones of the same category:
 					this._queue = _.reject(this._queue, (c) => {
-						return c.category === textCommand.category
-					})
+						return c.category === textCommand.category;
+					});
 				}
-				this._queue.push(textCommand)
+				this._queue.push(textCommand);
 			}
-			return
+			return;
 		}
 
-		let utterThis = new SpeechSynthesisUtterance(textCommand.text)
+		let utterThis = new SpeechSynthesisUtterance(textCommand.text);
 		utterThis.onend = () => {
-			this._checkQueue()
-		}
+			this._checkQueue();
+		};
 		utterThis.onerror = (event) => {
-			this._checkQueue()
-			console.warn('SpeechSynthesisUtterance.onerror', event)
-		}
-		utterThis.voice = this._voice
-		utterThis.pitch = VOICE_PITCH
-		utterThis.rate = VOICE_RATE
-		speechSynthesis.speak(utterThis)
+			this._checkQueue();
+			console.warn('SpeechSynthesisUtterance.onerror', event);
+		};
+		utterThis.voice = this._voice;
+		utterThis.pitch = VOICE_PITCH;
+		utterThis.rate = VOICE_RATE;
+		speechSynthesis.speak(utterThis);
 	}
-	private _checkQueue () {
-		let textCommand = this._queue.shift()
+	private _checkQueue() {
+		let textCommand = this._queue.shift();
 		if (textCommand) {
-			this._speak(textCommand)
+			this._speak(textCommand);
 		}
 	}
-	private selectVoice (): SpeechSynthesisVoice | undefined {
-
+	private selectVoice(): SpeechSynthesisVoice | undefined {
 		const voices = _.map(speechSynthesis.getVoices(), (voice) => {
+			const voiceName = voice.name + ` (${voice.lang})` + (voice.default ? ' -default' : '');
 
-			const voiceName = voice.name + ` (${voice.lang})` + (voice.default ? ' -default' : '')
-
-			let weight = 999
+			let weight = 999;
 			_.each(VOICE_PREFERENCE, (n, i) => {
-				if (voiceName.match(new RegExp(n, 'i'))) weight = i
-			})
-			return { weight, voice }
+				if (voiceName.match(new RegExp(n, 'i'))) weight = i;
+			});
+			return { weight, voice };
 		}).sort((a, b) => {
-			return a.weight - b.weight
-		})
-		return (voices[0] || {}).voice
-	  }
+			return a.weight - b.weight;
+		});
+		return (voices[0] || {}).voice;
+	}
 }
 
 // Singleton:
-export const SpeechSynthesiser = new SpeechSynthesisClass()
+export const SpeechSynthesiser = new SpeechSynthesisClass();

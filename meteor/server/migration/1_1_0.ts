@@ -1,6 +1,6 @@
-import { addMigrationSteps } from './databaseMigration'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { addMigrationSteps } from './databaseMigration';
+import { ensureCollectionProperty, setExpectedVersion } from './lib';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 // 1.1.0 (Release 13)
 addMigrationSteps('1.1.0', [
@@ -17,5 +17,10 @@ addMigrationSteps('1.1.0', [
 	// },
 
 	ensureCollectionProperty('CoreSystem', {}, 'serviceMessages', {}),
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.1.0')
-])
+	setExpectedVersion(
+		'expectedVersion.playoutDevice',
+		PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		'_process',
+		'^1.1.0'
+	)
+]);

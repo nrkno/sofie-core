@@ -1,49 +1,49 @@
 namespace modifierHelper {
 	const activeModifiers: {
-		[key: string]: boolean
-	} = {}
+		[key: string]: boolean;
+	} = {};
 
-	function setMap (name: string, e: KeyboardEvent, value: boolean) {
+	function setMap(name: string, e: KeyboardEvent, value: boolean) {
 		if (e.location === 2) {
-			activeModifiers[name + 'Right'] = value
+			activeModifiers[name + 'Right'] = value;
 		} else {
-			activeModifiers[name + 'Left'] = value
+			activeModifiers[name + 'Left'] = value;
 		}
 	}
 
-	function handleKeyEvent (e: KeyboardEvent) {
-		const value = e.type === 'keydown' ? true : false
+	function handleKeyEvent(e: KeyboardEvent) {
+		const value = e.type === 'keydown' ? true : false;
 
 		switch (e.key) {
 			case 'Alt':
-				setMap('alt', e, value)
-				break
+				setMap('alt', e, value);
+				break;
 			case 'Control':
-				setMap('ctrl', e, value)
-				break
+				setMap('ctrl', e, value);
+				break;
 			case 'AltGraph':
-				setMap('alt', e, value)
-				break
+				setMap('alt', e, value);
+				break;
 			case 'Shift':
-				setMap('shift', e, value)
-				break
+				setMap('shift', e, value);
+				break;
 			case 'Meta':
-				setMap('meta', e, value)
-				break
+				setMap('meta', e, value);
+				break;
 			case 'ContextMenu':
-				setMap('contextMenu', e, value)
-				break
+				setMap('contextMenu', e, value);
+				break;
 		}
 	}
 
 	// @ts-ignore
-	window.keyboardModifiers = activeModifiers
+	window.keyboardModifiers = activeModifiers;
 
 	document.addEventListener('keydown', (e: KeyboardEvent) => {
-		handleKeyEvent(e)
-	})
+		handleKeyEvent(e);
+	});
 
 	document.addEventListener('keyup', (e: KeyboardEvent) => {
-		handleKeyEvent(e)
-	})
+		handleKeyEvent(e);
+	});
 }

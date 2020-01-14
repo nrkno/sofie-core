@@ -1,29 +1,29 @@
 export interface MediaManagerDeviceSettings {
 	/** A list of available storage locations */
-	storages: Array<StorageSettings>
+	storages: Array<StorageSettings>;
 
 	/** A specification of source -> target mappings with workflow generators to be attached to them */
-	mediaFlows: Array<MediaFlow>
+	mediaFlows: Array<MediaFlow>;
 
 	/** The amount of workers to be available for file system operations */
-	workers: number
+	workers: number;
 
 	/** How long to wait before removing a file - used by some workflow generators */
-	lingerTime: number
+	lingerTime: number;
 
 	/** Cron job time - how often to check the file system for consistency - do a poll of the filesystem to check that the files are where they are supposed to be, clean out expired files */
-	cronJobTime?: number
+	cronJobTime?: number;
 
 	/** Connection details for the media scanner */
 	mediaScanner: {
-		host: string
-		port: number
-	}
+		host: string;
+		port: number;
+	};
 
 	/** A list of Monitors, which will monitor media statuses */
 	monitors?: {
-		[monitorId: string]: MonitorSettings
-	}
+		[monitorId: string]: MonitorSettings;
+	};
 }
 
 export enum MediaFlowType {
@@ -35,13 +35,13 @@ export enum MediaFlowType {
 
 export interface MediaFlow {
 	/** Id of the mediaFlow */
-	id: string
+	id: string;
 	/** Id of a Storage */
-	sourceId: string
+	sourceId: string;
 	/** Id of a Storage */
-	destinationId?: string
+	destinationId?: string;
 	/** Workflow generator type */
-	mediaFlowType: MediaFlowType
+	mediaFlowType: MediaFlowType;
 }
 
 export enum StorageType {
@@ -52,50 +52,53 @@ export enum StorageType {
 	// AWS_S3 = 'aws_s3'
 }
 export interface StorageSettings {
-	id: string
+	id: string;
 	support: {
-		read: boolean
-		write: boolean
-	}
-	type: StorageType
+		read: boolean;
+		write: boolean;
+	};
+	type: StorageType;
 	options: {
 		/** Only subscribed files can be listened to for changes */
-		onlySelectedFiles?: boolean
-		[key: string]: any
-	}
+		onlySelectedFiles?: boolean;
+		[key: string]: any;
+	};
 }
 export interface LocalFolderStorage extends StorageSettings {
-	type: StorageType.LOCAL_FOLDER
+	type: StorageType.LOCAL_FOLDER;
 	options: {
-		basePath: string
-		mediaPath?: string
-		usePolling?: boolean
-		onlySelectedFiles?: boolean
-	}
+		basePath: string;
+		mediaPath?: string;
+		usePolling?: boolean;
+		onlySelectedFiles?: boolean;
+	};
 }
 export interface FileShareStorage extends StorageSettings {
-	type: StorageType.FILE_SHARE
+	type: StorageType.FILE_SHARE;
 	options: {
 		/** URI to the network share, eg "\\somehting\share" */
-		basePath: string
+		basePath: string;
 		/** A folder prefix relative to the Playout media folder */
-		mediaPath?: string
+		mediaPath?: string;
 		/** A virtual local drive letter, "E", the basePath should be mounted to */
-		mappedNetworkedDriveTarget: string
-		username?: string // wip?
-		password?: string // wip?
-		onlySelectedFiles?: boolean
-	}
+		mappedNetworkedDriveTarget: string;
+		username?: string; // wip?
+		password?: string; // wip?
+		onlySelectedFiles?: boolean;
+	};
 }
-export type MonitorSettings = MonitorSettingsNull | MonitorSettingsMediaScanner | MonitorSettingsQuantel
+export type MonitorSettings =
+	| MonitorSettingsNull
+	| MonitorSettingsMediaScanner
+	| MonitorSettingsQuantel;
 export interface MonitorSettingsBase {
-	type: MonitorSettingsType
+	type: MonitorSettingsType;
 
 	/** The storageId is defining the storage/server on which the media is on.
 	 * (in the media-scanner, this is equivalent to the collectionId)
 	 */
-	storageId: string
-	disable?: boolean
+	storageId: string;
+	disable?: boolean;
 }
 export enum MonitorSettingsType {
 	NULL = '',
@@ -103,23 +106,23 @@ export enum MonitorSettingsType {
 	QUANTEL = 'quantel'
 }
 export interface MonitorSettingsNull extends MonitorSettingsBase {
-	type: MonitorSettingsType.NULL
+	type: MonitorSettingsType.NULL;
 }
 export interface MonitorSettingsMediaScanner extends MonitorSettingsBase {
-	type: MonitorSettingsType.MEDIA_SCANNER
+	type: MonitorSettingsType.MEDIA_SCANNER;
 	/** Host of the media-scanner PouchDB server */
-	host: string
-	port: number
+	host: string;
+	port: number;
 }
 export interface MonitorSettingsQuantel extends MonitorSettingsBase {
-	type: MonitorSettingsType.QUANTEL
+	type: MonitorSettingsType.QUANTEL;
 
 	/** Url to the quantel gateway  */
-	gatewayUrl: string
+	gatewayUrl: string;
 	/** Address to the ISA, for the gateway to connect to */
-	ISAUrl: string
+	ISAUrl: string;
 	/** The ID of the zone to use. If omitted, will be using "default" */
-	zoneId?: string
+	zoneId?: string;
 	/** The id of the server to control. An Ingeter */
-	serverId: number
+	serverId: number;
 }

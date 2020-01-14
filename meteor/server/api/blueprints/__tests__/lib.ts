@@ -1,8 +1,11 @@
-import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
-import { literal } from '../../../../lib/lib'
-import { Blueprint } from '../../../../lib/collections/Blueprints'
+import {
+	BlueprintManifestType,
+	SomeBlueprintManifest
+} from 'tv-automation-sofie-blueprints-integration';
+import { literal } from '../../../../lib/lib';
+import { Blueprint } from '../../../../lib/collections/Blueprints';
 
-export function generateFakeBlueprint (
+export function generateFakeBlueprint(
 	id: string,
 	type?: BlueprintManifestType,
 	codeFcn?: () => SomeBlueprintManifest
@@ -22,12 +25,12 @@ export function generateFakeBlueprint (
 
 		databaseVersion: {
 			showStyle: {},
-			studio: {},
+			studio: {}
 		},
 
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
-		minimumCoreVersion: '',
-	})
+		minimumCoreVersion: ''
+	});
 }

@@ -1,4 +1,3 @@
-
 export namespace TestToolsAPI {
 	export enum methods {
 		'recordStop' = 'testTools.recordStop',
