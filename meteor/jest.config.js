@@ -1,30 +1,20 @@
 const commonConfig = {
-	modulePaths: [
-		'<rootDir>/node_modules/',
-	],
-	moduleNameMapper: {
-	},
-	unmockedModulePathPatterns: [
-		'/^imports\\/.*\\.jsx?$/',
-		'/^node_modules/'
-	],
+	modulePaths: ['<rootDir>/node_modules/'],
+	moduleNameMapper: {},
+	unmockedModulePathPatterns: ['/^imports\\/.*\\.jsx?$/', '/^node_modules/'],
 	globals: {
 		'ts-jest': {
 			tsConfig: 'tsconfig.json',
 			diagnostics: {
-				ignoreCodes: [
-					'TS151001'
-				]
+				ignoreCodes: ['TS151001']
 			}
 		}
 	},
-	moduleFileExtensions: [
-		'ts',
-		'js'
-	],
+	moduleFileExtensions: ['ts', 'js'],
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest'
 	},
+	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
 	coverageThreshold: {
 		global: {
@@ -34,23 +24,21 @@ const commonConfig = {
 			statements: 0
 		}
 	},
-	coverageDirectory: "./.coverage/",
+	coverageDirectory: './.coverage/',
 	collectCoverageFrom: [
-		"server/**/*.{js,ts}",
-		"lib/**/*.{js,ts}",
-		"client/**/*.{js,ts}",
-		"!**/*.{tsx}",
-		"!**/client/main.js",
-		"!.meteor/**/*.*",
-		"!**/__tests__/**",
-		"!**/__mocks__/**",
+		'server/**/*.{js,ts}',
+		'lib/**/*.{js,ts}',
+		'client/**/*.{js,ts}',
+		'!**/*.{tsx}',
+		'!**/client/main.js',
+		'!.meteor/**/*.*',
+		'!**/__tests__/**',
+		'!**/__mocks__/**',
 		'!**/node_modules/**'
 	],
 	collectCoverage: false,
-	watchPathIgnorePatterns: [
-		'/.meteor/'
-	]
-}
+	watchPathIgnorePatterns: ['/.meteor/']
+};
 
 module.exports = {
 	projects: [
@@ -62,7 +50,8 @@ module.exports = {
 				'!.meteor/*.*'
 			],
 			testEnvironment: 'jsdom'
-		}), Object.assign({}, commonConfig, {
+		}),
+		Object.assign({}, commonConfig, {
 			displayName: 'lib',
 			testMatch: [
 				'<rootDir>/lib/__tests__/**/*.(spec|test).(ts|js)',
@@ -70,7 +59,8 @@ module.exports = {
 				'!.meteor/*.*'
 			],
 			testEnvironment: 'node'
-		}), Object.assign({}, commonConfig, {
+		}),
+		Object.assign({}, commonConfig, {
 			displayName: 'server',
 			testMatch: [
 				'<rootDir>/server/__tests__/**/*.(spec|test).(ts|js)',
@@ -80,4 +70,4 @@ module.exports = {
 			testEnvironment: 'node'
 		})
 	]
-}
+};

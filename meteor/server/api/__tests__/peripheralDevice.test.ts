@@ -1,27 +1,33 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
+import { Meteor } from 'meteor/meteor';
+import { Random } from 'meteor/random';
 
-import { PeripheralDevice, SpreadsheetDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import {
+	PeripheralDevice,
+	SpreadsheetDevice,
+	PeripheralDevices
+} from '../../../lib/collections/PeripheralDevices';
+import {
+	PeripheralDeviceCommand,
+	PeripheralDeviceCommands
+} from '../../../lib/collections/PeripheralDeviceCommands';
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns';
+import { Segment, Segments } from '../../../lib/collections/Segments';
+import { Part, Parts } from '../../../lib/collections/Parts';
+import { Piece, Pieces } from '../../../lib/collections/Pieces';
 
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice';
 
-import { getCurrentTime, literal } from '../../../lib/lib'
-import * as MOS from 'mos-connection'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { setLoggerLevel } from '../../../server/api/logger'
+import { getCurrentTime, literal } from '../../../lib/lib';
+import * as MOS from 'mos-connection';
+import { testInFiber } from '../../../__mocks__/helpers/jest';
+import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database';
+import { setLoggerLevel } from '../../../server/api/logger';
 
 describe('test peripheralDevice general API methods', () => {
-
-	let device: PeripheralDevice
+	let device: PeripheralDevice;
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
-		let rundownID = 'rundown0'
+		device = setupDefaultStudioEnvironment().ingestDevice;
+		let rundownID = 'rundown0';
 		Rundowns.insert({
 			_id: rundownID,
 			externalId: rundownID,
@@ -43,16 +49,16 @@ describe('test peripheralDevice general API methods', () => {
 				blueprint: 'on',
 				core: 'plate'
 			},
-			active: true,
-		})
-		let segmentID = 'segment0'
+			active: true
+		});
+		let segmentID = 'segment0';
 		Segments.insert({
 			_id: segmentID,
 			externalId: segmentID,
 			_rank: 0,
 			rundownId: rundownID,
-			name: 'Fire',
-		})
+			name: 'Fire'
+		});
 		Parts.insert({
 			_id: 'part000',
 			_rank: 0,
@@ -61,7 +67,7 @@ describe('test peripheralDevice general API methods', () => {
 			rundownId: rundownID,
 			title: 'Part 000',
 			typeVariant: 'mos'
-		})
+		});
 		Parts.insert({
 			_id: 'part001',
 			_rank: 1,
@@ -70,109 +76,133 @@ describe('test peripheralDevice general API methods', () => {
 			rundownId: rundownID,
 			title: 'Part 001',
 			typeVariant: 'mos'
-		})
+		});
 		Segments.insert({
 			_id: 'segment1',
 			_rank: 1,
 			externalId: 'segment01',
 			rundownId: rundownID,
 			name: 'Water'
-		})
+		});
 		Segments.insert({
 			_id: 'segment2',
 			_rank: 2,
 			externalId: 'segment02',
 			rundownId: rundownID,
 			name: 'Earth'
-		})
-	})
+		});
+	});
 
 	testInFiber('initialize', () => {
-		setLoggerLevel('debug')
+		setLoggerLevel('debug');
 
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
+		expect(PeripheralDevices.findOne(device._id)).toBeTruthy();
 
 		let options: PeripheralDeviceAPI.InitOptions = {
 			category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-		  type: PeripheralDeviceAPI.DeviceType.MOS,
+			type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
-		  name: 'test',
-		  connectionId: 'test'
-		}
-		Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token, options)
-		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
-		expect(initDevice).toBeTruthy()
-		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100)
-		expect(initDevice.lastConnected).toBeGreaterThan(getCurrentTime() - 100)
-		expect(initDevice.subType).toBe(options.subType)
-	})
+			name: 'test',
+			connectionId: 'test',
+			configManifest: {
+				deviceConfig: []
+			}
+		};
+		Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token, options);
+		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice;
+		expect(initDevice).toBeTruthy();
+		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100);
+		expect(initDevice.lastConnected).toBeGreaterThan(getCurrentTime() - 100);
+		expect(initDevice.subType).toBe(options.subType);
+	});
 
 	testInFiber('setStatus', () => {
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
+		expect(PeripheralDevices.findOne(device._id)).toBeTruthy();
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-		})
+		});
 		Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token, {
 			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"]
-		})
+		});
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
 			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"]
-		})
-	})
+		});
+	});
 
 	testInFiber('getPeripheralDevice', () => {
-		let gotDevice: PeripheralDevice = Meteor.call(PeripheralDeviceAPI.methods.getPeripheralDevice, device._id, device.token)
-		expect(gotDevice).toBeTruthy()
-		expect(gotDevice._id).toBe(device._id)
-	})
+		let gotDevice: PeripheralDevice = Meteor.call(
+			PeripheralDeviceAPI.methods.getPeripheralDevice,
+			device._id,
+			device.token
+		);
+		expect(gotDevice).toBeTruthy();
+		expect(gotDevice._id).toBe(device._id);
+	});
 
 	testInFiber('ping', () => {
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
-		Meteor.call(PeripheralDeviceAPI.methods.ping, device._id, device.token)
-		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
-	})
+		expect(PeripheralDevices.findOne(device._id)).toBeTruthy();
+		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen;
+		Meteor.call(PeripheralDeviceAPI.methods.ping, device._id, device.token);
+		expect(
+			(PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		).toBeGreaterThan(lastSeen);
+	});
 
 	testInFiber('pingWithCommand and functionReply', () => {
-		setLoggerLevel('debug')
+		setLoggerLevel('debug');
 
-		let resultErr = undefined
-		let resultMessage = undefined
+		let resultErr = undefined;
+		let resultMessage = undefined;
 		let pingCompleted = (err, msg) => {
-			resultErr = err
-			resultMessage = msg
-		}
+			resultErr = err;
+			resultMessage = msg;
+		};
 
 		// This is very odd. Ping command is sent and lastSeen updated before response
-		let device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
-		expect(device2).toBeTruthy()
+		let device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice;
+		expect(device2).toBeTruthy();
 		// Decrease lastSeen to ensure that the call below updates it
-		let lastSeen = device2.lastSeen - 100
-		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
+		let lastSeen = device2.lastSeen - 100;
+		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } });
 
-		let message = 'Waving!'
+		let message = 'Waving!';
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
-		Meteor.call(PeripheralDeviceAPI.methods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
-		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
-		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
-		expect(command).toBeTruthy()
-		expect(command.hasReply).toBeFalsy()
-		expect(command.functionName).toBe('pingResponse')
-		expect(command.args).toEqual([ message ])
+		Meteor.call(
+			PeripheralDeviceAPI.methods.pingWithCommand,
+			device._id,
+			device.token,
+			message,
+			pingCompleted,
+			null
+		);
+		expect(
+			(PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		).toBeGreaterThan(lastSeen);
+		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0];
+		expect(command).toBeTruthy();
+		expect(command.hasReply).toBeFalsy();
+		expect(command.functionName).toBe('pingResponse');
+		expect(command.args).toEqual([message]);
 
-		expect(resultErr).toBeUndefined()
-		expect(resultMessage).toBeUndefined()
+		expect(resultErr).toBeUndefined();
+		expect(resultMessage).toBeUndefined();
 
-		let replyMessage = 'Waving back!'
-		Meteor.call(PeripheralDeviceAPI.methods.functionReply, device._id, device.token, command._id, undefined, replyMessage)
-		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
+		let replyMessage = 'Waving back!';
+		Meteor.call(
+			PeripheralDeviceAPI.methods.functionReply,
+			device._id,
+			device.token,
+			command._id,
+			undefined,
+			replyMessage
+		);
+		expect(PeripheralDeviceCommands.findOne()).toBeFalsy();
 
-		expect(resultErr).toBeNull()
-		expect(resultMessage).toEqual(replyMessage)
-
-	})
+		expect(resultErr).toBeNull();
+		expect(resultMessage).toEqual(replyMessage);
+	});
 
 	/*
 	testInFiber('partPlaybackStarted', () => {
@@ -197,7 +227,7 @@ describe('test peripheralDevice general API methods', () => {
 		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
 	}) */
 
-/* testInFiber('piecePlaybackStarted', () => {
+	/* testInFiber('piecePlaybackStarted', () => {
 		setLoggerLevel('debug')
 		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
 			rundownId: 'rundown0',
@@ -220,33 +250,45 @@ describe('test peripheralDevice general API methods', () => {
 	})
 	*/
 
-	testInFiber('killProcess with a rundown present', () => { // test this does not shutdown because Rundown stored
-		setLoggerLevel('debug')
+	testInFiber('killProcess with a rundown present', () => {
+		// test this does not shutdown because Rundown stored
+		setLoggerLevel('debug');
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.killProcess, device._id, device.token, true)
-			fail('expected to throw')
+			Meteor.call(PeripheralDeviceAPI.methods.killProcess, device._id, device.token, true);
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(`[400] Unable to run killProcess: Rundowns not empty!`)
+			expect(e.message).toBe(`[400] Unable to run killProcess: Rundowns not empty!`);
 		}
-	})
+	});
 
 	testInFiber('testMethod', () => {
-		setLoggerLevel('debug')
-		let throwPlease = false
+		setLoggerLevel('debug');
+		let throwPlease = false;
 		try {
-			let result = 	Meteor.call(PeripheralDeviceAPI.methods.testMethod, device._id, device.token, 'european')
-			expect(result).toBe('european')
-			throwPlease = true
-			Meteor.call(PeripheralDeviceAPI.methods.testMethod, device._id, device.token, 'european', throwPlease)
-			fail('expected to throw')
+			let result = Meteor.call(
+				PeripheralDeviceAPI.methods.testMethod,
+				device._id,
+				device.token,
+				'european'
+			);
+			expect(result).toBe('european');
+			throwPlease = true;
+			Meteor.call(
+				PeripheralDeviceAPI.methods.testMethod,
+				device._id,
+				device.token,
+				'european',
+				throwPlease
+			);
+			fail('expected to throw');
 		} catch (e) {
 			if (throwPlease) {
-				expect(e.message).toBe('[418] Error thrown, as requested')
+				expect(e.message).toBe('[418] Error thrown, as requested');
 			} else {
-				expect(false).toBe(true)
+				expect(false).toBe(true);
 			}
 		}
-	})
+	});
 
 	/*
 	testInFiber('timelineTriggerTime', () => {
@@ -258,59 +300,93 @@ describe('test peripheralDevice general API methods', () => {
 	*/
 
 	testInFiber('requestUserAuthToken', () => {
-		setLoggerLevel('debug')
+		setLoggerLevel('debug');
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-			fail('expected to throw')
+			Meteor.call(
+				PeripheralDeviceAPI.methods.requestUserAuthToken,
+				device._id,
+				device.token,
+				'http://auth.url/'
+			);
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe('[400] can only request user auth token for peripheral device of spreadsheet type')
+			expect(e.message).toBe(
+				'[400] can only request user auth token for peripheral device of spreadsheet type'
+			);
 		}
 
-		PeripheralDevices.update(device._id, { $set: {
-			type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
-		}})
-		Meteor.call(PeripheralDeviceAPI.methods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-		let deviceWithAccessToken = PeripheralDevices.findOne(device._id)
-		expect(deviceWithAccessToken).toBeTruthy()
-		expect((deviceWithAccessToken as SpreadsheetDevice).accessTokenUrl).toBe('http://auth.url/')
+		PeripheralDevices.update(device._id, {
+			$set: {
+				type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
+			}
+		});
+		Meteor.call(
+			PeripheralDeviceAPI.methods.requestUserAuthToken,
+			device._id,
+			device.token,
+			'http://auth.url/'
+		);
+		let deviceWithAccessToken = PeripheralDevices.findOne(device._id);
+		expect(deviceWithAccessToken).toBeTruthy();
+		expect((deviceWithAccessToken as SpreadsheetDevice).accessTokenUrl).toBe(
+			'http://auth.url/'
+		);
 
-		PeripheralDevices.update(device._id, { $set: {
-			type: PeripheralDeviceAPI.DeviceType.MOS
-		}})
-	})
+		PeripheralDevices.update(device._id, {
+			$set: {
+				type: PeripheralDeviceAPI.DeviceType.MOS
+			}
+		});
+	});
 
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', () => {
-		setLoggerLevel('debug')
+		setLoggerLevel('debug');
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.storeAccessToken, device._id, device.token, 'http://auth.url/')
-			fail('expected to throw')
+			Meteor.call(
+				PeripheralDeviceAPI.methods.storeAccessToken,
+				device._id,
+				device.token,
+				'http://auth.url/'
+			);
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe('[400] can only store access token for peripheral device of spreadsheet type')
+			expect(e.message).toBe(
+				'[400] can only store access token for peripheral device of spreadsheet type'
+			);
 		}
 
-		PeripheralDevices.update(device._id, { $set: {
-			type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
-		}})
+		PeripheralDevices.update(device._id, {
+			$set: {
+				type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
+			}
+		});
 
-		Meteor.call(PeripheralDeviceAPI.methods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		let deviceWithSecretToken = PeripheralDevices.findOne(device._id)
+		Meteor.call(
+			PeripheralDeviceAPI.methods.storeAccessToken,
+			device._id,
+			device.token,
+			'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+		);
+		let deviceWithSecretToken = PeripheralDevices.findOne(device._id);
 		// console.log(deviceWithSecretToken)
-		expect(deviceWithSecretToken).toBeTruthy()
-		expect((deviceWithSecretToken as SpreadsheetDevice).accessTokenUrl).toBe('')
-		expect((deviceWithSecretToken as SpreadsheetDevice).secretSettings!.accessToken).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		expect((deviceWithSecretToken as SpreadsheetDevice).settings!.secretAccessToken).toBe(true)
-	})
+		expect(deviceWithSecretToken).toBeTruthy();
+		expect((deviceWithSecretToken as SpreadsheetDevice).accessTokenUrl).toBe('');
+		expect((deviceWithSecretToken as SpreadsheetDevice).secretSettings!.accessToken).toBe(
+			'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+		);
+		expect((deviceWithSecretToken as SpreadsheetDevice).settings!.secretAccessToken).toBe(true);
+	});
 
 	testInFiber('uninitialize', () => {
-		setLoggerLevel('debug')
-		Meteor.call(PeripheralDeviceAPI.methods.unInitialize, device._id, device.token)
-		expect(PeripheralDevices.findOne()).toBeFalsy()
+		setLoggerLevel('debug');
+		Meteor.call(PeripheralDeviceAPI.methods.unInitialize, device._id, device.token);
+		expect(PeripheralDevices.findOne()).toBeFalsy();
 
-		device = setupDefaultStudioEnvironment().ingestDevice
-		expect(PeripheralDevices.findOne()).toBeTruthy()
-	})
+		device = setupDefaultStudioEnvironment().ingestDevice;
+		expect(PeripheralDevices.findOne()).toBeTruthy();
+	});
 
 	testInFiber('initialize with bad arguments', () => {
 		let options: PeripheralDeviceAPI.InitOptions = {
@@ -318,47 +394,62 @@ describe('test peripheralDevice general API methods', () => {
 			type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
 			name: 'test',
-			connectionId: 'test'
-		}
+			connectionId: 'test',
+			configManifest: {
+				deviceConfig: []
+			}
+		};
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.initialize, 'wibbly', device.token, options)
-			fail('expected to throw')
+			Meteor.call(PeripheralDeviceAPI.methods.initialize, 'wibbly', device.token, options);
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
+			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`);
 		}
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token.slice(0, -1), options)
-			fail('expected to throw')
+			Meteor.call(
+				PeripheralDeviceAPI.methods.initialize,
+				device._id,
+				device.token.slice(0, -1),
+				options
+			);
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`)
+			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`);
 		}
-
-	})
+	});
 
 	testInFiber('setStatus with bad arguments', () => {
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.setStatus, 'wibbly', device.token, { statusCode: 0 })
-			fail('expected to throw')
+			Meteor.call(PeripheralDeviceAPI.methods.setStatus, 'wibbly', device.token, {
+				statusCode: 0
+			});
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
+			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`);
 		}
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token.slice(0, -1), { statusCode: 0 })
-			fail('expected to throw')
+			Meteor.call(
+				PeripheralDeviceAPI.methods.setStatus,
+				device._id,
+				device.token.slice(0, -1),
+				{ statusCode: 0 }
+			);
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`)
+			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`);
 		}
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token, { statusCode: 42 })
-			fail('expected to throw')
+			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token, {
+				statusCode: 42
+			});
+			fail('expected to throw');
 		} catch (e) {
-			expect(e.message).toBe(`[400] device status code is not known`)
+			expect(e.message).toBe(`[400] device status code is not known`);
 		}
-
-	})
+	});
 	// it('peripheralDevice.initialize() with bad arguments', async function () {
 	// 	let deviceId = Random.id()
 	// 	let token = Random.id()
@@ -433,11 +524,11 @@ describe('test peripheralDevice general API methods', () => {
 	// 	}).to.throw()
 	//
 	// })
-})
+});
 
 // Note: The data below is copied straight from the test data in mos-connection
 let xmlApiData = {
-	'rundownCreate': literal<MOS.IMOSRunningOrder>({
+	rundownCreate: literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: MOS.MosString128,
@@ -461,9 +552,21 @@ let xmlApiData = {
 						MOSID: 'testmos.enps.com',
 						// mosAbstract?: '',
 						Paths: [
-							literal<MOS.IMOSObjectPath>({ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\\media\\clip392028cd2320s0d.mxf' }),
-							literal<MOS.IMOSObjectPath>({ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' }),
-							literal<MOS.IMOSObjectPath>({ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' })
+							literal<MOS.IMOSObjectPath>({
+								Type: MOS.IMOSObjectPathType.PATH,
+								Description: 'MPEG2 Video',
+								Target: '\\server\\media\\clip392028cd2320s0d.mxf'
+							}),
+							literal<MOS.IMOSObjectPath>({
+								Type: MOS.IMOSObjectPathType.PROXY_PATH,
+								Description: 'WM9 750Kbps',
+								Target: 'http://server/proxy/clipe.wmv'
+							}),
+							literal<MOS.IMOSObjectPath>({
+								Type: MOS.IMOSObjectPathType.METADATA_PATH,
+								Description: 'MOS Object',
+								Target: 'http://server/proxy/clipe.xml'
+							})
 						],
 						// Channel?: new MOS.MosString128(),
 						// EditorialStart?: MOS.MosTime
@@ -501,7 +604,7 @@ let xmlApiData = {
 			})
 		]
 	}),
-	'rundownReplace': literal<MOS.IMOSRunningOrder>({
+	rundownReplace: literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: MOS.MosString128,
@@ -525,9 +628,21 @@ let xmlApiData = {
 						MOSID: 'testmos.enps.com',
 						// mosAbstract?: '',
 						Paths: [
-							literal<MOS.IMOSObjectPath>({ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\media\clip392028cd2320s0d.mxf' }),
-							literal<MOS.IMOSObjectPath>({ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' }),
-							literal<MOS.IMOSObjectPath>({ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' })
+							literal<MOS.IMOSObjectPath>({
+								Type: MOS.IMOSObjectPathType.PATH,
+								Description: 'MPEG2 Video',
+								Target: '\\servermediaclip392028cd2320s0d.mxf'
+							}),
+							literal<MOS.IMOSObjectPath>({
+								Type: MOS.IMOSObjectPathType.PROXY_PATH,
+								Description: 'WM9 750Kbps',
+								Target: 'http://server/proxy/clipe.wmv'
+							}),
+							literal<MOS.IMOSObjectPath>({
+								Type: MOS.IMOSObjectPathType.METADATA_PATH,
+								Description: 'MOS Object',
+								Target: 'http://server/proxy/clipe.xml'
+							})
 						],
 						// Channel?: new MOS.MosString128(),
 						// EditorialStart?: MOS.MosTime
@@ -565,8 +680,8 @@ let xmlApiData = {
 			})
 		]
 	}),
-	'rundownDelete': 49478285,
-	'rundownList': literal<MOS.IMOSObject>({
+	rundownDelete: 49478285,
+	rundownList: literal<MOS.IMOSObject>({
 		ID: new MOS.MosString128('M000123'),
 		Slug: new MOS.MosString128('Hotel Fire'),
 		// MosAbstract: string,
@@ -578,9 +693,21 @@ let xmlApiData = {
 		Status: MOS.IMOSObjectStatus.NEW,
 		AirStatus: MOS.IMOSObjectAirStatus.READY,
 		Paths: [
-			{ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\media\clip392028cd2320s0d.mxf' },
-			{ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' },
-			{ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' }
+			{
+				Type: MOS.IMOSObjectPathType.PATH,
+				Description: 'MPEG2 Video',
+				Target: '\\servermediaclip392028cd2320s0d.mxf'
+			},
+			{
+				Type: MOS.IMOSObjectPathType.PROXY_PATH,
+				Description: 'WM9 750Kbps',
+				Target: 'http://server/proxy/clipe.wmv'
+			},
+			{
+				Type: MOS.IMOSObjectPathType.METADATA_PATH,
+				Description: 'MOS Object',
+				Target: 'http://server/proxy/clipe.xml'
+			}
 		],
 		CreatedBy: new MOS.MosString128('Chris'),
 		Created: new MOS.MosTime('2009-10-31T23:39:12'),
@@ -589,7 +716,7 @@ let xmlApiData = {
 		// Description: string
 		// mosExternalMetaData?: Array<IMOSExternalMetaData>
 	}),
-	'rundownMetadataReplace': literal<MOS.IMOSRunningOrderBase>({
+	rundownMetadataReplace: literal<MOS.IMOSRunningOrderBase>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
 		// DefaultChannel?: new MOS.MosString128(''),
@@ -600,18 +727,18 @@ let xmlApiData = {
 		// MacrundownOut?: new MOS.MosString128(''),
 		// MosExternalMetaData?: Array<IMOSExternalMetaData>
 	}),
-	'rundownElementStat_rundown': literal<MOS.IMOSRunningOrderStatus>({
+	rundownElementStat_rundown: literal<MOS.IMOSRunningOrderStatus>({
 		ID: new MOS.MosString128('5PM'),
 		Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
 		Time: new MOS.MosTime('2009-04-11T14:13:53')
 	}),
-	'rundownElementStat_story': literal<MOS.IMOSStoryStatus>({
+	rundownElementStat_story: literal<MOS.IMOSStoryStatus>({
 		RunningOrderId: new MOS.MosString128('5PM'),
 		ID: new MOS.MosString128('HOTEL FIRE'),
 		Status: MOS.IMOSObjectStatus.PLAY,
 		Time: new MOS.MosTime('1999-04-11T14:13:53')
 	}),
-	'rundownElementStat_item': literal<MOS.IMOSItemStatus>({
+	rundownElementStat_item: literal<MOS.IMOSItemStatus>({
 		RunningOrderId: new MOS.MosString128('5PM'),
 		StoryId: new MOS.MosString128('HOTEL FIRE '),
 		ID: new MOS.MosString128('0'),
@@ -620,15 +747,15 @@ let xmlApiData = {
 		Status: MOS.IMOSObjectStatus.PLAY,
 		Time: new MOS.MosTime('2009-04-11T14:13:53')
 	}),
-	'rundownReadyToAir': literal<MOS.IMOSROReadyToAir>({
+	rundownReadyToAir: literal<MOS.IMOSROReadyToAir>({
 		ID: new MOS.MosString128('5PM'),
 		Status: MOS.IMOSObjectAirStatus.READY
 	}),
-	'rundownElementAction_insert_story_Action': literal<MOS.IMOSStoryAction>({
+	rundownElementAction_insert_story_Action: literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_insert_story_Stories': [
+	rundownElementAction_insert_story_Stories: [
 		literal<MOS.IMOSROStory>({
 			ID: new MOS.MosString128('17'),
 			Slug: new MOS.MosString128('Barcelona Football'),
@@ -642,9 +769,21 @@ let xmlApiData = {
 					MOSID: 'testmos',
 					// mosAbstract?: '',
 					Paths: [
-						{ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\media\clip392028cd2320s0d.mxf' },
-						{ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' },
-						{ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' }
+						{
+							Type: MOS.IMOSObjectPathType.PATH,
+							Description: 'MPEG2 Video',
+							Target: '\\servermediaclip392028cd2320s0d.mxf'
+						},
+						{
+							Type: MOS.IMOSObjectPathType.PROXY_PATH,
+							Description: 'WM9 750Kbps',
+							Target: 'http://server/proxy/clipe.wmv'
+						},
+						{
+							Type: MOS.IMOSObjectPathType.METADATA_PATH,
+							Description: 'MOS Object',
+							Target: 'http://server/proxy/clipe.xml'
+						}
 					],
 					EditorialStart: 0,
 					EditorialDuration: 715,
@@ -661,32 +800,44 @@ let xmlApiData = {
 			]
 		})
 	],
-	'rundownElementAction_insert_item_Action': literal<MOS.IMOSItemAction>({
+	rundownElementAction_insert_item_Action: literal<MOS.IMOSItemAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2'),
 		ItemID: new MOS.MosString128('23')
 	}),
-	'rundownElementAction_insert_item_Items': [
+	rundownElementAction_insert_item_Items: [
 		literal<MOS.IMOSItem>({
 			ID: new MOS.MosString128('27'),
 			Slug: new MOS.MosString128('NHL PKG'),
 			ObjectID: new MOS.MosString128('M19873'),
 			MOSID: 'testmos',
 			Paths: [
-				{ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\media\clip392028cd2320s0d.mxf' },
-				{ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' },
-				{ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' }
+				{
+					Type: MOS.IMOSObjectPathType.PATH,
+					Description: 'MPEG2 Video',
+					Target: '\\servermediaclip392028cd2320s0d.mxf'
+				},
+				{
+					Type: MOS.IMOSObjectPathType.PROXY_PATH,
+					Description: 'WM9 750Kbps',
+					Target: 'http://server/proxy/clipe.wmv'
+				},
+				{
+					Type: MOS.IMOSObjectPathType.METADATA_PATH,
+					Description: 'MOS Object',
+					Target: 'http://server/proxy/clipe.xml'
+				}
 			],
 			EditorialStart: 0,
 			EditorialDuration: 700,
 			UserTimingDuration: 690
 		})
 	],
-	'rundownElementAction_replace_story_Action': literal<MOS.IMOSStoryAction>({
+	rundownElementAction_replace_story_Action: literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_replace_story_Stories': [
+	rundownElementAction_replace_story_Stories: [
 		literal<MOS.IMOSROStory>({
 			ID: new MOS.MosString128('17'),
 			Slug: new MOS.MosString128('Porto Football'),
@@ -700,9 +851,21 @@ let xmlApiData = {
 					MOSID: 'testmos',
 					// mosAbstract?: '',
 					Paths: [
-						{ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\media\clip392028cd2320s0d.mxf' },
-						{ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' },
-						{ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' }
+						{
+							Type: MOS.IMOSObjectPathType.PATH,
+							Description: 'MPEG2 Video',
+							Target: '\\servermediaclip392028cd2320s0d.mxf'
+						},
+						{
+							Type: MOS.IMOSObjectPathType.PROXY_PATH,
+							Description: 'WM9 750Kbps',
+							Target: 'http://server/proxy/clipe.wmv'
+						},
+						{
+							Type: MOS.IMOSObjectPathType.METADATA_PATH,
+							Description: 'MOS Object',
+							Target: 'http://server/proxy/clipe.xml'
+						}
 					],
 					EditorialStart: 0,
 					EditorialDuration: 715,
@@ -719,80 +882,84 @@ let xmlApiData = {
 			]
 		})
 	],
-	'rundownElementAction_replace_item_Action': literal<MOS.IMOSItemAction>({
+	rundownElementAction_replace_item_Action: literal<MOS.IMOSItemAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2'),
 		ItemID: new MOS.MosString128('23')
 	}),
-	'rundownElementAction_replace_item_Items': [
+	rundownElementAction_replace_item_Items: [
 		literal<MOS.IMOSItem>({
 			ID: new MOS.MosString128('27'),
 			Slug: new MOS.MosString128('NHL PKG'),
 			ObjectID: new MOS.MosString128('M19873'),
 			MOSID: 'testmos',
 			Paths: [
-				{ Type: MOS.IMOSObjectPathType.PATH, Description: 'MPEG2 Video', Target: '\\server\media\clip392028cd2320s0d.mxf' },
-				{ Type: MOS.IMOSObjectPathType.PROXY_PATH, Description: 'WM9 750Kbps', Target: 'http://server/proxy/clipe.wmv' },
-				{ Type: MOS.IMOSObjectPathType.METADATA_PATH, Description: 'MOS Object', Target: 'http://server/proxy/clipe.xml' }
+				{
+					Type: MOS.IMOSObjectPathType.PATH,
+					Description: 'MPEG2 Video',
+					Target: '\\servermediaclip392028cd2320s0d.mxf'
+				},
+				{
+					Type: MOS.IMOSObjectPathType.PROXY_PATH,
+					Description: 'WM9 750Kbps',
+					Target: 'http://server/proxy/clipe.wmv'
+				},
+				{
+					Type: MOS.IMOSObjectPathType.METADATA_PATH,
+					Description: 'MOS Object',
+					Target: 'http://server/proxy/clipe.xml'
+				}
 			],
 			EditorialStart: 0,
 			EditorialDuration: 700,
 			UserTimingDuration: 690
 		})
 	],
-	'rundownElementAction_move_story_Action': literal<MOS.IMOSStoryAction>({
+	rundownElementAction_move_story_Action: literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_move_story_Stories': [
-		new MOS.MosString128('7')
-	],
-	'rundownElementAction_move_stories_Action': literal<MOS.IMOSStoryAction>({
+	rundownElementAction_move_story_Stories: [new MOS.MosString128('7')],
+	rundownElementAction_move_stories_Action: literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_move_stories_Stories': [
+	rundownElementAction_move_stories_Stories: [
 		new MOS.MosString128('7'),
 		new MOS.MosString128('12')
 	],
-	'rundownElementAction_move_items_Action': literal<MOS.IMOSItemAction>({
+	rundownElementAction_move_items_Action: literal<MOS.IMOSItemAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2'),
 		ItemID: new MOS.MosString128('12')
 	}),
-	'rundownElementAction_move_items_Items': [
-		new MOS.MosString128('23'),
-		new MOS.MosString128('24')
-	],
-	'rundownElementAction_delete_story_Action': literal<MOS.IMOSROAction>({
+	rundownElementAction_move_items_Items: [new MOS.MosString128('23'), new MOS.MosString128('24')],
+	rundownElementAction_delete_story_Action: literal<MOS.IMOSROAction>({
 		RunningOrderID: new MOS.MosString128('5PM')
 	}),
-	'rundownElementAction_delete_story_Stories': [
-		new MOS.MosString128('3')
-	],
-	'rundownElementAction_delete_items_Action': literal<MOS.IMOSStoryAction>({
+	rundownElementAction_delete_story_Stories: [new MOS.MosString128('3')],
+	rundownElementAction_delete_items_Action: literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_delete_items_Items': [
+	rundownElementAction_delete_items_Items: [
 		new MOS.MosString128('23'),
 		new MOS.MosString128('24')
 	],
-	'rundownElementAction_swap_stories_Action': literal<MOS.IMOSROAction>({
+	rundownElementAction_swap_stories_Action: literal<MOS.IMOSROAction>({
 		RunningOrderID: new MOS.MosString128('5PM')
 	}),
-	'rundownElementAction_swap_stories_StoryId0': new MOS.MosString128('3'),
-	'rundownElementAction_swap_stories_StoryId1': new MOS.MosString128('5'),
-	'rundownElementAction_swap_items_Action': literal<MOS.IMOSStoryAction>({
+	rundownElementAction_swap_stories_StoryId0: new MOS.MosString128('3'),
+	rundownElementAction_swap_stories_StoryId1: new MOS.MosString128('5'),
+	rundownElementAction_swap_items_Action: literal<MOS.IMOSStoryAction>({
 		RunningOrderID: new MOS.MosString128('5PM'),
 		StoryID: new MOS.MosString128('2')
 	}),
-	'rundownElementAction_swap_items_ItemId0': new MOS.MosString128('23'),
-	'rundownElementAction_swap_items_ItemId1': new MOS.MosString128('24')
-}
+	rundownElementAction_swap_items_ItemId0: new MOS.MosString128('23'),
+	rundownElementAction_swap_items_ItemId1: new MOS.MosString128('24')
+};
 
-describe('peripheralDevice: MOS Basic functions', function () {
-
+describe('peripheralDevice: MOS Basic functions', function() {
 	// beforeEach(function () {
 	// 	StubCollections.stub(Rundowns)
 	// 	StubCollections.stub(Segments)
@@ -1059,9 +1226,8 @@ describe('peripheralDevice: MOS Basic functions', function () {
 	// 	expect(getRank(after, null, 0, 2)).to.be.greaterThan(22)
 	// 	expect(getRank(after, null, 1, 2)).to.be.greaterThan(22)
 	// })
-})
-describe('peripheralDevice: MOS API methods', function () {
-
+});
+describe('peripheralDevice: MOS API methods', function() {
 	// it('mosRoCreate', function () {
 	// 	// Test data:
 	// 	let rundown = xmlApiData.rundownCreate
@@ -1568,4 +1734,4 @@ describe('peripheralDevice: MOS API methods', function () {
 	// 	expect(Rundowns.findOne(dbRundown._id).airStatus).to.equal(status1.Status)
 	//
 	// })
-})
+});

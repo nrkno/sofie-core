@@ -1,14 +1,25 @@
-import { addMigrationSteps } from './databaseMigration'
-import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import * as _ from 'underscore'
-
+import { addMigrationSteps } from './databaseMigration';
+import { setExpectedVersion } from './lib';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { Blueprints } from '../../lib/collections/Blueprints';
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
+import * as _ from 'underscore';
 
 // 1.5.0 (Release 17)
 addMigrationSteps('1.5.0', [
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.4.0'),
+	setExpectedVersion(
+		'expectedVersion.playoutDevice',
+		PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		'_process',
+		'^1.5.0'
+	),
+	setExpectedVersion(
+		'expectedVersion.mosDevice',
+		PeripheralDeviceAPI.DeviceType.MOS,
+		'_process',
+		'^1.1.0'
+	),
 
 	{
 		id: 'SourceLayers remove unlimited & onPGMClean',
@@ -17,34 +28,34 @@ addMigrationSteps('1.5.0', [
 			let showStyles = ShowStyleBases.find({
 				$or: [
 					{ 'sourceLayers.unlimited': { $exists: true } },
-					{ 'sourceLayers.onPGMClean': { $exists: true } },
+					{ 'sourceLayers.onPGMClean': { $exists: true } }
 				]
-			}).count()
+			}).count();
 			if (showStyles) {
-				return 'SourceLayers unlimited or onPGMClean is defined'
+				return 'SourceLayers unlimited or onPGMClean is defined';
 			}
-			return false
+			return false;
 		},
 		migrate: () => {
 			const showStyles = ShowStyleBases.find({
 				$or: [
 					{ 'sourceLayers.unlimited': { $exists: true } },
-					{ 'sourceLayers.onPGMClean': { $exists: true } },
+					{ 'sourceLayers.onPGMClean': { $exists: true } }
 				]
-			}).fetch()
+			}).fetch();
 
-			_.each(showStyles, show => {
-				_.each(show.sourceLayers, layer => {
-					delete layer['unlimited']
-					delete layer['onPGMClean']
-				})
+			_.each(showStyles, (show) => {
+				_.each(show.sourceLayers, (layer) => {
+					delete layer['unlimited'];
+					delete layer['onPGMClean'];
+				});
 
 				ShowStyleBases.update(show._id, {
 					$set: {
 						sourceLayers: show.sourceLayers
 					}
-				})
-			})
+				});
+			});
 		}
 	},
 
@@ -54,20 +65,23 @@ addMigrationSteps('1.5.0', [
 		validate: () => {
 			let blueprints = Blueprints.find({
 				blueprintId: { $exists: false }
-			}).count()
+			}).count();
 			if (blueprints) {
-				return 'Blueprints.blueprintId is "undefined"'
+				return 'Blueprints.blueprintId is "undefined"';
 			}
-			return false
+			return false;
 		},
 		migrate: () => {
-			Blueprints.update({
-				blueprintId: { $exists: false }
-			}, {
-				$set: {
-					blueprintId: ''
+			Blueprints.update(
+				{
+					blueprintId: { $exists: false }
+				},
+				{
+					$set: {
+						blueprintId: ''
+					}
 				}
-			})
+			);
 		}
-	},
-])
+	}
+]);
