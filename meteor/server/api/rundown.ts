@@ -128,10 +128,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 			peripheralDeviceId: '',
 
-			currentPartId: null,
-			nextPartId: null,
-			previousPartId: null
-		}), [ 'currentPartId', 'nextPartId', 'previousPartId', 'created' ])) as DBRundownPlaylist
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null
+		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId', 'created' ])) as DBRundownPlaylist
 
 		if (peripheralDevice) {
 			playlist.peripheralDeviceId = peripheralDevice._id
@@ -171,10 +171,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 			peripheralDeviceId: '',
 
-			currentPartId: null,
-			nextPartId: null,
-			previousPartId: null
-		}), [ 'currentPartId', 'nextPartId', 'previousPartId' ])) as DBRundownPlaylist
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null
+		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId' ])) as DBRundownPlaylist
 
 		if (peripheralDevice) {
 			playlist.peripheralDeviceId = peripheralDevice._id

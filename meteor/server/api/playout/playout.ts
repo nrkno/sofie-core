@@ -307,6 +307,8 @@ export namespace ServerPlayoutAPI {
 			let previousPartInstance = rundownData.currentPartInstance || null
 			let takePartInstance = rundownData.nextPartInstance
 			if (!takePartInstance) throw new Meteor.Error(404, 'takePart not found!')
+			const takeRundown: Rundown | undefined = rundownData.rundownsMap[takePartInstance.rundownId]
+			if (!takeRundown) throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
 			const nextPart = selectNextPart(takePartInstance, rundownData.parts)
 
@@ -759,23 +761,23 @@ export namespace ServerPlayoutAPI {
 
 			// logger.info('nowInPart', nowInPart)
 			// logger.info('filteredPieces', filteredPieces)
-			let getNextPiece = (part: Part, undo?: boolean) => {
+			let getNextPiece = (partInstance: PartInstance, undo?: boolean) => {
 				// Find next piece to disable
 
 				let nowInPart = 0
 				if (
-					part.startedPlayback &&
-					part.timings &&
-					part.timings.startedPlayback
+					partInstance.part.startedPlayback &&
+					partInstance.part.timings &&
+					partInstance.part.timings.startedPlayback
 				) {
-					let lastStartedPlayback = _.last(part.timings.startedPlayback)
+					let lastStartedPlayback = _.last(partInstance.part.timings.startedPlayback)
 
 					if (lastStartedPlayback) {
 						nowInPart = getCurrentTime() - lastStartedPlayback
 					}
 				}
 
-				let pieces: Array<PieceResolved> = getOrderedPiece(part)
+				let pieces: Array<PieceResolved> = getOrderedPiece(partInstance)
 
 				let findLast: boolean = !!undo
 
@@ -821,7 +823,7 @@ export namespace ServerPlayoutAPI {
 			]
 			if (undo) partInstances.reverse()
 
-			let nextPieceInstance: PieceResolved | undefined
+			let nextPieceInstance: PieceInstance | undefined
 
 			_.each(partInstances, (partInstance) => {
 				if (partInstance && !nextPieceInstance) {

@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
+import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
@@ -140,6 +141,8 @@ export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 	const rundowns = rundownPlaylist.getRundowns()
 	const rundownIDs = rundowns.map(i => i._id)
 	const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
+
+	// TODO-ASAP do these resets for instances too
 
 	Pieces.remove({
 		rundownId: {
