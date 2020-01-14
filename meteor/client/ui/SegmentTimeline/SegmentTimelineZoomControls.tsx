@@ -1,6 +1,6 @@
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset } from '../../utils/positions'
 

@@ -10,7 +10,7 @@ import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -52,7 +52,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			removeSnapshots: false
 		}
 	}
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.snapshots, {
 			created: {
 				$gt: getCurrentTime() - 30 * 24 * 3600 * 1000 // last 30 days

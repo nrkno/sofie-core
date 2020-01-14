@@ -1,6 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../logging'
-import { write } from 'fs-extra'
 import { stat } from 'fs'
 import { ServiceMessage, Criticality } from '../../../lib/collections/CoreSystem'
 import { writeMessage } from './serviceMessagesApi'

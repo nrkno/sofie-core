@@ -66,7 +66,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 })(class extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, piece: Piece }> {
 	_pieceSubscription: Meteor.SubscriptionHandle
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.piecesSimple, {
 			rundownId: this.props.rundownId
 		})
@@ -129,7 +129,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 })(class extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, piece: Piece }> {
 	_pieceSubscription: Meteor.SubscriptionHandle
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.piecesSimple, {
 			rundownId: this.props.rundownId
 		})

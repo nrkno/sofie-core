@@ -1,0 +1,44 @@
+/**
+ * This file is the entry-point for Meteor's server side
+ */
+
+import '../lib/main'
+
+// Import all files that register Meteor methods:
+import './api/blueprints/api'
+import './api/client'
+import './api/expectedMediaItems'
+import './api/ExternalMessageQueue'
+import './api/ingest/api'
+import './api/ingest/debug'
+import './api/ingest/mosDevice/api'
+import './api/integration/media-scanner'
+import './api/integration/mediaWorkFlows'
+import './api/logger'
+import './api/manualPlayout'
+import './api/peripheralDevice'
+import './api/playout/api'
+import './api/rundown'
+import './api/rundownLayouts'
+import './api/showStyles'
+import './api/snapshot'
+import './api/studios'
+import './api/systemTime/api'
+import './api/testTools'
+import './api/userActions'
+import './methods'
+import './migration/api'
+import './migration/databaseMigration'
+import './mockData/rundownData'
+import './performanceMonitor'
+import './systemStatus/api'
+
+// import all files that calls Meteor.startup
+import './api/rest/rest'
+import './api/systemTime/systemTime'
+import './Connections'
+import './coreSystem'
+import './cronjobs'
+
+import './publications/_publications'
+import './security/_security'

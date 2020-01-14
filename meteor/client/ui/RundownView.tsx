@@ -4,16 +4,16 @@ import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, VTEditableParameters, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
-import * as CoreIcon from '@nrk/core-icons/jsx'
+import CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -126,7 +126,7 @@ interface ITimingWarningState {
 	plannedStartCloseShow?: boolean
 }
 
-const WarningDisplay = translate()(timer(5000)(
+const WarningDisplay = withTranslation()(timer(5000)(
 	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
 		private REHEARSAL_MARGIN = 1 * 60 * 1000
 
@@ -229,10 +229,10 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_LOG_ERROR	= 'backspace'
 }
 
-const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
+const TimingDisplay = withTranslation()(withTiming<ITimingDisplayProps, {}>()(
 class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
-		const { t } = this.props
+			const { t } = this.props
 
 		if (!this.props.rundown) return null
 
@@ -341,7 +341,7 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
-const RundownHeader = translate()(class extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
+const RundownHeader = withTranslation()(class extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 	bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any
@@ -1974,7 +1974,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 }
 )
 
-export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
+export function handleRundownReloadResponse (t: i18next.TFunction, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
 	let hasDoneSomething = false
 	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
 		hasDoneSomething = true

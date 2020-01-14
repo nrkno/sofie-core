@@ -8,7 +8,7 @@ import { Part, Parts } from '../../../lib/collections/Parts'
 import { getCurrentTime, literal } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 
 export interface TimeEventArgs {

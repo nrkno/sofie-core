@@ -1,8 +1,8 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import {
 	Studio,
 	Studios,
@@ -16,14 +16,14 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
 import { LookaheadMode, BlueprintManifestType, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
@@ -56,7 +56,7 @@ interface IStudioDevicesProps {
 interface IStudioDevicesSettingsState {
 	showAvailableDevices: boolean
 }
-const StudioDevices = translate()(class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, IStudioDevicesSettingsState> {
+const StudioDevices = withTranslation()(class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, IStudioDevicesSettingsState> {
 	constructor (props: Translated<IStudioDevicesProps>) {
 		super(props)
 
@@ -189,7 +189,7 @@ interface IStudioMappingsState {
 	editedMappings: Array<string>
 }
 
-const StudioMappings = translate()(class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
+const StudioMappings = withTranslation()(class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
 	constructor (props: Translated<IStudioMappingsProps>) {
 		super(props)
 
@@ -732,7 +732,7 @@ interface ITestToolsRecordingsSettingsProps {
 interface ITestToolsRecordingsSettingsState {
 }
 
-const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSettings extends React.Component<Translated<ITestToolsRecordingsSettingsProps>, ITestToolsRecordingsSettingsState> {
+const TestToolsRecordingsSettings = withTranslation()(class TestToolsRecordingsSettings extends React.Component<Translated<ITestToolsRecordingsSettingsProps>, ITestToolsRecordingsSettingsState> {
 	render () {
 		const { t } = this.props
 		return (

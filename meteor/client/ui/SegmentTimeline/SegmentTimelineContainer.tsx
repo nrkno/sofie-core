@@ -212,7 +212,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.isVisible = false
 	}
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
 		})

@@ -3,7 +3,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
 import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'

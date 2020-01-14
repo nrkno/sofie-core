@@ -9,7 +9,7 @@ import {
 import { RundownAPI } from '../../../lib/api/rundown'
 import { SourceLayerType, PieceLifespan, PieceTransitionType } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
 import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
@@ -22,7 +22,7 @@ import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, Position } from '../../utils/positions'
 
@@ -64,7 +64,7 @@ interface ISourceLayerItemState {
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
 }
-export const SourceLayerItem = translate()(class extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
+export const SourceLayerItem = withTranslation()(class extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 

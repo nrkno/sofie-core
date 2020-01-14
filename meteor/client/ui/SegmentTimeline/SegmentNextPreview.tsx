@@ -1,8 +1,8 @@
 import * as React from 'react'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
 import { Rundown } from '../../../lib/collections/Rundowns'
 
@@ -30,7 +30,7 @@ interface IProps {
 	isCollapsed?: boolean
 }
 
-export const SegmentNextPreview = translate()(class extends React.Component<Translated<IProps>> {
+export const SegmentNextPreview = withTranslation()(class extends React.Component<Translated<IProps>> {
 	renderSourceLayers (outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 		if (layers) {
 			return layers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank).map((layer, id) => {

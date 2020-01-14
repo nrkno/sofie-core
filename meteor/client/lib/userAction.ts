@@ -10,7 +10,7 @@ import { Meteor } from 'meteor/meteor'
 import { UserActionAPI } from '../../lib/api/userActions'
 
 export function doUserAction (
-	t: i18next.TranslationFunction<any, object, string>,
+	t: i18next.TFunction,
 	event: any,
 	method: UserActionAPI.methods,
 	params: Array<any>,
@@ -80,7 +80,7 @@ export function doUserAction (
 	})
 }
 function userActionMethodName (
-	t: i18next.TranslationFunction<any, object, string>,
+	t: i18next.TFunction,
 	method: UserActionAPI.methods
 ) {
 	switch (method) {

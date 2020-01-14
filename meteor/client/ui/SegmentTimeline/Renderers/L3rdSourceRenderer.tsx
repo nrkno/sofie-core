@@ -10,7 +10,7 @@ import { PieceLifespan, NoraContent } from 'tv-automation-sofie-blueprints-integ
 import { FloatingInspector } from '../../FloatingInspector'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { NoraPreviewController } from './NoraPreviewRenderer'
 
 type KeyValue = { key: string, value: string }
@@ -18,7 +18,7 @@ interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 }
-export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const L3rdSourceRenderer = withTranslation()(class extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 
@@ -41,7 +41,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate (prevProps: Readonly<IProps & WithTranslation>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}

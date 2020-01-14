@@ -1,13 +1,13 @@
-import * as i18n from 'i18next'
-import * as Backend from 'i18next-xhr-backend'
-import * as LanguageDetector from 'i18next-browser-languagedetector'
-import { reactI18nextModule } from 'react-i18next'
+import i18n, { TFunction } from 'i18next'
+import Backend from 'i18next-xhr-backend'
+import LanguageDetector from 'i18next-browser-languagedetector'
+import { initReactI18next  } from 'react-i18next'
 
-let i18nTranslator: i18n.TranslationFunction<any, object, string>
-const i18nInstance = i18n
+let i18nTranslator: TFunction
+const i18nInstancePromise = i18n
 	.use(Backend)
 	.use(LanguageDetector)
-	.use(reactI18nextModule)
+	.use(initReactI18next)
 	.init({
 		fallbackLng: {
 			'nn': ['nb', 'en'],
@@ -33,7 +33,8 @@ const i18nInstance = i18n
 		},
 
 		react: {
-			wait: true
+			wait: true,
+			useSuspense: false
 		}
 	}, (err, t) => {
 		if (err) {
@@ -43,12 +44,12 @@ const i18nInstance = i18n
 		}
 	})
 
-export { i18nInstance, i18nTranslator }
+export { i18nInstancePromise, i18nTranslator }
 
 /*
  Notes:
  * How to use i18n in React:
-	export const MyReactClass = translate()(class MyReactClass extends React.Component<IProps & InjectedTranslateProps, IState> {
+	export const MyReactClass = withTranslation()(class MyReactClass extends React.Component<IProps & WithTranslation, IState> {
 		render () {
 			const {t} = this.props
 			t('My name is {{name}}', {name: 'foobar'})

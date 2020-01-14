@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
@@ -241,7 +241,7 @@ interface IState {
 
 const LIVE_LINE_TIME_PADDING = 150
 
-export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props: IProps) => {
+export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>((props: IProps) => {
 	return {
 		isHighResolution: false,
 		filter: (durations: RundownTiming.RundownTimingContext) => {

@@ -109,8 +109,8 @@ export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLaye
 	return undefined
 }
 
-export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
-	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TFunction) {
+	t = t || ((s: string, options?: string | undefined) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
@@ -183,7 +183,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 								if (timebase) {
 
 									// check for black/freeze frames
-									const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
+									const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TFunction) => {
 										if (arr.length === 1) {
 											const frames = Math.round(arr[0].duration * 1000 / timebase)
 											if (arr[0].start === 0) {

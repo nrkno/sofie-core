@@ -1,11 +1,11 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { translate } from 'react-i18next'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
@@ -17,7 +17,7 @@ import {
 } from './IHttpSendDeviceSettingsComponentProps'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
-export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSendDeviceSettingsComponentProps>, IHttpSendDeviceSettingsComponentState> {
+export const HttpSendDeviceSettingsComponent = withTranslation()(class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSendDeviceSettingsComponentProps>, IHttpSendDeviceSettingsComponentState> {
 	constructor (props: Translated<IHttpSendDeviceSettingsComponentProps>) {
 		super(props)
 		this.state = {

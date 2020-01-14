@@ -1,20 +1,20 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Segment } from '../../../lib/collections/Segments'
 import { Part } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
 import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { RundownViewKbdShortcuts } from '../RundownView'
 
@@ -49,7 +49,7 @@ interface IListViewStateHeader {
 	}
 }
 
-const AdLibListView = translate()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
+const AdLibListView = withTranslation()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 	table: HTMLTableElement
 
 	constructor (props: Translated<IListViewPropsHeader>) {
@@ -172,7 +172,7 @@ interface IToolbarStateHader {
 	searchInputValue: string
 }
 
-const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
+const AdLibPanelToolbar = withTranslation()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
 	constructor (props: Translated<IToolbarPropsHeader>) {

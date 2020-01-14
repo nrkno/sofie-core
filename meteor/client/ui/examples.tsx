@@ -1,7 +1,7 @@
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
 import { withTiming, WithTiming } from './RundownView/RundownTiming'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
 
@@ -44,7 +44,7 @@ interface TranslatedSimpleComponentProps {
 interface TranslatedSimpleComponentState {
 	myState0: string
 }
-const TranslatedSimpleComponent = translate()(
+const TranslatedSimpleComponent = withTranslation()(
 	class TranslatedSimpleComponent extends React.Component<Translated<TranslatedSimpleComponentProps>, TranslatedSimpleComponentState> {
 		constructor (props: Translated<TranslatedSimpleComponentProps>) {
 			super(props)

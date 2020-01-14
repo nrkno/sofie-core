@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Random } from 'meteor/random'
@@ -95,7 +95,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.rundowns, _.extend({
 			active: true
 		}, this.props.studioId ? {
@@ -409,7 +409,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	componentWillUnmount () {
 		super.componentWillUnmount()
 	}
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 
 		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
 		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })

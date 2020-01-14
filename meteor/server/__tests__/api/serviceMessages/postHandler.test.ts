@@ -4,6 +4,7 @@ import { Criticality, ServiceMessage } from '../../../../lib/collections/CoreSys
 import { IncomingMessage, ServerResponse } from 'http'
 import { Socket } from 'net'
 import * as serviceMessagesApi from '../../../api/serviceMessages/serviceMessagesApi'
+import { isNumber } from 'util'
 
 jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	return {

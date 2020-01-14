@@ -1,7 +1,7 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -55,8 +55,8 @@ const Timediff = class extends React.Component<{ time: number }> {
 	}
 }
 
-const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverviewState>()(
-	withTracker<WithTiming<RundownOverviewProps & InjectedTranslateProps>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
+const ClockComponent = withTranslation()(withTiming<RundownOverviewProps & WithTranslation, RundownOverviewState>()(
+	withTracker<WithTiming<RundownOverviewProps & WithTranslation>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
 
 		let rundown: Rundown | undefined
 		if (props.rundownId) rundown = Rundowns.findOne(props.rundownId)
@@ -92,8 +92,8 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			rundown: rundown
 		}
 	})(
-		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
-			componentWillMount () {
+		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>, RundownOverviewState> {
+			UNSAFE_componentWillMount () {
 				this.subscribe(PubSub.rundowns, {
 					_id: this.props.rundownId
 				})
@@ -216,7 +216,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			}
 		})))
 
-interface IPropsHeader extends InjectedTranslateProps {
+interface IPropsHeader extends WithTranslation {
 	key: string
 	rundown: Rundown
 	segments: Array<Segment>
@@ -231,7 +231,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 interface IStateHeader {
 }
 
-export const ClockView = translate()(withTracker(function (props: IPropsHeader) {
+export const ClockView = withTranslation()(withTracker(function (props: IPropsHeader) {
 	let studioId = objectPathGet(props, 'match.params.studioId')
 	let rundown = (
 		Rundowns.findOne({
