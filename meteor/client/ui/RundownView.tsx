@@ -1167,7 +1167,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 				key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
 				down: this.onShowCurrentSegmentFullOn,
 				up: this.onShowCurrentSegmentFullOff,
-				label: t('Show whole current segment'),
+				label: t('Show entire current segment'),
 				global: false
 			})
 		}
