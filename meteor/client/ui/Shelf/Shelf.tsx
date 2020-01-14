@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
 
 import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
@@ -489,6 +489,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	}
 }
 
-export const Shelf = translate(undefined, {
+export const Shelf = withTranslation(undefined, {
 	withRef: true
 })(ShelfBase)

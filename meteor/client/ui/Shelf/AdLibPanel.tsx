@@ -1,20 +1,20 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
 import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -120,7 +120,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 	}
 }
 
-const AdLibListView = translate()(class AdLibListView extends React.Component<
+const AdLibListView = withTranslation()(class AdLibListView extends React.Component<
 	Translated<IListViewPropsHeader>, IListViewStateHeader
 > {
 	table: HTMLTableElement
@@ -297,7 +297,7 @@ interface IToolbarStateHader {
 	searchInputValue: string
 }
 
-export const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
+export const AdLibPanelToolbar = withTranslation()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
 	constructor (props: Translated<IToolbarPropsHeader>) {
@@ -420,7 +420,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	const segments = props.playlist.getSegments()
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
-	
+
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun((
 		currentPartId: PartId,
 		nextPartId: PartId,
@@ -453,7 +453,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			})
 
 			uiSegmentMap.set(segmentUi._id, segmentUi)
-			
+
 			return segmentUi
 		})
 
@@ -672,7 +672,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 	}
 
-	componentDidMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.rundowns, {
 			playlistId: this.props.playlist._id
 		})

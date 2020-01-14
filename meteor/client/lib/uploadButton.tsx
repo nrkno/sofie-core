@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
 interface IProps {
 	className?: string

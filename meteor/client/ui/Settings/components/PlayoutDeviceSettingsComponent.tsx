@@ -1,13 +1,13 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-const Tooltip = require('rc-tooltip')
-import { translate } from 'react-i18next'
+import Tooltip from 'rc-tooltip'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
@@ -21,7 +21,7 @@ import { getHelpMode } from '../../../lib/localStorage'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { protectString, unprotectString } from '../../../../lib/lib'
 
-export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IPlayoutDeviceSettingsComponentState> {
+export const PlayoutDeviceSettingsComponent = withTranslation()(class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IPlayoutDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
 		this.state = {

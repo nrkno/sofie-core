@@ -1,11 +1,11 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faQuestion from '@fortawesome/fontawesome-free-solid/faQuestion'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { getHelpMode } from '../lib/localStorage'
 
 interface IProps {
@@ -78,7 +78,7 @@ export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 	}
 }
 
-export const DocumentationLink = translate()(class DocumentationLink extends React.Component<InjectedTranslateProps> {
+export const DocumentationLink = withTranslation()(class DocumentationLink extends React.Component<WithTranslation> {
 	render () {
 		const { t } = this.props
 		return (

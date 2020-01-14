@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as Escape from 'react-escape'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -21,7 +21,7 @@ interface IProps {
 interface IState {
 }
 
-export const SegmentContextMenu = translate()(class SegmentContextMenu extends React.Component<Translated<IProps>, IState> {
+export const SegmentContextMenu = withTranslation()(class SegmentContextMenu extends React.Component<Translated<IProps>, IState> {
 	constructor (props: Translated<IProps>) {
 		super(props)
 	}

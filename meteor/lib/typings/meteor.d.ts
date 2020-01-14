@@ -85,10 +85,11 @@ export interface UpdateOptions {
 export interface UpsertOptions {
 	multi?: boolean
 }
-
+/** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
-export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
+/** Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.  */
 export type MongoQuery<DBInterface> = Mongo.Query<DBInterface>
+export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
 export interface Mongocursor<DBInterface extends { _id: ProtectedString<any>}> extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
 	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle;
     observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): Meteor.LiveQueryHandle;

@@ -9,7 +9,7 @@ import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/Use
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
@@ -17,7 +17,7 @@ interface IUserActionsListProps {
 	renderButtons?: (item: UserActionsLogItem) => React.Component
 }
 
-export const UserActionsList = translate()(class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
+export const UserActionsList = withTranslation()(class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
 	renderMessageHead () {
 		const { t } = this.props
 		return (
@@ -119,7 +119,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 			dateTo: moment().add(1, 'days').startOf('day').valueOf()
 		}
 	}
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 		this.updateSubscription()
 	}

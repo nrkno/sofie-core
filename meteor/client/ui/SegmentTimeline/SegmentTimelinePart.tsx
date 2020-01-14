@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -341,7 +341,7 @@ const CARRIAGE_RETURN_ICON =
 		</svg>
 	</div>
 
-export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props: IProps) => {
+export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>((props: IProps) => {
 	return {
 		isHighResolution: false,
 		filter: (durations: RundownTiming.RundownTimingContext) => {

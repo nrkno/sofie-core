@@ -1,8 +1,8 @@
 import * as objectPath from 'object-path'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import {
 	Studio,
 	Studios
@@ -10,7 +10,7 @@ import {
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'

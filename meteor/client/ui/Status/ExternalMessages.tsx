@@ -5,12 +5,12 @@ import { getCurrentTime, Time, unprotectString } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
@@ -38,7 +38,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			studioId: undefined,
 		}
 	}
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.studios, {})
 	}
 	onClickStudio = (studio) => {
@@ -129,7 +129,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		}
 	}
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 		this.updateSubscription()
 	}

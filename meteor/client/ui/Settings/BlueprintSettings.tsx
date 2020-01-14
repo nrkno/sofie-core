@@ -16,7 +16,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { fetchFrom } from '../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'

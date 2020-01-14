@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
-import * as ClassNames from 'classnames'
-const Tooltip = require('rc-tooltip')
+import ClassNames from 'classnames'
+import Tooltip from 'rc-tooltip'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -13,11 +13,11 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
 import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
@@ -233,7 +233,7 @@ interface IStudioRuntimeArgumentsSettingsState {
 	editedItems: Array<string>
 }
 
-const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
+const StudioRuntimeArgumentsSettings = withTranslation()(class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
 	constructor (props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
 		super(props)
 
@@ -413,7 +413,7 @@ interface IStudioSourcesSettingsState {
 	editedSources: Array<string>
 }
 
-const SourceLayerSettings = translate()(class SourceLayerSettings extends React.Component<Translated<IStudioSourcesSettingsProps>, IStudioSourcesSettingsState> {
+const SourceLayerSettings = withTranslation()(class SourceLayerSettings extends React.Component<Translated<IStudioSourcesSettingsProps>, IStudioSourcesSettingsState> {
 	constructor (props: Translated<IStudioSourcesSettingsProps>) {
 		super(props)
 
@@ -840,7 +840,7 @@ interface IOutputSettingsState {
 	editedOutputs: Array<string>
 }
 
-const OutputSettings = translate()(class OutputSettings extends React.Component<Translated<IOutputSettingsProps>, IOutputSettingsState> {
+const OutputSettings = withTranslation()(class OutputSettings extends React.Component<Translated<IOutputSettingsProps>, IOutputSettingsState> {
 	constructor (props: Translated<IOutputSettingsProps>) {
 		super(props)
 
@@ -1096,7 +1096,7 @@ interface IHotkeyLegendSettingsState {
 	editedItems: Array<string>
 }
 
-const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends React.Component<Translated<IHotkeyLegendSettingsProps>, IHotkeyLegendSettingsState> {
+const HotkeyLegendSettings = withTranslation()(class HotkeyLegendSettings extends React.Component<Translated<IHotkeyLegendSettingsProps>, IHotkeyLegendSettingsState> {
 	constructor (props: Translated<IHotkeyLegendSettingsProps>) {
 		super(props)
 
@@ -1247,7 +1247,7 @@ interface IShowStyleVariantsProps {
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
 }
-const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings extends React.Component<Translated<IShowStyleVariantsProps>, IShowStyleVariantsSettingsState> {
+const ShowStyleVariantsSettings = withTranslation()(class ShowStyleVariantsSettings extends React.Component<Translated<IShowStyleVariantsProps>, IShowStyleVariantsSettingsState> {
 	constructor (props: Translated<IShowStyleVariantsProps>) {
 		super(props)
 

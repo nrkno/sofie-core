@@ -9,7 +9,7 @@ import { getCurrentTime, literal, normalizeArray, unprotectString } from '../../
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
@@ -446,7 +446,7 @@ export const RundownTimingProvider =
 
 						// remaining is the sum of unplayed lines + whatever is left of the current segment
 						// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
-						// if false (default), past unplayed parts will not count towards remaining time 
+						// if false (default), past unplayed parts will not count towards remaining time
 						if (
 							!partInstance.part.startedPlayback &&
 							!partInstance.part.floated &&

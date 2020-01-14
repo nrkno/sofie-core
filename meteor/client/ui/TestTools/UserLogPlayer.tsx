@@ -57,7 +57,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 			dateTo: moment().add(1, 'days').startOf('day').valueOf()
 		}
 	}
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 		this.updateSubscription()
 	}
@@ -247,7 +247,7 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 		rundownPlaylists: rundownPlaylistMap
 	}
 })(class RundownSelection extends MeteorReactComponent<Translated<IRundownSelectProps & IRundownSelectTrackedProps>, IRundownSelectState> {
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 
 		this.subscribe(PubSub.rundownPlaylists, {})

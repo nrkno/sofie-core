@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -25,7 +25,7 @@ import SystemMessages from './Settings/SystemMessages'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
@@ -367,7 +367,7 @@ interface ISettingsProps {
 	match?: any
 }
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
 		this.subscribe(PubSub.studios, {})
@@ -412,4 +412,4 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	}
 }
 
-export default translate()(Settings)
+export default withTranslation()(Settings)

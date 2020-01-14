@@ -5,7 +5,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import * as _ from 'underscore'
 
@@ -114,9 +114,9 @@ class MeteorDataManager {
 					// for the lifetime of the component is that Tracker only
 					// re-runs autoruns at flush time, while we need to be able to
 					// re-call getMeteorData synchronously whenever we want, e.g.
-					// from componentWillUpdate.
+					// from UNSAFE_componentWillUpdate.
 					c.stop()
-					// Calling forceUpdate() triggers componentWillUpdate which
+					// Calling forceUpdate() triggers UNSAFE_componentWillUpdate which
 					// recalculates getMeteorData() and re-renders the component.
 
 					// TODO(performance): optionally queue tracker updates for a while
@@ -175,14 +175,14 @@ class MeteorDataManager {
 	}
 }
 export const ReactMeteorData = {
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this, this._queueTrackerUpdates || false)
 		const newData = this._meteorDataManager.calculateData()
 		this._meteorDataManager.updateData(newData)
 	},
 
-	componentWillUpdate (nextProps, nextState) {
+	UNSAFE_componentWillUpdate (nextProps, nextState) {
 		const saveProps = this.props
 		const saveState = this.state
 		let newData
@@ -191,7 +191,7 @@ export const ReactMeteorData = {
 			// so that they are seen by getMeteorData!
 			// This is a simulation of how the proposed Observe API
 			// for React will work, which calls observe() after
-			// componentWillUpdate and after props and state are
+			// UNSAFE_componentWillUpdate and after props and state are
 			// updated, but before render() is called.
 			// See https://github.com/facebook/react/issues/3398.
 			this.props = nextProps
@@ -277,10 +277,11 @@ export function translateWithTracker<IProps, IState, TrackedProps> (
 	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
 	) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		return translate()(withTracker(autorunFunction, checkUpdate)(WrappedComponent))
+		const inner = withTracker(autorunFunction, checkUpdate)(WrappedComponent) as new (props: IProps & WithTranslation) => React.Component<IProps & WithTranslation, IState, any>
+		return withTranslation()(inner)
 	}
 }
-export type Translated<T> = T & InjectedTranslateProps
+export type Translated<T> = T & WithTranslation
 
 // function withTracker<IProps, IState, TrackedProps>
 // 	(

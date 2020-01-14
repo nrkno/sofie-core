@@ -1,12 +1,12 @@
 import * as React from 'react'
-import * as CoreIcons from '@nrk/core-icons/jsx'
+import CoreIcons from '@nrk/core-icons/jsx'
 import * as Escape from 'react-escape'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { mousetrapHelper } from './mousetrapHelper'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import {
 	EditAttribute,
@@ -357,7 +357,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		} else return null
 	}
 }
-export const ModalDialogGlobalContainer = translate()(ModalDialogGlobalContainer0)
+export const ModalDialogGlobalContainer = withTranslation()(ModalDialogGlobalContainer0)
 let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
 /**
  * Display a ModalDialog, callback on user input

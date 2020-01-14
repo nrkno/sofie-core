@@ -998,7 +998,7 @@ export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)
-				} else if (val1 > val2) { 
+				} else if (val1 > val2) {
 					return 1
 				} else {
 					return -1

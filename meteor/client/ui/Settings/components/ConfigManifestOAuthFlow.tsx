@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import {
 	PeripheralDevice,
 	SpreadsheetDevice,
@@ -16,7 +16,7 @@ interface IConfigManifestOAuthFlowComponentState {
 interface IConfigManifestOAuthFlowComponentProps {
 	device: PeripheralDevice
 }
-export const ConfigManifestOAuthFlowComponent = translate()(class ConfigManifestOAuthFlowComponent extends React.Component<Translated<IConfigManifestOAuthFlowComponentProps>, IConfigManifestOAuthFlowComponentState> {
+export const ConfigManifestOAuthFlowComponent = withTranslation()(class ConfigManifestOAuthFlowComponent extends React.Component<Translated<IConfigManifestOAuthFlowComponentProps>, IConfigManifestOAuthFlowComponentState> {
 	constructor (props: Translated<IConfigManifestOAuthFlowComponentProps>) {
 		super(props)
 		this.state = {}

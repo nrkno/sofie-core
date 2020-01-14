@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'

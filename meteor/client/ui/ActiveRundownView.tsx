@@ -57,7 +57,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		}
 	}
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		this.subscribe(PubSub.rundownPlaylists, _.extend({
 			active: true
 		}, this.props.studioId ? {

@@ -1,8 +1,8 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { ContextMenuTrigger } from 'react-contextmenu'
 
@@ -776,4 +776,4 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 }
 
-export const SegmentTimeline = translate()(SegmentTimelineClass)
+export const SegmentTimeline = withTranslation()(SegmentTimelineClass)

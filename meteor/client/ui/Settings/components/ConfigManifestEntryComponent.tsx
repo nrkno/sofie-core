@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -13,7 +13,7 @@ export interface IConfigManifestEntryComponentProps {
 	prefix?: string
 	hideLabel?: boolean
 }
-export const ConfigManifestEntryComponent = translate()(class ConfigManifestEntryComponent extends React.Component<Translated<IConfigManifestEntryComponentProps>, {}> {
+export const ConfigManifestEntryComponent = withTranslation()(class ConfigManifestEntryComponent extends React.Component<Translated<IConfigManifestEntryComponentProps>, {}> {
 
 	renderEditAttribute (configField: ConfigManifestEntry, obj: object, prefix?: string) {
 		let attribute = prefix + configField.id

@@ -9,10 +9,10 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faEye from '@fortawesome/fontawesome-free-solid/faEye'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -20,7 +20,7 @@ import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/cl
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
@@ -38,7 +38,7 @@ interface IDeviceItemProps {
 interface IDeviceItemState {
 }
 
-export function statusCodeToString (t: i18next.TranslationFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
+export function statusCodeToString (t: i18next.TFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
 	return (
 		statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN ?
 			t('Unknown') :
@@ -56,7 +56,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-export const DeviceItem = i18next.translate()(class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = i18next.withTranslation()(class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -303,7 +303,7 @@ interface ICoreItemState {
 
 const PackageInfo = require('../../../package.json')
 
-export const CoreItem = i18next.translate()(class CoreItem extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
+export const CoreItem = i18next.withTranslation()(class CoreItem extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
 	constructor (props: Translated<ICoreItemProps>) {
 		super(props)
 		this.state = {}
@@ -536,8 +536,8 @@ interface PeripheralDeviceStatusProps {
 interface PeripheralDeviceStatusState {
 
 }
-export const PeripheralDeviceStatus = i18next.translate()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & i18next.InjectedTranslateProps, PeripheralDeviceStatusState> {
-	constructor (props: PeripheralDeviceStatusProps & i18next.InjectedTranslateProps) {
+export const PeripheralDeviceStatus = i18next.withTranslation()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & i18next.WithTranslation, PeripheralDeviceStatusState> {
+	constructor (props: PeripheralDeviceStatusProps & i18next.WithTranslation) {
 		super(props)
 
 	}

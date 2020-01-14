@@ -1,12 +1,12 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { translate } from 'react-i18next'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
@@ -21,7 +21,7 @@ interface IMosDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedDevices: PeripheralDeviceId[]
 }
-export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IMosDeviceSettingsComponentState> {
+export const MosDeviceSettingsComponent = withTranslation()(class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IMosDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
 		this.state = {

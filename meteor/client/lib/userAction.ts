@@ -9,7 +9,7 @@ import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'
 
 export function doUserAction<Result> (
-	t: i18next.TranslationFunction<any, object, string>,
+	t: i18next.TFunction,
 	userEvent: any,
 	actionName0: string,
 	fcn: (event: any) => Promise<ClientAPI.ClientResponse<Result>>,

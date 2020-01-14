@@ -1,11 +1,11 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { translate } from 'react-i18next'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { withTranslation } from 'react-i18next'
 import { literal, unprotectString } from '../../../../lib/lib'
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MediaManagerDeviceSettings, StorageType, StorageSettings, MediaFlow, MediaFlowType, MonitorSettings, MonitorSettingsType } from '../../../../lib/collections/PeripheralDeviceSettings/mediaManager'
@@ -27,7 +27,7 @@ interface IMediaManagerSettingsComponentProps {
 	device: PeripheralDevice
 	subDevices?: PeripheralDevice[]
 }
-export const MediaManagerSettingsComponent = translate()(class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
+export const MediaManagerSettingsComponent = withTranslation()(class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
 	constructor (props: Translated<IMediaManagerSettingsComponentProps>) {
 		super(props)
 		this.state = {

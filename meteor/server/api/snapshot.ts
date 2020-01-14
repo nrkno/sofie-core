@@ -51,7 +51,7 @@ import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databas
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { MongoSelector } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { ingestMOSRundown } from './ingest/http'
@@ -216,11 +216,11 @@ function createSystemSnapshot (studioId: StudioId | null): SystemSnapshot {
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 	const studios 			= Studios.find((studioId ? { _id: studioId } : {})).fetch()
 
-	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
-	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
-	let queryRundownLayouts: MongoSelector<RundownLayoutBase> = {}
-	let queryDevices: MongoSelector<PeripheralDevice> = {}
-	let queryBlueprints: MongoSelector<Blueprint> = {}
+	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}
+	let queryShowStyleVariants: MongoQuery<ShowStyleVariant> = {}
+	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
+	let queryDevices: MongoQuery<PeripheralDevice> = {}
+	let queryBlueprints: MongoQuery<Blueprint> = {}
 
 	if (studioId) {
 		let showStyleBaseIds: ShowStyleBaseId[] = []

@@ -40,7 +40,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			dateTo: moment().add(1, 'days').startOf('day').valueOf()
 		}
 	}
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 		this.updateSubscription()
 	}

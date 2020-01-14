@@ -1,4 +1,4 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -6,8 +6,8 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { translate } from 'react-i18next'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
@@ -27,7 +27,7 @@ interface IGenericDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedObjects: EditId[]
 }
-export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IGenericDeviceSettingsComponentState> {
+export const GenericDeviceSettingsComponent = withTranslation()(class GenericDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IGenericDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
 		this.state = {

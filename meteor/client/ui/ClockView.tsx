@@ -1,7 +1,7 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -62,8 +62,8 @@ const Timediff = class Timediff extends React.Component<{ time: number }> {
 	}
 }
 
-const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverviewState>()(
-	withTracker<WithTiming<RundownOverviewProps & InjectedTranslateProps>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
+const ClockComponent = withTranslation()(withTiming<RundownOverviewProps & WithTranslation, RundownOverviewState>()(
+	withTracker<WithTiming<RundownOverviewProps & WithTranslation>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
 
 		let playlist: RundownPlaylist | undefined
 		if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
@@ -127,8 +127,8 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			rundownIds
 		}
 	})(
-		class ClockComponent extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
-			componentWillMount () {
+		class ClockComponent extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>, RundownOverviewState> {
+			UNSAFE_componentWillMount () {
 				this.autorun(() => {
 					let playlist = RundownPlaylists.findOne(this.props.playlistId)
 					if (this.props.playlist) {
@@ -271,7 +271,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			}
 		})))
 
-interface IPropsHeader extends InjectedTranslateProps {
+interface IPropsHeader extends WithTranslation {
 	key: string
 	playlist: RundownPlaylist
 	rundowns: Array<Rundown> | undefined
@@ -287,7 +287,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 interface IStateHeader {
 }
 
-export const ClockView = translate()(withTracker(function (props: IPropsHeader) {
+export const ClockView = withTranslation()(withTracker(function (props: IPropsHeader) {
 	let studioId = objectPathGet(props, 'match.params.studioId')
 	const playlist = RundownPlaylists.findOne({
 		active: true,

@@ -1,9 +1,9 @@
 import * as React from 'react'
-import * as CoreIcons from '@nrk/core-icons'
+import CoreIcons from '@nrk/core-icons'
 import { faChevronDown, faChevronRight, faCheck, faStopCircle, faRedo, faFlag } from '@fortawesome/fontawesome-free-solid'
 import * as VelocityReact from 'velocity-react'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as ClassNames from 'classnames'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import ClassNames from 'classnames'
 import { MomentFromNow } from '../../lib/Moment'
 import ReactCircularProgressbar from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -18,7 +18,7 @@ import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 
 interface IMediaManagerStatusProps {
 
@@ -162,7 +162,7 @@ function workStepStatusLabel (t: TFunc, step: MediaWorkFlowStep): string {
 	}
 }
 
-const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslateProps> = (props: IItemProps & i18next.InjectedTranslateProps) => {
+const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.WithTranslation> = (props: IItemProps & i18next.WithTranslation) => {
 	const mediaWorkflow = props.item
 	const t = props.t
 
@@ -318,7 +318,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		}
 	}
 
-	componentWillMount () {
+	UNSAFE_componentWillMount () {
 		// Subscribe to data:
 		this.subscribe(PubSub.mediaWorkFlows, {}) // TODO: add some limit
 		this.subscribe(PubSub.mediaWorkFlowSteps, {})

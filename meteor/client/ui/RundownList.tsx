@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -12,7 +12,7 @@ import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
@@ -356,11 +356,11 @@ class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, I
 	}
 
 	renderRundowns (list: RundownPlaylistUi[]) {
-		const { t } = this.props
+		const { t, i18n, tReady } = this.props
 
 		return list.length > 0 ?
 			list.map((rundownPlaylist) => (
-				<RundownListItem key={unprotectString(rundownPlaylist._id)} rundownPlaylist={rundownPlaylist} t={this.props.t} />
+				<RundownListItem key={unprotectString(rundownPlaylist._id)} rundownPlaylist={rundownPlaylist} { ...{ t, i18n, tReady }} />
 			)) :
 			<tr>
 				<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>

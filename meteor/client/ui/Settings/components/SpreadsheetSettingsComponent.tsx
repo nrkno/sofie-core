@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
-const Tooltip = require('rc-tooltip')
+import { withTranslation } from 'react-i18next'
+import Tooltip from 'rc-tooltip'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
@@ -19,7 +19,7 @@ interface ISpreadsheetSettingsComponentState {
 interface ISpreadsheetSettingsComponentProps {
 	device: PeripheralDevice
 }
-export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSettingsComponent extends React.Component<Translated<ISpreadsheetSettingsComponentProps>, ISpreadsheetSettingsComponentState> {
+export const SpreadsheetSettingsComponent = withTranslation()(class SpreadsheetSettingsComponent extends React.Component<Translated<ISpreadsheetSettingsComponentProps>, ISpreadsheetSettingsComponentState> {
 	constructor (props: Translated<ISpreadsheetSettingsComponentProps>) {
 		super(props)
 		this.state = {}

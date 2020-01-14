@@ -7,7 +7,7 @@ import { PieceUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { VTSourceRendererBase } from './VTSourceRenderer'
 import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
@@ -15,10 +15,10 @@ import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
 import Lottie from 'react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
-import { InjectedTranslateProps, translate } from 'react-i18next'
+import { WithTranslation, withTranslation} from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
 
-export const STKSourceRenderer = translate()(class STKSourceRenderer extends VTSourceRendererBase {
+export const STKSourceRenderer = withTranslation()(class STKSourceRenderer extends VTSourceRendererBase {
 	constructor (props) {
 		super(props)
 	}

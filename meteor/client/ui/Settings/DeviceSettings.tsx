@@ -17,7 +17,7 @@ import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsCo
 import { INewsSettingsComponent } from './components/INewsSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction } from '../lib/userAction'
@@ -18,8 +18,8 @@ interface IState {
 	q1: string
 	q2: string
 }
-// export default translate()(class Dashboard extends React.Component<Translated<IProps>, IState> {
-export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends React.Component<Translated<IProps>, IState> {
+// export default withTranslation()(class Dashboard extends React.Component<Translated<IProps>, IState> {
+export const AfterBroadcastForm = withTranslation()(class AfterBroadcastForm extends React.Component<Translated<IProps>, IState> {
 
 	constructor (props: Translated<IProps>) {
 		super(props)

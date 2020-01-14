@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Timecode } from 'timecode'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as faCaretUp from '@fortawesome/fontawesome-free-solid/faCaretUp'
 import * as faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 export interface IProps {
 	value?: number

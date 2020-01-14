@@ -1,10 +1,10 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
 import * as faChevronLeft from '@fortawesome/fontawesome-free-solid/faChevronLeft'
 import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IProps {
 	className?: string
@@ -39,7 +39,7 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 		window.removeEventListener('resize', this.resizeHandler)
 	}
 
-	componentWillUpdate () {
+	UNSAFE_componentWillUpdate () {
 		this.resizeHandler()
 	}
 
