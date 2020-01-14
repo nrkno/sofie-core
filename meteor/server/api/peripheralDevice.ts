@@ -18,7 +18,7 @@ import * as bodyParser from 'body-parser'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
-import { areThereActiveRundownsInStudio } from './playout/studio'
+import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -155,7 +155,9 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			const activeRundownIds = _.map(areThereActiveRundownsInStudio(studioId), r => r._id)
+			const playlistIds = _.map(areThereActiveRundownPlaylistsInStudio(studioId), r => r._id)
+			const allowedRundowns = Rundowns.find({ playlistId: { $in: playlistIds }}).fetch()
+			const allowedRundownsIds = _.map(allowedRundowns, r => r._id)
 
 			_.each(results, (o) => {
 				check(o.id, String)
@@ -180,7 +182,7 @@ export namespace ServerPeripheralDeviceAPI {
 					obj.enable.start = o.time
 					obj.enable.setFromNow = true
 
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(activeRundownIds, obj, o.time)
+					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(allowedRundownsIds, obj, o.time)
 				}
 			})
 		}

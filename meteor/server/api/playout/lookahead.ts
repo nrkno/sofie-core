@@ -328,6 +328,4 @@ function findObjectsForPart (
 		})
 		return res
 	}
-
-	return allObjs
 }

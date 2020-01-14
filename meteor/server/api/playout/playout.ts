@@ -1129,7 +1129,7 @@ export namespace ServerPlayoutAPI {
 				// logger.debug('adLibItemStart', newPiece)
 
 				cropInfinitesOnLayer(rundown, currentPartInstance, newAdLibPieceInstance)
-				stopInfinitesRunningOnLayer(rundown, currentPartInstance, newAdLibPieceInstance.piece.sourceLayerId)
+				stopInfinitesRunningOnLayer(playlist, rundown, currentPartInstance, newAdLibPieceInstance.piece.sourceLayerId)
 
 				updateTimeline(playlist.studioId)
 			}
@@ -1158,28 +1158,39 @@ export namespace ServerPlayoutAPI {
 			const relativeNow = now - lastStartedPlayback
 			const orderedPieces = getResolvedPieces(partInstance)
 
-			// TODO-ASAP - update to instances
-			orderedPieces.forEach((piece) => {
-				if (piece.sourceLayerId === sourceLayerId) {
-					if (!piece.userDuration) {
+			// TODO-ASAP - can this be changed to a custom instance??
+			orderedPieces.forEach((pieceInstance) => {
+				if (pieceInstance.piece.sourceLayerId === sourceLayerId) {
+					if (!pieceInstance.piece.userDuration) {
 						let newExpectedDuration: number | undefined = undefined
 
-						if (piece.infiniteId && piece.infiniteId !== piece._id) {
+						if (pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId !== pieceInstance.piece._id) {
 							newExpectedDuration = now - lastStartedPlayback
 						} else if (
-							piece.startedPlayback && // currently playing
-							_.isNumber(piece.enable.start) &&
-							(piece.enable.start || 0) < relativeNow && // is relative, and has started
-							!piece.stoppedPlayback // and not yet stopped
+							pieceInstance.piece.startedPlayback && // currently playing
+							_.isNumber(pieceInstance.piece.enable.start) &&
+							(pieceInstance.piece.enable.start || 0) < relativeNow && // is relative, and has started
+							!pieceInstance.piece.stoppedPlayback // and not yet stopped
 						) {
-							newExpectedDuration = now - piece.startedPlayback
+							newExpectedDuration = now - pieceInstance.piece.startedPlayback
 						}
 
 						if (newExpectedDuration !== undefined) {
-							console.log(`Cropping piece "${piece._id}" at ${newExpectedDuration}`)
+							console.log(`Cropping PieceInstance "${pieceInstance._id}" at ${newExpectedDuration}`)
 
+							PieceInstances.update({
+								_id: pieceInstance._id
+							}, {
+								$set: {
+									'piece.userDuration': {
+										duration: newExpectedDuration
+									}
+								}
+							})
+
+							// TODO-PartInstance - pending new data flow
 							Pieces.update({
-								_id: piece._id
+								_id: pieceInstance.piece._id
 							}, {
 								$set: {
 									userDuration: {
@@ -1192,7 +1203,7 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 
-			updateSourceLayerInfinitesAfterPart(rundown, partInstance)
+			updateSourceLayerInfinitesAfterPart(rundown, partInstance.part)
 
 			updateTimeline(playlist.studioId)
 		})

@@ -1,7 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, literal } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintPieceInstance, Time } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPieceInstance, Time, IBlueprintResolvedPieceInstance } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece } from './Pieces'
 
@@ -12,6 +12,10 @@ export interface PieceInstance extends IBlueprintPieceInstance {
 	/** The part instace this piece belongs to */
 	partInstanceId: string
 
+	piece: Piece
+}
+
+export interface ResolvedPieceInstance extends PieceInstance, IBlueprintResolvedPieceInstance {
 	piece: Piece
 }
 

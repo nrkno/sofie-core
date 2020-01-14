@@ -10,12 +10,15 @@ import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise } from '../../../lib/lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
 export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean): void {
 	let activeInfinitePieces: { [layer: string]: Piece } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
+
+	// TODO-ASAP update this to consider instances
 
 	if (previousPart === undefined) {
 	   // If running from start (no previousPart), then always run to the end
@@ -258,14 +261,14 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	let ps: Array<Promise<any>> = []
 	for (const instance of pieceInstances) {
 		ps.push(asyncCollectionUpdate(PieceInstances, instance._id, { $set: {
-			'piece.userDuration': { end: `#${getPieceGroupId(newPieceInstance)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+			'piece.userDuration': { end: `#${getPieceGroupId(newPieceInstance.piece)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
 			'piece.infiniteMode': PieceLifespan.Normal,
 			'piece.originalInfiniteMode': newPieceInstance.piece.originalInfiniteMode !== undefined ? newPieceInstance.piece.originalInfiniteMode : newPieceInstance.piece.infiniteMode
 		}}))
 
 		// TODO-PartInstance - pending new data flow
 		ps.push(asyncCollectionUpdate(Pieces, instance.piece._id, { $set: {
-			userDuration: { end: `#${getPieceGroupId(newPieceInstance)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+			userDuration: { end: `#${getPieceGroupId(newPieceInstance.piece)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
 			infiniteMode: PieceLifespan.Normal,
 			originalInfiniteMode: newPieceInstance.piece.originalInfiniteMode !== undefined ? newPieceInstance.piece.originalInfiniteMode : newPieceInstance.piece.infiniteMode
 		}}))
@@ -273,7 +276,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	waitForPromiseAll(ps)
 })
 
-export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
+export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundownPlaylist: RundownPlaylist, rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
 	// TODO-PartInstance - pending new data flow for this whole function
 
 	const ps: Array<Promise<void>> = []
@@ -294,7 +297,7 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 
 	// Also update the nextPartInstance
 	// TODO-ASAP - should this be done for the current one too, in case the stop was int he previous somehow?
-	const { nextPartInstance } = rundown.getSelectedPartInstances()
+	const { nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
 	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
 		nextPartInstance.getAllPieceInstances()
 			.filter(p => p.piece.infiniteMode && p.piece.infiniteId && p.piece.infiniteId !== p.piece._id && p.piece.sourceLayerId === sourceLayer)
@@ -304,5 +307,5 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 	waitForPromiseAll(ps)
 
 	// ensure adlib is extended correctly if infinite
-	updateSourceLayerInfinitesAfterPart(rundown, partInstance)
+	updateSourceLayerInfinitesAfterPart(rundown, partInstance.part)
 })

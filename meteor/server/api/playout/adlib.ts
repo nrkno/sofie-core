@@ -25,10 +25,10 @@ import { PartInstances } from '../../../lib/collections/PartInstances'
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdToCopy: string) {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
-			const rundownPlaylists = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!rundownPlaylists) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-			if (!rundownPlaylists.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
-			if (rundownPlaylists.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
+			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
+			if (rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 
 			const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdToCopy) as PieceInstance
 			if (!pieceInstanceToCopy) throw new Meteor.Error(404, `PieceInstance "${pieceInstanceIdToCopy}" not found!`)
@@ -63,17 +63,17 @@ export namespace ServerPlayoutAdLibAPI {
 
 			// Disable the original piece if from the same Part
 			if (pieceInstanceToCopy.partInstanceId === partInstance._id) {
-				const pieces = getResolvedPieces(part)
-				const origResolvedPiece = pieces.find(p => p._id === pieceInstanceToCopy._id)
+				const pieces = getResolvedPieces(partInstance)
+				const resolvedPieceBeingCopied = pieces.find(p => p._id === pieceInstanceToCopy._id)
 
 				// Ensure the piece being copied isnt currently live
 				if (pieceInstanceToCopy.piece.startedPlayback && pieceInstanceToCopy.piece.startedPlayback <= getCurrentTime()) {
 					if (
-						origResolvedPiece &&
-						origResolvedPiece.piece.playoutDuration !== undefined &&
+						resolvedPieceBeingCopied &&
+						resolvedPieceBeingCopied.piece.playoutDuration !== undefined &&
 						(
 							pieceInstanceToCopy.piece.infiniteMode ||
-							pieceInstanceToCopy.piece.startedPlayback + origResolvedPiece.piece.playoutDuration >= getCurrentTime()
+							pieceInstanceToCopy.piece.startedPlayback + resolvedPieceBeingCopied.piece.playoutDuration >= getCurrentTime()
 						)
 					) {
 						// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
@@ -97,7 +97,7 @@ export namespace ServerPlayoutAdLibAPI {
 			Pieces.insert(newPieceInstance.piece)
 
 			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
-			stopInfinitesRunningOnLayer(rundown, partInstance, newPieceInstance.piece.sourceLayerId)
+			stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 			updateTimeline(rundown.studioId)
 		})
 	}
@@ -193,7 +193,7 @@ export namespace ServerPlayoutAdLibAPI {
 			updateTimeline(rundownPlaylist.studioId)
 		} else {
 			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
-			stopInfinitesRunningOnLayer(rundown, partInstance, newPieceInstance.piece.sourceLayerId)
+			stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 			updateTimeline(rundown.studioId)
 		}
 	}

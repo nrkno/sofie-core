@@ -241,7 +241,6 @@ function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayout
 				if (showStyleBlueprintManifest.onTimelineGenerate && rundownData.currentPartInstance) {
 					const currentPart = rundownData.currentPartInstance
 					const context = new PartEventContext(activeRundown, studio, currentPart)
-					// const resolvedPieces = getResolvedPieces(currentPart)
 					const resolvedPieces = getResolvedPiecesFromFullTimeline(rundownData, timelineObjs)
 					const tlGenRes = waitForPromise(showStyleBlueprintManifest.onTimelineGenerate(context, timelineObjs, rundownData.rundownPlaylist.previousPersistentState, currentPart.part.previousPartEndState, resolvedPieces.pieces))
 					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
