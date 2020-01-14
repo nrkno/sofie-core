@@ -4,7 +4,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType, TimelineObjectCoreExt, PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { extendMandadory, getCurrentTime, literal } from '../../../lib/lib'
+import { extendMandadory, getCurrentTime, literal, waitForPromise, asyncCollectionFindOne, makePromise, asyncCollectionFindFetch } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { Timeline, TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -28,20 +28,24 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			if (!rundown.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 
-			const piece = Pieces.findOne({
+			const pPiece = asyncCollectionFindOne(Pieces, {
 				_id: pieceId,
 				rundownId: rundownId
-			}) as Piece
-			if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
-
-			const part = Parts.findOne({
+			})
+			const pPart = asyncCollectionFindOne(Parts, {
 				_id: partId,
 				rundownId: rundownId
 			})
+			const pShowStyleBase = makePromise(() => rundown.getShowStyleBase())
+
+			const piece = waitForPromise(pPiece)
+			const part = waitForPromise(pPart)
+			const showStyleBase = waitForPromise(pShowStyleBase)
+
+			if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 			if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 			if (rundown.currentPartId !== part._id) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 
-			const showStyleBase = rundown.getShowStyleBase()
 			const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 			if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Piece "${pieceId}" is not a GRAPHICS item!`)
 
@@ -131,7 +135,6 @@ export namespace ServerPlayoutAdLibAPI {
 			})
 			if (!adLibPiece) throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
 			if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Rundown Baseline AdLib-pieces can be only placed in a currently playing part!`)
-
 			innerStartAdLibPiece(rundown, queue, partId, adLibPiece)
 		})
 	}
