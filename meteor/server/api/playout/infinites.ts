@@ -313,7 +313,9 @@ function stopInfinitesRunningOnLayer (rundown: Rundown, part: Part, sourceLayer:
 		continuations.forEach(i => ps.push(asyncCollectionRemove(Pieces, i._id)))
 	}
 
-	// ensure adlib is extended correctly if infinite
-	updateSourceLayerInfinitesAfterPart(rundown, part)
 	waitForPromiseAll(ps)
+	if (ps.length) { // We only have to update infinites if we made any changes
+		// ensure adlib is extended correctly if infinite
+		updateSourceLayerInfinitesAfterPart(rundown, part)
+	}
 })
