@@ -1,29 +1,32 @@
-import {
-	getCoreSystem,
-	CoreSystem,
-	SYSTEM_ID,
-	getCoreSystemCursor,
-	parseVersion,
-	Version,
-	parseRange,
-	stripVersion,
-	VersionRange,
-	GENESIS_SYSTEM_VERSION
-} from '../lib/collections/CoreSystem';
-import { getCurrentTime } from '../lib/lib';
-import { Meteor } from 'meteor/meteor';
+import * as _ from 'underscore';
+import * as semver from 'semver';
+
+import { Blueprint, Blueprints } from '../lib/collections/Blueprints';
 import {
 	CURRENT_SYSTEM_VERSION,
 	prepareMigration,
 	runMigration
 } from './migration/databaseMigration';
-import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus';
-import { Blueprints, Blueprint } from '../lib/collections/Blueprints';
-import * as _ from 'underscore';
+import {
+	CoreSystem,
+	GENESIS_SYSTEM_VERSION,
+	SYSTEM_ID,
+	Version,
+	VersionRange,
+	getCoreSystem,
+	getCoreSystemCursor,
+	parseRange,
+	parseVersion,
+	stripVersion
+} from '../lib/collections/CoreSystem';
+import { StatusCode, removeSystemStatus, setSystemStatus } from './systemStatus/systemStatus';
+
+import { Meteor } from 'meteor/meteor';
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases';
 import { Studios } from '../lib/collections/Studios';
+import { getCurrentTime } from '../lib/lib';
 import { logger } from './logging';
-import * as semver from 'semver';
+
 const PackageInfo = require('../package.json');
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json');
 
@@ -109,7 +112,7 @@ function checkDatabaseVersions() {
 
 				// @ts-ignore
 				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
-					blueprint.databaseVersion = {};
+					blueprint.databaseVersion = { showStyle: {}, studio: {} };
 				if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {};
 				if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {};
 
@@ -206,7 +209,9 @@ function checkDatabaseVersion(
 					messages: [`${meName} version: ${currentVersion}`]
 				};
 			} else {
-				const currentV = new semver.SemVer(currentVersion, { includePrerelease: true });
+				const currentV = new semver.SemVer(currentVersion, {
+					includePrerelease: true
+				});
 
 				try {
 					const expectV = new semver.SemVer(stripVersion(expectVersion), {

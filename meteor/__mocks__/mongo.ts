@@ -1,19 +1,22 @@
 import * as _ from 'underscore';
+
+import { FindOptions, MongoSelector, UpdateOptions, UpsertOptions } from '../lib/typings/meteor';
 import {
+	Omit,
+	literal,
+	mongoWhere,
+	pullFromPath,
 	pushOntoPath,
 	setOntoPath,
-	mongoWhere,
-	literal,
-	unsetPath,
-	pullFromPath,
-	Omit
+	unsetPath
 } from '../lib/lib';
-import { RandomMock } from './random';
-import { UpsertOptions, UpdateOptions, MongoSelector, FindOptions } from '../lib/typings/meteor';
+
+import { Meteor } from 'meteor/meteor';
 import { MeteorMock } from './meteor';
 import { Mongo } from 'meteor/mongo';
 import { Random } from 'meteor/random';
-import { Meteor } from 'meteor/meteor';
+import { RandomMock } from './random';
+
 const clone = require('fast-clone');
 
 interface ObserverEntry {
@@ -281,8 +284,7 @@ export namespace MongoMock {
 	) {
 		const collectionName: string = _.isString(collection)
 			? collection
-			: // @ts-ignore
-			  collection.localName;
+			: collection['localName'];
 		data = data || {};
 		if (_.isArray(data)) {
 			const collectionData = {};

@@ -1,53 +1,55 @@
-import {
-	parseVersion,
-	getCoreSystem,
-	setCoreSystemVersion,
-	Version,
-	GENESIS_SYSTEM_VERSION
-} from '../../lib/collections/CoreSystem';
-import { Meteor } from 'meteor/meteor';
 import * as _ from 'underscore';
+import * as semver from 'semver';
+
 import {
-	MigrationMethods,
-	RunMigrationResult,
-	MigrationChunk,
-	MigrationStepType,
-	GetMigrationStatusResult
-} from '../../lib/api/migration';
-import {
-	MigrationStepInput,
-	MigrationStepInputResult,
-	MigrationStepInputFilteredResult,
+	BlueprintManifestType,
+	MigrationContextShowStyle as IMigrationContextShowStyle,
+	MigrationContextStudio as IMigrationContextStudio,
+	InputFunctionCore,
+	InputFunctionShowStyle,
+	InputFunctionStudio,
+	MigrateFunctionCore,
+	MigrateFunctionShowStyle,
+	MigrateFunctionStudio,
 	MigrationStep,
 	MigrationStepBase,
-	ValidateFunctionCore,
-	MigrateFunctionCore,
-	ValidateFunctionStudio,
-	ValidateFunctionShowStyle,
-	MigrateFunctionStudio,
-	MigrateFunctionShowStyle,
-	InputFunctionCore,
-	InputFunctionStudio,
-	InputFunctionShowStyle,
-	MigrationContextStudio as IMigrationContextStudio,
-	MigrationContextShowStyle as IMigrationContextShowStyle,
-	BlueprintManifestType,
+	MigrationStepInput,
+	MigrationStepInputFilteredResult,
+	MigrationStepInputResult,
 	ShowStyleBlueprintManifest,
-	StudioBlueprintManifest
+	StudioBlueprintManifest,
+	ValidateFunctionCore,
+	ValidateFunctionShowStyle,
+	ValidateFunctionStudio
 } from 'tv-automation-sofie-blueprints-integration';
-import { setMeteorMethods } from '../methods';
-import { logger } from '../../lib/logging';
-import { storeSystemSnapshot } from '../api/snapshot';
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
-import { Blueprints } from '../../lib/collections/Blueprints';
-import { Studios } from '../../lib/collections/Studios';
 import {
-	MigrationContextStudio,
-	MigrationContextShowStyle
+	GENESIS_SYSTEM_VERSION,
+	Version,
+	getCoreSystem,
+	parseVersion,
+	setCoreSystemVersion
+} from '../../lib/collections/CoreSystem';
+import {
+	GetMigrationStatusResult,
+	MigrationChunk,
+	MigrationMethods,
+	MigrationStepType,
+	RunMigrationResult
+} from '../../lib/api/migration';
+import {
+	MigrationContextShowStyle,
+	MigrationContextStudio
 } from '../api/blueprints/migrationContext';
-import { getHash } from '../../lib/lib';
-import * as semver from 'semver';
+
+import { Blueprints } from '../../lib/collections/Blueprints';
+import { Meteor } from 'meteor/meteor';
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
+import { Studios } from '../../lib/collections/Studios';
 import { evalBlueprints } from '../api/blueprints/cache';
+import { getHash } from '../../lib/lib';
+import { logger } from '../../lib/logging';
+import { setMeteorMethods } from '../methods';
+import { storeSystemSnapshot } from '../api/snapshot';
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -189,7 +191,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 			// @ts-ignore
 			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
-				blueprint.databaseVersion = {};
+				blueprint.databaseVersion = { showStyle: {}, studio: {} };
 			if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {};
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {};
 
