@@ -1,0 +1,28 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"experimentalDecorators": true,
+		"moduleResolution": "node",
+		"strictNullChecks": true,
+		"sourceMap": true,
+		"allowJs": true,
+		"jsx": "react",
+		"allowSyntheticDefaultImports": true,
+		"plugins": [
+			{
+				"name": "typescript-tslint-plugin"
+			}
+		],
+		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object"]
+	},
+	"include": [
+		"client/**/*",
+		"server/**/*",
+		"lib/**/*"
+	],
+	"exclude": [
+		"client/**/*",
+		"node_modules/**/*",
+		"**/.coverage/**/*"
+	]
+}
