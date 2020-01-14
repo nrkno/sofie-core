@@ -8,7 +8,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { literal, clone } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
-import type { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { selectNextPart } from './lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1

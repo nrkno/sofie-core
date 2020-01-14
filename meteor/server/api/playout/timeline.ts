@@ -66,6 +66,7 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
+// TODO-ASAP - this syncFunctionIgnore needs to ignore playoutData0 in the signature, or it could run 2 in parallel
 export const updateTimeline: (studioId: string, forceNowToTime?: Time, playoutData0?: RundownPlaylistPlayoutData | null) => void
 = syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time, playoutData0?: RundownPlaylistPlayoutData | null) {
 	logger.debug('updateTimeline running...')

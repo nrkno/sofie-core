@@ -303,7 +303,7 @@ export namespace ServerPlayoutAPI {
 				updateTimeline(playlist.studioId)
 				return ClientAPI.responseSuccess()
 			}
-			
+
 			let previousPartInstance = rundownData.currentPartInstance || null
 			let takePartInstance = rundownData.nextPartInstance
 			if (!takePartInstance) throw new Meteor.Error(404, 'takePart not found!')
@@ -1463,12 +1463,14 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 		// TODO - test the input data for this
 		updateSourceLayerInfinitesAfterPart(rundown, prevPart, true)
 
-		if (playlist.active && playlist.currentPartId) {
-			const currentPart = Parts.findOne(playlist.currentPartId)
-			if (currentPart && currentPart.rundownId === rundown._id) {
-				updateTimeline(rundown.studioId)
+		return rundownSyncFunction(playlist._id, RundownSyncFunctionPriority.Playout, () => {
+			if (playlist.active && playlist.currentPartInstanceId) {
+				const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+				if (currentPartInstance && (currentPartInstance.rundownId === rundown._id || (currentPartInstance.part.autoNext && nextPartInstance && nextPartInstance.rundownId === rundownId))) {
+					updateTimeline(rundown.studioId)
+				}
 			}
-		}
+		})
 	}, 1000)
 
 	updateTimelineFromIngestDataTimeouts[rundownId] = data

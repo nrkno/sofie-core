@@ -286,7 +286,7 @@ export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegme
 	}
 	return undefined
 }
-function    (dbPart: DBPart) {
+function getPreviousPart (dbPart: DBPart) {
 	return Parts.findOne({
 		rundownId: dbPart.rundownId,
 		_rank: { $lt: dbPart._rank }

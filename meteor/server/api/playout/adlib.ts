@@ -12,14 +12,13 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds } from './lib'
+import { prefixAllObjectIds, setNextPart } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces } from './pieces'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
 import { updatePartRanks } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
-import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 
@@ -188,7 +187,10 @@ export namespace ServerPlayoutAdLibAPI {
 			// 	}
 			// })
 
-			ServerPlayoutAPI.setNextPartInner(rundownPlaylist, partInstance)
+			setNextPart(rundownPlaylist, partInstance)
+
+			// remove old auto-next from timeline, and add new one
+			updateTimeline(rundownPlaylist.studioId)
 		} else {
 			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
 			stopInfinitesRunningOnLayer(rundown, partInstance, newPieceInstance.piece.sourceLayerId)
