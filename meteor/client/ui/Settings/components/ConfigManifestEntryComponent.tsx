@@ -9,29 +9,29 @@ import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/ap
 
 export interface IConfigManifestEntryComponentProps {
 	configField: ConfigManifestEntry
-	obj?: any
+	obj: object
 	prefix?: string
 	hideLabel?: boolean
 }
 export const ConfigManifestEntryComponent = translate()(class ConfigManifestEntryComponent extends React.Component<Translated<IConfigManifestEntryComponentProps>, {}> {
 
-	renderEditAttribute (configField: ConfigManifestEntry, obj?: any, prefix?: string) {
+	renderEditAttribute (configField: ConfigManifestEntry, obj: object, prefix?: string) {
 		let attribute = prefix + configField.id
 
 		if (configField.type === ConfigManifestEntryType.FLOAT || configField.type === ConfigManifestEntryType.INT) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj || this.props.device} type={configField.type} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type={configField.type} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.STRING) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj || this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj || this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute>
+			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.ENUM) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj || this.props.device} type='dropdown' options={configField.values} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type='dropdown' options={configField.values} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.OBJECT) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} mutateDisplayValue={v => JSON.stringify(v, undefined, 2)} mutateUpdateValue={v => JSON.parse(v)} obj={obj || this.props.device} type='multiline' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute modifiedClassName='bghl' attribute={attribute} mutateDisplayValue={v => JSON.stringify(v, undefined, 2)} mutateUpdateValue={v => JSON.parse(v)} obj={obj} type='multiline' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 		}
 	}
 
-	renderConfigField (configField: ConfigManifestEntry, obj?: any, prefix?: string) {
+	renderConfigField (configField: ConfigManifestEntry, obj: object, prefix?: string) {
 		const { t } = this.props
 
 		return (<div className='mod mvs mhs'>
