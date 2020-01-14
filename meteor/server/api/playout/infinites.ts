@@ -8,7 +8,7 @@ import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise, getCurrentTime } from '../../../lib/lib'
+import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, makePromise, waitForPromise, getCurrentTime } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
@@ -27,11 +27,16 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 	let ps: Array<Promise<any>> = []
 
+	const allPieces = (
+		Pieces.find({ rundownId: rundown._id }).fetch()
+	).filter(p => !p.definitelyEnded || p.definitelyEnded > getCurrentTime())
+
 	const pPartsToProcess = makePromise(() => rundown.getParts())
+
 
 	if (previousPart) {
 	   // figure out the baseline to set
-	   let prevPieces = getOrderedPiece(previousPart)
+	   let prevPieces = getOrderedPiece(previousPart, allPieces)
 	   _.each(prevPieces, piece => {
 		   if (!piece.infiniteMode || piece.playoutDuration || piece.userDuration || piece.enable.end || piece.enable.duration) {
 			   delete activeInfinitePieces[piece.sourceLayerId]
@@ -58,19 +63,20 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	let partsToProcess = waitForPromise(pPartsToProcess)
 	waitForPromiseAll(ps)
 
+
 	if (previousPart) {
 	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
 	}
 
    // Prepare pieces:
 	let psPopulateCache: Array<Promise<any>> = []
-	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
+	const currentPiecesCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
 	   psPopulateCache.push(new Promise((resolve, reject) => {
 		   try {
-			   let currentItems = getOrderedPiece(part)
+			   let pieces = getOrderedPiece(part, allPieces)
 
-			   currentItemsCache[part._id] = currentItems
+			   currentPiecesCache[part._id] = pieces
 			   resolve()
 		   } catch (e) {
 			   reject(e)
@@ -78,6 +84,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   }))
 	})
 	waitForPromiseAll(psPopulateCache)
+
 
 	ps = []
 	for (let part of partsToProcess) {
@@ -93,10 +100,10 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 	   // ensure any currently defined infinites are still wanted
 	   // let currentItems = getOrderedPiece(part)
-	   let currentItems = currentItemsCache[part._id]
-	   if (!currentItems) throw new Meteor.Error(500, `currentItemsCache didn't contain "${part._id}", which it should have`)
+	   let currentPieces = currentPiecesCache[part._id]
+	   if (!currentPieces) throw new Meteor.Error(500, `currentItemsCache didn't contain "${part._id}", which it should have`)
 
-	   let currentInfinites = currentItems.filter(i => i.infiniteId && i.infiniteId !== i._id)
+	   let currentInfinites = currentPieces.filter(i => i.infiniteId && i.infiniteId !== i._id)
 	   let removedInfinites: string[] = []
 
 	   for (let piece of currentInfinites) {
@@ -120,7 +127,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   }
 
 	   // figure out what infinites are to be extended
-	   currentItems = currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)
+	   currentPieces = currentPieces.filter(i => removedInfinites.indexOf(i._id) < 0)
 	   let oldInfiniteContinuation: string[] = []
 	   let newInfiniteContinations: Piece[] = []
 	   for (let k in activeInfinitePieces) {
@@ -130,7 +137,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   let allowInsert: boolean = true
 
 		   // If something exists on the layer, the infinite must be stopped and potentially replaced
-		   const existingItems = currentItems.filter(i => i.sourceLayerId === newPiece.sourceLayerId)
+		   const existingItems = currentPieces.filter(i => i.sourceLayerId === newPiece.sourceLayerId)
 		   if (existingItems && existingItems.length > 0) {
 			   // remove the existing, as we need to update its contents
 			   const existInf = existingItems.findIndex(e => !!e.infiniteId && e.infiniteId === newPiece.infiniteId)
@@ -214,8 +221,8 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   }
 
 	   // find any new infinites exposed by this
-	   currentItems = currentItems.filter(i => oldInfiniteContinuation.indexOf(i._id) < 0)
-	   for (let piece of newInfiniteContinations.concat(currentItems)) {
+	   currentPieces = currentPieces.filter(i => oldInfiniteContinuation.indexOf(i._id) < 0)
+	   for (let piece of newInfiniteContinations.concat(currentPieces)) {
 		   if (
 			   !piece.infiniteMode ||
 			   piece.playoutDuration ||
@@ -242,6 +249,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	}
 
 	waitForPromiseAll(ps)
+
 	return ''
 }
 
@@ -251,9 +259,17 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	const newItemExclusivityGroup = sourceLayerLookup[newPiece.sourceLayerId].exclusiveGroup
 
 	const pieces = part.getAllPieces().filter(i =>
-		(i.sourceLayerId === newPiece.sourceLayerId
-			|| (newItemExclusivityGroup && sourceLayerLookup[i.sourceLayerId] && sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup)
-		) && i._id !== newPiece._id && i.infiniteMode
+		(
+			i.sourceLayerId === newPiece.sourceLayerId ||
+			(
+				newItemExclusivityGroup &&
+				sourceLayerLookup[i.sourceLayerId] &&
+				sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup
+			)
+		) &&
+		i._id !== newPiece._id &&
+		i.infiniteMode &&
+		i.partId === part._id
 	)
 
 	let ps: Array<Promise<any>> = []
@@ -268,17 +284,36 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	waitForPromiseAll(ps)
 })
 
-export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, part: Part, sourceLayer: string) {
+export const stopInfinitesRunningOnLayer = syncFunction(
+function stopInfinitesRunningOnLayer (rundown: Rundown, part: Part, sourceLayer: string) {
+
 	let remainingParts = rundown.getParts().filter(l => l._rank > part._rank)
-	for (let line of remainingParts) {
-		let continuations = line.getAllPieces().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
+	const allPiecesOnLayer = Pieces.find({
+		rundownId: rundown._id,
+		sourceLayerId: sourceLayer,
+		partId: { $in: _.map(remainingParts, p => p._id) }
+	}).fetch()
+
+	const ps: Promise<any>[] = []
+	for (let remainingPart of remainingParts) {
+		let continuations = _.filter(allPiecesOnLayer, piece => {
+			return !!(
+				piece.partId === remainingPart._id &&
+				piece.infiniteMode &&
+				piece.infiniteId &&
+				piece.infiniteId !== piece._id &&
+				piece.sourceLayerId === sourceLayer
+			)
+		})
 		if (continuations.length === 0) {
+			// When no more continuations are found, we can stop looking
 			break
 		}
 
-		continuations.forEach(i => Pieces.remove(i._id))
+		continuations.forEach(i => ps.push(asyncCollectionRemove(Pieces, i._id)))
 	}
 
 	// ensure adlib is extended correctly if infinite
 	updateSourceLayerInfinitesAfterPart(rundown, part)
+	waitForPromiseAll(ps)
 })
