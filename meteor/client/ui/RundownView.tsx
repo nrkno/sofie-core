@@ -65,6 +65,8 @@ import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRend
 import { PointerLockCursor } from '../lib/PointerLockCursor';
 import { Settings } from '../../lib/Settings'
 
+export const MAGIC_TIME_SCALE_FACTOR = 0.03
+
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
 interface IKeyboardFocusMarkerState {
@@ -227,7 +229,8 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_NEXT_UP = 'shift+up',
 	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR	= 'shift+backspace'
+	RUNDOWN_LOG_ERROR	= 'shift+backspace',
+	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = ''
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -1056,7 +1059,9 @@ interface IState {
 export enum RundownViewEvents {
 	'rewindsegments'	=	'sofie:rundownRewindSegments',
 	'goToLiveSegment'	=	'sofie:goToLiveSegment',
-	'goToTop'			=	'sofie:goToTop'
+	'goToTop'			=	'sofie:goToTop',
+	'segmentZoomOn'		=	'sofie:segmentZoomOn',
+	'segmentZoomOff'	=	'sofie:segmentZoomOff'
 }
 
 interface ITrackedProps {
@@ -1130,6 +1135,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		global?: boolean
 	}> = []
 	private _inspectorShelf: WrappedShelf | null
+	private _segmentZoomOn: boolean = false
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1151,10 +1157,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		]
 
+		if (RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH) {
+			this.bindKeys.push({
+				key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
+				down: this.onShowCurrentSegmentFullOn,
+				up: this.onShowCurrentSegmentFullOff,
+				label: t('Show entire current segment'),
+				global: false
+			})
+		}
+
 		this.usedArgumentKeys = []
 
 		this.state = {
-			timeScale: 0.03 * Settings.defaultTimeScale,
+			timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
@@ -1432,6 +1448,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	onRewindSegments = () => {
 		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+	}
+
+	onShowCurrentSegmentFullOn = () => {
+		if (this._segmentZoomOn === false) {
+			console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOn}`)
+			window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOn))
+			this._segmentZoomOn = true
+		}
+	}
+
+	onShowCurrentSegmentFullOff = () => {
+		console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOff}`)
+		window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOff))
+		this._segmentZoomOn = false
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
