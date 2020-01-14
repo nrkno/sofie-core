@@ -230,7 +230,7 @@ export enum RundownViewKbdShortcuts {
 	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNDOWN_LOG_ERROR	= 'shift+backspace',
-	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = 'z'
+	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = ''
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -1162,7 +1162,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
 				down: this.onShowCurrentSegmentFullOn,
 				up: this.onShowCurrentSegmentFullOff,
-				label: t('Show whole current segment'),
+				label: t('Show entire current segment'),
 				global: false
 			})
 		}
