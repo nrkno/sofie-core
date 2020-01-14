@@ -102,18 +102,6 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 
 	let ps: Promise<any>[] = []
 
-	if (activeRundown) {
-		 // remove anything not related to active rundown
-		ps.push(caught(asyncCollectionRemove(Timeline, {
-			studioId: studio._id,
-			rundownId: {
-				$not: {
-					$eq: activeRundown._id
-				}
-			}
-		})))
-	}
-
 	ps.push(caught(getTimelineRundown(studio, activeRundownData).then(applyTimelineObjs)))
 	ps.push(caught(getTimelineRecording(studio).then(applyTimelineObjs)))
 
