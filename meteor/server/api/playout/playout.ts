@@ -222,7 +222,7 @@ export namespace ServerPlayoutAPI {
 			const partInstance = rundownData.currentPartInstance || rundownData.nextPartInstance
 			const currentRundown = partInstance ? rundownData.rundownsMap[partInstance.rundownId] : undefined
 			if (!currentRundown) throw new Meteor.Error(404, `Rundown "${partInstance && partInstance.rundownId || ''}" could not be found!`)
-			
+
 			let pBlueprint = makePromise(() => getBlueprintOfRundown(currentRundown))
 
 			const currentPart = rundownData.currentPartInstance
@@ -346,6 +346,7 @@ export namespace ServerPlayoutAPI {
 
 			let partInstanceM = {
 				$push: {
+					isTaken: true,
 					'part.timings.take': now,
 					'part.timings.playOffset': timeOffset || 0
 				}

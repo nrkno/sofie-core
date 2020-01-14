@@ -13,6 +13,9 @@ import {
 	Time,
 	pushOntoPath,
 	clone,
+	literal,
+	asyncCollectionInsert,
+	asyncCollectionInsertMany,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -21,7 +24,8 @@ import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances, DBPartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 /**
  * Reset the rundown:
@@ -97,6 +101,26 @@ export function resetRundown (rundown: Rundown) {
 			hidden: 1
 		}
 	}, { multi: true })
+
+	// Mask all instances as reset
+	PartInstances.update({
+		rundownId: rundown._id
+	}, {
+		$set: {
+			reset: true
+		}
+	}, {
+		multi: true
+	})
+	PieceInstances.update({
+		rundownId: rundown._id
+	}, {
+		$set: {
+			reset: true
+		}
+	}, {
+		multi: true
+	})
 
 	// ensure that any removed infinites are restored
 	updateSourceLayerInfinitesAfterPart(rundown)
@@ -262,7 +286,7 @@ export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegme
 	}
 	return undefined
 }
-function getPreviousPart (dbPart: DBPart) {
+function    (dbPart: DBPart) {
 	return Parts.findOne({
 		rundownId: dbPart.rundownId,
 		_rank: { $lt: dbPart._rank }
@@ -287,7 +311,6 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[]): { part: Part, index: number} | undefined {
 	let possibleParts = parts
 
-	// TODO-ASAP refactor and reuse to select the next part for playout too
 	if (previousPartInstance !== null) {
 		const currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
 		// TODO - choose something better for next?
@@ -307,47 +330,134 @@ export function selectNextPart (previousPartInstance: PartInstance | null, parts
 }
 export function setNextPart (
 	rundownPlaylist: RundownPlaylist,
-	nextPart: DBPart | null,
+	rawNextPart: DBPart | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
+	const acceptableRundowns = rundownPlaylist.getRundownIDs()
+	const { currentPartInstance, nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
+
+	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
+	const newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
+
 	let ps: Array<Promise<any>> = []
-	if (nextPart) {
-		const acceptableRundowns = rundownPlaylist.getRundownIDs()
-		if (acceptableRundowns.indexOf(nextPart.rundownId) < 0) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of any rundown in playlist "${rundownPlaylist._id}"`)
-		if (nextPart._id === rundownPlaylist.currentPartId) {
-			throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
+	if (newNextPart || newNextPartInstance) {
+
+		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
+			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (!isPartPlayable(nextPart)) {
-			throw new Meteor.Error(400, 'Part is unplabale, cannot set as next.')
+		if (newNextPart && acceptableRundowns.indexOf(newNextPart.rundownId)) {
+			throw new Meteor.Error(409, `Part "${newNextPart._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`)
+		} else if (newNextPartInstance && acceptableRundowns.indexOf(newNextPartInstance.rundownId)) {
+			throw new Meteor.Error(409, `PartInstance "${newNextPartInstance._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`)
 		}
 
-		ps.push(resetPart(nextPart))
+		// if (nextPart._id === rundown.currentPartId) {
+		// 	throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
+		// }
+
+		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
+
+		if (newNextPart) {
+			ps.push(resetPart(newNextPart))
+		}
+
+		// create new instance
+		let newInstanceId: string
+		if (newNextPartInstance) {
+			newInstanceId = newNextPartInstance._id
+		} if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
+			// Re-use existing
+			newInstanceId = nextPartInstance._id
+		} else {
+			// Create new isntance
+			newInstanceId = `${nextPart._id}_${Random.id()}`
+			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
+			ps.push(asyncCollectionInsert(PartInstances, {
+				_id: newInstanceId,
+				takeCount: newTakeCount,
+				rundownId: nextPart.rundownId,
+				segmentId: nextPart.segmentId,
+				part: nextPart
+			}))
+
+			const rawPieces = Pieces.find({
+				rundownId: nextPart.rundownId,
+				partId: nextPart._id
+			}).fetch()
+			const pieceInstances = _.map(rawPieces, piece => literal<PieceInstance>({
+				_id: `${newInstanceId}_${piece._id}`,
+				rundownId: nextPart.rundownId,
+				partInstanceId: newInstanceId,
+				piece: piece
+			}))
+			ps.push(asyncCollectionInsertMany(PieceInstances, pieceInstances))
+
+			// Remove any instances which havent been taken
+			ps.push(asyncCollectionRemove(PartInstances, {
+				rundownId: nextPart.rundownId,
+				takeCount: { $gte: newTakeCount },
+				_id: { $ne: newInstanceId }
+			}))
+
+			// TODO - cleanup old pieceInstances
+		}
+
+		// reset any previous instances of this part
+		ps.push(asyncCollectionUpdate(PartInstances, {
+			_id: { $ne: newInstanceId },
+			rundownId: nextPart.rundownId,
+			'part._id': nextPart._id,
+			reset: { $ne: true }
+		}, {
+			$set: {
+				reset: true
+			}
+		}, {
+			multi: true
+		}))
+		ps.push(asyncCollectionUpdate(PieceInstances, {
+			partInstanceId: { $ne: newInstanceId },
+			rundownId: nextPart.rundownId,
+			'piece.partId': nextPart._id,
+			reset: { $ne: true }
+		}, {
+			$set: {
+				reset: true
+			}
+		}, {
+			multi: true
+		}))
 
 		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
-			$set: {
-				nextPartId: nextPart._id,
+			$set: literal<Partial<RundownPlaylist>>({
+				nextPartInstanceId: newInstanceId,
 				nextPartManual: !!setManually,
 				nextTimeOffset: nextTimeOffset || null
-			}
+			})
 		}))
-		rundownPlaylist.nextPartId = nextPart._id
+		rundownPlaylist.nextPartInstanceId = newInstanceId
 		rundownPlaylist.nextPartManual = !!setManually
 		rundownPlaylist.nextTimeOffset = nextTimeOffset || null
 
-		ps.push(asyncCollectionUpdate(Parts, nextPart._id, {
-			$push: {
-				'timings.next': getCurrentTime()
-			}
-		}))
 	} else {
-		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
-			$set: {
-				nextPartId: null,
-				nextPartManual: !!setManually
-			}
+		// Set to null
+
+		// Remove any instances which havent been taken
+		ps.push(asyncCollectionRemove(PartInstances, {
+			rundownId: { $in: acceptableRundowns },
+			isTaken: { $ne: true } // TODO - this needs setting
 		}))
-		rundownPlaylist.nextPartId = null
+
+		// TODO - cleanup old pieceInstances
+
+		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
+			$set: literal<Partial<RundownPlaylist>>({
+				nextPartInstanceId: null,
+				nextPartManual: !!setManually
+			})
+		}))
+		rundownPlaylist.nextPartInstanceId = null
 		rundownPlaylist.nextPartManual = !!setManually
 	}
 

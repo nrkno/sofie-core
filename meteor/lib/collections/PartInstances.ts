@@ -27,6 +27,9 @@ export class PartInstance implements DBPartInstance {
 
 	public takeCount: number
 
+	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
+	public isTaken?: boolean
+
 	// From IBlueprintPartInstance:
 	public part: Part
 	public _id: string

@@ -716,6 +716,12 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 		})
 	})
 }
+export function asyncCollectionInsertMany<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	docs: DBInterface[],
+): Promise<string[]> {
+	return Promise.all(_.map(docs, doc => asyncCollectionInsert(collection, doc)))
+}
 /** Insert document, and ignore if document already exists */
 export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
