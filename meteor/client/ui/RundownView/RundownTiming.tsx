@@ -8,6 +8,7 @@ import { Part, Parts } from '../../../lib/collections/Parts'
 import { getCurrentTime, literal } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -582,17 +583,18 @@ class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>,
  * @return number
  */
 export function computeSegmentDuration (
-	timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>
+	timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>, display?: boolean
 ): number {
 	let partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 
 	return partIds.reduce((memo, item) => {
-		return partDurations ?
-				partDurations[item] !== undefined ?
-				memo + partDurations[item] :
-				memo
-			: 0
+		const partDuration = (partDurations ?
+			 partDurations[item] !== undefined ?
+				 partDurations[item] :
+				 0
+			 : 0) || (display ? DEFAULT_DISPLAY_DURATION : 0)
+		return memo + partDuration
 	}, 0)
 }
