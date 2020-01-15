@@ -42,6 +42,7 @@ import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { MAGIC_TIME_SCALE_FACTOR, RundownViewEvents } from '../RundownView'
+import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 
 interface IProps {
 	id: string
@@ -136,11 +137,11 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 			const durations = this.context.durations as RundownTiming.RundownTimingContext
 			this.props.parts.forEach((item) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
-				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[item._id] || 0)
+				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[item._id] || DEFAULT_DISPLAY_DURATION)
 				total += duration
 			})
 		} else {
-			total = RundownUtils.getSegmentDuration(this.props.parts)
+			total = RundownUtils.getSegmentDuration(this.props.parts, true)
 		}
 		return total
 	}
