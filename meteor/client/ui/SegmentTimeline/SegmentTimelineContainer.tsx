@@ -472,7 +472,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					getElementWidth(this.timelineDiv) || 1
 				) /
 				(
-					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1
+					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id), true) || 1
 				)
 			)
 		}
