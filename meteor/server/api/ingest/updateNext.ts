@@ -3,83 +3,73 @@ import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { fetchNext } from '../../../lib/lib'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
-
-function getRundownValidParts (rundown: Rundown) {
-	return rundown.getParts({
-		$or: [
-			{ invalid: false },
-			{ invalid: { $exists: false } }
-		]
-	})
-}
+import { selectNextPart } from '../playout/lib'
 
 export namespace UpdateNext {
-	export function ensureNextPartIsValid (rundown: Rundown) {
-		const playlist = RundownPlaylists.findOne(rundown.playlistId)
-		if (!playlist) throw new Meteor.Error(501, `Orphaned playlist: "${rundown._id}"`)
-
+	export function ensureNextPartIsValid (playlist: RundownPlaylist) {
 		// Ensure the next-id is still valid
-		if (rundown && playlist.active && playlist.nextPartId) {
-			const allValidParts = getRundownValidParts(rundown)
+		if (playlist && playlist.active && playlist.nextPartInstanceId) {
+			const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+			const allParts = playlist.getParts()
 
-			const currentPart = allValidParts.find(part => part._id === playlist.currentPartId)
-			const currentNextPart = allValidParts.find(part => part._id === playlist.nextPartId)
-
-			// If the current part is missing, then we can't know what the next is
-			if (!currentPart && playlist.currentPartId !== null) {
-				if (!currentNextPart) {
-					// Clear the invalid data
-					ServerPlayoutAPI.setNextPartInner(playlist, null)
+			if (currentPartInstance) {
+				// Leave the manually chosen part
+				const oldNextPart = nextPartInstance ? allParts.find(p => p._id === nextPartInstance.part._id) : undefined
+				if (playlist.nextPartManual && oldNextPart) {
+					return
 				}
+
+				// Check if the part is the same
+				const newNextPart = selectNextPart(currentPartInstance, allParts)
+				if (newNextPart && nextPartInstance && newNextPart.part._id === nextPartInstance.part._id) {
+					return
+				}
+
+				// TODO-PartInstances - if nextPart is very close to being on air during an autonext, then leave it
+
+				// Set to the newly selected part
+				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			} else {
-				const expectedAutoNextPart = fetchNext(allValidParts, currentPart)
-				const expectedAutoNextPartId = expectedAutoNextPart ? expectedAutoNextPart._id : null
-
-				// If not manually set, make sure that next is done by rank
-				if (!playlist.nextPartManual && expectedAutoNextPartId !== playlist.nextPartId) {
-					ServerPlayoutAPI.setNextPartInner(playlist, expectedAutoNextPart || null)
-
-				} else if (playlist.nextPartId && !currentNextPart) {
-					// If the specified next is not valid, then reset
-					ServerPlayoutAPI.setNextPartInner(playlist, expectedAutoNextPart || null)
-				}
+				// Don't have a currentPart, so set next to first in the show
+				const newNextPart = selectNextPart(null, allParts)
+				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			}
 		}
 	}
-	export function afterInsertParts (rundown: Rundown, newPartExternalIds: string[], removePrevious: boolean) {
-		const playlist = RundownPlaylists.findOne(rundown.playlistId)
-		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
-
-		if (rundown && playlist.active) {
+	export function afterInsertParts (playlist: RundownPlaylist, newPartExternalIds: string[], removePrevious: boolean) {
+		if (playlist && playlist.active) {
 			// If manually chosen, and could have been removed then special case handling
-			if (!playlist.nextPartId && playlist.currentPartId) {
+			if (!playlist.nextPartInstanceId && playlist.currentPartInstanceId) {
 				// The playhead is probably at the end of the rundown
 
-				// Set Next forward
-				moveNext(rundown._id, 1, 0, false)
+				// Try and choose something
+				const { currentPartInstance } = playlist.getSelectedPartInstances()
+				const newNextPart = selectNextPart(currentPartInstance || null, playlist.getParts())
+				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 
 			} else if (playlist.nextPartManual && removePrevious) {
-				const allValidParts = getRundownValidParts(rundown)
+				const { nextPartInstance } = playlist.getSelectedPartInstances()
+				const allParts = playlist.getParts()
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
-				const currentNextPart = allValidParts.find(part => part._id === playlist.nextPartId)
+				const currentNextPart = nextPartInstance ? allParts.find(part => part._id === nextPartInstance.part._id) : undefined
 				if (!currentNextPart) {
 					// Set to the first of the inserted parts
-					const firstNewPart = allValidParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1)
+					const firstNewPart = allParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1 && part.isPlayable())
 					if (firstNewPart) {
 						// Matched a part that replaced the old, so set to it
 						ServerPlayoutAPI.setNextPartInner(playlist, firstNewPart)
 
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
-						UpdateNext.ensureNextPartIsValid(rundown)
+						UpdateNext.ensureNextPartIsValid(playlist)
 					}
 				}
 			} else {
 				// Ensure next is valid
-				UpdateNext.ensureNextPartIsValid(rundown)
+				UpdateNext.ensureNextPartIsValid(playlist)
 			}
 		}
 	}

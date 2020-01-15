@@ -49,7 +49,7 @@ import {
 	setNextPart as libSetNextPart,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPreviousPartForSegment,
+	getPartBeforeSegment,
 	selectNextPart
 } from './lib'
 import {
@@ -1254,7 +1254,7 @@ export namespace ServerPlayoutAPI {
 				rArguments[property] = value
 			}
 
-			refreshPart(rundown, partInstance)
+			refreshPart(rundown, partInstance.part)
 
 			// Only take time to update the timeline if there's a point to do it
 			if (playlist.active) {
@@ -1464,7 +1464,7 @@ export function triggerUpdateTimelineAfterIngestData (rundownId: string, changed
 				_id: { $in: data.changedSegments }
 			})
 			if (firstSegment) {
-				prevPart = getPreviousPartForSegment(rundownId, firstSegment)
+				prevPart = getPartBeforeSegment(rundownId, firstSegment)
 			}
 		}
 

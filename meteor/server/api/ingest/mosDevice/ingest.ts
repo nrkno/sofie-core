@@ -264,7 +264,7 @@ export function handleMosDeleteStory (
 		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
 
 		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
-		UpdateNext.ensureNextPartIsValid(rundown)
+		UpdateNext.ensureNextPartIsValid(playlist)
 	})
 }
 
@@ -337,7 +337,7 @@ export function handleInsertParts (
 
 		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
 
-		UpdateNext.afterInsertParts(rundown, newPartIds, removePrevious)
+		UpdateNext.afterInsertParts(playlist, newPartIds, removePrevious)
 	})
 }
 export function handleSwapStories (
@@ -382,7 +382,7 @@ export function handleSwapStories (
 
 		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
 
-		UpdateNext.ensureNextPartIsValid(rundown)
+		UpdateNext.ensureNextPartIsValid(playlist)
 	})
 }
 export function handleMoveStories (
@@ -437,7 +437,7 @@ export function handleMoveStories (
 
 		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
 
-		UpdateNext.ensureNextPartIsValid(rundown)
+		UpdateNext.ensureNextPartIsValid(playlist)
 	})
 }
 

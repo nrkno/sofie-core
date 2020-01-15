@@ -276,7 +276,7 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 		setNextPart(rundownPlaylist, null)
 	}
 }
-export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
+export function getPartBeforeSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
 	const prevSegment = Segments.findOne({
 		rundownId: rundownId,
 		_rank: { $lt: dbSegment._rank }
@@ -307,7 +307,7 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	const segment = Segments.findOne(dbPart.segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
 
-	const prevPart = getPreviousPartForSegment(dbRundown._id, segment)
+	const prevPart = getPartBeforeSegment(dbRundown._id, segment)
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
 

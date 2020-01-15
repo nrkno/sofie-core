@@ -49,9 +49,9 @@ export function getCurrentTime (): Time {
 }
 export { systemTime }
 
-export type Optional<T> = {
-	[K in keyof T]?: T[K]
-}
+// export type Optional<T> = {
+// 	[K in keyof T]?: T[K]
+// }
 
 // type Test<T> = {
 // 	[K in keyof T]: T[K]

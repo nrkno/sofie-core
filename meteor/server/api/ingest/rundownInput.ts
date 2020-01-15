@@ -25,7 +25,8 @@ import {
 	ReturnType,
 	asyncCollectionUpsert,
 	asyncCollectionUpdate,
-	waitForPromise
+	waitForPromise,
+	asyncCollectionFindOne
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -641,12 +642,19 @@ function updateSegmentFromIngestData (
 	)
 	return anythingChanged(changes) ? segmentId : null
 }
-export function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
+function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
+	const pPlaylist = asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId })
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updatePartRanks(rundown)
 	updateSourceLayerInfinitesAfterPart(rundown)
-	UpdateNext.ensureNextPartIsValid(rundown)
+
+	const playlist = waitForPromise(pPlaylist)
+	if (!playlist) {
+		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
+	}
+	UpdateNext.ensureNextPartIsValid(playlist)
+	
 	triggerUpdateTimelineAfterIngestData(rundown._id, changedSegmentIds)
 }
 
