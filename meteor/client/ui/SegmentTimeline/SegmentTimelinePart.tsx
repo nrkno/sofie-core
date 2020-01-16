@@ -46,7 +46,7 @@ interface ISourceLayerPropsBase {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	relative?: boolean
+	relative: boolean
 	totalSegmentDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
@@ -57,11 +57,12 @@ interface ISourceLayerPropsBase {
 	autoNextPart: boolean
 	onContextMenu?: (contextMenuContext: any) => void
 }
+
 interface ISourceLayerProps extends ISourceLayerPropsBase {
 	layer: ISourceLayerUi
 }
 
-class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.Component<T> {
+class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.PureComponent<T> {
 	private mousePosition = {}
 
 	getPartContext = (props) => {
@@ -224,6 +225,7 @@ interface IOutputGroupProps {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
+	relative: boolean
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
@@ -307,7 +309,7 @@ interface IProps {
 	autoNextPart: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
-	relative?: boolean
+	relative: boolean
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
 	onContextMenu?: (contextMenuContext: any) => void
@@ -338,7 +340,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
-	private _configValueMemo: { [key: string]: ConfigItemValue } = {}
+	static whyDidYouRender = true
 
 	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
@@ -414,6 +416,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
+	shouldComponentUpdate (nextProps: WithTiming<IProps>, nextState: IState) {
+		return (!_.isEqual(nextProps, this.props) || !_.isEqual(nextState, this.state))
+	}
+
 	getLayerStyle () {
 		// this.props.part.expectedDuration ||
 		if (this.props.relative) {
@@ -481,7 +487,17 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 				if (layer.used) {
 					return (
 						<OutputGroup key={layer._id}
-							{...this.props}
+							collapsedOutputs={this.props.collapsedOutputs}
+							followLiveLine={this.props.followLiveLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							onContextMenu={this.props.onContextMenu}
+							onFollowLiveLine={this.props.onFollowLiveLine}
+							onPieceClick={this.props.onPieceClick}
+							onPieceDoubleClick={this.props.onPieceDoubleClick}
+							scrollLeft={this.props.scrollLeft}
+							scrollWidth={this.props.scrollWidth}
+							relative={this.props.relative}
 							mediaPreviewUrl={ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}
