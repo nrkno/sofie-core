@@ -212,6 +212,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.isVisible = false
 	}
 
+	shouldComponentUpdate (nextProps, nextState) {
+		return (!_.isEqual(nextProps, this.props) || !_.isEqual(nextState, this.state))
+	}
+
 	componentWillMount () {
 		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
@@ -391,6 +395,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 
+	onZoomChange = (e: any, newScale: number) => {
+		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
+	}
+
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
@@ -423,7 +431,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
 				onShowEntireSegment={this.onShowEntireSegment}
-				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
+				onZoomChange={this.onZoomChange}
 				onScroll={this.onScroll}
 				followingPart={this.props.followingPart}
 				isLastSegment={this.props.isLastSegment}
