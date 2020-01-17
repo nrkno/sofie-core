@@ -457,14 +457,15 @@ function diffAndApplyChanges (
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
 
 	// Check if operation affect currently playing Part:
-	if (playlist.active && playlist.currentPartId) {
+	const { currentPartInstance } = playlist.getSelectedPartInstances()
+	if (playlist.active && currentPartInstance) {
 		const currentPart = _.find(ingestParts, (ingestPart) => {
 			const partId = getPartId(rundown._id, ingestPart.externalId)
-			return partId === playlist.currentPartId
+			return partId === currentPartInstance.part._id
 		})
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
-			logger.warn(`Currently playing part "${playlist.currentPartId}" was removed during ingestData. Unsyncing the rundown!`)
+			logger.warn(`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`)
 			ServerRundownAPI.unsyncRundown(rundown._id)
 			return
 		} else {

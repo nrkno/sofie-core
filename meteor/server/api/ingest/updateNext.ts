@@ -5,7 +5,7 @@ import { ServerPlayoutAPI } from '../playout/playout'
 import { fetchNext } from '../../../lib/lib'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
-import { selectNextPart } from '../playout/lib'
+import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
 
 export namespace UpdateNext {
 	export function ensureNextPartIsValid (playlist: RundownPlaylist) {
@@ -27,7 +27,10 @@ export namespace UpdateNext {
 					return
 				}
 
-				// TODO-PartInstances - if nextPart is very close to being on air during an autonext, then leave it
+				// If we are close to an autonext, then leave it to avoid glitches
+				if (isTooCloseToAutonext(currentPartInstance) && nextPartInstance) {
+					return
+				}
 
 				// Set to the newly selected part
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)

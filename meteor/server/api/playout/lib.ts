@@ -612,3 +612,9 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		return o
 	})
 }
+export function isTooCloseToAutonext (currentPartInstance: PartInstance | undefined) {
+	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
+
+	// TODO-ASAP use some timing based rules
+	return true
+}

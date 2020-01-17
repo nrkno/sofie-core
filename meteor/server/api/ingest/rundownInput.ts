@@ -51,8 +51,10 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
-import { RundownPlaylists, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Mongo } from 'meteor/mongo'
+import { isTooCloseToAutonext } from '../playout/lib';
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances';
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -173,11 +175,10 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 		if (canBeUpdated(rundown)) {
 			let okToRemove: boolean = true
 			if (playlist.active) {
-				if (playlist.currentPartId) {
-					const part = Parts.findOne(playlist.currentPartId)
-					if (part && part.rundownId === rundown._id) {
-						okToRemove = false
-					}
+				const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+				
+				if ((currentPartInstance && currentPartInstance.rundownId === rundown._id) || (isTooCloseToAutonext(currentPartInstance) && nextPartInstance && nextPartInstance.rundownId === rundown._id)) {
+					okToRemove = false
 				}
 			}
 			if (okToRemove) {
@@ -297,7 +298,7 @@ function updateRundownFromIngestData (
 	}
 
 	// Save rundown into database:
-	let changes = saveIntoDb(Rundowns, {
+	const rundownChanges = saveIntoDb(Rundowns, {
 		_id: dbRundownData._id
 	}, [dbRundownData], {
 		beforeInsert: (o) => {
@@ -313,15 +314,16 @@ function updateRundownFromIngestData (
 
 	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
 
-	let playlistChanges = saveIntoDb(RundownPlaylists, {
+	// TODO - wont this wipe out any existing playlist data?
+	const playlistChanges = saveIntoDb(RundownPlaylists, {
 		_id: rundownPlaylistInfo.rundownPlaylist._id
 	}, [rundownPlaylistInfo.rundownPlaylist], {
 		beforeInsert: (o) => {
 			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
-			o.previousPartId = null
-			o.currentPartId = null
-			o.nextPartId = null
+			o.previousPartInstanceId = null
+			o.currentPartInstanceId = null
+			o.nextPartInstanceId = null
 			return o
 		},
 		beforeUpdate: (o) => {
@@ -378,8 +380,8 @@ function updateRundownFromIngestData (
 		adlibPieces.push(...segmentContents.adlibPieces)
 	})
 
-	changes = sumChanges(
-		changes,
+	const allChanges = sumChanges(
+		rundownChanges,
 		playlistChanges,
 		// Save the baseline
 		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs, {
@@ -456,13 +458,39 @@ function updateRundownFromIngestData (
 			}
 		})
 	)
-	const didChange = anythingChanged(changes)
+
+	syncChangesToSelectedPartInstances(dbRundown.getRundownPlaylist(), parts)
+
+	const didChange = anythingChanged(allChanges)
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
+}
+
+function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DBPart[]) {
+	// TODO-PartInstances - to be removed once new data flow
+	function syncPartChanges(partInstance: PartInstance | undefined) {
+		// We need to do this locally to avoid wiping out any stored changes
+		if (partInstance) {
+			const newPart = parts.find(p => p._id === partInstance.part._id)
+			if (newPart) {
+				PartInstances.update(partInstance._id, {
+					$set: {
+						part: {
+							...partInstance.part,
+							...newPart
+						}
+					}
+				})
+			}
+		}
+	}
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	syncPartChanges(currentPartInstance)
+	syncPartChanges(nextPartInstance)
 }
 
 function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
@@ -640,6 +668,9 @@ function updateSegmentFromIngestData (
 			}
 		})
 	)
+
+	syncChangesToSelectedPartInstances(rundown.getRundownPlaylist(), parts)
+
 	return anythingChanged(changes) ? segmentId : null
 }
 function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {

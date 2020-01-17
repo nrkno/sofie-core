@@ -21,6 +21,17 @@ export function getHash (str: string): string {
 }
 
 /**
+ * Wait for specified time
+ * @param time
+ */
+export function waitTime (time: number) {
+	let p = new Promise((resolve) => {
+		Meteor.setTimeout(resolve, time)
+	})
+	waitForPromise(p)
+}
+
+/**
  * Convenience method to convert a Meteor.call() into a Promise
  * @param  {string} Method name
  * @return {Promise<any>}
@@ -692,8 +703,12 @@ export function asyncCollectionFindFetch<DocClass, DBInterface> (
 	options?: FindOptions
 ): Promise<Array<DocClass>> {
 	return new Promise((resolve, reject) => {
-		let results = collection.find(selector, options).fetch()
-		resolve(results)
+		Meteor.defer(() => {
+			let results = collection.find(selector, options).fetch()
+			resolve(results)
+		})
+		// Let the find start executing
+		waitTime(0)
 	})
 }
 export function asyncCollectionFindOne<DocClass, DBInterface> (
@@ -795,9 +810,9 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
+export function waitForPromiseAll<T>(ps: Array<Promise<T>>): Array<T> {
 	return waitForPromise(Promise.all(ps))
-})
+}
 
 // export type UnPromise<T> = T extends Promise<infer U> ? U : T
 
