@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-6](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-5...v1.5.0-6) (2020-01-17)
+
+
+### Bug Fixes
+
+* update mediaObject subscriptions for AdLibListItems and DashboardPieceButtons ([c2263d9](https://github.com/nrkno/tv-automation-server-core/commit/c2263d9))
+
+
+
 ## [1.5.0-5](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-4...v1.5.0-5) (2020-01-16)
 
 
