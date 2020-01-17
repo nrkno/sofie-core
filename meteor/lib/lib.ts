@@ -781,9 +781,9 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
+export function waitForPromiseAll<T> (ps: Array<Promise<T>>): Array<T> {
 	return waitForPromise(Promise.all(ps))
-})
+}
 /**
  * Convert a promise to a "synchronous" Fiber function
  * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
