@@ -16,7 +16,8 @@ import { getCurrentTime,
 	makePromise,
 	clone,
 	literal,
-	asyncCollectionRemove} from '../../../lib/lib'
+	asyncCollectionRemove,
+	normalizeArray} from '../../../lib/lib'
 import { Timeline, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -743,21 +744,11 @@ export namespace ServerPlayoutAPI {
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
 			const showStyleBase = rundown.getShowStyleBase()
 
-			const currentSement = Segments.findOne(currentPartInstance.segmentId)
-			if (!currentSement) throw new Meteor.Error(404, `Segment "${currentPartInstance.segmentId}" not found!`)
-
-			let o = getResolvedSegment(showStyleBase, playlist, currentSement)
-
 			// @ts-ignore stringify
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
 
-			let allowedSourceLayers: {[layerId: string]: ISourceLayerExtended} = {}
-			_.each(o.segmentExtended.sourceLayers, (sourceLayer: ISourceLayerExtended) => {
-				if (sourceLayer.allowDisable) allowedSourceLayers[sourceLayer._id] = sourceLayer
-			})
-
-			// logger.info('allowedSourceLayers', allowedSourceLayers)
+			const allowedSourceLayers = normalizeArray(showStyleBase.sourceLayers)
 
 			// logger.info('nowInPart', nowInPart)
 			// logger.info('filteredPieces', filteredPieces)

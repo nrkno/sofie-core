@@ -7,9 +7,9 @@ import {
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, extendMandadory, literal, waitForPromise, fetchNext, last } from './lib'
-import { Segment } from './collections/Segments'
-import { Part, Parts } from './collections/Parts'
+import { normalizeArray, literal, waitForPromise, fetchNext, last } from './lib'
+import { Segment, DBSegment } from './collections/Segments'
+import { Part, Parts, DBPart } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ShowStyleBase } from './collections/ShowStyleBases'
@@ -17,7 +17,7 @@ import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
-export interface SegmentExtended extends Segment {
+export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers: {
 		[key: string]: IOutputLayerExtended
@@ -28,7 +28,7 @@ export interface SegmentExtended extends Segment {
 	}
 }
 
-export interface PartExtended extends Part {
+export interface PartExtended extends DBPart {
 	/** Pieces belonging to this part */
 	pieces: Array<PieceExtended>
 	renderedDuration: number
@@ -83,6 +83,7 @@ export interface PieceExtended extends Piece {
  * @param {Segment} segment
  * @param {boolean} [checkFollowingSegment]
  */
+// TODO-ASAP This will probably want to consider data from the partInstances if those exist and are to be shown
 export function getResolvedSegment (
 	showStyleBase: ShowStyleBase,
 	playlist: RundownPlaylist,
@@ -121,14 +122,17 @@ export function getResolvedSegment (
 
 	let autoNextPart = false
 
-	let segmentExtended = _.clone(segment) as SegmentExtended
-	/** Create maps for outputLayers and sourceLayers */
-	segmentExtended.outputLayers = {}
-	segmentExtended.sourceLayers = {}
+	let segmentExtended = literal<SegmentExtended>({
+		...segment,
+		/** Create maps for outputLayers and sourceLayers */
+		outputLayers: {},
+		sourceLayers: {}
+	})
 
 	// fetch all the parts for the segment
 	let partsE: Array<PartExtended> = []
 
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 	const segmentsAndParts = playlist.getSegmentsAndPartsSync()
 	let parts = segmentsAndParts.parts
 	// let segments = segmentsAndParts.segments
@@ -136,27 +140,27 @@ export function getResolvedSegment (
 
 	if (partsInSegment.length > 0) {
 		if (checkFollowingSegment) {
-			let followingPart = fetchNext(parts, last(partsInSegment))
+			let tmpFollowingPart = fetchNext(parts, last(partsInSegment))
 
-			if (followingPart) {
+			if (tmpFollowingPart) {
 
-				let pieces = Pieces.find({
-					partId: followingPart._id
+				const pieces = Pieces.find({
+					partId: tmpFollowingPart._id
 				}).fetch()
 
-				followingPart = extendMandadory<Part, PartExtended>(followingPart, {
-					pieces: _.map(pieces, (piece) => {
-						return extendMandadory<Piece, PieceExtended>(piece, {
-							// sourceLayer: ISourceLayerExtended,
-							// outputLayer: IOutputLayerExtended,
-							renderedInPoint: null,
-							renderedDuration: null,
-							// cropped: false,
-							// continuedByRef: PieceExtended,
-							// continuesRef: PieceExtended,
-							// maxLabelWidth: 0
-						})
-					}),
+				followingPart = literal<PartExtended>({
+					...tmpFollowingPart,
+					pieces: _.map(pieces, (piece) => literal<PieceExtended>({
+						...piece,
+						// sourceLayer: ISourceLayerExtended,
+						// outputLayer: IOutputLayerExtended,
+						renderedInPoint: null,
+						renderedDuration: null,
+						// cropped: false,
+						// continuedByRef: PieceExtended,
+						// continuesRef: PieceExtended,
+						// maxLabelWidth: 0
+					})),
 					renderedDuration: 0, // ?
 					startsAt: 0, // ?
 					willProbablyAutoNext: false // ?
@@ -167,26 +171,18 @@ export function getResolvedSegment (
 		// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 		// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 		const outputLayers = normalizeArray<IOutputLayerExtended>(
-			showStyleBase.outputLayers.map((layer) => {
-				return extendMandadory<IOutputLayer, IOutputLayerExtended>(
-					_.clone(layer),
-					{
-						sourceLayers: [],
-						used: false
-					}
-				)
-			}),
+			showStyleBase.outputLayers.map((layer) => literal<IOutputLayerExtended>({
+				...layer,
+				sourceLayers: [],
+				used: false
+			})),
 			'_id')
 		const sourceLayers = normalizeArray<ISourceLayerExtended>(
-			showStyleBase.sourceLayers.map((layer) => {
-				return extendMandadory<ISourceLayer, ISourceLayerExtended>(
-					_.clone(layer),
-					{
-						followingItems: [],
-						pieces: []
-					}
-				)
-			}),
+			showStyleBase.sourceLayers.map((layer) => literal<ISourceLayerExtended>({
+				...layer,
+				followingItems: [],
+				pieces: []
+			})),
 			'_id')
 
 		// the SuperTimeline has an issue with resolving pieces that start at the 0 absolute time point
@@ -205,13 +201,13 @@ export function getResolvedSegment (
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
-			let partE: PartExtended = extendMandadory(part, {
-				pieces: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
-					return extendMandadory<Piece, PieceExtended>(piece, {
-						renderedDuration: 0,
-						renderedInPoint: 0
-					})
-				}),
+			let partE = literal<PartExtended>({
+				...part,
+				pieces: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => literal<PieceExtended>({
+					...piece,
+					renderedDuration: 0,
+					renderedInPoint: 0
+				})),
 				renderedDuration: 0,
 				startsAt: 0,
 				willProbablyAutoNext: (
@@ -222,11 +218,11 @@ export function getResolvedSegment (
 			})
 
 			// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
-			if (playlist.currentPartId === partE._id) {
+			if (currentPartInstance && currentPartInstance.part._id === partE._id) {
 				isLiveSegment = true
 				currentLivePart = partE
 			}
-			if (playlist.nextPartId === partE._id) {
+			if (nextPartInstance && nextPartInstance.part._id === partE._id) {
 				isNextSegment = true
 			}
 			autoNextPart = !!(
@@ -447,9 +443,8 @@ export function getResolvedSegment (
 		segmentExtended.outputLayers = outputLayers
 		segmentExtended.sourceLayers = sourceLayers
 
-		if (isNextSegment && !isLiveSegment && !autoNextPart && playlist.currentPartId) {
-			const currentOtherPart = Parts.findOne(playlist.currentPartId)
-			if (currentOtherPart && currentOtherPart.expectedDuration && currentOtherPart.autoNext) {
+		if (isNextSegment && !isLiveSegment && !autoNextPart && currentPartInstance) {
+			if (currentPartInstance && currentPartInstance.part.expectedDuration && currentPartInstance.part.autoNext) {
 				autoNextPart = true
 			}
 		}
