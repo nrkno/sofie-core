@@ -10,7 +10,7 @@ import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Ti
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Pieces } from '../../../lib/collections/Pieces'
+import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces } from './pieces'
@@ -23,15 +23,18 @@ import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceIns
 import { PartInstances } from '../../../lib/collections/PartInstances'
 
 export namespace ServerPlayoutAdLibAPI {
-	export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdToCopy: string) {
+	export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 			if (rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 
-			const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdToCopy) as PieceInstance
-			if (!pieceInstanceToCopy) throw new Meteor.Error(404, `PieceInstance "${pieceInstanceIdToCopy}" not found!`)
+			const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdOrPieceIdToCopy)
+			const pieceToCopy = pieceInstanceToCopy ? pieceInstanceToCopy.piece : Pieces.findOne(pieceInstanceIdOrPieceIdToCopy) as Piece
+			if (!pieceToCopy) {
+				throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
+			}
 
 			const partInstance = PartInstances.findOne(partInstanceId)
 			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
@@ -40,10 +43,10 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
 			const showStyleBase = rundown.getShowStyleBase()
-			const sourceL = showStyleBase.sourceLayers.find(i => i._id === pieceInstanceToCopy.piece.sourceLayerId)
-			if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `PieceInstance "${pieceInstanceIdToCopy}" is not a GRAPHICS item!`)
+			const sourceL = showStyleBase.sourceLayers.find(i => i._id === pieceToCopy.sourceLayerId)
+			if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`)
 
-			const newPieceInstance = convertAdLibToPieceInstance(pieceInstanceToCopy.piece, partInstance, false)
+			const newPieceInstance = convertAdLibToPieceInstance(pieceToCopy, partInstance, false)
 			if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 				newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
 					_.compact(
@@ -62,7 +65,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			// Disable the original piece if from the same Part
-			if (pieceInstanceToCopy.partInstanceId === partInstance._id) {
+			if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
 				const pieces = getResolvedPieces(partInstance)
 				const resolvedPieceBeingCopied = pieces.find(p => p._id === pieceInstanceToCopy._id)
 

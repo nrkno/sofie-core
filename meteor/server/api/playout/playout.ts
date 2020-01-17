@@ -1044,12 +1044,12 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Make a copy of a piece and start playing it now
 	 */
-	export function pieceTakeNow (rundownId: string, partInstanceId: string, pieceInstanceIdToCopy: string) {
+	export function pieceTakeNow (rundownId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
 		check(rundownId, String)
 		check(partInstanceId, String)
-		check(pieceInstanceIdToCopy, String)
+		check(pieceInstanceIdOrPieceIdToCopy, String)
 
-		return ServerPlayoutAdLibAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdToCopy)
+		return ServerPlayoutAdLibAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	}
 	export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partInstanceId: string, adLibPieceId: string, queue: boolean) {
 		check(rundownPlaylistId, String)

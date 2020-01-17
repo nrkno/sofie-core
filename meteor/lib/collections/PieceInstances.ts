@@ -6,6 +6,9 @@ import { createMongoCollection } from './lib'
 import { Piece } from './Pieces'
 
 export interface PieceInstance extends IBlueprintPieceInstance {
+	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
+	readonly isTemporary?: boolean
+
 	_id: string
 	/** The rundown this piece belongs to */
 	rundownId: string
@@ -21,6 +24,7 @@ export interface ResolvedPieceInstance extends PieceInstance, IBlueprintResolved
 
 export function WrapPieceToTemporaryInstance (piece: Piece, partInstanceId: string): PieceInstance {
 	return literal<PieceInstance>({
+		isTemporary: true,
 		_id: `${piece._id}_tmp_instance`,
 		rundownId: piece.rundownId,
 		partInstanceId: partInstanceId,

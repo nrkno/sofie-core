@@ -23,8 +23,8 @@ methods[PlayoutAPI.methods.rundownDeactivate] = (rundownId: string) => {
 methods[PlayoutAPI.methods.reloadData] = (rundownId: string) => {
 	return ServerPlayoutAPI.reloadData(rundownId)
 }
-methods[PlayoutAPI.methods.pieceTakeNow] = (rundownId: string, partInstanceId: string, pieceInstanceIdToCopy: string) => {
-	return ServerPlayoutAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdToCopy)
+methods[PlayoutAPI.methods.pieceTakeNow] = (rundownId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) => {
+	return ServerPlayoutAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 }
 methods[PlayoutAPI.methods.rundownTake] = (rundownId: string) => {
 	return ServerPlayoutAPI.takeNextPart(rundownId)

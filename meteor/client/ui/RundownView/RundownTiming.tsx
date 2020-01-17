@@ -619,7 +619,7 @@ class AutoNextStatus extends React.Component<WithTiming<{}>> {
 const SPEAK_ADVANCE = 500
 
 interface IPartRemainingProps {
-	currentPartId: string | null
+	currentPartInstanceId: string | null
 	hideOnZero?: boolean
 	className?: string
 	heavyClassName?: string
@@ -685,7 +685,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 
 	componentDidUpdate (prevProps: WithTiming<IPartRemainingProps>) {
 		if (this.props.speaking) {
-			if (this.props.currentPartId !== prevProps.currentPartId) {
+			if (this.props.currentPartInstanceId !== prevProps.currentPartInstanceId) {
 				prevDisplayTime = undefined
 			}
 			this.speak()

@@ -18,7 +18,7 @@ import {
 	EvaluationBase
 } from '../../lib/collections/Evaluations'
 import { Studios } from '../../lib/collections/Studios'
-import { Pieces } from '../../lib/collections/Pieces'
+import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
@@ -226,34 +226,37 @@ export function togglePartArgument (rundownPlaylistId: string, partInstanceId: s
 		ServerPlayoutAPI.rundownTogglePartArgument(rundownPlaylistId, partInstanceId, property, value)
 	)
 }
-export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdToCopy: string) {
+export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
-	check(pieceInstanceIdToCopy, String)
+	check(pieceInstanceIdOrPieceIdToCopy, String)
 
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.currentPartInstanceId !== partInstanceId) return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
 
-	const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdToCopy) as PieceInstance
-	if (!pieceInstanceToCopy) throw new Meteor.Error(404, `PieceInstance "${pieceInstanceIdToCopy}" not found!`)
+	const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdOrPieceIdToCopy)
+	const pieceToCopy = pieceInstanceToCopy ? pieceInstanceToCopy.piece : Pieces.findOne(pieceInstanceIdOrPieceIdToCopy) as Piece
+	if (!pieceToCopy) {
+		throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
+	}
 
-	const rundown = Rundowns.findOne(pieceInstanceToCopy.rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${pieceInstanceToCopy.rundownId}" not found!`)
+	const rundown = Rundowns.findOne(pieceToCopy.rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${pieceToCopy.rundownId}" not found!`)
 
 	const partInstance = PartInstances.findOne({
 		_id: partInstanceId,
-		rundownId: pieceInstanceToCopy.rundownId
+		rundownId: rundown._id
 	})
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 	let showStyleBase = rundown.getShowStyleBase()
-	const sourceL = showStyleBase.sourceLayers.find(i => i._id === pieceInstanceToCopy.piece.sourceLayerId)
-	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`PieceInstance "${pieceInstanceToCopy}" is not a GRAPHICS piece!`)
+	const sourceL = showStyleBase.sourceLayers.find(i => i._id === pieceToCopy.sourceLayerId)
+	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS piece!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.pieceTakeNow(rundownPlaylistId, partInstanceId, pieceInstanceIdToCopy)
+		ServerPlayoutAPI.pieceTakeNow(rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	)
 }
 export function pieceSetInOutPoints (rundownPlaylistId: string, partId: string, pieceId: string, inPoint: number, duration: number) {
@@ -560,8 +563,8 @@ methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, u
 methods[UserActionAPI.methods.togglePartArgument] = function (rundownPlaylistId: string, partInstanceId: string, property: string, value: string): ClientAPI.ClientResponse {
 	return togglePartArgument.call(this, rundownPlaylistId, partInstanceId, property, value)
 }
-methods[UserActionAPI.methods.pieceTakeNow] = function (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdToCopy: string): ClientAPI.ClientResponse {
-	return pieceTakeNow.call(this, rundownPlaylistId, partInstanceId, pieceInstanceIdToCopy)
+methods[UserActionAPI.methods.pieceTakeNow] = function (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string): ClientAPI.ClientResponse {
+	return pieceTakeNow.call(this, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 }
 methods[UserActionAPI.methods.setInOutPoints] = function (rundownPlaylistId: string, partId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
 	return pieceSetInOutPoints.call(this, rundownPlaylistId, partId, pieceId, inPoint, duration)

@@ -271,8 +271,8 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
 				</span>
-				{ this.props.rundownPlaylist.currentPartId && <span className='timing-clock current-remaining'>
-					<CurrentPartRemaining currentPartId={this.props.rundownPlaylist.currentPartId} heavyClassName='overtime' />
+				{ this.props.rundownPlaylist.currentPartInstanceId && <span className='timing-clock current-remaining'>
+					<CurrentPartRemaining currentPartInstanceId={this.props.rundownPlaylist.currentPartInstanceId} heavyClassName='overtime' />
 					<AutoNextStatus />
 					{this.props.rundownPlaylist.holdState && this.props.rundownPlaylist.holdState !== RundownHoldState.COMPLETE ?
 						<div className='rundown__header-status rundown__header-status--hold'>{t('Hold')}</div>
@@ -1101,7 +1101,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let studio: Studio | undefined
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
-		rundowns = Rundowns.find({ playlistId: playlistId }).fetch()
+		rundowns = playlist.getRundowns()
 	}
 
 	const params = queryStringParse(location.search)
@@ -1330,7 +1330,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
 		if (this.props.playlist &&
-			prevProps.playlist && prevProps.playlist.currentPartId !== this.props.playlist.currentPartId &&
+			prevProps.playlist && prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
 			this.state.manualSetAsNext) {
 
 			this.setState({
@@ -1344,18 +1344,18 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			})
 		} else if (this.props.playlist &&
 			prevProps.playlist && !prevProps.playlist.active && this.props.playlist.active &&
-			this.props.playlist.nextPartId) {
+			this.props.playlist.nextPartInstanceId) {
 			scrollToPart(this.props.playlist.nextPartId).catch(() => console.error)
 		} else if (
 			// after take
 			(this.props.playlist &&
-			prevProps.playlist && this.props.playlist.currentPartId !== prevProps.playlist.currentPartId &&
-			this.props.playlist.currentPartId && this.state.followLiveSegments)
+			prevProps.playlist && this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
+			this.props.playlist.currentPartInstanceId && this.state.followLiveSegments)
 		) {
 			scrollToPart(this.props.playlist.currentPartId, true).catch(() => console.error)
 		} else if (
 			// initial Rundown open
-			(this.props.playlist && this.props.playlist.currentPartId &&
+			(this.props.playlist && this.props.playlist.currentPartInstanceId &&
 			this.state.subsReady && !prevState.subsReady)
 		) {
 			// allow for some time for the Rundown to render
@@ -1406,9 +1406,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 				const combos = i.hotkeys.split(',')
 
 				const handler = (e: KeyboardEvent) => {
-					if (this.props.playlist && this.props.playlist.active && this.props.playlist.nextPartId) {
+					if (this.props.playlist && this.props.playlist.active && this.props.playlist.nextPartInstanceId) {
 						doUserAction(t, e, UserActionAPI.methods.togglePartArgument, [
-							this.props.playlist._id, this.props.playlist.nextPartId, i.property, i.value
+							this.props.playlist._id, this.props.playlist.nextPartInstanceId, i.property, i.value
 						])
 					}
 				}
@@ -1426,15 +1426,18 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 	}
 
 	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
-		if (piece && piece.content && (piece.content as VTContent).editable &&
-			((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-			((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
-			this.setState({
-				isClipTrimmerOpen: true,
-				selectedPiece: piece
+		if (piece) {
+			const vtContent = piece.instance.piece.content as VTContent | undefined
+			if (vtContent && vtContent.editable &&
+				(vtContent.editable.editorialDuration !== undefined ||
+				vtContent.editable.editorialStart !== undefined)) {
+				this.setState({
+					isClipTrimmerOpen: true,
+					selectedPiece: piece
 
-			})
-		}
+				})
+			}
+	}
 	}
 
 	componentWillUnmount () {
@@ -1526,8 +1529,8 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		}, { timeout: 1000 })
 	}
 	onGoToLiveSegment = () => {
-		if (this.props.playlist && this.props.playlist.active && !this.props.playlist.currentPartId &&
-			this.props.playlist.nextPartId) {
+		if (this.props.playlist && this.props.playlist.active && !this.props.playlist.currentPartInstanceId &&
+			this.props.playlist.nextPartInstanceId) {
 			this.setState({
 				followLiveSegments: true
 			})
@@ -1538,7 +1541,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 				})
 				window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 			}, 2000)
-		} else if (this.props.playlist && this.props.playlist.active && this.props.playlist.currentPartId) {
+		} else if (this.props.playlist && this.props.playlist.active && this.props.playlist.currentPartInstanceId) {
 			this.setState({
 				followLiveSegments: true
 			})
@@ -1582,8 +1585,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 
 	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const { t } = this.props
-		if (this.state.studioMode && item && item._id && this.props.playlist && this.props.playlist.currentPartId) {
-			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.playlist._id, this.props.playlist.currentPartId, item._id])
+		if (this.state.studioMode && item && item.instance && this.props.playlist && this.props.playlist.currentPartInstanceId) {
+			const idToCopy = item.instance.isTemporary ? item.instance.piece._id : item.instance._id
+			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.playlist._id, this.props.playlist.currentPartInstanceId, idToCopy])
 		}
 	}
 

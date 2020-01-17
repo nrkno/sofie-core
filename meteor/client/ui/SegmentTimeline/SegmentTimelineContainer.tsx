@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Segment, Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
@@ -30,7 +30,7 @@ import { literal } from '../../../lib/lib'
 const SPEAK_ADVANCE = 500
 import { Settings } from '../../../lib/Settings'
 
-export interface SegmentUi extends Segment {
+export interface SegmentUi extends DBSegment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers?: {
 		[key: string]: IOutputLayerUi
@@ -120,7 +120,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part) => {
-		notes = notes.concat(part.getNotes(true), part.getInvalidReasonNotes())
+		notes = notes.concat(part.instance.part.getNotes(true), part.instance.part.getInvalidReasonNotes())
 	})
 	notes = notes.concat(segment.notes || [])
 
@@ -157,12 +157,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		(typeof props.playlist !== typeof nextProps.playlist) ||
 		(
 			(
-				props.playlist.currentPartId !== nextProps.playlist.currentPartId ||
-				props.playlist.nextPartId !== nextProps.playlist.nextPartId
+				props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
+				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId
 			) && (
 				(data.parts && (
-					data.parts.find(i => (i._id === props.playlist.currentPartId) || (i._id === nextProps.playlist.currentPartId)) ||
-					data.parts.find(i => (i._id === props.playlist.nextPartId) || (i._id === nextProps.playlist.nextPartId))
+					data.parts.find(i => (i.instance._id === props.playlist.currentPartInstanceId) || (i.instance._id === nextProps.playlist.currentPartInstanceId)) ||
+					data.parts.find(i => (i.instance._id === props.playlist.nextPartInstanceId) || (i.instance._id === nextProps.playlist.nextPartInstanceId))
 					)
 				)
 			)
@@ -194,7 +194,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	isLiveSegment: boolean
 	isVisible: boolean
-	rundownCurrentSegmentId: string | null
 	timelineDiv: HTMLDivElement
 	intersectionObserver: IntersectionObserver | undefined
 	mountedTime: number
@@ -225,7 +224,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentDidMount () {
-		this.rundownCurrentSegmentId = this.props.playlist.currentPartId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
 			this.startLive()
@@ -240,7 +238,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentDidUpdate (prevProps) {
-		this.rundownCurrentSegmentId = this.props.playlist.currentPartId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -306,16 +303,18 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
+			const currentLivePart = this.props.currentLivePart.instance.part
+
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
-				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
-					- this.context.durations.partDisplayStartsAt[this.props.parts[0]._id])
+				(this.context.durations.partDisplayStartsAt[currentLivePart._id]
+					- this.context.durations.partDisplayStartsAt[this.props.parts[0].instance.part._id])
 				|| 0
 
-			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
-			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
+			const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
+			const lastPlayOffset = currentLivePart.getLastPlayOffset() || 0
 
-			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
+			let newLivePosition = currentLivePart.startedPlayback && lastStartedPlayback ?
 				(e.detail.currentTime - lastStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
@@ -386,7 +385,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					getElementWidth(this.timelineDiv) || 1
 				) /
 				(
-					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i._id)) || 1
+					computeSegmentDuration(this.context.durations, this.props.parts.map(i => i.instance.part._id)) || 1
 				)
 			)
 		}

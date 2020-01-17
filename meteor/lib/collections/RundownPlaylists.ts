@@ -260,14 +260,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	getSelectedPartInstances (rundownIds0?: string[]) {
 		let rundownIds = rundownIds0
 		if (!rundownIds) {
-			const rundowns = this.getRundowns(undefined, {
-				fields: {
-					_id: 1,
-					_rank: 1,
-					name: 1
-				}
-			})
-			rundownIds = rundowns.map(i => i._id)
+			rundownIds = this.getRundownIDs()
 		}
 
 		const ids = _.compact([
@@ -285,6 +278,27 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			nextPartInstance: instances.find(inst => inst._id === this.nextPartInstanceId),
 			previousPartInstance: instances.find(inst => inst._id === this.previousPartInstanceId)
 		}
+	}
+	getAllPartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+		const rundownIds = this.getRundownIDs()
+
+		selector = selector || {}
+		options = options || {}
+		return PartInstances.find(
+			_.extend({
+				rundownId: { $in: rundownIds },
+			}, selector),
+			_.extend({
+				sort: { takeCount: 1 }
+			}, options)
+		).fetch()
+	}
+	getActivePartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+		const newSelector = {
+			...selector,
+			reset: { $ne: true }
+		}
+		return this.getAllPartInstances(newSelector, options)
 	}
 	fetchAllPlayoutData (): RundownPlaylistPlayoutData {
 		const rundowns = Rundowns.find({ playlistId: this._id }, {
