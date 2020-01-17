@@ -17,7 +17,7 @@ import { getResolvedSegment,
 	PieceExtended,
 	PartExtended
 } from '../../../lib/Rundown'
-import { RundownViewEvents } from '../RundownView'
+import { RundownViewEvents, IContextMenuContext } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getAllowSpeaking } from '../../lib/localStorage'
@@ -66,7 +66,7 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onTimeScaleChange?: (timeScaleVal: number) => void
-	onContextMenu?: (contextMenuContext: any) => void
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (level: NoteType) => void
 	followLiveSegments: boolean

@@ -11,7 +11,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import * as faCut from '@fortawesome/fontawesome-free-solid/faCut'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
-import { Position } from '../../../utils/positions'
+import { OffsetPosition } from '../../../utils/positions'
 
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
@@ -29,8 +29,8 @@ export interface ICustomLayerItemProps {
 	livePosition: number | null
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	elementPosition: Position
-	cursorPosition: Position
+	elementPosition: OffsetPosition
+	cursorPosition: OffsetPosition
 	cursorTimePosition: number
 	getItemLabelOffsetLeft?: () => { [key: string]: string }
 	getItemLabelOffsetRight?: () => { [key: string]: string }

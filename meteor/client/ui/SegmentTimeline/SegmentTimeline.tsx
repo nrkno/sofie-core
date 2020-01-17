@@ -40,6 +40,8 @@ import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage';
+import { IContextMenuContext } from '../RundownView';
+import { literal } from '../../../lib/lib';
 
 interface IProps {
 	id: string
@@ -71,7 +73,7 @@ interface IProps {
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onShowEntireSegment?: (event: any) => void
-	onContextMenu?: (contextMenuContext: any) => void
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: NoteType) => void
@@ -133,7 +135,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 			const durations = this.context.durations as RundownTiming.RundownTimingContext
 			this.props.parts.forEach((item) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
-				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[item._id] || 0)
+				const duration = Math.max((item.instance.part.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[item.instance.part._id] || 0)
 				total += duration
 			})
 		} else {
@@ -149,7 +151,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	renderZoomTimeline () {
 		return this.props.parts.map((part, index, array) => {
 			return (
-				<SegmentTimelinePart key={part._id}
+				<SegmentTimelinePart key={part.instance._id}
 					segment={this.props.segment}
 					playlist={this.props.playlist}
 					studio={this.props.studio}
@@ -164,7 +166,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					followLiveLine={this.props.followLiveLine}
 					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.segment._id === this.props.playlist.currentPartId && part.startedPlayback && part.getLastStartedPlayback() ? this.props.livePosition - (part.getLastStartedPlayback() || 0) : null}
+					livePosition={part.instance._id === this.props.playlist.currentPartInstanceId && part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback() ? this.props.livePosition - (part.instance.part.getLastStartedPlayback() || 0) : null}
 					isLastInSegment={false}
 					isLastSegment={false} />
 			)
@@ -354,10 +356,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	getSegmentContext = (props) => {
-		const ctx = {
+		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.parts.length > 0 ? this.props.parts[0] : null
-		}
+		})
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
 			this.props.onContextMenu(ctx)
@@ -406,7 +408,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						{t('On Air')}
 					</div>
 					<div className='segment-timeline__liveline__timecode'>
-						<CurrentPartRemaining currentPartId={this.props.playlist.currentPartId} speaking={getAllowSpeaking()} heavyClassName='overtime' />
+						<CurrentPartRemaining currentPartInstanceId={this.props.playlist.currentPartInstanceId} speaking={getAllowSpeaking()} heavyClassName='overtime' />
 						{this.props.autoNextPart ?
 							<div className='rundown-view__part__icon rundown-view__part__icon--auto-next'></div> :
 							<div className='rundown-view__part__icon rundown-view__part__icon--next'></div>
@@ -425,7 +427,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
 				return (
-					<SegmentTimelinePart key={part._id}
+					<SegmentTimelinePart key={part.instance._id}
 						{...this.props}
 						onPieceClick={this.props.onItemClick}
 						onPieceDoubleClick={this.props.onItemDoubleClick}
@@ -542,7 +544,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
-							partIds={this.props.parts.filter(item => item.duration === undefined).map(item => item._id)}
+							partIds={this.props.parts.filter(item => item.instance.part.duration === undefined).map(item => item._id)}
 						/>
 					}
 				</div>

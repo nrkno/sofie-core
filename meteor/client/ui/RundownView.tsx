@@ -24,7 +24,7 @@ import { Part, Parts } from '../../lib/collections/Parts'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownTimingProvider, withTiming, WithTiming, CurrentPartRemaining, AutoNextStatus } from './RundownView/RundownTiming'
-import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, PieceUi, PartUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
 import { RundownOverview } from './RundownView/RundownOverview'
@@ -62,6 +62,8 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
+import { SegmentUi } from './Shelf/AdLibPanel';
+import { OffsetPosition } from '../utils/positions';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1052,10 +1054,20 @@ interface IProps {
 	onlyShelf?: boolean
 }
 
+export interface IContextMenuContext {
+	segment?: SegmentUi
+	part?: PartUi | null
+
+	partDocumentOffset?: OffsetPosition,
+	timeScale?: number
+	mousePosition?: OffsetPosition,
+	partStartsAt?: number
+}
+
 interface IState {
 	timeScale: number
 	studioMode: boolean
-	contextMenuContext: any
+	contextMenuContext: IContextMenuContext
 	bottomMargin: string
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
@@ -1563,7 +1575,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		this.onGoToLiveSegment()
 	}
 
-	onContextMenu = (contextMenuContext: any) => {
+	onContextMenu = (contextMenuContext: IContextMenuContext) => {
 		this.setState({
 			contextMenuContext
 		})

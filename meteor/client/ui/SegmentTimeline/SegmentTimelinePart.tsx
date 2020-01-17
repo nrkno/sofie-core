@@ -19,14 +19,15 @@ import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTim
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, literal } from '../../../lib/lib'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
-import { getElementDocumentOffset } from '../../utils/positions'
+import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
+import { IContextMenuContext } from '../RundownView';
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -57,23 +58,23 @@ interface ISourceLayerProps {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
-	onContextMenu?: (contextMenuContext: any) => void
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
-	private mousePosition = {}
+	private mousePosition: OffsetPosition = { left: 0, top: 0 }
 
 	getPartContext = (props) => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + this.props.part.instance._id)
 		const partDocumentOffset = getElementDocumentOffset(partElement)
 
-		const ctx = {
+		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.part,
 			partDocumentOffset,
 			timeScale: this.props.timeScale,
 			mousePosition: this.mousePosition,
 			partStartsAt: this.props.startsAt
-		}
+		})
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
 			this.props.onContextMenu(ctx)
@@ -162,7 +163,7 @@ interface IOutputGroupProps {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
-	onContextMenu?: (contextMenuContext: any) => void
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
@@ -228,7 +229,7 @@ interface IProps {
 	relative?: boolean
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
-	onContextMenu?: (contextMenuContext: any) => void
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	isLastInSegment: boolean
 	isLastSegment: boolean
 }
