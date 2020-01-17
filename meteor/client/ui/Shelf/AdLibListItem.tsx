@@ -55,6 +55,18 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 		super(props)
 	}
 
+	componentDidMount () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
+	componentDidUpdate () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
 	updateMediaObjectSubscription () {
 		if (this.props.item && this.props.layer) {
 			const piece = this.props.item as any as AdLibPieceUi
