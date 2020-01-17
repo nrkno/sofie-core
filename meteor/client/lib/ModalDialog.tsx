@@ -1,6 +1,6 @@
 import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { mousetrapHelper } from './mousetrapHelper'

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'

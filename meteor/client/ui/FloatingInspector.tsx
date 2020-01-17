@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 
 interface IPropsHeader {
 	shown: boolean
