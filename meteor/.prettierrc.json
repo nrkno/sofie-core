@@ -4,7 +4,8 @@
 	"trailingComma": "none",
 	"singleQuote": true,
 	"jsxBracketSameLine": true,
-	"printWidth": 100,
+	"printWidth": 120,
 	"useTabs": true,
-	"endOfLine": "crlf"
+	"endOfLine": "crlf",
+	"semi": false
 }
