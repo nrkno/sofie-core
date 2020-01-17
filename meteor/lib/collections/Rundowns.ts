@@ -65,6 +65,8 @@ export interface DBRundown extends IBlueprintRundownDB {
 	nextPartManual?: boolean
 	/** the id of the Previous Part */
 	previousPartId: string | null
+	/** Timestamp for the last time an incorrect part was reported as started */
+	lastIncorrectPartPlaybackReported?: Time
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
@@ -116,6 +118,7 @@ export class Rundown implements DBRundown {
 	public nextPartManual?: boolean
 	public previousPartId: string | null
 	public startedPlayback?: Time
+	public lastIncorrectPartPlaybackReported?: Time
 	public unsynced?: boolean
 	public unsyncedTime?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
