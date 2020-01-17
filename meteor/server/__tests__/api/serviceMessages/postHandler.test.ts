@@ -141,8 +141,8 @@ describe('ServiceMessages API POST endpoint', () => {
 			})
 
 			it('should reject non-criticality positive number', () => {
-				const tooHigh = Object.values(Criticality)
-					.filter((value) => !isNaN(value))
+				const tooHigh = (Object.values(Criticality)
+					.filter((value) => !isNaN(value as number)) as Criticality[])
 					.sort((a, b) => b - a)[0] + 1
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = tooHigh

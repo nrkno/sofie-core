@@ -1,11 +1,11 @@
 {
 	"compilerOptions": {
-		"target": "es6",
+		"target": "es2019",
 		"experimentalDecorators": true,
 		"moduleResolution": "node",
 		"strictNullChecks": true,
 		"sourceMap": true,
-		"allowJs": true,
+		"allowJs": false,
 		"jsx": "react",
 		"allowSyntheticDefaultImports": true,
 		"plugins": [
@@ -13,7 +13,7 @@
 				"name": "typescript-tslint-plugin"
 			}
 		],
-		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object"]
+		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017", "es2018"]
 	},
 	"include": [
 		"client/**/*",
