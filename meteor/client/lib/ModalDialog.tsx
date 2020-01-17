@@ -1,6 +1,6 @@
 import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { mousetrapHelper } from './mousetrapHelper'
@@ -129,6 +129,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		this.inputResult[edit.props.attribute || ''] = newValue
 	}
 	render () {
+		debugger
 		return this.props.show ?
 					<Escape to='viewport'>
 						<VelocityReact.VelocityTransitionGroup enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }} runOnMount={true}>
