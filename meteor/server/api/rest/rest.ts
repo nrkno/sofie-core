@@ -3,7 +3,7 @@ import { Picker, Router, Params } from 'meteor/meteorhacks:picker'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { MeteorMethodSignatures } from '../../methods'
+import { MeteorMethodSignatures } from '../../../lib/methods'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
 

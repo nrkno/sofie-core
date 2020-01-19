@@ -4,7 +4,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
-import { setMeteorMethods, Methods } from '../../methods'
+import { setMeteorMethods, Methods } from '../../../lib/methods'
 import { PeripheralDevices, PeripheralDevice, getStudioIdFromDevice } from '../../../lib/collections/PeripheralDevices'
 
 export namespace MediaScannerIntegration {

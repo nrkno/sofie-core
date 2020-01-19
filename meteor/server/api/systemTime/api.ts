@@ -1,5 +1,5 @@
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { Methods, setMeteorMethods } from '../../methods'
+import { Methods, setMeteorMethods } from '../../../lib/methods'
 import { determineDiffTime } from './systemTime'
 import { getCurrentTime, systemTime } from '../../../lib/lib'
 

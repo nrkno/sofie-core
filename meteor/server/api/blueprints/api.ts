@@ -10,7 +10,7 @@ import {
 import { Random } from 'meteor/random'
 import { check, Match } from 'meteor/check'
 import { BlueprintAPI } from '../../../lib/api/blueprint'
-import { Methods, setMeteorMethods } from '../../methods'
+import { Methods, setMeteorMethods } from '../../../lib/methods'
 import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprints } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'

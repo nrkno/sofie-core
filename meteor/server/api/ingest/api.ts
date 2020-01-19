@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { Methods, setMeteorMethods } from '../../methods'
+import { Methods, setMeteorMethods } from '../../../lib/methods'
 
 import { RundownInput } from './rundownInput'
 

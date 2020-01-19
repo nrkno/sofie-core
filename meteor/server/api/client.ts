@@ -9,7 +9,7 @@ import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { setMeteorMethods, Methods } from '../methods'
+import { setMeteorMethods, Methods } from '../../lib/methods'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport (timestamp: Time, errorObject: any, location: string) {

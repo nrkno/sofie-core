@@ -17,7 +17,7 @@ import {
 	getCurrentTime,
 	removeNullyProperties
 } from '../../lib/lib'
-import { setMeteorMethods, Methods } from '../methods'
+import { setMeteorMethods, Methods } from '../../lib/methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'

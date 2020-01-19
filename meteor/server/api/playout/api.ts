@@ -1,4 +1,4 @@
-import { Methods, setMeteorMethods } from '../../methods'
+import { Methods, setMeteorMethods } from '../../../lib/methods'
 import { PlayoutAPI } from '../../../lib/api/playout'
 import { ServerPlayoutAPI } from './playout'
 import { getCurrentTime } from '../../../lib/lib'

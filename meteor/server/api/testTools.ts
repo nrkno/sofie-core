@@ -5,7 +5,7 @@ import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles
 import { Studios, Studio, ITestToolsConfig, MappingExt } from '../../lib/collections/Studios'
 import { getCurrentTime, literal, waitForPromise, getHash } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
-import { setMeteorMethods, Methods } from '../methods'
+import { setMeteorMethods, Methods } from '../../lib/methods'
 import { logger } from '../logging'
 import * as moment from 'moment'
 import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'

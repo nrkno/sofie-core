@@ -1,7 +1,7 @@
 import {
 	setMeteorMethods,
 	Methods
-} from '../methods'
+} from '../../lib/methods'
 import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 import { Timeline, TimelineObjGeneric, getTimelineId } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'

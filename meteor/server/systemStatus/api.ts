@@ -1,4 +1,4 @@
-import { Methods, setMeteorMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../../lib/methods'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'

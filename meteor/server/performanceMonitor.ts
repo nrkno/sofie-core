@@ -5,7 +5,7 @@ import {
 	setMeteorMethods,
 	getRunningMethods,
 	resetRunningMethods
-} from './methods'
+} from '../lib/methods'
 
 /**
  * The performanceMonotor runs at an interval, and when run it checks that it actually ran on time.

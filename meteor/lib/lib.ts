@@ -1070,3 +1070,17 @@ export function firstIfArray<T> (value: any): T {
 
 
 export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)
+
+export function extractFunctionSignature (f: Function): string[] | undefined {
+	if (f) {
+		const str = f.toString() || ''
+
+		const m = str.match(/\(([^)]*)\)/)
+		if (m) {
+			const params = m[1].split(',')
+			return _.map(params, (p) => {
+				return p.trim()
+			})
+		}
+	}
+}

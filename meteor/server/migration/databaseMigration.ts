@@ -35,7 +35,7 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest
 } from 'tv-automation-sofie-blueprints-integration'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods } from '../../lib/methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'

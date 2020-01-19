@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { PubSub } from '../../lib/api/pubsub'
-import { extractFunctionSignature } from '../lib'
+import { extractFunctionSignature } from '../../lib/lib'
 
 export const MeteorPublicationSignatures: {[key: string]: string[]} = {}
 export const MeteorPublications: {[key: string]: Function} = {}

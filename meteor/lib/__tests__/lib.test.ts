@@ -27,7 +27,7 @@ import {
 	partialExceptId,
 	escapeHtml
 } from '../lib'
-import { setMeteorMethods } from '../../server/methods'
+import { setMeteorMethods } from '../methods'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 

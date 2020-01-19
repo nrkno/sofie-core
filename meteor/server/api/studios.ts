@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
-import { Methods, setMeteorMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../../lib/methods'
 import { StudiosAPI } from '../../lib/api/studios'
 import { Studios, Studio, DBStudio } from '../../lib/collections/Studios'
 import { literal } from '../../lib/lib'

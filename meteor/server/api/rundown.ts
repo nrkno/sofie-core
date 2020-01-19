@@ -18,7 +18,7 @@ import {
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { Methods, setMeteorMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../../lib/methods'
 import { RundownAPI } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'

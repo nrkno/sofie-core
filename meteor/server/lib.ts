@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
-import { Methods } from './methods'
+import { Methods } from '../lib/methods'
 import * as _ from 'underscore'
 
 export const fsWriteFile: (path: fs.PathLike | number, data: any, options?: { encoding?: string | null; mode?: number | string; flag?: string; } | string | undefined | null) => void
@@ -14,17 +14,4 @@ export const fsUnlinkFile: (path: fs.PathLike) => void
 export function getAbsolutePath (): string {
 	// @ts-ignore Meteor.absolutePath is injected by the package ostrio:meteor-root
 	return Meteor.absolutePath
-}
-export function extractFunctionSignature (f: Function): string[] | undefined {
-	if (f) {
-		const str = f.toString() || ''
-
-		const m = str.match(/\(([^)]*)\)/)
-		if (m) {
-			const params = m[1].split(',')
-			return _.map(params, (p) => {
-				return p.trim()
-			})
-		}
-	}
 }

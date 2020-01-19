@@ -6,6 +6,9 @@ import { extractFunctionSignature } from './lib'
 export interface Methods {
 	[method: string]: Function
 }
+export interface ClientSideMethods {
+	[method: string]: (...args: any[]) => void
+}
 export const MeteorMethodSignatures: {[key: string]: string[]} = {}
 
 let runningMethods: {[methodId: string]: {

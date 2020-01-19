@@ -1,6 +1,6 @@
 import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
-import { Methods, setMeteorMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../../lib/methods'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'

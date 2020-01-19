@@ -1,5 +1,5 @@
 import * as MOS from 'mos-connection'
-import { setMeteorMethods, Methods } from '../../../methods'
+import { setMeteorMethods, Methods } from '../../../../lib/methods'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { MosIntegration } from './mosIntegration'
 

@@ -7,7 +7,7 @@ import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, getCurrentTime, getHash } from '../../lib/lib'
 import { Parts } from '../../lib/collections/Parts'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods } from '../../lib/methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
 

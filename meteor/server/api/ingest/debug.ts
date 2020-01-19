@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Methods, setMeteorMethods } from '../../methods'
+import { Methods, setMeteorMethods } from '../../../lib/methods'
 import { IngestActions } from './actions'
 import { updateTimeline } from '../playout/timeline'
 

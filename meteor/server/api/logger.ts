@@ -1,4 +1,4 @@
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods } from '../../lib/methods'
 import { logger } from '../logging'
 import * as _ from 'underscore'
 

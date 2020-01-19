@@ -1,5 +1,5 @@
 import { check, Match } from 'meteor/check'
-import { setMeteorMethods, Methods } from '../methods'
+import { setMeteorMethods, Methods } from '../../lib/methods'
 import { MigrationMethods, MigrationChunk } from '../../lib/api/migration'
 import { getMigrationStatus, runMigration, forceMigration, resetDatabaseVersions } from './databaseMigration'
 import { MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
