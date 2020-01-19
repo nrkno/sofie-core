@@ -300,8 +300,10 @@ export class Rundown implements DBRundown {
 }
 export interface RundownData {
 	rundown: Rundown
+	/** Ordered array of the Segments in a Rundown */
 	segments: Array<Segment>
 	segmentsMap: {[id: string]: Segment}
+	/** Ordered array of the Parts in a Rundown */
 	parts: Array<Part>
 	partsMap: {[id: string]: Part}
 	pieces: Array<Piece>

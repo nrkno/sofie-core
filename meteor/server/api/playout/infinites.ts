@@ -8,6 +8,7 @@ import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, normalizeArray, toc, makePromise, waitForPromise } from '../../../lib/lib'
+import { getPartsAfter } from './lib'
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
@@ -54,7 +55,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	waitForPromiseAll(ps)
 
 	if (previousPart) {
-	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
+		partsToProcess = getPartsAfter(previousPart, partsToProcess)
 	}
 
    // Prepare pieces:
@@ -258,7 +259,8 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 })
 
 export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (rundown: Rundown, part: Part, sourceLayer: string) {
-	let remainingParts = rundown.getParts().filter(l => l._rank > part._rank)
+	const remainingParts = getPartsAfter(part, rundown.getParts())
+
 	for (let line of remainingParts) {
 		let continuations = line.getAllPieces().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
 		if (continuations.length === 0) {

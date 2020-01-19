@@ -239,19 +239,9 @@ function getPartsOrderedByTime (rundownData: RundownData) {
 	// calculate ordered list of parts, which can be cached for other layers
 	const parts = rundownData.parts.map(part => ({
 		partId: part._id,
-		rank: part._rank,
 		segmentId: part.segmentId,
 		part: part
 	}))
-	parts.sort((a, b) => {
-		if (a.rank < b.rank) {
-			return -1
-		}
-		if (a.rank > b.rank) {
-			return 1
-		}
-		return 0
-	})
 
 	let currentPartIndex = 0
 	let currentSegmentId: string | undefined

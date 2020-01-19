@@ -48,7 +48,8 @@ import {
 	setNextPart as libSetNextPart,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPreviousPartForSegment
+	getPreviousPartForSegment,
+	getPartsAfter
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -870,14 +871,7 @@ export namespace ServerPlayoutAPI {
 
 						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPart._rank,
-							},
-							_id: { $ne: playingPart._id }
-						}, {
-							limit: 1
-						})
+						const partsAfter = getPartsAfter(playingPart, rundown.getParts())
 
 						let nextPart: Part | null = _.first(partsAfter) || null
 
@@ -896,14 +890,9 @@ export namespace ServerPlayoutAPI {
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPart._rank,
-							},
-							_id: { $ne: playingPart._id }
-						})
+						const partsAfter = getPartsAfter(playingPart, rundown.getParts())
 
-						let nextPart: Part | null = partsAfter[0] || null
+						let nextPart: Part | null = _.first(partsAfter) || null
 
 						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
