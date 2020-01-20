@@ -28,7 +28,7 @@ import { prefixAllObjectIds } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
-import { PieceInstance, ResolvedPieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, ResolvedPieceInstance, WrapPieceToTemporaryInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
 export interface PieceResolved extends Piece {
@@ -40,14 +40,16 @@ export interface PieceResolved extends Piece {
 export function orderPieces (pieces: Piece[], partId: string, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
 
-	const itemMap: { [key: string]: Piece } = {}
-	pieces.forEach(i => itemMap[i._id] = i)
+	const tmpPieceInstances = pieces.map(p => WrapPieceToTemporaryInstance(p, partId))
 
-	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = clone(createPieceGroup(undefined, piece))
+	const itemMap: { [key: string]: PieceInstance } = {}
+	tmpPieceInstances.forEach(i => itemMap[i._id] = i)
+
+	const objs: Array<TimelineObjRundown> = tmpPieceInstances.map(instance => {
+		const obj = clone(createPieceGroup(undefined, instance))
 
 		if (obj.enable.start === 0) {
-			if (piece.infiniteId && piece.infiniteId !== piece._id) {
+			if (instance.piece.infiniteId && instance.piece.infiniteId !== instance.piece._id) {
 				// Infinite coninuation, needs to start earlier otherwise it will likely end up being unresolved
 				obj.enable.start = 0
 			} else {
@@ -70,8 +72,8 @@ export function orderPieces (pieces: Piece[], partId: string, partStarted?: numb
 	let unresolvedCount = tlResolved.statistics.unresolvedCount
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
-		const pieceId = (obj.metadata || {}).pieceId
-		const piece = _.clone(itemMap[pieceId]) as PieceResolved
+		const pieceInstanceId = (obj.metadata || {}).pieceId
+		const piece = _.clone(itemMap[pieceInstanceId]).piece as PieceResolved
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			piece.resolvedStart = obj0.resolved.instances[0].start || 0
 			piece.resolved = true
@@ -180,7 +182,7 @@ export function createPieceGroup (
 	})
 }
 
-function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, pieceMap: { [key: string]: PieceInstance | undefined }, resolveForStr: string) {
+function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, pieceMap: { [key: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
 	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
 		time: baseTime
 	})

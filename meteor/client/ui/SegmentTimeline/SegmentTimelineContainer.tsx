@@ -220,6 +220,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.subscribe(PubSub.parts, {
 			segmentId: this.props.segmentId
 		})
+		this.subscribe(PubSub.partInstances, {
+			segmentId: this.props.segmentId,
+			reset: { $ne: true }
+		})
 		SpeechSynthesiser.init()
 	}
 

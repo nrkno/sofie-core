@@ -32,6 +32,7 @@ import { Random } from 'meteor/random';
 import { literal, normalizeArray } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper';
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances';
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -475,11 +476,11 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		})
 		const rMap = normalizeArray(rundowns, '_id')
 		currentRundown = rundowns[0]
-		const partId = props.playlist.currentPartId || props.playlist.nextPartId
-		if (partId) {
-			const part = Parts.findOne(partId)
-			if (part) {
-				currentRundown = rMap[part.rundownId]
+		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		if (partInstanceId) {
+			const partInstance = PartInstances.findOne(partInstanceId)
+			if (partInstance) {
+				currentRundown = rMap[partInstance.rundownId]
 			}
 		}
 
@@ -618,6 +619,14 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						$in: rundownIds
 					}
 				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: {
+						$in: rundownIds
+					},
+					reset: {
+						$ne: true
+					}
+				})
 				this.subscribe(PubSub.adLibPieces, {
 					rundownId: {
 						$in: rundownIds
@@ -711,10 +720,10 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		})
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (piece.invalid) {
+		if (adlibPiece.invalid) {
 			NotificationCenter.push(new Notification(
 				t('Invalid AdLib'),
 				NoticeLevel.WARNING,
@@ -722,7 +731,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 				'toggleAdLib'))
 			return
 		}
-		if (piece.floated) {
+		if (adlibPiece.floated) {
 			NotificationCenter.push(new Notification(
 				t('Floated AdLib'),
 				NoticeLevel.WARNING,
@@ -731,23 +740,23 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			return
 		}
 
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
-			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
-			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId] &&
+			!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable) {
+			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.playlist && this.props.playlist.currentPartId) {
-			if (!piece.isGlobal) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+			if (!adlibPiece.isGlobal) {
 				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
+					this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false
 				])
-			} else if (piece.isGlobal && !piece.isSticky) {
+			} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
 				doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-					this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
+					this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false
 				])
-			} else if (piece.isSticky) {
+			} else if (adlibPiece.isSticky) {
 				doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [
-					this.props.playlist._id, piece.sourceLayerId
+					this.props.playlist._id, adlibPiece.sourceLayerId
 				])
 			}
 		}
@@ -756,9 +765,9 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.playlist && this.props.playlist.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.playlist._id, this.props.playlist.currentPartId, sourceLayer._id
+				this.props.playlist._id, this.props.playlist.currentPartInstanceId, sourceLayer._id
 			])
 		}
 	}

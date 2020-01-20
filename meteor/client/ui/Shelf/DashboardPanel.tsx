@@ -35,6 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances';
 
 interface IState {
 	outputLayers: {
@@ -53,35 +54,40 @@ interface IDashboardPanelProps {
 
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
-	unfinishedPieces: {
-		[key: string]: Piece[]
+	unfinishedPieceInstanceIds: {
+		[adlibId: string]: string[]
 	}
 }
 
 export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	const unfinishedPieces = _.groupBy(props.playlist.currentPartId ? Pieces.find({
-		partId: props.playlist.currentPartId,
-		startedPlayback: {
+	const unfinishedPieceInstances = _.groupBy(props.playlist.currentPartInstanceId ? PieceInstances.find({
+		partInstanceId: props.playlist.currentPartInstanceId,
+		'piece.startedPlayback': {
 			$exists: true
 		},
 		$or: [{
-			stoppedPlayback: {
+			'piece.stoppedPlayback': {
 				$eq: 0
 			}
 		}, {
-			stoppedPlayback: {
+			'piece.stoppedPlayback': {
 				$exists: false
 			}
 		}],
-		adLibSourceId: {
+		'piece.adLibSourceId': {
 			$exists: true
 		}
-	}).fetch() : [], (piece) => piece.adLibSourceId)
+	}).fetch() : [], (instance) => instance.piece.adLibSourceId)
 
-	return Object.assign({}, fetchAndFilter(props), {
+	// Convert to array of ids as that is all that is needed
+	const unfinishedPieceInstanceIds:{ [adlibId: string]: string[] } = {}
+	_.each(unfinishedPieceInstances, (grp, id) => unfinishedPieceInstanceIds[id] = _.map(grp, instance => instance._id))
+
+	return {
+		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
-		unfinishedPieces
-	})
+		unfinishedPieceInstanceIds: unfinishedPieceInstanceIds
+	}
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
 })(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
@@ -143,6 +149,14 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 						$in: rundownIds
 					}
 				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: {
+						$in: rundownIds
+					},
+					reset: {
+						$ne: true
+					}
+				})
 				this.subscribe(PubSub.adLibPieces, {
 					rundownId: {
 						$in: rundownIds
@@ -199,7 +213,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	isAdLibOnAir (adLib: AdLibPieceUi) {
-		if (this.props.unfinishedPieces[adLib._id] && this.props.unfinishedPieces[adLib._id].length > 0) {
+		if (this.props.unfinishedPieceInstanceIds[adLib._id] && this.props.unfinishedPieceInstanceIds[adLib._id].length > 0) {
 			return true
 		}
 		return false
@@ -289,10 +303,10 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (piece.invalid) {
+		if (adlibPiece.invalid) {
 			NotificationCenter.push(new Notification(
 				t('Invalid AdLib'),
 				NoticeLevel.WARNING,
@@ -300,7 +314,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				'toggleAdLib'))
 			return
 		}
-		if (piece.floated) {
+		if (adlibPiece.floated) {
 			NotificationCenter.push(new Notification(
 				t('Floated AdLib'),
 				NoticeLevel.WARNING,
@@ -309,24 +323,24 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && sourceLayer.isQueueable) {
-			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
+			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.playlist && this.props.playlist.currentPartId) {
-			if (!this.isAdLibOnAir(piece)) {
-				if (!piece.isGlobal) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+			if (!this.isAdLibOnAir(adlibPiece)) {
+				if (!adlibPiece.isGlobal) {
 					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-						this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
+						this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false
 					])
-				} else if (piece.isGlobal && !piece.isSticky) {
+				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
 					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-						this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false
+						this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false
 					])
-				} else if (piece.isSticky) {
-					this.onToggleSticky(piece.sourceLayerId, e)
+				} else if (adlibPiece.isSticky) {
+					this.onToggleSticky(adlibPiece.sourceLayerId, e)
 				}
 			} else {
 				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
@@ -337,7 +351,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
 		}
@@ -346,9 +360,9 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.playlist && this.props.playlist.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.playlist._id, this.props.playlist.currentPartId, sourceLayer._id
+				this.props.playlist._id, this.props.playlist.currentPartInstanceId, sourceLayer._id
 			])
 		}
 	}

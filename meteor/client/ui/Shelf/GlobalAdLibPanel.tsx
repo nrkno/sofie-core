@@ -29,6 +29,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { PartInstances } from '../../../lib/collections/PartInstances';
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
@@ -286,11 +287,11 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		const rundowns = props.playlist.getRundowns()
 		const rMap = normalizeArray(rundowns, '_id')
 		currentRundown = rundowns[0]
-		const partId = props.playlist.currentPartId || props.playlist.nextPartId
-		if (partId) {
-			const part = Parts.findOne(partId)
-			if (part) {
-				currentRundown = rMap[part.rundownId]
+		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		if (partInstanceId) {
+			const partInstance = PartInstances.findOne(partInstanceId)
+			if (partInstance) {
+				currentRundown = rMap[partInstance.rundownId]
 			}
 		}
 
@@ -443,7 +444,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.currentRundown && this.props.playlist.currentPartId && this.props.playlist.active) {
+		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
 		}
@@ -456,35 +457,35 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		})
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (piece.invalid) {
+		if (adlibPiece.invalid) {
 			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
 			return
 		}
-		if (piece.floated) {
+		if (adlibPiece.floated) {
 			NotificationCenter.push(new Notification(t('Floated AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Floated'), 'toggleAdLib'))
 			return
 		}
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
-			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
-			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId] &&
+			!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable) {
+			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 
-		if (this.props.playlist && this.props.playlist.currentPartId && piece.isGlobal) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.playlist._id, this.props.playlist.currentPartId, piece._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 
-		if (this.props.playlist && this.props.playlist.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.playlist._id, this.props.playlist.currentPartId, sourceLayer._id])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.playlist._id, this.props.playlist.currentPartInstanceId, sourceLayer._id])
 		}
 	}
 

@@ -40,7 +40,7 @@ import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
-import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
+import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPartInstance, scrollToPartInstance } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
@@ -879,8 +879,8 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.playlist._id, changeRehearsal], (err, response) => {
 				if (!err && response) {
 					if (!handleRundownReloadResponse(t, this.props.playlist, response.result)) {
-						if (this.props.playlist && this.props.playlist.nextPartId) {
-							scrollToPart(this.props.playlist.nextPartId).catch(() => console.error)
+						if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
+							scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
 						}
 					}
 				}
@@ -1067,7 +1067,7 @@ export interface IContextMenuContext {
 interface IState {
 	timeScale: number
 	studioMode: boolean
-	contextMenuContext: IContextMenuContext
+	contextMenuContext: IContextMenuContext | null
 	bottomMargin: string
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
@@ -1284,9 +1284,25 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 						$in: rundownIDs
 					}
 				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: {
+						$in: rundownIDs
+					},
+					reset: {
+						$ne: true
+					}
+				})
 				this.subscribe(PubSub.pieces, {
 					rundownId: {
 						$in: rundownIDs
+					}
+				})
+				this.subscribe(PubSub.pieceInstances, {
+					rundownId: {
+						$in: rundownIDs
+					},
+					reset: {
+						$ne: true
 					}
 				})
 				this.subscribe(PubSub.adLibPieces, {
@@ -1357,21 +1373,21 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		} else if (this.props.playlist &&
 			prevProps.playlist && !prevProps.playlist.active && this.props.playlist.active &&
 			this.props.playlist.nextPartInstanceId) {
-			scrollToPart(this.props.playlist.nextPartId).catch(() => console.error)
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
 		} else if (
 			// after take
 			(this.props.playlist &&
 			prevProps.playlist && this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
 			this.props.playlist.currentPartInstanceId && this.state.followLiveSegments)
 		) {
-			scrollToPart(this.props.playlist.currentPartId, true).catch(() => console.error)
+			scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
 		} else if (
 			// initial Rundown open
 			(this.props.playlist && this.props.playlist.currentPartInstanceId &&
 			this.state.subsReady && !prevState.subsReady)
 		) {
 			// allow for some time for the Rundown to render
-			maintainFocusOnPart(this.props.playlist.currentPartId, 7000, true, true)
+			maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 		}
 
 		if (typeof this.props.playlist !== typeof prevProps.playlist ||
@@ -1546,7 +1562,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToPart(this.props.playlist.nextPartId, true).catch(console.error)
+			scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch(console.error)
 			setTimeout(() => {
 				this.setState({
 					followLiveSegments: true
@@ -1557,7 +1573,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			this.setState({
 				followLiveSegments: true
 			})
-			scrollToPart(this.props.playlist.currentPartId, true).catch(console.error)
+			scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(console.error)
 			setTimeout(() => {
 				this.setState({
 					followLiveSegments: true

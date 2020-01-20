@@ -3,17 +3,18 @@ import * as Velocity from 'velocity-animate'
 
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts } from '../../lib/collections/Parts'
+import { PartInstances } from '../../lib/collections/PartInstances';
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
 
-export function maintainFocusOnPart (partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
+export function maintainFocusOnPartInstance (partInstanceId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
 	let startTime = Date.now()
 	const focus = () => {
 		// console.log("focus");
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
-			scrollToPart(partId, forceScroll, noAnimation).then(() => {
+			scrollToPartInstance(partInstanceId, forceScroll, noAnimation).then(() => {
 				_dontClearInterval = false
 			}).catch(() => {
 				_dontClearInterval = false
@@ -36,6 +37,16 @@ function quitFocusOnPart () {
 		clearInterval(focusInterval)
 		focusInterval = undefined
 	}
+}
+
+export function scrollToPartInstance (partInstanceId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+	// TODO: do scrolling within segment as well?
+	quitFocusOnPart()
+	const partInstance = PartInstances.findOne(partInstanceId)
+	if (partInstance) {
+		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation)
+	}
+	return Promise.reject('Could not find PartInstance')
 }
 
 export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {

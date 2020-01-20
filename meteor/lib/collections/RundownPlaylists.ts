@@ -197,7 +197,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const rundownIds = rundowns.map(i => i._id)
 
 		const pSegments = asyncCollectionFindFetch(Segments, {
-			$in: rundownIds
+			rundownId: {
+				$in: rundownIds
+			}
 		}, {
 			sort: {
 				rundownId: 1,
@@ -206,7 +208,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 
 		const pParts = asyncCollectionFindFetch(Parts, {
-			$in: rundownIds
+			rundownId: {
+				$in: rundownIds
+			}
 		}, {
 			sort: {
 				rundownId: 1,

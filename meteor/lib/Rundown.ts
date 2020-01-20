@@ -98,7 +98,6 @@ function getPieceInstancesForPartInstance(partInstance: PartInstance) {
  * @param {Segment} segment
  * @param {boolean} [checkFollowingSegment]
  */
-// TODO-ASAP This will probably want to consider data from the partInstances if those exist and are to be shown
 export function getResolvedSegment (
 	showStyleBase: ShowStyleBase,
 	playlist: RundownPlaylist,

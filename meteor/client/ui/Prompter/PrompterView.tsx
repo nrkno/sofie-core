@@ -415,7 +415,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
 		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })
 		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.partInstances, { rundownId: this.props.rundownId, reset: { $ne: true } })
 		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownId })
+		this.subscribe(PubSub.pieceInstances, { rundownId: this.props.rundownId, reset: { $ne: true } })
 
 	}
 

@@ -133,6 +133,10 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 				this.subscribe(PubSub.parts, {
 					rundownId: this.props.playlistId
 				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: this.props.playlistId,
+					reset: { $ne: true }
+				})
 			}
 
 			render() {
@@ -314,8 +318,16 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 				this.subscribe(PubSub.parts, {
 					rundownId: { $in: rundownIDs }
 				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: { $in: rundownIDs },
+					reset: { $ne: true }
+				})
 				this.subscribe(PubSub.pieces, {
 					rundownId: { $in: rundownIDs }
+				})
+				this.subscribe(PubSub.pieceInstances, {
+					rundownId: { $in: rundownIDs },
+					reset: { $ne: true }
 				})
 				this.subscribe(PubSub.showStyleBases, {
 					_id: { $in: _.uniq(this.props.rundowns.map(i => i.showStyleBaseId)) }
