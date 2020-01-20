@@ -1,4 +1,4 @@
-import * as elementResizeEvent from 'element-resize-event'
+import elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as _ from 'underscore'
 

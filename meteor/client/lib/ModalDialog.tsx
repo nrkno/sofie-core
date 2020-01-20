@@ -129,7 +129,6 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		this.inputResult[edit.props.attribute || ''] = newValue
 	}
 	render () {
-		debugger
 		return this.props.show ?
 					<Escape to='viewport'>
 						<VelocityReact.VelocityTransitionGroup enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }} runOnMount={true}>

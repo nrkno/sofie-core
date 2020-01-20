@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { render } from 'react-dom'
 
-import { I18nextProvider, withTranslation} from 'react-i18next'
+import { I18nextProvider, withTranslation } from 'react-i18next'
 import './ui/i18n'
 
 import '../lib/main'
