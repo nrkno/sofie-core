@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Evaluations, Evaluation } from '../../../lib/collections/Evaluations'
 import { DatePickerFromTo } from '../../lib/datePicker'
-import * as moment from 'moment'
+import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 interface IEvaluationProps {
@@ -29,7 +29,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			}
 		}).fetch()
 	}
-})(class ExternalMessages extends MeteorReactComponent<Translated<IEvaluationProps & IEvaluationTrackedProps>, IEvaluationState> {
+})(class EvaluationView extends MeteorReactComponent<Translated<IEvaluationProps & IEvaluationTrackedProps>, IEvaluationState> {
 	private _currentsub: string = ''
 	private _sub?: Meteor.SubscriptionHandle
 	constructor (props) {

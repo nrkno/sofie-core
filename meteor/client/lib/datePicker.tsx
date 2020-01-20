@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import DatePicker from 'react-datepicker'
-import * as moment from 'moment'
+import moment from 'moment'
 import 'react-datepicker/dist/react-datepicker.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'

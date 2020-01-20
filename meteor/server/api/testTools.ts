@@ -5,7 +5,7 @@ import { Studios, Studio, ITestToolsConfig, MappingExt, StudioId } from '../../l
 import { getCurrentTime, literal, waitForPromise, getHash, getRandomId, protectString, makePromise, check } from '../../lib/lib'
 import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
 import { registerClassToMeteorMethods } from '../methods'
-import * as moment from 'moment'
+import moment from 'moment'
 import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'
 import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
