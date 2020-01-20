@@ -124,13 +124,12 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	let partsE: Array<PartExtended> = []
 
 	const segmentsAndParts = rundown.getSegmentsAndPartsSync()
-	let parts = segmentsAndParts.parts
 	// let segments = segmentsAndParts.segments
-	const partsInSegment = _.filter(parts, p => p.segmentId === segment._id)
+	const partsInSegment = _.filter(segmentsAndParts.parts, p => p.segmentId === segment._id)
 
 	if (partsInSegment.length > 0) {
 		if (checkFollowingSegment) {
-			let followingPart = fetchNext(parts, last(partsInSegment))
+			let followingPart = fetchNext(segmentsAndParts.parts, last(partsInSegment))
 
 			if (followingPart) {
 
@@ -195,7 +194,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		let startsAt = 0
 		let previousPart: PartExtended
 		// fetch all the pieces for the parts
-		partsE = _.map(parts, (part, itIndex) => {
+		partsE = _.map(partsInSegment, (part, itIndex) => {
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
@@ -339,7 +338,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				// either this is not the first element of the displayDurationGroup
 				(displayDurationGroups[partE.displayDurationGroup] !== undefined) ||
 				// or there is a following member of this displayDurationGroup
-				(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === partE.displayDurationGroup)
+				(partsInSegment[itIndex + 1] && partsInSegment[itIndex + 1].displayDurationGroup === partE.displayDurationGroup)
 			)) {
 				displayDurationGroups[partE.displayDurationGroup] = (displayDurationGroups[partE.displayDurationGroup] || 0) + (partE.expectedDuration || 0)
 				partE.renderedDuration = partE.duration || Math.min(partE.displayDuration || 0, partE.expectedDuration || 0) || displayDurationGroups[partE.displayDurationGroup]
