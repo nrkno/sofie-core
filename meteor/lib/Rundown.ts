@@ -151,13 +151,11 @@ export function getResolvedSegment (
 	const segmentsAndParts = playlist.getSegmentsAndPartsSync()
 	const activePartInstances = playlist.getActivePartInstances()
 
-	let parts = segmentsAndParts.parts
-	// let segments = segmentsAndParts.segments
-	const partsInSegment = _.filter(parts, p => p.segmentId === segment._id)
+	const partsInSegment = _.filter(segmentsAndParts.parts, p => p.segmentId === segment._id)
 
 	if (partsInSegment.length > 0) {
 		if (checkFollowingSegment) {
-			let tmpFollowingPart = fetchNext(parts, last(partsInSegment))
+			let tmpFollowingPart = fetchNext(segmentsAndParts.parts, last(partsInSegment))
 
 			if (tmpFollowingPart) {
 				const tmpFollowingPartInstance = FindPartInstanceOrWrapToTemporary(activePartInstances, tmpFollowingPart)
@@ -212,7 +210,7 @@ export function getResolvedSegment (
 		let startsAt = 0
 		let previousPart: PartExtended | undefined
 		// fetch all the pieces for the parts
-		partsE = _.map(parts, (part, itIndex) => {
+		partsE = _.map(partsInSegment, (part, itIndex) => {
 			const partInstance = FindPartInstanceOrWrapToTemporary(activePartInstances, part)
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
@@ -350,7 +348,7 @@ export function getResolvedSegment (
 				// either this is not the first element of the displayDurationGroup
 				(displayDurationGroups[partE.instance.part.displayDurationGroup] !== undefined) ||
 				// or there is a following member of this displayDurationGroup
-				(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === partE.instance.part.displayDurationGroup)
+				(partsInSegment[itIndex + 1] && partsInSegment[itIndex + 1].displayDurationGroup === partE.instance.part.displayDurationGroup)
 			)) {
 				displayDurationGroups[partE.instance.part.displayDurationGroup] = (displayDurationGroups[partE.instance.part.displayDurationGroup] || 0) + (partE.instance.part.expectedDuration || 0)
 				partE.renderedDuration = partE.instance.part.duration || Math.min(partE.instance.part.displayDuration || 0, partE.instance.part.expectedDuration || 0) || displayDurationGroups[partE.instance.part.displayDurationGroup]
