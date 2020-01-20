@@ -69,6 +69,10 @@ import * as SuperTimeline from 'superfly-timeline'
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
  */
 const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
+/**
+ * time in ms before an autotake when we don't accept takes
+ */
+const AUTOTAKE_DEBOUNCE = 1000
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -217,15 +221,25 @@ export namespace ServerPlayoutAPI {
 			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
-			if (currentPart && currentPart.transitionDuration) {
+			if (currentPart) {
 				const prevPart = rundown.previousPartId ? rundownData.partsMap[rundown.previousPartId] : undefined
 				const allowTransition = prevPart && !prevPart.disableOutTransition
+				const start = currentPart.getLastStartedPlayback()
 
 				// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
-				if (allowTransition) {
-					const start = currentPart.getLastStartedPlayback()
+				if (allowTransition && currentPart.transitionDuration) {
 					if (start && now < start + currentPart.transitionDuration) {
 						return ClientAPI.responseError('Cannot take during a transition')
+					}
+				}
+
+				const offset = currentPart.getLastPlayOffset()
+				if (start && offset && currentPart.expectedDuration) {
+					const t = Date.now() - start! + offset!
+
+					// If there is an auto next planned
+					if (currentPart.autoNext && t > currentPart.expectedDuration - AUTOTAKE_DEBOUNCE) {
+						return ClientAPI.responseError('Cannot take shortly before an autoTake')
 					}
 				}
 			}
