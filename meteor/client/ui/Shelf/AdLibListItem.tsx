@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as ClassNames from 'classnames'
+import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
 
@@ -53,6 +54,18 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 
 	constructor (props: IListViewItemProps) {
 		super(props)
+	}
+
+	componentDidMount () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
+	componentDidUpdate () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
 	}
 
 	updateMediaObjectSubscription () {

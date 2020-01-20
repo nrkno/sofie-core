@@ -382,9 +382,9 @@ interface IPrompterTrackedProps {
 	nextPartId: string,
 	prompterData: PrompterData
 }
-interface IPrompterState {
-	subsReady: boolean
-}
+
+type ScrollAnchor = [number, string] | null
+
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 
 	const rundown = Rundowns.findOne(props.rundownId)
@@ -397,8 +397,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		nextPartId: rundown && rundown.nextPartId || '',
 		prompterData
 	}
-})(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
-	private _scrollAnchor: [number, string] | undefined
+})(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
+	private _debounceUpdate: NodeJS.Timer
 
 	constructor (props) {
 		super(props)
@@ -406,20 +406,19 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			subsReady: false
 		}
 	}
+	
 	componentWillUnmount () {
 		super.componentWillUnmount()
 	}
-	componentWillMount () {
 
+	componentDidMount () {
 		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
 		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })
 		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
 		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownId })
-
 	}
 
-	UNSAFE_componentWillUpdate () {
-		// TODO: find an element to anchor to
+	getScrollAnchor = () => {
 		let readPosition = (this.props.config.margin || 0) * window.innerHeight / 100
 		switch (this.props.config.marker) {
 			case 'top':
@@ -444,27 +443,38 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		foundPositions = _.sortBy(foundPositions, v => 1 * v[0])
 
 		if (foundPositions.length > 0) {
-			this._scrollAnchor = foundPositions[foundPositions.length - 1]
+			return foundPositions[foundPositions.length - 1]
+		}
+		return null
+	}
+
+	restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
+		if (scrollAnchor === null) return
+		const anchor = document.querySelector(scrollAnchor[1])
+		if (anchor) {
+			const { top } = anchor.getBoundingClientRect()
+
+			window.scrollBy({
+				top: top - scrollAnchor[0]
+			})
+		} else {
+			console.warn('Read anchor could not be found: ' + scrollAnchor[1])
 		}
 	}
 
-	componentDidUpdate () {
-		// TODO: Restore element's position
+	shouldComponentUpdate(nextProps, nextState): boolean {
+		clearTimeout(this._debounceUpdate)
+		this.props = nextProps
+		this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
+		return false
+	}
 
-		if (this._scrollAnchor) {
-			const anchor = document.querySelector(this._scrollAnchor[1])
-			if (anchor) {
-				const { top } = anchor.getBoundingClientRect()
+	getSnapshotBeforeUpdate () {
+		return this.getScrollAnchor() as any
+	}
 
-				window.scrollBy({
-					top: top - this._scrollAnchor[0]
-				})
-
-				this._scrollAnchor = undefined
-			} else {
-				console.warn('Read anchor could not be found: ' + this._scrollAnchor[1])
-			}
-		}
+	componentDidUpdate (prevProps, prevState, snapshot) {
+		this.restoreScrollAnchor(snapshot)
 	}
 
 	renderPrompterData (prompterData: PrompterData) {
