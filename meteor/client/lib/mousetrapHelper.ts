@@ -80,7 +80,16 @@ export namespace mousetrapHelper {
 
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
+				// throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
+				const callback = _callbackTags[index + '_' + tag]
+				const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback)
+				if (callbackIndex >= 0) {
+					_boundHotkeys[index].splice(callbackIndex, 1)
+					if (tag) {
+						// cleanup callback tags to avoid memory leaks
+						delete _callbackTags[index + '_' + tag]
+					}
+				}
 			}
 			_callbackTags[index + '_' + tag] = callback
 		}
@@ -110,7 +119,8 @@ export namespace mousetrapHelper {
 		if (tag) {
 			callback = _callbackTags[index + '_' + tag]
 			if (callback === undefined) {
-				throw new Error(`No callback found for ${tag} and keys ${keys}`)
+				// console.warn(`No callback found for ${tag} and keys ${keys}`)
+				return
 			}
 		}
 

@@ -538,8 +538,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			followLive: true
 		}
 	}
-
-	UNSAFE_componentWillMount () {
+	
+	componentDidMount () {
 		this.subscribe(PubSub.segments, {
 			rundownId: this.props.rundown._id
 		})
@@ -558,9 +558,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.rundown.showStyleBaseId
 		})
-	}
 
-	componentDidMount () {
 		if (this.props.liveSegment) {
 			this.setState({
 				selectedSegment: this.props.liveSegment
@@ -586,6 +584,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 
 	componentWillUnmount () {
 		this._cleanUp()
+		
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 
