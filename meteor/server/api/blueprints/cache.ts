@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import * as moment from 'moment'
+import moment from 'moment'
 import { SaferEval } from 'safer-eval'
 import { logger } from '../../logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
