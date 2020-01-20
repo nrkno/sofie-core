@@ -30,6 +30,7 @@ import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances';
+import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel';
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
@@ -232,24 +233,6 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	}
 })
 
-export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
-	isGlobal?: boolean
-	isHidden?: boolean
-}
-
-export interface SegmentUi extends Segment {
-	/** Pieces belonging to this part */
-	parts: Array<Part>
-	items?: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-}
-
-interface ISourceLayerLookup {
-	[key: string]: ISourceLayer
-}
-
 interface IProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
@@ -259,22 +242,19 @@ interface IProps {
 
 interface IState {
 	selectedPiece: AdLibPiece | undefined
-	selectedSegment: SegmentUi | undefined
+	selectedSegment: AdlibSegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
 }
 interface ITrackedProps {
-	sourceLayerLookup: ISourceLayerLookup
+	sourceLayerLookup: { [id: string]: ISourceLayer }
 	rundownAdLibs: Array<AdLibPieceUi>
 	currentRundown: Rundown | undefined
 }
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	const sourceLayerLookup: ISourceLayerLookup = (
-		props.showStyleBase && props.showStyleBase.sourceLayers ?
-		_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
-		{}
-	)
+	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
+	
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 

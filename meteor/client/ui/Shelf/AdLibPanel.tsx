@@ -5,7 +5,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
+import { Segment, DBSegment } from '../../../lib/collections/Segments'
 import { Part, Parts } from '../../../lib/collections/Parts'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
@@ -35,11 +35,11 @@ import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelp
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances';
 
 interface IListViewPropsHeader {
-	uiSegments: Array<SegmentUi>
+	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: AdLibPieceUi) => void
 	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
 	selectedPart: AdLibPieceUi | undefined
-	selectedSegment: SegmentUi | undefined
+	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	noSegments: boolean
@@ -57,7 +57,7 @@ interface IListViewStateHeader {
 	}
 }
 
-export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, uiSegments: Array<SegmentUi>, filter?: RundownLayoutFilterBase, searchFilter?: string) {
+export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, uiSegments: Array<AdlibSegmentUi>, filter?: RundownLayoutFilterBase, searchFilter?: string) {
 	if (!searchFilter && !filter) return true
 	const liveSegment = uiSegments.find(i => i.isLive === true)
 	const uppercaseLabel = item.name.toUpperCase()
@@ -347,16 +347,12 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isClearSourceLayer?: boolean
 }
 
-export interface SegmentUi extends Segment {
+export interface AdlibSegmentUi extends DBSegment {
 	/** Pieces belonging to this part */
 	parts: Array<Part>
 	pieces?: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
-}
-
-interface ISourceLayerLookup {
-	[key: string]: ISourceLayer
 }
 
 export interface IAdLibPanelProps {
@@ -372,25 +368,22 @@ export interface IAdLibPanelProps {
 
 interface IState {
 	selectedPart: AdLibPiece | undefined
-	selectedSegment: SegmentUi | undefined
+	selectedSegment: AdlibSegmentUi | undefined
 	followLive: boolean
 	searchFilter: string | undefined
 }
 export interface IAdLibPanelTrackedProps {
-	uiSegments: Array<SegmentUi>
-	liveSegment: SegmentUi | undefined
-	sourceLayerLookup: ISourceLayerLookup
+	uiSegments: Array<AdlibSegmentUi>
+	liveSegment: AdlibSegmentUi | undefined
+	sourceLayerLookup: { [id: string]: ISourceLayer }
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
 export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
-	let liveSegment: SegmentUi | undefined = undefined
+	let liveSegment: AdlibSegmentUi | undefined = undefined
 
-	const sourceLayerLookup: ISourceLayerLookup = (
-		props.showStyleBase && props.showStyleBase.sourceLayers ?
-			_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
-			{}
-	)
+	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
+
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
@@ -411,7 +404,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		sourceLayerLookup,
 		sourceHotKeyUse
 	) => {
-		return (segments) ? (segments as Array<SegmentUi>).map((segSource) => {
+		return (segments) ? (segments as Array<AdlibSegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.parts = segSource.getParts(undefined, {
 			fields: {
@@ -772,7 +765,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 	}
 
-	onSelectSegment = (segment: SegmentUi) => {
+	onSelectSegment = (segment: AdlibSegmentUi) => {
 		// console.log(segment)
 		this.setState({
 			selectedSegment: segment,

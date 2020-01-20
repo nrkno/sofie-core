@@ -34,8 +34,8 @@ export enum ShelfTabs {
 }
 export interface ShelfProps {
 	isExpanded: boolean
-	segments: Array<SegmentUi>
-	liveSegment?: SegmentUi
+	// segments: Array<SegmentUi>
+	// liveSegment?: SegmentUi
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean

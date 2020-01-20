@@ -494,6 +494,17 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
+		let countdownToPartId: string | undefined = undefined
+		if (!this.props.isLiveSegment) {
+			const nextPart = this.props.isNextSegment ?
+				this.props.parts.find(p => p.instance._id == this.props.playlist.nextPartInstanceId) :
+				this.props.parts[0]
+
+			if (nextPart) {
+				countdownToPartId = nextPart.instance.part._id
+			}
+		}
+
 		return (
 			<div id={this.props.id}
 				className={ClassNames('segment-timeline', {
@@ -544,7 +555,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
-							partIds={this.props.parts.filter(item => item.instance.part.duration === undefined).map(item => item._id)}
+							partIds={this.props.parts.filter(item => item.instance.part.duration === undefined).map(item => item.instance.part._id)}
 						/>
 					}
 				</div>
@@ -552,15 +563,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 &&
 						<PartCountdown
-							partId={
-								(
-									!this.props.isLiveSegment &&
-									(
-										this.props.isNextSegment ?
-											this.props.playlist.nextPartId :
-											this.props.parts[0]._id
-									)
-								) || undefined}
+							partId={countdownToPartId}
 							hideOnZero={true}
 						/>
 					}

@@ -15,7 +15,8 @@ import { getResolvedSegment,
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	PieceExtended,
-	PartExtended
+	PartExtended,
+	SegmentExtended
 } from '../../../lib/Rundown'
 import { RundownViewEvents, IContextMenuContext } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -30,13 +31,13 @@ import { literal } from '../../../lib/lib'
 const SPEAK_ADVANCE = 500
 import { Settings } from '../../../lib/Settings'
 
-export interface SegmentUi extends DBSegment {
+export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
-	outputLayers?: {
+	outputLayers: {
 		[key: string]: IOutputLayerUi
 	}
 	/** Source layers used by this segment */
-	sourceLayers?: {
+	sourceLayers: {
 		[key: string]: ISourceLayerUi
 	}
 }

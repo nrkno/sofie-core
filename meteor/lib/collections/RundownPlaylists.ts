@@ -273,8 +273,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			this.nextPartInstanceId
 		])
 		const instances = ids.length > 0 ? PartInstances.find({
-			rundownId: this._id,
-			_id: { $in: ids }
+			rundownId: { $in: rundownIds },
+			_id: { $in: ids },
+			reset: { $ne: true }
 		}).fetch() : []
 
 		return {

@@ -435,16 +435,16 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 	if (playoutData.rundownPlaylist.nextPartInstanceId) {
 		// We may be at the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
 		nextPart = playoutData.nextPartInstance
-		if (!nextPart) throw new Meteor.Error(404, `Part "${playoutData.rundownPlaylist.nextPartInstanceId}" not found!`)
+		if (!nextPart) throw new Meteor.Error(404, `PartInstance "${playoutData.rundownPlaylist.nextPartInstanceId}" not found!`)
 	}
 
 	if (playoutData.rundownPlaylist.currentPartInstanceId) {
 		currentPart = playoutData.currentPartInstance
-		if (!currentPart) throw new Meteor.Error(404, `Part "${playoutData.rundownPlaylist.currentPartInstanceId}" not found!`)
+		if (!currentPart) throw new Meteor.Error(404, `PartInstance "${playoutData.rundownPlaylist.currentPartInstanceId}" not found!`)
 
 		if (playoutData.rundownPlaylist.previousPartInstanceId) {
 			previousPart = playoutData.previousPartInstance
-			if (!previousPart) throw new Meteor.Error(404, `Part "${playoutData.rundownPlaylist.previousPartInstanceId}" not found!`)
+			if (!previousPart) logger.warning(`Previous PartInstance "${playoutData.rundownPlaylist.previousPartInstanceId}" not found!`)
 		}
 	}
 

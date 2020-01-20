@@ -152,7 +152,8 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 			asyncCollectionUpdate(PartInstances, partInstance._id, {
 				$set: {
 					'part.startedPlayback': true,
-					'part.stoppedPlayback': false
+					'part.stoppedPlayback': false,
+					isTaken: true
 				},
 				$push: {
 					'part.timings.startedPlayback': timestamp

@@ -347,9 +347,11 @@ export namespace ServerPlayoutAPI {
 				$set: m
 			}))
 
-			let partInstanceM = {
-				$push: {
+			let partInstanceM: any = {
+				$set: {
 					isTaken: true,
+				},
+				$push: {
 					'part.timings.take': now,
 					'part.timings.playOffset': timeOffset || 0
 				}
@@ -361,9 +363,7 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 			if (previousPartEndState) {
-				partInstanceM['$set'] = {
-					'part.previousPartEndState': previousPartEndState
-				}
+				partInstanceM['$set']['part.previousPartEndState'] = previousPartEndState
 				partM['$set'] = literal<Partial<Part>>({
 					previousPartEndState: previousPartEndState
 				})
@@ -395,16 +395,24 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 			playlist = _.extend(playlist, m) as RundownPlaylist
-			rundownData = {
-				...rundownData,
-				previousPartInstance: rundownData.currentPartInstance,
-				currentPartInstance: rundownData.nextPartInstance,
-				nextPartInstance: undefined
-			}
+			// rundownData = {
+			// 	...rundownData,
+			// 	previousPartInstance: rundownData.currentPartInstance,
+			// 	currentPartInstance: rundownData.nextPartInstance,
+			// 	nextPartInstance: undefined
+			// }
 
 			libSetNextPart(playlist, nextPart ? nextPart.part : null)
 			waitForPromiseAll(ps)
 			ps = []
+
+			// update playoutData
+			// const newSelectedPartInstances = playlist.getSelectedPartInstances()
+			// rundownData = {
+			// 	...rundownData,
+			// 	...newSelectedPartInstances
+			// }
+			rundownData = playlist.fetchAllPlayoutData()
 
 			// Setup the parts for the HOLD we are starting
 			if (playlist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {

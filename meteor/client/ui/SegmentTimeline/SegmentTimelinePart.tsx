@@ -70,7 +70,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.part,
-			partDocumentOffset,
+			partDocumentOffset: partDocumentOffset || undefined,
 			timeScale: this.props.timeScale,
 			mousePosition: this.mousePosition,
 			partStartsAt: this.props.startsAt
@@ -417,8 +417,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							playlist={this.props.playlist}
 							startsAt={this.getPartStartsAt() || this.props.part.startsAt || 0}
 							duration={this.getPartDuration()}
-							isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id ? true : false}
-							isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id ? true : false}
+							isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
+							isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale)} />

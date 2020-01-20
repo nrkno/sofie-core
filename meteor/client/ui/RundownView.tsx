@@ -24,7 +24,7 @@ import { Part, Parts } from '../../lib/collections/Parts'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownTimingProvider, withTiming, WithTiming, CurrentPartRemaining, AutoNextStatus } from './RundownView/RundownTiming'
-import { SegmentTimelineContainer, PieceUi, PartUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
 import { RundownOverview } from './RundownView/RundownOverview'
@@ -62,7 +62,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
-import { SegmentUi } from './Shelf/AdLibPanel';
+import { AdlibSegmentUi } from './Shelf/AdLibPanel';
 import { OffsetPosition } from '../utils/positions';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
@@ -1953,7 +1953,6 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									ref={this.setInspectorShelf}
 									isExpanded={this.state.isInspectorShelfExpanded}
 									onChangeExpanded={this.onShelfChangeExpanded}
-									segments={this.props.segments}
 									hotkeys={this.state.usedHotkeys}
 									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
@@ -1992,7 +1991,6 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 						ref={this.setInspectorShelf}
 						isExpanded={this.state.isInspectorShelfExpanded}
 						onChangeExpanded={this.onShelfChangeExpanded}
-						segments={this.props.segments}
 						hotkeys={this.state.usedHotkeys}
 						playlist={this.props.playlist}
 						showStyleBase={this.props.showStyleBase}

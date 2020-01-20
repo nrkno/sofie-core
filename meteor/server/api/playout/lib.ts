@@ -143,6 +143,24 @@ export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 	const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
 	// TODO-ASAP do these resets for instances too
+	PartInstances.update({
+		rundownId: {
+			$in: rundownIDs
+		}
+	}, {
+		$set: {
+			reset: true
+		}
+	}, { multi: true })
+	PieceInstances.update({
+		rundownId: {
+			$in: rundownIDs
+		}
+	}, {
+		$set: {
+			reset: true
+		}
+	}, { multi: true })
 
 	Pieces.remove({
 		rundownId: {
