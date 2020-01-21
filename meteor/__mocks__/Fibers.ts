@@ -1,6 +1,6 @@
 let Fiber
 try {
-	Fiber = require('fibers')
+	Fiber = require('fibers-npm')
 } catch (e) {
 	if (e.toString().match(/Missing binary/)) {
 		// Temporary workaround:

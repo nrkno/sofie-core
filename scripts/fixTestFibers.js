@@ -5,7 +5,7 @@
 
 var fs = require('fs')
 
-const filePath = './node_modules/fibers/fibers.js'
+const filePath = './node_modules/fibers-npm/fibers.js'
 
 const stringToInsert = '\t\tif (process.env.JEST_WORKER_ID !== undefined ) modPath += \'.node\''
 const insertLineNumber = 13

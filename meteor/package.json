@@ -116,6 +116,7 @@
     "@types/xml2json": "^0.11.0",
     "codecov": "^3.5.0",
     "ejson": "^2.2.0",
+    "fibers-npm": "npm:fibers@4.0.3",
     "i18next-conv": "^8.0.1",
     "i18next-extract-gettext": "^3.2.0",
     "jest": "^24.9.0",
