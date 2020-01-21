@@ -55,7 +55,7 @@ interface IPieceExtendedDictionary {
 }
 export interface PieceExtended {
 	instance: PieceInstance
-	
+
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
 	/** Output layer that this part uses */
@@ -231,11 +231,11 @@ export function getResolvedSegment (
 			})
 
 			// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
-			if (currentPartInstance && currentPartInstance.part._id === partE.instance._id) {
+			if (currentPartInstance && currentPartInstance._id === partE.instance._id) {
 				isLiveSegment = true
 				currentLivePart = partE
 			}
-			if (nextPartInstance && nextPartInstance.part._id === partE.instance._id) {
+			if (nextPartInstance && nextPartInstance._id === partE.instance._id) {
 				isNextSegment = true
 			}
 			autoNextPart = !!(
