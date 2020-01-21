@@ -50,14 +50,14 @@ methods[PlayoutAPI.methods.rundownDisableNextPiece] = (rundownPlaylistId: string
 // methods[PlayoutAPI.methods.piecePlaybackStartedCallback] = (rundownId: string, pieceId: string, startedPlayback: number) => {
 // 	return ServerPlayoutAPI.onPiecePlaybackStarted(rundownId, pieceId, startedPlayback)
 // }
-methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) => {
-	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
+methods[PlayoutAPI.methods.segmentAdLibPieceStart] = (rundownPlaylistId: string, partId: string, pieceId: string, queue: boolean) => {
+	return ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) => {
-	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
+methods[PlayoutAPI.methods.rundownBaselineAdLibPieceStart] = (rundownPlaylistId: string, partId: string, pieceId: string, queue: boolean) => {
+	return ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partId, pieceId, queue)
 }
-methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownPlaylistId: string, rundownId: string, partInstanceId: string, pieceInstanceId: string) => {
-	return ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partInstanceId, pieceInstanceId)
+methods[PlayoutAPI.methods.segmentAdLibPieceStop] = (rundownPlaylistId: string, partInstanceId: string, pieceInstanceId: string) => {
+	return ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, partInstanceId, pieceInstanceId)
 }
 methods[PlayoutAPI.methods.sourceLayerOnPartStop] = (rundownPlaylistId: string, partId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partId, sourceLayerId)
