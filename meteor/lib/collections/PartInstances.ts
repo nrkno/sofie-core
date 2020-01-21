@@ -62,10 +62,10 @@ export class PartInstance implements DBPartInstance {
 				{
 					...selector,
 					rundownId: this.rundownId,
-					partId: this._id
+					partInstanceId: this._id
 				},
 				{
-					sort: { _rank: 1 },
+					// sort: { _rank: 1 },
 					...options
 				}
 			).fetch()

@@ -17,6 +17,7 @@ import {
 	literal,
 	asyncCollectionInsert,
 	asyncCollectionInsertMany,
+	waitForPromise,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -142,7 +143,6 @@ export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 	const rundownIDs = rundowns.map(i => i._id)
 	const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
-	// TODO-ASAP do these resets for instances too
 	PartInstances.update({
 		rundownId: {
 			$in: rundownIDs
@@ -359,7 +359,7 @@ export function setNextPart (
 	const { currentPartInstance, nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
 
 	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
-	const newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
+	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
 
 	let ps: Array<Promise<any>> = []
 	if (newNextPart || newNextPartInstance) {
@@ -373,15 +373,26 @@ export function setNextPart (
 			throw new Meteor.Error(409, `PartInstance "${newNextPartInstance._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`)
 		}
 
-		// if (nextPart._id === rundown.currentPartId) {
-		// 	throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
-		// }
+		if (newNextPart) {
+			if (currentPartInstance && newNextPart._id === currentPartInstance.part._id) {
+				throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
+			}
+
+			// If this is a part being copied, then reset and reload it (so that we copy the new, not old data)
+			// TODO-PartInstances - pending new data flow
+			waitForPromise(resetPart(newNextPart))
+			const partId = newNextPart._id
+			newNextPart = Parts.findOne(partId) as Part
+			if (!newNextPart) {
+				throw new Meteor.Error(409, `Part "${partId}" could not be reloaded after reset`)
+			}
+		} else if (newNextPartInstance) {
+			if (currentPartInstance && newNextPartInstance._id === currentPartInstance._id) {
+				throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
+			}
+		}
 
 		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
-
-		if (newNextPart) {
-			ps.push(resetPart(newNextPart))
-		}
 
 		// create new instance
 		let newInstanceId: string

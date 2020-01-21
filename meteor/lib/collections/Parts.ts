@@ -248,7 +248,7 @@ export class Part implements DBPart {
 
 		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
-	isPlayable () { // TODO-ASAP use this in more places instead of specific invalid/floated checks
+	isPlayable () {
 		return isPartPlayable(this)
 	}
 }
