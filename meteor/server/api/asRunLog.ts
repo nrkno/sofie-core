@@ -145,8 +145,7 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 		partInstanceOrId
 	)
 	if (partInstance) {
-		let rundown: Rundown
-		let playlist: RundownPlaylist
+		let rundown: Rundown | undefined
 
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(PartInstances, partInstance._id, {
@@ -173,13 +172,13 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 			})
 		])
 		rundown = r[1]
-		playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		partInstance.part.startedPlayback = true
 		partInstance.part.stoppedPlayback = false
 		pushOntoPath(partInstance.part, 'timings.startedPlayback', timestamp)
 
-		if (rundown && playlist) {
+		if (rundown) {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
@@ -189,10 +188,8 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 				content2: 			'part'
 			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else if (!rundown)
+		} else
 			logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
-		else
-			logger.error(`rundown playlist "${rundown.playlistId}" not found in reportPartHasStarted "${partInstance._id}"`)
 	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
 }
 export function reportPartHasStopped (partInstanceOrId: PartInstance | string , timestamp: Time) {
@@ -203,7 +200,7 @@ export function reportPartHasStopped (partInstanceOrId: PartInstance | string , 
 		partInstanceOrId
 	)
 	if (partInstance) {
-		let rundown: Rundown
+		let rundown: Rundown | undefined
 
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(PartInstances, partInstance._id, {
@@ -227,12 +224,12 @@ export function reportPartHasStopped (partInstanceOrId: PartInstance | string , 
 			})
 		])
 		rundown = r[1]
-		const playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		partInstance.part.stoppedPlayback = true
 		pushOntoPath(partInstance.part, 'timings.stoppedPlayback', timestamp)
 
 		if (rundown) {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
@@ -255,8 +252,8 @@ export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string
 		pieceInstanceOrId
 	)
 	if (pieceInstance) {
-		let rundown: Rundown
-		let partInstance: PartInstance
+		let rundown: Rundown | undefined
+		let partInstance: PartInstance | undefined
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 				$set: {
@@ -283,7 +280,6 @@ export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string
 		])
 		rundown = r[1]
 		partInstance = r[2]
-		const playlist = rundown.getRundownPlaylist()
 
 		// also update local object:
 		pieceInstance.piece.startedPlayback = timestamp
@@ -295,6 +291,7 @@ export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string
 		} else if (!rundown) {
 			logger.error(`Rundown "${pieceInstance.rundownId}" not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
 		} else {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
@@ -343,7 +340,6 @@ export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | string
 		])
 		rundown = r[1]
 		partInstance = r[2]
-		const playlist = rundown.getRundownPlaylist()
 
 		// also update local object:
 		pieceInstance.piece.stoppedPlayback = timestamp
@@ -354,6 +350,7 @@ export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | string
 		} else if (!rundown) {
 			logger.error(`Rundown "${pieceInstance.rundownId}" not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
 		} else {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,

@@ -1059,29 +1059,26 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	}
-	export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partInstanceId: string, adLibPieceId: string, queue: boolean) {
+	export function segmentAdLibPieceStart (rundownPlaylistId: string, partInstanceId: string, adLibPieceId: string, queue: boolean) {
 		check(rundownPlaylistId, String)
-		check(rundownId, String)
 		check(partInstanceId, String)
 		check(adLibPieceId, String)
 
-		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partInstanceId, adLibPieceId, queue)
+		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adLibPieceId, queue)
 	}
-	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partInstanceId: string, baselineAdLibPieceId: string, queue: boolean) {
+	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, partInstanceId: string, baselineAdLibPieceId: string, queue: boolean) {
 		check(rundownPlaylistId, String)
-		check(rundownId, String)
 		check(partInstanceId, String)
 		check(baselineAdLibPieceId, String)
 
-		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partInstanceId, baselineAdLibPieceId, queue)
+		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partInstanceId, baselineAdLibPieceId, queue)
 	}
-	export function stopAdLibPiece (rundownPlaylistId: string, rundownId: string, partInstanceId: string, pieceInstanceId: string) {
+	export function stopAdLibPiece (rundownPlaylistId: string, partInstanceId: string, pieceInstanceId: string) {
 		check(rundownPlaylistId, String)
-		check(rundownId, String)
 		check(partInstanceId, String)
 		check(pieceInstanceId, String)
 
-		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partInstanceId, pieceInstanceId)
+		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownPlaylistId, partInstanceId, pieceInstanceId)
 	}
 	export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
 		check(rundownPlaylistId, String)

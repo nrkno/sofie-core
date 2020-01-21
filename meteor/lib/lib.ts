@@ -714,7 +714,7 @@ export function asyncCollectionFindFetch<DocClass, DBInterface> (
 export function asyncCollectionFindOne<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
-): Promise<DocClass> {
+): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector)
 	.then((arr) => {
 		return arr[0]
