@@ -65,6 +65,15 @@ import { ServerPlayoutAdLibAPI } from './adlib'
 import { transformTimeline } from '../../../lib/timeline'
 import * as SuperTimeline from 'superfly-timeline'
 
+/**
+ * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
+ */
+const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
+/**
+ * time in ms before an autotake when we don't accept takes
+ */
+const AUTOTAKE_DEBOUNCE = 1000
+
 export namespace ServerPlayoutAPI {
 	/**
 	 * Prepare the rundown for transmission
@@ -212,15 +221,26 @@ export namespace ServerPlayoutAPI {
 			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
-			if (currentPart && currentPart.transitionDuration) {
+			if (currentPart) {
 				const prevPart = rundown.previousPartId ? rundownData.partsMap[rundown.previousPartId] : undefined
 				const allowTransition = prevPart && !prevPart.disableOutTransition
+				const start = currentPart.getLastStartedPlayback()
 
 				// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
-				if (allowTransition) {
-					const start = currentPart.getLastStartedPlayback()
+				if (allowTransition && currentPart.transitionDuration) {
 					if (start && now < start + currentPart.transitionDuration) {
 						return ClientAPI.responseError('Cannot take during a transition')
+					}
+				}
+
+				const offset = currentPart.getLastPlayOffset()
+				if (start && offset && currentPart.expectedDuration) {
+					// date.now - start = playback duration, duration + offset gives position in part
+					const playbackDuration = Date.now() - start! + offset!
+
+					// If there is an auto next planned
+					if (currentPart.autoNext && Math.abs(currentPart.expectedDuration - playbackDuration) < AUTOTAKE_DEBOUNCE) {
+						return ClientAPI.responseError('Cannot take shortly before an autoTake')
 					}
 				}
 			}
@@ -893,28 +913,34 @@ export namespace ServerPlayoutAPI {
 						libSetNextPart(rundown, nextPart)
 					} else {
 						// a part is being played that has not been selected for playback by Core
-						// show must go on, so find next part and update the Rundown, but log an error
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPart._rank,
-							},
-							_id: { $ne: playingPart._id }
-						})
+						const previousReported = rundown.lastIncorrectPartPlaybackReported
 
-						let nextPart: Part | null = partsAfter[0] || null
+						if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
+							// first time this has happened for a while, let's try to progress the show:
 
-						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
-						const rundownChange = {
-							previousPartId: null,
-							currentPartId: playingPart._id,
+							let partsAfter = rundown.getParts({
+								_rank: {
+									$gt: playingPart._rank,
+								},
+								_id: { $ne: playingPart._id }
+							})
+	
+							let nextPart: Part | null = partsAfter[0] || null
+	
+							setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+	
+							const rundownChange = {
+								previousPartId: null,
+								currentPartId: playingPart._id,
+								lastIncorrectPartPlaybackReported: Date.now() // save the time to prevent the system to go in a loop
+							}
+	
+							Rundowns.update(rundown._id, {
+								$set: rundownChange
+							})
+							rundown = _.extend(rundown, rundownChange) as Rundown
+							libSetNextPart(rundown, nextPart)
 						}
-
-						Rundowns.update(rundown._id, {
-							$set: rundownChange
-						})
-						rundown = _.extend(rundown, rundownChange) as Rundown
-						libSetNextPart(rundown, nextPart)
 
 						logger.error(`Part "${playingPart._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
