@@ -82,7 +82,10 @@ export function setupMockPeripheralDevice (
 		lastConnected: 1234,
 		connected: true,
 		connectionId: 'myConnectionId',
-		token: 'mockToken'
+		token: 'mockToken',
+		configManifest: {
+			deviceConfig: []
+		}
 	}
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
 	PeripheralDevices.insert(device)
@@ -575,8 +578,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 
 		const part10: DBPart = {
 			_id: rundownId + '_part1_0',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
 			_rank: 10,
 			externalId: 'MOCK_PART_1_0',
 			title: 'Part 1 0',
@@ -586,8 +589,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 
 		const part11: DBPart = {
 			_id: rundownId + '_part1_1',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
 			_rank: 11,
 			externalId: 'MOCK_PART_1_1',
 			title: 'Part 1 1',
@@ -597,8 +600,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 
 		const part12: DBPart = {
 			_id: rundownId + '_part1_2',
-			segmentId: segment0._id,
-			rundownId: segment0.rundownId,
+			segmentId: segment1._id,
+			rundownId: segment1.rundownId,
 			_rank: 12,
 			externalId: 'MOCK_PART_1_2',
 			title: 'Part 1 2',

@@ -143,7 +143,7 @@ export function reportPartHasStarted (partOrId: Part | string , timestamp: Time)
 		partOrId
 	)
 	if (part) {
-		let rundown: Rundown
+		let rundown: Rundown | undefined
 		let playlist: RundownPlaylist
 
 		let r = waitForPromiseAll<any>([
@@ -189,7 +189,7 @@ export function reportPartHasStopped (partOrId: Part | string , timestamp: Time)
 		partOrId
 	)
 	if (part) {
-		let rundown: Rundown
+		let rundown: Rundown | undefined
 
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(Parts, part._id, {
@@ -232,8 +232,8 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 	)
 	if (piece) {
 
-		let rundown: Rundown
-		let part: Part
+		let rundown: Rundown | undefined
+		let part: Part | undefined
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(Pieces, piece._id, {
 				$set: {
@@ -255,7 +255,7 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 		piece.stoppedPlayback = 0
 		pushOntoPath(piece, 'timings.startedPlayback', timestamp)
 
-		if (rundown) {
+		if (rundown && part) {
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
@@ -266,7 +266,11 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 				content2: 			'piece'
 			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`rundown "${part.rundownId}" not found in reportPieceHasStarted "${part._id}"`)
+		} else if (part) {
+			logger.error(`Part "${piece.partId}" not found in reportPieceHasStarted "${piece._id}"`)
+		} else {
+			logger.error(`Rundown "${piece.rundownId}" not found in reportPieceHasStarted "${piece._id}"`)
+		}
 
 	} else logger.error(`piece not found in reportPieceHasStarted "${pieceOrId}"`)
 }
@@ -279,8 +283,8 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 	)
 	if (piece) {
 
-		let rundown: Rundown
-		let part: Part
+		let rundown: Rundown | undefined
+		let part: Part | undefined
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(Pieces, piece._id, {
 				$set: {
@@ -300,7 +304,7 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 		piece.stoppedPlayback = timestamp
 		pushOntoPath(piece, 'timings.stoppedPlayback', timestamp)
 
-		if (rundown) {
+		if (rundown && part) {
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
@@ -311,7 +315,11 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 				content2: 			'piece'
 			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`rundown "${part.rundownId}" not found in reportPieceHasStopped "${part._id}"`)
+		}  else if (part) {
+			logger.error(`Part "${piece.partId}" not found in reportPieceHasStopped "${piece._id}"`)
+		} else {
+			logger.error(`Rundown "${piece.rundownId}" not found in reportPieceHasStopped "${piece._id}"`)
+		}
 
 	} else logger.error(`piece not found in reportPieceHasStopped "${pieceOrId}"`)
 }

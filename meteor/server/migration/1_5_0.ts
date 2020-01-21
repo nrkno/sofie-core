@@ -9,6 +9,8 @@ import * as _ from 'underscore'
 // 1.5.0 (Release 17)
 addMigrationSteps('1.5.0', [
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.4.0'),
+	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.5.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.1.0'),
 
 	{
 		id: 'SourceLayers remove unlimited & onPGMClean',
