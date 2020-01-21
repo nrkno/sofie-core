@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-9](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-8...v1.5.0-9) (2020-01-21)
+
+
+### Bug Fixes
+
+* **hotfix:** looping between 2 parts in a race-condition between pl-gw and core ([#160](https://github.com/nrkno/tv-automation-server-core/issues/160)) ([af5f540](https://github.com/nrkno/tv-automation-server-core/commit/af5f540))
+
+
+
 ## [1.5.0-8](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-7...v1.5.0-8) (2020-01-21)
 
 
