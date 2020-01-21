@@ -68,6 +68,15 @@ import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 
+/**
+ * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
+ */
+const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
+/**
+ * time in ms before an autotake when we don't accept takes
+ */
+const AUTOTAKE_DEBOUNCE = 1000
+
 export namespace ServerPlayoutAPI {
 	/**
 	 * Prepare the rundown for transmission
@@ -227,15 +236,24 @@ export namespace ServerPlayoutAPI {
 			let pBlueprint = makePromise(() => getBlueprintOfRundown(currentRundown))
 
 			const currentPart = rundownData.currentPartInstance
-			if (currentPart && currentPart.part.transitionDuration) {
+			if (currentPart) {
 				const prevPart = rundownData.previousPartInstance
 				const allowTransition = prevPart && !prevPart.part.disableOutTransition
+				const start = currentPart.part.getLastStartedPlayback()
 
 				// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
-				if (allowTransition) {
-					const start = currentPart.part.getLastStartedPlayback()
-					if (start && now < start + currentPart.part.transitionDuration) {
-						return ClientAPI.responseError('Cannot take during a transition')
+				if (allowTransition && currentPart.part.transitionDuration && start && now < start + currentPart.part.transitionDuration) {
+					return ClientAPI.responseError('Cannot take during a transition')
+				}
+
+				const offset = currentPart.part.getLastPlayOffset()
+				if (start && offset && currentPart.part.expectedDuration) {
+					// date.now - start = playback duration, duration + offset gives position in part
+					const playbackDuration = Date.now() - start! + offset!
+
+					// If there is an auto next planned
+					if (currentPart.part.autoNext && Math.abs(currentPart.part.expectedDuration - playbackDuration) < AUTOTAKE_DEBOUNCE) {
+						return ClientAPI.responseError('Cannot take shortly before an autoTake')
 					}
 				}
 			}
@@ -980,21 +998,27 @@ export namespace ServerPlayoutAPI {
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
+						const previousReported = playlist.lastIncorrectPartPlaybackReported
 
-						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+						if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
+							// first time this has happened for a while, let's try to progress the show:
 
-						const playlistChange = literal<Partial<RundownPlaylist>>({
-							previousPartInstanceId: null,
-							currentPartInstanceId: playingPartInstance._id,
-						})
+							setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						RundownPlaylists.update(playlist._id, {
-							$set: playlistChange
-						})
-						playlist = _.extend(playlist, playlistChange)
+							const playlistChange = literal<Partial<RundownPlaylist>>({
+								previousPartInstanceId: null,
+								currentPartInstanceId: playingPartInstance._id,
+								lastIncorrectPartPlaybackReported: Date.now() // save the time to prevent the system to go in a loop
+							})
 
-						const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
-						libSetNextPart(playlist, nextPart ? nextPart.part : null)
+							RundownPlaylists.update(playlist._id, {
+								$set: playlistChange
+							})
+							playlist = _.extend(playlist, playlistChange)
+
+							const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
+							libSetNextPart(playlist, nextPart ? nextPart.part : null)
+						}
 
 						// TODO - should this even change the next?
 						logger.error(`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`)

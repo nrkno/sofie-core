@@ -39,6 +39,8 @@ export interface DBRundownPlaylist {
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
+	/** Timestamp for the last time an incorrect part was reported as started */
+	lastIncorrectPartPlaybackReported?: Time
 }
 
 export interface RundownPlaylistPlayoutData {
@@ -66,6 +68,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public created: Time
 	public modified: Time
 	public startedPlayback?: Time
+	public lastIncorrectPartPlaybackReported?: Time
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean
