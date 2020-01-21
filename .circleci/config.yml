@@ -52,7 +52,7 @@ jobs:
       - checkout
       - run:
           name: Typecheck and lint code
-          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci
+          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci:lint
           no_output_timeout: 60m
 
   publish-tag:
