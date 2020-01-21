@@ -372,10 +372,13 @@ interface IState {
 	followLive: boolean
 	searchFilter: string | undefined
 }
+
+type SourceLayerLookup = { [id: string]: ISourceLayer }
+
 export interface IAdLibPanelTrackedProps {
 	uiSegments: Array<AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
-	sourceLayerLookup: { [id: string]: ISourceLayer }
+	sourceLayerLookup: SourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
@@ -385,7 +388,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse = {}
+	let sourceHotKeyUse: { [key: string]: number} = {}
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 	let segments: Array<Segment> = props.playlist.getSegments(undefined, {
@@ -398,52 +401,60 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	})
 
 	const uiSegments = memoizedIsolatedAutorun((
-		currentPartId,
-		nextPartId,
-		segments,
-		sourceLayerLookup,
-		sourceHotKeyUse
+		currentPartId: string,
+		nextPartId: string,
+		segments: Segment[],
+		sourceLayerLookup: SourceLayerLookup,
+		sourceHotKeyUse: { [key: string]: number}
 	) => {
-		return (segments) ? (segments as Array<AdlibSegmentUi>).map((segSource) => {
-		const seg = _.clone(segSource)
-		seg.parts = segSource.getParts(undefined, {
-			fields: {
-				'_id': 1,
-				'_rank': 1,
-				'name': 1,
-				'rundownId': 1
-			}
-		})
-		let segmentAdLibPieces: Array<AdLibPiece> = []
-		seg.parts.forEach((part) => {
-			if (part._id === currentPartId) {
-				seg.isLive = true
-				liveSegment = seg
-			}
-			if (part._id === nextPartId) {
-				seg.isNext = true
-			}
-			segmentAdLibPieces = segmentAdLibPieces.concat(part.getAdLibPieces())
-		})
-		seg.pieces = segmentAdLibPieces
-
-		// automatically assign hotkeys based on adLibItem index
-		if (seg.isLive) {
-			seg.pieces.forEach((item) => {
-				let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
-
-				if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-					let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-					const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
-					if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-						item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
-						// add one to the usage hash table
-						sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-					}
+		return segments ? segments.map((segSource) => {
+			const segParts = segSource.getParts(undefined, {
+				fields: {
+					'_id': 1,
+					'_rank': 1,
+					'name': 1,
+					'rundownId': 1
 				}
 			})
-		}
-		return seg
+
+			const seg = literal<AdlibSegmentUi>({
+				...segSource,
+				parts: segParts,
+				// Filled in below
+				isLive: false,
+				isNext: false,
+			})
+
+			let segmentAdLibPieces: Array<AdLibPiece> = []
+			seg.parts.forEach((part) => {
+				if (part._id === currentPartId) {
+					seg.isLive = true
+					liveSegment = seg
+				}
+				if (part._id === nextPartId) {
+					seg.isNext = true
+				}
+				segmentAdLibPieces = segmentAdLibPieces.concat(part.getAdLibPieces())
+			})
+			seg.pieces = segmentAdLibPieces
+
+			// automatically assign hotkeys based on adLibItem index
+			if (seg.isLive) {
+				seg.pieces.forEach((item) => {
+					let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+
+					if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
+						let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+						const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
+						if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+							item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
+							// add one to the usage hash table
+							sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+						}
+					}
+				})
+			}
+			return seg
 		}) : []
 	},
 	'uiSegments',
@@ -480,7 +491,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		if (currentRundown) {
 			// memoizedIsolatedAutorun
 
-			rundownBaselineAdLibs = memoizedIsolatedAutorun((currentRundownId, sourceLayerLookup, sourceLayers, sourceHotKeyUse) => {
+			rundownBaselineAdLibs = memoizedIsolatedAutorun((currentRundownId: string, sourceLayerLookup: SourceLayerLookup, sourceLayers: ISourceLayer[], sourceHotKeyUse: { [key: string]: number}) => {
 				let rundownAdLibItems = RundownBaselineAdLibPieces.find({
 					rundownId: currentRundownId
 				}, {
@@ -540,7 +551,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		}
 
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
-			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun((sourceLayers) => {
+			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun((sourceLayers: ISourceLayer[]) => {
 				return sourceLayers.filter(i => !!i.clearKeyboardHotkey).
 					sort((a, b) => a._rank - b._rank).
 					map(layer => literal<AdLibPieceUi>({
@@ -816,6 +827,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 	}
 
 	render () {
+		console.log('render adlibs')
 		if (this.props.visible) {
 			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
