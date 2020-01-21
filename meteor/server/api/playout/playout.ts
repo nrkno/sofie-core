@@ -235,10 +235,11 @@ export namespace ServerPlayoutAPI {
 
 				const offset = currentPart.getLastPlayOffset()
 				if (start && offset && currentPart.expectedDuration) {
-					const t = Date.now() - start! + offset!
+					// date.now - start = playback duration, duration + offset gives position in part
+					const playbackDuration = Date.now() - start! + offset!
 
 					// If there is an auto next planned
-					if (currentPart.autoNext && t > currentPart.expectedDuration - AUTOTAKE_DEBOUNCE) {
+					if (currentPart.autoNext && Math.abs(currentPart.expectedDuration - playbackDuration) < AUTOTAKE_DEBOUNCE) {
 						return ClientAPI.responseError('Cannot take shortly before an autoTake')
 					}
 				}
