@@ -283,21 +283,20 @@ export function pieceSetInOutPoints (rundownPlaylistId: string, partId: string, 
 		.then((res) => ClientAPI.responseSuccess(res))
 		.catch((err) => ClientAPI.responseError(err))
 }
-export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, slaiId: string, queue: boolean) {
+export function segmentAdLibPieceStart (rundownPlaylistId: string, partId: string, slaiId: string, queue: boolean) {
 	check(rundownPlaylistId, String)
-	check(rundownId, String)
 	check(partId, String)
 	check(slaiId, String)
 
-	let playlist = RundownPlaylists.findOne(rundownId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownId}" not found!`)
+	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partId, slaiId, queue)
+		ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, partId, slaiId, queue)
 	)
 }
 export function sourceLayerOnPartStop (rundownPlaylistId: string, partId: string, sourceLayerId: string) {
@@ -313,22 +312,22 @@ export function sourceLayerOnPartStop (rundownPlaylistId: string, partId: string
 		ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partId, sourceLayerId)
 	)
 }
-export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string, queue: boolean) {
-	check(rundownId, String)
+export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, partId: string, pieceId: string, queue: boolean) {
+	check(rundownPlaylistId, String)
 	check(partId, String)
 	check(pieceId, String)
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownId}" not found!`)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, pieceId, queue)
+		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partId, pieceId, queue)
 	)
 }
-export function segmentAdLibPieceStop (rundownPlaylistId: string, rundownId, partId: string, pieceId: string) {
+export function segmentAdLibPieceStop (rundownPlaylistId: string, partId: string, pieceId: string) {
 	check(rundownPlaylistId, String)
 	check(partId, String)
 	check(pieceId, String)
@@ -338,7 +337,7 @@ export function segmentAdLibPieceStop (rundownPlaylistId: string, rundownId, par
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partId, pieceId)
+		ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, partId, pieceId)
 	)
 }
 export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
@@ -357,21 +356,21 @@ export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLa
 export function activateHold (rundownPlaylistId: string, undo?: boolean) {
 	check(rundownPlaylistId, String)
 
-	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 
-	if (!rundown.currentPartId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
-	if (!rundown.nextPartId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
+	if (!playlist.currentPartId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
+	if (!playlist.nextPartId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
 
-	let currentPart = Parts.findOne({ _id: rundown.currentPartId })
-	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
-	let nextPart = Parts.findOne({ _id: rundown.nextPartId })
-	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
-	if (!undo && rundown.holdState) {
+	let currentPart = Parts.findOne({ _id: playlist.currentPartId })
+	if (!currentPart) throw new Meteor.Error(404, `Part "${playlist.currentPartId}" not found!`)
+	let nextPart = Parts.findOne({ _id: playlist.nextPartId })
+	if (!nextPart) throw new Meteor.Error(404, `Part "${playlist.nextPartId}" not found!`)
+	if (!undo && playlist.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
 	}
-	if (undo && rundown.holdState !== RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[rundown.holdState || 0]}`)
+	if (undo && playlist.holdState !== RundownHoldState.PENDING) {
+		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[playlist.holdState || 0]}`)
 	}
 
 	if (undo) {
@@ -395,16 +394,15 @@ export function userStoreRundownSnapshot (rundownId: string, reason: string) {
 	)
 }
 export function removeRundown (rundownId: string) {
-	let rundown = RundownPlaylists.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you can't remove an active Rundown!`)
+	let playlist = Rundowns.findOne(rundownId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
 	return ClientAPI.responseSuccess(
 		ServerRundownAPI.removeRundown(rundownId)
 	)
 }
 export function resyncRundown (rundownId: string) {
-	let rundown = RundownPlaylists.findOne(rundownId)
+	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	// if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you need to deactivate it before resyncing it.`)
 

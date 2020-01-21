@@ -1002,29 +1002,26 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.pieceTakeNow(rundownId, partId, pieceId)
 	}
-	export function segmentAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, adLibPieceId: string, queue: boolean) {
+	export function segmentAdLibPieceStart (rundownPlaylistId: string, partId: string, adLibPieceId: string, queue: boolean) {
 		check(rundownPlaylistId, String)
-		check(rundownId, String)
 		check(partId, String)
 		check(adLibPieceId, String)
 
-		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(rundownPlaylistId, rundownId, partId, adLibPieceId, queue)
+		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(rundownPlaylistId, partId, adLibPieceId, queue)
 	}
-	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, rundownId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
+	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, partId: string, baselineAdLibPieceId: string, queue: boolean) {
 		check(rundownPlaylistId, String)
-		check(rundownId, String)
 		check(partId, String)
 		check(baselineAdLibPieceId, String)
 
-		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, rundownId, partId, baselineAdLibPieceId, queue)
+		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partId, baselineAdLibPieceId, queue)
 	}
-	export function stopAdLibPiece (rundownPlaylistId: string, rundownId: string, partId: string, pieceId: string) {
+	export function stopAdLibPiece (rundownPlaylistId: string, partId: string, pieceId: string) {
 		check(rundownPlaylistId, String)
-		check(rundownId, String)
 		check(partId, String)
 		check(pieceId, String)
 
-		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownPlaylistId, rundownId, partId, pieceId)
+		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownPlaylistId, partId, pieceId)
 	}
 	export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
 		check(rundownPlaylistId, String)
