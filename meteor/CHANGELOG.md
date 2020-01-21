@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-8](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-7...v1.5.0-8) (2020-01-21)
+
+
+### Bug Fixes
+
+* displayDurationGroup countdowns ([af76df2](https://github.com/nrkno/tv-automation-server-core/commit/af76df2))
+
+
+
 ## [1.5.0-7](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-6...v1.5.0-7) (2020-01-20)
 
 
