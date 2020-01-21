@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+      - image: sofietv/tv-automation-meteor-base:1.10.2
     steps:
       - checkout
       - restore_cache:
@@ -37,7 +37,7 @@ jobs:
             - .
   tests:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+      - image: sofietv/tv-automation-meteor-base:1.10.2
     steps:
       - checkout
       - run:
