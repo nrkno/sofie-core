@@ -222,20 +222,20 @@ export const RundownList = translateWithTracker((props) => {
 
 	return {
 		coreSystem: getCoreSystem(),
-		rundowns: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((p: RundownPlaylistUi) => {
-			const rs = p.getRundowns()
-			p.airStatus = rs.map(r => r.airStatus).join(', ')
-			p.status = rs.map(r => r.status).join(', ')
-			p.unsynced = rs.reduce((p, v) => p || v.unsynced || false, false)
+		rundowns: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((playlist: RundownPlaylistUi) => {
+			const linkedRundowns = playlist.getRundowns()
+			playlist.airStatus = linkedRundowns.map(rundown => rundown.airStatus).join(', ')
+			playlist.status = linkedRundowns.map(rundown => rundown.status).join(', ')
+			playlist.unsynced = linkedRundowns.reduce((mem, rundown) => mem || rundown.unsynced || false, false)
 
-			const studio = _.find(studios, s => s._id === p.studioId)
+			const studio = _.find(studios, s => s._id === playlist.studioId)
 
-			p.studioName = studio && studio.name || ''
-			p.showStyles = _.uniq(
-				rs.map(r => [r.showStyleBaseId, r.showStyleVariantId]), false, (t) => t[0] + '_' + t[1]
+			playlist.studioName = studio && studio.name || ''
+			playlist.showStyles = _.uniq(
+				linkedRundowns.map(rundown => [rundown.showStyleBaseId, rundown.showStyleVariantId]), false, (ids) => ids[0] + '_' + ids[1]
 				).map(combo => {
-					const showStyleBase = _.find(showStyleBases, s => s._id === combo[0])
-					const showStyleVariant = _.find(showStyleVariants, s => s._id === combo[1])
+					const showStyleBase = _.find(showStyleBases, style => style._id === combo[0])
+					const showStyleVariant = _.find(showStyleVariants, variant => variant._id === combo[1])
 
 					return {
 						id: showStyleBase && showStyleBase._id || '',
@@ -243,7 +243,7 @@ export const RundownList = translateWithTracker((props) => {
 						variantName: showStyleVariant && showStyleVariant.name || ''
 					}
 				})
-			return p
+			return playlist
 		})
 	}
 })(
@@ -280,22 +280,8 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 	componentDidMount () {
 		const { t } = this.props
-		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
-			if (err) {
-				// console.error(err)
-				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
-				return
-			}
 
-			this.setState({
-				systemStatus: systemStatus
-			})
-		})
-	}
-
-	componentWillMount () {
 		// Subscribe to data:
-		// TODO: make something clever here, to not load ALL the rundowns
 		this.subscribe(PubSub.rundownPlaylists, {})
 		this.subscribe(PubSub.studios, {})
 
@@ -322,6 +308,18 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 					subsReady: subsReady
 				})
 			}
+		})
+
+		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
+			if (err) {
+				// console.error(err)
+				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
+				return
+			}
+
+			this.setState({
+				systemStatus: systemStatus
+			})
 		})
 	}
 
