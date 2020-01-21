@@ -47,6 +47,7 @@ export interface MediaFlow {
 export enum StorageType {
 	LOCAL_FOLDER = 'local_folder',
 	FILE_SHARE = 'file_share',
+	QUANTEL_HTTP = 'quantel_http',
 	UNKNOWN = 'unknown'
 	// FTP = 'ftp',
 	// AWS_S3 = 'aws_s3'
@@ -62,6 +63,17 @@ export interface StorageSettings {
 		/** Only subscribed files can be listened to for changes */
 		onlySelectedFiles?: boolean
 		[key: string]: any
+	}
+}
+export interface QuantelHTTPStorage extends StorageSettings {
+	type: StorageType.QUANTEL_HTTP
+	options: {
+		transformerUrl: string
+		gatewayUrl: string
+		ISAUrl: string
+		zoneId: string | undefined
+		serverId: number
+		onlySelectedFiles: true
 	}
 }
 export interface LocalFolderStorage extends StorageSettings {
