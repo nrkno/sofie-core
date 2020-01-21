@@ -203,12 +203,12 @@ export function reportPartHasStopped (partOrId: Part | string , timestamp: Time)
 			asyncCollectionFindOne(Rundowns, part.rundownId)
 		])
 		rundown = r[1]
-		const playlist = rundown.getRundownPlaylist()
 		// also update local object:
 		part.stoppedPlayback = true
 		pushOntoPath(part, 'timings.stoppedPlayback', timestamp)
 
 		if (rundown) {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
