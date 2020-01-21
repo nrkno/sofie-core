@@ -18,6 +18,7 @@
     "update-snapshots": "jest --updateSnapshot",
     "ci_tmp": "meteor npm run lint && meteor npm run cov",
     "ci": "meteor npm run unitci && meteor npm run send-coverage",
+    "ci:lint": "meteor npm run check-types && meteor npm run lint",
     "cov-open": "open-cli coverage/lcov-report/index.html",
     "cov": "meteor npm run unitcov && meteor npm run cov-open",
     "send-coverage": "codecov",
