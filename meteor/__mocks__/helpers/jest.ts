@@ -27,7 +27,7 @@ export async function runAllTimers () {
 	// Run all timers, and wait, multiple times.
 	// This is to allow timers AND internal promises to resolve in inner functions
 	for (let i = 0; i < 50; i++) {
-		await jest.runOnlyPendingTimers()
+		jest.runOnlyPendingTimers()
 		await new Promise(resolve => orgSetTimeout(resolve, 0))
 	}
 }

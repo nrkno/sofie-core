@@ -14,9 +14,6 @@
 		],
 		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object"]
 	},
-	"exclude": [
-		"node_modules",
-		"**/__mocks__/**/*",
-		"**/.coverage/**/*"
-	]
+	"exclude": ["node_modules", "**/__mocks__/**/*", "**/.coverage/**/*"],
+	"include": ["client", "lib", "server"]
 }
