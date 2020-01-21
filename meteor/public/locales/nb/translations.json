@@ -267,6 +267,7 @@
     "Media Scanner Host": "Vert for mediascanner",
     "Media Scanner Port": "Port for mediascanner",
     "Quantel Gateway URL": "Quantel Gateway-adresse (url)",
+    "Quantel HTTP Transformer URL": "Quantel HTTP Transformer-adresse (url)",
     "Quantel ISA URL": "Quantel ISA-adresse (url)",
     "Zone ID (leave blank for default)": "Sone-id (la denne være tom for standardvalg)",
     "Quantel Server ID": "Quantel server-id",

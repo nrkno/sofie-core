@@ -292,7 +292,39 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.usePolling'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
 											</label>
 										</div>
-									</React.Fragment>))))}
+									</React.Fragment>)) ||
+										(storage.type === StorageType.QUANTEL_HTTP && ((<React.Fragment>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Quantel HTTP Transfomer URL')}
+													<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.transformerUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Quantel Gateway URL')}
+													<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.gatewayUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Quantel ISA URL')}
+													<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.ISAUrl'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Zone ID (leave blank for default)')}
+													<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.zoneId'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Quantel Server ID')}
+													<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+										</React.Fragment>)))))}
 							</div>
 							<div className='mod alright'>
 								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditStorageItem(storage.id)}>

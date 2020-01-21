@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-12-16T15:02:27.601Z\n"
-"PO-Revision-Date: 2019-12-16T15:02:27.601Z\n"
+"POT-Creation-Date: 2020-01-21T22:25:06.502Z\n"
+"PO-Revision-Date: 2020-01-21T22:25:06.502Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -721,6 +721,17 @@ msgstr ""
 msgid "Blueprints updated successfully."
 msgstr ""
 
+msgid "Replace Blueprints?"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid ""
+"Are you sure you want to replace the blueprints with the file "
+"\"{{fileName}}\"?"
+msgstr ""
+
 msgid "Failed to update blueprints: {{errorMessage}}"
 msgstr ""
 
@@ -760,10 +771,51 @@ msgstr ""
 msgid "Last modified"
 msgstr ""
 
+msgid "Blueprint Id"
+msgstr ""
+
 msgid "Blueprint Version"
 msgstr ""
 
 msgid "Upload Blueprints"
+msgstr ""
+
+msgid "Spreadsheet credentials succesfully uploaded."
+msgstr ""
+
+msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
+msgstr ""
+
+msgid "Application credentials"
+msgstr ""
+
+msgid "Access token"
+msgstr ""
+
+msgid ""
+"Click on the link below and accept the permissions request. Paste the "
+"received URL below."
+msgstr ""
+
+msgid "Waiting for gateway to generate URL..."
+msgstr ""
+
+msgid "Device ID"
+msgstr ""
+
+msgid "Device Type"
+msgstr ""
+
+msgid "Remove this item?"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Are you sure you want to remove {{type}} \"{{deviceId}}\"?"
+msgstr ""
+
+msgid "Attached Subdevices"
 msgstr ""
 
 msgid "URL"
@@ -776,9 +828,6 @@ msgid "Make ready commands"
 msgstr ""
 
 msgid "Remove this command?"
-msgstr ""
-
-msgid "Remove"
 msgstr ""
 
 msgid "Are you sure you want to remove this command?"
@@ -817,6 +866,21 @@ msgstr ""
 msgid "Base path is a network share"
 msgstr ""
 
+msgid "Quantel HTTP Transfomer URL"
+msgstr ""
+
+msgid "Quantel Gateway URL"
+msgstr ""
+
+msgid "Quantel ISA URL"
+msgstr ""
+
+msgid "Zone ID (leave blank for default)"
+msgstr ""
+
+msgid "Quantel Server ID"
+msgstr ""
+
 msgid "Media Flow ID"
 msgstr ""
 
@@ -851,18 +915,6 @@ msgid "Media Scanner Host"
 msgstr ""
 
 msgid "Media Scanner Port"
-msgstr ""
-
-msgid "Quantel Gateway URL"
-msgstr ""
-
-msgid "Quantel ISA URL"
-msgstr ""
-
-msgid "Zone ID (leave blank for default)"
-msgstr ""
-
-msgid "Quantel Server ID"
 msgstr ""
 
 msgid "No. of Available Workers"
@@ -901,12 +953,6 @@ msgstr ""
 msgid "Monitors"
 msgstr ""
 
-msgid "Attached Subdevices"
-msgstr ""
-
-msgid "Device ID"
-msgstr ""
-
 msgid "Primary ID (Newsroom System MOS ID)"
 msgstr ""
 
@@ -932,9 +978,6 @@ msgid "Device id"
 msgstr ""
 
 msgid "Disable"
-msgstr ""
-
-msgid "Device Type"
 msgstr ""
 
 msgid "Thread Usage"
@@ -1009,30 +1052,10 @@ msgstr ""
 msgid "Connect some devices to the playout gateway"
 msgstr ""
 
-msgid "Spreadsheet credentials succesfully uploaded."
-msgstr ""
-
-msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
-msgstr ""
-
-msgid "Application credentials"
-msgstr ""
-
 msgid ""
 "Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
 "and upload it here."
-msgstr ""
-
-msgid "Access token"
-msgstr ""
-
-msgid ""
-"Click on the link below and accept the permissions request. Paste the "
-"received URL below."
-msgstr ""
-
-msgid "Waiting for gateway to generate URL..."
 msgstr ""
 
 msgid "Drive folder name"
@@ -1381,12 +1404,6 @@ msgid "Internal ID"
 msgstr ""
 
 msgid "Source Type"
-msgstr ""
-
-msgid "Is unlimited"
-msgstr ""
-
-msgid "Is on clean PGM"
 msgstr ""
 
 msgid "Is a Live Remote Input"

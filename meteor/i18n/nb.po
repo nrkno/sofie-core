@@ -895,6 +895,9 @@ msgstr "Port for mediascanner"
 msgid "Quantel Gateway URL"
 msgstr "Quantel Gateway-adresse (url)"
 
+msgid "Quantel HTTP Transformer URL"
+msgstr "Quantel HTTP Transformer-adresse (url)"
+
 msgid "Quantel ISA URL"
 msgstr "Quantel ISA-adresse (url)"
 
