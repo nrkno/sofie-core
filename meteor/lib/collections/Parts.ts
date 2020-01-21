@@ -248,6 +248,13 @@ export class Part implements DBPart {
 
 		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
+	isPlayable () {
+		return isPartPlayable(this)
+	}
+}
+
+export function isPartPlayable (part: DBPart) {
+	return !part.invalid && !part.floated
 }
 
 export const Parts: TransformedCollection<Part, DBPart>

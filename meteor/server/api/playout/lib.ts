@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { Pieces } from '../../../lib/collections/Pieces'
-import { Parts, DBPart, Part } from '../../../lib/collections/Parts'
+import { Parts, DBPart, Part, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	asyncCollectionUpdate,
 	getCurrentTime,
@@ -122,7 +122,8 @@ function resetRundownPlayhead (rundown: Rundown) {
 
 	if (rundown.active) {
 		// put the first on queue:
-		setNextPart(rundown, _.first(parts) || null)
+		const firstPart = selectNextPart(null, rundown.getParts())
+		setNextPart(rundown, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(rundown, null)
 	}
@@ -174,6 +175,27 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	const prevPart = getPreviousPartForSegment(dbRundown._id, segment)
 	updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
+
+export function selectNextPart (previousPart: Part | null, parts: Part[]): { part: Part, index: number} | undefined {
+	let possibleParts = parts
+
+	if (previousPart !== null) {
+		const currentIndex = parts.findIndex(p => p._id === previousPart._id)
+		// TODO - choose something better for next?
+		if (currentIndex !== -1) {
+			possibleParts = parts.slice(currentIndex + 1)
+		}
+	}
+
+	// Filter to after and find the first playabale
+	for (let index = 0; index < possibleParts.length; index ++) {
+		const part = possibleParts[index]
+		if (part.isPlayable()) {
+			return { part, index }
+		}
+	}
+	return undefined
+}
 export function setNextPart (
 	rundown: Rundown,
 	nextPart: DBPart | null,
@@ -187,11 +209,8 @@ export function setNextPart (
 		if (nextPart._id === rundown.currentPartId) {
 			throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
 		}
-		if (nextPart.invalid) {
-			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
-		}
-		if (nextPart.floated) {
-			throw new Meteor.Error(400, 'Part is marked as floated, cannot set as next.')
+		if (!isPartPlayable(nextPart)) {
+			throw new Meteor.Error(400, 'Part is unplabale, cannot set as next.')
 		}
 
 		ps.push(resetPart(nextPart))

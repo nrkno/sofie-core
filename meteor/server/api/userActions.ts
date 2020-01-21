@@ -89,8 +89,7 @@ export function setNext (rundownId: string, nextPartId: string | null, setManual
 		nextPart = Parts.findOne(nextPartId)
 		if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
-		if (nextPart.invalid) return ClientAPI.responseError('Part is marked as invalid, cannot set as next.')
-		if (nextPart.floated) return ClientAPI.responseError('Part is marked as floated, cannot set as next.')
+		if (!nextPart.isPlayable()) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
 	}
 
 	if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) {

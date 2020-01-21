@@ -10,7 +10,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime } from '../../../lib/lib'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
-import { setNextPart, onPartHasStoppedPlaying } from './lib'
+import { setNextPart, onPartHasStoppedPlaying, selectNextPart } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { areThereActiveRundownsInStudio } from './studio'
@@ -47,10 +47,9 @@ export function activateRundown (rundown: Rundown, rehearsal: boolean) {
 	rundown.rehearsal = rehearsal
 
 	if (!rundown.nextPartId) {
-		let parts = rundown.getParts()
-		let firstPart = _.first(parts)
-		if (firstPart && !firstPart.invalid && !firstPart.floated) {
-			setNextPart(rundown, firstPart)
+		const firstPart = selectNextPart(null, rundown.getParts())
+		if (firstPart) {
+			setNextPart(rundown, firstPart.part)
 		}
 	}
 

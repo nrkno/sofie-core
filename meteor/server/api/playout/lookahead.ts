@@ -7,7 +7,7 @@ import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType 
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
-import { clone, literal } from '../../../lib/lib'
+import { literal, clone } from '../../../lib/lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -175,7 +175,7 @@ export function findLookaheadForlayer (
 	let startingPartOnLayerIndex: number = -1
 	for (let i = currentPartIndex; i < timeOrderedPartsWithPieces.length; i++) {
 		const v = timeOrderedPartsWithPieces[i]
-		if (v.pieces.length > 0) {
+		if (v.pieces.length > 0 && v.part.isPlayable()) {
 			startingPartOnLayer = v
 			startingPartOnLayerIndex = i
 			break
@@ -193,7 +193,7 @@ export function findLookaheadForlayer (
 				break
 			}
 
-			if (part.pieces.length > 0) {
+			if (part.pieces.length > 0 && part.part.isPlayable()) {
 				startingPartOnLayer = part
 				startingPartOnLayerIndex = i
 				break
@@ -219,7 +219,7 @@ export function findLookaheadForlayer (
 	// Loop over future parts until we have enough objects, or run out of parts
 	let nextPartOnLayerIndex = startingPartOnLayerIndex
 	while (nextPartOnLayerIndex !== -1 && res.future.length < lookaheadDepth) {
-		nextPartOnLayerIndex = _.findIndex(timeOrderedPartsWithPieces, (v, i) => i > nextPartOnLayerIndex && v.pieces.length > 0)
+		nextPartOnLayerIndex = _.findIndex(timeOrderedPartsWithPieces, (v, i) => i > nextPartOnLayerIndex && v.pieces.length > 0 && v.part.isPlayable())
 
 		if (nextPartOnLayerIndex !== -1) {
 			const nextPartOnLayer = timeOrderedPartsWithPieces[nextPartOnLayerIndex]

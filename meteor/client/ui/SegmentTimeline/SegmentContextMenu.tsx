@@ -32,7 +32,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 			this.props.studioMode && this.props.rundown && this.props.rundown.active ?
 				<Escape to='document'>
 					<ContextMenu id='segment-timeline-context-menu'>
-						{part && !part.invalid && timecode !== null && <React.Fragment>
+						{part && part.isPlayable() && timecode !== null && <React.Fragment>
 							{startsAt !== null && <MenuItem onClick={(e) => this.props.onSetNext(part, e)} disabled={part._id === this.props.rundown.currentPartId}>
 								<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 							</MenuItem>}

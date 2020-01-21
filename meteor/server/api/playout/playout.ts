@@ -49,7 +49,7 @@ import {
 	onPartHasStoppedPlaying,
 	refreshPart,
 	getPreviousPartForSegment,
-	getPartsAfter
+	selectNextPart
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -280,9 +280,7 @@ export namespace ServerPlayoutAPI {
 			let takePart = rundownData.partsMap[rundown.nextPartId]
 			if (!takePart) throw new Meteor.Error(404, 'takePart not found!')
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			let partAfter = fetchNext(_.filter(rundownData.parts, p => (p.rundownId === rundown._id && !p.invalid)), takePart)
-
-			let nextPart: DBPart | null = partAfter || null
+			const nextPart = selectNextPart(takePart, rundownData.parts)
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPart || null, takePart)
@@ -344,7 +342,7 @@ export namespace ServerPlayoutAPI {
 			}
 			rundown = _.extend(rundown, m) as Rundown
 
-			libSetNextPart(rundown, nextPart)
+			libSetNextPart(rundown, nextPart ? nextPart.part : null)
 			waitForPromiseAll(ps)
 			ps = []
 
@@ -567,7 +565,7 @@ export namespace ServerPlayoutAPI {
 		let part = parts[partIndex]
 		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-		if ((part._id === rundown.currentPartId && !nextPartId0) || part.invalid || part.floated) {
+		if ((part._id === rundown.currentPartId && !nextPartId0) || !part.isPlayable()) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			if (part._id !== nextPartId0) {
@@ -871,9 +869,7 @@ export namespace ServerPlayoutAPI {
 
 						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
-						const partsAfter = getPartsAfter(playingPart, rundown.getParts())
-
-						let nextPart: Part | null = _.first(partsAfter) || null
+						const nextPart = selectNextPart(playingPart, rundown.getParts())
 
 						const rundownChange = {
 							previousPartId: rundown.currentPartId,
@@ -886,13 +882,11 @@ export namespace ServerPlayoutAPI {
 						})
 						rundown = _.extend(rundown, rundownChange) as Rundown
 
-						libSetNextPart(rundown, nextPart)
+						libSetNextPart(rundown, nextPart ? nextPart.part : null)
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
-						const partsAfter = getPartsAfter(playingPart, rundown.getParts())
-
-						let nextPart: Part | null = _.first(partsAfter) || null
+						const nextPart = selectNextPart(playingPart, rundown.getParts())
 
 						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
 
@@ -905,7 +899,7 @@ export namespace ServerPlayoutAPI {
 							$set: rundownChange
 						})
 						rundown = _.extend(rundown, rundownChange) as Rundown
-						libSetNextPart(rundown, nextPart)
+						libSetNextPart(rundown, nextPart ? nextPart.part : null)
 
 						logger.error(`Part "${playingPart._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
