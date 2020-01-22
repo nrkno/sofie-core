@@ -199,9 +199,7 @@ export namespace ServerPlayoutAPI {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-			const rundowns = Rundowns.find({
-				playlistId: playlist._id
-			}).fetch()
+			const rundowns = playlist.getRundowns()
 
 			const all = rundowns.map(r => IngestActions.reloadRundown(r))
 
@@ -398,7 +396,7 @@ export namespace ServerPlayoutAPI {
 			ps.push(asyncCollectionUpdate(Parts, takePartInstance.part._id, partM))
 
 			if (m.previousPartInstanceId) {
-				ps.push(asyncCollectionUpdate(Parts, m.previousPartInstanceId, {
+				ps.push(asyncCollectionUpdate(PartInstances, m.previousPartInstanceId, {
 					$push: {
 						'part.timings.takeOut': now,
 					}
@@ -1076,12 +1074,12 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Make a copy of a piece and start playing it now
 	 */
-	export function pieceTakeNow (rundownId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
-		check(rundownId, String)
+	export function pieceTakeNow (playlistId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
+		check(playlistId, String)
 		check(partInstanceId, String)
 		check(pieceInstanceIdOrPieceIdToCopy, String)
 
-		return ServerPlayoutAdLibAPI.pieceTakeNow(rundownId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
+		return ServerPlayoutAdLibAPI.pieceTakeNow(playlistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	}
 	export function segmentAdLibPieceStart (rundownPlaylistId: string, partInstanceId: string, adLibPieceId: string, queue: boolean) {
 		check(rundownPlaylistId, String)
@@ -1180,7 +1178,6 @@ export namespace ServerPlayoutAPI {
 			const relativeNow = now - lastStartedPlayback
 			const orderedPieces = getResolvedPieces(partInstance)
 
-			// TODO-ASAP - can this be changed to a custom instance??
 			orderedPieces.forEach((pieceInstance) => {
 				if (pieceInstance.piece.sourceLayerId === sourceLayerId) {
 					if (!pieceInstance.piece.userDuration) {
@@ -1190,15 +1187,14 @@ export namespace ServerPlayoutAPI {
 							newExpectedDuration = now - lastStartedPlayback
 						} else if (
 							pieceInstance.piece.startedPlayback && // currently playing
-							_.isNumber(pieceInstance.piece.enable.start) &&
-							(pieceInstance.piece.enable.start || 0) < relativeNow && // is relative, and has started
+							(pieceInstance.resolvedStart || 0) < relativeNow && // is relative, and has started
 							!pieceInstance.piece.stoppedPlayback // and not yet stopped
 						) {
 							newExpectedDuration = now - pieceInstance.piece.startedPlayback
 						}
 
 						if (newExpectedDuration !== undefined) {
-							console.log(`Cropping PieceInstance "${pieceInstance._id}" at ${newExpectedDuration}`)
+							console.log(`Cropping PieceInstance "${pieceInstance._id}" to ${newExpectedDuration}`)
 
 							PieceInstances.update({
 								_id: pieceInstance._id
