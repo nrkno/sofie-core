@@ -38,7 +38,8 @@
     "deprecated-unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
     "deprecated-integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "deprecated-test-once": "meteor test --once --driver-package meteortesting:mocha",
-    "check-types": "tsc --noEmit -p tsconfig-base.json"
+    "check-types": "tsc --noEmit -p tsconfig-base.json",
+    "watch-types": "tsc --watch --noEmit -p tsconfig-base.json"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.1",
