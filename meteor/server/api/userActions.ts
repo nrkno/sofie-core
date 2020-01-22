@@ -31,7 +31,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylists, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 

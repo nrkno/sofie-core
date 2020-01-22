@@ -59,7 +59,7 @@ import {
 	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
 	deactivateRundownPlaylistInner
 } from './actions'
-import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPieceInstance, convertPieceToAdLibPiece } from './pieces'
+import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPieceInstance, convertPieceToAdLibPiece, orderPieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { areThereActiveRundownPlaylistsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
@@ -792,12 +792,13 @@ export namespace ServerPlayoutAPI {
 					}
 				}
 
-				let pieces: Array<PieceResolved> = getOrderedPiece(partInstance)
+				const pieceInstances = partInstance.getAllPieceInstances()
+				const orderedPieces: Array<PieceResolved> = orderPieces(pieceInstances.map(p => p.piece), partInstance.part._id, partInstance.part.getLastStartedPlayback())
 
 				let findLast: boolean = !!undo
 
 				let filteredPieces = _.sortBy(
-					_.filter(pieces, (piece: PieceResolved) => {
+					_.filter(orderedPieces, (piece: PieceResolved) => {
 						let sourceLayer = allowedSourceLayers[piece.sourceLayerId]
 						if (sourceLayer && sourceLayer.allowDisable && !piece.virtual) return true
 						return false
@@ -824,7 +825,7 @@ export namespace ServerPlayoutAPI {
 						)
 					)
 				})
-				return nextPiece
+				return nextPiece ? pieceInstances.find(p => p.piece._id === nextPiece!._id) : undefined
 			}
 
 			if (nextPartInstance) {

@@ -40,16 +40,18 @@ export interface PieceResolved extends Piece {
 export function orderPieces (pieces: Piece[], partId: string, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
 
-	const tmpPieceInstances = pieces.map(p => WrapPieceToTemporaryInstance(p, partId))
+	const itemMap: { [key: string]: Piece } = {}
+	pieces.forEach(i => itemMap[i._id] = i)
 
-	const itemMap: { [key: string]: PieceInstance } = {}
-	tmpPieceInstances.forEach(i => itemMap[i._id] = i)
-
-	const objs: Array<TimelineObjRundown> = tmpPieceInstances.map(instance => {
-		const obj = clone(createPieceGroup(undefined, instance))
+	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
+		const obj = clone(createPieceGroup(undefined, {
+			_id: piece._id, // Set hte id to the same, as it is just for metadata
+			rundownId: piece.rundownId,
+			piece: piece
+		}))
 
 		if (obj.enable.start === 0) {
-			if (instance.piece.infiniteId && instance.piece.infiniteId !== instance.piece._id) {
+			if (piece.infiniteId && piece.infiniteId !== piece._id) {
 				// Infinite coninuation, needs to start earlier otherwise it will likely end up being unresolved
 				obj.enable.start = 0
 			} else {
@@ -73,7 +75,7 @@ export function orderPieces (pieces: Piece[], partId: string, partStarted?: numb
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
 		const pieceInstanceId = (obj.metadata || {}).pieceId
-		const piece = _.clone(itemMap[pieceInstanceId]).piece as PieceResolved
+		const piece = _.clone(itemMap[pieceInstanceId]) as PieceResolved
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			piece.resolvedStart = obj0.resolved.instances[0].start || 0
 			piece.resolved = true
@@ -155,7 +157,7 @@ export function createPieceGroupFirstObject (
 }
 export function createPieceGroup (
 	playlistId: string | undefined,
-	pieceInstance: PieceInstance,
+	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
 	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({

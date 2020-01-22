@@ -814,14 +814,6 @@ export function waitForPromiseAll<T>(ps: Array<Promise<T>>): Array<T> {
 	return waitForPromise(Promise.all(ps))
 }
 
-// export type UnPromise<T> = T extends Promise<infer U> ? U : T
-
-// export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
-// export function waitForPromiseAll2 <T extends any[]> (...args: Promisify<T>): T {
-// 	// TODO - this might not work with the old typescript being used. If it does uses of the old version should be replaced with this
-// 	return waitForPromiseAll(args as any) as any
-// }
-
 /**
  * Convert a promise to a "synchronous" Fiber function
  * Makes the Fiber wait for the promise to resolve, then return the value of the promise.

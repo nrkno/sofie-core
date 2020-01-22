@@ -73,6 +73,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	let psPopulateCache: Array<Promise<any>> = []
 	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
+		// TODO-ASAP this promise is pointless, as nothing inside orderPieces will yield up the fiber
 		psPopulateCache.push(new Promise((resolve, reject) => {
 			try {
 				const partStarted = part.getLastStartedPlayback()
@@ -100,7 +101,6 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   }
 
 	   // ensure any currently defined infinites are still wanted
-	   // let currentItems = getOrderedPiece(part)
 	   let currentItems = currentItemsCache[part._id]
 	   if (!currentItems) throw new Meteor.Error(500, `currentItemsCache didn't contain "${part._id}", which it should have`)
 
