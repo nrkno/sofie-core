@@ -116,7 +116,8 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	let message: string | null = null
 	let contentDuration: number | undefined = undefined
 
-	if (sourceLayer) {
+	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	if (!ignoreMediaStatus && sourceLayer) {
 		switch (sourceLayer.type) {
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:

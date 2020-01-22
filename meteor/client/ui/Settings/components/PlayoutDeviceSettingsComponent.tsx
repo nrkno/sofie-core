@@ -244,6 +244,12 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.launcherPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('CasparCG Retry Timer')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.retryInterval'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l' mutateDisplayValue={v => v === false ? 'disable' : v} mutateUpdateValue={v => v === 'disable' ? false : v ? Number(v) : undefined}></EditAttribute>
+				</label>
+			</div>
 		</React.Fragment>
 	}
 	renderAtemDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
