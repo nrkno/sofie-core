@@ -1,4 +1,5 @@
 node_modules/**
+.meteor/local**
 src/**/*.js
 src/**/*.js.map
 coverage
