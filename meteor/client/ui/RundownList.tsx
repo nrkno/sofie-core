@@ -66,7 +66,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
 	}
 
-	confirmDelete (rundown: RundownPlaylist) {
+	confirmDelete (playlist: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -74,10 +74,10 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRundown, [rundown._id])
+				doUserAction(t, e, UserActionAPI.methods.removeRundown, [playlist._id])
 			},
 			message: (
-				t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) + '\n' +
+				t('Are you sure you want to delete the "{{name}}" rundown?', { name: playlist.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})

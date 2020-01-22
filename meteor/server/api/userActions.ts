@@ -31,7 +31,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 
@@ -399,12 +399,12 @@ export function userStoreRundownSnapshot (rundownId: string, reason: string) {
 		storeRundownSnapshot(rundownId, reason)
 	)
 }
-export function removeRundown (rundownId: string) {
-	let playlist = Rundowns.findOne(rundownId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+export function removeRundown (playlistId: string) {
+	let playlist = RundownPlaylists.findOne(playlistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.removeRundown(rundownId)
+		ServerRundownAPI.removeRundown(playlistId)
 	)
 }
 export function resyncRundown (rundownId: string) {
@@ -590,8 +590,8 @@ methods[UserActionAPI.methods.saveEvaluation] = function (evaluation: Evaluation
 methods[UserActionAPI.methods.storeRundownSnapshot] = function (rundownId: string, reason: string) {
 	return userStoreRundownSnapshot.call(this, rundownId, reason)
 }
-methods[UserActionAPI.methods.removeRundown] = function (rundownId: string) {
-	return removeRundown.call(this, rundownId)
+methods[UserActionAPI.methods.removeRundown] = function (playlistId: string) {
+	return removeRundown.call(this, playlistId)
 }
 methods[UserActionAPI.methods.resyncRundown] = function (rundownId: string) {
 	return resyncRundown.call(this, rundownId)

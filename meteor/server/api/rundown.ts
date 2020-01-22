@@ -354,16 +354,15 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 }
 
 export namespace ServerRundownAPI {
-	export function removeRundown (rundownId: string) {
-		check(rundownId, String)
-		logger.info('removeRundown ' + rundownId)
+	export function removeRundown (playlistId: string) {
+		check(playlistId, String)
+		logger.info('removeRundown ' + playlistId)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		const playlist = rundown.getRundownPlaylist()
-		if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}".`)
+		const playlist = RundownPlaylists.findOne(playlistId)
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+		if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${playlistId}".`)
 
-		rundown.remove()
+		playlist.remove()
 	}
 	export function resyncRundown (rundownId: string): UserActionAPI.ReloadRundownResponse {
 		check(rundownId, String)
@@ -425,8 +424,8 @@ export namespace ClientRundownAPI {
 }
 
 let methods: Methods = {}
-methods[RundownAPI.methods.removeRundown] = (rundownId: string) => {
-	return ServerRundownAPI.removeRundown(rundownId)
+methods[RundownAPI.methods.removeRundown] = (playlistId: string) => {
+	return ServerRundownAPI.removeRundown(playlistId)
 }
 methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
 	return ServerRundownAPI.resyncRundown(rundownId)
