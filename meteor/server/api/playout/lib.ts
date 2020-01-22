@@ -307,11 +307,24 @@ export function getPartBeforeSegment (rundownId: string, dbSegment: DBSegment): 
 	}
 	return undefined
 }
-function getPreviousPart (dbPart: DBPart) {
-	return Parts.findOne({
-		rundownId: dbPart.rundownId,
-		_rank: { $lt: dbPart._rank }
-	}, { sort: { _rank: -1 } })
+export function getPartsAfter (part: Part, partsInRundownInOrder: Part[]): Part[] {
+	let found = false
+	// Only process parts after part:
+	const partsAfter = partsInRundownInOrder.filter(p => {
+		if (found) return true
+		if (p._id === part._id) found = true
+		return false
+	})
+	return partsAfter
+}
+function getPreviousPart (dbPart: DBPart, rundown: Rundown) {
+
+	let prevPart: Part | undefined = undefined
+	for (let p of rundown.getParts()) {
+		if (p._id === dbPart._id) break
+		prevPart = p
+	}
+	return prevPart
 }
 export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbRundown.externalId, dbPart.segmentId, dbPart.segmentId)
@@ -569,7 +582,7 @@ function resetPart (part: DBPart): Promise<void> {
 	} else {
 		const rundown = Rundowns.findOne(part.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
-		const prevPart = getPreviousPart(part)
+		const prevPart = getPreviousPart(part, rundown)
 
 
 		return Promise.all(ps)

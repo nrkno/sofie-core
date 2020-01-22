@@ -45,10 +45,13 @@ export interface DBRundownPlaylist {
 
 export interface RundownPlaylistPlayoutData {
 	rundownPlaylist: RundownPlaylist,
+	/** Ordered array of the Rundowns in a Playlist */
 	rundowns: Rundown[],
 	rundownsMap: { [key: string]: Rundown },
+	/** Ordered array of the Segments in a Playlist */
 	segments: Segment[],
 	segmentsMap: { [key: string]: Segment},
+	/** Ordered array of the Parts in a Playlist */
 	parts: Part[],
 	partsMap: { [key: string]: Part },
 	pieces: Piece[]

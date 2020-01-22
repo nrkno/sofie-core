@@ -11,6 +11,7 @@ import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncC
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
+import { getPartsAfter } from './lib';
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
@@ -59,7 +60,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	waitForPromiseAll(ps)
 
 	if (previousPart) {
-	   partsToProcess = partsToProcess.filter(l => l._rank > previousPart._rank)
+		partsToProcess = getPartsAfter(previousPart, partsToProcess)
 	}
 
 	let allPieces = Pieces.find({
@@ -282,7 +283,7 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 	const ps: Array<Promise<void>> = []
 
 	// Cleanup any future parts
-	const remainingParts = rundown.getParts().filter(l => l._rank > partInstance.part._rank)
+	const remainingParts = getPartsAfter(partInstance.part, rundown.getParts())
 	const affectedPartIds: string[] = []
 	for (let part of remainingParts) {
 		let continuations = part.getAllPieces().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
