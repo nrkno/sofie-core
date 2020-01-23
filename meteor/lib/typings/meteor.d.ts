@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
-import { Optional } from '../lib'
+import { Omit } from '../lib'
 
 declare module 'meteor/tracker' {
 	namespace Tracker {
@@ -89,7 +89,7 @@ export interface UpsertOptions {
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
 export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
 
-export interface TransformedCollection<Class, DBInterface> {
+export interface TransformedCollection<Class extends DBInterface, DBInterface> {
 	allow (options: {
 		insert?: (userId: string, doc: DBInterface) => boolean
 		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean

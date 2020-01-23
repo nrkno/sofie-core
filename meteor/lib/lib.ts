@@ -705,7 +705,7 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 	}
 }
 
-export function asyncCollectionFindFetch<DocClass, DBInterface> (
+export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	options?: FindOptions
@@ -719,7 +719,7 @@ export function asyncCollectionFindFetch<DocClass, DBInterface> (
 		waitTime(0)
 	})
 }
-export function asyncCollectionFindOne<DocClass, DBInterface> (
+export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
 ): Promise<DocClass | undefined> {
@@ -728,7 +728,7 @@ export function asyncCollectionFindOne<DocClass, DBInterface> (
 		return arr[0]
 	})
 }
-export function asyncCollectionInsert<DocClass, DBInterface> (
+export function asyncCollectionInsert<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
 ): Promise<string> {
@@ -739,14 +739,14 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 		})
 	})
 }
-export function asyncCollectionInsertMany<DocClass, DBInterface> (
+export function asyncCollectionInsertMany<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	docs: DBInterface[],
 ): Promise<string[]> {
 	return Promise.all(_.map(docs, doc => asyncCollectionInsert(collection, doc)))
 }
 /** Insert document, and ignore if document already exists */
-export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
+export function asyncCollectionInsertIgnore<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
 ): Promise<string> {
@@ -763,7 +763,7 @@ export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
 		})
 	})
 }
-export function asyncCollectionUpdate<DocClass, DBInterface> (
+export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	modifier: MongoModifier<DBInterface>,
@@ -778,7 +778,7 @@ export function asyncCollectionUpdate<DocClass, DBInterface> (
 	})
 }
 
-export function asyncCollectionUpsert<DocClass, DBInterface> (
+export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	modifier: MongoModifier<DBInterface>,
@@ -793,7 +793,7 @@ export function asyncCollectionUpsert<DocClass, DBInterface> (
 	})
 }
 
-export function asyncCollectionRemove<DocClass, DBInterface> (
+export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
 

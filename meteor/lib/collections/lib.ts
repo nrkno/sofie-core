@@ -9,7 +9,7 @@ const ObserveChangeBufferTimeout = 2000
 
 type Timeout = number
 
-export function ObserveChangesForHash<Ta, Tb> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
+export function ObserveChangesForHash<Ta extends Tb, Tb> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
 	const doUpdate = (id: string, obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
 

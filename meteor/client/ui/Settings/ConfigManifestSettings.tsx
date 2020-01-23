@@ -25,7 +25,7 @@ import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fo
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
-function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2, TObj>, object: TObj, item: BasicConfigManifestEntry, attribute: string) {
+function getEditAttribute<DBInterface, DocClass extends DBInterface> (collection: TransformedCollection<DocClass, DBInterface>, object: DBInterface, item: BasicConfigManifestEntry, attribute: string) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
 			return <EditAttribute
@@ -66,12 +66,12 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 	}
 }
 
-interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+interface IConfigManifestSettingsProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface, DocClass extends DBInterface> {
 	manifest: ConfigManifestEntry[]
 
 	collection: TCol
-	object: TObj
-	configPath: KeysByType<TObj, Array<IConfigItem>>
+	object: DBInterface
+	configPath: KeysByType<DBInterface, Array<IConfigItem>>
 
 	subPanel?: boolean
 }
@@ -84,12 +84,12 @@ interface IConfigManifestSettingsState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 
-interface IConfigManifestTableProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+interface IConfigManifestTableProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface, DocClass extends DBInterface> {
 	item: ConfigManifestEntryTable
 	baseAttribute: string
 
 	collection: TCol
-	object: TObj
+	object: DBInterface
 
 	subPanel?: boolean
 }
@@ -97,10 +97,10 @@ interface IConfigManifestTableState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 
-export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
-	extends React.Component<Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>, IConfigManifestTableState> {
+export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends DBObj, DocClass extends DBInterface>
+	extends React.Component<Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>, IConfigManifestTableState> {
 
-	constructor (props: Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>) {
+	constructor (props: Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>) {
 		super(props)
 
 		this.state = {
@@ -108,7 +108,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 		}
 	}
 
-	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+	updateObject (obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
 		this.props.collection.update(obj._id, updateObj)
 	}
 
@@ -247,10 +247,10 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 	}
 }
 
-export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
-	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>, IConfigManifestSettingsState> {
+export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends DBObj, DocClass extends DBInterface>
+	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>, IConfigManifestSettingsState> {
 
-	constructor (props: Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>) {
+	constructor (props: Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>) {
 		super(props)
 
 		this.state = {
@@ -267,7 +267,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 		return this.props.object[this.props.configPath]
 	}
 
-	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+	updateObject (obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
 		this.props.collection.update(obj._id, updateObj)
 	}
 
