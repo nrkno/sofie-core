@@ -26,6 +26,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { literal } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
+export const SIMULATED_PLAYBACK_MARGIN = 2000
 import { Settings } from '../../../lib/Settings'
 
 export interface SegmentUi extends Segment {
@@ -304,16 +305,22 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
+			debugger
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
 				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
 					- this.context.durations.partDisplayStartsAt[this.props.parts[0]._id])
 				|| 0
 
-			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
+			let isExpectedToPlay: boolean = this.props.currentLivePart.startedPlayback || false
+			const lastTake = this.props.currentLivePart.getLastTake()
+			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback() || lastTake
+			if (this.props.currentLivePart.taken && lastTake && (lastTake + SIMULATED_PLAYBACK_MARGIN > e.detail.currentTime)) {
+				isExpectedToPlay = true
+			}
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
-			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
+			let newLivePosition = (isExpectedToPlay) && lastStartedPlayback ?
 				(e.detail.currentTime - lastStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
