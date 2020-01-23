@@ -759,8 +759,6 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 			if (!playlist.currentPartInstanceId) throw new Meteor.Error(401, `No current part!`)
 
-			const studio = playlist.getStudio()
-
 			const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 			if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
 
@@ -857,7 +855,7 @@ export namespace ServerPlayoutAPI {
 					disabled: !undo
 				}})
 
-				updateTimeline(studio._id)
+				updateTimeline(playlist.studioId)
 
 				return ClientAPI.responseSuccess()
 			} else {

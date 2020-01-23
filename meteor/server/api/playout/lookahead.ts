@@ -203,7 +203,6 @@ export function findLookaheadForlayer (
 		const pieces = piecesUsingLayerByPart[part._id] || []
 		if (pieces.length > 0 && part.isPlayable()) {
 			const partInfo = { part, pieces }
-			// TODO
 			findObjectsForPart(playoutData, layer, previousPartInfo, partInfo)
 				.forEach(o => res.future.push({ obj: o, partId: part._id }))
 			previousPartInfo = partInfo

@@ -211,9 +211,9 @@ export function unsyncRundown (rundownId: string) {
 		ServerRundownAPI.unsyncRundown(rundownId)
 	)
 }
-export function disableNextPiece (rundownId: string, undo?: boolean) {
+export function disableNextPiece (rundownPlaylistId: string, undo?: boolean) {
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.disableNextPiece(rundownId, undo)
+		ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
 	)
 }
 export function togglePartArgument (rundownPlaylistId: string, partInstanceId: string, property: string, value: string) {
