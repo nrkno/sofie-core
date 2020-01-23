@@ -201,7 +201,7 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 		}
 	})
 
-	let ps: Array<Promise<any>> = []
+	let ps: Array<Promise<unknown>> = []
 	// Ensure that the parts are all correctly rannnnked
 	_.each(rankedParts, (part, newRank) => {
 		if (part._rank !== newRank) {

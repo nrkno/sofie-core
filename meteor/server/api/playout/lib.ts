@@ -170,7 +170,7 @@ export function setNextPart (
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
-	let ps: Array<Promise<any>> = []
+	let ps: Array<Promise<unknown>> = []
 	if (nextPart) {
 
 		if (nextPart.rundownId !== rundown._id) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of rundown "${rundown._id}"`)

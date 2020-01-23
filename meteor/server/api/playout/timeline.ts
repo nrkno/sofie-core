@@ -93,7 +93,7 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 		timelineObjs = timelineObjs.concat(_timelineObjs)
 	}
 
-	let ps: Promise<any>[] = []
+	let ps: Promise<unknown>[] = []
 
 	if (activeRundown) {
 		 // remove anything not related to active rundown

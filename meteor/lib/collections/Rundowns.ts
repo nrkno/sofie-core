@@ -247,19 +247,13 @@ export class Rundown implements DBRundown {
 				return Pieces.find({ rundownId: this._id }).fetch()
 			})
 		]
-		let r: any = waitForPromiseAll(ps as any)
-		let segments: Segment[] 				= r[0].segments
-		let segmentsMap 				 		= r[0].segmentsMap
-		let partsMap 					= r[1].partsMap
-		let parts: Part[]			= r[1].parts
-		let pieces: Piece[] = r[2]
+		const r = waitForPromiseAll(ps)
+		const pieces: Piece[] = r[2]
 
 		return {
 			rundown: this,
-			segments,
-			segmentsMap,
-			parts,
-			partsMap,
+			...r[0],
+			...r[1],
 			pieces
 		}
 	}

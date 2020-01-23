@@ -20,7 +20,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   runUntilEnd = true
 	}
 
-	let ps: Array<Promise<any>> = []
+	let ps: Array<Promise<unknown>> = []
 
 	const pPartsToProcess = makePromise(() => rundown.getParts())
 
@@ -58,7 +58,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	}
 
    // Prepare pieces:
-	let psPopulateCache: Array<Promise<any>> = []
+	let psPopulateCache: Array<Promise<void>> = []
 	const currentItemsCache: {[partId: string]: PieceResolved[]} = {}
 	_.each(partsToProcess, (part) => {
 	   psPopulateCache.push(new Promise((resolve, reject) => {
@@ -246,7 +246,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 		) && i._id !== newPiece._id && i.infiniteMode
 	)
 
-	let ps: Array<Promise<any>> = []
+	let ps: Array<Promise<unknown>> = []
 	for (const piece of pieces) {
 		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
 			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },

@@ -464,7 +464,7 @@ function diffAndApplyChanges (
 	saveRundownCache(rundown._id, newIngestRundown)
 
 	// Update segment ranks:
-	let ps: Array<Promise<any>> = []
+	let ps: Array<Promise<unknown>> = []
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
 		ps.push(
 			asyncCollectionUpdate(

@@ -233,7 +233,7 @@ export namespace ServerPlayoutAPI {
 				})
 			// If hold is active, then this take is to clear it
 			} else if (rundown.holdState === RundownHoldState.ACTIVE) {
-				const ps: Promise<any>[] = []
+				const ps: Promise<unknown>[] = []
 				ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 					$set: {
 						holdState: RundownHoldState.COMPLETE
@@ -311,7 +311,7 @@ export namespace ServerPlayoutAPI {
 				previousPartEndState = blueprint.getEndStateForPart(context, rundown.previousPersistentState, previousPart.previousPartEndState, resolvedPieces, time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}
-			let ps: Array<Promise<any>> = []
+			let ps: Array<Promise<unknown>> = []
 			let m: Partial<Rundown> = {
 				previousPartId: rundown.currentPartId,
 				currentPartId: takePart._id,
@@ -1235,7 +1235,7 @@ function beforeTake (rundownData: RundownData, currentPart: Part | null, nextPar
 			// adjacent Part isn't the next part, do not overflow
 			return
 		}
-		let ps: Array<Promise<any>> = []
+		let ps: Array<Promise<unknown>> = []
 		const currentPieces = currentPart.getAllPieces()
 		currentPieces.forEach((piece) => {
 			if (piece.overflows && typeof piece.enable.duration === 'number' && piece.enable.duration > 0 && piece.playoutDuration === undefined && piece.userDuration === undefined) {

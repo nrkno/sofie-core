@@ -114,7 +114,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	const oldObjs: Array<DocClass> = waitForPromise(pOldObjs)
 
-	const ps: Array<Promise<any>> = []
+	const ps: Array<Promise<unknown>> = []
 
 	const removeObjs: {[id: string]: DocClass} = {}
 	_.each(oldObjs,function (o: DocClass) {
@@ -778,16 +778,28 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
-	Promise.all(ps)
-	.then((result) => {
-		cb(null, result)
-	})
-	.catch((e) => {
-		cb(e)
-	})
-})
+export function waitForPromiseAll<T1, T2, T3, T4> (values: readonly [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike <T4>]): [T1, T2, T3, T4]
+export function waitForPromiseAll<T1, T2, T3> (values: readonly [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>]): [T1, T2, T3]
+export function waitForPromiseAll<T1, T2> (values: readonly [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>]): [T1, T2]
+export function waitForPromiseAll<T> (values: readonly (T | PromiseLike<T>)[]): T[]
+export function waitForPromiseAll<T> (values: readonly (T | PromiseLike<T>)[]): T[] {
+	return waitForPromise(Promise.all(values))
+}
+
+export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
+export function waitForPromiseObj <T extends object> (obj: Promisify<T>): T {
+	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
+	return _.object(_.keys(obj), values)
+}
+
+
+/**
+ * Convert a promise to a "synchronous" Fiber function
+ * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
+ * If the fiber rejects, the function in the Fiber will "throw"
+ */
 export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)
 	Promise.resolve(p)
 	.then((result) => {
 		cb(null, result)
@@ -796,6 +808,10 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 		cb(e)
 	})
 })
+/**
+ * Convert a Fiber function into a promise
+ * Makes the Fiber function to run in its own fiber and return a promise
+ */
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
@@ -807,6 +823,7 @@ export function makePromise<T> (fcn: () => T): Promise<T> {
 		})
 	})
 }
+
 export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
