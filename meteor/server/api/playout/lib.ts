@@ -317,7 +317,7 @@ export function getPartsAfter (part: Part, partsInRundownInOrder: Part[]): Part[
 	})
 	return partsAfter
 }
-function getPreviousPart (dbPart: DBPart, rundown: Rundown) {
+export function getPreviousPart (dbPart: DBPart, rundown: Rundown) {
 
 	let prevPart: Part | undefined = undefined
 	for (let p of rundown.getParts()) {
@@ -411,7 +411,7 @@ export function setNextPart (
 		let newInstanceId: string
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
-		} if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
+		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
 		} else {

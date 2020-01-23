@@ -385,6 +385,8 @@ export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, par
 		piece: {
 			..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
 			_id: newPieceId,
+			rundownId: partInstance.rundownId,
+			partId: partInstance.part._id,
 			enable: {
 				start: (queue ? 0 : 'now'),
 				duration: duration

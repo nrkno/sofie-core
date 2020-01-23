@@ -12,15 +12,15 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart } from './lib'
+import { prefixAllObjectIds, setNextPart, getPartBeforeSegment, getPreviousPart } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces } from './pieces'
-import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
+import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer, updateSourceLayerInfinitesAfterPart } from './infinites'
 import { updateTimeline } from './timeline'
 import { updatePartRanks } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
-import { PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
@@ -161,9 +161,13 @@ export namespace ServerPlayoutAdLibAPI {
 	}
 	function innerStartAdLibPiece (rundownPlaylist: RundownPlaylist, rundown: Rundown, queue: boolean, partInstanceId0: string, adLibPiece: AdLibPiece) {
 		let partInstanceId = partInstanceId0
+		let previousPartInstance: PartInstance | undefined
 		if (queue) {
+			previousPartInstance = PartInstances.findOne(partInstanceId0)
+			if (!previousPartInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId0}" not found!`)
+
 			// insert a NEW, adlibbed part after this part
-			partInstanceId = adlibQueueInsertPartInstance(rundown, partInstanceId, adLibPiece)
+			partInstanceId = adlibQueueInsertPartInstance(rundown, previousPartInstance, adLibPiece)
 		}
 		let partInstance = PartInstances.findOne({
 			_id: partInstanceId,
@@ -178,31 +182,23 @@ export namespace ServerPlayoutAdLibAPI {
 		Pieces.insert(newPieceInstance.piece)
 
 		if (queue) {
-			// TODO-ASAP - should this not handled by a call to updateInfinites? if not then re-enable
-			// keep infinite pieces
-			// Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
-			// 	// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
-			// 	if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-			// 		let newPiece = convertAdLibToPiece(piece, part!, queue)
-			// 		Pieces.insert(newPiece)
-			// 	}
-			// })
+			// Update any infinites
+			updateSourceLayerInfinitesAfterPart(rundown, previousPartInstance!.part)
 
 			setNextPart(rundownPlaylist, partInstance)
 
 			// remove old auto-next from timeline, and add new one
-			updateTimeline(rundownPlaylist.studioId)
+			if (previousPartInstance && previousPartInstance.part.autoNext && rundownPlaylist.currentPartInstanceId === previousPartInstance._id) {
+				updateTimeline(rundownPlaylist.studioId)
+			}
 		} else {
 			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
 			stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 			updateTimeline(rundown.studioId)
 		}
 	}
-	function adlibQueueInsertPartInstance (rundown: Rundown, afterPartInstanceId: string, adLibPiece: AdLibPiece) {
+	function adlibQueueInsertPartInstance (rundown: Rundown, afterPartInstance: PartInstance, adLibPiece: AdLibPiece) {
 		logger.info('adlibQueueInsertPartInstance')
-
-		const afterPartInstance = PartInstances.findOne(afterPartInstanceId)
-		if (!afterPartInstance) throw new Meteor.Error(404, `PartInstance "${afterPartInstanceId}" not found!`)
 
 		const newPartInstanceId = Random.id()
 
