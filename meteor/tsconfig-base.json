@@ -21,7 +21,6 @@
 		"lib/**/*"
 	],
 	"exclude": [
-		"client/**/*",
 		"node_modules/**/*",
 		"**/.coverage/**/*"
 	]
