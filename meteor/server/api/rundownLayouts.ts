@@ -53,7 +53,7 @@ postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incomin
 
 	let content = ''
 	try {
-		const body = (req as any).body
+		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 
 		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')

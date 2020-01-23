@@ -27,7 +27,7 @@ describe('Test blueprint http api', () => {
 				method: 'POST',
 				url: `/blueprints/restore/${blueprintId}?` + queryParams.join('&')
 			})
-			;(req as any).body = body
+			req.body = body
 
 			route.handler({ blueprintId }, req, res, jest.fn())
 
@@ -145,7 +145,7 @@ describe('Test blueprint http api', () => {
 				method: 'POST',
 				url: `${routeName}?force=1`
 			})
-			;(req as any).body = body
+			req.body = body
 
 			route.handler({}, req, res, jest.fn())
 
