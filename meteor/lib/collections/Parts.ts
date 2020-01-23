@@ -37,6 +37,11 @@ export interface DBPart extends IBlueprintPartDB {
 	 * This is set from a callback from the playout gateway
 	 */
 	stoppedPlayback?: boolean
+	/** Whether this part was taken (the most recent time it was played).
+	 * This is reset each time setAsNext is used.
+	 * This is set immediately by core
+	 */
+	taken?: boolean
 
 	/** The time the system played back this part, null if not yet finished playing, in milliseconds.
 	 * This is set when Take:ing the next part
@@ -96,6 +101,7 @@ export class Part implements DBPart {
 	public rundownId: string
 	public status?: string
 	public startedPlayback?: boolean
+	public taken?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
 	public previousPartEndState?: PartEndState
