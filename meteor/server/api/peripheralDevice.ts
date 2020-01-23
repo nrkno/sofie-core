@@ -379,7 +379,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		const peripheralDevice = PeripheralDevices.findOne(deviceId) // TODO: a better security model is needed here. Token is a no-go, but something else to verify the user?
 		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice ${deviceId} not found`)
 
-		const body = (req as any).body
+		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
 
 		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Upload credentials: Invalid request body')

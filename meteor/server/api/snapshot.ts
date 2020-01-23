@@ -749,7 +749,9 @@ PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: S
 	let content = 'ok'
 	try {
 		response.setHeader('Content-Type', 'text/plain')
-		let snapshot = (req as any).body
+		let snapshot = req.body as any
+		if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
+
 		if (typeof snapshot !== 'object') { // sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
 			snapshot = JSON.parse(snapshot)
 		}
