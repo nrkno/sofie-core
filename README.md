@@ -43,9 +43,10 @@ When running meteor it is possible to provide it with [additional settings](http
 
 | Setting         | Use                     | Default value |
 | --------------- | ----------------------- | ------------- |
-| frameRate       | Frames per second base for displaying timecodes in the UI | 25 |
-| 
-
+| `frameRate`       | Frames per second base for displaying timecodes in the UI | 25 |
+| `defaultToCollapsedSegments` | All segments be collapsed by default | `false` |
+| `autoRewindLeavingSegment` | Should the segment in the Rundown view automatically rewind after it stops being live? | `false` |
+| `autoExpandCurrentNextSegment` | Should the Current and Next segments be automatically made expanded (uncollapsed) | `false` |
 
 ## Additional views
 
