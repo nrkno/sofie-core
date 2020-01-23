@@ -35,6 +35,7 @@ import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PartInstances } from '../../lib/collections/PartInstances';
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -263,7 +264,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
  * @param rundownId
  */
 export function updatePartRanks (rundown: Rundown): Array<Part> {
-
+	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point, or do we not care about their rank?
 
 	const pSegmentsAndParts = rundown.getSegmentsAndParts()
 
@@ -334,6 +335,10 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 						if (dynamicPart._rank !== newRank) {
 							dynamicPart._rank = newRank
 							ps.push(asyncCollectionUpdate(Parts, dynamicPart._id, { $set: { _rank: dynamicPart._rank } }))
+							ps.push(asyncCollectionUpdate(PartInstances, {
+								'part._id': dynamicPart._id,
+								reset: { $ne: true }
+							}, { $set: { 'part._rank': dynamicPart._rank } }))
 						}
 
 						parts.splice(insertI, 0, dynamicPart)
