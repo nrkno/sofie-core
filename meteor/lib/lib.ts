@@ -875,7 +875,11 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export function waitForPromiseAll<T> (ps: Array<Promise<T>>): Array<T> {
+export function waitForPromiseAll<T1, T2, T3, T4> (ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike <T4>]): [T1, T2, T3, T4]
+export function waitForPromiseAll<T1, T2, T3> (ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>]): [T1, T2, T3]
+export function waitForPromiseAll<T1, T2> (ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>]): [T1, T2]
+export function waitForPromiseAll<T> (ps: (T | PromiseLike<T>)[]): T[]
+export function waitForPromiseAll<T> (ps: (T | PromiseLike<T>)[]): T[] {
 	return waitForPromise(Promise.all(ps))
 }
 
@@ -900,7 +904,10 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 		cb(e)
 	})
 })
-/** Executes the provided function in another (asynchronous) Fiber, returning the result in a promise */
+/**
+ * Convert a Fiber function into a promise
+ * Makes the Fiber function to run in its own fiber and return a promise
+ */
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
@@ -912,6 +919,7 @@ export function makePromise<T> (fcn: () => T): Promise<T> {
 		})
 	})
 }
+
 export function mongoWhere<T> (o: any, selector: MongoQuery<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {

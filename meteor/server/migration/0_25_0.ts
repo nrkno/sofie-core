@@ -61,7 +61,7 @@ addMigrationSteps('0.25.0', [
 			const dbs = getDeprecatedDatabases()
 
 			if (dbs) {
-				const ps: Promise<any>[] = []
+				const ps: Promise<unknown>[] = []
 
 				dbs.SegmentLines.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(Parts, doc)) })
 				dbs.SegmentLines.remove({})
