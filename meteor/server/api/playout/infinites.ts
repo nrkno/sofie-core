@@ -7,8 +7,8 @@ import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise } from '../../../lib/lib'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise, asyncCollectionFindFetch, literal } from '../../../lib/lib'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
 import { getPartsAfter } from './lib';
@@ -19,7 +19,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	let activeInfinitePieces: { [layer: string]: Piece } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
 
-	// TODO-ASAP update this to consider instances
+	// TODO-PartInstance - pending new data flow for this whole function
 
 	if (previousPart === undefined) {
 	   // If running from start (no previousPart), then always run to the end
@@ -28,6 +28,10 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 	let ps: Array<Promise<any>> = []
 
+	const pInstancesToUpdate = asyncCollectionFindFetch(PartInstances, {
+		rundownId: rundown._id,
+		reset: { $ne: true }
+	})
 	const pPartsToProcess = makePromise(() => rundown.getParts())
 
 	if (previousPart) {
@@ -46,6 +50,14 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 						   $set: { infiniteId: piece.infiniteId }
 					   })
 				   )
+				   ps.push(
+					asyncCollectionUpdate(PieceInstances, {
+						'piece._id': piece._id,
+						reset: { $ne: true }
+					}, {
+						$set: { 'piece.infiniteId': piece.infiniteId }
+					})
+				)
 				//    logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
 			   }
 			   if (piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
@@ -88,6 +100,14 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	})
 	waitForPromiseAll(psPopulateCache)
 
+	let instancesToUpdate: PartInstance[] | undefined
+	const getInstancesToUpdate = () => {
+		if (instancesToUpdate === undefined) {
+			instancesToUpdate = waitForPromise(pInstancesToUpdate) || []
+		}
+		return instancesToUpdate
+	}
+
 	ps = []
 	for (let part of partsToProcess) {
 	   // Drop any that relate only to previous segments
@@ -111,7 +131,11 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   const active = activeInfinitePieces[piece.sourceLayerId]
 		   if (!active || active.infiniteId !== piece.infiniteId) {
 			   // Previous piece no longer enforces the existence of this one
-			   ps.push(asyncCollectionRemove(Pieces, piece._id))
+			   ps.push(asyncCollectionRemove(PieceInstances, {
+				   'piece._id': piece._id,
+				   reset: { $ne: true }
+				}))
+				ps.push(asyncCollectionRemove(Pieces, piece._id))
 
 			   removedInfinites.push(piece._id)
 			//    logger.debug(`updateSourceLayerInfinitesAfterPart: removed old infinite "${piece._id}" from "${piece.partId}"`)
@@ -203,14 +227,36 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   // no change, since the new piece is equal to the existing one
 			   // logger.debug(`updateSourceLayerInfinitesAfterPart: no change to infinite continuation "${itemToInsert._id}"`)
 		   } else if (existingPiece && pieceToInsert && existingPiece._id === pieceToInsert._id) {
-			   // same _id; we can do an update:
-			   ps.push(asyncCollectionUpdate(Pieces, pieceToInsert._id, pieceToInsert))// note; not a $set, because we want to replace the object
+				// same _id; we can do an update:
+				ps.push(asyncCollectionUpdate(Pieces, pieceToInsert._id, pieceToInsert))// note; not a $set, because we want to replace the object
+				ps.push(asyncCollectionUpdate(PieceInstances, {
+					'piece._id': pieceToInsert._id,
+					reset: { $ne: true }
+				}, {
+					$set: { piece: pieceToInsert }
+				}))
 			//    logger.debug(`updateSourceLayerInfinitesAfterPart: updated infinite continuation "${pieceToInsert._id}"`)
 		   } else {
 			   if (existingPiece) {
-				   ps.push(asyncCollectionRemove(Pieces, existingPiece._id))
+					ps.push(asyncCollectionRemove(PieceInstances, {
+						'piece._id': existingPiece._id,
+						reset: { $ne: true }
+					}))
+					ps.push(asyncCollectionRemove(Pieces, existingPiece._id))
 			   }
 			   if (pieceToInsert) {
+				   const partId = pieceToInsert.partId
+				   const affectedInstances = getInstancesToUpdate().filter(i => i.part._id === partId)
+				   // insert instance into any active instances
+				   for (const partInstance of affectedInstances) {
+						ps.push(asyncCollectionInsert(PieceInstances, literal<PieceInstance>({
+							_id:  `${partInstance._id}_${pieceToInsert._id}`,
+							rundownId: partInstance.rundownId,
+							partInstanceId: partInstance._id,
+							piece: pieceToInsert
+						})))
+				   }
+
 				   ps.push(asyncCollectionInsert(Pieces, pieceToInsert))
 				//    logger.debug(`updateSourceLayerInfinitesAfterPart: inserted infinite continuation "${pieceToInsert._id}"`)
 			   }
@@ -231,11 +277,17 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
 		   } else if (piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
 			   if (!piece.infiniteId) {
-				   // ensure infinite id is set
-				   piece.infiniteId = piece._id
-				   ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
-					   infiniteId: piece.infiniteId }
-				   }))
+					// ensure infinite id is set
+					piece.infiniteId = piece._id
+					ps.push(asyncCollectionUpdate(PieceInstances, {
+						'piece._id': piece._id,
+						reset: { $ne: true }
+					}, { $set: {
+						'piece.infiniteId': piece.infiniteId }
+					}))
+					ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
+						infiniteId: piece.infiniteId }
+					}))
 				//    logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
 			   }
 
