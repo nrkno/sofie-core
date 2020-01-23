@@ -27,7 +27,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, DBPartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance, WrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 
 /**
  * Reset the rundown:
@@ -430,12 +430,7 @@ export function setNextPart (
 				rundownId: nextPart.rundownId,
 				partId: nextPart._id
 			}).fetch()
-			const pieceInstances = _.map(rawPieces, piece => literal<PieceInstance>({
-				_id: `${newInstanceId}_${piece._id}`,
-				rundownId: nextPart.rundownId,
-				partInstanceId: newInstanceId,
-				piece: piece
-			}))
+			const pieceInstances = _.map(rawPieces, piece => WrapPieceToInstance(piece, newInstanceId))
 			ps.push(asyncCollectionInsertMany(PieceInstances, pieceInstances))
 
 			// Remove any instances which havent been taken

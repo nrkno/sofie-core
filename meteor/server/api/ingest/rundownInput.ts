@@ -26,7 +26,12 @@ import {
 	asyncCollectionUpsert,
 	asyncCollectionUpdate,
 	waitForPromise,
-	asyncCollectionFindOne
+	asyncCollectionFindOne,
+	waitForPromiseAll,
+	asyncCollectionRemove,
+	normalizeArray,
+	normalizeArrayFunc,
+	asyncCollectionInsert
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -55,6 +60,7 @@ import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist } from '../../../l
 import { Mongo } from 'meteor/mongo'
 import { isTooCloseToAutonext } from '../playout/lib';
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances';
+import { PieceInstances, WrapPieceToInstance } from '../../../lib/collections/PieceInstances';
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -459,7 +465,7 @@ function updateRundownFromIngestData (
 		})
 	)
 
-	syncChangesToSelectedPartInstances(dbRundown.getRundownPlaylist(), parts)
+	syncChangesToSelectedPartInstances(dbRundown.getRundownPlaylist(), parts, segmentPieces)
 
 	const didChange = anythingChanged(allChanges)
 	if (didChange) {
@@ -470,27 +476,72 @@ function updateRundownFromIngestData (
 	return didChange
 }
 
-function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DBPart[]) {
+function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DBPart[], pieces: Piece[]) {
 	// TODO-PartInstances - to be removed once new data flow
+
+	const ps: Array<Promise<any>> = []
+	
 	function syncPartChanges(partInstance: PartInstance | undefined) {
 		// We need to do this locally to avoid wiping out any stored changes
 		if (partInstance) {
 			const newPart = parts.find(p => p._id === partInstance.part._id)
+			// The part missing is ok, as it should never happen to the current one (and if it does it is better to just keep playing)
+			// Or if it was the next, then that will be resolved by a future call to updatenext
 			if (newPart) {
-				PartInstances.update(partInstance._id, {
+				ps.push(asyncCollectionUpdate(PartInstances, partInstance._id, {
 					$set: {
 						part: {
 							...partInstance.part,
 							...newPart
 						}
 					}
-				})
+				}))
+
+				// Pieces
+				const piecesForPart = pieces.filter(p => p.partId === newPart._id)
+				const currentPieceInstances = PieceInstances.find({ partInstanceId: partInstance._id }).fetch() // TODO - maybe this should be batched
+				const currentPieceInstancesMap = normalizeArrayFunc(currentPieceInstances, p => p.piece._id)
+
+				// insert
+				const newPieces = piecesForPart.filter(p => !currentPieceInstancesMap[p._id])
+				const insertedIds: string[] = []
+				for(const newPiece of newPieces) {
+					const newPieceInstance = WrapPieceToInstance(newPiece, partInstance._id)
+					ps.push(asyncCollectionInsert(PieceInstances, newPieceInstance))
+					insertedIds.push(newPieceInstance._id)
+				}
+
+				// prune
+				ps.push(asyncCollectionRemove(PieceInstances, {
+					partInstanceId: partInstance._id,
+					'piece._id': { $not: { $in: piecesForPart.map(p => p._id) } },
+					dynamicallyInserted: { $ne: true }
+				}))
+				
+				// update
+				for (const instance of currentPieceInstances) {
+					const piece = piecesForPart.find(p => p._id === instance.piece._id)
+					// If missing that is because the remove is still running, but that is fine
+					if (piece) {
+						ps.push(asyncCollectionUpdate(PieceInstances, instance._id, {
+							$set: {
+								piece: {
+									...instance.piece,
+									...piece
+								}
+							}
+						}))
+					}
+				}
 			}
 		}
 	}
+	// TODO - should this be done for all of playlist.getActivePartInstances() ?
 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 	syncPartChanges(currentPartInstance)
 	syncPartChanges(nextPartInstance)
+
+	waitForPromiseAll(ps)
 }
 
 function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
@@ -669,7 +720,7 @@ function updateSegmentFromIngestData (
 		})
 	)
 
-	syncChangesToSelectedPartInstances(rundown.getRundownPlaylist(), parts)
+	syncChangesToSelectedPartInstances(rundown.getRundownPlaylist(), parts, segmentPieces)
 
 	return anythingChanged(changes) ? segmentId : null
 }

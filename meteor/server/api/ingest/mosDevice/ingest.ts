@@ -36,6 +36,7 @@ import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Parts } from '../../../../lib/collections/Parts'
+import { PartInstances } from '../../../../lib/collections/PartInstances';
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -499,6 +500,9 @@ function diffAndApplyChanges (
 	})
 	// Updated segments that has had their segment.externalId changed:
 	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
+		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
+
 		// Move over those parts to the new segmentId.
 		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
 		ps.push(
@@ -506,11 +510,29 @@ function diffAndApplyChanges (
 				Parts,
 				{
 					rundownId: rundown._id,
-					segmentId: getSegmentId(rundown._id, oldSegmentExternalId)
+					segmentId: oldSegmentId
 				},
 				{
 					$set: {
-						segmentId: getSegmentId(rundown._id, newSegmentExternalId)
+						segmentId: newSegmentId
+					}
+				},
+				{
+					multi: true
+				}
+			)
+		)
+		ps.push(
+			asyncCollectionUpdate(
+				PartInstances,
+				{
+					rundownId: rundown._id,
+					segmentId: oldSegmentId
+				},
+				{
+					$set: {
+						segmentId: newSegmentId,
+						'part.segmentId': newSegmentId
 					}
 				},
 				{

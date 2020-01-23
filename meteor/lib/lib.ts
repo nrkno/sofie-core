@@ -503,6 +503,14 @@ export function getRank<T extends {_rank: number}> (
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 }
+export function normalizeArrayFunc<T> (array: Array<T>, getKey: (o: T) => string): {[indexKey: string]: T} {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = getKey(array[i])
+		normalizedObject[key] = array[i]
+	}
+	return normalizedObject as { [key: string]: T }
+}
 export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexKey: string]: T} {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {

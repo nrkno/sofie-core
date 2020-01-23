@@ -10,6 +10,7 @@ import { getStudioFromDevice, canBeUpdated } from '../lib'
 import { handleRemovedRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories, handleMosRundownMetadata } from './ingest'
+import { PartInstances } from '../../../../lib/collections/PartInstances';
 
 export namespace MosIntegration {
 	export function mosRoCreate (id: string, token: string, rundown: MOS.IMOSRunningOrder) {
@@ -69,6 +70,13 @@ export namespace MosIntegration {
 			Parts.update(part._id, {$set: {
 				status: status.Status
 			}})
+			// TODO-PartInstance
+			PartInstances.update({
+				'part._id': part._id,
+				reset: { $ne: true }
+			}, { $set: {
+				status: status.Status
+			}}, { multi: true })
 		} else throw new Meteor.Error(404, `Part ${status.ID} in rundown ${status.RunningOrderId} not found`)
 	}
 	export function mosRoStoryInsert (id: string, token: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {

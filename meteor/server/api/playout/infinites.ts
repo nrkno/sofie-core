@@ -9,7 +9,7 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise, asyncCollectionFindFetch, literal } from '../../../lib/lib'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance, WrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
 import { getPartsAfter } from './lib';
 
@@ -234,7 +234,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 					reset: { $ne: true }
 				}, {
 					$set: { piece: pieceToInsert }
-				}))
+				}, { multi: true }))
 			//    logger.debug(`updateSourceLayerInfinitesAfterPart: updated infinite continuation "${pieceToInsert._id}"`)
 		   } else {
 			   if (existingPiece) {
@@ -249,12 +249,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 				   const affectedInstances = getInstancesToUpdate().filter(i => i.part._id === partId)
 				   // insert instance into any active instances
 				   for (const partInstance of affectedInstances) {
-						ps.push(asyncCollectionInsert(PieceInstances, literal<PieceInstance>({
-							_id:  `${partInstance._id}_${pieceToInsert._id}`,
-							rundownId: partInstance.rundownId,
-							partInstanceId: partInstance._id,
-							piece: pieceToInsert
-						})))
+						ps.push(asyncCollectionInsert(PieceInstances, WrapPieceToInstance(pieceToInsert, partInstance._id)))
 				   }
 
 				   ps.push(asyncCollectionInsert(Pieces, pieceToInsert))
@@ -284,7 +279,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 						reset: { $ne: true }
 					}, { $set: {
 						'piece.infiniteId': piece.infiniteId }
-					}))
+					}, { multi: true }))
 					ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
 						infiniteId: piece.infiniteId }
 					}))
@@ -345,16 +340,17 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 		}
 
 		affectedPartIds.push(part._id)
-		continuations.forEach(p => ps.push(asyncCollectionRemove(Pieces, p._id)))
+		ps.push(asyncCollectionRemove(Pieces, { _id: { $in: continuations.map(p => p._id) } }))
 	}
 
 	// Also update the nextPartInstance
 	// TODO-ASAP - should this be done for the current one too, in case the stop was int he previous somehow?
 	const { nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
 	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
-		nextPartInstance.getAllPieceInstances()
+		const toRemove = nextPartInstance.getAllPieceInstances()
 			.filter(p => p.piece.infiniteMode && p.piece.infiniteId && p.piece.infiniteId !== p.piece._id && p.piece.sourceLayerId === sourceLayer)
-			.forEach(p => ps.push(asyncCollectionRemove(PieceInstances, p._id)))
+			
+		ps.push(asyncCollectionRemove(PieceInstances, { _id: { $in: toRemove.map(p => p._id) } }))
 	}
 
 	waitForPromiseAll(ps)

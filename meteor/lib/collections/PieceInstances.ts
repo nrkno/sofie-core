@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { IBlueprintPieceInstance, Time, IBlueprintResolvedPieceInstance } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece } from './Pieces'
+import { PartInstance } from './PartInstances';
 
 export interface PieceInstance extends IBlueprintPieceInstance {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
@@ -34,6 +35,15 @@ export function WrapPieceToTemporaryInstance (piece: Piece, partInstanceId: stri
 
 export function FindPieceInstanceOrWrapToTemporary (partInstances: PieceInstance[], partInstanceId: string, piece: Piece): PieceInstance {
 	return partInstances.find(instance => instance.piece._id === piece._id) || WrapPieceToTemporaryInstance(piece, partInstanceId)
+}
+
+export function WrapPieceToInstance(piece: Piece, partInstanceId: string): PieceInstance {
+	return {
+		_id: `${partInstanceId}_${piece._id}`,
+		rundownId: piece.rundownId,
+		partInstanceId: partInstanceId,
+		piece: piece
+	}
 }
 
 export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance> = createMongoCollection<PieceInstance>('pieceInstances')
