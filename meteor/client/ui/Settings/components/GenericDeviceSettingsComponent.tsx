@@ -13,7 +13,7 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { IPlayoutDeviceSettingsComponentProps } from './IHttpSendDeviceSettingsComponentProps'
-import { ConfigManifestEntry, ConfigManifestEntryType, TableConfigManifestEntry, SubDeviceConfigManifestEntry } from '../../../../lib/api/deviceConfig'
+import { ConfigManifestEntry, ConfigManifestEntryType, TableConfigManifestEntry, TableEntryConfigManifestEntry } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { unprotectString, protectString } from '../../../../lib/lib'
@@ -353,7 +353,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 	}
 
 	getConfigSummaryFields (configManifest: TableConfigManifestEntry) {
-		const fieldNames: { [field: string]: SubDeviceConfigManifestEntry } = {}
+		const fieldNames: { [field: string]: TableEntryConfigManifestEntry } = {}
 
 		_.each(configManifest.config, (c) => {
 			for (const field of c) {
