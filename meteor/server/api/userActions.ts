@@ -212,9 +212,9 @@ export function unsyncRundown (rundownId: string) {
 	)
 }
 export function disableNextPiece (rundownPlaylistId: string, undo?: boolean) {
-	return ClientAPI.responseSuccess(
+	// return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
-	)
+	// )
 }
 export function togglePartArgument (rundownPlaylistId: string, partInstanceId: string, property: string, value: string) {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -554,8 +554,8 @@ methods[UserActionAPI.methods.reloadData] = function (rundownId: string): Client
 methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): ClientAPI.ClientResponse {
 	return unsyncRundown.call(this, rundownId)
 }
-methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
-	return disableNextPiece.call(this, rundownId, undo)
+methods[UserActionAPI.methods.disableNextPiece] = function (rundownPlaylistId: string, undo?: boolean): ClientAPI.ClientResponse {
+	return disableNextPiece.call(this, rundownPlaylistId, undo)
 }
 methods[UserActionAPI.methods.togglePartArgument] = function (rundownPlaylistId: string, partInstanceId: string, property: string, value: string): ClientAPI.ClientResponse {
 	return togglePartArgument.call(this, rundownPlaylistId, partInstanceId, property, value)
@@ -566,17 +566,17 @@ methods[UserActionAPI.methods.pieceTakeNow] = function (rundownPlaylistId: strin
 methods[UserActionAPI.methods.setInOutPoints] = function (rundownPlaylistId: string, partId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
 	return pieceSetInOutPoints.call(this, rundownPlaylistId, partId, pieceId, inPoint, duration)
 }
-methods[UserActionAPI.methods.segmentAdLibPieceStart] = function (rundownPlaylistId: string, rundownId: string, partInstanceId: string, salliId: string, queue: boolean) {
-	return segmentAdLibPieceStart.call(this, rundownPlaylistId, rundownId, partInstanceId, salliId, queue)
+methods[UserActionAPI.methods.segmentAdLibPieceStart] = function (rundownPlaylistId: string, partInstanceId: string, salliId: string, queue: boolean) {
+	return segmentAdLibPieceStart.call(this, rundownPlaylistId, partInstanceId, salliId, queue)
 }
 methods[UserActionAPI.methods.sourceLayerOnPartStop] = function (rundownPlaylistId: string, partInstanceId: string, sourceLayerId: string) {
 	return sourceLayerOnPartStop.call(this, rundownPlaylistId, partInstanceId, sourceLayerId)
 }
-methods[UserActionAPI.methods.baselineAdLibPieceStart] = function (rundownPlaylistId: string, rundownId: string, partInstanceId: string, adlibPieceId: string, queue: boolean) {
-	return rundownBaselineAdLibPieceStart.call(this, rundownPlaylistId, rundownId, partInstanceId, adlibPieceId, queue)
+methods[UserActionAPI.methods.baselineAdLibPieceStart] = function (rundownPlaylistId: string, partInstanceId: string, adlibPieceId: string, queue: boolean) {
+	return rundownBaselineAdLibPieceStart.call(this, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 }
-methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownPlaylistId: string, rundownId: string, partInstanceId: string, pieceInstanceId: string) {
-	return segmentAdLibPieceStop.call(this, rundownPlaylistId, rundownId, partInstanceId, pieceInstanceId)
+methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownPlaylistId: string, partInstanceId: string, pieceInstanceId: string) {
+	return segmentAdLibPieceStop.call(this, rundownPlaylistId, partInstanceId, pieceInstanceId)
 }
 methods[UserActionAPI.methods.sourceLayerStickyPieceStart] = function (rundownPlaylistId: string, sourceLayerId: string) {
 	return sourceLayerStickyPieceStart.call(this, rundownPlaylistId, sourceLayerId)

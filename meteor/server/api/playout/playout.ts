@@ -770,7 +770,7 @@ export namespace ServerPlayoutAPI {
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
 
-			const allowedSourceLayers = normalizeArray(showStyleBase.sourceLayers)
+			const allowedSourceLayers = normalizeArray(showStyleBase.sourceLayers, '_id')
 
 			// logger.info('nowInPart', nowInPart)
 			// logger.info('filteredPieces', filteredPieces)
