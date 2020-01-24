@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-10...v1.5.0) (2020-01-24)
+
+
+### Bug Fixes
+
+* RundownList "unsynced from MOS" header colspan ([bc8b3c9](https://github.com/nrkno/tv-automation-server-core/commit/bc8b3c9))
+
+
+
 ## [1.5.0-10](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-8...v1.5.0-10) (2020-01-21)
 
 
