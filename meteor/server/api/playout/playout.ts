@@ -966,6 +966,9 @@ export namespace ServerPlayoutAPI {
 						}
 
 						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+
+						reportPartHasStarted(playingPartInstance, startedPlayback)
+
 					} else if (playlist.nextPartInstanceId === partInstanceId) {
 						// this is the next part, clearly an autoNext has taken place
 						if (playlist.currentPartInstanceId) {
@@ -990,6 +993,8 @@ export namespace ServerPlayoutAPI {
 						})
 						playlist = _.extend(playlist, playlistChange) as RundownPlaylist
 
+						reportPartHasStarted(playingPartInstance, startedPlayback)
+
 						const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
 						libSetNextPart(playlist, nextPart ? nextPart.part : null)
 					} else {
@@ -1013,6 +1018,8 @@ export namespace ServerPlayoutAPI {
 							})
 							playlist = _.extend(playlist, playlistChange)
 
+							reportPartHasStarted(playingPartInstance, startedPlayback)
+
 							const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
 							libSetNextPart(playlist, nextPart ? nextPart.part : null)
 						}
@@ -1020,8 +1027,6 @@ export namespace ServerPlayoutAPI {
 						// TODO-ASAP - should this even change the next?
 						logger.error(`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
-
-					reportPartHasStarted(playingPartInstance, startedPlayback)
 
 					// Load the latest data and complete the take
 					const rundownPlaylist = RundownPlaylists.findOne(rundown.playlistId)
@@ -1241,10 +1246,10 @@ export namespace ServerPlayoutAPI {
 				const mUnset1: any = {}
 				mUnset['runtimeArguments.' + property] = 1
 				mUnset1['part.runtimeArguments.' + property] = 1
-				Parts.update(partInstance.part._id, {$unset: mUnset1, $set: {
+				Parts.update(partInstance.part._id, {$unset: mUnset, $set: {
 					dirty: true
 				}})
-				PartInstances.update(partInstance._id, {$unset: mUnset, $set: {
+				PartInstances.update(partInstance._id, {$unset: mUnset1, $set: {
 					dirty: true
 				}})
 				delete rArguments[property]
