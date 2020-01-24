@@ -44,11 +44,11 @@ export function orderPieces (pieces: Piece[], partId: string, partStarted?: numb
 	pieces.forEach(i => itemMap[i._id] = i)
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = clone(createPieceGroup(undefined, {
+		const obj = createPieceGroup(undefined, {
 			_id: piece._id, // Set hte id to the same, as it is just for metadata
 			rundownId: piece.rundownId,
 			piece: piece
-		}))
+		})
 
 		if (obj.enable.start === 0) {
 			if (piece.infiniteId && piece.infiniteId !== piece._id) {

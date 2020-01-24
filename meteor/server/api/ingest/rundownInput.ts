@@ -499,7 +499,7 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 
 				// Pieces
 				const piecesForPart = pieces.filter(p => p.partId === newPart._id)
-				const currentPieceInstances = PieceInstances.find({ partInstanceId: partInstance._id }).fetch() // TODO - maybe this should be batched
+				const currentPieceInstances = PieceInstances.find({ partInstanceId: partInstance._id }).fetch() // TODO-ASAP - maybe this should be batched
 				const currentPieceInstancesMap = normalizeArrayFunc(currentPieceInstances, p => p.piece._id)
 
 				// insert

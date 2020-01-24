@@ -1017,7 +1017,7 @@ export namespace ServerPlayoutAPI {
 							libSetNextPart(playlist, nextPart ? nextPart.part : null)
 						}
 
-						// TODO - should this even change the next?
+						// TODO-ASAP - should this even change the next?
 						logger.error(`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
 
@@ -1116,22 +1116,21 @@ export namespace ServerPlayoutAPI {
 			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
 			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
 
-			// TODO-ASAP use PieceInstance? and consider other rundowns
-			const lastPieces = Pieces.find({
+			const lastPieceInstances = PieceInstances.find({
 				rundownId: rundown._id,
-				sourceLayerId: sourceLayer._id,
-				startedPlayback: {
+				'piece.sourceLayerId': sourceLayer._id,
+				'piece.startedPlayback': {
 					$exists: true
 				}
 			}, {
 				sort: {
-					startedPlayback: -1
+					'piece.startedPlayback': -1
 				},
 				limit: 1
 			}).fetch()
 
-			if (lastPieces.length > 0) {
-				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
+			if (lastPieceInstances.length > 0) {
+				const lastPiece = convertPieceToAdLibPiece(lastPieceInstances[0].piece)
 				const newAdLibPieceInstance = convertAdLibToPieceInstance(lastPiece, currentPartInstance, false)
 
 				PieceInstances.insert(newAdLibPieceInstance)
@@ -1288,7 +1287,6 @@ export namespace ServerPlayoutAPI {
 		check(timelineObj, Object)
 		check(time, Number)
 
-		// TODO - this is a destructive action... It needs to either backup the original, or only run on dynamically inserted
 		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metadata && timelineObj.metadata.pieceId) {
 			logger.debug('Update PieceInstance: ', timelineObj.metadata.pieceId, (new Date(time)).toTimeString())
 			PieceInstances.update({
@@ -1300,18 +1298,26 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 
-			// TODO-PartInstance - pending new data flow
 			const pieceInstance = PieceInstances.findOne({
 				_id: timelineObj.metadata.pieceId,
 				rundownId: { $in: activeRundownIds }
 			})
 			if (pieceInstance) {
+				// TODO-PartInstance - pending new data flow
 				Pieces.update({
 					_id: pieceInstance.piece._id,
 					rundownId: { $in: activeRundownIds }
 				}, {
 					$set: {
 						'enable.start': time
+					}
+				})
+				PieceInstances.update({
+					_id: pieceInstance._id,
+					rundownId: { $in: activeRundownIds }
+				}, {
+					$set: {
+						'piece.enable.start': time
 					}
 				})
 			}

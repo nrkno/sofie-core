@@ -243,7 +243,6 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	})
 
 	// Clean up all the db parts that belong to the removed Parts
-	// TODO - is there anything else to remove?
 	Pieces.remove({
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
