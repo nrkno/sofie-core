@@ -1937,7 +1937,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									<ClipTrimDialog
 										studio={this.props.studio}
 										playlistId={this.props.playlistId}
-										selectedPiece={this.state.selectedPiece}
+										selectedPiece={this.state.selectedPiece.instance.piece}
 										onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>
 								}
