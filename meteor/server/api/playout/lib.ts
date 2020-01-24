@@ -18,6 +18,7 @@ import {
 	asyncCollectionInsert,
 	asyncCollectionInsertMany,
 	waitForPromise,
+	asyncCollectionFindFetch,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -373,6 +374,11 @@ export function setNextPart (
 
 	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
 	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
+	
+	const pNonTakenPartInstances = asyncCollectionFindFetch(PartInstances, {
+		rundownId: { $in: acceptableRundowns },
+		isTaken: { $ne: true }
+	})
 
 	let ps: Array<Promise<any>> = []
 	if (newNextPart || newNextPartInstance) {
@@ -434,13 +440,15 @@ export function setNextPart (
 			ps.push(asyncCollectionInsertMany(PieceInstances, pieceInstances))
 
 			// Remove any instances which havent been taken
+			const instancesIdsToRemove = waitForPromise(pNonTakenPartInstances).map(p => p._id).filter(id => id != newInstanceId)
 			ps.push(asyncCollectionRemove(PartInstances, {
-				rundownId: nextPart.rundownId,
-				takeCount: { $gte: newTakeCount },
-				_id: { $ne: newInstanceId }
+				rundownId: { $in: acceptableRundowns },
+				_id: { $in: instancesIdsToRemove }
 			}))
-
-			// TODO - cleanup old pieceInstances
+			ps.push(asyncCollectionRemove(PieceInstances, {
+				rundownId: { $in: acceptableRundowns },
+				partInstanceId: { $in: instancesIdsToRemove }
+			}))
 		}
 
 		// reset any previous instances of this part
@@ -484,12 +492,15 @@ export function setNextPart (
 		// Set to null
 
 		// Remove any instances which havent been taken
+		const instancesIdsToRemove = waitForPromise(pNonTakenPartInstances).map(p => p._id)
 		ps.push(asyncCollectionRemove(PartInstances, {
 			rundownId: { $in: acceptableRundowns },
-			isTaken: { $ne: true } // TODO - this needs setting
+			_id: { $in: instancesIdsToRemove }
 		}))
-
-		// TODO - cleanup old pieceInstances
+		ps.push(asyncCollectionRemove(PieceInstances, {
+			rundownId: { $in: acceptableRundowns },
+			partInstanceId: { $in: instancesIdsToRemove }
+		}))
 
 		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
 			$set: literal<Partial<RundownPlaylist>>({
