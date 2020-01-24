@@ -5,7 +5,8 @@ import {
 	PeripheralDevices
 } from '../../../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
-import * as i18next from 'react-i18next'
+import * as i18next from 'i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { getCurrentTime, getHash } from '../../../lib/lib'
@@ -58,7 +59,7 @@ export function statusCodeToString (t: i18next.TFunction, statusCode: Peripheral
 	)
 }
 
-export const DeviceItem = i18next.withTranslation()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = withTranslation()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -362,14 +363,14 @@ interface ICoreItemState {
 
 const PackageInfo = require('../../../package.json')
 
-export const CoreItem = i18next.withTranslation()(class extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
+export const CoreItem = withTranslation()(class extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
 	constructor (props: Translated<ICoreItemProps>) {
 		super(props)
 		this.state = {
 			showKillCoreConfirm: false,
 		}
 	}
-	
+
 	onKillCore () {
 		this.setState({
 			showKillCoreConfirm: true
@@ -380,7 +381,7 @@ export const CoreItem = i18next.withTranslation()(class extends React.Component<
 		if (this.state.showKillCoreConfirm) {
 			doUserAction(t, e, UserActionAPI.methods.generateRestartToken, [], (err, res) => {
 				if (err || !res || !res.result) {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))	
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))
 					return
 				}
 
@@ -388,13 +389,13 @@ export const CoreItem = i18next.withTranslation()(class extends React.Component<
 
 				doUserAction(t, {}, UserActionAPI.methods.restartCore, [ restartToken ], (err, res) => {
 					if (err || !res || !res.result) {
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))	
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))
 						return
 					}
-					let time = 'unknown';
+					let time = 'unknown'
 					const match = res.result.match(/([\d\.]+)s/)
 					if (match) {
-						time = match[1] 
+						time = match[1]
 					}
 					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Sofie Automation Server Core will restart in {{time}}s...', { time }), 'SystemStatus'))
 				})
@@ -506,7 +507,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 	componentDidMount () {
 		this.refreshSystemStatus()
-		this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)		
+		this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
 
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
@@ -617,8 +618,8 @@ interface PeripheralDeviceStatusProps {
 interface PeripheralDeviceStatusState {
 
 }
-export const PeripheralDeviceStatus = i18next.withTranslation()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & i18next.WithTranslation, PeripheralDeviceStatusState> {
-	constructor (props: PeripheralDeviceStatusProps & i18next.WithTranslation) {
+export const PeripheralDeviceStatus = withTranslation()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & WithTranslation, PeripheralDeviceStatusState> {
+	constructor (props: PeripheralDeviceStatusProps & WithTranslation) {
 		super(props)
 
 	}

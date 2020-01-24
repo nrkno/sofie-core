@@ -391,10 +391,18 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 
 	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
 		const baseAttribute = `config.${valIndex}.value`
-		const { t, collection, object } = this.props
+		const { t, i18n, tReady, collection, object } = this.props
 		if (item.type === ConfigManifestEntryType.TABLE) {
 			const item2 = item as ConfigManifestEntryTable
-			return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+			return <ConfigManifestTable
+				t={t}
+				i18n={i18n}
+				tReady={tReady}
+				collection={collection}
+				object={object}
+				baseAttribute={baseAttribute}
+				item={item2}
+			/>
 		} else {
 			return (
 				<label className='field'>

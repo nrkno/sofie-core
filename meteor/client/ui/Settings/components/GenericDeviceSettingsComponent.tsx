@@ -69,7 +69,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 
 	editDevice = (deviceId: string) => {
 		this.editItem('settings.devices.' + deviceId)
-	} 
+	}
 
 	handleConfirmRemoveCancel = (e) => {
 		this.setState({
@@ -259,7 +259,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 			const config = configManifest.config[configManifest.defaultType || 'default']
 			const propNames = config.map(o => o.columnName).map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='action'>&nbsp;</th>)
-	
+
 			return (<React.Fragment>
 				<tr className='hl'>
 					{propNames}
@@ -414,12 +414,12 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 
 	/**
 	 * @todo add handler for new entry
-	 * 
-	 * @param configField 
-	 * @param obj 
-	 * @param prefix 
+	 *
+	 * @param configField
+	 * @param obj
+	 * @param prefix
 	 */
-	renderConfigTable (configField: TableConfigManifestEntry, obj?: any, prefix?: string) {
+	renderConfigTable (configField: TableConfigManifestEntry, obj?: any, prefix: string = '') {
 		const { t } = this.props
 		// @ts-ignore
 		const tableContent = _.property(prefix.substr(0, prefix.length - 1).split('.'))(obj)
@@ -429,7 +429,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 			const config = configField.config[configField.defaultType]
 			const propNames = config.map(o => o.columnName).map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='actions'>&nbsp;</th>)
-	
+
 			return (<React.Fragment key={configField.id}>
 				<h2 className='mhn'>{t(configField.name)}</h2>
 				<table className='expando settings-config-table table'>
@@ -460,7 +460,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 							</React.Fragment>})}
 					</tbody>
 				</table>
-	
+
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
 						<FontAwesomeIcon icon={faPlus} />
@@ -487,7 +487,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 					<tbody>
 						{_.map(tableContent, (tableEntry: any, i) => {
 							const tableConfigField = configField.config[configField.deviceTypesMapping ? configField.deviceTypesMapping[tableEntry[configField.typeField || 'type']] : tableEntry[configField.typeField || 'type']]
-							
+
 							return <React.Fragment key={i}>
 								{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 								{this.isItemEdited(prefix + '' + i) &&
@@ -553,7 +553,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 
 			<ModalDialog title={t('Remove this item?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 				<p>{t('Are you sure you want to remove {{type}} "{{deviceId}}"?',
-					{ 
+					{
 						deviceId: (this.state.deleteConfirmItemPath && this.state.deleteConfirmItemPath.split('.').pop()),
 						type: (
 							this.state.deleteConfirmItemPath &&

@@ -1016,7 +1016,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 
 	renderEditForm () {
-		const { t } = this.props
+		const { t, i18n, tReady } = this.props
 
 		return (
 			this.props.studio ?
@@ -1161,7 +1161,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioBaselineStatus studio={this.props.studio} t={t} />
+						<StudioBaselineStatus studio={this.props.studio} t={t} i18n={i18n} tReady={tReady} />
 					</div>
 				</div>
 				<div className='row'>
@@ -1176,7 +1176,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
-							t={this.props.t}
+							t={t}
+							i18n={i18n}
+							tReady={tReady}
 							manifest={collectConfigs(this.props.studio)}
 							object={this.props.studio}
 							collection={Studios}

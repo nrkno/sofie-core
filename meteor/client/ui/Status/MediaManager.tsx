@@ -9,7 +9,8 @@ import ReactCircularProgressbar from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
-import * as i18next from 'react-i18next'
+import * as i18next from 'i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { extendMandadory } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -162,7 +163,7 @@ function workStepStatusLabel (t: TFunc, step: MediaWorkFlowStep): string {
 	}
 }
 
-const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.WithTranslation> = (props: IItemProps & i18next.WithTranslation) => {
+const MediaManagerWorkFlowItem: React.SFC<IItemProps & WithTranslation> = (props: IItemProps & WithTranslation) => {
 	const i = props.item
 	const t = props.t
 
@@ -347,16 +348,18 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	}
 
 	renderWorkFlows () {
-		const { t } = this.props
+		const { t, i18n, tReady } = this.props
 
 		return this.props.workFlows
 		.sort((a, b) => b.created - a.created)
 		.sort((a, b) => b.priority - a.priority).map(i => {
 			return <MediaManagerWorkFlowItem
+				t={t}
+				i18n={i18n}
+				tReady={tReady}
 				expanded={this.state.expanded}
 				item={i}
 				key={i._id}
-				t={t}
 				toggleExpanded={this.toggleExpanded}
 				actionRestart={this.actionRestart}
 				actionAbort={this.actionAbort}

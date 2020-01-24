@@ -229,10 +229,10 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_LOG_ERROR	= 'backspace'
 }
 
-const TimingDisplay = withTranslation()(withTiming<ITimingDisplayProps, {}>()(
+const TimingDisplay = withTranslation()(withTiming<Translated<ITimingDisplayProps>, {}>()(
 class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
-			const { t } = this.props
+		const { t } = this.props
 
 		if (!this.props.rundown) return null
 

@@ -101,7 +101,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	renderEditForm (showStyleBase: ShowStyleBase) {
-		const { t } = this.props
+		const { t, i18n, tReady } = this.props
 
 		return (
 			<div className='studio-edit mod mhl mvn'>
@@ -189,7 +189,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
-							t={this.props.t}
+							t={t}
+							i18n={i18n}
+							tReady={tReady}
 							manifest={collectConfigs(showStyleBase)}
 							object={showStyleBase}
 							collection={ShowStyleBases}
@@ -1252,7 +1254,7 @@ const ShowStyleVariantsSettings = withTranslation()(class ShowStyleVariantsSetti
 	}
 
 	renderShowStyleVariants () {
-		const { t } = this.props
+		const { t, i18n, tReady } = this.props
 
 		return (
 			this.props.showStyleVariants.map((showStyleVariant, index) => {
@@ -1292,7 +1294,9 @@ const ShowStyleVariantsSettings = withTranslation()(class ShowStyleVariantsSetti
 								<div className='row'>
 									<div className='col c12 r1-c12 phs'>
 										<ConfigManifestSettings
-											t={this.props.t}
+											t={t}
+											i18n={i18n}
+											tReady={tReady}
 											manifest={collectConfigs(showStyleVariant)}
 											collection={ShowStyleVariants}
 											configPath={'config'}
