@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -148,17 +147,27 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	componentDidUpdate (prevProps: IListViewPropsHeader) {
-		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
+	scrollToCurrentSegment () {
+		if (this.table.id && this.props.selectedSegment) {
 			// scroll to selected segment
 			const segmentSelector = `#${this.table.id} .adlib-panel__list-view__item__${this.props.selectedSegment._id}`
 			const segment: HTMLElement | null = document.querySelector(segmentSelector)
 			if (segment) {
-				const targetPosition = segment.offsetTop + this.table.scrollTop
-				Velocity(this.table, {
-					'scrollTop': targetPosition
-				}, 250, 'swing')
+				this.table.scrollTo({
+					top: segment.offsetTop,
+					behavior: 'smooth'
+				})
 			}
+		}
+	}
+
+	componentDidMount () {
+		this.scrollToCurrentSegment()
+	}
+
+	componentDidUpdate (prevProps: IListViewPropsHeader) {
+		if (prevProps.selectedSegment !== this.props.selectedSegment) {
+			this.scrollToCurrentSegment()
 		}
 	}
 
@@ -521,6 +530,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	}
 }
 
+const HOTKEY_GROUP = 'AdLibPanel'
+
 export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return fetchAndFilter(props)
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
@@ -571,8 +582,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 	}
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 		this.usedHotkeys.length = 0
 
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -586,8 +597,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 
 		this.usedHotkeys.length = 0
 	}
@@ -603,21 +614,21 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup', this.constructor.name)
+					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup', this.constructor.name)
+						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
