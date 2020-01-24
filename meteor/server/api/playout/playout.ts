@@ -1094,13 +1094,6 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partInstanceId, baselineAdLibPieceId, queue)
 	}
-	export function stopAdLibPiece (rundownPlaylistId: string, partInstanceId: string, pieceInstanceId: string) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(pieceInstanceId, String)
-
-		return ServerPlayoutAdLibAPI.stopAdLibPiece(rundownPlaylistId, partInstanceId, pieceInstanceId)
-	}
 	export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
 		check(rundownPlaylistId, String)
 		check(sourceLayerId, String)

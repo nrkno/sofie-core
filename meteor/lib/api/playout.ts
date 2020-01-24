@@ -22,7 +22,6 @@ export namespace PlayoutAPI {
 		'pieceTakeNow'						= 'playout.pieceTakeNow',
 		'segmentAdLibPieceStart'			= 'playout.segmentAdLibPieceStart',
 		'rundownBaselineAdLibPieceStart'	= 'playout.rundownBaselineAdLibPieceStart',
-		'segmentAdLibPieceStop'				= 'playout.segmentAdLibPieceStop',
 		'sourceLayerOnPartStop'				= 'playout.sourceLayerOnPartStop',
 		'sourceLayerStickyPieceStart'		= 'playout.sourceLayerStickyPieceStart',
 		// 'timelineTriggerTimeUpdateCallback'	= 'playout.timelineTriggerTimeUpdateCallback',

@@ -31,7 +31,6 @@ namespace PlayoutAPI { // Using our own method definition, to catch external API
 		'pieceTakeNow'						= 'playout.pieceTakeNow',
 		'segmentAdLibPieceStart'			= 'playout.segmentAdLibPieceStart',
 		'rundownBaselineAdLibPieceStart'	= 'playout.rundownBaselineAdLibPieceStart',
-		'segmentAdLibPieceStop'				= 'playout.segmentAdLibPieceStop',
 		'sourceLayerOnPartStop'				= 'playout.sourceLayerOnPartStop',
 		'sourceLayerStickyPieceStart'		= 'playout.sourceLayerStickyPieceStart'
 	}

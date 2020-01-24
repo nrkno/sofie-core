@@ -334,19 +334,6 @@ export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, partI
 		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
-export function segmentAdLibPieceStop (rundownPlaylistId: string, partInstanceId: string, pieceInstanceId: string) {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(pieceInstanceId, String)
-
-	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
-
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.stopAdLibPiece(rundownPlaylistId, partInstanceId, pieceInstanceId)
-	)
-}
 export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
 	check(rundownPlaylistId, String)
 	check(sourceLayerId, String)
@@ -574,9 +561,6 @@ methods[UserActionAPI.methods.sourceLayerOnPartStop] = function (rundownPlaylist
 }
 methods[UserActionAPI.methods.baselineAdLibPieceStart] = function (rundownPlaylistId: string, partInstanceId: string, adlibPieceId: string, queue: boolean) {
 	return rundownBaselineAdLibPieceStart.call(this, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
-}
-methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownPlaylistId: string, partInstanceId: string, pieceInstanceId: string) {
-	return segmentAdLibPieceStop.call(this, rundownPlaylistId, partInstanceId, pieceInstanceId)
 }
 methods[UserActionAPI.methods.sourceLayerStickyPieceStart] = function (rundownPlaylistId: string, sourceLayerId: string) {
 	return sourceLayerStickyPieceStart.call(this, rundownPlaylistId, sourceLayerId)

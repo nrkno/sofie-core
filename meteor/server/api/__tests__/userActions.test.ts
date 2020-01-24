@@ -31,7 +31,6 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 		'segmentAdLibPieceStart'				= 'userAction.segmentAdLibPieceStart',
 		'sourceLayerOnPartStop'					= 'userAction.sourceLayerOnPartStop',
 		'baselineAdLibPieceStart'				= 'userAction.baselineAdLibPieceStart',
-		'segmentAdLibPieceStop'					= 'userAction.segmentAdLibPieceStop',
 
 		'sourceLayerStickyPieceStart'			= 'userAction.sourceLayerStickyPieceStart',
 

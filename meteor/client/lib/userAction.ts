@@ -102,7 +102,6 @@ function userActionMethodName (
 
 		case UserActionAPI.methods.segmentAdLibPieceStart: return t('Starting AdLib-piece')
 		case UserActionAPI.methods.baselineAdLibPieceStart: return t('Starting AdLib-piece')
-		case UserActionAPI.methods.segmentAdLibPieceStop: return t('Stopping AdLib-piece')
 
 		case UserActionAPI.methods.sourceLayerStickyPieceStart: return t('Starting sticky-pice')
 
