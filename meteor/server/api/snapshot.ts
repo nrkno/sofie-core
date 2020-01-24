@@ -29,7 +29,8 @@ import {
 	formatDateTime,
 	fixValidPath,
 	saveIntoDb,
-	sumChanges
+	sumChanges,
+	normalizeArray
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
@@ -54,8 +55,10 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/R
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { PartInstances, PartInstance } from '../../lib/collections/PartInstances';
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances';
 
-interface RundownSnapshot {
+interface RundownPlaylistSnapshot {
 	version: string
 	playlistId: string
 	snapshot: SnapshotRundown
@@ -67,7 +70,9 @@ interface RundownSnapshot {
 	baselineAdlibs: Array<RundownBaselineAdLibItem>
 	segments: Array<Segment>
 	parts: Array<Part>
+	partInstances: Array<PartInstance>
 	pieces: Array<Piece>
+	pieceInstances: Array<PieceInstance>
 	adLibPieces: Array<AdLibPiece>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
@@ -90,7 +95,7 @@ interface DebugSnapshot {
 	studioId?: string
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
-	activeRundowns: Array<RundownSnapshot>
+	activeRundownPlaylists: Array<RundownPlaylistSnapshot>
 	timeline: Array<TimelineObjGeneric>
 	userActionLog: Array<UserActionsLogItem>
 	deviceSnaphots: Array<DeviceSnapshot>
@@ -101,13 +106,13 @@ interface DeviceSnapshot {
 	replyTime: Time
 	content: any
 }
-type AnySnapshot = RundownSnapshot | SystemSnapshot | DebugSnapshot
+type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot
 
 /**
  * Create a snapshot of all items related to a rundown
  * @param playlistId
  */
-function createRundownSnapshot (playlistId: string): RundownSnapshot {
+function createRundownSnapshot (playlistId: string): RundownPlaylistSnapshot {
 	let snapshotId = Random.id()
 	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${playlistId}"`)
 
@@ -120,7 +125,9 @@ function createRundownSnapshot (playlistId: string): RundownSnapshot {
 
 	const segments = playlist.getSegments()
 	const parts = playlist.getParts()
+	const partInstances = playlist.getAllPartInstances()
 	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
@@ -153,7 +160,9 @@ function createRundownSnapshot (playlistId: string): RundownSnapshot {
 		baselineAdlibs,
 		segments,
 		parts,
+		partInstances,
 		pieces,
+		pieceInstances,
 		adLibPieces,
 		mediaObjects,
 		expectedMediaItems
@@ -252,13 +261,13 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 
 	let systemSnapshot = createSystemSnapshot(studioId)
 
-	let activeROs = Rundowns.find({
+	let activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
 		active: true,
 	}).fetch()
 
-	let activeRundownSnapshots = _.map(activeROs, (rundown) => {
-		return createRundownSnapshot(rundown._id)
+	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
+		return createRundownSnapshot(playlist._id)
 	})
 
 	let timeline = Timeline.find().fetch()
@@ -300,7 +309,7 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 			version: CURRENT_SYSTEM_VERSION
 		},
 		system: systemSnapshot,
-		activeRundowns: activeRundownSnapshots,
+		activeRundownPlaylists: activePlaylistSnapshots,
 		timeline: timeline,
 		userActionLog: userActionLogLatest,
 		deviceSnaphots: deviceSnaphots
@@ -394,7 +403,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
 
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown
-		return restoreFromRundownSnapshot(snapshot as RundownSnapshot)
+		return restoreFromRundownSnapshot(snapshot as RundownPlaylistSnapshot)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) { // A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
@@ -402,7 +411,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
+function restoreFromRundownSnapshot (snapshot: RundownPlaylistSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
 	let playlistId = snapshot.playlistId
 
@@ -430,11 +439,11 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 		return
 	}
 
-	if (playlistId !== snapshot.playlist._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${playlistId}", "${snapshot.playlist._id}!"`)
+	if (playlistId !== snapshot.playlist._id) throw new Meteor.Error(500, `Restore snapshot: playlistIds don\'t match, "${playlistId}", "${snapshot.playlist._id}!"`)
 
 	const dbPlaylist = RundownPlaylists.findOne(playlistId)
 	const dbRundowns = dbPlaylist ? dbPlaylist.getRundowns() : []
-	const dbRundownMap = dbPlaylist ? dbPlaylist.getRundownsMap() : {}
+	const dbRundownMap = normalizeArray(dbRundowns, '_id')
 
 	const unsynced = dbRundowns.reduce((p, v) => (p || v.unsynced), false)
 	if (unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked Rundown!`)
@@ -457,17 +466,19 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 			rd.showStyleVariantId = showStyleVariants[0]._id
 		}
 	})
+	const rundownIds = snapshot.rundowns.map(r => r._id)
 
 	saveIntoDb(RundownPlaylists, { _id: playlistId }, [ snapshot.playlist ])
 	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
-	saveIntoDb(IngestDataCache, { rundownId: playlistId }, snapshot.ingestData)
+	saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, snapshot.ingestData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(RundownBaselineObjs, { rundownId: playlistId }, snapshot.baselineObjs)
-	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: playlistId }, snapshot.baselineAdlibs)
-	saveIntoDb(Segments, { rundownId: playlistId }, snapshot.segments)
-	saveIntoDb(Parts, { rundownId: playlistId }, snapshot.parts)
-	saveIntoDb(Pieces, { rundownId: playlistId }, snapshot.pieces)
-	saveIntoDb(AdLibPieces, { rundownId: playlistId }, snapshot.adLibPieces)
+	saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, snapshot.baselineObjs)
+	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } }, snapshot.baselineAdlibs)
+	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, snapshot.segments)
+	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, snapshot.parts)
+	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
+	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
+	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, snapshot.adLibPieces)
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
 
