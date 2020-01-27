@@ -229,7 +229,7 @@ describe('Playout API', () => {
 			})
 		}
 	})
-	testInFiberOnly('Global and Part Ad-Libs', () => {
+	testInFiber('Global and Part Ad-Libs', () => {
 		const nowSpy = jest.spyOn(Date, 'now')
 		nowSpy.mockReturnValue(1000)
 
