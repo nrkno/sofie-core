@@ -177,7 +177,11 @@ function checkDatabaseVersion (
 	theyName: string
 ): { statusCode: StatusCode, messages: string[] } {
 
-	if (currentVersion) currentVersion = semver.clean(currentVersion)
+	if (currentVersion) {
+		// Strip any patches from the version:
+		const strippedVersion = semver.coerce(currentVersion)
+		if (strippedVersion) currentVersion = semver.valid(strippedVersion)
+	}
 
 	if (expectVersion) {
 		if (currentVersion) {
