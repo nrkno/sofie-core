@@ -409,6 +409,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		}
 	})
 
+	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
+
 	const uiSegments = memoizedIsolatedAutorun((
 		currentPartId: string,
 		nextPartId: string,
@@ -467,8 +469,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		}) : []
 	},
 	'uiSegments',
-	props.playlist ? props.playlist.currentPartId : undefined,
-	props.playlist ? props.playlist.nextPartId : undefined,
+	currentPartInstance ? currentPartInstance.part._id : undefined,
+	nextPartInstance ? nextPartInstance.part._id : undefined,
 	segments,
 	sourceLayerLookup,
 	sourceHotKeyUse)
