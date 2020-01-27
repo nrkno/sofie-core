@@ -347,16 +347,17 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[]): { part: Part, index: number} | undefined {
 	let possibleParts = parts
 
+	let offset = 0;
 	if (previousPartInstance !== null) {
 		const currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
 		// TODO - choose something better for next?
 		if (currentIndex !== -1) {
-			possibleParts = parts.slice(currentIndex + 1)
+			offset = currentIndex + 1
 		}
 	}
 
 	// Filter to after and find the first playabale
-	for (let index = 0; index < possibleParts.length; index ++) {
+	for (let index = offset; index < possibleParts.length; index ++) {
 		const part = possibleParts[index]
 		if (part.isPlayable()) {
 			return { part, index }
