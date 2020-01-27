@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -151,17 +150,27 @@ const AdLibListView = translate()(class extends React.Component<
 		}
 	}
 
-	componentDidUpdate (prevProps: IListViewPropsHeader) {
-		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
+	scrollToCurrentSegment () {
+		if (this.table.id && this.props.selectedSegment) {
 			// scroll to selected segment
 			const segmentSelector = `#${this.table.id} .adlib-panel__list-view__item__${this.props.selectedSegment._id}`
 			const segment: HTMLElement | null = document.querySelector(segmentSelector)
 			if (segment) {
-				const targetPosition = segment.offsetTop + this.table.scrollTop
-				Velocity(this.table, {
-					'scrollTop': targetPosition
-				}, 250, 'swing')
+				this.table.scrollTo({
+					top: segment.offsetTop,
+					behavior: 'smooth'
+				})
 			}
+		}
+	}
+
+	componentDidMount () {
+		this.scrollToCurrentSegment()
+	}
+
+	componentDidUpdate (prevProps: IListViewPropsHeader) {
+		if (prevProps.selectedSegment !== this.props.selectedSegment) {
+			this.scrollToCurrentSegment()
 		}
 	}
 

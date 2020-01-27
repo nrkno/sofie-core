@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-10...v1.5.0) (2020-01-24)
+
+
+### Bug Fixes
+
+* RundownList "unsynced from MOS" header colspan ([bc8b3c9](https://github.com/nrkno/tv-automation-server-core/commit/bc8b3c9))
+
+
+
+## [1.5.0-10](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-8...v1.5.0-10) (2020-01-21)
+
+
+### Bug Fixes
+
+* **hotfix:** looping between 2 parts in a race-condition between pl-gw and core ([#160](https://github.com/nrkno/tv-automation-server-core/issues/160)) ([af5f540](https://github.com/nrkno/tv-automation-server-core/commit/af5f540))
+* AdLib panel doesn't scroll with takes ([3a9db63](https://github.com/nrkno/tv-automation-server-core/commit/3a9db63))
+
+
+
 ## [1.5.0-9](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-8...v1.5.0-9) (2020-01-21)
 
 

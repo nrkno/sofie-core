@@ -21,17 +21,6 @@ export function getHash (str: string): string {
 }
 
 /**
- * Wait for specified time
- * @param time
- */
-export function waitTime (time: number) {
-	let p = new Promise((resolve) => {
-		Meteor.setTimeout(resolve, time)
-	})
-	waitForPromise(p)
-}
-
-/**
  * Convenience method to convert a Meteor.call() into a Promise
  * @param  {string} Method name
  * @return {Promise<any>}
@@ -710,14 +699,13 @@ export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterfa
 	selector: MongoSelector<DBInterface> | string,
 	options?: FindOptions
 ): Promise<Array<DocClass>> {
-	return new Promise((resolve, reject) => {
-		Meteor.defer(() => {
-			let results = collection.find(selector, options).fetch()
-			resolve(results)
-		})
-		// Let the find start executing
-		waitTime(0)
+	// Make the collection fethcing in another Fiber:
+	const p = makePromise(() => {
+		return collection.find(selector, options).fetch()
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	waitTime(0)
+	return p
 }
 export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
@@ -837,10 +825,7 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 		cb(e)
 	})
 })
-/**
- * Convert a Fiber function into a promise
- * Makes the Fiber function to run in its own fiber and return a promise
- */
+/** Executes the provided function in another (asynchronous) Fiber, returning the result in a promise */
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
@@ -1115,3 +1100,14 @@ export function firstIfArray<T> (value: any): T {
 
 
 export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)
+
+/**
+ * Wait for specified time
+ * @param time
+ */
+export function waitTime (time: number) {
+	let p = new Promise((resolve) => {
+		Meteor.setTimeout(resolve, time)
+	})
+	waitForPromise(p)
+}

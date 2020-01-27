@@ -470,7 +470,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 							</tbody>
 							{unsynced.length > 0 && <tbody>
 								<tr className='hl'>
-									<th colSpan={8} className='pvn phn'>
+									<th colSpan={9} className='pvn phn'>
 										<h2 className='mtm mbs mhn'>{t('Unsynced from MOS')}</h2>
 									</th>
 								</tr>
