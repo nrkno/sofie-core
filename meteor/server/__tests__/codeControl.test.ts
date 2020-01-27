@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { syncFunction, Callback, waitTime, syncFunctionIgnore } from '../codeControl'
+import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
 import { RundownSyncFunctionPriority, rundownSyncFunction } from '../api/ingest/rundownInput'
-import { tic, toc, waitForPromise, makePromise, waitForPromiseAll } from '../../lib/lib'
+import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 
 const TIME_FUZZY = 200
 const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {

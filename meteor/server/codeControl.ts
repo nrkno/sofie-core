@@ -199,13 +199,3 @@ function getId (id: string, args: Array<any>): string {
 	}
 	return str
 }
-/**
- * Wait for specified time
- * @param time
- */
-export function waitTime (time: number) {
-	let p = new Promise((resolve) => {
-		Meteor.setTimeout(resolve, time)
-	})
-	waitForPromise(p)
-}
