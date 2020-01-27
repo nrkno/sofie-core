@@ -1,29 +1,29 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundown } from '../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../__mocks__/helpers/database'
 import { getResolvedSegment } from '../Rundown'
-import { Rundowns } from '../collections/Rundowns'
+import { RundownPlaylists } from '../collections/RundownPlaylists';
 
 
 describe('lib/Rundown', () => {
 	let env: DefaultEnvironment
-	let rundownId: string
+	let playlistId: string
 	beforeAll(() => {
 		env = setupDefaultStudioEnvironment()
-		rundownId = setupDefaultRundown(env)
+		playlistId = setupDefaultRundownPlaylist(env).playlistId
 	})
 	testInFiber('getResolvedSegment', () => {
 
 		const showStyleBase = env.showStyleBase
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Error('Rundown not found')
+		const playlist = RundownPlaylists.findOne(playlistId)
+		if (!playlist) throw new Error('Rundown not found')
 
-		const segments = rundown.getSegments()
+		const segments = playlist.getSegments()
 		const segment = segments[0]
 		const nextSegment = segments[1]
 
 		const resolvedSegment = getResolvedSegment(
 			showStyleBase,
-			rundown,
+			playlist,
 			segment,
 			true
 		)

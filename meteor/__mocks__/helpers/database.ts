@@ -422,9 +422,9 @@ export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0
 
 		active: false,
 		rehearsal: false,
-		currentPartId: null,
-		nextPartId: null,
-		previousPartId: null,
+		currentPartInstanceId: null,
+		nextPartInstanceId: null,
+		previousPartInstanceId: null,
 	}
 	const playlistId = RundownPlaylists.insert(playlist)
 

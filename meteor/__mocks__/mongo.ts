@@ -115,6 +115,9 @@ export namespace MongoMock {
 				},
 				forEach (f) {
 					docs.forEach(f)
+				},
+				map (f) {
+					return docs.map(f)
 				}
 			}
 		}

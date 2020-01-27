@@ -42,9 +42,9 @@ describe('Test external message queue static methods', () => {
 				peripheralDeviceId: '',
 				created: 0,
 				modified: 0,
-				currentPartId: 'part_now',
-				nextPartId: 'partNext',
-				previousPartId: null,
+				currentPartInstanceId: 'part_now',
+				nextPartInstanceId: 'partNext',
+				previousPartInstanceId: null,
 				active: true
 			})
 			Rundowns.insert({

@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
 import { getHash, literal } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
-import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR, IBlueprintPartInstance, IBlueprintPieceInstance } from 'tv-automation-sofie-blueprints-integration'
 import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartContext, PartEventContext, AsRunEventContext } from '../context'
 import { ConfigRef } from '../config'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -12,8 +12,40 @@ import { DBPart } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { Pieces } from '../../../../lib/collections/Pieces'
+import { WrapPartToTemporaryInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances';
+import { PieceInstances } from '../../../../lib/collections/PieceInstances';
 
 describe('Test blueprint api context', () => {
+
+	function generateSparsePieceInstances (rundown: Rundown) {
+		_.each(rundown.getParts(), (part, i) => {
+			// make into a partInstance
+			PartInstances.insert({
+				_id: `${part._id}_instance`,
+				rundownId: part.rundownId,
+				segmentId: part.segmentId,
+				takeCount: i,
+				part
+			})
+
+			const count = ((i + 2) % 4) + 1 // Some consistent randomness
+			for (let i = 0; i < count; i++) {
+				PieceInstances.insert({
+					_id: `${part._id}_piece${i}`,
+					rundownId: rundown._id,
+					partInstanceId: `${part._id}_instance`,
+					piece: {
+						_id: `${part._id}_piece_inner${i}`,
+						rundownId: rundown._id,
+						partId: part._id,
+						content: {
+							index: i
+						}
+					}
+				} as any)
+			}
+		})
+	}
 
 	let env: DefaultEnvironment
 	beforeAll(() => {
@@ -403,10 +435,11 @@ describe('Test blueprint api context', () => {
 				_id: 'not-a-real-part'
 			}
 
-			const context = new PartEventContext(rundown, undefined, mockPart as IBlueprintPartDB)
+			const tmpPart = WrapPartToTemporaryInstance(mockPart as DBPart)
+			const context = new PartEventContext(rundown, undefined, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
-			expect(context.part).toEqual(mockPart)
+			expect(context.part).toEqual(tmpPart)
 		})
 	})
 
@@ -570,16 +603,17 @@ describe('Test blueprint api context', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown)
 
 			// Should be some defaults
 			expect(_.pluck(context.getParts(), '_id')).toEqual([
-				`${rundown._id}_part0_0`,
-				`${rundown._id}_part0_1`,
-				`${rundown._id}_part1_0`,
-				`${rundown._id}_part1_1`,
-				`${rundown._id}_part1_2`
+				`${rundown._id}_part0_0_instance`,
+				`${rundown._id}_part0_1_instance`,
+				`${rundown._id}_part1_0_instance`,
+				`${rundown._id}_part1_1_instance`,
+				`${rundown._id}_part1_2_instance`
 			])
 		})
 
@@ -587,6 +621,7 @@ describe('Test blueprint api context', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown)
 
@@ -603,6 +638,7 @@ describe('Test blueprint api context', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown)
 
@@ -618,6 +654,7 @@ describe('Test blueprint api context', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown)
 
@@ -627,38 +664,41 @@ describe('Test blueprint api context', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown)
 
-			const part = context.getPart(`${rundown._id}_part1_0`) as IBlueprintPartDB
+			const part = context.getPart(`${rundown._id}_part1_0_instance`) as IBlueprintPartInstance
 			expect(part).toBeTruthy()
-			expect(part._id).toEqual(`${rundown._id}_part1_0`)
+			expect(part._id).toEqual(`${rundown._id}_part1_0_instance`)
 		})
 		test('getPart - empty id with event partId', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown, {
-				partId: `${rundown._id}_part1_1`
+				partInstanceId: `${rundown._id}_part1_1_instance`
 			})
 
-			const part = context.getPart('') as IBlueprintPartDB
+			const part = context.getPart('') as IBlueprintPartInstance
 			expect(part).toBeTruthy()
-			expect(part._id).toEqual(`${rundown._id}_part1_1`)
+			expect(part._id).toEqual(`${rundown._id}_part1_1_instance`)
 		})
 		test('getPart - good with event partId', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
+			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown, {
-				partId: `${rundown._id}_part1_2`
+				partInstanceId: `${rundown._id}_part1_2_instance`
 			})
 
-			const part = context.getPart(`${rundown._id}_part0_1`) as IBlueprintPartDB
+			const part = context.getPart(`${rundown._id}_part0_1_instance`) as IBlueprintPartInstance
 			expect(part).toBeTruthy()
-			expect(part._id).toEqual(`${rundown._id}_part0_1`)
+			expect(part._id).toEqual(`${rundown._id}_part0_1_instance`)
 		})
 
 		test('getIngestDataForPart - no part', () => {
@@ -673,7 +713,7 @@ describe('Test blueprint api context', () => {
 				// Should not get here
 				expect(false).toBeTruthy()
 			} catch (e) {
-				expect(e.message).toEqual('Cannot read property \'_id\' of undefined')
+				expect(e.message).toEqual('Cannot read property \'part\' of undefined')
 			}
 		})
 		test('getIngestDataForPart - no id', () => {
@@ -688,7 +728,7 @@ describe('Test blueprint api context', () => {
 				// Should not get here
 				expect(false).toBeTruthy()
 			} catch (e) {
-				expect(e.message).toEqual('Match error: Expected string, got undefined')
+				expect(e.message).toEqual('Cannot read property \'_id\' of undefined')
 			}
 		})
 		test('getIngestDataForPart - no data', () => {
@@ -700,8 +740,9 @@ describe('Test blueprint api context', () => {
 
 			const part = rundown.getParts()[3]
 			expect(part).toBeTruthy()
-
-			const ingestPart = context.getIngestDataForPart(part)
+			
+			const partInstance = WrapPartToTemporaryInstance(part)
+			const ingestPart = context.getIngestDataForPart(partInstance)
 			expect(ingestPart).toBeUndefined()
 		})
 		test('getIngestDataForPart - good', () => {
@@ -726,7 +767,8 @@ describe('Test blueprint api context', () => {
 				} as any
 			})
 
-			const ingestPart = context.getIngestDataForPart(part)
+			const partInstance = WrapPartToTemporaryInstance(part)
+			const ingestPart = context.getIngestDataForPart(partInstance)
 			expect(ingestPart).toEqual({
 				fakeData: true
 			})
@@ -754,23 +796,6 @@ describe('Test blueprint api context', () => {
 		// 	expect(ingestRundown).toBeUndefined()
 		// })
 
-		function generateSparsePieces (rundown: Rundown) {
-			_.each(rundown.getParts(), (part, i) => {
-				const count = ((i + 2) % 4) + 1 // Some consistent randomness
-				for (let i = 0; i < count; i++) {
-					const id = `${part._id}_piece${i}`
-					Pieces.insert({
-						_id: id,
-						rundownId: rundown._id,
-						partId: part._id,
-						content: {
-							index: i
-						}
-					} as any)
-				}
-			})
-		}
-
 		test('getPieces - good', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
@@ -779,9 +804,9 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
-			const part = rundown.getParts()[3]
+			const part = PartInstances.find({ rundownId: rundown._id }).fetch()[3]
 			expect(part).toBeTruthy()
 
 			// Should be some defaults
@@ -798,7 +823,7 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
 			// Should be some defaults
 			expect(context.getPieces('not-a-real-part')).toHaveLength(0)
@@ -811,7 +836,7 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
 			// Should be some defaults
 			expect(context.getPieces('')).toHaveLength(0)
@@ -825,7 +850,7 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
 			expect(context.getPiece()).toBeUndefined()
 		})
@@ -837,7 +862,7 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
 			expect(context.getPiece('')).toBeUndefined()
 		})
@@ -849,7 +874,7 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
 			expect(context.getPiece('not-a-real-piece')).toBeUndefined()
 		})
@@ -861,9 +886,9 @@ describe('Test blueprint api context', () => {
 			const context = getContext(rundown)
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
-			const piece = context.getPiece(`${rundown._id}_part0_1_piece3`) as IBlueprintPieceDB
+			const piece = context.getPiece(`${rundown._id}_part0_1_piece3`) as IBlueprintPieceInstance
 			expect(piece).toBeTruthy()
 			expect(piece._id).toEqual(`${rundown._id}_part0_1_piece3`)
 		})
@@ -873,13 +898,13 @@ describe('Test blueprint api context', () => {
 			expect(rundown).toBeTruthy()
 
 			const context = getContext(rundown, {
-				pieceId: `${rundown._id}_part0_1_piece2`
+				pieceInstanceId: `${rundown._id}_part0_1_piece2`
 			})
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
-			const piece = context.getPiece('') as IBlueprintPieceDB
+			const piece = context.getPiece('') as IBlueprintPieceInstance
 			expect(piece).toBeTruthy()
 			expect(piece._id).toEqual(`${rundown._id}_part0_1_piece2`)
 		})
@@ -889,13 +914,13 @@ describe('Test blueprint api context', () => {
 			expect(rundown).toBeTruthy()
 
 			const context = getContext(rundown, {
-				pieceId: `${rundown._id}_part0_1_piece2`
+				pieceInstanceId: `${rundown._id}_part0_1_piece2`
 			})
 
 			// Generate some pieces
-			generateSparsePieces(rundown)
+			generateSparsePieceInstances(rundown)
 
-			const piece = context.getPiece(`${rundown._id}_part1_2_piece0`) as IBlueprintPieceDB
+			const piece = context.getPiece(`${rundown._id}_part1_2_piece0`) as IBlueprintPieceInstance
 			expect(piece).toBeTruthy()
 			expect(piece._id).toEqual(`${rundown._id}_part1_2_piece0`)
 		})

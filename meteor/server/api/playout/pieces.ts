@@ -390,10 +390,21 @@ export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, par
 			enable: {
 				start: (queue ? 0 : 'now'),
 				duration: duration
+			},
+			adLibSourceId: adLibPiece._id,
+			dynamicallyInserted: !queue,
+			timings: {
+				take: [getCurrentTime()],
+				startedPlayback: [],
+				next: [],
+				stoppedPlayback: [],
+				playOffset: [],
+				takeDone: [],
+				takeOut: [],
 			}
 		}
 	})
-
+	
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 		let contentObjects = newPieceInstance.piece.content.timelineObjects
 		const objs = prefixAllObjectIds(_.compact(

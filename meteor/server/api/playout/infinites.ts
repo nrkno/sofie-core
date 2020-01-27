@@ -292,14 +292,14 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 		ps.push(asyncCollectionUpdate(PieceInstances, instance._id, { $set: {
 			'piece.userDuration': { end: `#${getPieceGroupId(newPieceInstance.piece)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
 			'piece.infiniteMode': PieceLifespan.Normal,
-			'piece.originalInfiniteMode': newPieceInstance.piece.originalInfiniteMode !== undefined ? newPieceInstance.piece.originalInfiniteMode : newPieceInstance.piece.infiniteMode
+			'piece.originalInfiniteMode': instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
 		}}))
 
 		// TODO-PartInstance - pending new data flow
 		ps.push(asyncCollectionUpdate(Pieces, instance.piece._id, { $set: {
 			userDuration: { end: `#${getPieceGroupId(newPieceInstance.piece)}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
 			infiniteMode: PieceLifespan.Normal,
-			originalInfiniteMode: newPieceInstance.piece.originalInfiniteMode !== undefined ? newPieceInstance.piece.originalInfiniteMode : newPieceInstance.piece.infiniteMode
+			originalInfiniteMode: instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
 		}}))
 	}
 	waitForPromiseAll(ps)

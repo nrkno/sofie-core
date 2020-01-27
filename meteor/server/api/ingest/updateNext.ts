@@ -17,7 +17,7 @@ export namespace UpdateNext {
 			if (currentPartInstance) {
 				// Leave the manually chosen part
 				const oldNextPart = nextPartInstance ? allParts.find(p => p._id === nextPartInstance.part._id) : undefined
-				if (playlist.nextPartManual && oldNextPart) {
+				if (playlist.nextPartManual && oldNextPart && nextPartInstance && nextPartInstance.part.isPlayable()) {
 					return
 				}
 
@@ -34,8 +34,8 @@ export namespace UpdateNext {
 
 				// Set to the newly selected part
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
-			} else {
-				// Don't have a currentPart, so set next to first in the show
+			} else if (!nextPartInstance) {
+				// Don't have a currentPart or a nextPart, so set next to first in the show
 				const newNextPart = selectNextPart(null, allParts)
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			}
