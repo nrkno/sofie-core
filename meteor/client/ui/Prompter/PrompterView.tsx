@@ -14,7 +14,7 @@ import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { objectPathGet, firstIfArray } from '../../../lib/lib'
+import { objectPathGet, firstIfArray, literal } from '../../../lib/lib'
 import { Parts } from '../../../lib/collections/Parts'
 import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import { Segments } from '../../../lib/collections/Segments'
@@ -97,16 +97,27 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	componentWillMount () {
-		this.subscribe(PubSub.rundowns, _.extend({
-			active: true
-		}, this.props.studioId ? {
-			studioId: this.props.studioId
-		} : {}))
 		if (this.props.studioId) {
 			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
+
+			this.subscribe(PubSub.rundownPlaylists, {
+				active: true,
+				studioId: this.props.studioId
+			})
 		}
+
+		const playlistId = this.props.rundownPlaylist ? this.props.rundownPlaylist._id : ''
+		this.autorun(() => {
+			let playlist = RundownPlaylists.findOne(playlistId)
+			if (playlistId) {
+				this.subscribe(PubSub.rundowns, {
+					playlistId: playlistId
+				})
+			}
+		})
+		
 		this.autorun(() => {
 			let subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
@@ -354,23 +365,20 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 }
 export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
-	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studio
-	if (studioId) {
-		studio = Studios.findOne(studioId)
-	}
-	const rundown = Rundowns.findOne(_.extend({
-		active: true
-	}, {
-		studioId: studioId
-	}))
+	const studioId = objectPathGet(props, 'match.params.studioId')
+	const studio = studioId ? Studios.findOne(studioId) : undefined
 
-	return {
-		rundown,
+	const rundownPlaylist = RundownPlaylists.findOne({
+		active: true,
+		studioId: studioId
+	})
+
+	return literal<ITrackedProps>({
+		rundownPlaylist,
 		studio,
 		studioId,
 		// isReady: rundownSubscription.ready() && (studioSubscription ? studioSubscription.ready() : true)
-	}
+	})
 })(PrompterViewInner)
 
 interface IPrompterProps {
@@ -413,12 +421,28 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	}
 
 	componentDidMount () {
-		this.subscribe(PubSub.rundowns, { _id: this.props.rundownPlaylistId })
-		this.subscribe(PubSub.segments, { rundownId: this.props.rundownPlaylistId })
-		this.subscribe(PubSub.parts, { rundownId: this.props.rundownPlaylistId })
-		this.subscribe(PubSub.partInstances, { rundownId: this.props.rundownPlaylistId, reset: { $ne: true } })
-		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownPlaylistId })
-		this.subscribe(PubSub.pieceInstances, { rundownId: this.props.rundownPlaylistId, reset: { $ne: true } })
+		this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
+
+		// TODO-PartInstance the prompter should probably consider instances
+		this.autorun(() => {
+			const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
+			if (playlist) {
+				const rundownIDs = playlist.getRundownIDs()
+				this.subscribe(PubSub.segments, {
+					rundownId: { $in: rundownIDs }
+				})
+				this.subscribe(PubSub.parts, {
+					rundownId: { $in: rundownIDs }
+				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: { $in: rundownIDs },
+					reset: { $ne: true }
+				})
+				this.subscribe(PubSub.pieces, {
+					rundownId: { $in: rundownIDs }
+				})
+			}
+		})
 	}
 
 	getScrollAnchor = () => {
