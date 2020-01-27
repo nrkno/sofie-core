@@ -12,8 +12,6 @@ describe('lib/timeline', () => {
 				_id: '0',
 				id: '0',
 				studioId: 'studio0',
-				rundownId: 'myRundown0',
-				playlistId: 'myPlaylist0',
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -27,8 +25,6 @@ describe('lib/timeline', () => {
 				_id: 'child0',
 				id: 'child0',
 				studioId: 'studio0',
-				rundownId: 'myRundown0',
-				playlistId: 'myPlaylist0',
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -43,8 +39,6 @@ describe('lib/timeline', () => {
 				_id: 'child1',
 				id: 'child1',
 				studioId: 'studio0',
-				rundownId: 'myRundown0',
-				playlistId: 'myPlaylist0',
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -59,8 +53,6 @@ describe('lib/timeline', () => {
 				_id: 'group0',
 				id: 'group0',
 				studioId: 'studio0',
-				rundownId: 'myRundown0',
-				playlistId: 'myPlaylist0',
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -88,8 +80,6 @@ describe('lib/timeline', () => {
 					callBackStopped: 'partPlaybackStopped'
 				},
 				layer: 'L1',
-				rundownId: 'myRundown0',
-				playlistId: 'myPlaylist0',
 				// @ts-ignore
 				partId: 'myPart0',
 			},
@@ -110,8 +100,6 @@ describe('lib/timeline', () => {
 					callBackStopped: 'piecePlaybackStopped'
 				},
 				layer: 'L1',
-				rundownId: 'myRundown0',
-				playlistId: 'myPlaylist0',
 				// @ts-ignore
 				pieceId: 'myPiece0',
 			},

@@ -265,8 +265,6 @@ function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayout
 					timelineObjs.map<TimelineObjRundown>((timelineObj) => {
 						return {
 							...omit(timelineObj, 'pieceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
-							playlistId: rundownData.rundownPlaylist._id,
-							rundownId: activeRundown._id,
 							objectType: TimelineObjType.RUNDOWN
 						}
 					})
@@ -285,8 +283,6 @@ function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayout
 						id: id,
 						_id: '', // set later
 						studioId: '', // set later
-						playlistId: '',
-						rundownId: '',
 						objectType: TimelineObjType.RUNDOWN,
 						enable: { start: 0 },
 						layer: id,
@@ -402,9 +398,6 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Ti
 
 function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, baselineItems: RundownBaselineObj[]): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activePlaylist = playoutData.rundownPlaylist
-	const currentRundownPartInstance = playoutData.currentPartInstance || playoutData.nextPartInstance
-	const currentRundown = currentRundownPartInstance ? playoutData.rundownsMap[currentRundownPartInstance.rundownId] : undefined
-	if (!currentRundown) throw new Meteor.Error(501, `Could not resolve current rundown and part for playlist "${activePlaylist._id}"`)
 
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 	let currentPartGroup: TimelineObjRundown | undefined
@@ -421,8 +414,6 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 		_id: '', // set later
 		studioId: '', // set later
 		objectType: TimelineObjType.RUNDOWN,
-		playlistId: playoutData.rundownPlaylist._id,
-		rundownId: currentRundown._id,
 		enable: { while: 1 },
 		layer: 'rundown_status',
 		content: {
@@ -449,7 +440,7 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 	}
 
 	if (baselineItems) {
-		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(currentRundown, baselineItems))
+		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
 	}
 
 	// Currently playing:
@@ -474,7 +465,7 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 				if (previousPart.part.autoNext && previousPart.part.autoNextOverlap) {
 					previousPartGroupEnable.end = `#${getPartGroupId(currentPart)}.start + ${previousPart.part.autoNextOverlap || 0}`
 				}
-				previousPartGroup = createPartGroup(activePlaylist, previousPart, previousPartGroupEnable)
+				previousPartGroup = createPartGroup(previousPart, previousPartGroupEnable)
 				previousPartGroup.priority = -1
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
@@ -484,7 +475,7 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: TimelineObjRundown[] = [previousPartGroup]
 				prevObjs = prevObjs.concat(
-					transformPartIntoTimeline(activePlaylist, previousPieces, groupClasses, previousPartGroup, undefined, activePlaylist.holdState))
+					transformPartIntoTimeline(previousPieces, groupClasses, previousPartGroup, undefined, activePlaylist.holdState))
 				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
 
 				timelineObjs = timelineObjs.concat(prevObjs)
@@ -500,11 +491,11 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 		if (currentPart.part.startedPlayback && currentPart.part.getLastStartedPlayback()) { // If we are recalculating the currentPart, then ensure it doesnt think it is starting now
 			currentPartEnable.start = currentPart.part.getLastStartedPlayback() || 0
 		}
-		currentPartGroup = createPartGroup(activePlaylist, currentPart, currentPartEnable)
+		currentPartGroup = createPartGroup(currentPart, currentPartEnable)
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
-			const infiniteGroup = createPartGroup(activePlaylist, currentPart, { duration: piece.piece.enable.duration || undefined })
+			const infiniteGroup = createPartGroup(currentPart, { duration: piece.piece.enable.duration || undefined })
 			infiniteGroup.id = getPartGroupId(piece._id) + '_infinite'
 			infiniteGroup.priority = 1
 
@@ -537,7 +528,7 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 			const showHoldExcept = piece.piece.infiniteId !== piece.piece._id
-			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(activePlaylist, [piece], groupClasses, infiniteGroup, undefined, activePlaylist.holdState, showHoldExcept))
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline([piece], groupClasses, infiniteGroup, undefined, activePlaylist.holdState, showHoldExcept))
 		}
 
 		const groupClasses: string[] = ['current_part']
@@ -549,15 +540,15 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 		}
 		timelineObjs = timelineObjs.concat(
 			currentPartGroup,
-			transformPartIntoTimeline(activePlaylist, currentNormalItems, groupClasses, currentPartGroup, transProps, activePlaylist.holdState)
+			transformPartIntoTimeline(currentNormalItems, groupClasses, currentPartGroup, transProps, activePlaylist.holdState)
 		)
 
-		timelineObjs.push(createPartGroupFirstObject(activePlaylist, currentPart, currentPartGroup, previousPart))
+		timelineObjs.push(createPartGroupFirstObject(currentPart, currentPartGroup, previousPart))
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextPart && currentPart.part.autoNext) {
 			// console.log('This part will autonext')
-			let nextPartGroup = createPartGroup(activePlaylist, nextPart, {})
+			let nextPartGroup = createPartGroup(nextPart, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(currentPart.part, nextPart.part)
 
@@ -581,9 +572,9 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 			}
 			timelineObjs = timelineObjs.concat(
 				nextPartGroup,
-				transformPartIntoTimeline(activePlaylist, nextItems, groupClasses, nextPartGroup, transProps)
+				transformPartIntoTimeline(nextItems, groupClasses, nextPartGroup, transProps)
 			)
-			timelineObjs.push(createPartGroupFirstObject(activePlaylist, nextPart, nextPartGroup, currentPart))
+			timelineObjs.push(createPartGroupFirstObject(nextPart, nextPartGroup, currentPart))
 		}
 	}
 
@@ -595,7 +586,6 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 	return timelineObjs
 }
 function createPartGroup (
-	playlist: RundownPlaylist,
 	part: PartInstance,
 	enable: TSR.Timeline.TimelineEnable
 ): TimelineObjGroupPart & TimelineObjRundown {
@@ -606,8 +596,6 @@ function createPartGroup (
 		id: getPartGroupId(part),
 		_id: '', // set later
 		studioId: '', // set later
-		rundownId: part.rundownId,
-		playlistId: playlist._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
 		priority: 5,
@@ -624,7 +612,6 @@ function createPartGroup (
 	return partGrp
 }
 function createPartGroupFirstObject (
-	playlist: RundownPlaylist,
 	part: PartInstance,
 	partGroup: TimelineObjRundown,
 	previousPart?: PartInstance
@@ -633,8 +620,6 @@ function createPartGroupFirstObject (
 		id: getPartFirstObjectId(part),
 		_id: '', // set later
 		studioId: '', // set later
-		rundownId: part.rundownId,
-		playlistId: playlist._id,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: 'group_first_object',
@@ -654,15 +639,13 @@ function createPartGroupFirstObject (
 	})
 }
 
-function transformBaselineItemsIntoTimeline (rundown: Rundown, objs: RundownBaselineObj[]): Array<TimelineObjRundown> {
+function transformBaselineItemsIntoTimeline (objs: RundownBaselineObj[]): Array<TimelineObjRundown> {
 	let timelineObjs: Array<TimelineObjRundown> = []
 	_.each(objs, (obj: RundownBaselineObj) => {
 		// the baseline objects are layed out without any grouping
 		_.each(obj.objects, (o: TimelineObjGeneric) => {
 			fixTimelineId(o)
 			timelineObjs.push(extendMandadory<TimelineObjGeneric, TimelineObjRundown>(o, {
-				rundownId: rundown._id,
-				playlistId: rundown.playlistId,
 				objectType: TimelineObjType.RUNDOWN
 			}))
 		})
@@ -678,7 +661,6 @@ interface TransformTransitionProps {
 }
 
 function transformPartIntoTimeline (
-	playlist: RundownPlaylist,
 	pieceInstances: PieceInstance[],
 	firstObjClasses: string[],
 	partGroup?: TimelineObjRundown,
@@ -722,11 +704,11 @@ function transformPartIntoTimeline (
 			}
 
 			// create a piece group for the pieces and then place all of them there
-			const pieceGroup = createPieceGroup(playlist._id, pieceInstance, partGroup)
+			const pieceGroup = createPieceGroup(pieceInstance, partGroup)
 			timelineObjs.push(pieceGroup)
 
 			if (!pieceInstance.piece.virtual) {
-				timelineObjs.push(createPieceGroupFirstObject(playlist._id, pieceInstance, pieceGroup, firstObjClasses))
+				timelineObjs.push(createPieceGroupFirstObject(pieceInstance, pieceGroup, firstObjClasses))
 
 				_.each(tos, (o: TimelineObjectCoreExt) => {
 					fixTimelineId(o)
@@ -751,8 +733,6 @@ function transformPartIntoTimeline (
 						_id: '', // set later
 						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup.id : undefined,
-						rundownId: pieceInstance.rundownId,
-						playlistId: playlist._id,
 						objectType: TimelineObjType.RUNDOWN,
 						pieceId: pieceInstance.piece._id,
 						infinitePieceId: pieceInstance.piece.infiniteId

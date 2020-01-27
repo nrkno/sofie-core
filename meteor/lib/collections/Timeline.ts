@@ -22,8 +22,6 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	/** Studio installation Id */
 	studioId: string
-	playlistId?: string
-	rundownId?: string
 
 	objectType: TimelineObjType
 
@@ -61,10 +59,6 @@ export interface TimelineObjStat extends TimelineObjGeneric {
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
-	/** Rundown Id */
-	rundownId: string
-	/** Playlist Id */
-	playlistId: string
 }
 export interface TimelineObjRecording extends TimelineObjGeneric {
 	objectType: TimelineObjType.RECORDING

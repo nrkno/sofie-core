@@ -238,8 +238,6 @@ function findObjectsForPart (
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						rundownId: activeRundown._id,
-						playlistId: activePlaylist._id,
 						pieceId: i._id,
 						infinitePieceId: i.infiniteId
 					}))
@@ -317,8 +315,6 @@ function findObjectsForPart (
 					_id: '', // set later
 					studioId: '', // set later
 					objectType: TimelineObjType.RUNDOWN,
-					rundownId: activeRundown._id,
-					playlistId: activePlaylist._id,
 					pieceId: piece._id,
 					infinitePieceId: piece.infiniteId,
 					content: newContent

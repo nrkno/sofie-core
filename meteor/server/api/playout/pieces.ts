@@ -44,7 +44,7 @@ export function orderPieces (pieces: Piece[], partId: string, partStarted?: numb
 	pieces.forEach(i => itemMap[i._id] = i)
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = createPieceGroup(undefined, {
+		const obj = createPieceGroup({
 			_id: piece._id, // Set hte id to the same, as it is just for metadata
 			rundownId: piece.rundownId,
 			piece: piece
@@ -124,7 +124,6 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	return orderPieces(pieces, part._id, partStarted)
 }
 export function createPieceGroupFirstObject (
-	playlistId: string | undefined,
 	pieceInstance: PieceInstance,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
@@ -133,8 +132,6 @@ export function createPieceGroupFirstObject (
 		id: getPieceFirstObjectId(pieceInstance.piece),
 		_id: '', // set later
 		studioId: '', // set later
-		playlistId: playlistId || '',
-		rundownId: pieceInstance.rundownId,
 		pieceId: pieceInstance._id,
 		infinitePieceId: pieceInstance.piece.infiniteId,
 		objectType: TimelineObjType.RUNDOWN,
@@ -156,7 +153,6 @@ export function createPieceGroupFirstObject (
 	})
 }
 export function createPieceGroup (
-	playlistId: string | undefined,
 	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
@@ -171,8 +167,6 @@ export function createPieceGroup (
 		children: [],
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
-		playlistId: playlistId || '',
-		rundownId: pieceInstance.rundownId,
 		pieceId: pieceInstance._id,
 		infinitePieceId: pieceInstance.piece.infiniteId,
 		objectType: TimelineObjType.RUNDOWN,
@@ -260,7 +254,7 @@ export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceIns
 	const itemMap: { [key: string]: PieceInstance | undefined } = {}
 	pieceInstances.forEach(piece => itemMap[piece._id] = piece)
 
-	const objs = pieceInstances.map(piece => clone(createPieceGroup(undefined, piece)))
+	const objs = pieceInstances.map(piece => clone(createPieceGroup(piece)))
 	objs.forEach(o => {
 		if (o.enable.start === 'now' && partInstance.part.getLastStartedPlayback()) {
 			// Emulate playout starting now. TODO - ensure didnt break other uses

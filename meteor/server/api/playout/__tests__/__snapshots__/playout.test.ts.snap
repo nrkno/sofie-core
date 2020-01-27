@@ -16,8 +16,6 @@ Array [
     "id": "playlist_randomId10002_status",
     "layer": "rundown_status",
     "objectType": "rundown",
-    "playlistId": "playlist_randomId10002",
-    "rundownId": "randomId10002",
     "studioId": "mockStudio4",
   },
   Object {
@@ -35,9 +33,7 @@ Array [
     "isPartGroup": true,
     "layer": "",
     "objectType": "rundown",
-    "playlistId": "playlist_randomId10002",
     "priority": 5,
-    "rundownId": "randomId10002",
     "studioId": "mockStudio4",
   },
   Object {
@@ -60,8 +56,6 @@ Array [
     "inGroup": "part_group_randomId10002_part0_0_randomId10004",
     "layer": "group_first_object",
     "objectType": "rundown",
-    "playlistId": "playlist_randomId10002",
-    "rundownId": "randomId10002",
     "studioId": "mockStudio4",
   },
   Object {
@@ -140,8 +134,6 @@ Array [
       },
     },
     "objectType": "rundown",
-    "playlistId": "",
-    "rundownId": "",
     "studioId": "mockStudio4",
   },
 ]
