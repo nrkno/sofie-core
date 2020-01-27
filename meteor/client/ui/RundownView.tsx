@@ -1088,7 +1088,7 @@ export enum RundownViewEvents {
 }
 
 interface ITrackedProps {
-	rundownId: string
+	rundownPlaylistId: string
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
 	segments: Segment[]
@@ -1120,7 +1120,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
-		rundownId: playlistId,
+		rundownPlaylistId: playlistId,
 		rundowns,
 		segments: playlist ? playlist.getSegments() : [],
 		playlist,
@@ -1242,7 +1242,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 	}
 
 	componentDidMount () {
-		let playlistId = this.props.rundownId
+		let playlistId = this.props.rundownPlaylistId
 
 		this.subscribe(PubSub.rundownPlaylists, {
 			_id: playlistId
