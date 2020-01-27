@@ -9,7 +9,7 @@ import '../api'
 import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { deactivate } from '../../userActions'
-import { RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
 const Timeline = mockupCollection(OrgTimeline)
 
@@ -30,7 +30,7 @@ describe('Playout API', () => {
 			return Rundowns.findOne(rundownId0) as Rundown
 		}
 		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0)
+			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		}
 		const parts = getRundown0().getParts()
 
@@ -43,26 +43,38 @@ describe('Playout API', () => {
 		expect(Timeline.upsert).not.toHaveBeenCalled()
 		expect(Timeline.update).not.toHaveBeenCalled()
 
-		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.activateRundown(playlistId0, false)
-		expect(getPlaylist0()).toMatchObject({
-			active: true,
-			rehearsal: false,
-			currentPartId: null,
-			nextPartId: parts[0]._id,
-		})
+		{
+			// Prepare and activate in rehersal:
+			ServerPlayoutAPI.activateRundown(playlistId0, false)
+
+			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			expect(currentPartInstance).toBeFalsy()
+			expect(nextPartInstance).toBeTruthy()
+			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
+
+			expect(getPlaylist0()).toMatchObject({
+				active: true,
+				rehearsal: false,
+				currentPartInstanceId: null,
+				// nextPartInstanceId: parts[0]._id,
+			})
+		}
 
 		expect(Timeline.insert).toHaveBeenCalled()
 		expect(Timeline.upsert).toHaveBeenCalled()
 		expect(Timeline.update).toHaveBeenCalled()
 		Timeline.mockClear()
 
-		// Take the first Part:
-		ServerPlayoutAPI.takeNextPart(playlistId0)
-		expect(getPlaylist0()).toMatchObject({
-			currentPartId: parts[0]._id,
-			nextPartId: parts[1]._id,
-		})
+		{
+			// Take the first Part:
+			ServerPlayoutAPI.takeNextPart(playlistId0)
+
+			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			expect(currentPartInstance).toBeTruthy()
+			expect(nextPartInstance).toBeTruthy()
+			expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
+			expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
+		}
 
 		expect(Timeline.insert).toHaveBeenCalled()
 		expect(Timeline.upsert).toHaveBeenCalled()
@@ -77,8 +89,8 @@ describe('Playout API', () => {
 		ServerPlayoutAPI.deactivateRundown(playlistId0)
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
-			currentPartId: null,
-			nextPartId: null
+			currentPartInstanceId: null,
+			nextPartInstanceId: null
 		})
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()

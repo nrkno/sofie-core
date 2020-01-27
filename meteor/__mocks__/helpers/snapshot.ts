@@ -79,7 +79,7 @@ function isTimelineObj (o): o is TimelineObjGeneric {
 	return o.enable && o._id && o.id && o.studioId
 }
 function isPlaylist (o): o is DBRundownPlaylist {
-	return o._id && _.has(o, 'currentPartId')
+	return o._id && _.has(o, 'currentPartInstanceId')
 }
 function isRundown (o): o is DBRundown {
 	return o._id && _.has(o, 'playlistId')
