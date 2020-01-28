@@ -264,7 +264,7 @@ function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayout
 				resolve(
 					timelineObjs.map<TimelineObjRundown>((timelineObj) => {
 						return {
-							...omit(timelineObj, 'pieceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
+							...omit(timelineObj, 'pieceInstanceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
 							objectType: TimelineObjType.RUNDOWN
 						}
 					})
@@ -734,7 +734,7 @@ function transformPartIntoTimeline (
 						studioId: '', // set later
 						inGroup: partGroup ? pieceGroup.id : undefined,
 						objectType: TimelineObjType.RUNDOWN,
-						pieceId: pieceInstance.piece._id,
+						pieceInstanceId: pieceInstance._id,
 						infinitePieceId: pieceInstance.piece.infiniteId
 					})
 				})

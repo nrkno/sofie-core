@@ -132,7 +132,7 @@ export function createPieceGroupFirstObject (
 		id: getPieceFirstObjectId(pieceInstance.piece),
 		_id: '', // set later
 		studioId: '', // set later
-		pieceId: pieceInstance._id,
+		pieceInstanceId: pieceInstance._id,
 		infinitePieceId: pieceInstance.piece.infiniteId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
@@ -167,7 +167,7 @@ export function createPieceGroup (
 		children: [],
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
-		pieceId: pieceInstance._id,
+		pieceInstanceId: pieceInstance._id,
 		infinitePieceId: pieceInstance.piece.infiniteId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: calculatePieceTimelineEnable(pieceInstance.piece),

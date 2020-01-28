@@ -8,7 +8,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { orderPieces } from './pieces'
 import { literal, clone } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, WrapPieceToTemporaryInstance, WrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { selectNextPart } from './lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
@@ -160,7 +160,7 @@ export function findLookaheadForlayer (
 			pieces: pieces.map(p => p.piece)
 		}
 
-		findObjectsForPart(playoutData, layer, previousPartInfo, partInfo)
+		findObjectsForPart(playoutData, layer, previousPartInfo, partInfo, partInstance._id)
 			.forEach(o => res.timed.push({ obj: o, partId: partInstance.part._id }))
 		previousPartInfo = partInfo
 	})
@@ -203,7 +203,7 @@ export function findLookaheadForlayer (
 		const pieces = piecesUsingLayerByPart[part._id] || []
 		if (pieces.length > 0 && part.isPlayable()) {
 			const partInfo = { part, pieces }
-			findObjectsForPart(playoutData, layer, previousPartInfo, partInfo)
+			findObjectsForPart(playoutData, layer, previousPartInfo, partInfo, null)
 				.forEach(o => res.future.push({ obj: o, partId: part._id }))
 			previousPartInfo = partInfo
 		}
@@ -217,6 +217,7 @@ function findObjectsForPart (
 	layer: string,
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
+	partInstanceId: string | null,
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activePlaylist = playoutData.rundownPlaylist
 	const activeRundown = playoutData.rundownsMap[partInfo.part.rundownId]
@@ -227,10 +228,12 @@ function findObjectsForPart (
 	}
 
 	let allObjs: TimelineObjRundown[] = []
-	partInfo.pieces.forEach(i => {
-		if (i.content && i.content.timelineObjects) {
+	partInfo.pieces.forEach(piece => {
+		if (piece.content && piece.content.timelineObjects) {
+			// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
+			const pieceInstanceId = partInstanceId ? WrapPieceToInstance(piece, partInstanceId)._id : piece._id
 
-			_.each(i.content.timelineObjects, (obj) => {
+			_.each(piece.content.timelineObjects, (obj) => {
 				if (obj) {
 					fixTimelineId(obj)
 					allObjs.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
@@ -238,8 +241,8 @@ function findObjectsForPart (
 						_id: '', // set later
 						studioId: '', // set later
 						objectType: TimelineObjType.RUNDOWN,
-						pieceId: i._id,
-						infinitePieceId: i.infiniteId
+						pieceInstanceId: pieceInstanceId,
+						infinitePieceId: piece.infiniteId
 					}))
 				}
 			})
@@ -310,12 +313,15 @@ function findObjectsForPart (
 				}
 				const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
 
+				// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
+				const pieceInstanceId = partInstanceId ? WrapPieceToInstance(piece, partInstanceId)._id : piece._id
+				
 				res.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
 					...obj,
 					_id: '', // set later
 					studioId: '', // set later
 					objectType: TimelineObjType.RUNDOWN,
-					pieceId: piece._id,
+					pieceInstanceId: pieceInstanceId,
 					infinitePieceId: piece.infiniteId,
 					content: newContent
 				}))
