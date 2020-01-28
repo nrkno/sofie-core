@@ -28,6 +28,7 @@ import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
+import { CSSProperties } from '../../styles/_cssVariables'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -595,7 +596,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps & WithTra
 		const innerPart = this.props.part.instance.part
 
 		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
-		let invalidReasonColorVars: React.CSSProperties | undefined = undefined
+		let invalidReasonColorVars: CSSProperties | undefined = undefined
 		if (innerPart.invalidReason && innerPart.invalidReason.color) {
 			const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
 			if (invalidColor) {
