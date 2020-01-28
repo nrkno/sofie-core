@@ -336,7 +336,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	}
 
 	shouldComponentUpdate (nextProps: WithTiming<IProps>, nextState: IState) {
-		return (!_.isEqual(nextProps, this.props) || !_.isEqual(nextState, this.state))
+		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
 	}
 
 	getLayerStyle () {
