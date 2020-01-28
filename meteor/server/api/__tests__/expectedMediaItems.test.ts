@@ -46,9 +46,9 @@ describe('Expected Media Items', () => {
 			peripheralDeviceId: '',
 			created: 0,
 			modified: 0,
-			currentPartId: '',
-			previousPartId: '',
-			nextPartId: '',
+			currentPartInstanceId: '',
+			previousPartInstanceId: '',
+			nextPartInstanceId: '',
 			active: true
 		})
 

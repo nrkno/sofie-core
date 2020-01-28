@@ -97,8 +97,8 @@ addMigrationSteps('0.25.0', [
 		{
 			rundownId:		'runningOrderId',
 			// segmentId:	'segmentId',
-			partId:			'segmentLineId',
-			pieceId:		'segmentLineItemId',
+			partInstanceId:			'segmentLineId',
+			pieceInstanceId:		'segmentLineItemId',
 		},
 		'migrateDatabaseCollections'
 	),

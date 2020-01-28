@@ -2,6 +2,9 @@ import { testInFiber } from '../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../__mocks__/helpers/database'
 import { getResolvedSegment } from '../Rundown'
 import { RundownPlaylists } from '../collections/RundownPlaylists';
+import { PartInstance, DBPartInstance } from '../collections/PartInstances';
+import * as _ from 'underscore';
+import { literal } from '../lib';
 
 
 describe('lib/Rundown', () => {
@@ -29,6 +32,7 @@ describe('lib/Rundown', () => {
 		)
 		expect(resolvedSegment).toBeTruthy()
 		expect(resolvedSegment.parts).toHaveLength(2)
+		const followingPart = nextSegment.getParts()[0]
 		expect(resolvedSegment).toMatchObject({
 			// segmentExtended: SegmentExtended,
 			// parts: Array<PartExtended>,
@@ -39,7 +43,13 @@ describe('lib/Rundown', () => {
 			hasGuestItems: false,
 			hasAlreadyPlayed: false,
 			autoNextPart: false,
-			followingPart: nextSegment.getParts()[0]
+			followingPart: {
+				instance: {
+					rundownId: followingPart.rundownId,
+					segmentId: followingPart.segmentId,
+					part: followingPart
+				}
+			}
 		})
 		expect(resolvedSegment).toMatchSnapshot()
 	})

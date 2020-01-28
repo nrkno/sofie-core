@@ -32,9 +32,9 @@ describe('test peripheralDevice general API methods', () => {
 			peripheralDeviceId: '',
 			created: 0,
 			modified: 0,
-			currentPartId: null,
-			nextPartId: null,
-			previousPartId: null,
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null,
 			active: true
 		})
 		Rundowns.insert({

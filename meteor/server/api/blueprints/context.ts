@@ -424,8 +424,8 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		let ids: string[] = []
 		if (this.rundownId) ids.push('rundownId: ' + this.rundownId)
 		if (this.asRunEvent.segmentId) ids.push('segmentId: ' + this.asRunEvent.segmentId)
-		if (this.asRunEvent.partId) ids.push('partId: ' + this.asRunEvent.partId)
-		if (this.asRunEvent.pieceId) ids.push('pieceId: ' + this.asRunEvent.pieceId)
+		if (this.asRunEvent.partInstanceId) ids.push('partInstanceId: ' + this.asRunEvent.partInstanceId)
+		if (this.asRunEvent.pieceInstanceId) ids.push('pieceInstanceId: ' + this.asRunEvent.pieceInstanceId)
 		if (this.asRunEvent.timelineObjectId) ids.push('timelineObjectId: ' + this.asRunEvent.timelineObjectId)
 		return ids.join(',')
 	}
