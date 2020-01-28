@@ -213,7 +213,6 @@ export namespace ServerPlayoutAdLibAPI {
 
 			ServerPlayoutAPI.setNextPartInner(rundown, partId)
 		} else {
-			updateSourceLayerInfinitesAfterPart(rundown)
 			cropInfinitesOnLayer(rundown, part, newPiece)
 			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 			updateTimeline(rundown.studioId)
