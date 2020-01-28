@@ -214,7 +214,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	shouldComponentUpdate (nextProps: IProps & ITrackedProps, nextState: IState) {
-		return (_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
+		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
 	}
 
 	componentWillMount () {
