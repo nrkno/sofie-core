@@ -26,6 +26,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset } from '../../utils/positions'
+import { CSSProperties } from '../../styles/_cssVariables'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -443,7 +444,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<Translated<IProp
 		const { t } = this.props
 
 		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.rundown.nextPartId))
-		let invalidReasonColorVars: React.CSSProperties | undefined = undefined
+		let invalidReasonColorVars: CSSProperties | undefined = undefined
 		if (this.props.part.invalidReason && this.props.part.invalidReason.color) {
 			const invalidColor = this.convertHexToRgba(this.props.part.invalidReason.color)
 			if (invalidColor) {
