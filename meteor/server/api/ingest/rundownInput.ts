@@ -637,7 +637,12 @@ function updateSegmentFromIngestData (
 		_id: segmentId,
 		rundownId: rundown._id,
 	})
-	const existingParts = existingSegment && existingSegment.getParts({ dynamicallyInserted: { $ne: true } }) || []
+	// The segment may not yet exist (if it had its id changed), so we need to fetch the old ones manually
+	const existingParts = Parts.find({
+		rundownId: rundown._id,
+		segmentId: segmentId,
+		dynamicallyInserted: { $ne: true }
+	}).fetch()
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
