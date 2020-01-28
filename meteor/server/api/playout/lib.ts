@@ -507,10 +507,12 @@ export function setNextPart (
 		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: null,
-				nextPartManual: !!setManually
+				nextPartManual: !!setManually,
+				nextTimeOffset: null
 			})
 		}))
 		rundownPlaylist.nextPartInstanceId = null
+		rundownPlaylist.nextTimeOffset = null
 		rundownPlaylist.nextPartManual = !!setManually
 	}
 
