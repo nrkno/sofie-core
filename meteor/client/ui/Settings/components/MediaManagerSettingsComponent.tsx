@@ -571,6 +571,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 		})
 	}
 
+  // TODO - add media scanner properties
 	render () {
 		const { t, subDevices } = this.props
 		let settings = this.props.device.settings as MediaManagerDeviceSettings
