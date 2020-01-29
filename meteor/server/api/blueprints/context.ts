@@ -34,7 +34,7 @@ import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
-import { Segment } from '../../../lib/collections/Segments';
+import { Segment } from '../../../lib/collections/Segments'
 
 /** Common */
 

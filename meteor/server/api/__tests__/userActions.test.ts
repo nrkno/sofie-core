@@ -201,12 +201,12 @@ describe('User Actions', () => {
 	})
 
 	testInFiber('Restart Core', () => {
-		jest.useFakeTimers();
+		jest.useFakeTimers()
 
 		// Generate restart token
 		const res = Meteor.call(UserActionAPI.methods.generateRestartToken)
 		expect(res).toMatchObject({ success: 200 })
-		expect(typeof res.result).toBe('string');
+		expect(typeof res.result).toBe('string')
 
 		const mockExit = jest.spyOn(process, 'exit').mockImplementation()
 

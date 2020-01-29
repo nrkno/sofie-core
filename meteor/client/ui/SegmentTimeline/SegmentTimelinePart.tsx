@@ -429,14 +429,14 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	}
 
 	convertHexToRgba = (hexColor: string): { red: number, green: number, blue: number } | undefined => {
-		if (hexColor.substr(0, 1) !== "#") return
+		if (hexColor.substr(0, 1) !== '#') return
 		if (hexColor.length !== 7) return
 
 		const red = parseInt(hexColor.substr(1, 2), 16)
 		const green = parseInt(hexColor.substr(3, 2), 16)
 		const blue = parseInt(hexColor.substr(5, 2), 16)
 
-		return {red, green, blue}
+		return { red, green, blue }
 	}
 
 	render () {

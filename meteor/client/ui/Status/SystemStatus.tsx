@@ -369,7 +369,7 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 			showKillCoreConfirm: false,
 		}
 	}
-	
+
 	onKillCore () {
 		this.setState({
 			showKillCoreConfirm: true
@@ -380,7 +380,7 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 		if (this.state.showKillCoreConfirm) {
 			doUserAction(t, e, UserActionAPI.methods.generateRestartToken, [], (err, res) => {
 				if (err || !res || !res.result) {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))	
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))
 					return
 				}
 
@@ -388,13 +388,13 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 
 				doUserAction(t, {}, UserActionAPI.methods.restartCore, [ restartToken ], (err, res) => {
 					if (err || !res || !res.result) {
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))	
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))
 						return
 					}
-					let time = 'unknown';
+					let time = 'unknown'
 					const match = res.result.match(/([\d\.]+)s/)
 					if (match) {
-						time = match[1] 
+						time = match[1]
 					}
 					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Sofie Automation Server Core will restart in {{time}}s...', { time }), 'SystemStatus'))
 				})
@@ -427,13 +427,13 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 						)}>
 						<div className='value'>
 							<span className='pill device-status__label'>
-								<a href="#" title={(this.props.systemStatus && this.props.systemStatus._internal.messages) ? this.props.systemStatus._internal.messages.join('\n') : undefined}>{this.props.systemStatus && this.props.systemStatus.status}</a>
+								<a href='#' title={(this.props.systemStatus && this.props.systemStatus._internal.messages) ? this.props.systemStatus._internal.messages.join('\n') : undefined}>{this.props.systemStatus && this.props.systemStatus.status}</a>
 							</span>
 						</div>
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<div className='value'>{t('Sofie Automation Server Core: {{name}}', {name: this.props.coreSystem.name || 'unnamed'})}</div>
+					<div className='value'>{t('Sofie Automation Server Core: {{name}}', { name: this.props.coreSystem.name || 'unnamed' })}</div>
 				</div>
 				<div className='device-item__version'>
 					<label>{t('Version')}: </label>
@@ -449,7 +449,7 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 							show={!!this.state.showKillCoreConfirm}
 							onAccept={(e) => this.handleConfirmKillAccept(e)}
 							onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-							<p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', {name: this.props.coreSystem.name || 'unnamed'})}</p>
+							<p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', { name: this.props.coreSystem.name || 'unnamed' })}</p>
 						</ModalDialog>
 						<button className='btn btn-secondary' onClick={
 							(e) => {
@@ -506,7 +506,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 	componentDidMount () {
 		this.refreshSystemStatus()
-		this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)		
+		this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
 
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})

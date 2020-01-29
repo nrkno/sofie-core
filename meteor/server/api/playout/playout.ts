@@ -924,17 +924,17 @@ export namespace ServerPlayoutAPI {
 								},
 								_id: { $ne: playingPart._id }
 							})
-	
+
 							let nextPart: Part | null = partsAfter[0] || null
-	
+
 							setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-	
+
 							const rundownChange = {
 								previousPartId: null,
 								currentPartId: playingPart._id,
 								lastIncorrectPartPlaybackReported: Date.now() // save the time to prevent the system to go in a loop
 							}
-	
+
 							Rundowns.update(rundown._id, {
 								$set: rundownChange
 							})

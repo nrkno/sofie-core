@@ -38,7 +38,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
-import { getAllowSpeaking } from '../../lib/localStorage';
+import { getAllowSpeaking } from '../../lib/localStorage'
 
 interface IProps {
 	id: string

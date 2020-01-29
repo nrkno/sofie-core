@@ -497,8 +497,9 @@ export function generateRestartToken () {
 export function restartCore (token: string) {
 	check(token, String)
 
-	if (token !== getHash(UserActionAPI.RESTART_SALT + restartToken))
+	if (token !== getHash(UserActionAPI.RESTART_SALT + restartToken)) {
 		throw new Meteor.Error(401, `Restart token is invalid`)
+	}
 
 	setTimeout(() => {
 		process.exit(0)

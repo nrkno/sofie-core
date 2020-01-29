@@ -219,7 +219,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		this.onRefreshTimer()
 
-		window['rundownTimingContext'] = this.durations 
+		window['rundownTimingContext'] = this.durations
 	}
 
 	componentDidUpdate (prevProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -655,8 +655,8 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 
 	render () {
 		const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
-		return (<span className={ClassNames(this.props.className, 
-				!!(Math.floor((displayTimecode || 0) / 1000) > 0) ? this.props.heavyClassName : undefined
+		return (<span className={ClassNames(this.props.className,
+				(Math.floor((displayTimecode || 0) / 1000) > 0) ? this.props.heavyClassName : undefined
 			)}>{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>)
 	}
 
@@ -689,7 +689,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 			// if (displayTime === 0 && prevDisplayTime !== undefined) {
 			// 	text = 'Zero'
 			// }
-			
+
 			if (text) {
 				SpeechSynthesiser.speak(text, 'countdown')
 			}
