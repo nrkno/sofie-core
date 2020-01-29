@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
-import { Rundowns } from './Rundowns'
+import { Rundowns, Rundown } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { AdLibPieces } from './AdLibPieces'
 import { Segments } from './Segments'
@@ -17,6 +17,8 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
 import { createMongoCollection } from './lib'
+import { Studio } from './Studios'
+import { ShowStyleBase } from './ShowStyleBases'
 
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends IBlueprintPartDB {
@@ -231,6 +233,35 @@ export class Part implements DBPart {
 				}
 			})
 		}
+		return notes
+	}
+	getMinimumReactiveNotes (rundown: Rundown, studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
+		let notes: Array<PartNote> = []
+		notes = notes.concat(this.notes || [])
+
+		const pieces = this.getPieces()
+		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+		_.each(pieces, (piece) => {
+			// TODO: check statuses (like media availability) here
+
+			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
+				const part = partLookup[piece.sourceLayerId]
+				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
+				if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
+					notes.push({
+						type: NoteType.WARNING,
+						origin: {
+							name: 'Media Check',
+							rundownId: this.rundownId,
+							segmentId: this.segmentId,
+							partId: this._id,
+							pieceId: piece._id
+						},
+						message: st.message || ''
+					})
+				}
+			}
+		})
 		return notes
 	}
 	getLastTake () {
