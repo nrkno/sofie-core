@@ -40,13 +40,13 @@ export interface PieceResolved extends Piece {
  * Returns a list of the pieces in a Part, ordered in the order they will be played
  * @param part
  */
-export function getOrderedPiece (part: Part): Array<PieceResolved> {
-	const pieces = part.getAllPieces()
+export function getOrderedPiece (part: Part, allPieces?: Piece[]): Array<PieceResolved> {
+	const pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
 	const now = getCurrentTime()
 	const partStarted = part.getLastStartedPlayback()
 
-	const itemMap: { [key: string]: Piece } = {}
-	pieces.forEach(i => itemMap[i._id] = i)
+	const pieceMap: { [key: string]: Piece } = {}
+	pieces.forEach(i => pieceMap[i._id] = i)
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
 		const obj = clone(createPieceGroup(piece))
@@ -65,7 +65,6 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 
 		return obj
 	})
-
 	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
 		time: 0
 	})
@@ -76,7 +75,7 @@ export function getOrderedPiece (part: Part): Array<PieceResolved> {
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
 		const pieceId = (obj.metadata || {}).pieceId
-		const piece = _.clone(itemMap[pieceId]) as PieceResolved
+		const piece = _.clone(pieceMap[pieceId]) as PieceResolved
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			piece.resolvedStart = obj0.resolved.instances[0].start || 0
 			piece.resolved = true
@@ -170,9 +169,9 @@ export function createPieceGroup (
 		}
 	})
 }
-export function getResolvedPieces (part: Part): Piece[] {
+export function getResolvedPieces (part: Part, allPieces?: Piece[]): Piece[] {
 	// TODO - was this mangled for endState and could it have broken something else?
-	const pieces = part.getAllPieces()
+	const pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(piece => itemMap[piece._id] = piece)

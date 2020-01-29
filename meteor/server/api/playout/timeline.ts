@@ -102,18 +102,6 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 
 	let ps: Promise<any>[] = []
 
-	if (activeRundown) {
-		 // remove anything not related to active rundown
-		ps.push(caught(asyncCollectionRemove(Timeline, {
-			studioId: studio._id,
-			rundownId: {
-				$not: {
-					$eq: activeRundown._id
-				}
-			}
-		})))
-	}
-
 	ps.push(caught(getTimelineRundown(studio, activeRundownData).then(applyTimelineObjs)))
 	ps.push(caught(getTimelineRecording(studio).then(applyTimelineObjs)))
 
@@ -127,8 +115,8 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	let savedTimelineObjs: TimelineObjGeneric[] = []
-	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
+	let savedTimelineObjsHashes: TimelineObjHash[] = []
+	const changes = saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
 		studioId: studio._id,
 		objectType: { $ne: TimelineObjType.STAT }
 	}, timelineObjs, {
@@ -138,18 +126,19 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
 				o.enable.start = oldO.enable.start
 				o.enable.setFromNow = true
 			}
-			savedTimelineObjs.push(o)
+			savedTimelineObjsHashes.push(prepareTimelineObjectHash(o))
 			return o
 		},
 		afterInsert: (o: TimelineObjGeneric) => {
-			savedTimelineObjs.push(o)
+			savedTimelineObjsHashes.push(prepareTimelineObjectHash(o))
 		},
 		unchanged: (o: TimelineObjGeneric) => {
-			savedTimelineObjs.push(o)
+			savedTimelineObjsHashes.push(prepareTimelineObjectHash(o))
 		}
 	})
 
-	afterUpdateTimeline(studio, savedTimelineObjs)
+	afterUpdateTimeline(studio, savedTimelineObjsHashes)
+
 
 	logger.debug('updateTimeline done!')
 })
@@ -158,16 +147,13 @@ export const updateTimeline: (studioId: string, forceNowToTime?: Time, activeRun
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioId id of the studio to update
  */
-export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<TimelineObjGeneric>) {
-
-	// logger.info('afterUpdateTimeline')
+export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<TimelineObjGeneric | TimelineObjHash>) {
 	if (!timelineObjs) {
 		timelineObjs = Timeline.find({
 			studioId: studio._id,
 			objectType: { $ne: TimelineObjType.STAT }
 		}).fetch()
 	}
-
 	// Number of objects
 	let objCount = timelineObjs.length
 	// Hash of all objects
@@ -176,7 +162,11 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 		if (a._id > b._id) return -1
 		return 0
 	})
-	let objHash = getHash(stringifyObjects(timelineObjs))
+
+	const timelineObjHashes: string[] = _.map(timelineObjs, o => {
+		return prepareTimelineObjectHash(o).objHash
+	})
+	let objHash = getHash(stringifyObjects(timelineObjHashes))
 
 	// save into "magic object":
 	let statObj: TimelineObjStat = {
@@ -196,7 +186,17 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 	}
 	statObj._id = getTimelineId(statObj)
 
+
 	waitForPromise(asyncCollectionUpsert(Timeline, statObj._id, { $set: statObj }))
+}
+interface TimelineObjHash {
+	_id: string
+	objHash: string
+}
+function prepareTimelineObjectHash (timelineObj: TimelineObjGeneric | TimelineObjHash): TimelineObjHash {
+	// @ts-ignore
+	if (timelineObj.objHash) return timelineObj // is already an objectHash
+	return { _id: timelineObj._id, objHash: stringifyObjects(timelineObj) }
 }
 function getActiveRundown (studioId: string): Promise<Rundown | undefined> {
 	return asyncCollectionFindOne(Rundowns, {

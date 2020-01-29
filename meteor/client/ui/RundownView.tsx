@@ -1316,14 +1316,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		} else if (this.props.rundown &&
 			prevProps.rundown && !prevProps.rundown.active && this.props.rundown.active &&
 			this.props.rundown.nextPartId) {
-			scrollToPart(this.props.rundown.nextPartId).catch(() => console.error)
+			const partId = this.props.rundown.nextPartId
+			setTimeout(() => {
+				scrollToPart(partId).catch(() => console.error)
+			}, Settings.defaultToCollapsedSegments ? 750 : 0)
 		} else if (
 			// after take
 			(this.props.rundown &&
 			prevProps.rundown && this.props.rundown.currentPartId !== prevProps.rundown.currentPartId &&
 			this.props.rundown.currentPartId && this.state.followLiveSegments)
 		) {
-			scrollToPart(this.props.rundown.currentPartId, true).catch(() => console.error)
+			const partId = this.props.rundown.currentPartId
+			setTimeout(() => {
+				scrollToPart(partId, true).catch(() => console.error)
+			}, Settings.defaultToCollapsedSegments ? 750 : 0)
 		} else if (
 			// initial Rundown open
 			(this.props.rundown && this.props.rundown.currentPartId &&
