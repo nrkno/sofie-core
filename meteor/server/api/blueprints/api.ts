@@ -54,7 +54,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 	check(body, String)
 	check(blueprintName, Match.Maybe(String))
 
-	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
+	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) {
 		throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)

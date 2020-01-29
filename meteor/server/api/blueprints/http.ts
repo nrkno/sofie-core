@@ -75,7 +75,7 @@ postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: S
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 		}
 
-		logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
+		if (!Meteor.isTest) logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
 
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
