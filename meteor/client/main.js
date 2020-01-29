@@ -7,7 +7,7 @@ import { i18nInstance } from './ui/i18n.js';
 
 import App from './ui/App.js';
 
-if (!Meteor.isProduction) {
+if (!Meteor.isProduction && Meteor.settings.public.whyDidYouRender === true) {
   const whyDidYouRender = require('@welldone-software/why-did-you-render/dist/no-classes-transpile/umd/whyDidYouRender.min.js');
   whyDidYouRender(React);
 }
