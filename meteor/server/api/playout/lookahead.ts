@@ -7,7 +7,8 @@ import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType 
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
-import { clone, literal } from '../../../lib/lib'
+import { clone, literal, getCurrentTime } from '../../../lib/lib'
+import { logger } from '../../../lib/logging'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -304,6 +305,9 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 	startingPartOnLayer.pieces.forEach(i => {
 		if (i.content && i.content.timelineObjects) {
 
+			// Skip pieces which have definitelyEnded, as they will not be present on the timeline
+			if (i.definitelyEnded && i.definitelyEnded < getCurrentTime()) return
+
 			_.each(i.content.timelineObjects, (obj) => {
 				if (obj) {
 					fixTimelineId(obj)
@@ -328,7 +332,15 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 	}
 	if (allObjs.length > 1) {
 		if (startingPartOnLayer.part) {
-			const orderedItems = getOrderedPiece(startingPartOnLayer.part)
+			const orderedItems = getOrderedPiece(startingPartOnLayer.part).filter(p => {
+				// Unresolved pieces mean that references to #piece.start will be not resolve causing the lookaheads to be alive forever
+				if (!p.resolved) {
+					logger.info(`lookahead dropping piece with identical start & end times ${p._id}`)
+					return false
+				}
+				// Skip pieces which have definitelyEnded, as they will not be present on the timeline
+				return !(p.definitelyEnded && p.definitelyEnded < getCurrentTime())
+			})
 
 			let allowTransition = false
 			let classesFromPreviousPart: string[] = []
