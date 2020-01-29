@@ -163,7 +163,7 @@ function workStepStatusLabel (t: TFunc, step: MediaWorkFlowStep): string {
 	}
 }
 
-const MediaManagerWorkFlowItem: React.SFC<IItemProps & WithTranslation> = (props: IItemProps & WithTranslation) => {
+const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & WithTranslation> = (props: IItemProps & WithTranslation) => {
 	const i = props.item
 	const t = props.t
 

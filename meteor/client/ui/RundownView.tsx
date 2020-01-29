@@ -198,7 +198,7 @@ const WarningDisplay = withTranslation()(timer(5000)(
 			</ModalDialog>
 		}
 	}
-) as React.StatelessComponent<Translated<ITimingWarningProps>>)
+) as React.FunctionComponent<Translated<ITimingWarningProps>>)
 
 interface ITimingDisplayProps {
 	rundown: Rundown

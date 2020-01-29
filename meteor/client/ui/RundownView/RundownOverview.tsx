@@ -40,7 +40,7 @@ interface TimeMap {
 	[key: string]: number
 }
 
-const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
+const PartOverview: React.FunctionComponent<IPartPropsHeader> = (props: IPartPropsHeader) => {
 	return (
 		<ErrorBoundary>
 			<div className={ClassNames('rundown__overview__segment__part', {
@@ -70,7 +70,7 @@ const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
 	)
 }
 
-const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
+const SegmentOverview: React.FunctionComponent<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
 	const segmentDuration = props.segmentLiveDurations ? props.segment.items.map((i) => props.segmentLiveDurations[i._id]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
 
 	return props.segment.items && (
