@@ -7,6 +7,7 @@ try {
 		throw Error(`
 Note: When you get the "Missing binary"-error when running in Jest
 be sure you have run npm install (so that the postInstall script has run)
+and that you ran npm install with the correct Node version
 
 Original error:
 ${e.toString()}`
