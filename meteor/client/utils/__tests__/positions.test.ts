@@ -1,14 +1,18 @@
 import { getElementDocumentOffset } from '../positions'
 
 describe('getElementDocumentOffset', () => {
-	const emptyRect: ClientRect = {
+	// const emptyRect = new DOMRect(0, 0, 0, 0)
+	const emptyRect = {
+		x: 0,
+		y: 0,
 		top: 0,
 		left: 0,
 		bottom: 0,
 		right: 0,
 		height: 0,
-		width: 0
-	}
+		width: 0,
+		toJSON: () => ''
+	} as DOMRect // Not using the class DOMRect because for unknown reasons, it does not exist in jest / jsdom
 
 	test('should return null for null input', () => {
 		const actual = getElementDocumentOffset(null)
@@ -21,7 +25,7 @@ describe('getElementDocumentOffset', () => {
 		test('should be 0 when bounding client rect top is 0 and window.scrollY is 0', () => {
 			Object.defineProperty(window, 'scrollY', { value: 0 })
 			const container = document.createElement('div')
-			container.getBoundingClientRect = (): ClientRect => {
+			container.getBoundingClientRect = (): DOMRect => {
 				return Object.assign({}, emptyRect, { top: 0 })
 			}
 
@@ -33,7 +37,7 @@ describe('getElementDocumentOffset', () => {
 		test('should be 20 when bounding client rect top is 20 and window.scrollY is 0', () => {
 			Object.defineProperty(window, 'scrollY', { value: 0 })
 			const container = document.createElement('div')
-			container.getBoundingClientRect = (): ClientRect => {
+			container.getBoundingClientRect = (): DOMRect => {
 				return Object.assign({}, emptyRect, { top: 20 })
 			}
 
@@ -45,7 +49,7 @@ describe('getElementDocumentOffset', () => {
 		test('should be 31 when bounding client rect top is 10 and window.scrollY is 21', () => {
 			Object.defineProperty(window, 'scrollY', { value: 21 })
 			const container = document.createElement('div')
-			container.getBoundingClientRect = (): ClientRect => {
+			container.getBoundingClientRect = (): DOMRect => {
 				return Object.assign({}, emptyRect, { top: 10 })
 			}
 
@@ -59,7 +63,7 @@ describe('getElementDocumentOffset', () => {
 		test('should be 0 when bounding client rect left is 0 and window.scrollX is 0', () => {
 			Object.defineProperty(window, 'scrollY', { value: 0 })
 			const container = document.createElement('div')
-			container.getBoundingClientRect = (): ClientRect => {
+			container.getBoundingClientRect = (): DOMRect => {
 				return Object.assign({}, emptyRect, { left: 0 })
 			}
 
@@ -71,7 +75,7 @@ describe('getElementDocumentOffset', () => {
 		test('should be 18 when bounding client rect left is 18 and window.scrollX is 0', () => {
 			Object.defineProperty(window, 'scrollX', { value: 0 })
 			const container = document.createElement('div')
-			container.getBoundingClientRect = (): ClientRect => {
+			container.getBoundingClientRect = (): DOMRect => {
 				return Object.assign({}, emptyRect, { left: 18 })
 			}
 
@@ -83,7 +87,7 @@ describe('getElementDocumentOffset', () => {
 		test('should be 42 when bounding client rect left is 2 and window.scrollX is 40', () => {
 			Object.defineProperty(window, 'scrollX', { value: 40 })
 			const container = document.createElement('div')
-			container.getBoundingClientRect = (): ClientRect => {
+			container.getBoundingClientRect = (): DOMRect => {
 				return Object.assign({}, emptyRect, { left: 2 })
 			}
 
