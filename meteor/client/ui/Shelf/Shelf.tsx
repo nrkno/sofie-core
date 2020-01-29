@@ -32,6 +32,7 @@ export enum ShelfTabs {
 	SYSTEM_HOTKEYS = 'system_hotkeys'
 }
 export interface ShelfProps {
+	ref: (shelf: ShelfBase | null) => void
 	isExpanded: boolean
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
