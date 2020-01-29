@@ -20,7 +20,7 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
@@ -405,18 +405,31 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 		prospectivePieces = Pieces.find({
 			rundownId: rundownId,
 			partId: currentPartId,
-			startedPlayback: {
-				$exists: true
-			},
-			$or: [{
-				stoppedPlayback: {
-					$eq: 0
+			$and: [
+				{
+					$or: [
+						{
+							startedPlayback: {
+								$exists: true
+							},
+						},
+						{
+							dynamicallyInserted: true
+						}
+					]
+				},
+				{
+					$or: [{
+						stoppedPlayback: {
+							$eq: 0
+						}
+					}, {
+						stoppedPlayback: {
+							$exists: false
+						}
+					}],
 				}
-			}, {
-				stoppedPlayback: {
-					$exists: false
-				}
-			}],
+			],
 			playoutDuration: {
 				$exists: false
 			},
@@ -446,6 +459,10 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 				} else {
 					return false
 				}
+			}
+
+			if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
+				return true
 			}
 			return true
 		})
