@@ -488,18 +488,17 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 function startupMessage () {
 	if (!Meteor.isTest) {
 		console.log('process started') // This is a message all Sofie processes log upon startup
+
+		logger.info(`Core starting up`)
+		logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
+
+		logger.info(`Core package version: "${PackageInfo.versionExtended || PackageInfo.version}"`)
+
+		const versions = getRelevantSystemVersions()
+		_.each(versions, (version, name) => {
+			logger.info(`Core package ${name} version: "${version}"`)
+		})
 	}
-
-	logger.info(`Core starting up`)
-	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
-
-	logger.info(`Core package version: "${PackageInfo.versionExtended || PackageInfo.version}"`)
-
-	const versions = getRelevantSystemVersions()
-	_.each(versions, (version, name) => {
-		logger.info(`Core package ${name} version: "${version}"`)
-	})
-
 }
 
 Meteor.startup(() => {
