@@ -18,6 +18,7 @@ jest.mock('meteor/meteorhacks:picker',		require('./meteorhacks-picker').setup,		
 jest.mock('meteor/mdg:validated-method',	require('./validated-method').setup,		{ virtual: true })
 
 jest.mock('meteor/mongo',					require('./mongo').setup,				    { virtual: true })
+jest.mock('moment',							require('./moment').setup,				    { virtual: true })
 
 jest.mock('../server/api/integration/slack', require('./slack').setup, { virtual: true })
 jest.mock('../server/api/integration/soap', require('./soap').setup, { virtual: true })
