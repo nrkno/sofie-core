@@ -33,6 +33,7 @@ import { Studios, DBStudio } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { isInFiber } from '../../__mocks__/Fibers'
+import { waitTime } from '../codeControl'
 
 describe('Basic test of test environment', () => {
 
@@ -55,6 +56,11 @@ describe('Basic test of test environment', () => {
 			})
 		})
 		expect(waitForPromise(p)).toEqual('a')
+
+		const start = Date.now()
+		waitTime(100)
+		expect(Date.now() - start).toBeGreaterThanOrEqual(100)
+
 	})
 	test('Test Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']
