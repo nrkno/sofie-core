@@ -325,12 +325,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			let virtualStartedPlayback = lastStartedPlayback || lastTake
 			if (this.props.currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
 				isExpectedToPlay = true
-
-
 				
 				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
 					if (virtualStartedPlayback! < lastStartedPlayback) {
+						console.log(simulationPercentage)
 						virtualStartedPlayback = (simulationPercentage * lastStartedPlayback) + ((1 - simulationPercentage) * lastTake)
 					}
 				}
@@ -345,7 +344,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				livePosition: newLivePosition
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
-			} : null, simulationPercentage !== undefined && simulationPercentage < 1 ? {
+			} : null, lastStartedPlayback && simulationPercentage < 1 ? {
 				playbackSimulationPercentage: Math.min(simulationPercentage + 0.08, 1)
 			} : null))
 		}
