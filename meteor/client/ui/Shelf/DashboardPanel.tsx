@@ -142,22 +142,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 			rundownId: this.props.rundown._id
 		})
 		this.subscribe(PubSub.pieces, {
-			rundownId: this.props.rundown._id,
-			startedPlayback: {
-				$exists: true
-			},
-			adLibSourceId: {
-				$exists: true
-			},
-			$or: [{
-				stoppedPlayback: {
-					$eq: 0
-				}
-			}, {
-				stoppedPlayback: {
-					$exists: false
-				}
-			}]
+			rundownId: this.props.rundown._id
 		})
 		this.subscribe(PubSub.adLibPieces, {
 			rundownId: this.props.rundown._id
@@ -405,31 +390,20 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 		prospectivePieces = Pieces.find({
 			rundownId: rundownId,
 			partId: currentPartId,
-			$and: [
-				{
-					$or: [
-						{
-							startedPlayback: {
-								$exists: true
-							},
-						},
-						{
-							dynamicallyInserted: true
-						}
-					]
-				},
-				{
-					$or: [{
-						stoppedPlayback: {
-							$eq: 0
-						}
-					}, {
-						stoppedPlayback: {
-							$exists: false
-						}
-					}],
+			dynamicallyInserted: true,
+			$or: [{
+				stoppedPlayback: {
+					$eq: 0
 				}
-			],
+			}, {
+				stoppedPlayback: {
+					$exists: false
+				}
+			}, {
+				definitelyEnded: {
+					$exists: false
+				}
+			}],
 			playoutDuration: {
 				$exists: false
 			},
@@ -440,6 +414,10 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((piece) => {
+			if (piece.definitelyEnded) return false
+			if (piece.startedPlayback === undefined && piece.continuesRefId === undefined) return false
+			if (piece.stoppedPlayback) return false
+
 			let duration: number | undefined =
 				(piece.playoutDuration) ?
 					piece.playoutDuration :
@@ -452,7 +430,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 					undefined
 
 			if (duration !== undefined) {
-				const end = (piece.startedPlayback! + duration)
+				const end = ((piece.startedPlayback || 0) + duration)
 				if (end > now) {
 					nearestEnd = nearestEnd > end ? end : nearestEnd
 					return true
