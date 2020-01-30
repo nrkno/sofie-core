@@ -26,6 +26,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { Settings } from '../../../lib/Settings'
 
 const SPEAK_ADVANCE = 500
+export const SIMULATED_PLAYBACK_MARGIN = 2000
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -119,7 +120,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let o = getResolvedSegment(props.showStyleBase, props.rundown, segment)
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part) => {
-		notes = notes.concat(part.getNotes(true))
+		notes = notes.concat(part.getMinimumReactiveNotes(props.rundown, props.studio, props.showStyleBase))
 	})
 	notes = notes.concat(segment.notes || [])
 
@@ -232,6 +233,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		this.isLiveSegment = props.isLiveSegment || false
 		this.isVisible = false
+	}
+
+	shouldComponentUpdate (nextProps: IProps & ITrackedProps, nextState: IState) {
+		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
 	}
 
 	componentWillMount () {
@@ -390,10 +395,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					- this.context.durations.partDisplayStartsAt[this.props.parts[0]._id])
 				|| 0
 
-			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
+			let isExpectedToPlay: boolean = this.props.currentLivePart.startedPlayback || false
+			const lastTake = this.props.currentLivePart.getLastTake()
+			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback() || lastTake
+			if (this.props.currentLivePart.taken && lastTake && (lastTake + SIMULATED_PLAYBACK_MARGIN > e.detail.currentTime)) {
+				isExpectedToPlay = true
+			}
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
-			let newLivePosition = this.props.currentLivePart.startedPlayback && lastStartedPlayback ?
+			let newLivePosition = (isExpectedToPlay) && lastStartedPlayback ?
 				(e.detail.currentTime - lastStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
@@ -518,6 +528,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
+	onZoomChange = (e: any, newScale: number) => {
+		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
+	}
+
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
@@ -552,7 +566,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
 				onShowEntireSegment={this.onShowEntireSegment}
-				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
+				onZoomChange={this.onZoomChange}
 				onScroll={this.onScroll}
 				followingPart={this.props.followingPart}
 				isLastSegment={this.props.isLastSegment}
