@@ -231,7 +231,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			livePosition: 0,
 			displayTimecode: 0,
 			autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
-			playbackSimulationPercentage: 1
+			playbackSimulationPercentage: 0
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -392,7 +392,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
-			const simulationPercentage = this.state.playbackSimulationPercentage
+			let simulationPercentage = this.state.playbackSimulationPercentage
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
 				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
@@ -405,6 +405,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			let virtualStartedPlayback = lastStartedPlayback || lastTake
 			if (this.props.currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
 				isExpectedToPlay = true
+
+
 				
 				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
@@ -431,7 +433,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 					(onAirPartDuration * -1)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
-			} : null, simulationPercentage < 1 ? {
+			} : null, simulationPercentage !== undefined && simulationPercentage < 1 ? {
 				playbackSimulationPercentage: Math.min(simulationPercentage + 0.08, 1)
 			} : null))
 		}
