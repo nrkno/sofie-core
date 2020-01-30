@@ -14,7 +14,7 @@ import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { Parts } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds } from './lib'
 import { convertAdLibToPiece, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
-import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
+import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer, updateSourceLayerInfinitesAfterPart } from './infinites'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
@@ -213,6 +213,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 			ServerPlayoutAPI.setNextPartInner(rundown, partId)
 		} else {
+			updateSourceLayerInfinitesAfterPart(rundown)
 			cropInfinitesOnLayer(rundown, part, newPiece)
 			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
 			updateTimeline(rundown.studioId)
