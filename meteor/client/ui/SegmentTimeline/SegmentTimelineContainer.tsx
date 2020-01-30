@@ -26,8 +26,8 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { literal } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
-export const SIMULATED_PLAYBACK_SOFT_MARGIN = 1500
-export const SIMULATED_PLAYBACK_HARD_MARGIN = 2000
+export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
+export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 import { Settings } from '../../../lib/Settings'
 
 export interface SegmentUi extends Segment {
@@ -81,6 +81,7 @@ interface IState {
 	collapsed: boolean,
 	followLiveLine: boolean,
 	livePosition: number
+	playbackSimulationPercentage: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
@@ -207,7 +208,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
-			livePosition: 0
+			livePosition: 0,
+			playbackSimulationPercentage: 1
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -310,6 +312,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
+			const simulationPercentage = this.state.playbackSimulationPercentage
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
 				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
@@ -320,13 +323,14 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			const lastTake = this.props.currentLivePart.getLastTake()
 			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
 			let virtualStartedPlayback = lastStartedPlayback || lastTake
-			if (this.props.currentLivePart.taken && lastTake && (lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime)) {
+			if (this.props.currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
 				isExpectedToPlay = true
 				
 				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
-					const percentage = Math.min((e.detail.currentTime - lastTake) / (SIMULATED_PLAYBACK_HARD_MARGIN - SIMULATED_PLAYBACK_SOFT_MARGIN), 1)
-					virtualStartedPlayback = (percentage * lastStartedPlayback) + ((1 - percentage) * lastTake)
+					if (virtualStartedPlayback! < lastStartedPlayback) {
+						virtualStartedPlayback = (simulationPercentage * lastStartedPlayback) + ((1 - simulationPercentage) * lastTake)
+					}
 				}
 			}
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
@@ -339,6 +343,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				livePosition: newLivePosition
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
+			} : null, simulationPercentage < 1 ? {
+				playbackSimulationPercentage: Math.min(simulationPercentage + 0.08, 1)
 			} : null))
 		}
 	}
