@@ -26,7 +26,8 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { literal } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
-export const SIMULATED_PLAYBACK_MARGIN = 2000
+export const SIMULATED_PLAYBACK_SOFT_MARGIN = 1500
+export const SIMULATED_PLAYBACK_HARD_MARGIN = 2000
 import { Settings } from '../../../lib/Settings'
 
 export interface SegmentUi extends Segment {
@@ -317,14 +318,21 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 			let isExpectedToPlay: boolean = this.props.currentLivePart.startedPlayback || false
 			const lastTake = this.props.currentLivePart.getLastTake()
-			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback() || lastTake
-			if (this.props.currentLivePart.taken && lastTake && (lastTake + SIMULATED_PLAYBACK_MARGIN > e.detail.currentTime)) {
+			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
+			let virtualStartedPlayback = lastStartedPlayback || lastTake
+			if (this.props.currentLivePart.taken && lastTake && (lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime)) {
 				isExpectedToPlay = true
+				
+				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
+				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
+					const percentage = Math.min((e.detail.currentTime - lastTake) / (SIMULATED_PLAYBACK_HARD_MARGIN - SIMULATED_PLAYBACK_SOFT_MARGIN), 1)
+					virtualStartedPlayback = (percentage * lastStartedPlayback) + ((1 - percentage) * lastTake)
+				}
 			}
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
-			let newLivePosition = (isExpectedToPlay) && lastStartedPlayback ?
-				(e.detail.currentTime - lastStartedPlayback + partOffset) :
+			let newLivePosition = (isExpectedToPlay) && virtualStartedPlayback ?
+				(e.detail.currentTime - virtualStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
 			this.setState(_.extend({
