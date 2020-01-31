@@ -28,6 +28,7 @@ import { literal } from '../../../lib/lib'
 const SPEAK_ADVANCE = 500
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
+const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 import { Settings } from '../../../lib/Settings'
 
 export interface SegmentUi extends Segment {
@@ -81,7 +82,6 @@ interface IState {
 	collapsed: boolean,
 	followLiveLine: boolean,
 	livePosition: number
-	playbackSimulationPercentage: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
@@ -199,6 +199,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	timelineDiv: HTMLDivElement
 	intersectionObserver: IntersectionObserver | undefined
 	mountedTime: number
+	playbackSimulationPercentage: number = 0
+
 
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
@@ -208,8 +210,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			collapsed: UIStateStorage.getItemBoolean(`rundownView.${this.props.rundown._id}`, `segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
-			livePosition: 0,
-			playbackSimulationPercentage: 0
+			livePosition: 0
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -245,8 +246,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		})
 	}
 
-	componentDidUpdate (prevProps) {
+	componentDidUpdate (prevProps: IProps & ITrackedProps) {
+		if (this.rundownCurrentSegmentId !== this.props.rundown.currentPartId) {
+			this.playbackSimulationPercentage = 0
+		}
+
 		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
+		
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -312,7 +318,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
-			let simulationPercentage = this.state.playbackSimulationPercentage
+			let simulationPercentage = this.playbackSimulationPercentage
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
 				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
@@ -325,11 +331,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			let virtualStartedPlayback = lastStartedPlayback || lastTake
 			if (this.props.currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
 				isExpectedToPlay = true
+				// console.log('Simulated playback')
 				
 				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
-					if (virtualStartedPlayback! < lastStartedPlayback) {
-						console.log(simulationPercentage)
+					// console.log('Within crossfade range', virtualStartedPlayback, lastStartedPlayback, simulationPercentage)
+					if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
+						// console.log(simulationPercentage)
 						virtualStartedPlayback = (simulationPercentage * lastStartedPlayback) + ((1 - simulationPercentage) * lastTake)
 					}
 				}
@@ -340,12 +348,14 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				(e.detail.currentTime - virtualStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
+			if (lastStartedPlayback && simulationPercentage < 1) {
+				this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
+			}
+
 			this.setState(_.extend({
 				livePosition: newLivePosition
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
-			} : null, lastStartedPlayback && simulationPercentage < 1 ? {
-				playbackSimulationPercentage: Math.min(simulationPercentage + 0.08, 1)
 			} : null))
 		}
 	}
