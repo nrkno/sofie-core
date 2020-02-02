@@ -426,7 +426,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 
-	onZoomChange = (e: any, newScale: number) => {
+	onZoomChange = (newScale: number, e: any) => {
 		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
 	}
 
