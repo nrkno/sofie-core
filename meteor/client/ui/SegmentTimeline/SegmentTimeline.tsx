@@ -199,11 +199,11 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					</div>
 					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.timelineWidth / this.props.timeScale}
-						onScroll={(left, e) => this.props.onScroll(left, e)}
+						onScroll={this.props.onScroll}
 						segmentDuration={this.getSegmentDuration()}
 						liveLineHistorySize={this.props.liveLineHistorySize}
 						timeScale={this.props.timeScale}
-						onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
+						onZoomChange={this.props.onZoomChange} />
 					{this.renderMiniLiveLine()}
 				</div>
 			</div>
