@@ -112,6 +112,7 @@
     "@types/sinon": "^7.0.12",
     "@types/winston": "^2.3.9",
     "@types/xml2json": "^0.11.0",
+    "@welldone-software/why-did-you-render": "^3.5.0",
     "codecov": "^3.5.0",
     "ejson": "^2.2.0",
     "fibers": "^3.1.1",
