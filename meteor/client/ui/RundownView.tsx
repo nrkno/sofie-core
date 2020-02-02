@@ -61,6 +61,8 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
+import { Settings } from '../../lib/Settings'
+import { PointerLockCursor } from '../lib/PointerLockCursor'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1908,6 +1910,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 								}
 							</ErrorBoundary>
 							{this.renderSegmentsList()}
+							<ErrorBoundary>
+								<PointerLockCursor />
+							</ErrorBoundary>
 							<ErrorBoundary>
 								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
 									rundown={this.props.rundown}

@@ -25,6 +25,8 @@ export interface ISettings {
 	autoExpandCurrentNextSegment: boolean
 	// Default timeScale for the segment timeline
 	defaultTimeScale: number
+	// Allow grabbing the entire timeline
+	allowGrabbingTimeline: boolean
 }
 
 export let Settings: ISettings
@@ -37,7 +39,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	'defaultToCollapsedSegments': false,
 	'autoExpandCurrentNextSegment': false,
 	'autoRewindLeavingSegment': false,
-	'defaultTimeScale': 1
+	'defaultTimeScale': 1,
+	'allowGrabbingTimeline': true
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
