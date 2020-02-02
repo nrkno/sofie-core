@@ -578,7 +578,7 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 		}
 	}
 
-	onZoomChange = (e: any, newScale: number) => {
+	onZoomChange = (newScale: number, e: any) => {
 		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
 	}
 
