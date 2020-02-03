@@ -286,6 +286,11 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(piece => itemMap[piece._id] = piece)
+	pieces.forEach(piece => {
+		if (piece.infiniteId && !Object.keys(itemMap).includes(piece.infiniteId)) {
+			itemMap[piece.infiniteId] = piece
+		}
+	})
 
 	objs.forEach(o => {
 		if (o.enable.start === 'now') {
