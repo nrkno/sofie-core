@@ -35,6 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { invalidateAt } from '../../lib/invalidatingTime'
 
 interface IState {
 	outputLayers: {
@@ -82,13 +83,38 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}).fetch() : [], (piece) => piece.adLibSourceId)
 
-	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio(),
-		unfinishedPieces
-	})
-}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-	return !_.isEqual(props, nextProps)
-})(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
+export function dashboardElementPosition (el: DashboardPositionableElement): React.CSSProperties {
+	return {
+		width: el.width >= 0 ?
+			`calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
+			undefined,
+		height: el.height >= 0 ?
+			`calc((${el.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
+			undefined,
+		left: el.x >= 0 ?
+			`calc(${el.x} * var(--dashboard-button-grid-width))` :
+			el.width < 0 ?
+				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
+				undefined,
+		top: el.y >= 0 ?
+			`calc(${el.y} * var(--dashboard-button-grid-height))` :
+			el.height < 0 ?
+				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
+				undefined,
+		right: el.x < 0 ?
+			`calc(${-1 * el.x - 1} * var(--dashboard-button-grid-width))` :
+			el.width < 0 ?
+				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
+				undefined,
+		bottom: el.y < 0 ?
+			`calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))` :
+			el.height < 0 ?
+				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
+				undefined
+	}
+}
+
+export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -246,29 +272,36 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 
 		if (this.props.sourceLayerLookup) {
-			_.each(this.props.sourceLayerLookup, (item) => {
-				if (item.clearKeyboardHotkey) {
-					item.clearKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
-						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onClearAllSourceLayer(item, e)
-						}, 'keyup')
-						this.usedHotkeys.push(element)
-					})
 
+			const clearKeyboardHotkeySourceLayers: {[hotkey: string]: ISourceLayer[]} = {}
+
+			_.each(this.props.sourceLayerLookup, (sourceLayer) => {
+				if (sourceLayer.clearKeyboardHotkey) {
+					sourceLayer.clearKeyboardHotkey.split(',').forEach(hotkey => {
+						if (!clearKeyboardHotkeySourceLayers[hotkey]) clearKeyboardHotkeySourceLayers[hotkey] = []
+						clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
+					})
 				}
 
-				if (item.isSticky && item.activateStickyKeyboardHotkey) {
-					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
+					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleSticky(item._id, e)
-						}, 'keyup')
+							this.onToggleSticky(sourceLayer._id, e)
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(element)
 					})
 				}
+			})
+
+			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
+				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.constructor.name)
+				mousetrapHelper.bind(hotkey, (e: ExtendedKeyboardEvent) => {
+					preventDefault(e)
+					this.onClearAllSourceLayers(sourceLayers, e)
+				}, 'keyup', this.constructor.name)
+				this.usedHotkeys.push(hotkey)
 			})
 		}
 	}
@@ -306,7 +339,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 				}
 			} else {
 				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
-					this.onClearAllSourceLayer(sourceLayer, e)
+					this.onClearAllSourceLayers([sourceLayer], e)
 				}
 			}
 		}
@@ -319,12 +352,12 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
-	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
+	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
 		if (this.props.rundown && this.props.rundown.currentPartId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id
+				this.props.rundown._id, this.props.rundown.currentPartId, _.map(sourceLayers, sl => sl._id)
 			])
 		}
 	}
@@ -408,3 +441,71 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		return null
 	}
 })
+
+export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: string | null) {
+	let prospectivePieces: Piece[] = []
+	const now = getCurrentTime()
+	if (currentPartId) {
+		prospectivePieces = Pieces.find({
+			rundownId: rundownId,
+			partId: currentPartId,
+			startedPlayback: {
+				$exists: true
+			},
+			$or: [{
+				stoppedPlayback: {
+					$eq: 0
+				}
+			}, {
+				stoppedPlayback: {
+					$exists: false
+				}
+			}],
+			playoutDuration: {
+				$exists: false
+			},
+			adLibSourceId: {
+				$exists: true
+			}
+		}).fetch()
+
+		let nearestEnd = Number.POSITIVE_INFINITY
+		prospectivePieces = prospectivePieces.filter((piece) => {
+			let duration: number | undefined =
+				(piece.playoutDuration) ?
+					piece.playoutDuration :
+				(piece.userDuration && typeof piece.userDuration.duration === 'number') ?
+					piece.userDuration.duration :
+				(piece.userDuration && typeof piece.userDuration.end === 'string') ?
+					0 : // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
+				(typeof piece.enable.duration === 'number') ?
+					piece.enable.duration :
+					undefined
+
+			if (duration !== undefined) {
+				const end = (piece.startedPlayback! + duration)
+				if (end > now) {
+					nearestEnd = nearestEnd > end ? end : nearestEnd
+					return true
+				} else {
+					return false
+				}
+			}
+			return true
+		})
+
+		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+	}
+
+	return _.groupBy(prospectivePieces, (piece) => piece.adLibSourceId)
+}
+
+export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	return Object.assign({}, fetchAndFilter(props), {
+		studio: props.rundown.getStudio(),
+		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
+	})
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
+})(DashboardPanelInner)
+

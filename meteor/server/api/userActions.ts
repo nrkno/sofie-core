@@ -290,17 +290,17 @@ export function segmentAdLibPieceStart (rundownId: string, partId: string, slaiI
 		ServerPlayoutAPI.segmentAdLibPieceStart(rundownId, partId, slaiId, queue)
 	)
 }
-export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerId: string) {
+export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerIds: string[] | string) {
 	check(rundownId, String)
 	check(partId, String)
-	check(sourceLayerId, String)
+	check(sourceLayerIds, Match.OneOf(String, Array))
 
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerOnPartStop(rundownId, partId, sourceLayerId)
+		ServerPlayoutAPI.sourceLayerOnPartStop(rundownId, partId, sourceLayerIds)
 	)
 }
 export function rundownBaselineAdLibPieceStart (rundownId: string, partId: string, pieceId: string, queue: boolean) {
@@ -525,8 +525,8 @@ methods[UserActionAPI.methods.setInOutPoints] = function (rundownId: string, par
 methods[UserActionAPI.methods.segmentAdLibPieceStart] = function (rundownId: string, partId: string, salliId: string, queue: boolean) {
 	return segmentAdLibPieceStart.call(this, rundownId, partId, salliId, queue)
 }
-methods[UserActionAPI.methods.sourceLayerOnPartStop] = function (rundownId: string, partId: string, sourceLayerId: string) {
-	return sourceLayerOnPartStop.call(this, rundownId, partId, sourceLayerId)
+methods[UserActionAPI.methods.sourceLayerOnPartStop] = function (rundownId: string, partId: string, sourceLayerIds: string[] | string) {
+	return sourceLayerOnPartStop.call(this, rundownId, partId, sourceLayerIds)
 }
 methods[UserActionAPI.methods.baselineAdLibPieceStart] = function (rundownId: string, partId: string, pieceId: string, queue: boolean) {
 	return rundownBaselineAdLibPieceStart.call(this, rundownId, partId, pieceId, queue)

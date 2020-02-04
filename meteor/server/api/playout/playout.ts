@@ -1021,10 +1021,12 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerId: string) {
+	export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerIds: string[] | string) {
 		check(rundownId, String)
 		check(partId, String)
-		check(sourceLayerId, String)
+		check(sourceLayerIds, Match.OneOf(String, Array))
+
+		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
 
 		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
 			const rundown = Rundowns.findOne(rundownId)
@@ -1043,7 +1045,7 @@ export namespace ServerPlayoutAPI {
 			const orderedPieces = getResolvedPieces(part)
 
 			orderedPieces.forEach((piece) => {
-				if (piece.sourceLayerId === sourceLayerId) {
+				if (sourceLayerIds.indexOf(piece.sourceLayerId) !== -1) {
 					if (!piece.userDuration) {
 						let newExpectedDuration: number | undefined = undefined
 
