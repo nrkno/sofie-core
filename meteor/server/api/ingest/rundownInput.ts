@@ -319,6 +319,28 @@ function updateRundownFromIngestData (
 		adlibPieces.push(...segmentContents.adlibPieces)
 	})
 
+
+	// Prepare updates:
+	const prepareSaveSegments = prepareSaveIntoDb(Segments, {
+		rundownId: rundownId
+	}, segments)
+	const prepareSaveParts = prepareSaveIntoDb<Part, DBPart>(Parts, {
+		rundownId: rundownId,
+	}, parts)
+	const prepareSavePieces = prepareSaveIntoDb<Piece, Piece>(Pieces, {
+		rundownId: rundownId,
+		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
+	}, segmentPieces)
+	const prepareSaveAdLibPieces = prepareSaveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
+		rundownId: rundownId,
+	}, adlibPieces)
+
+	// determine if update is allowed here
+	if (!isUpdateAllowed(dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts)) {
+		ServerRundownAPI.unsyncRundown(dbRundown._id)
+		return false
+	}
+
 	changes = sumChanges(
 		changes,
 		// Save the baseline
@@ -331,9 +353,7 @@ function updateRundownFromIngestData (
 		}, adlibItems),
 
 		// Update Segments:
-		saveIntoDb(Segments, {
-			rundownId: rundownId
-		}, segments, {
+		savePreparedChanges(prepareSaveSegments, Segments, {
 			afterInsert (segment) {
 				logger.info('inserted segment ' + segment._id)
 			},
@@ -348,18 +368,22 @@ function updateRundownFromIngestData (
 			}
 		}),
 
-		saveIntoDb<Part, DBPart>(Parts, {
-			rundownId: rundownId,
-		}, parts, {
+		savePreparedChanges<Part, DBPart>(prepareSaveParts, Parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundownId, parts)
 			}
 		}),
 
-		saveIntoDb<Piece, Piece>(Pieces, {
-			rundownId: rundownId,
-			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
-		}, segmentPieces, {
+		savePreparedChanges<Piece, Piece>(prepareSavePieces, Pieces, {
 			afterInsert (piece) {
 				logger.debug('inserted piece ' + piece._id)
 				logger.debug(piece)
@@ -372,9 +396,7 @@ function updateRundownFromIngestData (
 			}
 		}),
 
-		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
-			rundownId: rundownId,
-		}, adlibPieces, {
+		savePreparedChanges<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, AdLibPieces, {
 			afterInsert (adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
@@ -523,7 +545,7 @@ function updateSegmentFromIngestData (
 	}, adlibPieces)
 
 	// determine if update is allowed here
-	if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts )) {
+	if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts)) {
 		ServerRundownAPI.unsyncRundown(rundown._id)
 		return null
 	}
