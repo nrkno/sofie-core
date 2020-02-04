@@ -1,6 +1,9 @@
 @import "../colorScheme";
 @import "../itemTypeColors";
 
+$dashboard-button-width: 6.40625em;
+$dashboard-button-height: 5.625em;
+
 .dashboard {
 	position: absolute;
 	top: 2px;
@@ -111,9 +114,20 @@
 			width: 2px;
 			height: 6em;
 			margin-bottom: -1em;
-			background: var(--general-live-color);
-			transform: translate(-1px, 0);
 			z-index: 2;
+			transform: translate(calc(-1 * #{$dashboard-button-width}), 0);
+			
+			&::after {
+				content: ' ';
+				display: block;
+				position: absolute;
+				background: var(--general-live-color);
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
+			}
 
 			&::before {
 				content: ' ';
@@ -125,6 +139,29 @@
 				border-bottom: 10px solid transparent;
 				border-top: 10px solid transparent;
 				border-right: 10px solid transparent;
+				transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
+			}
+		}
+
+		&.next {
+			.dashboard-panel__panel__group__liveline {
+				&::after {
+					background: var(--general-next-color);
+				}
+				&::before {
+					border-left-color: var(--general-next-color);
+				}
+			}
+		}
+
+		&.live {
+			.dashboard-panel__panel__group__liveline {
+				&::after {
+					background: var(--general-live-color);
+				}
+				&::before {
+					border-left-color: var(--general-live-color);
+				}
 			}
 		}
 	}
@@ -140,8 +177,8 @@
 		white-space: normal;
 		line-break: loose;
 		word-break: break-all;
-		width: 82px;
-		height: 72px;
+		width: $dashboard-button-width;
+		height: $dashboard-button-height;
 		border: none;
 		margin: 4px;
 		vertical-align: top;
