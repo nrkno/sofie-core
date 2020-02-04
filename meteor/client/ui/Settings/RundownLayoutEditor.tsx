@@ -374,7 +374,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Source Layers')}
+							{t('Overflow horizontally')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.overflowHorizontally`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
 						</label>
 						<EditAttribute
 							modifiedClassName='bghl'
