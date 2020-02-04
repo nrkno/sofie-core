@@ -50,8 +50,6 @@ const BUTTON_GRID_WIDTH = 1
 const BUTTON_GRID_HEIGHT = 0.61803
 
 interface IDashboardPanelProps {
-	searchFilter?: string | undefined
-	mediaPreviewUrl?: string
 }
 
 interface IDashboardPanelTrackedProps {
@@ -363,10 +361,11 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
-						<div className='dashboard-panel__panel'>
-							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
-								.concat(this.props.rundownBaselineAdLibs)
-								.sort((a, b) => a._rank - b._rank)
+						<div className={ClassNames('dashboard-panel__panel', {
+							'dashboard-panel__panel--horizontal': filter.overflowHorizontally
+						})}>
+							{this.props.rundownBaselineAdLibs
+								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton

@@ -93,7 +93,12 @@
 		font-size: 0.8em;
 		margin: -4px;
 		overflow: overlay;
-    	max-height: calc(100% - 12px);
+		max-height: calc(100% - 12px);
+		
+		&.dashboard-panel__panel--horizontal {
+			white-space: nowrap;
+			overflow: auto;
+		}
 	}
 
 	.dashboard-panel__panel__group {
