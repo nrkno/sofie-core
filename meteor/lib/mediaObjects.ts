@@ -115,12 +115,14 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
-	switch (sourceLayer.type) {
-		case SourceLayerType.VT:
-		case SourceLayerType.LIVE_SPEAK:
-			const fileName = getMediaObjectMediaId(piece, sourceLayer)
-			const displayName = piece.name
-			if (fileName) {
+	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	if (!ignoreMediaStatus && sourceLayer) {
+		switch (sourceLayer.type) {
+			case SourceLayerType.VT:
+			case SourceLayerType.LIVE_SPEAK:
+				const fileName = getMediaObjectMediaId(piece, sourceLayer)
+				const displayName = piece.name
+				const messages: Array<string> = []
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
