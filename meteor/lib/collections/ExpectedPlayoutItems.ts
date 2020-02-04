@@ -2,24 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
-
-export interface ExpectedPlayoutItemGeneric { // TMP! This is to be moved into the blueprint definitions!
-
-	/** What type of playout device this item should be handled by */
-	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
-	/** Which playout device this item should be handled by */
-	// deviceId: string // Todo: implement deviceId support (later)
-
-	content: ExpectedPlayoutItemContent
-}
-export type ExpectedPlayoutItemContent = ExpectedPlayoutItemContentVizMSE
-
-export interface ExpectedPlayoutItemContentVizMSE { // TODO: This is a temporary implementation, and is a copy of the TSR typings
-	templateName: string
-	elementName: string | number // if number, it's a vizPilot element
-	dataFields: string[]
-}
+import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
 
 export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
 	/** Globally unique id of the item */
