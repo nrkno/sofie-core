@@ -559,7 +559,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 	}
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 		this.usedHotkeys.length = 0
 
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -573,8 +574,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.constructor.name)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.constructor.name)
 
 		this.usedHotkeys.length = 0
 	}
@@ -583,28 +584,28 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.constructor.name)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', this.constructor.name)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.constructor.name)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', this.constructor.name)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}

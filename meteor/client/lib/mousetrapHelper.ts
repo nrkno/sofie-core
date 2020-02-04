@@ -7,14 +7,12 @@ interface IWrappedCallback {
 	allowInModal: boolean
 	isGlobal: boolean
 	original: (e: Event) => void
+	tag?: string
 }
 
 export namespace mousetrapHelper {
 	const _boundHotkeys: {
 		[key: string]: IWrappedCallback[]
-	} = {}
-	const _callbackTags: {
-		[key: string]: (e: Event) => void
 	} = {}
 
 	function handleKey (keys: string, e: ExtendedKeyboardEvent) {
@@ -49,15 +47,9 @@ export namespace mousetrapHelper {
 		_boundHotkeys[index].push({
 			isGlobal: true,
 			allowInModal: !!allowInModal,
-			original: callback
+			original: callback,
+			tag
 		})
-
-		if (tag) {
-			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Globalbind: Callback with tag "${tag}" already exists for ${index}!`)
-			}
-			_callbackTags[index + '_' + tag] = callback
-		}
 	}
 
 	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
@@ -74,24 +66,22 @@ export namespace mousetrapHelper {
 		_boundHotkeys[index].push({
 			isGlobal: false,
 			allowInModal: !!allowInModal,
-			original: callback
+			original: callback,
+			tag
 		})
-
-		if (tag) {
-			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
-			}
-			_callbackTags[index + '_' + tag] = callback
-		}
 	}
 
-	export function unbindAll (keys: string[], action?: string) {
+	export function unbindAll (keys: string[], action?: string, tag?: string) {
 		keys.forEach(key => {
-			let index = key
-			if (action) index = key + '_' + action
-			if (_boundHotkeys[index] === undefined) return
-			delete _boundHotkeys[index]
-			mousetrap.unbind(keys, action)
+			if (!tag) {
+				let index = key
+				if (action) index = key + '_' + action
+				mousetrap.unbind(key, action)
+				if (_boundHotkeys[index] === undefined) return
+				delete _boundHotkeys[index]
+			} else {
+				unbind(key, tag, action)
+			}
 		})
 	}
 
@@ -102,23 +92,10 @@ export namespace mousetrapHelper {
 		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
 		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
 
-		if (tag) {
-			callback = _callbackTags[index + '_' + tag]
-			if (callback === undefined) {
-				throw new Error(`No callback found for ${tag} and keys ${keys}`)
-			}
-		}
-
-		if (!callback) throw new Error(`Callback could not be located`)
-
 		if (_boundHotkeys[index] === undefined) return
-		const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback)
+		const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback || i.tag === tag)
 		if (callbackIndex >= 0) {
 			_boundHotkeys[index].splice(callbackIndex, 1)
-			if (tag) {
-				// cleanup callback tags to avoid memory leaks
-				delete _callbackTags[index + '_' + tag]
-			}
 		} else {
 			console.log('Callback not found in list for ', index)
 		}
