@@ -664,9 +664,29 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		return o
 	})
 }
-export function isTooCloseToAutonext (currentPartInstance: PartInstance | undefined) {
+
+/**
+ * time in ms before an autotake when we don't accept takes/updates
+ */
+const AUTOTAKE_UPDATE_DEBOUNCE = 5000
+const AUTOTAKE_TAKE_DEBOUNCE = 1000
+
+export function isTooCloseToAutonext (currentPartInstance: PartInstance | undefined, isTake?: boolean) {
 	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
 
-	// TODO-ASAP use some timing based rules
-	return true
+	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
+
+	const start = currentPartInstance.part.getLastStartedPlayback()
+	const offset = currentPartInstance.part.getLastPlayOffset()
+	if (start && offset && currentPartInstance.part.expectedDuration) {
+		// date.now - start = playback duration, duration + offset gives position in part
+		const playbackDuration = getCurrentTime() - start + offset
+
+		// If there is an auto next planned
+		if (Math.abs(currentPartInstance.part.expectedDuration - playbackDuration) < debounce) {
+			return true
+		}
+	}
+
+	return false
 }

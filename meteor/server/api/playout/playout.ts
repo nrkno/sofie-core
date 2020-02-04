@@ -51,7 +51,8 @@ import {
 	onPartHasStoppedPlaying,
 	refreshPart,
 	getPartBeforeSegment,
-	selectNextPart
+	selectNextPart,
+	isTooCloseToAutonext
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -72,10 +73,6 @@ import { PartInstances, PartInstance } from '../../../lib/collections/PartInstan
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
  */
 const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
-/**
- * time in ms before an autotake when we don't accept takes
- */
-const AUTOTAKE_DEBOUNCE = 1000
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -244,15 +241,8 @@ export namespace ServerPlayoutAPI {
 					return ClientAPI.responseError('Cannot take during a transition')
 				}
 
-				const offset = currentPart.part.getLastPlayOffset()
-				if (start && offset && currentPart.part.expectedDuration) {
-					// date.now - start = playback duration, duration + offset gives position in part
-					const playbackDuration = Date.now() - start! + offset!
-
-					// If there is an auto next planned
-					if (currentPart.part.autoNext && Math.abs(currentPart.part.expectedDuration - playbackDuration) < AUTOTAKE_DEBOUNCE) {
-						return ClientAPI.responseError('Cannot take shortly before an autoTake')
-					}
+				if (isTooCloseToAutonext(currentPart, true)) {
+					return ClientAPI.responseError('Cannot take shortly before an autoTake')
 				}
 			}
 
