@@ -99,34 +99,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 	}
 }
 
-export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
-		rundownId: props.rundown._id,
-		partId: props.rundown.currentPartId,
-		startedPlayback: {
-			$exists: true
-		},
-		$or: [{
-			stoppedPlayback: {
-				$eq: 0
-			}
-		}, {
-			stoppedPlayback: {
-				$exists: false
-			}
-		}],
-		adLibSourceId: {
-			$exists: true
-		}
-	}).fetch() : [], (piece) => piece.adLibSourceId)
-
-	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio(),
-		unfinishedPieces
-	})
-}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-	return !_.isEqual(props, nextProps)
-})(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
+export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -418,4 +391,33 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 		return null
 	}
-})
+}
+
+export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
+		rundownId: props.rundown._id,
+		partId: props.rundown.currentPartId,
+		startedPlayback: {
+			$exists: true
+		},
+		$or: [{
+			stoppedPlayback: {
+				$eq: 0
+			}
+		}, {
+			stoppedPlayback: {
+				$exists: false
+			}
+		}],
+		adLibSourceId: {
+			$exists: true
+		}
+	}).fetch() : [], (piece) => piece.adLibSourceId)
+
+	return Object.assign({}, fetchAndFilter(props), {
+		studio: props.rundown.getStudio(),
+		unfinishedPieces
+	})
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
+})(DashboardPanelInner)

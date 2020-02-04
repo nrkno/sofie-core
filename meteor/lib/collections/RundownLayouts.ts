@@ -92,6 +92,8 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	buttonHeightScale: number
 
 	includeClearInRundownBaseline: boolean
+	assignHotKeys: boolean
+	showAsTimeline?: boolean
 }
 
 export interface RundownLayoutBase {
