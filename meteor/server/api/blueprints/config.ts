@@ -85,8 +85,11 @@ export function compileStudioConfig (studio: Studio) {
 	return res
 }
 
-export function findMissingConfigs (manifest: ConfigManifestEntry[], config: IConfigItem[]) {
+export function findMissingConfigs (manifest: ConfigManifestEntry[] | undefined, config: IConfigItem[]) {
 	const missingKeys: string[] = []
+	if (manifest === undefined) {
+		 return missingKeys
+	}
 
 	const configKeys = _.map(config, c => c._id)
 	_.each(manifest, m => {

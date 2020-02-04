@@ -154,7 +154,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 	getStudioConfig (): Readonly<{[key: string]: ConfigItemValue}> {
 		const studioBlueprint = Blueprints.findOne(this.studio.blueprintId)
 		if (studioBlueprint) {
-			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest || [], this.studio.config)
+			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.config)
 			if (diffs && diffs.length) {
 				logger.warn(`Studio "${this.studio._id}" missing required config: ${diffs.join(', ')}`)
 			}
@@ -208,7 +208,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 		const showStyleBlueprint = Blueprints.findOne(showStyleCompound.blueprintId)
 		if (showStyleBlueprint) {
-			const diffs = findMissingConfigs(showStyleBlueprint.showStyleConfigManifest || [], showStyleCompound.config)
+			const diffs = findMissingConfigs(showStyleBlueprint.showStyleConfigManifest, showStyleCompound.config)
 			if (diffs && diffs.length) {
 				logger.warn(`ShowStyle "${showStyleCompound._id}-${showStyleCompound.showStyleVariantId}" missing required config: ${diffs.join(', ')}`)
 			}

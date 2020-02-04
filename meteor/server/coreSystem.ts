@@ -24,6 +24,9 @@ import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
+import { findMissingConfigs } from './api/blueprints/config'
+import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/ShowStyleVariants'
+import { syncFunction } from './codeControl';
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
@@ -65,18 +68,43 @@ function initializeCoreSystem () {
 		removed: checkDatabaseVersions
 	})
 
-	let blueprintsCursor = Blueprints.find({})
+	const observeBlueprintChanges = () => {
+		checkDatabaseVersions()
+		queueCheckBlueprintsConfig()
+	}
+
+	const blueprintsCursor = Blueprints.find({})
 	blueprintsCursor.observeChanges({
-		added: checkDatabaseVersions,
-		changed: checkDatabaseVersions,
-		removed: checkDatabaseVersions
+		added: observeBlueprintChanges,
+		changed: observeBlueprintChanges,
+		removed: observeBlueprintChanges
+	})
+
+	const studiosCursor = Studios.find({})
+	studiosCursor.observeChanges({
+		added: queueCheckBlueprintsConfig,
+		changed: queueCheckBlueprintsConfig,
+		removed: queueCheckBlueprintsConfig
+	})
+
+	const showStyleBaseCursor = ShowStyleBases.find({})
+	showStyleBaseCursor.observeChanges({
+		added: queueCheckBlueprintsConfig,
+		changed: queueCheckBlueprintsConfig,
+		removed: queueCheckBlueprintsConfig
+	})
+
+	const showStyleVariantCursor = ShowStyleVariants.find({})
+	showStyleVariantCursor.observeChanges({
+		added: queueCheckBlueprintsConfig,
+		changed: queueCheckBlueprintsConfig,
+		removed: queueCheckBlueprintsConfig
 	})
 
 	checkDatabaseVersions()
 }
 
-let blueprints: { [id: string]: true } = {}
-
+let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
 function checkDatabaseVersions () {
 	// Core system
 
@@ -124,6 +152,7 @@ function checkDatabaseVersions () {
 						)
 					}
 
+					// TODO - is this correct for the current relationships? What about studio blueprints?
 					Studios.find({
 						supportedShowStyleBase: showStyleBase._id
 					}).forEach((studio) => {
@@ -142,26 +171,16 @@ function checkDatabaseVersions () {
 						}
 					})
 				})
-				// setSystemStatus('blueprintVersion_' + blueprint._id, checkDatabaseVersion(
-				// 	blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-				// 	parseVersion(blueprint.databaseVersion || '0.0.0'),
-				// 	'to fix, run migration',
-				// 	'blueprint',
-				// 	'database'
-				// ))
 
 				checkBlueprintCompability(blueprint)
-				// also check:
-				// blueprint.integrationVersion
-				// blueprint.TSRVersion
 			}
 		})
-		_.each(blueprints, (_val, id: string) => {
+		_.each(lastDatabaseVersionBlueprintIds, (_val, id: string) => {
 			if (!blueprintIds[id]) {
 				removeSystemStatus('blueprintVersion_' + id)
 			}
 		})
-		blueprints = blueprintIds
+		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
 }
 /**
@@ -294,9 +313,6 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	} else if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
 		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
 		setSystemStatus(systemStatusId, integrationStatus)
-	} else if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
-		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
-		setSystemStatus(systemStatusId, integrationStatus)
 	} else {
 		setSystemStatus(systemStatusId, {
 			statusCode: StatusCode.GOOD,
@@ -304,6 +320,85 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		})
 	}
 }
+
+let checkBlueprintsConfigTimeout: number | undefined
+function queueCheckBlueprintsConfig () {
+	const RATE_LIMIT = 10000
+
+	// We want to rate limit this. It doesn't matter if it is delayed, so lets do that to keep it simple
+	if (!checkBlueprintsConfigTimeout) {
+		checkBlueprintsConfigTimeout = Meteor.setTimeout(() => {
+			checkBlueprintsConfigTimeout = undefined
+
+			checkBlueprintsConfig()
+		}, RATE_LIMIT)
+	}
+}
+
+let lastBlueprintConfigIds: { [id: string]: true } = {}
+const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig () {
+	let blueprintIds: { [id: string]: true } = {}
+
+	// Studios
+	_.each(Studios.find({}).fetch(), studio => {
+		const blueprint = Blueprints.findOne(studio.blueprintId)
+		if (!blueprint) return
+
+		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.config)
+		const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
+		setBlueprintConfigStatus(systemStatusId, diff, studio._id)
+		blueprintIds[systemStatusId] = true
+	})
+
+	// ShowStyles
+	_.each(ShowStyleBases.find({}).fetch(), showBase => {
+		const blueprint = Blueprints.findOne(showBase.blueprintId)
+		if (!blueprint || !blueprint.showStyleConfigManifest) return
+
+		const variants = ShowStyleVariants.find({
+			showStyleBaseId: showBase._id
+		}).fetch()
+
+		const allDiffs: string[] = []
+
+		_.each(variants, variant => {
+			const compound = createShowStyleCompound(showBase, variant)
+			if (!compound) return
+
+			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.config)
+			if (diff && diff.length) {
+				allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
+			}
+		})
+		const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
+		setBlueprintConfigStatus(systemStatusId, allDiffs)
+		blueprintIds[systemStatusId] = true
+	})
+
+	// Check for removed
+	_.each(lastBlueprintConfigIds, (_val, id: string) => {
+		if (!blueprintIds[id]) {
+			removeSystemStatus(id)
+		}
+	})
+	lastBlueprintConfigIds = blueprintIds
+})
+function setBlueprintConfigStatus (systemStatusId: string, diff: string[], studioId?: string) {
+	if (diff && diff.length > 0) {
+		setSystemStatus(systemStatusId, {
+			studioId: studioId,
+			statusCode: StatusCode.WARNING_MAJOR,
+			messages: [`Config is missing required fields: ${diff.join(', ')}`]
+		})
+	} else {
+		setSystemStatus(systemStatusId, {
+			studioId: studioId,
+			statusCode: StatusCode.GOOD,
+			messages: ['Config is valid']
+		})
+	}
+}
+
 export function getRelevantSystemVersions (): { [name: string]: string } {
 	const versions: { [name: string]: string } = {}
 
