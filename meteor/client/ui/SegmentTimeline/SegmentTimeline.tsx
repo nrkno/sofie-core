@@ -37,6 +37,9 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
+import { Settings } from '../../../lib/Settings'
+import { MAGIC_TIME_SCALE_FACTOR, RundownViewEvents } from '../RundownView'
 
 interface IProps {
 	id: string
@@ -219,7 +222,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 
 	zoomNormalize = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.props.onZoomChange(0.03, e)
+		this.props.onZoomChange(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, e)
 	}
 
 	render () {
@@ -243,22 +246,38 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 }
 
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
+
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
 	private _touchSize: number = 0
 	private _touchAttached: boolean = false
-	private _lastTouch: {
+	private _mouseAttached: boolean = false
+	private _lastClick: number = 0
+	private _mouseMoved: boolean = false
+	private _lastPointer: {
 		clientX: number
 		clientY: number
 	} | undefined = undefined
+	private static _zoomOutLatch: number | undefined = undefined
+	private static _zoomOutLatchId: string | undefined = undefined
 
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
 			timelineWidth: 1
 		}
+	}
+
+	componentDidMount () {
+		window.addEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
+		window.addEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+	}
+
+	componentWillUnmount () {
+		window.removeEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
+		window.removeEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
 	}
 
 	setSegmentRef = (el: HTMLDivElement) => {
@@ -314,6 +333,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				this._touchAttached = true
 			}
 			this._touchSize = e.touches[1].clientX - e.touches[0].clientX
+			e.preventDefault()
+			e.stopPropagation()
 		} else if (e.touches.length === 1) {
 			if (!this._touchAttached) {
 				document.addEventListener('touchmove', this.onTimelineTouchMove)
@@ -324,6 +345,112 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				clientX: e.touches[0].clientX,
 				clientY: e.touches[0].clientY
 			}
+			e.preventDefault()
+			e.stopPropagation()
+		}
+	}
+
+	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
+		let scrollAmount = (e.movementX * -1) || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
+		this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
+		if (e.movementX === 0) {
+			this._lastPointer = {
+				clientX: e.clientX,
+				clientY: e.clientY
+			}
+		}
+		if (e.movementX !== 0 || e.movementY !== 0) {
+			this._mouseMoved = true
+		}
+	}
+
+	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> & any) => {
+		document.removeEventListener('mousemove', this.onTimelineMouseMove)
+		document.removeEventListener('mouseup', this.onTimelineMouseUp)
+		this._mouseAttached = false
+		this._lastPointer = undefined
+		this.setState({
+			mouseGrabbed: false
+		})
+		document.exitPointerLock()
+
+		const now = Date.now()
+		if (!this._mouseMoved && (now - this._lastClick < 500)) {
+			this.onTimelineDoubleClick(e)
+		}
+		this._lastClick = this._mouseMoved ? 0 : now
+	}
+
+	onTimelinePointerLockChange = (e: Event) => {
+		if (!document.pointerLockElement) {
+			hidePointerLockCursor()
+		}
+	}
+
+	onTimelinePointerError = (e: Event) => {
+		hidePointerLockCursor()
+	}
+
+	onRundownEventSegmentZoomOn = (e: any) => {
+		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.rundown.currentPartId === null)) {
+			this.onTimelineZoomOn(e)
+		}
+	}
+
+	onRundownEventSegmentZoomOff = (e: any) => {
+		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.rundown.currentPartId === null)) {
+			this.onTimelineZoomOff(e)
+		}
+	}
+
+	onTimelineZoomOn = (e: any) => {
+		if (SegmentTimelineClass._zoomOutLatch === undefined) {
+			SegmentTimelineClass._zoomOutLatch = this.props.timeScale
+		}
+		SegmentTimelineClass._zoomOutLatchId = this.props.id
+		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(e)
+	}
+
+	onTimelineZoomOff = (e: any) => {
+		if (SegmentTimelineClass._zoomOutLatch !== undefined) {
+			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, e)
+		}
+		SegmentTimelineClass._zoomOutLatch = undefined
+		SegmentTimelineClass._zoomOutLatchId = undefined
+	}
+
+	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
+	onTimelineDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
+			this.onTimelineZoomOn(e)
+		} else {
+			this.onTimelineZoomOff(e)
+		}
+	}
+
+	onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!this._touchAttached && !this._mouseAttached) {
+			// if mouse down is on a piece - abort
+			if ((e.target as HTMLDivElement).classList.contains('segment-timeline__piece')) return
+			// check that only primary button is pressed down (mask 00001b)
+			if ((e.buttons & 1) !== 1) return
+			e.preventDefault()
+
+			document.addEventListener('mousemove', this.onTimelineMouseMove)
+			document.addEventListener('mouseup', this.onTimelineMouseUp)
+			this._mouseAttached = true
+			this.setState({
+				mouseGrabbed: true
+			})
+			this._lastPointer = {
+				clientX: e.clientX,
+				clientY: e.clientY
+			}
+			document.addEventListener('pointerlockchange', this.onTimelinePointerLockChange)
+			document.addEventListener('pointerlockerror', this.onTimelinePointerError)
+			document.body.requestPointerLock()
+			showPointerLockCursor(this._lastPointer.clientX, this._lastPointer.clientY)
+			this._mouseMoved = false
 		}
 	}
 

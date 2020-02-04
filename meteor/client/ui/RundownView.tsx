@@ -61,6 +61,8 @@ import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 
+export const MAGIC_TIME_SCALE_FACTOR = 0.03
+
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
 interface IKeyboardFocusMarkerState {
@@ -1057,7 +1059,9 @@ interface IState {
 export enum RundownViewEvents {
 	'rewindsegments'	=	'sofie:rundownRewindSegments',
 	'goToLiveSegment'	=	'sofie:goToLiveSegment',
-	'goToTop'			=	'sofie:goToTop'
+	'goToTop'			=	'sofie:goToTop',
+	'segmentZoomOn'		=	'sofie:segmentZoomOn',
+	'segmentZoomOff'	=	'sofie:segmentZoomOff'
 }
 
 interface ITrackedProps {
@@ -1126,6 +1130,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		global?: boolean
 	}> = []
 	private _inspectorShelf: WrappedShelf | null
+	private _segmentZoomOn: boolean = false
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1147,11 +1152,21 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		]
 
+		if (RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH) {
+			this.bindKeys.push({
+				key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
+				down: this.onShowCurrentSegmentFullOn,
+				up: this.onShowCurrentSegmentFullOff,
+				label: t('Show whole current segment'),
+				global: false
+			})
+		}
+
 		this.usedArgumentKeys = []
 
 		this.state = {
-			timeScale: 0.03,
-			studioMode: getStudioMode(),
+			timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
+			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
@@ -1428,6 +1443,20 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onRewindSegments = () => {
 		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+	}
+
+	onShowCurrentSegmentFullOn = () => {
+		if (this._segmentZoomOn === false) {
+			console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOn}`)
+			window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOn))
+			this._segmentZoomOn = true
+		}
+	}
+
+	onShowCurrentSegmentFullOff = () => {
+		console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOff}`)
+		window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOff))
+		this._segmentZoomOn = false
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
