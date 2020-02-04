@@ -338,15 +338,34 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		return <div className='dashboard'>
 			{rundownLayout.filters
 				.sort((a, b) => a.rank - b.rank)
-				.map((f: DashboardLayoutFilter) =>
-					<DashboardPanel
-						key={f._id}
-						includeGlobalAdLibs={true}
-						filter={f}
-						visible={true}
-						registerHotkeys={true}
-						{...this.props}
-						/>
+				.map((panel) =>
+					RundownLayoutsAPI.isFilter(panel) ?
+						(panel as DashboardLayoutFilter).showAsTimeline ?
+							<TimelineDashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={!!(panel as DashboardLayoutFilter).hide}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								{...this.props}
+								/> :
+							<DashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={!!(panel as DashboardLayoutFilter).hide}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								{...this.props}
+								/> :
+					RundownLayoutsAPI.isExternalFrame(panel) ?
+						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={true}
+							{...this.props}
+							/> :
+						undefined
 			)}
 		</div>
 	}
