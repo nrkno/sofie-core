@@ -246,6 +246,18 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.stopLive()
+
+			if (this.state.autoExpandCurrentNextSegment) {
+				this.setState({
+					collapsed: UIStateStorage.getItemBoolean(
+						`rundownView.${this.props.rundown._id}`,
+						`segment.${this.props.segmentId}`,
+						!!Settings.defaultToCollapsedSegments
+					)
+				})
+			}
+
+			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
