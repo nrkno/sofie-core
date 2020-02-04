@@ -5,15 +5,20 @@ import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
 import {
-	setStudioMode,
-	setAdminMode,
-	getStudioMode,
-	getAdminMode,
-	setDeveloperMode,
-	setTestingMode,
-	getTestingMode,
-	getDeveloperMode,
-	setSpeakingMode
+	setAllowStudio,
+	setAllowConfigure,
+	getAllowStudio,
+	getAllowConfigure,
+	setAllowDeveloper,
+	setAllowTesting,
+	getAllowTesting,
+	getAllowDeveloper,
+	setAllowSpeaking,
+	setAllowService,
+	getAllowService,
+	setHelpMode,
+	setUIZoom,
+	getUIZoom
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -56,11 +61,16 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 
 		const params = queryStringParse(location.search)
 
-		if (params['studio']) 	setStudioMode(params['studio'] === '1')
-		if (params['configure']) setAdminMode(params['configure'] === '1')
-		if (params['develop']) setDeveloperMode(params['develop'] === '1')
-		if (params['testing']) setTestingMode(params['testing'] === '1')
-		if (params['speak']) setSpeakingMode(params['speak'] === '1')
+		if (params['studio']) 	setAllowStudio(params['studio'] === '1')
+		if (params['configure']) setAllowConfigure(params['configure'] === '1')
+		if (params['develop']) setAllowDeveloper(params['develop'] === '1')
+		if (params['testing']) setAllowTesting(params['testing'] === '1')
+		if (params['speak']) setAllowSpeaking(params['speak'] === '1')
+		if (params['service']) setAllowService(params['service'] === '1')
+		if (params['help']) setHelpMode(params['help'] === '1')
+		if (params['zoom'] && typeof params['zoom'] === 'string')
+			setUIZoom(parseFloat(params['zoom'] as string || '1') / 100 || 1)
+
 		if (params['admin']) {
 			const val = params['admin'] === '1'
 			setStudioMode(val)
@@ -101,6 +111,11 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		m.locale(i18n.language)
 		document.documentElement.lang = i18n.language
 		setInterval(this.cronJob, CRON_INTERVAL)
+
+		const uiZoom = getUIZoom()
+		if (uiZoom !== 1) {
+			document.documentElement.style.fontSize = (uiZoom * 16) + 'px'
+		}
 	}
 
 	render () {

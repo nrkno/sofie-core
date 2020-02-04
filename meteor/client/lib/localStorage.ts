@@ -32,3 +32,11 @@ export function setSpeakingMode (speakingMode: boolean) {
 export function getSpeakingMode (): boolean {
 	return localStorage.getItem('speakingMode') === '1'
 }
+
+export function setUIZoom (uiZoomLevel: number) {
+	localStorage.setItem('uiZoomLevel', uiZoomLevel + '')
+}
+
+export function getUIZoom (): number {
+	return parseFloat(localStorage.getItem('uiZoomLevel') || '1') || 1
+}
