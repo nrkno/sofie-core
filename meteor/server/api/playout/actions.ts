@@ -96,7 +96,7 @@ export function deactivateRundownInner (rundown: Rundown) {
 			holdState: RundownHoldState.NONE,
 		}
 	})
-	setNextPart(rundown, null)
+	setNextPart(rundown, null, null)
 
 	if (rundown.currentPartId) {
 		Parts.update(rundown.currentPartId, {

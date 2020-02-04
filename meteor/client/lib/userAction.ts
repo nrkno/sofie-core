@@ -88,6 +88,7 @@ function userActionMethodName (
 		case UserActionAPI.methods.take: return t('Take')
 		case UserActionAPI.methods.setNext: return t('Setting Next')
 		case UserActionAPI.methods.moveNext: return t('Moving Next')
+		case UserActionAPI.methods.setNextSegment: return t('Setting Next Segment')
 
 		case UserActionAPI.methods.prepareForBroadcast: return t('Preparing for broadcast')
 		case UserActionAPI.methods.resetRundown: return t('Resetting Rundown')

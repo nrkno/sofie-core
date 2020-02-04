@@ -66,6 +66,9 @@ export interface DBRundown extends IBlueprintRundownDB {
 	/** the id of the Previous Part */
 	previousPartId: string | null
 
+	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
+	nextSegmentId?: string
+
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 
@@ -115,6 +118,7 @@ export class Rundown implements DBRundown {
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartId: string | null
+	public nextSegmentId: string
 	public startedPlayback?: Time
 	public unsynced?: boolean
 	public unsyncedTime?: Time
