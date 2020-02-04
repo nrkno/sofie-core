@@ -537,25 +537,35 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
 
-		if (!canBeUpdated(rundown, segmentId, partId)) return
 
-		const part = Parts.findOne({
-			_id: partId,
-			segmentId: segmentId,
-			rundownId: rundown._id
-		})
-		if (!part) throw new Meteor.Error(404, 'Part not found')
+		if (canBeUpdated(rundown, segmentId, partId)) {
+			const part = Parts.findOne({
+				_id: partId,
+				segmentId: segmentId,
+				rundownId: rundown._id
+			})
+			if (!part) throw new Meteor.Error(404, 'Part not found')
 
-		// Blueprints will handle the deletion of the Part
-		const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
-		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
+			if (rundown.currentPartId && rundown.currentPartId === part._id) {
+				// Don't allow removing currently playing part
+				logger.warn(`Not allowing removal of currently playing part "${part}", making rundown unsynced instead`)
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			} else {
 
-		saveSegmentCache(rundown._id, segmentId, ingestSegment)
+				// Blueprints will handle the deletion of the Part
+				const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
+				ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
-		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
-		if (updatedSegmentId) {
-			afterIngestChangedData(rundown, [updatedSegmentId])
+				saveSegmentCache(rundown._id, segmentId, ingestSegment)
+
+				const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+				if (updatedSegmentId) {
+					afterIngestChangedData(rundown, [updatedSegmentId])
+				}
+			}
 		}
+
+
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {

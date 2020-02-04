@@ -1001,4 +1001,97 @@ describe('Test ingest actions for rundowns and segments', () => {
 		// dynamicPart = Parts.findOne(dynamicPartId) as Part
 		// expect(dynamicPart).toBeFalsy()
 	})
+
+	testInFiberOnly('unsyncing of rundown', () => {
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 0,
+						},
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						}
+					]
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						}
+					]
+				}
+			]
+		}
+
+		// Preparation: set up rundown
+		expect(Rundowns.findOne()).toBeFalsy()
+		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device2._id, device2.token, rundownData)
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId
+		})
+
+		const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+		const resyncRundown = () => {
+			try {
+				ServerRundownAPI.resyncRundown(rundown._id)
+			} catch (e) {
+				if (e.toString().match(/does not support the method "reloadRundown"/)) {
+					// This is expected
+					return
+				}
+				throw e
+			}
+		}
+
+		const segments = getRundown().getSegments()
+		const parts = getRundown().getParts()
+
+		expect(segments).toHaveLength(2)
+		expect(parts).toHaveLength(3)
+
+		// Activate the rundown, make data updates and verify that it gets unsynced properly
+		ServerPlayoutAPI.activateRundown(rundown._id, true)
+		expect(getRundown().unsynced).toEqual(false)
+
+		RundownInput.dataRundownDelete({}, device2._id, device2.token, rundownData.externalId)
+		expect(getRundown().unsynced).toEqual(true)
+
+		resyncRundown()
+		expect(getRundown().unsynced).toEqual(false)
+
+		ServerPlayoutAPI.takeNextPart(rundown._id)
+		expect(getRundown().currentPartId).toEqual(parts[0]._id)
+
+		RundownInput.dataSegmentDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId)
+		expect(getRundown().unsynced).toEqual(true)
+
+		resyncRundown()
+		expect(getRundown().unsynced).toEqual(false)
+
+		RundownInput.dataPartDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId, parts[0].externalId)
+		expect(getRundown().unsynced).toEqual(true)
+
+		resyncRundown()
+		expect(getRundown().unsynced).toEqual(false)
+
+	})
 })
