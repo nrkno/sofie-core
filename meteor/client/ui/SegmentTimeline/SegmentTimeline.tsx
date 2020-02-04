@@ -37,6 +37,8 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor';
+import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	id: string
@@ -219,7 +221,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 
 	zoomNormalize = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.props.onZoomChange(0.03, e)
+		this.props.onZoomChange(0.03 * Settings.defaultTimeScale, e)
 	}
 
 	render () {
