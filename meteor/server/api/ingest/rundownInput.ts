@@ -510,24 +510,23 @@ function updateSegmentFromIngestData (
 		rundownId: rundown._id
 	}, newSegment)
 
-		// Update segment info:
-		asyncCollectionUpsert(Segments, {
-			_id: segmentId,
-			rundownId: rundown._id
-		}, newSegment),
+	// Update segment info:
+	asyncCollectionUpsert(Segments, {
+		_id: segmentId,
+		rundownId: rundown._id
+	}, newSegment),
 
-		// Move over parts from other segments:
-		asyncCollectionUpdate(Parts, {
-			rundownId: rundown._id,
-			segmentId: { $ne: segmentId },
-			dynamicallyInserted: { $ne: true },
-			_id: { $in: _.pluck(parts, '_id') }
-		}, { $set: {
-			segmentId: segmentId
-		}}, {
-			multi: true
-		})
-	]))
+	// Move over parts from other segments:
+	asyncCollectionUpdate(Parts, {
+		rundownId: rundown._id,
+		segmentId: { $ne: segmentId },
+		dynamicallyInserted: { $ne: true },
+		_id: { $in: _.pluck(parts, '_id') }
+	}, { $set: {
+		segmentId: segmentId
+	}}, {
+		multi: true
+	})
 
 	const prepareSaveParts = prepareSaveIntoDb<Part, DBPart>(Parts, {
 		rundownId: rundown._id,
