@@ -114,6 +114,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
+	let contentDuration: number | undefined = undefined
 
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
@@ -152,13 +153,24 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 							let audioStreams = 0
 							let isStereo = false
 
-							// check the streams for resolution info
-							for (const stream of mediaObject.mediainfo.streams) {
-								if (stream.width && stream.height) {
-									if (stream.codec.time_base) {
-										const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-										timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
-									}
+                            // check the streams for resolution info
+                            for (const stream of mediaObject.mediainfo.streams) {
+                                if (stream.width && stream.height) {
+                                    if (stream.codec.time_base) {
+                                        const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
+                                        timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
+                                    }
+
+                                    const format = buildFormatString(mediaObject.mediainfo, stream)
+                                    if (!acceptFormat(format, formats)) {
+                                        messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
+                                    }
+                                } else if (stream.codec.type === 'audio') {
+                                    // this is the first (and hopefully last) track of audio, and has 2 channels
+                                    if (audioStreams === 0 && stream.channels === 2) {
+                                        isStereo = true
+                                    }
+                                    audioStreams++
 
 									const format = buildFormatString(mediaObject.mediainfo, stream)
 									if (!acceptFormat(format, formats)) {
@@ -232,6 +244,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 	return {
 		status: newStatus,
 		metadata: metadata,
-		message: message
+		message: message,
+		contentDuration: contentDuration
 	}
 }
