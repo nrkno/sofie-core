@@ -40,6 +40,174 @@ interface IConfigManifestSettingsState {
 	editedItems: Array<string>
 }
 
+interface IConfigManifestTableProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+	item: ConfigManifestEntryTable
+	baseAttribute: string
+
+	collection: TCol
+	object: TObj
+
+	subPanel?: boolean
+}
+interface IConfigManifestTableState {
+	uploadFileKey: number // Used to force clear the input after use
+}
+
+export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
+	extends React.Component<Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>, IConfigManifestTableState> {
+
+	constructor (props: Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>) {
+		super(props)
+
+		this.state = {
+			uploadFileKey: Date.now()
+		}
+	}
+
+	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+		this.props.collection.update(obj._id, updateObj)
+	}
+
+	removeRow (id: string, baseAttribute: string) {
+		const m: any = {}
+		m[baseAttribute] = {
+			_id: id
+		}
+		this.updateObject(this.props.object, { $pull: m })
+	}
+
+	addRow (configEntry: ConfigManifestEntryTable, baseAttribute: string) {
+		const rowDefault: any = {
+			_id: Random.id()
+		}
+		_.each(configEntry.columns, col => rowDefault[col.id] = col.defaultVal)
+
+		const m: any = {}
+		m[baseAttribute] = rowDefault
+		this.updateObject(this.props.object, { $push: m })
+	}
+
+	exportJSON (configEntry: ConfigManifestEntryTable, vals: any) {
+		const jsonStr = JSON.stringify(vals, undefined, 4)
+
+		const element = document.createElement('a')
+		element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+		element.download = `${this.props.object._id}_config_${configEntry.id}.json`
+
+		document.body.appendChild(element) // Required for this to work in FireFox
+		element.click()
+		document.body.removeChild(element) // Required for this to work in FireFox
+	}
+
+	importJSON (e: React.ChangeEvent<HTMLInputElement>, configEntry: ConfigManifestEntryTable, baseAttribute: string) {
+		const { t } = this.props
+
+		const file = e.target.files ? e.target.files[0] : null
+		if (!file) {
+			return
+		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			// On file upload
+
+			this.setState({
+				uploadFileKey: Date.now()
+			})
+
+			const uploadFileContents = (e2.target as any).result
+
+			// Parse the config
+			let newConfig: TableConfigItemValue = []
+			try {
+				newConfig = JSON.parse(uploadFileContents)
+				if (!_.isArray(newConfig)) {
+					throw new Error('Not an array')
+				}
+			} catch (err) {
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }), 'ConfigManifestSettings'))
+				return
+			}
+
+			// Validate the config
+			const conformedConfig: TableConfigItemValue = []
+			_.forEach(newConfig, entry => {
+				const newEntry: TableConfigItemValue[0] = {
+					_id: entry._id || Random.id()
+				}
+
+				// Ensure all fields are defined
+				_.forEach(configEntry.columns, col => {
+					newEntry[col.id] = entry[col.id] !== undefined ? entry[col.id] : col.defaultVal
+				})
+				conformedConfig.push(newEntry)
+			})
+
+			const m: any = {}
+			m[baseAttribute] = conformedConfig
+			this.updateObject(this.props.object, { $set: m })
+		}
+		reader.readAsText(file)
+	}
+
+	render () {
+		const { t } = this.props
+
+		const baseAttribute = this.props.baseAttribute
+		const vals: TableConfigItemValue = objectPath.get(this.props.object, baseAttribute) || []
+		const configEntry = this.props.item
+
+		return (
+			<div>
+				<table className='table'>
+					<thead>
+						<tr>
+							{ _.map(configEntry.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+							<th>&nbsp;</th>
+						</tr>
+					</thead>
+					<tbody>
+					{
+						_.map(vals, (val, i) => <tr key={i}>
+							{ _.map(configEntry.columns, col => <td key={col.id}>{
+								getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${i}.${col.id}`)
+							}</td>) }
+							<td>
+								<button className={ClassNames('btn btn-danger', {
+									'btn-tight': this.props.subPanel
+								})} onClick={() => this.removeRow(val._id, baseAttribute)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>)
+					}
+					</tbody>
+				</table>
+
+				<button className={ClassNames('btn btn-primary', {
+					'btn-tight': this.props.subPanel
+				})} onClick={() => this.addRow(configEntry, baseAttribute)}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				<button className={ClassNames('btn mlm btn-secondary', {
+					'btn-tight': this.props.subPanel
+				})} onClick={() => this.exportJSON(configEntry, vals)}>
+					<FontAwesomeIcon icon={faDownload} />&nbsp;{ t('Export') }
+				</button>
+				<UploadButton
+					className={ClassNames('btn btn-secondary mls', {
+						'btn-tight': this.props.subPanel
+					})}
+					accept='application/json,.json'
+					onChange={e => this.importJSON(e, configEntry, baseAttribute)}
+					key={this.state.uploadFileKey}>
+					<FontAwesomeIcon icon={faUpload} />&nbsp;{ t('Import') }
+				</UploadButton>
+			</div>
+		)
+	}
+}
+
 export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
 	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>, IConfigManifestSettingsState> {
 
@@ -164,6 +332,37 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 			deleteConfirmItem: undefined,
 			showDeleteConfirm: false
 		})
+	}
+
+	renderConfigValue (item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
+		const { t } = this.props
+
+		const value = rawValue === undefined ? item.defaultVal : rawValue
+
+		switch (item.type) {
+			case ConfigManifestEntryType.BOOLEAN:
+				return value ? t('true') : t('false')
+			case ConfigManifestEntryType.TABLE:
+				return t('{{count}} rows', {count: ((rawValue as any[] || []).length)})
+			default:
+				return value.toString()
+		}
+	}
+
+	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
+		const baseAttribute = `config.${valIndex}.value`
+		const { t, collection, object } = this.props
+		if (item.type === ConfigManifestEntryType.TABLE) {
+			const item2 = item as ConfigManifestEntryTable
+			return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+		} else {
+			return (
+				<label className='field'>
+					{t('Value')}
+					{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+				</label>
+			)
+		}
 	}
 
 	renderItems () {
