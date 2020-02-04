@@ -250,4 +250,48 @@ export namespace ServerPlayoutAdLibAPI {
 			updateTimeline(rundown.studioId)
 		})
 	}
+	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			if (!rundown.currentPartId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+
+			let showStyleBase = rundown.getShowStyleBase()
+
+			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
+			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
+			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
+
+			const query = literal<Mongo.Query<Piece>>({
+				rundownId: rundown._id,
+				sourceLayerId: sourceLayer._id,
+				startedPlayback: {
+					$exists: true
+				}
+			})
+
+			if (sourceLayer.stickyOriginalOnly) {
+				// Ignore adlibs if using original only
+				query.adLibSourceId = {
+					$exists: false
+				}
+			}
+
+			const lastPieces = Pieces.find(query, {
+				sort: {
+					startedPlayback: -1
+				},
+				limit: 1
+			}).fetch()
+
+			if (lastPieces.length > 0) {
+				const currentPart = Parts.findOne(rundown.currentPartId)
+				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
+
+				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
+				innerStartAdLibPiece(rundown, false, rundown.currentPartId, lastPiece)
+			}
+		})
+	}
 }
