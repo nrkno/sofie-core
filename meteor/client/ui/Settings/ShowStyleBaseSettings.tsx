@@ -463,9 +463,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 			_id: this.props.showStyleBase._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
 			name: t('New Source'),
-			type: SourceLayerType.UNKNOWN,
-			unlimited: false,
-			onPGMClean: true
+			type: SourceLayerType.UNKNOWN
 		})
 
 		ShowStyleBases.update(this.props.showStyleBase._id, {
