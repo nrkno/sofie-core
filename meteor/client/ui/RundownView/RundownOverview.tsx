@@ -14,7 +14,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { PartExtended } from '../../../lib/Rundown'
 import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
-import { FindPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances';
+import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances';
 
 interface SegmentUi extends Segment {
 	items: Array<PartUi>
@@ -136,7 +136,7 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 		const partInstances = playlist.getActivePartInstances()
 
 		parts.forEach(p => {
-			const instance = FindPartInstanceOrWrapToTemporary(partInstances, p)
+			const instance = findPartInstanceOrWrapToTemporary(partInstances, p)
 			segmentsMap[p.segmentId].items.push({
 				instance,
 				pieces: [],

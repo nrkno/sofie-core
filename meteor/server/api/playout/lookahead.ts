@@ -8,7 +8,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { orderPieces } from './pieces'
 import { literal, clone } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance, WrapPieceToTemporaryInstance, WrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, wrapPieceToTemporaryInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { selectNextPart } from './lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
@@ -231,7 +231,7 @@ function findObjectsForPart (
 	partInfo.pieces.forEach(piece => {
 		if (piece.content && piece.content.timelineObjects) {
 			// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
-			const pieceInstanceId = partInstanceId ? WrapPieceToInstance(piece, partInstanceId)._id : piece._id
+			const pieceInstanceId = partInstanceId ? wrapPieceToInstance(piece, partInstanceId)._id : piece._id
 
 			_.each(piece.content.timelineObjects, (obj) => {
 				if (obj) {
@@ -314,7 +314,7 @@ function findObjectsForPart (
 				const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
 
 				// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
-				const pieceInstanceId = partInstanceId ? WrapPieceToInstance(piece, partInstanceId)._id : piece._id
+				const pieceInstanceId = partInstanceId ? wrapPieceToInstance(piece, partInstanceId)._id : piece._id
 				
 				res.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
 					...obj,

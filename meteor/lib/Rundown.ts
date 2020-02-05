@@ -14,8 +14,8 @@ import { Rundown } from './collections/Rundowns'
 import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
-import { PartInstance, FindPartInstanceOrWrapToTemporary } from './collections/PartInstances';
-import { PieceInstance, PieceInstances, WrapPieceToTemporaryInstance } from './collections/PieceInstances';
+import { PartInstance, findPartInstanceOrWrapToTemporary } from './collections/PartInstances';
+import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances';
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -78,7 +78,7 @@ function getPieceInstancesForPartInstance(partInstance: PartInstance) {
 	if (partInstance.isTemporary) {
 		return Pieces.find({
 			partId: partInstance.part._id
-		}).map(p => WrapPieceToTemporaryInstance(p, partInstance._id)) 
+		}).map(p => wrapPieceToTemporaryInstance(p, partInstance._id)) 
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
 	}
@@ -157,7 +157,7 @@ export function getResolvedSegment (
 			let tmpFollowingPart = fetchNext(segmentsAndParts.parts, last(partsInSegment))
 
 			if (tmpFollowingPart) {
-				const tmpFollowingPartInstance = FindPartInstanceOrWrapToTemporary(activePartInstances, tmpFollowingPart)
+				const tmpFollowingPartInstance = findPartInstanceOrWrapToTemporary(activePartInstances, tmpFollowingPart)
 				const pieces = getPieceInstancesForPartInstance(tmpFollowingPartInstance)
 
 				followingPart = literal<PartExtended>({
@@ -210,7 +210,7 @@ export function getResolvedSegment (
 		let previousPart: PartExtended | undefined
 		// fetch all the pieces for the parts
 		partsE = _.map(partsInSegment, (part, itIndex) => {
-			const partInstance = FindPartInstanceOrWrapToTemporary(activePartInstances, part)
+			const partInstance = findPartInstanceOrWrapToTemporary(activePartInstances, part)
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface

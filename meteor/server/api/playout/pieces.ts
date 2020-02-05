@@ -28,7 +28,7 @@ import { prefixAllObjectIds } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
-import { PieceInstance, ResolvedPieceInstance, WrapPieceToTemporaryInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, ResolvedPieceInstance, wrapPieceToTemporaryInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
 export interface PieceResolved extends Piece {

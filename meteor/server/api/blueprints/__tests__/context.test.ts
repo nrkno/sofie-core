@@ -12,7 +12,7 @@ import { DBPart } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { Pieces } from '../../../../lib/collections/Pieces'
-import { WrapPartToTemporaryInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances';
+import { wrapPartToTemporaryInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances';
 import { PieceInstances } from '../../../../lib/collections/PieceInstances';
 
 describe('Test blueprint api context', () => {
@@ -435,7 +435,7 @@ describe('Test blueprint api context', () => {
 				_id: 'not-a-real-part'
 			}
 
-			const tmpPart = WrapPartToTemporaryInstance(mockPart as DBPart)
+			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
 			const context = new PartEventContext(rundown, undefined, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
@@ -741,7 +741,7 @@ describe('Test blueprint api context', () => {
 			const part = rundown.getParts()[3]
 			expect(part).toBeTruthy()
 			
-			const partInstance = WrapPartToTemporaryInstance(part)
+			const partInstance = wrapPartToTemporaryInstance(part)
 			const ingestPart = context.getIngestDataForPartInstance(partInstance)
 			expect(ingestPart).toBeUndefined()
 		})
@@ -767,7 +767,7 @@ describe('Test blueprint api context', () => {
 				} as any
 			})
 
-			const partInstance = WrapPartToTemporaryInstance(part)
+			const partInstance = wrapPartToTemporaryInstance(part)
 			const ingestPart = context.getIngestDataForPartInstance(partInstance)
 			expect(ingestPart).toEqual({
 				fakeData: true

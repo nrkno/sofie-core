@@ -18,7 +18,7 @@ import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0';
-import { FindPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances';
+import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances';
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -78,7 +78,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 
 				return extendMandadory<DBSegment, SegmentUi>(segment, {
 					items: _.map(parts, (part, index) => {
-						const instance = FindPartInstanceOrWrapToTemporary(allPartInstances, part)
+						const instance = findPartInstanceOrWrapToTemporary(allPartInstances, part)
 						if (part.displayDurationGroup && (
 							(displayDurationGroups[part.displayDurationGroup]) ||
 							// or there is a following member of this displayDurationGroup

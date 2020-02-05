@@ -77,7 +77,7 @@ export class PartInstance implements DBPartInstance {
 
 }
 
-export function WrapPartToTemporaryInstance (part: DBPart): PartInstance {
+export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
 	return new PartInstance({
 		_id: `${part._id}_tmp_instance`,
 		rundownId: part.rundownId,
@@ -87,8 +87,8 @@ export function WrapPartToTemporaryInstance (part: DBPart): PartInstance {
 	}, true)
 }
 
-export function FindPartInstanceOrWrapToTemporary (partInstances: PartInstance[], part: DBPart): PartInstance {
-	return partInstances.find(instance => instance.part._id === part._id) || WrapPartToTemporaryInstance(part)
+export function findPartInstanceOrWrapToTemporary (partInstances: PartInstance[], part: DBPart): PartInstance {
+	return partInstances.find(instance => instance.part._id === part._id) || wrapPartToTemporaryInstance(part)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>('partInstances', { transform: (doc) => applyClassToDocument(PartInstance, doc) })

@@ -23,7 +23,7 @@ export interface ResolvedPieceInstance extends PieceInstance, IBlueprintResolved
 	piece: Piece
 }
 
-export function WrapPieceToTemporaryInstance (piece: Piece, partInstanceId: string): PieceInstance {
+export function wrapPieceToTemporaryInstance (piece: Piece, partInstanceId: string): PieceInstance {
 	return literal<PieceInstance>({
 		isTemporary: true,
 		_id: `${piece._id}_tmp_instance`,
@@ -33,11 +33,11 @@ export function WrapPieceToTemporaryInstance (piece: Piece, partInstanceId: stri
 	})
 }
 
-export function FindPieceInstanceOrWrapToTemporary (partInstances: PieceInstance[], partInstanceId: string, piece: Piece): PieceInstance {
-	return partInstances.find(instance => instance.piece._id === piece._id) || WrapPieceToTemporaryInstance(piece, partInstanceId)
+export function findPieceInstanceOrWrapToTemporary (partInstances: PieceInstance[], partInstanceId: string, piece: Piece): PieceInstance {
+	return partInstances.find(instance => instance.piece._id === piece._id) || wrapPieceToTemporaryInstance(piece, partInstanceId)
 }
 
-export function WrapPieceToInstance(piece: Piece, partInstanceId: string): PieceInstance {
+export function wrapPieceToInstance(piece: Piece, partInstanceId: string): PieceInstance {
 	return {
 		_id: `${partInstanceId}_${piece._id}`,
 		rundownId: piece.rundownId,

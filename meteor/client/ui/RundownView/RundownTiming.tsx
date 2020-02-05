@@ -11,7 +11,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import * as ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { PartInstance, FindPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances';
+import { PartInstance, findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances';
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -279,7 +279,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 		if (playlist && parts) {
 			parts.forEach((origPart, itIndex) => {
-				const partInstance = FindPartInstanceOrWrapToTemporary(partInstances, origPart)
+				const partInstance = findPartInstanceOrWrapToTemporary(partInstances, origPart)
 
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1

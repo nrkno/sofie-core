@@ -9,7 +9,7 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
 import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise, asyncCollectionFindFetch, literal } from '../../../lib/lib'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, WrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
 import { getPartsAfter } from './lib';
 
@@ -230,7 +230,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 				   const affectedInstances = getInstancesToUpdate().filter(i => i.part._id === partId)
 				   // insert instance into any active instances
 				   for (const partInstance of affectedInstances) {
-						ps.push(asyncCollectionInsert(PieceInstances, WrapPieceToInstance(pieceToInsert, partInstance._id)))
+						ps.push(asyncCollectionInsert(PieceInstances, wrapPieceToInstance(pieceToInsert, partInstance._id)))
 				   }
 
 				   ps.push(asyncCollectionInsert(Pieces, pieceToInsert))

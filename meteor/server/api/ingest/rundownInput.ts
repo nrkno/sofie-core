@@ -60,7 +60,7 @@ import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist } from '../../../l
 import { Mongo } from 'meteor/mongo'
 import { isTooCloseToAutonext } from '../playout/lib';
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances';
-import { PieceInstances, WrapPieceToInstance } from '../../../lib/collections/PieceInstances';
+import { PieceInstances, wrapPieceToInstance } from '../../../lib/collections/PieceInstances';
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -506,7 +506,7 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 				const newPieces = piecesForPart.filter(p => !currentPieceInstancesMap[p._id])
 				const insertedIds: string[] = []
 				for(const newPiece of newPieces) {
-					const newPieceInstance = WrapPieceToInstance(newPiece, partInstance._id)
+					const newPieceInstance = wrapPieceToInstance(newPiece, partInstance._id)
 					ps.push(asyncCollectionInsert(PieceInstances, newPieceInstance))
 					insertedIds.push(newPieceInstance._id)
 				}
