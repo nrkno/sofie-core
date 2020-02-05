@@ -23,7 +23,8 @@ import {
 	IngestRundown,
 	IngestPart,
 	IBlueprintPartInstance,
-	IBlueprintPieceInstance
+	IBlueprintPieceInstance,
+	IBlueprintPartDB
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig } from './config'
@@ -350,11 +351,11 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/** Get all parts in this rundown */
-	getParts (): Array<IBlueprintPartInstance> {
-		return this.rundown.getAllPartInstances()
+	getParts (): Array<IBlueprintPartDB> {
+		return this.rundown.getParts()
 	}
 	/** Get the part related to this AsRunEvent */
-	getPart (partInstanceId?: string): IBlueprintPartInstance | undefined {
+	getPartInstance (partInstanceId?: string): IBlueprintPartInstance | undefined {
 		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
 		check(partInstanceId, String)
 		if (partInstanceId) {
@@ -364,14 +365,17 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/** Get the mos story related to a part */
-	getIngestDataForPart (part: IBlueprintPartInstance): IngestPart | undefined {
-		check(part.part._id, String)
+	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
+		check(part._id, String)
 
 		try {
-			return loadIngestDataCachePart(this.rundown._id, this.rundown.externalId, part.part._id, part.part.externalId).data
+			return loadIngestDataCachePart(this.rundown._id, this.rundown.externalId, part._id, part.externalId).data
 		} catch (e) {
 			return undefined
 		}
+	}
+	getIngestDataForPartInstance (partInstance: IBlueprintPartInstance): IngestPart | undefined {
+		return this.getIngestDataForPart(partInstance.part)
 	}
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown (): IngestRundown | undefined {
@@ -386,7 +390,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	 * Returns a piece.
 	 * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent
 	 */
-	getPiece (pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
+	getPieceInstance (pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
 		check(pieceInstanceId, Match.Optional(String))
 		pieceInstanceId = pieceInstanceId || this.asRunEvent.pieceInstanceId
 		if (pieceInstanceId) {
@@ -400,7 +404,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	 * Returns pieces in a part
 	 * @param id Id of part to fetch pieces in
 	 */
-	getPieces (partInstanceId: string): Array<IBlueprintPieceInstance> {
+	getPieceInstances (partInstanceId: string): Array<IBlueprintPieceInstance> {
 		check(partInstanceId, String)
 		if (partInstanceId) {
 			return PieceInstances.find({
