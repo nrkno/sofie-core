@@ -151,7 +151,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	renderZoomTimeline () {
 		return this.props.parts.map((part, index, array) => {
 			return (
-				<SegmentTimelinePart key={part.instance._id}
+				<SegmentTimelinePart key={part.partId}
 					segment={this.props.segment}
 					playlist={this.props.playlist}
 					studio={this.props.studio}
@@ -427,7 +427,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
 				return (
-					<SegmentTimelinePart key={part.instance._id}
+					<SegmentTimelinePart key={part.partId}
 						{...this.props}
 						onPieceClick={this.props.onItemClick}
 						onPieceDoubleClick={this.props.onItemDoubleClick}

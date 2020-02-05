@@ -15,6 +15,8 @@ import { Pieces } from './Pieces'
 export interface DBPartInstance extends IBlueprintPartInstance {
 	rundownId: string
 
+	isScratch?: boolean
+
 	/** Rank of the take that this PartInstance belongs to */
 	takeCount: number
 
@@ -24,6 +26,12 @@ export interface DBPartInstance extends IBlueprintPartInstance {
 export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
+
+	/**
+	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
+	 * is still being made and the piece instances are being created.
+	 */
+	public readonly isScratch?: boolean
 
 	public takeCount: number
 

@@ -431,7 +431,8 @@ export function setNextPart (
 				takeCount: newTakeCount,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
-				part: nextPart
+				part: nextPart,
+				isScratch: true
 			}))
 
 			const rawPieces = Pieces.find({
@@ -439,7 +440,13 @@ export function setNextPart (
 				partId: nextPart._id
 			}).fetch()
 			const pieceInstances = _.map(rawPieces, piece => wrapPieceToInstance(piece, newInstanceId))
-			ps.push(asyncCollectionInsertMany(PieceInstances, pieceInstances))
+			ps.push(asyncCollectionInsertMany(PieceInstances, pieceInstances).then(() =>
+				asyncCollectionUpdate(PartInstances, newInstanceId, {
+					$set: {
+						isScratch: false
+					}
+				})
+			))
 
 			// Remove any instances which havent been taken
 			const instancesIdsToRemove = waitForPromise(pNonTakenPartInstances).map(p => p._id).filter(id => id != newInstanceId)

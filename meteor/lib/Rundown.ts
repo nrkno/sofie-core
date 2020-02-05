@@ -14,8 +14,8 @@ import { Rundown } from './collections/Rundowns'
 import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
-import { PartInstance, findPartInstanceOrWrapToTemporary } from './collections/PartInstances';
-import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances';
+import { PartInstance, findPartInstanceOrWrapToTemporary } from './collections/PartInstances'
+import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -31,6 +31,7 @@ export interface SegmentExtended extends DBSegment {
 }
 
 export interface PartExtended {
+	partId: string
 	instance: PartInstance
 	/** Pieces belonging to this part */
 	pieces: Array<PieceExtended>
@@ -74,11 +75,11 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 }
 
-function getPieceInstancesForPartInstance(partInstance: PartInstance) {
-	if (partInstance.isTemporary) {
+function getPieceInstancesForPartInstance (partInstance: PartInstance) {
+	if (partInstance.isTemporary || partInstance.isScratch) {
 		return Pieces.find({
 			partId: partInstance.part._id
-		}).map(p => wrapPieceToTemporaryInstance(p, partInstance._id)) 
+		}).map(p => wrapPieceToTemporaryInstance(p, partInstance._id))
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
 	}
@@ -161,6 +162,7 @@ export function getResolvedSegment (
 				const pieces = getPieceInstancesForPartInstance(tmpFollowingPartInstance)
 
 				followingPart = literal<PartExtended>({
+					partId: tmpFollowingPart._id,
 					instance: tmpFollowingPartInstance,
 					pieces: _.map(pieces, (piece) => literal<PieceExtended>({
 						instance: piece,
@@ -215,6 +217,7 @@ export function getResolvedSegment (
 
 			// extend objects to match the Extended interface
 			let partE = literal<PartExtended>({
+				partId: part._id,
 				instance: partInstance,
 				pieces: _.map(getPieceInstancesForPartInstance(partInstance), (piece) => literal<PieceExtended>({
 					instance: piece,

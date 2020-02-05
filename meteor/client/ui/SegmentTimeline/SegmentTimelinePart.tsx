@@ -261,8 +261,6 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
-	private _configValueMemo: { [key: string]: ConfigItemValue } = {}
-
 	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
 
@@ -291,7 +289,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps) {
+	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
 		const isLive = (nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id)
 		const isNext = (nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id)
 
@@ -439,15 +437,15 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	convertHexToRgba = (hexColor: string): { red: number, green: number, blue: number } | undefined => {
-		if (hexColor.substr(0, 1) !== "#") return
+	static convertHexToRgba (hexColor: string): { red: number, green: number, blue: number } | undefined {
+		if (hexColor.substr(0, 1) !== '#') return
 		if (hexColor.length !== 7) return
 
 		const red = parseInt(hexColor.substr(1, 2), 16)
 		const green = parseInt(hexColor.substr(3, 2), 16)
 		const blue = parseInt(hexColor.substr(5, 2), 16)
 
-		return {red, green, blue}
+		return { red, green, blue }
 	}
 
 	render () {
@@ -458,7 +456,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
 		let invalidReasonColorVars: React.CSSProperties | undefined = undefined
 		if (innerPart.invalidReason && innerPart.invalidReason.color) {
-			const invalidColor = this.convertHexToRgba(innerPart.invalidReason.color)
+			const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
 			if (invalidColor) {
 				invalidReasonColorVars = {
 					'--invalid-reason-color-opaque': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
