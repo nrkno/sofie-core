@@ -95,6 +95,7 @@ export function resetRundown (rundown: Rundown) {
 			startedPlayback: 1,
 			userDuration: 1,
 			definitelyEnded: 1,
+			stoppedPlayback: 1,
 			disabled: 1,
 			hidden: 1
 		}
