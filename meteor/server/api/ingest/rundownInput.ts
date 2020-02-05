@@ -60,7 +60,7 @@ import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist } from '../../../l
 import { Mongo } from 'meteor/mongo'
 import { isTooCloseToAutonext } from '../playout/lib';
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances';
-import { PieceInstances, wrapPieceToInstance } from '../../../lib/collections/PieceInstances';
+import { PieceInstances, wrapPieceToInstance, PieceInstance } from '../../../lib/collections/PieceInstances';
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -481,7 +481,7 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 
 	const ps: Array<Promise<any>> = []
 	
-	function syncPartChanges(partInstance: PartInstance | undefined) {
+	function syncPartChanges(partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
 		// We need to do this locally to avoid wiping out any stored changes
 		if (partInstance) {
 			const newPart = parts.find(p => p._id === partInstance.part._id)
@@ -499,7 +499,7 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 
 				// Pieces
 				const piecesForPart = pieces.filter(p => p.partId === newPart._id)
-				const currentPieceInstances = PieceInstances.find({ partInstanceId: partInstance._id }).fetch() // TODO-ASAP - maybe this should be batched
+				const currentPieceInstances = rawPieceInstances.filter(p => p.partInstanceId === partInstance._id)
 				const currentPieceInstancesMap = normalizeArrayFunc(currentPieceInstances, p => p.piece._id)
 
 				// insert
@@ -536,10 +536,12 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 			}
 		}
 	}
-	// TODO - should this be done for all of playlist.getActivePartInstances() ?
+	
 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-	syncPartChanges(currentPartInstance)
-	syncPartChanges(nextPartInstance)
+	const partInstanceIds = _.compact([currentPartInstance, nextPartInstance]).map(i => i._id)
+	const rawPieceInstances = partInstanceIds ? PieceInstances.find({ partInstanceId: { $in: partInstanceIds }}).fetch() : []
+	syncPartChanges(currentPartInstance, rawPieceInstances)
+	syncPartChanges(nextPartInstance, rawPieceInstances)
 
 	waitForPromiseAll(ps)
 }

@@ -325,7 +325,6 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 	}
 
 	// Also update the nextPartInstance
-	// TODO-ASAP - should this be done for the current one too, in case the stop was int he previous somehow?
 	const { nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
 	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
 		const toRemove = nextPartInstance.getAllPieceInstances()
