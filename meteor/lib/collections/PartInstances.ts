@@ -15,7 +15,7 @@ import { Pieces } from './Pieces'
 export interface DBPartInstance extends IBlueprintPartInstance {
 	rundownId: string
 
-	isScratch?: boolean
+	isScratch?: true
 
 	/** Rank of the take that this PartInstance belongs to */
 	takeCount: number
@@ -31,7 +31,7 @@ export class PartInstance implements DBPartInstance {
 	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
 	 * is still being made and the piece instances are being created.
 	 */
-	public readonly isScratch?: boolean
+	public readonly isScratch?: true
 
 	public takeCount: number
 

@@ -442,8 +442,8 @@ export function setNextPart (
 			const pieceInstances = _.map(rawPieces, piece => wrapPieceToInstance(piece, newInstanceId))
 			ps.push(asyncCollectionInsertMany(PieceInstances, pieceInstances).then(() =>
 				asyncCollectionUpdate(PartInstances, newInstanceId, {
-					$set: {
-						isScratch: false
+					$unset: {
+						isScratch: 1
 					}
 				})
 			))
