@@ -61,13 +61,15 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
 
-			switch (this.props.piece.sourceLayer.type) {
-				case SourceLayerType.VT:
-					objId = (piece.content as VTContent).fileName.toUpperCase()
-					break
-				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-					break
+			if (piece.content) {
+				switch (this.props.layer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.content as VTContent).fileName ? (piece.content as VTContent).fileName.toUpperCase() : undefined
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.content as LiveSpeakContent).fileName ? (piece.content as VTContent).fileName.toUpperCase() : undefined
+						break
+				}
 			}
 
 			if (objId && objId !== this.objId) {
