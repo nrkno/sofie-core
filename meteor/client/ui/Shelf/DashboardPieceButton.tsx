@@ -64,13 +64,15 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 			const piece = this.props.item as any as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			switch (this.props.layer.type) {
-				case SourceLayerType.VT:
-					objId = (piece.content as VTContent).fileName.toUpperCase()
-					break
-				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-					break
+			if (piece.content) {
+				switch (this.props.layer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.content as VTContent).fileName ? (piece.content as VTContent).fileName.toUpperCase() : undefined
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.content as LiveSpeakContent).fileName ? (piece.content as VTContent).fileName.toUpperCase() : undefined
+						break
+				}
 			}
 
 			if (objId && objId !== this.objId) {
