@@ -391,26 +391,31 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 			rundownId: rundownId,
 			partId: currentPartId,
 			dynamicallyInserted: true,
-			$or: [{
-				stoppedPlayback: {
-					$eq: 0
+			$and: [
+				{
+					$or: [{
+						stoppedPlayback: {
+							$eq: 0
+						}
+					}, {
+						stoppedPlayback: {
+							$exists: false
+						}
+					}],
+				},
+				{
+					definitelyEnded: {
+						$exists: false
+					}
 				}
-			}, {
-				stoppedPlayback: {
-					$exists: false
-				}
-			}, {
-				definitelyEnded: {
-					$exists: false
-				}
-			}],
+			],
 			playoutDuration: {
 				$exists: false
 			},
 			adLibSourceId: {
 				$exists: true
 			}
-		}).fetch()
+		}).fetch().filter(p => !(p.userDuration && p.userDuration.duration))
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((piece) => {
