@@ -82,7 +82,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}).fetch() : [], (instance) => instance.piece.adLibSourceId)
 
 	// Convert to array of ids as that is all that is needed
-	const unfinishedPieceInstanceIds:{ [adlibId: string]: string[] } = {}
+	const unfinishedPieceInstanceIds: { [adlibId: string]: string[] } = {}
 	_.each(unfinishedPieceInstances, (grp, id) => unfinishedPieceInstanceIds[id] = _.map(grp, instance => instance._id))
 
 	return {
