@@ -26,7 +26,7 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists';
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -170,7 +170,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				rundowns.forEach((rundown) => {
 					let unsyncedId = rundown._id + '_unsynced'
 					let newNotification: Notification | undefined = undefined
-	
+
 					if (rundown.unsynced) {
 						newNotification = new Notification(
 							unsyncedId,
@@ -215,7 +215,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						delete this._rundownStatus[unsyncedId]
 						this._rundownStatusDep.changed()
 					}
-	
+
 					let rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
@@ -505,7 +505,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						}
 					], -1)
 				}
-	
+
 				if (newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
 					this._rundownImportVersionStatus = newNotification
 					this._rundownImportVersionStatusDep.changed()

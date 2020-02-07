@@ -347,7 +347,7 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[]): { part: Part, index: number} | undefined {
 	let possibleParts = parts
 
-	let offset = 0;
+	let offset = 0
 	if (previousPartInstance !== null) {
 		const currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
 		// TODO - choose something better for next?
@@ -376,7 +376,7 @@ export function setNextPart (
 
 	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
 	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
-	
+
 	const pNonTakenPartInstances = asyncCollectionFindFetch(PartInstances, {
 		rundownId: { $in: acceptableRundowns },
 		isTaken: { $ne: true }

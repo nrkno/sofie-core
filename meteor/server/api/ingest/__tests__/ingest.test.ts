@@ -8,7 +8,7 @@ import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { updatePartRanks } from '../../rundown'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists';
+import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 

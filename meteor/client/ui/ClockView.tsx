@@ -17,8 +17,8 @@ import { getCurrentTime, objectPathGet, extendMandadory, literal } from '../../l
 import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
-import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0';
-import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances';
+import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0'
+import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -125,7 +125,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 		}
 	})(
 		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
-			componentWillMount() {
+			componentWillMount () {
 				this.autorun(() => {
 					let playlist = RundownPlaylists.findOne(this.props.playlistId)
 					if (this.props.playlist) {
@@ -140,9 +140,9 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						this.subscribe(PubSub.rundowns, {
 							playlistId: this.props.playlistId
 						})
-						
+
 						const rundownIds = playlist.getRundownIDs()
-						
+
 						this.subscribe(PubSub.segments, {
 							rundownId: { $in: this.props.rundownIds }
 						})
@@ -157,7 +157,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 				})
 			}
 
-			render() {
+			render () {
 				const { playlist, segments, showStyleBaseId } = this.props
 
 				if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {

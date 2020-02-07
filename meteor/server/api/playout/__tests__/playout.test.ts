@@ -10,11 +10,11 @@ import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { deactivate } from '../../userActions'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices';
-import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands';
-import { Pieces } from '../../../../lib/collections/Pieces';
-import { AdLibPieces } from '../../../../lib/collections/AdLibPieces';
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice';
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
+import { Pieces } from '../../../../lib/collections/Pieces'
+import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 const Timeline = mockupCollection(OrgTimeline)
 

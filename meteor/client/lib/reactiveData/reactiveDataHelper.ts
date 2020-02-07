@@ -43,14 +43,14 @@ const isolatedAutorunsMem: {
 	[key: string]: {
 		dependancy: Tracker.Dependency
 		value: any
-	} 
+	}
 } = {}
 
 export function memoizedIsolatedAutorun<T> (fnc: (...params) => T, functionName: string, ...params): T {
 	function hashFncAndParams (fName: string, p: any): string {
-		return fName + "_" + getHash(JSON.stringify(p))
+		return fName + '_' + getHash(JSON.stringify(p))
 	}
-	
+
 	let result: T
 	const fId = hashFncAndParams(functionName, params)
 	const parentComputation = Tracker.currentComputation
@@ -81,7 +81,7 @@ export function memoizedIsolatedAutorun<T> (fnc: (...params) => T, functionName:
 			})
 			return computation
 		})
-		var gc = setInterval(() => {
+		let gc = setInterval(() => {
 			if (!dep.hasDependents()) {
 				clearInterval(gc)
 				computation.stop()

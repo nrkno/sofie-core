@@ -13,7 +13,7 @@ import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { UserActionAPI } from '../../../lib/api/userActions'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists';
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)

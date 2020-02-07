@@ -37,7 +37,7 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector, token) {
 	// Enforce only not-reset
 	selector = selector || {}
 	selector.reset = { $ne: true }
-	
+
 	if (RundownSecurity.allowReadAccess(selector, token, this)) {
 		return PieceInstances.find(selector, modifier)
 	}

@@ -27,11 +27,11 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownLayoutFilter, RundownLayoutFilterBase, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { Random } from 'meteor/random';
+import { Random } from 'meteor/random'
 import { literal, normalizeArray } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper';
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances';
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -615,7 +615,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount () {
 		this.subscribe(PubSub.rundowns, {
 			playlistId: this.props.playlist._id
 		})
@@ -689,7 +689,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 
 		this.usedHotkeys.length = 0
-	} 
+	}
 
 	refreshKeyboardHotkeys () {
 		if (!this.props.studioMode) return

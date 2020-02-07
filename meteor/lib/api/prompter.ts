@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
 import { Part } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
-import { RundownPlaylist, RundownPlaylists } from '../collections/RundownPlaylists';
+import { RundownPlaylist, RundownPlaylists } from '../collections/RundownPlaylists'
 
 export enum PrompterMethods {
 	getPrompterData = 'PrompterMethods.getPrompterData'

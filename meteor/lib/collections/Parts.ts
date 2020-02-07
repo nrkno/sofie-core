@@ -88,10 +88,10 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-        title: string
-        description?: string
-        color?: string
-    }
+		title: string
+		description?: string
+		color?: string
+	}
 	public floated?: boolean
 	// From IBlueprintPartDB:
 	public _id: string

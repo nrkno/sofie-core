@@ -62,8 +62,8 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
-import { AdlibSegmentUi } from './Shelf/AdLibPanel';
-import { OffsetPosition } from '../utils/positions';
+import { AdlibSegmentUi } from './Shelf/AdLibPanel'
+import { OffsetPosition } from '../utils/positions'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1373,7 +1373,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		} else if (this.props.playlist &&
 			prevProps.playlist && !prevProps.playlist.active && this.props.playlist.active &&
 			this.props.playlist.nextPartInstanceId) {
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+			scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
 		} else if (
 			// after take
 			(this.props.playlist &&
@@ -1465,7 +1465,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 
 				})
 			}
-	}
+		}
 	}
 
 	componentWillUnmount () {

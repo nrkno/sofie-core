@@ -178,7 +178,7 @@ export function createPieceGroup (
 	})
 }
 
-function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, pieceMap: { [key: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
+function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pieceMap: { [key: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
 	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
 		time: baseTime
 	})
@@ -188,7 +188,7 @@ function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, piec
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
 		const id = (obj.metadata || {}).pieceId
-		
+
 		if (!id) return
 
 		const pieceInstance = pieceMap[id]
@@ -221,7 +221,7 @@ function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, piec
 	if (_.size(pieceMap) !== resolvedPieces.length) {
 		logger.warn(`Got ${resolvedPieces.length} ordered pieces. Expected ${_.size(pieceMap)}. for ${resolveForStr}`)
 	}
-	
+
 	// Sort the pieces by time, then transitions first
 	resolvedPieces.sort((a, b) => {
 		if (a.resolvedStart < b.resolvedStart) {
@@ -263,7 +263,7 @@ export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceIns
 			o.enable.start = 1
 		}
 	})
-	
+
 	const resolvedPieces = resolvePieceTimeline(objs, 0, itemMap, `PartInstance #${partInstance._id}`)
 
 	// crop infinite pieces
@@ -398,7 +398,7 @@ export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, par
 			}
 		}
 	})
-	
+
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 		let contentObjects = newPieceInstance.piece.content.timelineObjects
 		const objs = prefixAllObjectIds(_.compact(

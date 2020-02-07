@@ -11,7 +11,7 @@ import { check } from 'meteor/check'
 import { Parts } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists';
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development

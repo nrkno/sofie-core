@@ -10,7 +10,7 @@ import { getStudioFromDevice, canBeUpdated } from '../lib'
 import { handleRemovedRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import { handleMosRundownData, handleMosFullStory, handleMosDeleteStory, handleInsertParts, handleSwapStories, handleMoveStories, handleMosRundownMetadata } from './ingest'
-import { PartInstances } from '../../../../lib/collections/PartInstances';
+import { PartInstances } from '../../../../lib/collections/PartInstances'
 
 export namespace MosIntegration {
 	export function mosRoCreate (id: string, token: string, rundown: MOS.IMOSRunningOrder) {

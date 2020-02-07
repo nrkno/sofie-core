@@ -474,7 +474,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			this._placeHolderElement = false
 
 			const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
-			
+
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
 

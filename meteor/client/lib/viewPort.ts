@@ -3,7 +3,7 @@ import * as Velocity from 'velocity-animate'
 
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts } from '../../lib/collections/Parts'
-import { PartInstances } from '../../lib/collections/PartInstances';
+import { PartInstances } from '../../lib/collections/PartInstances'
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false

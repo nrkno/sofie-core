@@ -35,7 +35,7 @@ import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PartInstances } from '../../lib/collections/PartInstances';
+import { PartInstances } from '../../lib/collections/PartInstances'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {

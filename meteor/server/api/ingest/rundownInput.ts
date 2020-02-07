@@ -58,9 +58,9 @@ import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
 import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Mongo } from 'meteor/mongo'
-import { isTooCloseToAutonext } from '../playout/lib';
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances';
-import { PieceInstances, wrapPieceToInstance, PieceInstance } from '../../../lib/collections/PieceInstances';
+import { isTooCloseToAutonext } from '../playout/lib'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances, wrapPieceToInstance, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -182,7 +182,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 			let okToRemove: boolean = true
 			if (playlist.active) {
 				const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-				
+
 				if ((currentPartInstance && currentPartInstance.rundownId === rundown._id) || (isTooCloseToAutonext(currentPartInstance) && nextPartInstance && nextPartInstance.rundownId === rundown._id)) {
 					okToRemove = false
 				}
@@ -476,12 +476,12 @@ function updateRundownFromIngestData (
 	return didChange
 }
 
-function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DBPart[], pieces: Piece[]) {
+function syncChangesToSelectedPartInstances (playlist: RundownPlaylist, parts: DBPart[], pieces: Piece[]) {
 	// TODO-PartInstances - to be removed once new data flow
 
 	const ps: Array<Promise<any>> = []
-	
-	function syncPartChanges(partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
+
+	function syncPartChanges (partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
 		// We need to do this locally to avoid wiping out any stored changes
 		if (partInstance) {
 			const newPart = parts.find(p => p._id === partInstance.part._id)
@@ -505,7 +505,7 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 				// insert
 				const newPieces = piecesForPart.filter(p => !currentPieceInstancesMap[p._id])
 				const insertedIds: string[] = []
-				for(const newPiece of newPieces) {
+				for (const newPiece of newPieces) {
 					const newPieceInstance = wrapPieceToInstance(newPiece, partInstance._id)
 					ps.push(asyncCollectionInsert(PieceInstances, newPieceInstance))
 					insertedIds.push(newPieceInstance._id)
@@ -517,7 +517,7 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 					'piece._id': { $not: { $in: piecesForPart.map(p => p._id) } },
 					dynamicallyInserted: { $ne: true }
 				}))
-				
+
 				// update
 				for (const instance of currentPieceInstances) {
 					const piece = piecesForPart.find(p => p._id === instance.piece._id)
@@ -536,10 +536,10 @@ function syncChangesToSelectedPartInstances(playlist: RundownPlaylist, parts: DB
 			}
 		}
 	}
-	
+
 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 	const partInstanceIds = _.compact([currentPartInstance, nextPartInstance]).map(i => i._id)
-	const rawPieceInstances = partInstanceIds ? PieceInstances.find({ partInstanceId: { $in: partInstanceIds }}).fetch() : []
+	const rawPieceInstances = partInstanceIds ? PieceInstances.find({ partInstanceId: { $in: partInstanceIds } }).fetch() : []
 	syncPartChanges(currentPartInstance, rawPieceInstances)
 	syncPartChanges(nextPartInstance, rawPieceInstances)
 
@@ -743,7 +743,7 @@ function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) 
 		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
 	}
 	UpdateNext.ensureNextPartIsValid(playlist)
-	
+
 	triggerUpdateTimelineAfterIngestData(rundown._id, changedSegmentIds)
 }
 

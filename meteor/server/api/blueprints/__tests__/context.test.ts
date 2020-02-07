@@ -12,8 +12,8 @@ import { DBPart } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { Pieces } from '../../../../lib/collections/Pieces'
-import { wrapPartToTemporaryInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances';
-import { PieceInstances } from '../../../../lib/collections/PieceInstances';
+import { wrapPartToTemporaryInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 
 describe('Test blueprint api context', () => {
 
@@ -740,7 +740,7 @@ describe('Test blueprint api context', () => {
 
 			const part = rundown.getParts()[3]
 			expect(part).toBeTruthy()
-			
+
 			const partInstance = wrapPartToTemporaryInstance(part)
 			const ingestPart = context.getIngestDataForPartInstance(partInstance)
 			expect(ingestPart).toBeUndefined()

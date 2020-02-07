@@ -9,7 +9,7 @@ import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../../lib/collections/PartInstances';
+import { PartInstances } from '../../../../lib/collections/PartInstances'
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment

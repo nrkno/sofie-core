@@ -10,7 +10,7 @@ import { UpdateNext } from '../updateNext'
 
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances';
+import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 jest.mock('../../playout/playout')
 
 require('../api.ts') // include in order to create the Meteor methods needed

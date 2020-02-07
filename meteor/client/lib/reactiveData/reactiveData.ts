@@ -10,7 +10,7 @@ import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQu
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
-import * as _ from 'underscore';
+import * as _ from 'underscore'
 
 export namespace reactiveData {
 	export function getRRundownId (rundownId: string): ReactiveVar<string | undefined> {

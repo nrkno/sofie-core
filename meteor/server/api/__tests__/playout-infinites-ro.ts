@@ -344,7 +344,7 @@ export const testRO1: MockRO = {
 			'_id': 'gRQFPOgXaV7r_WqgNCPqVcAvsGc_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '18J8ymz6_XVRPRyBkqEh4a_HT_k_',
-			'_rank': 01,
+			'_rank': 1,
 			'externalId': '',
 			'title': 'SEERBILDE;SEERBILDE',
 			'typeVariant': 'grafikk',

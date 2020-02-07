@@ -29,8 +29,8 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { PartInstances } from '../../../lib/collections/PartInstances';
-import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel';
+import { PartInstances } from '../../../lib/collections/PartInstances'
+import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
@@ -256,7 +256,7 @@ const HOTKEY_GROUP = 'GlobalAdLibPanel'
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
-	
+
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 

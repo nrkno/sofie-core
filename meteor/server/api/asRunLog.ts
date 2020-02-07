@@ -130,10 +130,12 @@ export function reportRundownHasStarted (playlistOrId: RundownPlaylist | string,
 			content2: 'rundown'
 		}, !!playlist.rehearsal, timestamp)
 		if (event) handleEvent(event)
-	} else if (playlist)
+	} else if (playlist) {
 		logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
-	else
+ }
+	else {
 		logger.error(`playlist not found in reportRundownHasStarted "${playlistOrId}"`)
+ }
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
@@ -188,8 +190,9 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 				content2: 			'part'
 			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else
+		} else {
 			logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
+		}
 	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
 }
 export function reportPartHasStopped (partInstanceOrId: PartInstance | string , timestamp: Time) {

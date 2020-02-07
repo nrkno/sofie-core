@@ -151,7 +151,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	})
 
-	const segments = Segments.find({ rundownId: { $in: props.rundownIDs }}).fetch()
+	const segments = Segments.find({ rundownId: { $in: props.rundownIDs } }).fetch()
 
 	let notes: Array<PartNote> = []
 	_.each(segments, s => {

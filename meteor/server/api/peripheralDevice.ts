@@ -156,7 +156,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		if (results.length > 0) {
 			const playlistIds = _.map(areThereActiveRundownPlaylistsInStudio(studioId), r => r._id)
-			const allowedRundowns = Rundowns.find({ playlistId: { $in: playlistIds }}).fetch()
+			const allowedRundowns = Rundowns.find({ playlistId: { $in: playlistIds } }).fetch()
 			const allowedRundownsIds = _.map(allowedRundowns, r => r._id)
 
 			_.each(results, (o) => {

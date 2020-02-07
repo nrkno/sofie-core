@@ -315,7 +315,7 @@ function findObjectsForPart (
 
 				// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
 				const pieceInstanceId = partInstanceId ? wrapPieceToInstance(piece, partInstanceId)._id : piece._id
-				
+
 				res.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
 					...obj,
 					_id: '', // set later

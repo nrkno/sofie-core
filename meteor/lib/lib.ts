@@ -806,7 +806,7 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export function waitForPromiseAll<T>(ps: Array<Promise<T>>): Array<T> {
+export function waitForPromiseAll<T> (ps: Array<Promise<T>>): Array<T> {
 	return waitForPromise(Promise.all(ps))
 }
 

@@ -1,10 +1,10 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../__mocks__/helpers/database'
 import { getResolvedSegment } from '../Rundown'
-import { RundownPlaylists } from '../collections/RundownPlaylists';
-import { PartInstance, DBPartInstance } from '../collections/PartInstances';
-import * as _ from 'underscore';
-import { literal } from '../lib';
+import { RundownPlaylists } from '../collections/RundownPlaylists'
+import { PartInstance, DBPartInstance } from '../collections/PartInstances'
+import * as _ from 'underscore'
+import { literal } from '../lib'
 
 
 describe('lib/Rundown', () => {

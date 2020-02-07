@@ -35,7 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances';
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 interface IState {
 	outputLayers: {

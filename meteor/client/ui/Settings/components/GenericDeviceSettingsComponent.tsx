@@ -58,7 +58,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		} else {
 			this.finishEditItem(deviceId)
 		}
-	} 
+	}
 
 	handleConfirmRemoveCancel = (e) => {
 		this.setState({
@@ -237,7 +237,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			const propNames = config.map(o => (o as SubDeviceConfigManifestEntry).columnName)
 				.map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='action'>&nbsp;</th>)
-	
+
 			return (<React.Fragment>
 				<thead>
 					<tr className='hl'>
@@ -288,11 +288,11 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 				</thead>
 				<tbody>
 					{_.map(devices, (device: any, deviceId: string) => {
-						const configFieldKey = //configManifest.deviceTypesMapping ?
+						const configFieldKey = // configManifest.deviceTypesMapping ?
 							// configManifest.deviceTypesMapping[device[configManifest.typeField || 'type']] :
 							device[configManifest.typeField || 'type']
 						const configField = configManifest.config[configFieldKey]
-						
+
 						return <React.Fragment key={deviceId}>
 							{this.renderDeviceSummary(configManifest, deviceId, device, this.isItemEdited)}
 							{this.isItemEdited('settings.' + configManifest.id + '.' + deviceId) &&
@@ -410,10 +410,10 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 	/**
 	 * @todo add handler for new entry
-	 * 
-	 * @param configField 
-	 * @param obj 
-	 * @param prefix 
+	 *
+	 * @param configField
+	 * @param obj
+	 * @param prefix
 	 */
 	renderConfigTable (configField: TableConfigManifestEntry, obj: object, prefix: string) {
 		const { t } = this.props
@@ -427,7 +427,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			const propNames = config.map(o => (o as SubDeviceConfigManifestEntry).columnName)
 				.map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='actions'>&nbsp;</th>)
-	
+
 			return (<React.Fragment key={configField.id}>
 				<h2 className='mhn'>{t(configField.name)}</h2>
 				<table className='expando settings-config-table table'>
@@ -438,7 +438,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					</thead>
 					<tbody>
 						{_.map(tableContent, (tableEntry: any, i) => {
-						return <React.Fragment key={i}>
+							return <React.Fragment key={i}>
 							{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 							{this.isItemEdited(prefix + '' + i) &&
 								<tr className='expando-details hl' key={tableEntry.id + '-details'}>
@@ -458,7 +458,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 							</React.Fragment>})}
 					</tbody>
 				</table>
-	
+
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
 						<FontAwesomeIcon icon={faPlus} />
@@ -485,7 +485,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					<tbody>
 						{_.map(tableContent, (tableEntry: any, i) => {
 							const tableConfigField = configField.config[configField.deviceTypesMapping ? configField.deviceTypesMapping[tableEntry[configField.typeField || 'type']] : tableEntry[configField.typeField || 'type']]
-							
+
 							return <React.Fragment key={i}>
 								{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 								{this.isItemEdited(prefix + '' + i) &&
@@ -551,7 +551,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 			<ModalDialog title={t('Remove this item?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 				<p>{t('Are you sure you want to remove {{type}} "{{deviceId}}"?',
-					{ 
+					{
 						deviceId: (this.state.deleteConfirmItemPath && this.state.deleteConfirmItemPath.split('.').pop()),
 						type: (
 							this.state.deleteConfirmItemPath &&

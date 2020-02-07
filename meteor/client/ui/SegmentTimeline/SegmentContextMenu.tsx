@@ -7,8 +7,8 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
-import { IContextMenuContext } from '../RundownView';
-import { PartUi } from './SegmentTimelineContainer';
+import { IContextMenuContext } from '../RundownView'
+import { PartUi } from './SegmentTimelineContainer'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void

@@ -46,8 +46,8 @@ import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces';
-import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces';
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

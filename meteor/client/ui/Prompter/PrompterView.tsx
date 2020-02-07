@@ -117,7 +117,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				})
 			}
 		})
-		
+
 		this.autorun(() => {
 			let subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
@@ -153,7 +153,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
-	checkScrollToCurrent() {
+	checkScrollToCurrent () {
 		let playlistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id
 		let playlist = RundownPlaylists.findOne(playlistId || '')
 
@@ -489,7 +489,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 	}
 
-	shouldComponentUpdate(nextProps, nextState): boolean {
+	shouldComponentUpdate (nextProps, nextState): boolean {
 		clearTimeout(this._debounceUpdate)
 		this.props = nextProps
 		this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)

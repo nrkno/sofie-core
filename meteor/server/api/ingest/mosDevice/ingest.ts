@@ -36,7 +36,7 @@ import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Parts } from '../../../../lib/collections/Parts'
-import { PartInstances } from '../../../../lib/collections/PartInstances';
+import { PartInstances } from '../../../../lib/collections/PartInstances'
 
 interface AnnotatedIngestPart {
 	externalId: string

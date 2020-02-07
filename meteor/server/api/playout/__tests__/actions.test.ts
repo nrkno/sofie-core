@@ -11,7 +11,7 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists';
+import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 
 // const Timeline = mockupCollection(OrgTimeline)
 

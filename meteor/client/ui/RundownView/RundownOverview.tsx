@@ -13,8 +13,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { PartExtended } from '../../../lib/Rundown'
 import { Part } from '../../../lib/collections/Parts'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
-import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances';
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
 
 interface SegmentUi extends Segment {
 	items: Array<PartUi>

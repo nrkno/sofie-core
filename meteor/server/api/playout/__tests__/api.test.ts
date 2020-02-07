@@ -6,8 +6,8 @@ import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Piece } from '../../../../lib/collections/Pieces'
-import { PartInstances } from '../../../../lib/collections/PartInstances';
-import { resetRandomId } from '../../../../__mocks__/random';
+import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { resetRandomId } from '../../../../__mocks__/random'
 
 namespace PlayoutAPI { // Using our own method definition, to catch external API changes
 	export enum methods {
@@ -37,7 +37,6 @@ namespace PlayoutAPI { // Using our own method definition, to catch external API
 		'sourceLayerStickyPieceStart'		= 'playout.sourceLayerStickyPieceStart'
 	}
 }
-
 
 
 describe('Playout API', () => {
@@ -103,7 +102,7 @@ describe('Playout API', () => {
 		expect(() => {
 			Meteor.call(PlayoutAPI.methods.rundownActivate, playlistId1, false)
 		}).toThrowError(/only one rundown/i)
-		
+
 
 		{
 			// Take the first Part:

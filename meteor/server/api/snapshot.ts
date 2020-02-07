@@ -55,8 +55,8 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/R
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { PartInstances, PartInstance } from '../../lib/collections/PartInstances';
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances';
+import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 
 interface RundownPlaylistSnapshot {
 	version: string
@@ -121,7 +121,7 @@ function createRundownSnapshot (playlistId: string): RundownPlaylistSnapshot {
 	const rundowns = playlist.getRundowns()
 	const rundownIds = rundowns.map(i => i._id)
 	const ingestData = IngestDataCache.find({ rundownId: { $in: rundownIds } }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
-	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join("|") + `).*` } }).fetch()
+	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join('|') + `).*` } }).fetch()
 
 	const segments = playlist.getSegments()
 	const parts = playlist.getParts()
@@ -458,8 +458,8 @@ function restoreFromRundownSnapshot (snapshot: RundownPlaylistSnapshot) {
 		}
 
 		rd.notifiedCurrentPlayingPartExternalId = (dbRundownMap[rd._id] ? dbRundownMap[rd._id].notifiedCurrentPlayingPartExternalId : undefined)
-		if (studios.length === 1) rd.studioId = studios[0]._id 
-		
+		if (studios.length === 1) rd.studioId = studios[0]._id
+
 		const showStyleVariants = ShowStyleVariants.find().fetch()
 		if (showStyleVariants.length === 1) {
 			rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId

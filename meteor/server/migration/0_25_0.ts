@@ -105,9 +105,9 @@ addMigrationSteps('0.25.0', [
 	renamePropertiesInCollection('Evaluations',
 		Evaluations,
 		'Evaluations',
-		{
-			rundownId: 'runningOrderId'
-		} as any,
+			{
+				rundownId: 'runningOrderId'
+			} as any,
 		'migrateDatabaseCollections'
 	),
 	renamePropertiesInCollection('ExpectedMediaItems',
@@ -193,9 +193,9 @@ addMigrationSteps('0.25.0', [
 		'Timeline',
 		{
 			studioId: 'siId',
-		objectType: {content: {
-				rundown: 'ro'
-			}}
+			objectType: {content: {
+			rundown: 'ro'
+		}}
 		},
 		'migrateDatabaseCollections'
 	),
@@ -221,16 +221,16 @@ addMigrationSteps('0.25.0', [
 	renamePropertiesInCollection('Rundowns',
 		Rundowns,
 		'Rundowns',
-		{
-			externalId: 'mosId',
-			studioId: 'studioInstallationId',
-			peripheralDeviceId: 'mosDeviceId',
-			currentPartId: 'currentSegmentLineId',
-			nextPartId: 'nextSegmentLineId',
-			nextPartManual: 'nextSegmentLineManual',
-			previousPartId: 'previousSegmentLineId',
-			notifiedCurrentPlayingPartExternalId: 'currentPlayingStoryStatus',
-		} as any,
+			{
+				externalId: 'mosId',
+				studioId: 'studioInstallationId',
+				peripheralDeviceId: 'mosDeviceId',
+				currentPartId: 'currentSegmentLineId',
+				nextPartId: 'nextSegmentLineId',
+				nextPartManual: 'nextSegmentLineManual',
+				previousPartId: 'previousSegmentLineId',
+				notifiedCurrentPlayingPartExternalId: 'currentPlayingStoryStatus',
+			} as any,
 		'migrateDatabaseCollections'
 	),
 	renamePropertiesInCollection('AdLibPieces',

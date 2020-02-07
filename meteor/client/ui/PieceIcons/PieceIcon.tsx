@@ -15,7 +15,7 @@ import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances';
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 interface IPropsHeader {
 	partInstanceId: string
@@ -27,7 +27,7 @@ interface INamePropsHeader extends IPropsHeader {
 	partSlug: string
 }
 
-function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
+function findPieceInstanceToShow (props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
 	let pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
@@ -114,7 +114,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 						<LiveSpeakInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case SourceLayerType.REMOTE :
-					const rmContent = piece ? piece.content as RemoteContent | undefined: undefined
+					const rmContent = piece ? piece.content as RemoteContent | undefined : undefined
 					return (
 						<RemoteInputIcon inputIndex={ rmContent ? rmContent.studioLabel : '' } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
@@ -127,7 +127,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 						<VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case SourceLayerType.CAMERA :
-					const camContent = piece ? piece.content as CameraContent | undefined: undefined
+					const camContent = piece ? piece.content as CameraContent | undefined : undefined
 					return (
 						<CamInputIcon inputIndex={ camContent ? camContent.studioLabel : ''  } abbreviation={this.props.sourceLayer.abbreviation} />
 					)

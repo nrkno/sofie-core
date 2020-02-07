@@ -153,7 +153,7 @@ export function resetRundown (rundownPlaylistId: string): ClientAPI.ClientRespon
 		ServerPlayoutAPI.resetRundown(rundownPlaylistId)
 	)
 }
-export function resetAndActivate(rundownPlaylistId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
+export function resetAndActivate (rundownPlaylistId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
 	check(rundownPlaylistId, String)
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -213,7 +213,7 @@ export function unsyncRundown (rundownId: string) {
 }
 export function disableNextPiece (rundownPlaylistId: string, undo?: boolean) {
 	// return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
+	ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
 	// )
 }
 export function togglePartArgument (rundownPlaylistId: string, partInstanceId: string, property: string, value: string) {
@@ -494,8 +494,9 @@ export function generateRestartToken () {
 export function restartCore (token: string) {
 	check(token, String)
 
-	if (token !== getHash(UserActionAPI.RESTART_SALT + restartToken))
+	if (token !== getHash(UserActionAPI.RESTART_SALT + restartToken)) {
 		throw new Meteor.Error(401, `Restart token is invalid`)
+	}
 
 	setTimeout(() => {
 		process.exit(0)
