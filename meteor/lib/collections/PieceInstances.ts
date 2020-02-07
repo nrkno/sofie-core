@@ -33,8 +33,8 @@ export function wrapPieceToTemporaryInstance (piece: Piece, partInstanceId: stri
 	})
 }
 
-export function findPieceInstanceOrWrapToTemporary (partInstances: PieceInstance[], partInstanceId: string, piece: Piece): PieceInstance {
-	return partInstances.find(instance => instance.piece._id === piece._id) || wrapPieceToTemporaryInstance(piece, partInstanceId)
+export function findPieceInstanceOrWrapToTemporary (pieceInstances: PieceInstance[], partInstanceId: string, piece: Piece): PieceInstance {
+	return pieceInstances.find(instance => instance.piece._id === piece._id) || wrapPieceToTemporaryInstance(piece, partInstanceId)
 }
 
 export function wrapPieceToInstance (piece: Piece, partInstanceId: string): PieceInstance {
