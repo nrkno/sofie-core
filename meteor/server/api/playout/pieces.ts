@@ -168,7 +168,9 @@ export function createPieceGroup (
 }
 export function getResolvedPieces (part: Part): Piece[] {
 	// TODO - was this mangled for endState and could it have broken something else?
-	const pieces = part.getAllPieces()
+	let pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
+
+	pieces = pieces.filter(p => !p.stoppedPlayback)
 
 	const itemMap: { [key: string]: Piece } = {}
 	pieces.forEach(piece => itemMap[piece._id] = piece)
