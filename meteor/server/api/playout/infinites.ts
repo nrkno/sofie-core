@@ -274,12 +274,14 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 
 	let ps: Array<Promise<any>> = []
 	for (const piece of pieces) {
-		ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
-			userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
-			definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPiece.adlibPreroll || 0),
-			infiniteMode: PieceLifespan.Normal,
-			originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
-		}}))
+		if (!piece.userDuration || (!piece.userDuration.duration && !piece.userDuration.end)) {
+			ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
+				userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
+				definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPiece.adlibPreroll || 0),
+				infiniteMode: PieceLifespan.Normal,
+				originalInfiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode
+			}}))
+		}
 	}
 	waitForPromiseAll(ps)
 })
