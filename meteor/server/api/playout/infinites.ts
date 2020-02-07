@@ -251,7 +251,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 
 	let ps: Array<Promise<any>> = []
 	for (const piece of pieces) {
-		if (!piece.userDuration || !piece.userDuration.duration) {
+		if (!piece.userDuration || (!piece.userDuration.duration && !piece.userDuration.end)) {
 			ps.push(asyncCollectionUpdate(Pieces, piece._id, { $set: {
 				userDuration: { end: `#${getPieceGroupId(newPiece)}.start + ${newPiece.adlibPreroll || 0}` },
 				definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPiece.adlibPreroll || 0),
