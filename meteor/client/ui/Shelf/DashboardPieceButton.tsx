@@ -4,7 +4,6 @@ import * as ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { Meteor } from 'meteor/meteor'
 
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
