@@ -414,8 +414,20 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 			},
 			adLibSourceId: {
 				$exists: true
-			}
-		}).fetch().filter(p => !(p.userDuration && p.userDuration.duration))
+			},
+			$or: [
+				{
+					userDuration: {
+						$exists: false
+					}
+				},
+				{
+					'userDuration.duration': {
+						$exists: false
+					}
+				}
+			]
+		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((piece) => {
