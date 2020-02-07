@@ -252,7 +252,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 
 		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
-		
+
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -262,6 +262,26 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.isLiveSegment = false
 			this.stopLive()
 			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
+		}
+
+		if (
+			// the segment isn't live, is next, and the nextPartId has changed
+			!this.props.isLiveSegment &&
+			this.props.isNextSegment &&
+			this.props.rundown.nextPartId &&
+			prevProps.rundown.nextPartId !== this.props.rundown.nextPartId
+		) {
+			const partOffset = this.context.durations &&
+				this.context.durations.partDisplayStartsAt &&
+				(this.context.durations.partDisplayStartsAt[this.props.rundown.nextPartId]
+					- this.context.durations.partDisplayStartsAt[this.props.parts[0]._id])
+				|| 0
+
+			if (this.state.scrollLeft > partOffset) {
+				this.setState({
+					scrollLeft: partOffset
+				})
+			}
 		}
 
 		// rewind all scrollLeft's to 0 on rundown activate
@@ -328,11 +348,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			let isExpectedToPlay: boolean = this.props.currentLivePart.startedPlayback || false
 			const lastTake = this.props.currentLivePart.getLastTake()
 			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
-			let virtualStartedPlayback = lastStartedPlayback || lastTake
+			let virtualStartedPlayback = ((lastTake || 0) > (lastStartedPlayback || -1)) ? lastTake : lastStartedPlayback
 			if (this.props.currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
 				isExpectedToPlay = true
 				// console.log('Simulated playback')
-				
+
 				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
 					// console.log('Within crossfade range', virtualStartedPlayback, lastStartedPlayback, simulationPercentage)
