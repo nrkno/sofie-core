@@ -117,7 +117,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		}
 		if (itemConfig.defaultType === undefined) throw new Error('defaultType not set: ' + itemConfig.id)
 		for (const prop of itemConfig.config[itemConfig.defaultType]) {
-			if ((prop as SubDeviceConfigManifestEntry).defaultVal) {
+			if ((prop as SubDeviceConfigManifestEntry).defaultVal !== undefined) {
 				createDefault(prop.id.split('.'), (prop as SubDeviceConfigManifestEntry).defaultVal, defaults)
 			}
 		}
