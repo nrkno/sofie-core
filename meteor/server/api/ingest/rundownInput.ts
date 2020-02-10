@@ -175,7 +175,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 
 			if (canBeUpdated(rundown)) {
 				if (!isUpdateAllowed(rundown, { removed: [rundown] }, {}, {})) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
+					ServerRundownAPI.unsync(rundown._id)
 				} else {
 					logger.info(`Removing rundown "${rundown._id}"`)
 					rundown.remove()
@@ -183,7 +183,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 			} else {
 				logger.info(`Rundown "${rundown._id}" cannot be updated`)
 				if (!rundown.unsynced) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
+					ServerRundownAPI.unsync(rundown._id)
 				}
 			}
 		}
@@ -373,7 +373,7 @@ function updateRundownFromIngestData (
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundown(dbRundown._id)
+		ServerRundownAPI.unsync(dbRundown._id)
 		return false
 	}
 
@@ -466,9 +466,9 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `handleRemovedSegment: Segment "${segmentId}" not found`)
 
-		if (canBeUpdated(rundown, segmentId)) {
+		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(rundown, {}, { removed: [segment] }, {})) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				ServerRundownAPI.unsync(rundown._id, segment._id)
 			} else {
 				if (removeSegments(rundownId, [segmentId]) === 0) {
 					throw new Meteor.Error(404, `handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`)
@@ -477,14 +477,16 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		}
 	})
 }
-function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
+export function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-		if (!canBeUpdated(rundown, segmentId)) return
+		const segment = Segments.findOne(segmentId)
+
+		if (!canBeUpdated(rundown, segment)) return
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
@@ -580,7 +582,7 @@ function updateSegmentFromIngestData (
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundown(rundown._id)
+		ServerRundownAPI.unsync(rundown._id, segmentId)
 		return null
 	}
 
@@ -645,8 +647,9 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
 
+		const segment = Segments.findOne(segmentId)
 
-		if (canBeUpdated(rundown, segmentId, partId)) {
+		if (canBeUpdated(rundown, segment)) {
 			const part = Parts.findOne({
 				_id: partId,
 				segmentId: segmentId,
@@ -655,7 +658,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
 			if (!isUpdateAllowed(rundown, {}, {}, { removed: [part] })) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				ServerRundownAPI.unsync(rundown._id, segmentId)
 			} else {
 
 				// Blueprints will handle the deletion of the Part
@@ -689,7 +692,10 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
 
-	if (!canBeUpdated(rundown, segmentId, partId)) return
+	const segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(500, `Segment "${segmentId}" not found`)
+
+	if (!canBeUpdated(rundown, segment)) return
 
 	const part = Parts.findOne({
 		_id: partId,
@@ -698,20 +704,26 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	})
 
 	if (
-		part && !isUpdateAllowed(rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })) {
-		ServerRundownAPI.unsyncRundown(rundown._id)
+		part && !isUpdateAllowed(rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })
+	) {
+		ServerRundownAPI.unsync(rundown._id, segmentId)
 	} else {
 
-		// Blueprints will handle the creation of the Part
-		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
-		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
-		ingestSegment.parts.push(ingestPart)
+		if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: segment, oldId: segment._id }] }, { })) {
+			ServerRundownAPI.unsync(rundown._id, segmentId)
+		} else {
+			// Blueprints will handle the creation of the Part
+			const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
+			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
+			ingestSegment.parts.push(ingestPart)
 
-		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
-		if (updatedSegmentId) {
-			afterIngestChangedData(rundown, [updatedSegmentId])
+			saveSegmentCache(rundown._id, segmentId, ingestSegment)
+			const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+			if (updatedSegmentId) {
+				afterIngestChangedData(rundown, [updatedSegmentId])
+			}
 		}
+
 	}
 }
 
@@ -811,7 +823,7 @@ export function isUpdateAllowed (
 			_.each(rundownChanges.removed, rd => {
 				if (rundown._id === rd._id) {
 					// Don't allow removing an active rundown
-					logger.warn(`Not allowing removal of current active rundown "${rd._id}", making rundown unsynced instead`)
+					logger.warn(`Not allowing removal of current active rundown "${rd._id}"`)
 					allowed = false
 				}
 			})
@@ -821,7 +833,7 @@ export function isUpdateAllowed (
 				_.each(partChanges.removed, part => {
 					if (rundown.currentPartId === part._id) {
 						// Don't allow removing currently playing part
-						logger.warn(`Not allowing removal of currently playing part "${part._id}", making rundown unsynced instead`)
+						logger.warn(`Not allowing removal of currently playing part "${part._id}"`)
 						allowed = false
 					}
 				})
@@ -831,7 +843,7 @@ export function isUpdateAllowed (
 				_.each(segmentChanges.removed, segment => {
 					if (currentPart.segmentId === segment._id) {
 						// Don't allow removing segment with currently playing part
-						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}", making rundown unsynced instead`)
+						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}"`)
 						allowed = false
 					}
 				})

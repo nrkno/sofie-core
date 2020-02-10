@@ -5,7 +5,7 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { Segments } from '../../lib/collections/Segments'
+import { Segments, Segment } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	fetchBefore,
@@ -34,6 +34,7 @@ import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
+import { Settings } from '../../lib/Settings'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -306,22 +307,38 @@ export namespace ServerRundownAPI {
 
 		rundown.remove()
 	}
-	export function resyncRundown (rundownId: string): UserActionAPI.ReloadRundownResponse {
+	export function resyncRundown (rundownId: string): UserActionAPI.TriggerReloadDataResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
-		Rundowns.update(rundown._id, {
+		const ps: Promise<any>[] = []
+
+		if (Settings.allowUnsyncedSegments) {
+			ps.push(asyncCollectionUpdate(Segments, {
+				rundownId: rundown._id,
+				unsynced: true
+			}, {
+				$set: {
+					unsynced: false
+				}
+			}, {
+				multi: true
+			}))
+		}
+		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 			$set: {
 				unsynced: false
 			}
-		})
+		}))
+
+		waitForPromiseAll(ps)
 
 		return IngestActions.reloadRundown(rundown)
 	}
-	export function unsyncRundown (rundownId: string): void {
+	function unsyncRundown (rundownId: string): void {
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 
@@ -336,6 +353,52 @@ export namespace ServerRundownAPI {
 		} else {
 			logger.info(`Rundown "${rundownId}" was already unsynced`)
 		}
+	}
+	export function unsync (rundownId: string, segmentId?: string): void {
+		check(segmentId, String)
+		if (
+			!segmentId ||
+			!Settings.allowUnsyncedSegments
+		) {
+			// Fall back to unsync the whole rundown:
+			return unsyncRundown(rundownId)
+		}
+		logger.info('unsyncSegment ' + segmentId)
+
+		let segment = Segments.findOne({
+			_id: segmentId,
+			rundownId: rundownId
+		})
+		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" in rundown "${rundownId}" not found!`)
+
+		if (!segment.unsynced) {
+			Rundowns.update(segment._id, {$set: {
+				unsynced: true,
+				unsyncedTime: getCurrentTime()
+			}})
+		} else {
+			logger.info(`Segment "${segmentId}" was already unsynced`)
+		}
+	}
+	export function resyncSegment (segmentId: string): UserActionAPI.TriggerReloadDataResponse {
+		check(segmentId, String)
+		logger.info('resyncSegment ' + segmentId)
+		if (!Settings.allowUnsyncedSegments) throw new Meteor.Error(500, `unsyncSegment: Settings.allowUnsyncedSegments is not set`)
+
+		let segment = Segments.findOne(segmentId)
+		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
+
+		let rundown = segment.getRundown()
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
+		if (rundown.unsynced) throw new Meteor.Error(404, `Not able to resync a segment if the Rundown ("${rundown._id}") is unsynced!`)
+
+		Segments.update(segment._id, {
+			$set: {
+				unsynced: false
+			}
+		})
+
+		return IngestActions.reloadSegment(rundown, segment)
 	}
 }
 export namespace ClientRundownAPI {
@@ -377,7 +440,7 @@ methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
 	return ServerRundownAPI.resyncRundown(rundownId)
 }
 methods[RundownAPI.methods.unsyncRundown] = (rundownId: string) => {
-	return ServerRundownAPI.unsyncRundown(rundownId)
+	return ServerRundownAPI.unsync(rundownId)
 }
 methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: string) => {
 	return ClientRundownAPI.rundownNeedsUpdating(rundownId)

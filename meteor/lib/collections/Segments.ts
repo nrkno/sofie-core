@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { applyClassToDocument, registerCollection } from '../lib'
+import { applyClassToDocument, registerCollection, Time } from '../lib'
 import { Parts } from './Parts'
 import { Rundowns } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
@@ -20,6 +20,11 @@ export interface DBSegment extends IBlueprintSegmentDB {
 	status?: string
 	expanded?: boolean
 
+	/** Is the segment in an unsynced (has been unpublished from ENPS) state? */
+	unsynced?: boolean
+	/** Timestamp of when segment was unsynced */
+	unsyncedTime?: Time
+
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 }
@@ -32,6 +37,8 @@ export class Segment implements DBSegment {
 	public metaData?: { [key: string]: any }
 	public status?: string
 	public expanded?: boolean
+	public unsynced?: boolean
+	public unsyncedTime?: Time
 	public notes?: Array<PartNote>
 	public isHidden?: boolean
 	public identifier?: string
