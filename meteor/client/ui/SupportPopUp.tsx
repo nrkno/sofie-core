@@ -54,23 +54,23 @@ interface IToggleProps {
 }
 
 export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
-	getMessages () {
-		const core = CoreSystem.findOne()
-		if (!core) {
-			return ''
-		}
+	// getMessages () {
+	// 	const core = CoreSystem.findOne()
+	// 	if (!core) {
+	// 		return ''
+	// 	}
 
-		if (!core.support) {
-			return ''
-		}
+	// 	if (!core.support) {
+	// 		return ''
+	// 	}
 
-		return core.support.message
-	}
+	// 	return core.support.message
+	// }
 	render () {
 		return <React.Fragment>
 			<button className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
-				'status-bar__controls__button--open': this.props.isOpen,
-				'status-bar__controls__button--has-messages': this.getMessages() !== ''
+				'status-bar__controls__button--open': this.props.isOpen
+				// 'status-bar__controls__button--has-messages': this.getMessages() !== ''
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<FontAwesomeIcon icon={faQuestion} />
 			</button>
