@@ -82,7 +82,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 	}
 
 	componentDidMount () {
-		this.keyboardFocusInterval = Meteor.setInterval(this.checkFocus, 3000)
+		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(KeyboardFocusMarker.SYNTHETIC_TIMER_EVENT), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
 		document.body.addEventListener('mousedown', this.checkFocus)
@@ -97,7 +97,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		document.removeEventListener('visibilitychange', this.checkFocus)
 	}
 
-	checkFocus = (e) => {
+	checkFocus = (e: object) => {
 		const focusNow = document.hasFocus()
 		if (this.state.inFocus !== focusNow) {
 			this.setState({
@@ -105,9 +105,9 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 			})
 			const viewInfo = [ window.location.href + window.location.search, window.innerWidth, window.innerHeight, getAllowStudio(), getAllowConfigure(), getAllowService() ]
 			if (focusNow) {
-				callMethod(e || KeyboardFocusMarker.SYNTHETIC_TIMER_EVENT, UserActionAPI.methods.guiFocused, viewInfo)
+				callMethod(e, UserActionAPI.methods.guiFocused, viewInfo)
 			} else {
-				callMethod(e || KeyboardFocusMarker.SYNTHETIC_TIMER_EVENT, UserActionAPI.methods.guiBlurred, viewInfo)
+				callMethod(e, UserActionAPI.methods.guiBlurred, viewInfo)
 			}
 		}
 	}
