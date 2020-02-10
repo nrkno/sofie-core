@@ -241,7 +241,7 @@ export function reloadData (rundownId: string) {
 }
 export function unsyncRundown (rundownId: string) {
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.unsyncRundown(rundownId)
+		ServerRundownAPI.unsync(rundownId)
 	)
 }
 export function disableNextPiece (rundownId: string, undo?: boolean) {
