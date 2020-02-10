@@ -86,6 +86,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
 		document.body.addEventListener('mousedown', this.checkFocus)
+		document.addEventListener('visibilitychange', this.checkFocus)
 	}
 
 	componentWillUnmount () {
@@ -93,6 +94,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
 		document.body.removeEventListener('mousedown', this.checkFocus)
+		document.removeEventListener('visibilitychange', this.checkFocus)
 	}
 
 	checkFocus = (e) => {
