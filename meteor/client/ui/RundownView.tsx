@@ -1119,7 +1119,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private readonly LIVELINE_HISTORY_SIZE = 100
-		
+
 	private bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any,
@@ -2019,9 +2019,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 }
 )
 
-export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundown: Rundown, result: UserActionAPI.ReloadRundownResponse): boolean {
+export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundown: Rundown, result: UserActionAPI.TriggerReloadDataResponse): boolean {
 	let hasDoneSomething = false
-	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
+	if (result === UserActionAPI.TriggerReloadDataResponse.MISSING) {
 		hasDoneSomething = true
 		const notification = NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL,
 			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundown.name }),

@@ -14,15 +14,15 @@ import * as _ from 'underscore'
 import { UserActionAPI } from '../../../../lib/api/userActions'
 
 export namespace MOSDeviceActions {
-	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => UserActionAPI.ReloadRundownResponse = Meteor.wrapAsync(
-		function reloadRundown (peripheralDevice: PeripheralDevice, rundown: Rundown, cb: WrapAsyncCallback<UserActionAPI.ReloadRundownResponse>): void {
+	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => UserActionAPI.TriggerReloadDataResponse = Meteor.wrapAsync(
+		function reloadRundown (peripheralDevice: PeripheralDevice, rundown: Rundown, cb: WrapAsyncCallback<UserActionAPI.TriggerReloadDataResponse>): void {
 			logger.info('reloadRundown ' + rundown._id)
 
 			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
 				if (err) {
 					if (_.isString(err) && err.match(/rundown does not exist/i)) {
 						// Don't throw an error, instead return MISSING value
-						cb(null, UserActionAPI.ReloadRundownResponse.MISSING)
+						cb(null, UserActionAPI.TriggerReloadDataResponse.MISSING)
 					} else {
 						logger.error('Error in MOSDeviceActions.reloadRundown', err)
 						cb(err)
@@ -39,7 +39,7 @@ export namespace MOSDeviceActions {
 						handleMosRundownData(peripheralDevice, mosRunningOrder, false)
 
 						// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
-						cb(null, UserActionAPI.ReloadRundownResponse.WORKING)
+						cb(null, UserActionAPI.TriggerReloadDataResponse.WORKING)
 					} catch (e) {
 						cb(e)
 					}
