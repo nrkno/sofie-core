@@ -198,7 +198,11 @@ body.no-overflow {
 	bottom: 0;
 	right: 0;
 
-	background: linear-gradient(-45deg, red 33%, transparent 33%, transparent 66%, red 66%), linear-gradient(-45deg, red 33%, transparent 33%, transparent 66%, red 66%), linear-gradient(-45deg, red 33%, transparent 33%, transparent 66%, red 66%), linear-gradient(-45deg, red 33%, transparent 33%, transparent 66%, red 66%);
+	background:
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%);
 	background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
 	background-size: 30px 8px, 30px 8px, 8px 30px, 8px 30px;
 	background-position: 0 0, 100% 100%, 0 100%, 100% 0;
