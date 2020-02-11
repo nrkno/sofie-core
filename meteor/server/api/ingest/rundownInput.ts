@@ -29,7 +29,8 @@ import {
 	PreparedChanges,
 	prepareSaveIntoDb,
 	savePreparedChanges,
-	Optional
+	Optional,
+	PreparedChangesChangesDoc
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -56,6 +57,8 @@ import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
 import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { Settings } from '../../../lib/Settings'
+import { isArray } from 'util'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -372,9 +375,43 @@ function updateRundownFromIngestData (
 	}, adlibPieces)
 
 	// determine if update is allowed here
-	if (!isUpdateAllowed(dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts)) {
+	if (!isUpdateAllowed(dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts, Settings.allowUnsyncedSegments)) {
 		ServerRundownAPI.unsync(dbRundown._id)
 		return false
+	}
+
+	if (Settings.allowUnsyncedSegments) {
+		// Remove part updates for parts with these segment Ids
+		const removeWithSegmentId: string[] = []
+
+		// Filter out segment updates that must be rejected
+		removeWithSegmentId.push(...processSegmentChangesToReject(dbRundown, prepareSaveSegments.removed, 'removed'))
+		removeWithSegmentId.push(...processSegmentChangesToReject(dbRundown, prepareSaveSegments.inserted, 'inserted'))
+		removeWithSegmentId.push(...processSegmentChangesToRejectSpecial(dbRundown, prepareSaveSegments.changed))
+
+		console.log(`SEGMENTS TO REJECT: ${JSON.stringify(removeWithSegmentId)}`)
+
+		// Remove part updates associated with rejected segment updates
+		removePartUpdatesBySegmentId(prepareSaveParts.removed, removeWithSegmentId)
+		removePartUpdatesBySegmentId(prepareSaveParts.inserted, removeWithSegmentId)
+		removePartUpdatesBySegmentIdSpecial(prepareSaveParts.changed, removeWithSegmentId)
+
+		// Remove piece updates for pieces with these part Ids
+		const removeWithPartId: string[] = []
+
+		// Filter out part updates that must be rejected
+		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts.removed, 'removed'))
+		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts.inserted, 'inserted'))
+		removeWithPartId.push(...processPartChangesToRejectSpecial(dbRundown, prepareSaveParts.changed))	
+
+		console.log(`PARTS TO REJECT: ${JSON.stringify(removeWithPartId)}`)
+
+		// Remove piece updates that must be rejected
+		console.log(`REMOVED: ${prepareSavePieces.removed.length}`)
+		removePieceUpdatesByPartId(prepareSavePieces.removed, removeWithPartId)
+		console.log(`REMOVED: ${prepareSavePieces.removed.length}`)
+		removePieceUpdatesByPartId(prepareSavePieces.inserted, removeWithPartId)
+		removePieceUpdatesByPartIdSpecial(prepareSavePieces.changed, removeWithPartId)
 	}
 
 	changes = sumChanges(
@@ -657,6 +694,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 			})
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
+			logger.info('THIS SHOULD FAIL')
 			if (!isUpdateAllowed(rundown, {}, {}, { removed: [part] })) {
 				ServerRundownAPI.unsync(rundown._id, segmentId)
 			} else {
@@ -807,7 +845,8 @@ export function isUpdateAllowed (
 	rundown: Rundown,
 	rundownChanges: Optional<PreparedChanges<DBRundown>>,
 	segmentChanges: Optional<PreparedChanges<DBSegment>>,
-	partChanges: Optional<PreparedChanges<DBPart>>
+	partChanges: Optional<PreparedChanges<DBPart>>,
+	unsyncedSegmentAllowed?: boolean
 ): boolean {
 	let allowed: boolean = true
 
@@ -829,7 +868,7 @@ export function isUpdateAllowed (
 			})
 		}
 		if (rundown.currentPartId) {
-			if (allowed && partChanges.removed && partChanges.removed.length) {
+			if (allowed && partChanges.removed && partChanges.removed.length && !unsyncedSegmentAllowed) {
 				_.each(partChanges.removed, part => {
 					if (rundown.currentPartId === part._id) {
 						// Don't allow removing currently playing part
@@ -838,7 +877,7 @@ export function isUpdateAllowed (
 					}
 				})
 			}
-			if (allowed && segmentChanges.removed && segmentChanges.removed.length) {
+			if (allowed && segmentChanges.removed && segmentChanges.removed.length && !unsyncedSegmentAllowed) {
 				const currentPart = rundown.getParts({ _id: rundown.currentPartId })[0]
 				_.each(segmentChanges.removed, segment => {
 					if (currentPart.segmentId === segment._id) {
@@ -865,4 +904,149 @@ function printChanges (changes: Optional<PreparedChanges<{_id: string}>>): strin
 	if (changes.removed)	str += _.map(changes.removed,	doc => 'remove:' + doc._id).join(',')
 
 	return str
+}
+
+function removePartUpdatesBySegmentId(arr: DBPart[], segmentIds: string[]) {
+	const partsToRemove: DBPart[] = []
+
+	arr.forEach((part) => {
+		if (segmentIds.includes(part.segmentId)) {
+			partsToRemove.push(part)
+		}
+	})
+
+	partsToRemove.forEach(p => {
+		arr.splice(arr.indexOf(p), 1)
+	})
+}
+
+function removePartUpdatesBySegmentIdSpecial(arr: PreparedChangesChangesDoc<DBPart>[], segmentIds: string[]) {
+	const partsToRemove: PreparedChangesChangesDoc<DBPart>[] = []
+
+	arr.forEach((part) => {
+		if (segmentIds.includes(part.doc.segmentId)) {
+			partsToRemove.push(part)
+		}
+	})
+
+	partsToRemove.forEach(p => {
+		arr.splice(arr.indexOf(p), 1)
+	})
+}
+
+function removePieceUpdatesByPartId(arr: Piece[], partIds: string[]) {
+	const piecesToRemove: Piece[] = []
+
+	arr.forEach((piece) => {
+		if (partIds.includes(piece.partId)) {
+			piecesToRemove.push(piece)
+		}
+	})
+
+	console.log(`REMOVING PIECES ${piecesToRemove.map(p => p._id)}`)
+
+	piecesToRemove.forEach(p => {
+		arr.splice(arr.indexOf(p), 1)
+	})
+}
+
+function removePieceUpdatesByPartIdSpecial (arr: PreparedChangesChangesDoc<Piece>[], partIds: string[]) {
+	const piecesToRemove: PreparedChangesChangesDoc<Piece>[] = []
+	arr.forEach((piece) => {
+		if (partIds.includes(piece.doc.partId)) {
+			piecesToRemove.push(piece)
+		}
+	})
+
+	console.log(`REMOVING PIECES ${piecesToRemove.map(p => p.doc._id)}`)
+
+	piecesToRemove.forEach((piece) => {
+		arr.splice(arr.indexOf(piece), 1)
+	})		
+}
+
+function processSegmentChangesToReject (rundown: Rundown, segments: DBSegment[], field: keyof Omit<PreparedChanges<Piece>, 'changed'>): string[] {
+	console.log(`CHANGES FOR ${field} : ${segments.length}`)
+	const removeWithSegmentId: string[] = []
+
+	segments.forEach((segment) => {
+		const existingSegment = Segments.findOne({ _id: segment._id })
+		if (
+			!isUpdateAllowed(rundown, {}, { [field]: [segment] }, {}) ||
+			(existingSegment && !canBeUpdated(rundown, existingSegment))
+		) {
+			removeWithSegmentId.push(segment._id)
+			segments.splice(segments.indexOf(segment), 1)
+			
+			if (existingSegment && !existingSegment.unsynced) {
+				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
+			}
+		}
+	})
+
+	return removeWithSegmentId
+}
+
+function processSegmentChangesToRejectSpecial (rundown: Rundown, segments: PreparedChangesChangesDoc<DBSegment>[]): string[] {
+	console.log(`CHANGES FOR changes : ${segments.length}`)
+	const removeWithSegmentId: string[] = []
+
+	segments.forEach((segment) => {
+		const existingSegment = Segments.findOne({ _id: segment.doc._id })
+		if (
+			!isUpdateAllowed(rundown, {}, { changed: [{ doc: segment.doc, oldId: segment.oldId }] }, {}) ||
+			(existingSegment && !canBeUpdated(rundown, existingSegment))
+		) {
+			removeWithSegmentId.push(segment.doc._id)
+			segments.splice(segments.indexOf(segment), 1)
+			
+			if (existingSegment && !existingSegment.unsynced) {
+				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
+			}
+		}
+	})
+
+	return removeWithSegmentId
+}
+
+function processPartChangesToReject (rundown: Rundown, arr: DBPart[], field: keyof Omit<PreparedChanges<Piece>, 'changed'>): string[] {
+	const removeWithPartId: string[] = []
+
+	arr.forEach(part => {
+		const existingSegment = Segments.findOne({ _id: part.segmentId })
+		if (
+			!isUpdateAllowed(rundown, {}, {}, { [field]: [part] }) ||
+			(existingSegment && !canBeUpdated(rundown, existingSegment))
+		) {
+			removeWithPartId.push(part._id)
+			arr.splice(arr.indexOf(part), 1)
+
+			if (existingSegment && !existingSegment.unsynced) {
+				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
+			}
+		}
+	})
+
+	return removeWithPartId
+}
+
+function processPartChangesToRejectSpecial (rundown: Rundown, arr: PreparedChangesChangesDoc<DBPart>[]): string[] {
+	const removeWithPartId: string[] = []
+
+	arr.forEach(part => {
+		const existingSegment = Segments.findOne({ _id: part.doc.segmentId })
+		if (
+			!isUpdateAllowed(rundown, {}, {}, { changed: [part] }) ||
+			(existingSegment && !canBeUpdated(rundown, existingSegment))
+		) {
+			removeWithPartId.push(part.doc._id)
+			arr.splice(arr.indexOf(part), 1)
+
+			if (existingSegment && !existingSegment.unsynced) {
+				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
+			}
+		}
+	})
+
+	return removeWithPartId
 }
