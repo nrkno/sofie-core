@@ -355,7 +355,6 @@ export namespace ServerRundownAPI {
 		}
 	}
 	export function unsync (rundownId: string, segmentId?: string): void {
-		check(segmentId, String)
 		if (
 			!segmentId ||
 			!Settings.allowUnsyncedSegments
@@ -363,6 +362,8 @@ export namespace ServerRundownAPI {
 			// Fall back to unsync the whole rundown:
 			return unsyncRundown(rundownId)
 		}
+
+		check(segmentId, String)
 		logger.info('unsyncSegment ' + segmentId)
 
 		let segment = Segments.findOne({
