@@ -373,7 +373,7 @@ export namespace ServerRundownAPI {
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" in rundown "${rundownId}" not found!`)
 
 		if (!segment.unsynced) {
-			Rundowns.update(segment._id, {$set: {
+			Segments.update(segment._id, {$set: {
 				unsynced: true,
 				unsyncedTime: getCurrentTime()
 			}})
