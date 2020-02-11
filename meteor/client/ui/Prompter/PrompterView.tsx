@@ -482,6 +482,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		let lines: React.ReactNode[] = []
 		let previousSegmentId = ''
 		let previousPartId = ''
+		let isSegmentHidden: boolean = false
 		_.each(prompterData.lines, (line, i: number) => {
 
 			let currentNextLine: 'live' | 'next' | null = null
@@ -494,21 +495,27 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			if (line.segmentId !== previousSegmentId) {
 				let segment = Segments.findOne(line.segmentId)
+				isSegmentHidden = false
+				if (segment && segment.isHidden) {
+					isSegmentHidden = true
+				}
 
-				lines.push(
-					<div
-						key={'segment_' + line.segmentId + '_' + line.id}
-						className={ClassNames(
-							'prompter-segment',
-							'scroll-anchor',
-							'segment-' + line.segmentId,
-							'part-' + line.partId,
-							currentNextLine
-						)}
-					>
-						{segment ? segment.name : 'N/A'}
-					</div>
-				)
+				if (!isSegmentHidden) {
+					lines.push(
+						<div
+							key={'segment_' + line.segmentId + '_' + line.id}
+							className={ClassNames(
+								'prompter-segment',
+								'scroll-anchor',
+								'segment-' + line.segmentId,
+								'part-' + line.partId,
+								currentNextLine
+							)}
+						>
+							{segment ? segment.name : 'N/A'}
+						</div>
+					)
+				}
 			} else if (line.partId !== previousPartId) {
 
 				let part = Parts.findOne(line.partId)
@@ -518,34 +525,38 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				}
 				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
-				lines.push(
-					<div
-						key={'part_' + line.partId + '_' + line.id}
-						className={ClassNames(
-							'prompter-part',
-							'scroll-anchor',
-							'part-' + line.partId,
-							currentNextLine
-						)}
-					>
-						{title}
-					</div>
-				)
+				if (!isSegmentHidden) {
+					lines.push(
+						<div
+							key={'part_' + line.partId + '_' + line.id}
+							className={ClassNames(
+								'prompter-part',
+								'scroll-anchor',
+								'part-' + line.partId,
+								currentNextLine
+							)}
+						>
+							{title}
+						</div>
+					)
+				}
 			}
 			previousSegmentId = line.segmentId
 			previousPartId = line.partId
 
-			lines.push(
-				<div
-					key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
-					className={ClassNames(
-						'prompter-line',
-						(!line.text ? 'empty' : undefined)
-					)}
-				>
-					{line.text || ''}
-				</div>
-			)
+			if (!isSegmentHidden) {
+				lines.push(
+					<div
+						key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
+						className={ClassNames(
+							'prompter-line',
+							(!line.text ? 'empty' : undefined)
+						)}
+					>
+						{line.text || ''}
+					</div>
+				)
+			}
 		})
 
 		return lines
