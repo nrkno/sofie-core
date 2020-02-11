@@ -125,7 +125,11 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 	if (props.rundownId) rundown = Rundowns.findOne(props.rundownId)
 	let segments: Array<SegmentUi> = []
 	if (rundown) {
-		segments = _.map(rundown.getSegments(), (segment) => {
+		segments = _.map(rundown.getSegments({
+			isHidden: {
+				$ne: true
+			}
+		}), (segment) => {
 			return extendMandadory<Segment, SegmentUi>(segment, {
 				items: _.map(segment.getParts(), (part) => {
 					let sle = extendMandadory<Part, PartExtended>(part, {

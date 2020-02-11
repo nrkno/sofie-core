@@ -1097,7 +1097,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownId: rundownId,
 		rundown: rundown,
-		segments: rundown ? Segments.find({ rundownId: rundown._id }, {
+		segments: rundown ? Segments.find({
+			rundownId: rundown._id,
+			isHidden: {
+				$ne: true
+			}
+		}, {
 			sort: {
 				'_rank': 1
 			}
