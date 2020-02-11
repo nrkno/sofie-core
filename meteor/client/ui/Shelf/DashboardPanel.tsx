@@ -49,6 +49,9 @@ interface IState {
 }
 
 interface IDashboardPanelProps {
+	searchFilter?: string | undefined
+	mediaPreviewUrl?: string
+	shouldQueue: boolean
 }
 
 interface IDashboardPanelTrackedProps {
@@ -276,6 +279,8 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 
 	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
+
+		queue = queue || this.props.shouldQueue
 
 		if (piece.invalid) {
 			NotificationCenter.push(new Notification(
@@ -530,7 +535,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 	return _.groupBy(prospectivePieces, (piece) => piece.adLibSourceId)
 }
 
-export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
