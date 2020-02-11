@@ -17,7 +17,7 @@ import { getCurrentTime,
 	clone,
 	literal,
 	asyncCollectionRemove} from '../../../lib/lib'
-import { Timeline, getTimelineId, TimelineObjGeneric } from '../../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -56,14 +56,12 @@ import {
 	deactivateRundown as libDeactivateRundown,
 	deactivateRundownInner
 } from './actions'
-import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece, resolveActivePieces } from './pieces'
+import { PieceResolved, getOrderedPiece, getResolvedPieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { areThereActiveRundownsInStudio } from './studio'
-import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
+import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
-import { transformTimeline } from '../../../lib/timeline'
-import * as SuperTimeline from 'superfly-timeline'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1027,48 +1025,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownId, String)
 		check(sourceLayerId, String)
 
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!rundown.currentPartId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
-
-			let showStyleBase = rundown.getShowStyleBase()
-
-			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
-			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
-			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
-
-			const lastPieces = Pieces.find({
-				rundownId: rundown._id,
-				sourceLayerId: sourceLayer._id,
-				startedPlayback: {
-					$exists: true
-				}
-			}, {
-				sort: {
-					startedPlayback: -1
-				},
-				limit: 1
-			}).fetch()
-
-			if (lastPieces.length > 0) {
-				const currentPart = Parts.findOne(rundown.currentPartId)
-				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
-
-				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
-				const newAdLibPiece = convertAdLibToPiece(lastPiece, currentPart, false)
-
-				Pieces.insert(newAdLibPiece)
-
-				// logger.debug('adLibItemStart', newPiece)
-
-				cropInfinitesOnLayer(rundown, currentPart, newAdLibPiece)
-				stopInfinitesRunningOnLayer(rundown, currentPart, newAdLibPiece.sourceLayerId)
-
-				updateTimeline(rundown.studioId)
-			}
-		})
+		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(rundownId, sourceLayerId)
 	}
 	export function sourceLayerOnPartStop (rundownId: string, partId: string, sourceLayerId: string) {
 		check(rundownId, String)
