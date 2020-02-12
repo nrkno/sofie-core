@@ -279,11 +279,11 @@ function userActionMethodName(
 		case UserActionAPIMethods.bucketAdlibImport: return t('Importing Bucker Adlib-piece')
 		case UserActionAPIMethods.bucketAdlibStart: return t('Starting Bucket Adlib-piece')
 
-		case UserActionAPIMethods.createBucket: return t('Creating Bucket')
-		case UserActionAPIMethods.removeBucket: return t('Deleting Bucket')
-		case UserActionAPIMethods.emptyBucket: return t('Emptying Bucket')
-		case UserActionAPIMethods.modifyBucket: return t('Chaning Bucket')
-		case UserActionAPIMethods.removeBucketAdLib: return t('Removing Bucket Adlib-piece')
+		case UserActionAPIMethods.bucketsCreateNewBucket: return t('Creating Bucket')
+		case UserActionAPIMethods.bucketsRemoveBucket: return t('Deleting Bucket')
+		case UserActionAPIMethods.bucketsEmptyBucket: return t('Emptying Bucket')
+		case UserActionAPIMethods.bucketsModifyBucket: return t('Chaning Bucket')
+		case UserActionAPIMethods.bucketsRemoveBucketAdLib: return t('Removing Bucket Adlib-piece')
 	}
 	return method // fallback
 }
