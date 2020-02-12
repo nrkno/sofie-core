@@ -1,3 +1,5 @@
+import { IMOSObject, IMOSItem, MosString128, IMOSScope } from "mos-connection";
+
 /**
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
  * corners to fit specific use cases.
@@ -7,14 +9,14 @@
  * typically is a browser thing. For server side usage, xml2json is probably
  * what you want :)
  */
-export {mosXmlString2Js, mosXml2Js}
+export { mosXmlString2Js, mosXml2Js }
 
 const domparser = new DOMParser()
 
 /**
  * Convenience function for conversion from XML source strings.
  */
-function mosXmlString2Js (xmlString:string):object {
+function mosXmlString2Js(xmlString: string): object {
 	const doc = domparser.parseFromString(xmlString, 'text/xml')
 
 	return mosXml2Js(doc)
@@ -25,26 +27,26 @@ function mosXmlString2Js (xmlString:string):object {
  * Documents without a mos root node will not be parsed, and an
  * empty object will be returned.
  */
-function mosXml2Js (doc:XMLDocument):object {
+function mosXml2Js(doc: XMLDocument): object {
 	if (doc.firstChild && doc.firstChild.nodeName === 'mos') {
 		return {
 			mos: nodeToObj(doc.firstChild)
 		}
 	}
-	
+
 	return {}
 }
 
-function nodeToObj (node:Node):object|string|null {
+function nodeToObj(node: Node): object | string | null {
 	if (node.childNodes) {
 		const obj = {}
 
 		for (const n of node.childNodes) {
-			const {nodeName} = n
+			const { nodeName } = n
 
-			switch(nodeName) {
+			switch (nodeName) {
 				case '#text':
-					const {textContent} = n
+					const { textContent } = n
 					if (textContent && textContent.trim() !== '') {
 						return textContent
 					}
@@ -53,9 +55,9 @@ function nodeToObj (node:Node):object|string|null {
 					obj[nodeName] = nodeToObj(n)
 			}
 		}
-		
+
 		return obj
-		}
+	}
 
 	return {}
 }

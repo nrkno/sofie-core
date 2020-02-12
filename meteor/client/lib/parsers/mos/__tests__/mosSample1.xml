@@ -1,0 +1,91 @@
+<mos>
+	<ncsItem>
+		<item>
+			<itemID>6</itemID>
+			<itemSlug>Uten tittel-6</itemSlug>
+			<objID>5c16aa49-cf36-440d-9d9a-138558665715</objID>
+			<mosID>GFX.NRK.MOS</mosID>
+			<mosAbstract>202 Bilde (00:00, Auto/OnNext): Hennie som French</mosAbstract>
+			<abstract>202 Bilde (00:00, Auto/OnNext): Hennie som French</abstract>
+			<mosExternalMetadata>
+				<mosScope>PLAYLIST</mosScope>
+				<mosSchema>http://nora.core.mesosint.nrk.no/mos/content</mosSchema>
+				<mosPayload>
+					<uuid>0cdd0edd-1e10-4e38-b970-b6661bbe1376</uuid>
+					<metadata>
+						<modul>nora.module.browser</modul>
+						<selection>
+							<design>
+								<displayName>Nyheter</displayName>
+								<id>nyheter</id>
+							</design>
+							<type>
+								<displayName>bakskjerm</displayName>
+								<id>bakskjerm</id>
+							</type>
+							<mal>
+								<displayName>202 Bilde</displayName>
+								<id>202_bilde</id>
+							</mal>
+						</selection>
+						<name>
+							<time>(00:00, Auto/OnNext)</time>
+							<templateName>202 Bilde</templateName>
+							<templateVariant />
+							<content>Hennie som French</content>
+							<full>202 Bilde (00:00, Auto/OnNext): Hennie som French</full>
+						</name>
+						<type>bakskjerm</type>
+						<userContext>
+							<userContext>
+								<ncsID>MAENPSTEST11</ncsID>
+								<changedBy>N23109</changedBy>
+								<software>
+									<manufacturer>AP</manufacturer>
+									<product>ENPS Client</product>
+									<version>8</version>
+								</software>
+							</userContext>
+							<changed>2018-08-30-T17:56:41</changed>
+						</userContext>
+					</metadata>
+					<template>
+						<channel>gfx3</channel>
+						<system>html</system>
+						<name>202_bilde</name>
+						<layer>bakskjerm</layer>
+					</template>
+					<content>
+						<bilde>
+							<creators>ØYSTEIN TRONSLI DRABLØS / FRILAND/DAVID BLOOMER</creators>
+							<credit />
+							<title>Hennie som French</title>
+							<w>0.8462222</w>
+							<format>image/jpeg</format>
+							<width>1920</width>
+							<x>0.07688889</x>
+							<h>1</h>
+							<y>0</y>
+							<id>QdncIGkD-IU8W5Ff5QBoIA</id>
+							<type>image/jpeg</type>
+							<uri>QdncIGkD-IU8W5Ff5QBoIARqUM5XjlRKIhner2t9Dsxg</uri>
+							<quality>0.9</quality>
+							<height>1080</height>
+							<url>https://some-url</url>
+						</bilde>
+					</content>
+				</mosPayload>
+			</mosExternalMetadata>
+			<mosExternalMetadata>
+				<mosScope>PLAYLIST</mosScope>
+				<mosSchema>http://nora.core.mesosint.nrk.no/mos/timing</mosSchema>
+				<mosPayload>
+					<out>onNext</out>
+					<timeIn>0</timeIn>
+					<duration>5000</duration>
+					<in>auto</in>
+				</mosPayload>
+			</mosExternalMetadata>
+		</item>
+	</ncsItem>
+</mos>
