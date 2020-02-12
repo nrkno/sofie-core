@@ -7,7 +7,6 @@ function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneri
 	if (!piece.content || !piece.content.payload) {
 		throw new Error('Not a Nora blueprint piece')
 	}
-	const noraContent = piece.content as NoraContent
 
 	const noraPayload = piece.content.payload as NoraPayload
 

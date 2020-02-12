@@ -1,23 +1,23 @@
-import {createMosObjectXmlStringFromPayload} from '../browser-plugin-data'
+import { createMosObjectXmlStringFromPayload } from '../browser-plugin-data'
 import * as parser from 'xml2json'
 
-const superPayload =   {
-    "manifest": "nyheter",
-    "template": {
-      "layer": "super",
-      "name": "01_navn",
-      "event": "take"
-    },
-    "metadata": {
-      "templateName": "01 navn",
-      "templateVariant": "Ett navn"
-    },
-    "content": {
-      "navn": "Petter Blomkvist",
-      "tittel": "regiondirektør, Entreprenørforeningen",
-      "_valid": true
-    }
-  }
+const superPayload = {
+	"manifest": "nyheter",
+	"template": {
+		"layer": "super",
+		"name": "01_navn",
+		"event": "take"
+	},
+	"metadata": {
+		"templateName": "01 navn",
+		"templateVariant": "Ett navn"
+	},
+	"content": {
+		"navn": "Petter Blomkvist",
+		"tittel": "regiondirektør, Entreprenørforeningen",
+		"_valid": true
+	}
+}
 
 
 describe('createMosObjectXmlStringFromPayload', () => {
@@ -29,7 +29,7 @@ describe('createMosObjectXmlStringFromPayload', () => {
 	})
 
 	describe('basic XML document structure', () => {
-		const doc:any = parser.toJson(result, {object: true})
+		const doc: any = parser.toJson(result, { object: true })
 
 		it('the root node should be named mos', () => {
 			const nodeNames = Object.keys(doc)
@@ -40,25 +40,25 @@ describe('createMosObjectXmlStringFromPayload', () => {
 
 		it('the root node should contain a single ncsItem node', () => {
 			const nodeNames = Object.keys(doc.mos)
-			
+
 			expect(nodeNames.length).toEqual(1)
 			expect(nodeNames[0]).toEqual('ncsItem')
 		})
 
 		it('the ncsItem node should contain a single item node', () => {
 			const nodeNames = Object.keys(doc.mos.ncsItem)
-			
+
 			expect(nodeNames.length).toEqual(1)
 			expect(nodeNames[0]).toEqual('item')
 		})
 	})
 
 	describe('item node', () => {
-		const doc:any = parser.toJson(result, {object: true})
+		const doc: any = parser.toJson(result, { object: true })
 		const itemNode = doc.mos.ncsItem.item
 
 		test.todo('itemID node should contain the ENPS item id')
-		
+
 		it('itemSlug node should be empty', () => {
 			const itemSlugNode = itemNode.itemSlug
 
@@ -70,7 +70,7 @@ describe('createMosObjectXmlStringFromPayload', () => {
 
 			it('mosSchema node should use URL for Nora content', () => {
 				const expected = 'http://nora.core.mesosint.nrk.no/mos/content'
-				
+
 				const actual = mosExternalMetadata.mosSchema
 
 				expect(actual).toEqual(expected)
