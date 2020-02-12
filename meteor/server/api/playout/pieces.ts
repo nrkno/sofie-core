@@ -118,7 +118,7 @@ export function orderPieces(pieces: Piece[], partId: PartId, partStarted?: numbe
  * Returns a list of the pieces in a Part, ordered in the order they will be played
  * @param part
  */
-export function getOrderedPiece (cache: CacheForRundownPlaylist, part: Part): Array<PieceResolved> {
+export function getOrderedPiece(cache: CacheForRundownPlaylist, part: Part): Array<PieceResolved> {
 	const pieces = getAllPiecesFromCache(cache, part)
 	const partStarted = part.getLastStartedPlayback()
 
@@ -180,7 +180,7 @@ export function createPieceGroup(
 	})
 }
 
-function resolvePieceTimeline (objs: TimelineContentObject[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
+function resolvePieceTimeline(objs: TimelineContentObject[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
 	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
 	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
@@ -248,7 +248,7 @@ function resolvePieceTimeline (objs: TimelineContentObject[], baseTime: number, 
 	return resolvedPieces
 }
 
-export function getResolvedPieces (cache: CacheForRundownPlaylist, partInstance: PartInstance): ResolvedPieceInstance[] {
+export function getResolvedPieces(cache: CacheForRundownPlaylist, partInstance: PartInstance): ResolvedPieceInstance[] {
 	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
@@ -281,7 +281,7 @@ export function getResolvedPieces (cache: CacheForRundownPlaylist, partInstance:
 
 	return resolvedPieces
 }
-export function getResolvedPiecesFromFullTimeline (cache: CacheForRundownPlaylist, playlist: RundownPlaylist, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
+export function getResolvedPiecesFromFullTimeline(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
 	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId))))
 
 	const now = getCurrentTime()

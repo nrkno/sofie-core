@@ -9,7 +9,7 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 
-export function loadCachedRundownData (rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
+export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const cachedRundown = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
@@ -44,7 +44,7 @@ export function loadCachedRundownData (rundownId: RundownId, rundownExternalId: 
 
 	return ingestRundown
 }
-export function loadCachedIngestSegment (rundownId: RundownId, rundownExternalId: string, segmentId: SegmentId, segmentExternalId: string): LocalIngestSegment {
+export function loadCachedIngestSegment(rundownId: RundownId, rundownExternalId: string, segmentId: SegmentId, segmentExternalId: string): LocalIngestSegment {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		segmentId: segmentId,
@@ -87,14 +87,14 @@ export function loadIngestDataCachePart(rundownId: RundownId, rundownExternalId:
 	return partEntry
 }
 
-export function saveRundownCache (rundownId: RundownId, ingestRundown: LocalIngestRundown) {
+export function saveRundownCache(rundownId: RundownId, ingestRundown: LocalIngestRundown) {
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(rundownId, ingestRundown)
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache, {
 		rundownId: rundownId,
 	}, cacheEntries)
 }
-export function saveSegmentCache (rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
+export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache, {
@@ -114,28 +114,28 @@ export interface LocalIngestSegment extends IngestSegment, LocalIngestBase {
 export interface LocalIngestPart extends IngestPart, LocalIngestBase {
 
 }
-export function isLocalIngestRundown (o: IngestRundown | LocalIngestRundown): o is LocalIngestRundown {
+export function isLocalIngestRundown(o: IngestRundown | LocalIngestRundown): o is LocalIngestRundown {
 	return !!(o['modified'])
 }
-export function makeNewIngestRundown (ingestRundown: IngestRundown): LocalIngestRundown {
+export function makeNewIngestRundown(ingestRundown: IngestRundown): LocalIngestRundown {
 	return {
 		...ingestRundown,
 		segments: _.map(ingestRundown.segments, makeNewIngestSegment),
 		modified: getCurrentTime()
 	}
 }
-export function makeNewIngestSegment (ingestSegment: IngestSegment): LocalIngestSegment {
+export function makeNewIngestSegment(ingestSegment: IngestSegment): LocalIngestSegment {
 	return {
 		...ingestSegment,
 		parts: _.map(ingestSegment.parts, makeNewIngestPart),
 		modified: getCurrentTime()
 	}
 }
-export function makeNewIngestPart (ingestPart: IngestPart): LocalIngestPart {
+export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 	return { ...ingestPart, modified: getCurrentTime() }
 }
 
-export function updateIngestRundownWithData (
+export function updateIngestRundownWithData(
 	oldIngestRundown: LocalIngestRundown,
 	newIngestSegments: LocalIngestSegment[]
 ): LocalIngestRundown {
@@ -153,7 +153,7 @@ export function updateIngestRundownWithData (
 	return newIngestRundown
 }
 
-function generateCacheForRundown (rundownId: RundownId, ingestRundown: LocalIngestRundown): IngestDataCacheObj[] {
+function generateCacheForRundown(rundownId: RundownId, ingestRundown: LocalIngestRundown): IngestDataCacheObj[] {
 	// cache the Data
 	const cacheEntries: IngestDataCacheObj[] = []
 	const rundown: IngestDataCacheObjRundown = {
@@ -170,7 +170,7 @@ function generateCacheForRundown (rundownId: RundownId, ingestRundown: LocalInge
 	_.each(ingestRundown.segments, segment => cacheEntries.push(...generateCacheForSegment(rundownId, segment)))
 	return cacheEntries
 }
-function generateCacheForSegment (rundownId: RundownId, ingestSegment: LocalIngestSegment): IngestDataCacheObj[] {
+function generateCacheForSegment(rundownId: RundownId, ingestSegment: LocalIngestSegment): IngestDataCacheObj[] {
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const cacheEntries: Array<IngestDataCacheObjSegment | IngestDataCacheObjPart> = []
 
@@ -193,7 +193,7 @@ function generateCacheForSegment (rundownId: RundownId, ingestSegment: LocalInge
 
 	return cacheEntries
 }
-function generateCacheForPart (rundownId: RundownId, segmentId: SegmentId, part: LocalIngestPart): IngestDataCacheObjPart {
+function generateCacheForPart(rundownId: RundownId, segmentId: SegmentId, part: LocalIngestPart): IngestDataCacheObjPart {
 	const partId = getPartId(rundownId, part.externalId)
 	return {
 		_id: protectString<IngestDataCacheObjId>(`${rundownId}_${partId}`),
