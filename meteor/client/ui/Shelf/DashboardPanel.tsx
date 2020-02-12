@@ -28,13 +28,14 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal } from '../../../lib/lib'
+import { literal, getCurrentTime } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { invalidateAt } from '../../lib/invalidatingTime';
 
 interface IState {
 	outputLayers: {
@@ -46,9 +47,12 @@ interface IState {
 	searchFilter: string | undefined
 }
 
+const BUTTON_GRID_WIDTH = 1
+const BUTTON_GRID_HEIGHT = 0.61803
+
+const HOTKEY_GROUP = 'DashboardPanel'
+
 interface IDashboardPanelProps {
-	searchFilter?: string | undefined
-	mediaPreviewUrl?: string
 	shouldQueue: boolean
 }
 
@@ -59,36 +63,45 @@ interface IDashboardPanelTrackedProps {
 	}
 }
 
-const HOTKEY_GROUP = 'DashboardPanel'
+interface DashboardPositionableElement {
+	x: number
+	y: number
+	width: number
+	height: number
+}
 
-export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
-		rundownId: props.rundown._id,
-		partId: props.rundown.currentPartId,
-		startedPlayback: {
-			$exists: true
-		},
-		$or: [{
-			stoppedPlayback: {
-				$eq: 0
-			}
-		}, {
-			stoppedPlayback: {
-				$exists: false
-			}
-		}],
-		adLibSourceId: {
-			$exists: true
-		}
-	}).fetch() : [], (piece) => piece.adLibSourceId)
+export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+	return {
+		width: el.width >= 0 ?
+			`calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
+			undefined,
+		height: el.height >= 0 ?
+			`calc((${el.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
+			undefined,
+		left: el.x >= 0 ?
+			`calc(${el.x} * var(--dashboard-button-grid-width))` :
+			el.width < 0 ?
+				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
+				undefined,
+		top: el.y >= 0 ?
+			`calc(${el.y} * var(--dashboard-button-grid-height))` :
+			el.height < 0 ?
+				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
+				undefined,
+		right: el.x < 0 ?
+			`calc(${-1 * el.x - 1} * var(--dashboard-button-grid-width))` :
+			el.width < 0 ?
+				`calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))` :
+				undefined,
+		bottom: el.y < 0 ?
+			`calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))` :
+			el.height < 0 ?
+				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
+				undefined
+	}
+}
 
-	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio(),
-		unfinishedPieces
-	})
-}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-	return !_.isEqual(props, nextProps)
-})(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
+export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -169,7 +182,6 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -230,7 +242,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
 					}, 'keyup', HOTKEY_GROUP)
-					this.usedHotkeys.push(item.hotkey)
+					this.usedHotkeys.push(item.hotkey, HOTKEY_GROUP)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
@@ -303,7 +315,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			if (!this.isAdLibOnAir(piece)) {
+			if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 				if (!piece.isGlobal) {
 					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
 						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
@@ -354,34 +366,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 			} else {
 				return (
 					<div className='dashboard-panel'
-						style={{
-							width: filter.width >= 0 ?
-								`calc((${filter.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
-								undefined,
-							height: filter.height >= 0 ?
-								`calc((${filter.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
-								undefined,
-							left: filter.x >= 0 ?
-								`calc(${filter.x} * var(--dashboard-button-grid-width))` :
-								filter.width < 0 ?
-									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
-									undefined,
-							top: filter.y >= 0 ?
-								`calc(${filter.y} * var(--dashboard-button-grid-height))` :
-								filter.height < 0 ?
-									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
-									undefined,
-							right: filter.x < 0 ?
-								`calc(${-1 * filter.x - 1} * var(--dashboard-button-grid-width))` :
-								filter.width < 0 ?
-									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
-									undefined,
-							bottom: filter.y < 0 ?
-								`calc(${-1 * filter.y - 1} * var(--dashboard-button-grid-height))` :
-								filter.height < 0 ?
-									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
-									undefined
-						}}
+						style={dashboardElementPosition(filter)}
 					>
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
@@ -390,7 +375,9 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
-						<div className='dashboard-panel__panel'>
+						<div className={ClassNames('dashboard-panel__panel', {
+							'dashboard-panel__panel--horizontal': filter.overflowHorizontally
+						})}>
 							{this.props.rundownBaselineAdLibs
 								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
@@ -417,4 +404,91 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 		}
 		return null
 	}
-})
+}
+
+export function getUnfinishedPiecesReactive(rundownId: string, currentPartId: string | null) {
+	let prospectivePieces: Piece[] = []
+	const now = getCurrentTime()
+	if (currentPartId) {
+		prospectivePieces = Pieces.find({
+			rundownId: rundownId,
+			partId: currentPartId,
+			dynamicallyInserted: true,
+			$and: [
+				{
+					$or: [{
+						stoppedPlayback: {
+							$eq: 0
+						}
+					}, {
+						stoppedPlayback: {
+							$exists: false
+						}
+					}],
+				},
+				{
+					definitelyEnded: {
+						$exists: false
+					}
+				}
+			],
+			playoutDuration: {
+				$exists: false
+			},
+			adLibSourceId: {
+				$exists: true
+			},
+			$or: [
+				{
+					userDuration: {
+						$exists: false
+					}
+				},
+				{
+					'userDuration.duration': {
+						$exists: false
+					}
+				}
+			]
+		}).fetch()
+
+		let nearestEnd = Number.POSITIVE_INFINITY
+		prospectivePieces = prospectivePieces.filter((piece) => {
+			let duration: number | undefined =
+				(piece.playoutDuration) ?
+					piece.playoutDuration :
+				(piece.userDuration && typeof piece.userDuration.duration === "number") ?
+					piece.userDuration.duration :
+				(piece.userDuration && typeof piece.userDuration.end === "string") ?
+					0 : // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
+				(typeof piece.enable.duration === "number") ?
+					piece.enable.duration :
+					undefined
+
+			if (duration !== undefined) {
+				const end = (piece.startedPlayback! + duration)
+				if (end > now) {
+					nearestEnd = nearestEnd > end ? end : nearestEnd
+					return true
+				} else {
+					return false
+				}
+			}
+			return true
+		})
+
+		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+	}
+
+	return _.groupBy(prospectivePieces, (piece) => piece.adLibSourceId)
+}
+
+export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	return Object.assign({}, fetchAndFilter(props), {
+		studio: props.rundown.getStudio(),
+		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
+	})
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
+})(DashboardPanelInner)
+
