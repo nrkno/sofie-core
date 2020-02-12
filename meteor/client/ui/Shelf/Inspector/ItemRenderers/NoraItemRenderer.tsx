@@ -56,5 +56,6 @@ function isNoraItem (item: IBlueprintPieceGeneric): boolean {
 		return false
 	}
 
-	return [ 'super', 'bakskjerm' ].indexOf(content.payload.template.layer) > -1
+	// return [ 'super', 'bakskjerm' ].indexOf(content.payload.template.layer) > -1
+	return true
 }

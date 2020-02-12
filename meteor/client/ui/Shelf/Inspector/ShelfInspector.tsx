@@ -6,7 +6,7 @@ import renderItem from './ItemRenderers/ItemRendererFactory';
 export { ShelfInspector }
 
 interface IShelfInspectorProps {
-	selected?: IBlueprintPieceGeneric
+	selected: IBlueprintPieceGeneric | undefined
 }
 
 class ShelfInspector extends React.Component<IShelfInspectorProps> {

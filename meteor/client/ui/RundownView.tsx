@@ -1398,6 +1398,10 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 				selectedPiece: piece
 
 			})
+		} else {
+			if (this._inspectorShelf) {
+				this._inspectorShelf.getWrappedInstance().selectPiece(piece)
+			}
 		}
 	}
 
