@@ -30,7 +30,7 @@ import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
-export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlaylist, rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean): void {
+export function updateSourceLayerInfinitesAfterPart(cache: CacheForRundownPlaylist, rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean): void {
 	let activeInfinitePieces: { [layer: string]: Piece } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: SegmentId } = {}
 
@@ -63,8 +63,8 @@ export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlayl
 						'piece._id': piece._id,
 						reset: { $ne: true }
 					}, {
-						$set: { 'piece.infiniteId': piece.infiniteId }
-					})
+							$set: { 'piece.infiniteId': piece.infiniteId }
+						})
 				}
 				if (piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
 					activeInfinitePieces[piece.sourceLayerId] = piece
@@ -215,8 +215,8 @@ export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlayl
 					'piece._id': pieceToInsert._id,
 					reset: { $ne: true }
 				}, {
-					$set: { piece: pieceToInsert }
-				})
+						$set: { piece: pieceToInsert }
+					})
 				// logger.debug(`updateSourceLayerInfinitesAfterPart: updated infinite continuation "${pieceToInsert._id}"`)
 			} else {
 				if (existingPiece) {
@@ -259,11 +259,15 @@ export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlayl
 					cache.PieceInstances.update({
 						'piece._id': piece._id,
 						reset: { $ne: true }
-					}, { $set: {
-						'piece.infiniteId': piece.infiniteId }
-					})
-					cache.Pieces.update(piece._id, { $set: {
-						infiniteId: piece.infiniteId }
+					}, {
+							$set: {
+								'piece.infiniteId': piece.infiniteId
+							}
+						})
+					cache.Pieces.update(piece._id, {
+						$set: {
+							infiniteId: piece.infiniteId
+						}
 					})
 					// logger.debug(`updateSourceLayerInfinitesAfterPart: marked "${piece._id}" as start of infinite`)
 				}
@@ -275,7 +279,7 @@ export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlayl
 	}
 }
 
-export function cropInfinitesOnLayer (cache: CacheForRundownPlaylist, rundown: Rundown, partInstance: PartInstance, newPieceInstance: PieceInstance) {
+export function cropInfinitesOnLayer(cache: CacheForRundownPlaylist, rundown: Rundown, partInstance: PartInstance, newPieceInstance: PieceInstance) {
 	const showStyleBase = rundown.getShowStyleBase()
 	const exclusiveGroup = _.find(showStyleBase.sourceLayers, sl => sl._id === newPieceInstance.piece.sourceLayerId)
 	const newItemExclusivityGroup = exclusiveGroup ? exclusiveGroup.exclusiveGroup : undefined
@@ -288,20 +292,24 @@ export function cropInfinitesOnLayer (cache: CacheForRundownPlaylist, rundown: R
 
 	for (const instance of pieceInstances) {
 		if (!instance.piece.userDuration || (!instance.piece.userDuration.duration && !instance.piece.userDuration.end)) {
-			cache.PieceInstances.update(instance._id, { $set: {
-				'piece.userDuration': { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
-				definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPieceInstance.piece.adlibPreroll || 0),
-				'piece.infiniteMode': PieceLifespan.Normal,
-				'piece.originalInfiniteMode': instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
-			}})
+			cache.PieceInstances.update(instance._id, {
+				$set: {
+					'piece.userDuration': { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+					definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPieceInstance.piece.adlibPreroll || 0),
+					'piece.infiniteMode': PieceLifespan.Normal,
+					'piece.originalInfiniteMode': instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
+				}
+			})
 
 			// TODO-PartInstance - pending new data flow
-			cache.Pieces.update(instance.piece._id, { $set: {
-				userDuration: { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
-				definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPieceInstance.piece.adlibPreroll || 0),
-				infiniteMode: PieceLifespan.Normal,
-				originalInfiniteMode: instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
-			}})
+			cache.Pieces.update(instance.piece._id, {
+				$set: {
+					userDuration: { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+					definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPieceInstance.piece.adlibPreroll || 0),
+					infiniteMode: PieceLifespan.Normal,
+					originalInfiniteMode: instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
+				}
+			})
 		}
 	}
 }

@@ -237,7 +237,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		return false
 	}
 
-	isAdLibNext (adLib: AdLibPieceUi) {
+	isAdLibNext(adLib: AdLibPieceUi) {
 		if (this.props.nextPieces[unprotectString(adLib._id)] && this.props.nextPieces[unprotectString(adLib._id)].length > 0) {
 			return true
 		}
