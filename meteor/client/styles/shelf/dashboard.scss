@@ -19,7 +19,7 @@
 	position: absolute;
 	background: rgba(0, 0, 0, 0.2);
 	border: 1px solid rgba(0,0,0,0.1);
-	border-radius: 5px;
+	border-radius: 10px;
 	padding: 0.625rem;
 	margin: 0.625rem;
 	user-select: none;
@@ -138,7 +138,7 @@
 		position: relative;
 		background: #000;
 		border: none;
-		border-radius: 3px;
+		border-radius: 4px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: normal;
