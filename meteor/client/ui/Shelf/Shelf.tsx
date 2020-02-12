@@ -11,8 +11,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { SegmentUi, PieceUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
@@ -28,8 +27,6 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
-import { IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
-import { InternalIBlueprintPieceGeneric } from '../../../lib/collections/Pieces'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',

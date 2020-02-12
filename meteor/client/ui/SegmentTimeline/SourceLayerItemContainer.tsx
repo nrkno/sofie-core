@@ -54,7 +54,7 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 	private overrides: Partial<IPropsHeader>
 	private destroyed: boolean
 
-	updateMediaObjectSubscription () {
+	updateMediaObjectSubscription() {
 		if (this.destroyed) return
 
 		if (this.props.piece && this.props.piece.sourceLayer) {
@@ -84,13 +84,13 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 		}
 	}
 
-	shouldDataTrackerUpdate (prevProps: IPropsHeader): boolean {
+	shouldDataTrackerUpdate(prevProps: IPropsHeader): boolean {
 		if (this.props.piece !== prevProps.piece) return true
 		if (this.props.isLiveLine !== prevProps.isLiveLine) return true
 		return false
 	}
 
-	updateDataTracker () {
+	updateDataTracker() {
 		if (this.destroyed) return
 
 		this.statusComp = this.autorun(() => {
@@ -134,8 +134,8 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 					if (typeof timelineObj.enable.duration === 'number' && !pieceCopy.cropped) {
 						pieceCopy.renderedDuration = (
 							timelineObj.enable.duration !== 0 ?
-							timelineObj.enable.duration :
-							(props.partDuration - (pieceCopy.renderedInPoint || 0))
+								timelineObj.enable.duration :
+								(props.partDuration - (pieceCopy.renderedInPoint || 0))
 						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)
@@ -181,14 +181,14 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 		})
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 			this.updateDataTracker()
 		})
 	}
 
-	componentDidUpdate (prevProps: IPropsHeader) {
+	componentDidUpdate(prevProps: IPropsHeader) {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 		})
@@ -198,12 +198,12 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 		}
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.destroyed = true
 		super.componentWillUnmount()
 	}
 
-	render () {
+	render() {
 		return (
 			<SourceLayerItem {...this.props} {...this.overrides} />
 		)

@@ -134,7 +134,6 @@ $dashboard-button-height: 5.625em;
 		margin: -4px;
 		overflow: overlay;
 		max-height: calc(100% - 12px);
-
 		&.dashboard-panel__panel--horizontal {
 			white-space: nowrap;
 			overflow: auto;
@@ -153,7 +152,6 @@ $dashboard-button-height: 5.625em;
 			margin-bottom: -1em;
 			z-index: 2;
 			transform: translate(calc(-1 * #{$dashboard-button-width}), 0);
-
 			&::after {
 				content: ' ';
 				display: block;
@@ -171,7 +169,7 @@ $dashboard-button-height: 5.625em;
 				display: block;
 				position: absolute;
 				top: 0;
-				left: 1px;
+				left: 2px;
 				border-left: 10px solid var(--general-live-color);
 				border-bottom: 10px solid transparent;
 				border-top: 10px solid transparent;

@@ -35,7 +35,7 @@ interface IDashboardPanelTrackedProps {
 }
 
 export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return{
+	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
 		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
@@ -49,11 +49,11 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 		this.liveLine = el
 		this.ensureLiveLineVisible()
 	}
-	componentDidUpdate (prevProps) {
+	componentDidUpdate(prevProps) {
 		super.componentDidUpdate(prevProps)
 		this.ensureLiveLineVisible()
 	}
-	componentDidMount () {
+	componentDidMount() {
 		super.componentDidMount()
 		this.ensureLiveLineVisible()
 	}
@@ -66,7 +66,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 			})
 		}
 	}, 250)
-	render () {
+	render() {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -81,7 +81,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
-						{ filter.enableSearch &&
+						{filter.enableSearch &&
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
@@ -92,18 +92,18 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 								<div className='dashboard-panel__panel__group'>
 									{filteredRudownBaselineAdLibs.map((item: AdLibPieceUi) => {
 										return <DashboardPieceButton
-													key={unprotectString(item._id)}
-													adLibListItem={item}
-													layer={this.state.sourceLayers[item.sourceLayerId]}
-													outputLayer={this.state.outputLayers[item.outputLayerId]}
-													onToggleAdLib={this.onToggleAdLib}
-													playlist={this.props.playlist}
-													isOnAir={this.isAdLibOnAir(item)}
-													mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
-													widthScale={filter.buttonWidthScale}
-													heightScale={filter.buttonHeightScale}
-												>
-													{item.name}
+											key={unprotectString(item._id)}
+											adLibListItem={item}
+											layer={this.state.sourceLayers[item.sourceLayerId]}
+											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											onToggleAdLib={this.onToggleAdLib}
+											playlist={this.props.playlist}
+											isOnAir={this.isAdLibOnAir(item)}
+											mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+											widthScale={filter.buttonWidthScale}
+											heightScale={filter.buttonHeightScale}
+										>
+											{item.name}
 										</DashboardPieceButton>
 									})}
 								</div>
@@ -125,18 +125,18 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 										}
 										{filteredPieces.map((item: AdLibPieceUi) => {
 											return <DashboardPieceButton
-														key={unprotectString(item._id)}
-														adLibListItem={item}
-														layer={this.state.sourceLayers[item.sourceLayerId]}
-														outputLayer={this.state.outputLayers[item.outputLayerId]}
-														onToggleAdLib={this.onToggleAdLib}
-														playlist={this.props.playlist}
-														isOnAir={this.isAdLibOnAir(item)}
-														mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
-														widthScale={filter.buttonWidthScale}
-														heightScale={filter.buttonHeightScale}
-													>
-														{item.name}
+												key={unprotectString(item._id)}
+												adLibListItem={item}
+												layer={this.state.sourceLayers[item.sourceLayerId]}
+												outputLayer={this.state.outputLayers[item.outputLayerId]}
+												onToggleAdLib={this.onToggleAdLib}
+												playlist={this.props.playlist}
+												isOnAir={this.isAdLibOnAir(item)}
+												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+												widthScale={filter.buttonWidthScale}
+												heightScale={filter.buttonHeightScale}
+											>
+												{item.name}
 											</DashboardPieceButton>
 										})}
 									</div> :

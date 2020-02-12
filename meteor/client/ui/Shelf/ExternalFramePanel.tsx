@@ -179,7 +179,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}
 	}
 
-	sendCurrentState () {
+	sendCurrentState() {
 		this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 			id: Random.id(),
 			type: SofieExternalMessageType.CURRENT_PART_CHANGED,
@@ -206,7 +206,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		document.removeEventListener('keydown', this.onKeyEvent)
 	}
 
-	componentDidUpdate (prevProps: IProps) {
+	componentDidUpdate(prevProps: IProps) {
 		if (prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
 			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
@@ -230,18 +230,18 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		window.addEventListener('message', this.onReceiveMessage)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		// reject all outstanding promises for replies
 		_.each(this.awaitingReply, (promise) => promise.reject(new Error('ExternalFramePanel unmounting')))
 		this.unregisterHandlers()
 		window.removeEventListener('message', this.onReceiveMessage)
 	}
 
-	render () {
+	render() {
 		return <div className='external-frame-panel'
 			style={
 				_.extend(
@@ -254,10 +254,10 @@ export class ExternalFramePanel extends React.Component<IProps> {
 				)
 			}>
 			<iframe
-			ref={this.setElement}
-			className='external-frame-panel__iframe'
-			src={this.props.panel.url}
-			sandbox='allow-forms allow-popups allow-scripts'></iframe>
+				ref={this.setElement}
+				className='external-frame-panel__iframe'
+				src={this.props.panel.url}
+				sandbox='allow-forms allow-popups allow-scripts'></iframe>
 		</div>
 	}
 }
