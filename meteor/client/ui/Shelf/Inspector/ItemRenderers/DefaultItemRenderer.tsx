@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/Pieces'
+import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 
-export default function DefaultItemRenderer(props: { item: InternalIBlueprintPieceGeneric }): JSX.Element {
-	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.item
+export default function DefaultItemRenderer(props: { piece: PieceUi }): JSX.Element {
+	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.piece.instance.piece
 
 	return (
 		<dl>

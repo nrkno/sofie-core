@@ -7,7 +7,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { AdLibListItem } from './AdLibListItem'
+import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
@@ -20,7 +20,7 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer, IBlueprintAdLibPiece, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -33,13 +33,14 @@ import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelp
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShelfInspector } from './Inspector/ShelfInspector'
-import { Piece } from '../../../lib/collections/Pieces'
+import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { RundownUtils } from '../../lib/rundown'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
-	onSelectAdLib: (piece: AdLibPieceUi) => void
-	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
-	selectedPart: AdLibPieceUi | undefined
+	onSelectAdLib: (piece: IAdLibListItem) => void
+	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: ExtendedKeyboardEvent) => void
+	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
@@ -204,7 +205,8 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<
 						<AdLibListItem
 							key={unprotectString(adLibPiece._id)}
 							adLibListItem={adLibPiece}
-							selected={this.props.selectedPart && this.props.selectedPart._id === adLibPiece._id || false}
+							selected={this.props.selectedPiece && RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+								this.props.selectedPiece._id === adLibPiece._id || false}
 							layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
 							outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 							onToggleAdLib={this.props.onToggleAdLib}
@@ -252,13 +254,14 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<
 										this.props.searchFilter
 									)
 								).
-								map((item: AdLibPieceUi) =>
+								map((adLibPiece: AdLibPieceUi) =>
 									<AdLibListItem
-										key={unprotectString(item._id)}
-										adLibListItem={item}
-										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-										layer={this.state.sourceLayers[item.sourceLayerId]}
-										outputLayer={this.state.outputLayers[item.outputLayerId]}
+										key={unprotectString(adLibPiece._id)}
+										adLibListItem={adLibPiece}
+										selected={this.props.selectedPiece && RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+											this.props.selectedPiece._id === adLibPiece._id || false}
+										layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
+										outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
 										playlist={this.props.playlist}
@@ -275,7 +278,7 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<
 	}
 
 	render() {
-		const selected = this.props.selectedPart
+		const selected = this.props.selectedPiece
 
 		return (
 			<div className={ClassNames('adlib-panel__list-view__list', {
@@ -387,10 +390,12 @@ export interface IAdLibPanelProps {
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
+	selectedPiece: AdLibPieceUi | PieceUi | undefined
+
+	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
 
 interface IState {
-	selectedPart: AdLibPiece | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	followLive: boolean
 	searchFilter: string | undefined
@@ -670,7 +675,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		super(props)
 
 		this.state = {
-			selectedPart: undefined,
 			selectedSegment: undefined,
 			searchFilter: undefined,
 			followLive: true
@@ -792,11 +796,9 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		})
 	}
 
-	onSelectAdLib = (piece: AdLibPieceUi) => {
+	onSelectAdLib = (piece: IAdLibListItem) => {
 		// console.log(aSLine)
-		this.setState({
-			selectedPart: piece
-		})
+		this.props.onSelectPiece && this.props.onSelectPiece(piece as AdLibPieceUi)
 	}
 
 	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
@@ -892,7 +894,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 					rundownAdLibs={this.props.rundownBaselineAdLibs}
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
-					selectedPart={this.state.selectedPart}
+					selectedPiece={this.props.selectedPiece}
 					selectedSegment={this.state.selectedSegment}
 					showStyleBase={this.props.showStyleBase}
 					searchFilter={this.state.searchFilter}

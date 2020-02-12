@@ -2,12 +2,13 @@ import * as React from 'react'
 import { IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
 import { IModalAttributes, Modal } from '../../../lib/ui/containers/modals/Modal'
 import renderItem from './ItemRenderers/ItemRendererFactory'
-import { InternalIBlueprintPieceGeneric } from '../../../../lib/collections/Pieces'
+import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
+import { AdLibPieceUi } from '../AdLibPanel'
 
 export { ShelfInspector }
 
 interface IShelfInspectorProps {
-	selected?: InternalIBlueprintPieceGeneric
+	selected: AdLibPieceUi | PieceUi | undefined
 }
 
 class ShelfInspector extends React.Component<IShelfInspectorProps> {

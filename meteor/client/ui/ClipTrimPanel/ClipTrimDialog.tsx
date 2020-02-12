@@ -8,6 +8,7 @@ import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
+import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
@@ -23,7 +24,7 @@ interface IState {
 }
 
 export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Component<IProps & InjectedTranslateProps, IState> {
-	constructor (props: IProps & InjectedTranslateProps) {
+	constructor(props: IProps & InjectedTranslateProps) {
 		super(props)
 
 		this.state = {
@@ -47,11 +48,11 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 			this.state.duration
 		))
 	}
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedPiece.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
-			onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}>
+				onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}>
 				<ClipTrimPanel
 					studioId={this.props.studio._id}
 					playlistId={this.props.playlistId}

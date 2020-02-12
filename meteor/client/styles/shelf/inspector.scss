@@ -1,2 +1,17 @@
 .shelf-inspector {
+	overflow-y: auto;
+	overflow-x: none;
+
+	> dl {
+		margin: 0 0.5em;
+
+		> dd {
+			margin: 0;
+			font-weight: 400;
+		}
+
+		> dt {
+			margin: 0 0 0 1em;
+		}
+	}
 }

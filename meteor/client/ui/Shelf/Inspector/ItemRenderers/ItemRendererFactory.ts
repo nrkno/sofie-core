@@ -2,12 +2,13 @@ import * as React from 'react'
 import DefaultItemRenderer from './DefaultItemRenderer'
 import { NoraItemRenderer, isNoraItem } from './NoraItemRenderer'
 
-import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/Pieces'
+import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
+import { AdLibPieceUi } from '../../AdLibPanel'
 
-export default function renderItem(item: InternalIBlueprintPieceGeneric): JSX.Element {
-	if (isNoraItem(item)) {
-		return React.createElement(NoraItemRenderer, { item })
+export default function renderItem(piece: AdLibPieceUi | PieceUi): JSX.Element {
+	if (isNoraItem(piece)) {
+		return React.createElement(NoraItemRenderer, { piece })
 	}
 
-	return React.createElement(DefaultItemRenderer, { item })
+	return React.createElement(DefaultItemRenderer, { piece })
 }
