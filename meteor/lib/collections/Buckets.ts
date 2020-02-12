@@ -1,12 +1,14 @@
 import { PieceGeneric } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 
+export type BucketId = ProtectedString<'BucketId'>
+
 export interface Bucket {
-	_id: string
+	_id: BucketId
 	name: string
 }
 export const Buckets: TransformedCollection<Bucket, Bucket> = createMongoCollection<Bucket>('buckets')

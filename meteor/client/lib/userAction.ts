@@ -7,8 +7,9 @@ import {
 import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'
+import { UserActionAPIMethods } from '../../lib/api/userActions'
 
-export function doUserAction<Result> (
+export function doUserAction<Result>(
 	t: i18next.TranslationFunction<any, object, string>,
 	userEvent: any,
 	actionName0: string,
@@ -50,7 +51,7 @@ export function doUserAction<Result> (
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.CRITICAL,
 						t('Action {{actionName}} failed: {{error}}', { error: res.message || res.error, actionName: actionName })
-					, 'userAction')
+						, 'userAction')
 				)
 				navigator.vibrate([400, 300, 400, 300, 400])
 			}
@@ -64,11 +65,10 @@ export function doUserAction<Result> (
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.NOTIFICATION,
 						okMessage || t('Action {{actionName}} done!', { actionName: actionName })
-					, 'userAction', undefined, false, undefined, undefined, 2000)
+						, 'userAction', undefined, false, undefined, undefined, 2000)
 				)
 			}
 		}
-
 	}).catch((err) => {
 		clearMethodTimeout()
 		// console.error(err) - this is a result of an error server-side. Will be logged, no reason to print it out to console
@@ -83,4 +83,54 @@ export function doUserAction<Result> (
 			navigator.vibrate([400, 300, 400, 300, 400])
 		}
 	})
+}
+
+function userActionMethodName(
+	t: i18next.TranslationFunction<any, object, string>,
+	method: UserActionAPIMethods
+) {
+	switch (method) {
+		// @todo: go through these and set better names:
+		case UserActionAPIMethods.take: return t('Take')
+		case UserActionAPIMethods.setNext: return t('Setting Next')
+		case UserActionAPIMethods.moveNext: return t('Moving Next')
+
+		case UserActionAPIMethods.prepareForBroadcast: return t('Preparing for broadcast')
+		case UserActionAPIMethods.resetRundownPlaylist: return t('Resetting Rundown')
+		case UserActionAPIMethods.resetAndActivate: return t('Resetting and activating Rundown')
+		case UserActionAPIMethods.activate: return t('Activating Rundown')
+		case UserActionAPIMethods.deactivate: return t('Deactivating Rundown')
+		case UserActionAPIMethods.reloadData: return t('Reloading rundown data')
+
+		case UserActionAPIMethods.disableNextPiece: return t('Disabling next piece')
+		case UserActionAPIMethods.togglePartArgument: return t('Toggling Part-Argument')
+		case UserActionAPIMethods.pieceTakeNow: return t('Taking Piece')
+
+		case UserActionAPIMethods.segmentAdLibPieceStart: return t('Starting AdLib-piece')
+		case UserActionAPIMethods.baselineAdLibPieceStart: return t('Starting AdLib-piece')
+		// case UserActionAPIMethods.segmentAdLibPieceStop: return t('Stopping AdLib-piece')
+
+		case UserActionAPIMethods.sourceLayerStickyPieceStart: return t('Starting sticky-pice')
+
+		case UserActionAPIMethods.activateHold: return t('Activating Hold')
+
+		case UserActionAPIMethods.saveEvaluation: return t('Saving Evaluation')
+
+		case UserActionAPIMethods.storeRundownSnapshot: return t('Creating Snapshot for debugging')
+
+		case UserActionAPIMethods.sourceLayerOnPartStop: return t('Stopping source layer')
+
+		case UserActionAPIMethods.removeRundown: return t('Removing Rundown')
+		case UserActionAPIMethods.resyncRundown: return t('Re-Syncing Rundown')
+
+		case UserActionAPIMethods.recordStop: return t('Stopping recording')
+		case UserActionAPIMethods.recordStart: return t('Starting recording')
+		case UserActionAPIMethods.recordDelete: return t('Deleting recording')
+
+		case UserActionAPIMethods.setInOutPoints: return t('Setting In/Out points')
+
+		case UserActionAPIMethods.bucketAdlibImport: return t('Importing Bucker Adlib-piece')
+		case UserActionAPIMethods.bucketAdlibStart: return t('Starting Bucket Adlib-piece')
+	}
+	return method // fallback
 }

@@ -30,6 +30,7 @@ import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlay
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
 import { PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -37,7 +38,7 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
+export function orderPieces(pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
 
 	const pieceMap = normalizeArray(pieces, '_id')
@@ -116,13 +117,13 @@ export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: numb
  * Returns a list of the pieces in a Part, ordered in the order they will be played
  * @param part
  */
-export function getOrderedPiece (part: Part): Array<PieceResolved> {
+export function getOrderedPiece(part: Part): Array<PieceResolved> {
 	const pieces = part.getAllPieces()
 	const partStarted = part.getLastStartedPlayback()
 
 	return orderPieces(pieces, part._id, partStarted)
 }
-export function createPieceGroupFirstObject (
+export function createPieceGroupFirstObject(
 	pieceInstance: PieceInstance,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
@@ -152,7 +153,7 @@ export function createPieceGroupFirstObject (
 	})
 	return firstObject
 }
-export function createPieceGroup (
+export function createPieceGroup(
 	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
@@ -178,7 +179,7 @@ export function createPieceGroup (
 	})
 }
 
-function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
+function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
 	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
 		time: baseTime
 	})
@@ -248,7 +249,7 @@ function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pie
 	return resolvedPieces
 }
 
-export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceInstance[] {
+export function getResolvedPieces(partInstance: PartInstance): ResolvedPieceInstance[] {
 	const pieceInstances = partInstance.getAllPieceInstances()
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
@@ -281,7 +282,7 @@ export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceIns
 
 	return resolvedPieces
 }
-export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
+export function getResolvedPiecesFromFullTimeline(playoutData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
 	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId))))
 
 	const now = getCurrentTime()
@@ -329,7 +330,7 @@ export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistP
 }
 
 
-export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
+export function convertPieceToAdLibPiece(piece: Piece): AdLibPiece {
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
@@ -361,7 +362,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	return newAdLibPiece
 }
 
-export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, partInstance: PartInstance, queue: boolean): PieceInstance {
+export function convertAdLibToPieceInstance(adLibPiece: AdLibPiece | Piece | BucketAdLib, partInstance: PartInstance, queue: boolean): PieceInstance {
 	let duration: number | string | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']

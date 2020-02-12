@@ -14,103 +14,106 @@ import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
 
 export interface NewUserActionAPI {
-	take						(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	setNext						(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number): Promise<ClientAPI.ClientResponse<void>>
-	setNextSegment				(userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId | null): Promise<ClientAPI.ClientResponse<void>>
-	moveNext					(userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number): Promise<ClientAPI.ClientResponse<PartId | null>>
-	prepareForBroadcast			(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	resetRundownPlaylist		(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	resetAndActivate			(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean): Promise<ClientAPI.ClientResponse<void>>
-	activate					(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): Promise<ClientAPI.ClientResponse<void>>
-	deactivate					(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	forceResetAndActivate		(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): Promise<ClientAPI.ClientResponse<void>>
-	reloadData					(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
-	unsyncRundown				(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
-	disableNextPiece			(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
-	togglePartArgument			(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string): Promise<ClientAPI.ClientResponse<void>>
-	pieceTakeNow				(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId): Promise<ClientAPI.ClientResponse<void>>
-	setInOutPoints				(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number): Promise<ClientAPI.ClientResponse<void>>
-	segmentAdLibPieceStart		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean)
-	sourceLayerOnPartStop		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[])
-	baselineAdLibPieceStart		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
-	sourceLayerStickyPieceStart	(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string): Promise<ClientAPI.ClientResponse<void>>
-	activateHold				(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
-	saveEvaluation				(userEvent: string, evaluation: EvaluationBase): Promise<ClientAPI.ClientResponse<void>>
-	storeRundownSnapshot		(userEvent: string, playlistId: RundownPlaylistId, reason: string): Promise<ClientAPI.ClientResponse<SnapshotId>>
-	removeRundownPlaylist		(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	resyncRundownPlaylist		(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
-	removeRundown				(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
-	resyncRundown				(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<ReloadRundownResponse>>
-	recordStop					(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
-	recordStart					(userEvent: string, studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
-	recordDelete				(userEvent: string, id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>
-	mediaRestartWorkflow		(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaAbortWorkflow			(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaPrioritizeWorkflow		(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaRestartAllWorkflows	(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
-	mediaAbortAllWorkflows		(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
-	regenerateRundownPlaylist	(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	generateRestartToken		(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
-	restartCore					(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
-	guiFocused					(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	guiBlurred					(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	setNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number): Promise<ClientAPI.ClientResponse<void>>
+	setNextSegment(userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId | null): Promise<ClientAPI.ClientResponse<void>>
+	moveNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number): Promise<ClientAPI.ClientResponse<PartId | null>>
+	prepareForBroadcast(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	resetRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean): Promise<ClientAPI.ClientResponse<void>>
+	activate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): Promise<ClientAPI.ClientResponse<void>>
+	deactivate(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	forceResetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): Promise<ClientAPI.ClientResponse<void>>
+	reloadData(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
+	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
+	disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
+	togglePartArgument(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string): Promise<ClientAPI.ClientResponse<void>>
+	pieceTakeNow(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId): Promise<ClientAPI.ClientResponse<void>>
+	setInOutPoints(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number): Promise<ClientAPI.ClientResponse<void>>
+	segmentAdLibPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean)
+	sourceLayerOnPartStop(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[])
+	baselineAdLibPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
+	sourceLayerStickyPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string): Promise<ClientAPI.ClientResponse<void>>
+	activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
+	saveEvaluation(userEvent: string, evaluation: EvaluationBase): Promise<ClientAPI.ClientResponse<void>>
+	storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string): Promise<ClientAPI.ClientResponse<SnapshotId>>
+	removeRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
+	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
+	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<ReloadRundownResponse>>
+	recordStop(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
+	recordStart(userEvent: string, studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
+	recordDelete(userEvent: string, id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>
+	mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
+	mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
+	mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
+	mediaRestartAllWorkflows(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
+	mediaAbortAllWorkflows(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
+	regenerateRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	generateRestartToken(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
+	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
+	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
-	'take' 									= 'userAction.take',
-	'setNext' 								= 'userAction.setNext',
-	'setNextSegment' 						= 'userAction.setNextSegment',
-	'moveNext' 								= 'userAction.moveNext',
+	'take' = 'userAction.take',
+	'setNext' = 'userAction.setNext',
+	'setNextSegment' = 'userAction.setNextSegment',
+	'moveNext' = 'userAction.moveNext',
 
-	'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
-	'resetRundownPlaylist' 					= 'userAction.resetRundownPlaylist',
-	'resetAndActivate' 						= 'userAction.resetAndActivate',
-	'forceResetAndActivate' 				= 'userAction.forceResetAndActivate',
-	'activate' 								= 'userAction.activate',
-	'deactivate' 							= 'userAction.deactivate',
-	'reloadData' 							= 'userAction.reloadData',
-	'unsyncRundown' 						= 'userAction.unsyncRundown',
+	'prepareForBroadcast' = 'userAction.prepareForBroadcast',
+	'resetRundownPlaylist' = 'userAction.resetRundownPlaylist',
+	'resetAndActivate' = 'userAction.resetAndActivate',
+	'forceResetAndActivate' = 'userAction.forceResetAndActivate',
+	'activate' = 'userAction.activate',
+	'deactivate' = 'userAction.deactivate',
+	'reloadData' = 'userAction.reloadData',
+	'unsyncRundown' = 'userAction.unsyncRundown',
 
-	'disableNextPiece'						= 'userAction.disableNextPiece',
-	'togglePartArgument'					= 'userAction.togglePartArgument',
-	'pieceTakeNow'							= 'userAction.pieceTakeNow',
-	'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
+	'disableNextPiece' = 'userAction.disableNextPiece',
+	'togglePartArgument' = 'userAction.togglePartArgument',
+	'pieceTakeNow' = 'userAction.pieceTakeNow',
+	'setInOutPoints' = 'userAction.pieceSetInOutPoints',
 
-	'segmentAdLibPieceStart'				= 'userAction.segmentAdLibPieceStart',
-	'sourceLayerOnPartStop'					= 'userAction.sourceLayerOnPartStop',
-	'baselineAdLibPieceStart'				= 'userAction.baselineAdLibPieceStart',
+	'bucketAdlibImport' = 'userAction.bucketAdlibImport',
+	'bucketAdlibStart' = 'userAction.bucketAdlibStart',
 
-	'sourceLayerStickyPieceStart'			= 'userAction.sourceLayerStickyPieceStart',
+	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
+	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',
+	'baselineAdLibPieceStart' = 'userAction.baselineAdLibPieceStart',
 
-	'activateHold'							= 'userAction.activateHold',
+	'sourceLayerStickyPieceStart' = 'userAction.sourceLayerStickyPieceStart',
 
-	'saveEvaluation' 						= 'userAction.saveEvaluation',
+	'activateHold' = 'userAction.activateHold',
 
-	'storeRundownSnapshot'					= 'userAction.storeRundownSnapshot',
+	'saveEvaluation' = 'userAction.saveEvaluation',
 
-	'removeRundownPlaylist'					= 'userAction.removeRundownPlaylist',
-	'resyncRundownPlaylist'					= 'userAction.resyncRundownPlaylist',
+	'storeRundownSnapshot' = 'userAction.storeRundownSnapshot',
 
-	'removeRundown'							= 'userAction.removeRundown',
-	'resyncRundown'							= 'userAction.resyncRundown',
+	'removeRundownPlaylist' = 'userAction.removeRundownPlaylist',
+	'resyncRundownPlaylist' = 'userAction.resyncRundownPlaylist',
 
-	'recordStop'							= 'userAction.recordStop',
-	'recordStart'							= 'userAction.recordStart',
-	'recordDelete'							= 'userAction.recordDelete',
+	'removeRundown' = 'userAction.removeRundown',
+	'resyncRundown' = 'userAction.resyncRundown',
 
-	'mediaRestartWorkflow'					= 'userAction.mediamanager.restartWorkflow',
-	'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow',
-	'mediaRestartAllWorkflows'				= 'userAction.mediamanager.restartAllWorkflows',
-	'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
-	'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
+	'recordStop' = 'userAction.recordStop',
+	'recordStart' = 'userAction.recordStart',
+	'recordDelete' = 'userAction.recordDelete',
 
-	'regenerateRundownPlaylist'				= 'userAction.ingest.regenerateRundownPlaylist',
+	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
+	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
+	'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',
+	'mediaAbortAllWorkflows' = 'userAction.mediamanager.abortAllWorkflows',
+	'mediaPrioritizeWorkflow' = 'userAction.mediamanager.mediaPrioritizeWorkflow',
 
-	'generateRestartToken'					= 'userAction.system.generateRestartToken',
-	'restartCore'							= 'userAction.system.restartCore',
+	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
 
-	'guiFocused'							= 'userAction.focused',
-	'guiBlurred'							= 'userAction.blurred'
+	'generateRestartToken' = 'userAction.system.generateRestartToken',
+	'restartCore' = 'userAction.system.restartCore',
+
+	'guiFocused' = 'userAction.focused',
+	'guiBlurred' = 'userAction.blurred'
 }
 
 export interface ReloadRundownPlaylistResponse {

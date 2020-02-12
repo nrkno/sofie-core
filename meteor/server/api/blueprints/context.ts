@@ -27,7 +27,7 @@ import {
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from './config'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
@@ -47,12 +47,12 @@ export class CommonContext implements ICommonContext {
 
 	private _idPrefix: string = ''
 	private hashI = 0
-	private hashed: {[hash: string]: string} = {}
+	private hashed: { [hash: string]: string } = {}
 
-	constructor (idPrefix: string) {
+	constructor(idPrefix: string) {
 		this._idPrefix = idPrefix
 	}
-	getHashId (str: string, isNotUnique?: boolean) {
+	getHashId(str: string, isNotUnique?: boolean) {
 		if (!str) str = 'hash' + (this.hashI++)
 
 		if (isNotUnique) {
@@ -66,7 +66,7 @@ export class CommonContext implements ICommonContext {
 		this.hashed[id] = str
 		return id
 	}
-	unhashId (hash: string): string {
+	unhashId(hash: string): string {
 		return this.hashed[hash] || hash
 	}
 }
@@ -83,7 +83,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 
 	private readonly savedNotes: Array<RawNote> = []
 
-	constructor (
+	constructor(
 		contextName: string,
 		contextIdentifier: string,
 		handleNotesExternally: boolean
@@ -95,7 +95,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		this._handleNotesExternally = handleNotesExternally
 	}
 	/** Throw Error and display message to the user in the GUI */
-	error (message: string, trackingId?: string) {
+	error(message: string, trackingId?: string) {
 		check(message, String)
 		logger.error('Error from blueprint: ' + message)
 		this._pushNote(
@@ -106,7 +106,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		throw new Meteor.Error(500, message)
 	}
 	/** Save note, which will be displayed to the user in the GUI */
-	warning (message: string, trackingId?: string) {
+	warning(message: string, trackingId?: string) {
 		check(message, String)
 		this._pushNote(
 			NoteType.WARNING,
@@ -114,16 +114,16 @@ export class NotesContext extends CommonContext implements INotesContext {
 			trackingId
 		)
 	}
-	getNotes (): RawNote[] {
+	getNotes(): RawNote[] {
 		return this.savedNotes
 	}
-	get handleNotesExternally (): boolean {
+	get handleNotesExternally(): boolean {
 		return this._handleNotesExternally
 	}
-	set handleNotesExternally (value: boolean) {
+	set handleNotesExternally(value: boolean) {
 		this._handleNotesExternally = value
 	}
-	protected _pushNote (type: NoteType, message: string, trackingId: string | undefined) {
+	protected _pushNote(type: NoteType, message: string, trackingId: string | undefined) {
 		if (this._handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
@@ -144,14 +144,18 @@ export class NotesContext extends CommonContext implements INotesContext {
 
 export class StudioConfigContext implements IStudioConfigContext {
 	protected readonly studio: Studio
-	constructor (studio: Studio) {
+	constructor(studio: Studio) {
 		this.studio = studio
 	}
 
-	getStudio (): Readonly<Studio> {
+	public get studioId(): StudioId {
+		return this.studio._id
+	}
+
+	getStudio(): Readonly<Studio> {
 		return this.studio
 	}
-	getStudioConfig (): Readonly<{[key: string]: ConfigItemValue}> {
+	getStudioConfig(): Readonly<{ [key: string]: ConfigItemValue }> {
 		const studioBlueprint = Blueprints.findOne(this.studio.blueprintId)
 		if (studioBlueprint) {
 			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.config)
@@ -164,13 +168,13 @@ export class StudioConfigContext implements IStudioConfigContext {
 
 		return compileStudioConfig(this.studio)
 	}
-	getStudioConfigRef (configKey: string): string {
+	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
 	}
 }
 
 export class StudioContext extends StudioConfigContext implements IStudioContext {
-	getStudioMappings (): Readonly<BlueprintMappings> {
+	getStudioMappings(): Readonly<BlueprintMappings> {
 		return this.studio.mappings
 	}
 }
@@ -178,12 +182,12 @@ export class StudioContext extends StudioConfigContext implements IStudioContext
 /** Show Style Variant */
 
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	private showStyleBaseId: ShowStyleBaseId
-	private showStyleVariantId: ShowStyleVariantId
+	public readonly showStyleBaseId: ShowStyleBaseId
+	public readonly showStyleVariantId: ShowStyleVariantId
 
 	readonly notesContext: NotesContext
 
-	constructor (
+	constructor(
 		studio: Studio,
 		showStyleBaseId: ShowStyleBaseId,
 		showStyleVariantId: ShowStyleVariantId,
@@ -196,13 +200,13 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		this.notesContext = notesContext
 	}
 
-	getShowStyleBase (): ShowStyleBase {
+	getShowStyleBase(): ShowStyleBase {
 		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.showStyleBaseId + '" not found')
 
 		return showStyleBase
 	}
-	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
+	getShowStyleConfig(): { [key: string]: ConfigItemValue } {
 		const showStyleCompound = getShowStyleCompound(this.showStyleVariantId)
 		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.showStyleVariantId}"`)
 
@@ -216,33 +220,33 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 			logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
 		}
 
-		const res: {[key: string]: ConfigItemValue} = {}
+		const res: { [key: string]: ConfigItemValue } = {}
 		_.each(showStyleCompound.config, (c) => {
 			res[c._id] = c.value
 		})
 		return res
 	}
-	getShowStyleConfigRef (configKey: string): string {
+	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
 	}
 
 	/** NotesContext */
-	error (message: string, trackingId?: string) {
+	error(message: string, trackingId?: string) {
 		this.notesContext.error(message, trackingId)
 	}
-	warning (message: string, trackingId?: string) {
+	warning(message: string, trackingId?: string) {
 		this.notesContext.warning(message, trackingId)
 	}
-	getHashId (str: string, isNotUnique?: boolean) {
+	getHashId(str: string, isNotUnique?: boolean) {
 		return this.notesContext.getHashId(str, isNotUnique)
 	}
-	unhashId (hash: string) {
+	unhashId(hash: string) {
 		return this.notesContext.unhashId(hash)
 	}
-	get handleNotesExternally (): boolean {
+	get handleNotesExternally(): boolean {
 		return this.notesContext.handleNotesExternally
 	}
-	set handleNotesExternally (value: boolean) {
+	set handleNotesExternally(value: boolean) {
 		this.notesContext.handleNotesExternally = value
 	}
 }
@@ -255,7 +259,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor (rundown: Rundown, notesContext: NotesContext | undefined, studio?: Studio) {
+	constructor(rundown: Rundown, notesContext: NotesContext | undefined, studio?: Studio) {
 		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false))
 
 		this.rundownId = unprotectString(rundown._id)
@@ -270,7 +274,7 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
 	private readonly segment: Readonly<Segment>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], notesContext: NotesContext) {
+	constructor(rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], notesContext: NotesContext) {
 		super(rundown, notesContext, studio)
 
 		if (_.isArray(runtimeArguments)) {
@@ -286,7 +290,7 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 		}
 	}
 
-	getRuntimeArguments (externalId: string): BlueprintRuntimeArguments | undefined {
+	getRuntimeArguments(externalId: string): BlueprintRuntimeArguments | undefined {
 		return this.runtimeArguments[externalId]
 	}
 }
@@ -300,7 +304,7 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, partInstance: PartInstance) {
+	constructor(rundown: Rundown, studio: Studio | undefined, partInstance: PartInstance) {
 		super(rundown, new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false), studio)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -310,13 +314,13 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
+	constructor(rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
 		super(rundown, new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false), studio)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
 
 	/** Get all asRunEvents in the rundown */
-	getAllAsRunEvents (): Array<IBlueprintAsRunLogEvent> {
+	getAllAsRunEvents(): Array<IBlueprintAsRunLogEvent> {
 		return unprotectObjectArray(AsRunLog.find({
 			rundownId: this._rundown._id
 		}, {
@@ -326,14 +330,14 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}).fetch())
 	}
 	/** Get all segments in this rundown */
-	getSegments (): Array<IBlueprintSegmentDB> {
+	getSegments(): Array<IBlueprintSegmentDB> {
 		return unprotectObjectArray(this._rundown.getSegments())
 	}
 	/**
 	 * Returns a segment
 	 * @param segmentId Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
 	 */
-	getSegment (segmentId?: string): IBlueprintSegmentDB | undefined {
+	getSegment(segmentId?: string): IBlueprintSegmentDB | undefined {
 		segmentId = segmentId || this.asRunEvent.segmentId
 		check(segmentId, String)
 		if (segmentId) {
@@ -343,11 +347,11 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/** Get all parts in this rundown */
-	getParts (): Array<IBlueprintPartDB> {
+	getParts(): Array<IBlueprintPartDB> {
 		return unprotectObjectArray(this._rundown.getParts())
 	}
 	/** Get the part related to this AsRunEvent */
-	getPartInstance (partInstanceId?: string): IBlueprintPartInstance | undefined {
+	getPartInstance(partInstanceId?: string): IBlueprintPartInstance | undefined {
 		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
 		check(partInstanceId, String)
 		if (partInstanceId) {
@@ -357,7 +361,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		}
 	}
 	/** Get the mos story related to a part */
-	getIngestDataForPart (part: IBlueprintPartDB): IngestPart | undefined {
+	getIngestDataForPart(part: IBlueprintPartDB): IngestPart | undefined {
 		check(part._id, String)
 
 		try {
@@ -366,11 +370,11 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 			return undefined
 		}
 	}
-	getIngestDataForPartInstance (partInstance: IBlueprintPartInstance): IngestPart | undefined {
+	getIngestDataForPartInstance(partInstance: IBlueprintPartInstance): IngestPart | undefined {
 		return this.getIngestDataForPart(partInstance.part)
 	}
 	/** Get the mos story related to the rundown */
-	getIngestDataForRundown (): IngestRundown | undefined {
+	getIngestDataForRundown(): IngestRundown | undefined {
 		try {
 			return loadCachedRundownData(this._rundown._id, this.rundown.externalId)
 		} catch (e) {
@@ -382,7 +386,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	 * Returns a piece.
 	 * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent
 	 */
-	getPieceInstance (pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
+	getPieceInstance(pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
 		check(pieceInstanceId, Match.Optional(String))
 		pieceInstanceId = pieceInstanceId || this.asRunEvent.pieceInstanceId
 		if (pieceInstanceId) {
@@ -396,7 +400,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	 * Returns pieces in a part
 	 * @param id Id of part to fetch pieces in
 	 */
-	getPieceInstances (partInstanceId: string): Array<IBlueprintPieceInstance> {
+	getPieceInstances(partInstanceId: string): Array<IBlueprintPieceInstance> {
 		check(partInstanceId, String)
 		if (partInstanceId) {
 			return unprotectObjectArray(PieceInstances.find({
@@ -407,15 +411,15 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return []
 	}
 
-	formatDateAsTimecode (time: number): string {
+	formatDateAsTimecode(time: number): string {
 		check(time, Number)
 		return formatDateAsTimecode(new Date(time))
 	}
-	formatDurationAsTimecode (time: number): string {
+	formatDurationAsTimecode(time: number): string {
 		check(time, Number)
 		return formatDurationAsTimecode(time)
 	}
-	protected getLoggerIdentifier (): string {
+	protected getLoggerIdentifier(): string {
 		// override NotesContext.getLoggerIdentifier
 		let ids: string[] = []
 		if (this.rundownId) ids.push('rundownId: ' + this.rundownId)

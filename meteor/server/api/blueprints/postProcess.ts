@@ -20,8 +20,12 @@ import {
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { ShowStyleContext } from './context'
+import { RundownImportVersions } from '../../../lib/collections/Rundowns'
+import { BucketId } from '../../../lib/collections/Buckets'
 
-export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
+export function postProcessPieces(innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -58,7 +62,7 @@ export function postProcessPieces (innerContext: RundownContext, pieces: IBluepr
 	})
 }
 
-export function postProcessAdLibPieces (innerContext: RundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: BlueprintId, partId?: PartId): AdLibPiece[] {
+export function postProcessAdLibPieces(innerContext: RundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: BlueprintId, partId?: PartId): AdLibPiece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -94,7 +98,7 @@ export function postProcessAdLibPieces (innerContext: RundownContext, adLibPiece
 	})
 }
 
-export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(objs), (baseObj, i) => {
 		const obj = convertTimelineObject(baseObj)
@@ -108,7 +112,7 @@ export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRT
 	})
 }
 
-function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObjRundown {
+function convertTimelineObject(o: TimelineObjectCoreExt): TimelineObjRundown {
 	return {
 		...o,
 		id: o.id,
@@ -118,7 +122,7 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObjRundown {
 	}
 }
 
-export function postProcessRundownBaselineItems (innerContext: RundownContext, baselineItems: TSR.Timeline.TimelineObject[]): TimelineObjGeneric[] {
+export function postProcessRundownBaselineItems(innerContext: RundownContext, baselineItems: TSR.Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric, i): TimelineObjGeneric => {
 		const obj: TimelineObjGeneric = convertTimelineObject(o)
@@ -130,4 +134,40 @@ export function postProcessRundownBaselineItems (innerContext: RundownContext, b
 
 		return obj
 	})
+}
+
+export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig: IBlueprintAdLibPiece, blueprintId: string, bucketId: BucketId, importVersions: RundownImportVersions): BucketAdLib {
+	let i = 0
+	let partsUniqueIds: { [id: string]: true } = {}
+	let timelineUniqueIds: { [id: string]: true } = {}
+	let piece: BucketAdLib = {
+		...itemOrig,
+		_id: protectString(innerContext.getHashId(`${innerContext.showStyleVariantId}_${innerContext.studioId}_bucket_adlib_${itemOrig.externalId}`)),
+		studioId: innerContext.studioId,
+		showStyleVariantId: innerContext.showStyleVariantId,
+		bucketId,
+		importVersions,
+		// status: RundownAPI.PieceStatusCode.UNKNOWN,
+		// disabled: false
+	}
+
+	if (!piece.externalId) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+
+	if (partsUniqueIds[unprotectString(piece._id)]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+	partsUniqueIds[unprotectString(piece._id)] = true
+
+	if (piece.content && piece.content.timelineObjects) {
+		piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
+			const obj = convertTimelineObject(o)
+
+			if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_obj_' + (i++))
+
+			if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of timelineObjs must be unique! ("${innerContext.unhashId(obj.id)}")`)
+			timelineUniqueIds[obj.id] = true
+
+			return obj
+		})
+	}
+
+	return piece
 }
