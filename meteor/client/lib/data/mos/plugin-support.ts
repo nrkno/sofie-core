@@ -16,11 +16,11 @@ export enum UIMetricMode {
 
 export enum Events {
 	/** Event is emitted every now-and-then, generally to be used for simple displays */
-	'dragenter'			= 'sofie:dragEnter',
+	'dragenter' = 'sofie:dragEnter',
 	/** event is emitted with a very high frequency (60 Hz), to be used sparingly as
 	 * hooking up Components to it will cause a lot of renders
 	 */
-	'dragleave'			= 'sofie:dragLeave'
+	'dragleave' = 'sofie:dragLeave'
 }
 
 export interface UIMetric {
@@ -32,55 +32,55 @@ export interface UIMetric {
 	canClose?: boolean
 }
 
-export function createMosItemRequest () {
+export function createMosItemRequest() {
 	const doc = objectToXML({
 		ncsItemRequest: {}
 	},
-	'mos')
+		'mos')
 
 	return new XMLSerializer().serializeToString(doc)
 }
 
-export function createMosAckString (status?: AckStatus, statusDescription?: string):string {
+export function createMosAckString(status?: AckStatus, statusDescription?: string): string {
 	const doc = objectToXML({
 		ncsAck: {
 			status,
 			statusDescription
 		}
 	},
-	'mos')
-
-	return new XMLSerializer().serializeToString(doc)
-}
-
-export function createMosAppInfoXmlString (uiMetrics?: UIMetric[]):string {
-	const doc = objectToXML({
-		ncsID: 'sofie-core',
-			ncsAppInfo: {
-				ncsInformation: {
-					userID: 'sofie system',
-					runContext: 'BROWSE',
-					software: {
-						manufacturer: 'Sofie Project',
-						product: 'Sofie TV Automation',
-						version: PackageInfo.version || 'UNSTABLE'
-					},
-					uiMetric: uiMetrics ? uiMetrics.map((metric, index) => {
-						return Object.assign({}, metric, {
-							_attributes: {
-								num: index.toString()
-							}
-						})
-					}) : undefined
-				}
-			}	
-		},
 		'mos')
 
 	return new XMLSerializer().serializeToString(doc)
 }
 
-export function objectToXML (obj: object, rootName: string): Document {
+export function createMosAppInfoXmlString(uiMetrics?: UIMetric[]): string {
+	const doc = objectToXML({
+		ncsID: 'sofie-core',
+		ncsAppInfo: {
+			ncsInformation: {
+				userID: 'sofie system',
+				runContext: 'BROWSE',
+				software: {
+					manufacturer: 'Sofie Project',
+					product: 'Sofie TV Automation',
+					version: PackageInfo.version || 'UNSTABLE'
+				},
+				uiMetric: uiMetrics ? uiMetrics.map((metric, index) => {
+					return Object.assign({}, metric, {
+						_attributes: {
+							num: index.toString()
+						}
+					})
+				}) : undefined
+			}
+		}
+	},
+		'mos')
+
+	return new XMLSerializer().serializeToString(doc)
+}
+
+export function objectToXML(obj: object, rootName: string): Document {
 	const doc = new Document()
 	const root = doc.createElement(rootName)
 
@@ -90,11 +90,11 @@ export function objectToXML (obj: object, rootName: string): Document {
 	return doc
 }
 
-function addNodes (obj: object, rootNode: Node): void {
+function addNodes(obj: object, rootNode: Node): void {
 	const doc = rootNode.ownerDocument
 
 	for (const name of Object.keys(obj)) {
-		const value = obj[ name ]
+		const value = obj[name]
 
 		if (typeof value === 'object' && name === '_attributes') {
 			for (const attrName of Object.keys(value)) {
@@ -110,14 +110,14 @@ function addNodes (obj: object, rootNode: Node): void {
 	}
 }
 
-function createAttribute(name: string, value: any, doc:Document) {
+function createAttribute(name: string, value: any, doc: Document) {
 	const attr = doc.createAttribute(name)
 	attr.textContent = value
 
 	return attr
 }
 
-function createNode(name:string, value:any, doc:Document) {
+function createNode(name: string, value: any, doc: Document) {
 	const node = doc.createElement(name)
 
 	if (typeof value === 'object' && value !== null) {

@@ -1,4 +1,4 @@
-import { createMosObjectXmlStringNoraBluePrintPiece, createMosAppInfoXmlString } from '../browser-plugin-data'
+import { createMosObjectXmlStringNoraBluePrintPiece } from '../browser-plugin-data'
 import * as parser from 'xml2json'
 import { NoraPayload, IBlueprintPieceGeneric, NoraContent } from 'tv-automation-sofie-blueprints-integration';
 
@@ -18,7 +18,7 @@ const superPayload: NoraPayload = {
 		"tittel": "regiondirektør, Entreprenørforeningen",
 		"_valid": true
 	}
-}
+} as any
 
 const bakskjermPayload: NoraPayload = {
 	"manifest": "nyheter",
@@ -51,19 +51,19 @@ const bakskjermPayload: NoraPayload = {
 		},
 		"_valid": true
 	}
-}
+} as any
 
 const superContent: NoraContent = {
 	sourceDuration: 5000,
 	payload: superPayload,
 	timelineObjects: []
-}
+} as any
 
 const bakskjermContent: NoraContent = {
 	sourceDuration: 0,
 	payload: bakskjermPayload,
 	timelineObjects: []
-}
+} as any
 
 const noraSuperPiece: IBlueprintPieceGeneric = {
 	externalId: 'bb19514d-44d7-4521-ad17-ea658b12e149',
@@ -375,58 +375,4 @@ describe('createMosObjectXmlStringNoraBluePrintPiece', () => {
 			})
 		})
 	})
-})
-
-describe('createMosAppInfoXmlString', () => {
-	const xmlString = createMosAppInfoXmlString()
-
-	it('should return a string that is a valid XML document', () => {
-		expect(typeof xmlString).toEqual('string')
-		parser.toJson(xmlString) // will throw if invalid
-	})
-
-	describe('XML document', () => {
-		const doc: any = parser.toJson(xmlString, { object: true })
-
-		it('the root node should be named mos', () => {
-			const nodeNames = Object.keys(doc)
-
-			expect(nodeNames.length).toEqual(1)
-			expect(nodeNames[ 0 ]).toEqual('mos')
-		})
-
-		describe('mos node contents', () => {
-			const mos = doc.mos
-
-			//TODO: this should either be the official Sofie name or possibly the instance name?
-			it('node ncsID should be sofie-core', () => {
-				const expected = 'sofie-core'
-
-				const actual = mos.ncsID
-
-				expect(actual).toEqual(expected)
-			})
-
-			//TODO: this is completely bogus. The Nora plugin doesn't actually check the values
-			describe('node ncsAppInfo', () => {
-				const ncsAppInfo = mos.ncsAppInfo
-				describe('node ncsInformation', () => {
-					const ncsInformation = ncsAppInfo.ncsInformation
-
-					it('node userID should contain something', () => {
-						const actual = ncsInformation.userID
-
-						expect(actual).toEqual(expect.anything())
-					})
-
-					it('node software should contain something', () => {
-						const actual = ncsInformation.software
-
-						expect(actual).toEqual(expect.anything())
-					})
-				})
-			})
-		})
-	})
-
 })
