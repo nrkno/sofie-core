@@ -22,7 +22,7 @@ $dashboard-button-height: 5.625em;
 	position: absolute;
 	background: rgba(0, 0, 0, 0.2);
 	border: 1px solid rgba(0,0,0,0.1);
-	border-radius: 5px;
+	border-radius: 10px;
 	padding: 0.625rem;
 	margin: 0.625rem;
 	user-select: none;
@@ -205,11 +205,10 @@ $dashboard-button-height: 5.625em;
 
 	.dashboard-panel__panel__button {
 		display: inline-flex;
-  		align-items: flex-end;
 		position: relative;
 		background: #000;
 		border: none;
-		border-radius: 3px;
+		border-radius: 4px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: normal;
@@ -287,14 +286,18 @@ $dashboard-button-height: 5.625em;
 			hyphens: auto;
 			
 			vertical-align: top;
-			-webkit-text-stroke-color: #000;
-			-webkit-text-stroke-width: 0.02em;
+			// -webkit-text-stroke-color: #000;
+			// -webkit-text-stroke-width: 0.02em;
 			line-height: 1.15em;
-			bottom: 3px;
+			top: 3px;
 			font-family: "Roboto Condensed", sans-serif;
 			font-size: 1.17em;
-			font-weight: 600;
-			text-shadow: -0.5px -0.5px 0px rgba(0,0,0,1), 0.5px 0.5px 0px rgba(0,0,0,1), 0.5px 0.5px 2px rgba(0,0,0,0.7);
+			font-weight: 400;
+			text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.5),
+				1px 1px 0px rgba(0, 0, 0, 0.5),
+				1px -1px 0px rgba(0, 0, 0, 0.5),
+				1px -1px 0px rgba(0, 0, 0, 0.5),
+				0.5px 0.5px 2px rgba(0, 0, 0, 1);
 			z-index: 2;
 		}
 
