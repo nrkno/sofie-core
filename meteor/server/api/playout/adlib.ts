@@ -19,6 +19,7 @@ import { updatePartRanks } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
+import { BucketAdLibs, BucketAdLib } from '../../../lib/collections/BucketAdlibs';
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow (rundownId: string, partId: string, pieceId: string) {
@@ -135,7 +136,7 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartAdLibPiece(rundown, queue, partId, adLibPiece)
 		})
 	}
-	function innerStartAdLibPiece (rundown: Rundown, queue: boolean, partId: string, adLibPiece: AdLibPiece) {
+	function innerStartAdLibPiece (rundown: Rundown, queue: boolean, partId: string, adLibPiece: AdLibPiece | BucketAdLib) {
 		let orgPartId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
@@ -167,7 +168,7 @@ export namespace ServerPlayoutAdLibAPI {
 			updateTimeline(rundown.studioId)
 		}
 	}
-	function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
+	function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece | BucketAdLib) {
 		logger.info('adlibQueueInsertPart')
 
 		const part = Parts.findOne(partId)
@@ -249,6 +250,29 @@ export namespace ServerPlayoutAdLibAPI {
 			})
 
 			updateTimeline(rundown.studioId)
+		})
+	}
+	export function startBucketAdlibPiece (rundownId: string, partId: string, bucketAdlibId: string, queue: boolean) {
+		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
+		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
+
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Bucket AdLib-pieces can be only placed in an active rundown!`)
+			if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
+				throw new Meteor.Error(403, `Buckete AdLib-pieces can not be used in combination with hold!`)
+			}
+
+			if (!queue && rundown.currentPartId !== partId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
+
+			if (bucketAdlib.showStyleVariantId !== rundown.showStyleVariantId || bucketAdlib.studioId !== rundown.studioId){
+				throw new Meteor.Error(404, `Bucket AdLib "${bucketAdlibId}" is not compatible with rundown "${rundownId}"!`)
+			}
+
+			// TODO - further adlib validity checks
+
+			innerStartAdLibPiece(rundown, queue, partId, bucketAdlib)
 		})
 	}
 }

@@ -22,6 +22,9 @@ export namespace UserActionAPI {
 		'pieceTakeNow'							= 'userAction.pieceTakeNow',
 		'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
 
+		'bucketAdlibImport'						= 'userAction.bucketAdlibImport',
+		'bucketAdlibStart'						= 'userAction.bucketAdlibStart',
+
 		'segmentAdLibPieceStart'				= 'userAction.segmentAdLibPieceStart',
 		'sourceLayerOnPartStop'					= 'userAction.sourceLayerOnPartStop',
 		'baselineAdLibPieceStart'				= 'userAction.baselineAdLibPieceStart',

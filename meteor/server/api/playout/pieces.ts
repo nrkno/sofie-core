@@ -29,6 +29,7 @@ import { prefixAllObjectIds } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownData } from '../../../lib/collections/Rundowns'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs';
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -430,7 +431,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	return newAdLibPiece
 }
 
-export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part, queue: boolean): Piece {
+export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece | BucketAdLib, part: Part, queue: boolean): Piece {
 	let duration: number | string | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
@@ -441,6 +442,7 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 	const newId = Random.id()
 	const newPiece = literal<Piece>({
 		..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
+		rundownId: part.rundownId,
 		_id: newId,
 		enable: {
 			start: (queue ? 0 : 'now'),

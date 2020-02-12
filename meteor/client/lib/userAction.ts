@@ -122,6 +122,9 @@ function userActionMethodName (
 		case UserActionAPI.methods.recordDelete: return t('Deleting recording')
 
 		case UserActionAPI.methods.setInOutPoints: return t('Setting In/Out points')
+		
+		case UserActionAPI.methods.bucketAdlibImport: return t('Importing Bucker Adlib-piece')
+		case UserActionAPI.methods.bucketAdlibStart: return t('Starting Bucket Adlib-piece')
 	}
 	return method // fallback
 

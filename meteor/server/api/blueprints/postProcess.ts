@@ -17,6 +17,9 @@ import {
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs';
+import { ShowStyleContext } from './context';
+import { RundownImportVersions } from '../../../lib/collections/Rundowns';
 
 export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
 	let i = 0
@@ -126,4 +129,40 @@ export function postProcessRundownBaselineItems (innerContext: RundownContext, b
 
 		return obj
 	})
+}
+
+export function postProcessBucketAdLib (innerContext: ShowStyleContext, itemOrig: IBlueprintAdLibPiece, blueprintId: string, bucketId: string, importVersions: RundownImportVersions): BucketAdLib {
+	let i = 0
+	let partsUniqueIds: { [id: string]: true } = {}
+	let timelineUniqueIds: { [id: string]: true } = {}
+	let piece: BucketAdLib = {
+		...itemOrig,
+		_id: innerContext.getHashId(`${innerContext.showStyleVariantId}_${innerContext.studioId}_bucket_adlib_${itemOrig.externalId}`),
+		studioId: innerContext.studioId,
+		showStyleVariantId: innerContext.showStyleVariantId,
+		bucketId,
+		importVersions,
+		// status: RundownAPI.PieceStatusCode.UNKNOWN,
+		// disabled: false
+	}
+
+	if (!piece.externalId) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(piece._id)}")`)
+
+	if (partsUniqueIds[piece._id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(piece._id)}")`)
+	partsUniqueIds[piece._id] = true
+
+	if (piece.content && piece.content.timelineObjects) {
+		piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
+			const obj = convertTimelineObject('null', o)
+
+			if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_obj_' + (i++))
+
+			if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of timelineObjs must be unique! ("${innerContext.unhashId(obj.id)}")`)
+			timelineUniqueIds[obj.id] = true
+
+			return obj
+		})
+	}
+
+	return piece
 }

@@ -15,6 +15,7 @@ export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
 
 export interface ShowStyleCompound extends ShowStyleBase {
 	showStyleVariantId: string
+	_rundownVersionHashVariant: string
 }
 export function getShowStyleCompound (showStyleVariantId: string): ShowStyleCompound | undefined {
 	let showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
@@ -31,11 +32,14 @@ export function getShowStyleCompound (showStyleVariantId: string): ShowStyleComp
 		configs[config._id] = config
 	})
 
-	return _.extend(showStyleBase, {
+	return {
+		...showStyleBase,
 		showStyleVariantId: showStyleVariant._id,
 		name: `${showStyleBase.name}-${showStyleVariant.name}`,
-		config: _.values(configs)
-	})
+		config: _.values(configs),
+		_rundownVersionHash: showStyleBase._rundownVersionHash,
+		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
+	}
 }
 
 export class ShowStyleVariant implements DBShowStyleVariant {

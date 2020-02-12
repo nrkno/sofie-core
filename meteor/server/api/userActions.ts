@@ -18,7 +18,7 @@ import {
 } from '../../lib/collections/Evaluations'
 import { Studios } from '../../lib/collections/Studios'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -30,6 +30,10 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
+import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants';
+import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs';
+import { Buckets } from '../../lib/collections/Buckets';
+import { ServerPlayoutAdLibAPI } from './playout/adlib';
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -485,6 +489,46 @@ export function regenerateRundown (rundownId: string) {
 	)
 }
 
+export function bucketAdlibImport (studioId: string, showStyleVariantId: string, bucketId: string, ingestItem: IngestAdlib) {
+	check(studioId, String)
+	check(showStyleVariantId, String)
+	check(bucketId, String)
+	// TODO - validate IngestAdlib
+
+	const studio = Studios.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+	const showStyleCompound = getShowStyleCompound(showStyleVariantId)
+	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
+
+	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
+	}
+
+	const bucket = Buckets.findOne(bucketId)
+	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
+
+	updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
+	
+	return ClientAPI.responseSuccess()
+}
+
+export function bucketAdlibStart (rundownId: string, partId: string, bucketAdlibId: string, queue?: boolean) {
+	check(rundownId, String)
+	check(partId, String)
+	check(bucketAdlibId, String)
+
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
+	if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
+		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
+	}
+
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAdLibAPI.startBucketAdlibPiece(rundownId, partId, bucketAdlibId, !!queue)
+	)
+}
+
 let restartToken: string | undefined = undefined
 
 export function generateRestartToken () {
@@ -618,6 +662,12 @@ methods[UserActionAPI.methods.generateRestartToken] = function () {
 }
 methods[UserActionAPI.methods.restartCore] = function (token: string) {
 	return restartCore.call(this, token)
+}
+methods[UserActionAPI.methods.bucketAdlibImport] = function (studioId: string, showStyleVariantId: string, bucketId: string, ingestItem: IngestAdlib) {
+	return bucketAdlibImport.call(this, studioId, showStyleVariantId, bucketId, ingestItem)
+}
+methods[UserActionAPI.methods.bucketAdlibStart] = function (rundownId: string, partId: string, bucketAdlibId: string, queue?: boolean) {
+	return bucketAdlibStart.call(this, rundownId, partId, bucketAdlibId, queue)
 }
 
 // Apply methods:

@@ -163,6 +163,10 @@ export class StudioConfigContext implements IStudioConfigContext {
 		this.studio = studio
 	}
 
+	public get studioId (): string {
+		return this.studio._id
+	}
+
 	getStudio (): Readonly<Studio> {
 		return this.studio
 	}
@@ -183,8 +187,8 @@ export class StudioContext extends StudioConfigContext implements IStudioContext
 /** Show Style Variant */
 
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	private showStyleBaseId: string
-	private showStyleVariantId: string
+	public readonly showStyleBaseId: string
+	public readonly showStyleVariantId: string
 
 	private notes: NotesContext
 
