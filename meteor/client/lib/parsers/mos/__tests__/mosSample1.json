@@ -41,7 +41,7 @@
 							"software": {
 								"manufacturer": "AP",
 								"product": "ENPS Client",
-								"version": 8
+								"version": "8"
 							}
 						},
 						"changed": "2018-08-30-T17:56:41"
@@ -55,21 +55,19 @@
 				},
 				"content": {
 					"bilde": {
-						"text": 0,
 						"creators": "ØYSTEIN TRONSLI DRABLØS / FRILAND/DAVID BLOOMER",
-						"credit": "",
 						"title": "Hennie som French",
-						"w": 0.8462222,
+						"w": "0.8462222",
 						"format": "image/jpeg",
-						"width": 1920,
-						"x": 0.07688889,
-						"h": 1,
-						"y": 0,
+						"width": "1920",
+						"x": "0.07688889",
+						"h": "1",
+						"y": "0",
 						"id": "QdncIGkD-IU8W5Ff5QBoIA",
 						"type": "image/jpeg",
 						"uri": "QdncIGkD-IU8W5Ff5QBoIARqUM5XjlRKIhner2t9Dsxg",
-						"quality": 0.9,
-						"height": 1080,
+						"quality": "0.9",
+						"height": "1080",
 						"url": "https://some-url"
 					}
 				}
@@ -80,9 +78,8 @@
 			"MosSchema": "http://nora.core.mesosint.nrk.no/mos/timing",
 			"MosPayload": {
 				"out": "onNext",
-				"text": 0,
-				"timeIn": 0,
-				"duration": 5000,
+				"timeIn": "0",
+				"duration": "5000",
 				"in": "auto"
 			}
 		}
