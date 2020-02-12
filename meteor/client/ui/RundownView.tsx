@@ -1107,10 +1107,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		buckets: playlist && Buckets.find({
 			studioId: playlist.studioId
 		}, {
-			sort: {
-				'_rank': 1
-			}
-		}).fetch() || [],
+				sort: {
+					'_rank': 1
+				}
+			}).fetch() || [],
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {
 				$in: PeripheralDevices.find({
@@ -1652,7 +1652,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
 			}
 		}
-		
+
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -2117,60 +2117,60 @@ export function handleRundownPlaylistReloadResponse(t: i18next.TranslationFuncti
 			'userAction',
 			undefined,
 			true, [
-			// actions:
-			{
-				label: t('Mark the rundown as unsynced'),
-				type: 'default',
-				action: () => {
-					doUserAction(t, 'Missing rundown action', UserAction.UNSYNC_RUNDOWN, (e) => MeteorCall.userAction.unsyncRundown(e, missingRundownId), (err) => {
-						if (!err) {
-							notification.stop()
-						}
-					})
+				// actions:
+				{
+					label: t('Mark the rundown as unsynced'),
+					type: 'default',
+					action: () => {
+						doUserAction(t, 'Missing rundown action', UserAction.UNSYNC_RUNDOWN, (e) => MeteorCall.userAction.unsyncRundown(e, missingRundownId), (err) => {
+							if (!err) {
+								notification.stop()
+							}
+						})
+					}
+				},
+				{
+					label: t('Remove just the rundown'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: rundownPlaylist.name,
+							message: t('Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}}? This cannot be undone!', {
+								rundownName: missingRundownName,
+								playlistName: rundownPlaylist.name
+							}),
+							onAccept: () => {
+								// nothing
+								doUserAction(t, 'Missing rundown action', UserAction.REMOVE_RUNDOWN, (e) => MeteorCall.userAction.removeRundown(e, missingRundownId), (err) => {
+									if (!err) {
+										notification.stop()
+										window.location.assign(`/`)
+									}
+								})
+							},
+						})
+					}
+				},
+				{
+					label: t('Remove rundown playlist'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: rundownPlaylist.name,
+							message: t('Do you really want to remove the rundownPlaylist "{{rundownName}}"? This cannot be undone!', { rundownName: missingRundownName }),
+							onAccept: () => {
+								// nothing
+								doUserAction(t, 'Missing rundown action', UserAction.REMOVE_RUNDOWN_PLAYLIST, (e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id), (err) => {
+									if (!err) {
+										notification.stop()
+										window.location.assign(`/`)
+									}
+								})
+							},
+						})
+					}
 				}
-			},
-			{
-				label: t('Remove just the rundown'),
-				type: 'default',
-				action: () => {
-					doModalDialog({
-						title: rundownPlaylist.name,
-						message: t('Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}}? This cannot be undone!', {
-							rundownName: missingRundownName,
-							playlistName: rundownPlaylist.name
-						}),
-						onAccept: () => {
-							// nothing
-							doUserAction(t, 'Missing rundown action', UserAction.REMOVE_RUNDOWN, (e) => MeteorCall.userAction.removeRundown(e, missingRundownId), (err) => {
-								if (!err) {
-									notification.stop()
-									window.location.assign(`/`)
-								}
-							})
-						},
-					})
-				}
-			},
-			{
-				label: t('Remove rundown playlist'),
-				type: 'default',
-				action: () => {
-					doModalDialog({
-						title: rundownPlaylist.name,
-						message: t('Do you really want to remove the rundownPlaylist "{{rundownName}}"? This cannot be undone!', { rundownName: missingRundownName }),
-						onAccept: () => {
-							// nothing
-							doUserAction(t, 'Missing rundown action', UserAction.REMOVE_RUNDOWN_PLAYLIST, (e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id), (err) => {
-								if (!err) {
-									notification.stop()
-									window.location.assign(`/`)
-								}
-							})
-						},
-					})
-				}
-			}
-		]
+			]
 		))
 	}
 	return hasDoneSomething

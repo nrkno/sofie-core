@@ -105,8 +105,8 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 		const { t } = this.props
 		return (
 			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedPiece.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
-			onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}
-			className='big'>
+				onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}
+				className='big'>
 				<ClipTrimPanel
 					studioId={this.props.studio._id}
 					playlistId={this.props.playlistId}

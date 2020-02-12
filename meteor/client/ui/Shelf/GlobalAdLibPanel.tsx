@@ -96,12 +96,12 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<Tr
 	renderGlobalAdLibs() {
 		const { t } = this.props
 		const itemList: (IAdLibListItem &
-		{
-			isSticky?: boolean,
-			layer?: ISourceLayer,
-			sourceLayerId?: string,
-			outputLayerId?: string
-		})[] = []
+			{
+				isSticky?: boolean,
+				layer?: ISourceLayer,
+				sourceLayerId?: string,
+				outputLayerId?: string
+			})[] = []
 
 		return (
 			<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
