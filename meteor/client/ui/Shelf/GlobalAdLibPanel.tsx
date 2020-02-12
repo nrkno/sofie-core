@@ -28,6 +28,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { ShelfInspector } from './Inspector/ShelfInspector'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
@@ -159,6 +160,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
 					{this.renderGlobalAdLibs()}
 				</table>
+				<ShelfInspector selected={this.props.selectedPiece} />
 			</div>
 		)
 	}
