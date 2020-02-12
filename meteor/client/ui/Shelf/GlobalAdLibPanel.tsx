@@ -35,7 +35,6 @@ import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
-import { ShelfInspector } from './Inspector/ShelfInspector'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void

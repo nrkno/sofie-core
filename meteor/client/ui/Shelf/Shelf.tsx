@@ -8,7 +8,7 @@ import * as mousetrap from 'mousetrap'
 import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-import { AdLibPanel } from './AdLibPanel'
+import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -68,7 +68,7 @@ interface IState {
 	moving: boolean
 	selectedTab: string | undefined
 	shouldQueue: boolean
-	selectedPiece: PieceUi | undefined
+	selectedPiece: AdLibPieceUi | PieceUi | undefined
 }
 
 const CLOSE_MARGIN = 45
