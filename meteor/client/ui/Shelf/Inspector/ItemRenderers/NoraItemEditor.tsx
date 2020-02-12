@@ -1,8 +1,9 @@
-import { NoraPayload } from "tv-automation-sofie-blueprints-integration";
-import * as React from "react";
-import { createMosObjectXmlStringNoraBluePrintPiece, createMosAppInfoXmlString } from "../../../../lib/data/nora/browser-plugin-data";
-import { mosXmlString2Js } from "../../../../lib/parsers/mos/mosXml2Js";
-import { InternalIBlueprintPieceGeneric } from "../../../../../lib/collections/Pieces"
+import { NoraPayload } from 'tv-automation-sofie-blueprints-integration'
+import * as React from 'react'
+import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
+import { mosXmlString2Js } from '../../../../lib/parsers/mos/mosXml2Js'
+import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/Pieces'
+import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
