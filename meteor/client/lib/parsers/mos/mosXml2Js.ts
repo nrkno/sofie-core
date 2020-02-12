@@ -1,4 +1,6 @@
-import { IMOSObject, IMOSItem, MosString128, IMOSScope } from "mos-connection";
+import { IMOSObject, IMOSItem, MosString128, IMOSScope, MosTime, MosDuration } from "mos-connection";
+import { Parser as MosParser } from 'mos-connection/dist/mosModel/Parser'
+import * as _ from 'underscore'
 
 /**
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
@@ -9,32 +11,42 @@ import { IMOSObject, IMOSItem, MosString128, IMOSScope } from "mos-connection";
  * typically is a browser thing. For server side usage, xml2json is probably
  * what you want :)
  */
-export { mosXmlString2Js, mosXml2Js }
 
 const domparser = new DOMParser()
 
-/**
- * Convenience function for conversion from XML source strings.
- */
-function mosXmlString2Js(xmlString: string): object {
-	const doc = domparser.parseFromString(xmlString, 'text/xml')
-
-	return mosXml2Js(doc)
+/** Copied from mos-gateway */
+export function fixMosData (o: any): any {
+	if (
+		_.isObject(o) && (
+		o instanceof MosTime ||
+		o instanceof MosDuration ||
+		o instanceof MosString128
+	)) {
+		return o.toString()
+	}
+	if (_.isArray(o)) {
+		return _.map(o, (val) => {
+			return fixMosData(val)
+		})
+	} else if (_.isObject(o)) {
+		let o2: any = {}
+		_.each(o, (val, key) => {
+			o2[key] = fixMosData(val)
+		})
+		return o2
+	} else {
+		return o
+	}
 }
 
-/**
- * Returns an object representing the MOS XML document.
- * Documents without a mos root node will not be parsed, and an
- * empty object will be returned.
- */
-function mosXml2Js(doc: XMLDocument): object {
-	if (doc.firstChild && doc.firstChild.nodeName === 'mos') {
-		return {
-			mos: nodeToObj(doc.firstChild)
-		}
-	}
+export function parseMosPluginItemXml(xmlString: string): IMOSItem | undefined {
+	const doc = nodeToObj(domparser.parseFromString(xmlString, 'text/xml')) as any
 
-	return {}
+	if (doc && doc.mos && doc.mos.ncsItem && doc.mos.ncsItem.item) {
+		return MosParser.xml2Item(doc.mos.ncsItem.item)
+	} else {
+		return undefined
+	}
 }
 
 function nodeToObj(node: Node): object | string | null {
@@ -52,7 +64,17 @@ function nodeToObj(node: Node): object | string | null {
 					}
 					break
 				default:
-					obj[nodeName] = nodeToObj(n)
+					const child = nodeToObj(n)
+					if (obj.hasOwnProperty(nodeName)) {
+						if (_.isArray(obj[nodeName])) {
+							obj[nodeName].push(child)
+						} else {
+							obj[nodeName] = [obj[nodeName], child]
+						}
+
+					} else  {
+						obj[nodeName] = child
+					}
 			}
 		}
 
@@ -60,4 +82,23 @@ function nodeToObj(node: Node): object | string | null {
 	}
 
 	return {}
+}
+
+export function generateMosPluginItemXml(item: IMOSItem): string {
+	const tmpItem = {
+		...item
+	}
+	if (item.MosExternalMetaData) {
+		tmpItem.MosExternalMetaData = item.MosExternalMetaData.map((md) => {
+			return {
+				mosScope: md.MosScope,
+				mosSchema: md.MosSchema,
+				mosPayload: md.MosPayload
+			}
+			
+		}) as any
+	}
+	
+	const builder = MosParser.item2xml(tmpItem)
+	return `<mos><ncsItem>${builder.toString()}</ncsItem></mos>`
 }
