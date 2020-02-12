@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as ClassNames from 'classnames'
+import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
 
@@ -21,6 +22,7 @@ export interface IAdLibListItem {
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
+	floated?: boolean
 }
 
 interface IListViewItemProps {
@@ -54,6 +56,18 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 		super(props)
 	}
 
+	componentDidMount () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
+	componentDidUpdate () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
 	updateMediaObjectSubscription () {
 		if (this.props.item && this.props.layer) {
 			const piece = this.props.item as any as AdLibPieceUi
@@ -84,7 +98,8 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 		return (
 			<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
 				'selected': this.props.selected,
-				'invalid': this.props.item.invalid
+				'invalid': this.props.item.invalid,
+				'floated': this.props.item.floated
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
 				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}

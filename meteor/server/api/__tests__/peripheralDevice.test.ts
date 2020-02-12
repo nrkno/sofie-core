@@ -20,7 +20,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	let device: PeripheralDevice
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 		let rundownID = 'rundown0'
 		Rundowns.insert({
 			_id: rundownID,
@@ -97,7 +97,10 @@ describe('test peripheralDevice general API methods', () => {
 		  type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
 		  name: 'test',
-		  connectionId: 'test'
+		  connectionId: 'test',
+		  configManifest: {
+			  deviceConfig: []
+		  }
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token, options)
 		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
@@ -308,7 +311,7 @@ describe('test peripheralDevice general API methods', () => {
 		Meteor.call(PeripheralDeviceAPI.methods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 		expect(PeripheralDevices.findOne()).toBeTruthy()
 	})
 
@@ -318,7 +321,10 @@ describe('test peripheralDevice general API methods', () => {
 			type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
 			name: 'test',
-			connectionId: 'test'
+			connectionId: 'test',
+			configManifest: {
+				deviceConfig: []
+			}
 		}
 		try {
 			Meteor.call(PeripheralDeviceAPI.methods.initialize, 'wibbly', device.token, options)

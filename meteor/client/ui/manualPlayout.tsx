@@ -5,30 +5,18 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { callMethod } from '../lib/clientAPI'
 import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 
-import {
-	TimelineObjAtemME,
-	TimelineContentTypeAtem,
-	AtemTransitionStyle,
-	DeviceType as PlayoutDeviceType,
-	MappingAtem,
-	MappingAtemType,
-	TimelineObjCCGMedia,
-	TimelineContentTypeCasparCg,
-	DeviceType,
-	TimelineObjQuantelAny
-} from 'timeline-state-resolver-types'
 import { Studios, Studio, MappingExt } from '../../lib/collections/Studios'
 import {
 	PeripheralDevices,
 } from '../../lib/collections/PeripheralDevices'
 import {
-	PlayoutDeviceSettings,
-	PlayoutDeviceSettingsDeviceAtem
+	PlayoutDeviceSettings
 } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'
 import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
 import { PubSub } from '../../lib/api/pubsub'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 interface IManualPlayoutProps {
 }
 interface IManualPlayoutState {
@@ -55,7 +43,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 	}
 	getAtems (studio: Studio) {
 
-		let atems: {[id: string]: PlayoutDeviceSettingsDeviceAtem} = {}
+		let atems: {[id: string]: TSR.DeviceOptionsAtem} = {}
 
 		let parentDevices = PeripheralDevices.find({
 			studioId: studio._id,
@@ -67,8 +55,8 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				let settings = parentDevice.settings as PlayoutDeviceSettings
 				_.each(
 					settings.devices, (device, deviceId) => {
-						if (device.type === PlayoutDeviceType.ATEM) {
-							atems[deviceId] = device as PlayoutDeviceSettingsDeviceAtem
+						if (device.type === TSR.DeviceType.ATEM) {
+							atems[deviceId] = device
 						}
 					}
 				)
@@ -77,12 +65,12 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		return atems
 	}
 	getAtemMEs (studio: Studio) {
-		let mappings: {[layer: string]: MappingAtem} = {}
+		let mappings: {[layer: string]: TSR.MappingAtem} = {}
 		_.each(studio.mappings, (mapping, layerId) => {
-			if (mapping.device === PlayoutDeviceType.ATEM) {
+			if (mapping.device === TSR.DeviceType.ATEM) {
 				// @ts-ignore
 				let mappingAtem = mapping as MappingAtem
-				if (mappingAtem.mappingType === MappingAtemType.MixEffect) {
+				if (mappingAtem.mappingType === TSR.MappingAtemType.MixEffect) {
 					mappings[layerId] = mappingAtem
 				}
 
@@ -92,19 +80,19 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 	}
 	atemCamera (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string, cam: number) {
 
-		let o: TimelineObjAtemME = {
+		let o: TSR.TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
 			enable: {
 				start: 'now'
 			},
 			layer: mappingLayerId,
 			content: {
-				deviceType: DeviceType.ATEM,
-				type: TimelineContentTypeAtem.ME,
+				deviceType: TSR.DeviceType.ATEM,
+				type: TSR.TimelineContentTypeAtem.ME,
 
 				me: {
 					input: cam,
-					transition: AtemTransitionStyle.CUT
+					transition: TSR.AtemTransitionStyle.CUT
 				}
 			}
 		}
@@ -114,8 +102,8 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		let mappings: {[layer: string]: MappingExt} = {}
 		_.each(studio.mappings, (mapping, layerId) => {
 			if (
-				mapping.device === PlayoutDeviceType.CASPARCG ||
-				mapping.device === DeviceType.QUANTEL
+				mapping.device === TSR.DeviceType.CASPARCG ||
+				mapping.device === TSR.DeviceType.QUANTEL
 			) {
 				mappings[layerId] = mapping
 
@@ -127,15 +115,15 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		let file = this.state.inputValues[mappingLayerId].file
 
-		let o: TimelineObjCCGMedia = {
+		let o: TSR.TimelineObjCCGMedia = {
 			id: 'caspar_' + mappingLayerId,
 			enable: {
 				start: 'now'
 			},
 			layer: mappingLayerId,
 			content: {
-				deviceType: DeviceType.CASPARCG,
-				type: TimelineContentTypeCasparCg.MEDIA,
+				deviceType: TSR.DeviceType.CASPARCG,
+				type: TSR.TimelineContentTypeCasparCg.MEDIA,
 
 				file: file + '',
 
@@ -150,13 +138,13 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		let input = this.state.inputValues[mappingLayerId]
 
-		let o: TimelineObjQuantelAny = {
+		let o: TSR.TimelineObjQuantelAny = {
 
 			id: 'quantel_' + mappingLayerId ,
 
 			classes: [],
 			content: {
-				deviceType: DeviceType.QUANTEL,
+				deviceType: TSR.DeviceType.QUANTEL,
 
 				title: input.title || '',
 				// @ts-ignore temporary ignore, remove soon

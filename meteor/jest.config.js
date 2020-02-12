@@ -1,7 +1,6 @@
 const commonConfig = {
 	modulePaths: [
 		'<rootDir>/node_modules/',
-		'<rootDir>/node_modules/jest-meteor-stubs/lib/',
 	],
 	moduleNameMapper: {
 	},
@@ -26,6 +25,7 @@ const commonConfig = {
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest'
 	},
+	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
 	coverageThreshold: {
 		global: {
@@ -43,6 +43,9 @@ const commonConfig = {
 		"!**/*.{tsx}",
 		"!**/client/main.js",
 		"!.meteor/**/*.*",
+		"!**/__tests__/**",
+		"!**/__mocks__/**",
+		'!**/node_modules/**'
 	],
 	collectCoverage: false,
 	watchPathIgnorePatterns: [

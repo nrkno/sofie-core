@@ -40,7 +40,7 @@ import {
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { getBlueprintOfRundown } from '../blueprints/cache'
-import { PartEventContext, PartContext, RundownContext } from '../blueprints/context'
+import { PartEventContext, RundownContext } from '../blueprints/context'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
@@ -53,7 +53,8 @@ import {
 import {
 	prepareStudioForBroadcast,
 	activateRundown as libActivateRundown,
-	deactivateRundown as libDeactivateRundown
+	deactivateRundown as libDeactivateRundown,
+	deactivateRundownInner
 } from './actions'
 import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPiece, convertPieceToAdLibPiece, resolveActivePieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
@@ -63,6 +64,15 @@ import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rund
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { transformTimeline } from '../../../lib/timeline'
 import * as SuperTimeline from 'superfly-timeline'
+
+/**
+ * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
+ */
+const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
+/**
+ * time in ms before an autotake when we don't accept takes
+ */
+const AUTOTAKE_DEBOUNCE = 1000
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -117,6 +127,41 @@ export namespace ServerPlayoutAPI {
 			libResetRundown(rundown)
 
 			return libActivateRundown(rundown, !!rehearsal) // Activate rundown
+		})
+	}
+	/**
+	 * Activate the rundown, decativate any other running rundowns
+	 */
+	export function forceResetAndActivateRundown (rundownId: string, rehearsal: boolean) {
+		check(rehearsal, Boolean)
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+			let anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+			let error: any
+			_.each(anyOtherActiveRundowns, (otherRundown) => {
+				try {
+					deactivateRundownInner(otherRundown)
+				} catch (e) {
+					error = e
+				}
+			})
+			if (error) {
+				// Ok, something went wrong, but check if the active rundowns where deactivated?
+				anyOtherActiveRundowns = areThereActiveRundownsInStudio(rundown.studioId, rundown._id)
+				if (anyOtherActiveRundowns.length) {
+					// No they weren't, we can't continue..
+					throw error
+				} else {
+					// They where deactivated, log the error and continue
+					logger.error(error)
+				}
+			}
+
+			libResetRundown(rundown)
+
+			return libActivateRundown(rundown, rehearsal)
 		})
 	}
 	/**
@@ -176,15 +221,26 @@ export namespace ServerPlayoutAPI {
 			let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
 
 			const currentPart = rundown.currentPartId ? rundownData.partsMap[rundown.currentPartId] : undefined
-			if (currentPart && currentPart.transitionDuration) {
+			if (currentPart) {
 				const prevPart = rundown.previousPartId ? rundownData.partsMap[rundown.previousPartId] : undefined
 				const allowTransition = prevPart && !prevPart.disableOutTransition
+				const start = currentPart.getLastStartedPlayback()
 
 				// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
-				if (allowTransition) {
-					const start = currentPart.getLastStartedPlayback()
+				if (allowTransition && currentPart.transitionDuration) {
 					if (start && now < start + currentPart.transitionDuration) {
 						return ClientAPI.responseError('Cannot take during a transition')
+					}
+				}
+
+				const offset = currentPart.getLastPlayOffset()
+				if (start && offset && currentPart.expectedDuration) {
+					// date.now - start = playback duration, duration + offset gives position in part
+					const playbackDuration = Date.now() - start! + offset!
+
+					// If there is an auto next planned
+					if (currentPart.autoNext && Math.abs(currentPart.expectedDuration - playbackDuration) < AUTOTAKE_DEBOUNCE) {
+						return ClientAPI.responseError('Cannot take shortly before an autoTake')
 					}
 				}
 			}
@@ -428,9 +484,8 @@ export namespace ServerPlayoutAPI {
 		rundownId: string,
 		horisontalDelta: number,
 		verticalDelta: number,
-		setManually: boolean,
-		currentNextPieceId?: string
-	): string {
+		setManually: boolean
+	): string | null {
 		check(rundownId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -442,8 +497,7 @@ export namespace ServerPlayoutAPI {
 				rundownId,
 				horisontalDelta,
 				verticalDelta,
-				setManually,
-				currentNextPieceId
+				setManually
 			)
 		})
 	}
@@ -452,8 +506,8 @@ export namespace ServerPlayoutAPI {
 		horisontalDelta: number,
 		verticalDelta: number,
 		setManually: boolean,
-		currentNextPieceId?: string
-	): string {
+		nextPartId0?: string
+	): string | null {
 
 		const rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -461,47 +515,57 @@ export namespace ServerPlayoutAPI {
 
 		if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) throw new Meteor.Error(501, `Rundown "${rundownId}" cannot change next during hold!`)
 
-		let currentNextPiece: Part
-		if (currentNextPieceId) {
-			currentNextPiece = Parts.findOne(currentNextPieceId) as Part
+		let nextPartId: string = ''
+		if (nextPartId0) {
+			nextPartId = nextPartId0
 		} else {
-			if (!rundown.nextPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next part!`)
-			currentNextPiece = Parts.findOne(rundown.nextPartId) as Part
+			if (!rundown.nextPartId) {
+				if (!rundown.currentPartId) throw new Meteor.Error(501, `Rundown "${rundownId}" has no next and no current part!`)
+				nextPartId = rundown.currentPartId
+			} else {
+				nextPartId = rundown.nextPartId
+			}
 		}
+		let currentNextPart: Part = Parts.findOne(nextPartId) as Part
+		if (!currentNextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
-		if (!currentNextPiece) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
+		let currentNextSegment = Segments.findOne(currentNextPart.segmentId) as Segment
+		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
 
-		let currentNextSegment = Segments.findOne(currentNextPiece.segmentId) as Segment
-		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPiece.segmentId}" not found!`)
-
-		let parts = rundown.getParts()
-		let segments = rundown.getSegments()
+		const parts = rundown.getParts()
+		const partsInSegments: {[segmentId: string]: Part[]} = {}
+		const segmentsWithParts: Segment[] = []
+		_.each(rundown.getSegments(), segment => {
+			let partsInSegment = segment.getParts()
+			if (partsInSegment.length) {
+				segmentsWithParts.push(segment)
+				partsInSegments[segment._id] = partsInSegment
+			}
+		})
 
 		let partIndex: number = -1
 		_.find(parts, (part, i) => {
-			if (part._id === currentNextPiece._id) {
+			if (part._id === currentNextPart._id) {
 				partIndex = i
 				return true
 			}
 		})
 		let segmentIndex: number = -1
-		_.find(segments, (s, i) => {
+		_.find(segmentsWithParts, (s, i) => {
 			if (s._id === currentNextSegment._id) {
 				segmentIndex = i
 				return true
 			}
 		})
 		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
-		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment not found in list of segments!`)
+		if (segmentIndex === -1) throw new Meteor.Error(404, `Segment "${currentNextSegment._id}" not found in segmentsWithParts!`)
 		if (verticalDelta !== 0) {
 			segmentIndex += verticalDelta
 
-			let segment = segments[segmentIndex]
-
+			const segment = segmentsWithParts[segmentIndex]
 			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
 
-			let partsInSegment = segment.getParts()
-			let part = _.first(partsInSegment) as Part
+			const part = _.first(partsInSegments[segment._id]) as Part
 			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
 			partIndex = -1
@@ -520,10 +584,17 @@ export namespace ServerPlayoutAPI {
 		let part = parts[partIndex]
 		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
 
-		if ((part._id === rundown.currentPartId && !currentNextPieceId) || part.invalid) {
+		if ((part._id === rundown.currentPartId && !nextPartId0) || part.invalid || part.floated) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
-			return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+			if (part._id !== nextPartId0) {
+				return moveNextPartInner(rundownId, horisontalDelta, verticalDelta, setManually, part._id)
+			} else {
+				// Calling ourselves again at this point would result in an infinite loop
+				// There probably isn't any Part available to Next then...
+				setNextPartInner(rundown, null, setManually)
+				return null
+			}
 		} else {
 			setNextPartInner(rundown, part, setManually)
 			return part._id
@@ -554,6 +625,23 @@ export namespace ServerPlayoutAPI {
 			}
 
 			Rundowns.update(rundownId, { $set: { holdState: RundownHoldState.PENDING } })
+
+			updateTimeline(rundown.studioId)
+
+			return ClientAPI.responseSuccess()
+		})
+	}
+	export function deactivateHold (rundownId: string) {
+		check(rundownId, String)
+		logger.debug('rundownDeactivateHold')
+
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+			if (rundown.holdState !== RundownHoldState.PENDING) throw new Meteor.Error(400, `Rundown "${rundownId}" is not pending a hold!`)
+
+			Rundowns.update(rundownId, { $set: { holdState: RundownHoldState.NONE } })
 
 			updateTimeline(rundown.studioId)
 
@@ -825,28 +913,34 @@ export namespace ServerPlayoutAPI {
 						libSetNextPart(rundown, nextPart)
 					} else {
 						// a part is being played that has not been selected for playback by Core
-						// show must go on, so find next part and update the Rundown, but log an error
-						let partsAfter = rundown.getParts({
-							_rank: {
-								$gt: playingPart._rank,
-							},
-							_id: { $ne: playingPart._id }
-						})
+						const previousReported = rundown.lastIncorrectPartPlaybackReported
 
-						let nextPart: Part | null = partsAfter[0] || null
+						if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
+							// first time this has happened for a while, let's try to progress the show:
 
-						setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
-						const rundownChange = {
-							previousPartId: null,
-							currentPartId: playingPart._id,
+							let partsAfter = rundown.getParts({
+								_rank: {
+									$gt: playingPart._rank,
+								},
+								_id: { $ne: playingPart._id }
+							})
+	
+							let nextPart: Part | null = partsAfter[0] || null
+	
+							setRundownStartedPlayback(rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
+	
+							const rundownChange = {
+								previousPartId: null,
+								currentPartId: playingPart._id,
+								lastIncorrectPartPlaybackReported: Date.now() // save the time to prevent the system to go in a loop
+							}
+	
+							Rundowns.update(rundown._id, {
+								$set: rundownChange
+							})
+							rundown = _.extend(rundown, rundownChange) as Rundown
+							libSetNextPart(rundown, nextPart)
 						}
-
-						Rundowns.update(rundown._id, {
-							$set: rundownChange
-						})
-						rundown = _.extend(rundown, rundownChange) as Rundown
-						libSetNextPart(rundown, nextPart)
 
 						logger.error(`Part "${playingPart._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
@@ -1233,15 +1327,15 @@ interface UpdateTimelineFromIngestDataTimeout {
 let updateTimelineFromIngestDataTimeouts: {
 	[id: string]: UpdateTimelineFromIngestDataTimeout
 } = {}
-export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegments: Array<string>) {
+export function triggerUpdateTimelineAfterIngestData (rundownId: string, changedSegmentIds: Array<string>) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
 	let data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts[rundownId]
 	if (data) {
 		if (data.timeout) Meteor.clearTimeout(data.timeout)
-		data.changedSegments = data.changedSegments.concat(changedSegments)
+		data.changedSegments = data.changedSegments.concat(changedSegmentIds)
 	} else {
 		data = {
-			changedSegments: changedSegments
+			changedSegments: changedSegmentIds
 		}
 	}
 

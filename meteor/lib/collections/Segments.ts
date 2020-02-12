@@ -33,6 +33,7 @@ export class Segment implements DBSegment {
 	public status?: string
 	public expanded?: boolean
 	public notes?: Array<PartNote>
+	public isHidden?: boolean
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {
@@ -59,9 +60,9 @@ export class Segment implements DBSegment {
 		let notes: Array<PartNote> = []
 
 		if (includeParts) {
-			const lines = this.getParts()
-			_.each(lines, l => {
-				notes = notes.concat(l.getNotes(runtimeNotes))
+			const parts = this.getParts()
+			_.each(parts, l => {
+				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
 			})
 		}
 

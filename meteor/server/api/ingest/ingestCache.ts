@@ -10,7 +10,7 @@ export function loadCachedRundownData (rundownId: string, rundownExternalId: str
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
-	if (!baseEntry) throw new Meteor.Error(404, `Rundown ${rundownExternalId} has no cached ingest data`)
+	if (!baseEntry) throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
 
 	const ingestRundown = baseEntry.data as IngestRundown
 
@@ -71,9 +71,6 @@ export function loadIngestDataCachePart (rundownId: string, rundownExternalId: s
 	if (!partEntry) throw new Meteor.Error(404, `Part "${partExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`)
 	if (partEntry.type !== IngestCacheType.PART) throw new Meteor.Error(500, 'Wrong type on cached part')
 	return partEntry
-}
-export function loadCachedIngestPart (rundownId: string, rundownExternalId: string, partId: string, partExternalId: string): IngestPart {
-	return loadIngestDataCachePart(rundownId, rundownExternalId, partId, partExternalId).data
 }
 
 export function saveRundownCache (rundownId: string, ingestRundown: IngestRundown) {

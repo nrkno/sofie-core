@@ -7,7 +7,7 @@ import {
 	getPieceGroupId,
 	TimelineObjHoldMode,
 	OnGenerateTimelineObj,
-	PlayoutTimelinePrefixes
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import {
@@ -29,7 +29,6 @@ import { Meteor } from 'meteor/meteor'
 import {
 	waitForPromiseAll,
 	caught,
-	makePromise,
 	saveIntoDb,
 	asyncCollectionFindOne,
 	waitForPromise,
@@ -46,22 +45,17 @@ import {
 } from '../../../lib/lib'
 import { Rundowns, RundownData, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
-import {
-	Timeline as TimelineTypes,
-	DeviceType,
-	TSRTimelineObjBase
-} from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints, getBlueprintOfRundown, getBlueprintOfRundownAsync } from '../blueprints/cache'
-import { StudioContext, RundownContext, PartEventContext } from '../blueprints/context'
+import { loadStudioBlueprints, getBlueprintOfRundownAsync } from '../blueprints/cache'
+import { StudioContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from '../testTools'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { prefixAllObjectIds } from './lib'
-import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces, getResolvedPiecesFromFullTimeline } from './pieces'
+import { createPieceGroup, createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 
@@ -184,7 +178,7 @@ export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<Timeli
 		studioId: studio._id,
 		objectType: TimelineObjType.STAT,
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.NOTHING,
 			modified: getCurrentTime(),
 			objCount: objCount,
@@ -300,7 +294,7 @@ function getTimelineRundown (studio: Studio, activeRundownData: RundownData | nu
 							}
 						},
 						content: {
-							deviceType: DeviceType.ABSTRACT
+							deviceType: TSR.DeviceType.ABSTRACT
 						}
 					}))
 				}
@@ -356,7 +350,7 @@ function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObj
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
 
-			_.each(o.children, (child: TSRTimelineObjBase) => {
+			_.each(o.children, (child: TSR.TSRTimelineObjBase) => {
 
 				let childFixed: TimelineObjGeneric = {
 					...child,
@@ -423,7 +417,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		enable: { while: 1 },
 		layer: 'rundown_status',
 		content: {
-			deviceType: DeviceType.ABSTRACT
+			deviceType: TSR.DeviceType.ABSTRACT
 		},
 		classes: [activeRundown.rehearsal ? 'rundown_rehersal' : 'rundown_active']
 	}))
@@ -492,7 +486,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// fetch pieces
 		// fetch the timelineobjs in pieces
 		const isFollowed = nextPart && currentPart.autoNext
-		const currentPartEnable = literal<TimelineTypes.TimelineEnable>({
+		const currentPartEnable = literal<TSR.Timeline.TimelineEnable>({
 			duration: !isFollowed ? undefined : calcPartTargetDuration(previousPart, currentPart)
 		})
 		if (currentPart.startedPlayback && currentPart.getLastStartedPlayback()) { // If we are recalculating the currentPart, then ensure it doesnt think it is starting now
@@ -562,9 +556,6 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 					start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
 					duration: nextPartGroup.enable.duration
 				}
-				if (typeof nextPartGroup.enable.duration === 'number') {
-					nextPartGroup.enable.duration += currentPart.autoNextOverlap || 0
-				}
 			}
 
 			let toSkipIds = currentPieces.filter(i => i.infiniteId).map(i => i.infiniteId)
@@ -594,7 +585,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 	return timelineObjs
 }
-function createPartGroup (part: Part, enable: TimelineTypes.TimelineEnable): TimelineObjGroupPart & TimelineObjRundown {
+function createPartGroup (part: Part, enable: TSR.Timeline.TimelineEnable): TimelineObjGroupPart & TimelineObjRundown {
 	if (!enable.start) { // TODO - is this loose enough?
 		enable.start = 'now'
 	}
@@ -608,7 +599,7 @@ function createPartGroup (part: Part, enable: TimelineTypes.TimelineEnable): Tim
 		priority: 5,
 		layer: '', // These should coexist
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP
 		},
 		children: [],
@@ -632,7 +623,7 @@ function createPartGroupFirstObject (
 		enable: { start: 0 },
 		layer: 'group_first_object',
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
 			// Will cause the playout-gateway to run a callback, when the object starts playing:
 			callBack: 'partPlaybackStarted',
@@ -786,14 +777,14 @@ function calcPartTargetDuration (prevPart: Part | undefined, currentPart: Part):
 	const maxPreroll = Math.max(currentPart.transitionPrerollDuration ? currentPart.transitionPrerollDuration : 0, currentPart.prerollDuration || 0)
 	const maxKeepalive = Math.max(currentPart.transitionKeepaliveDuration ? currentPart.transitionKeepaliveDuration : 0, currentPart.prerollDuration || 0)
 	const lengthAdjustment = maxPreroll - maxKeepalive
-	const rawExpectedDuration = (currentPart.expectedDuration || 0) - lengthAdjustment
+	const rawExpectedDuration = (currentPart.expectedDuration || 0) - lengthAdjustment + (currentPart.autoNextOverlap || 0)
 
 	if (!prevPart || prevPart.disableOutTransition) {
 		return rawExpectedDuration + (currentPart.prerollDuration || 0)
 	}
 
 	let prerollDuration = (currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0)
-	return rawExpectedDuration + (prevPart.autoNextOverlap || 0) + prerollDuration
+	return rawExpectedDuration + prerollDuration
 }
 function calcPartOverlapDuration (fromPart: Part, toPart: Part): number {
 	const allowTransition: boolean = !fromPart.disableOutTransition

@@ -25,6 +25,7 @@ import { Studios } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
 const PackageInfo = require('../package.json')
+const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 export { PackageInfo }
 
@@ -40,7 +41,8 @@ function initializeCoreSystem () {
 			modified: getCurrentTime(),
 			version: version,
 			previousVersion: null,
-			storePath: '' // to be filled in later
+			storePath: '', // to be filled in later
+			serviceMessages: {}
 		})
 
 		// Check what migration has to provide:
@@ -264,7 +266,7 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseRange(PackageInfo.dependencies['timeline-state-resolver-types']),
+		parseRange(BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']),
 		'Blueprint has to be updated',
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
@@ -352,6 +354,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 			'react-escape',
 			'react-hotkeys',
 			'react-i18next',
+			'react-intersection-observer',
 			'react-lottie',
 			'react-moment',
 			'react-router-dom',
@@ -382,6 +385,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 			versions[name] = sanitizeVersion(dependencies[name])
 		})
 		versions['core'] = PackageInfo.version // package version
+		versions['timeline-state-resolver-types'] = BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']
 
 	} else logger.error(`Core package dependencies missing`)
 	return versions

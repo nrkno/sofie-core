@@ -30,7 +30,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter } from './AdLibPanel'
+import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
@@ -42,16 +42,14 @@ interface IState {
 	}
 	sourceLayers: {
 		[key: string]: ISourceLayer
-	}
+	},
+	searchFilter: string | undefined
 }
 
-const BUTTON_GRID_WIDTH = 30
-const BUTTON_GRID_HEIGHT = 26
-const PANEL_MARGIN_WIDTH = 15
-const PANEL_MARGIN_HEIGHT = 44
-
 interface IDashboardPanelProps {
+	searchFilter?: string | undefined
 	mediaPreviewUrl?: string
+	shouldQueue: boolean
 }
 
 interface IDashboardPanelTrackedProps {
@@ -61,7 +59,9 @@ interface IDashboardPanelTrackedProps {
 	}
 }
 
-export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+const HOTKEY_GROUP = 'DashboardPanel'
+
+export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	const unfinishedPieces = _.groupBy(props.rundown.currentPartId ? Pieces.find({
 		rundownId: props.rundown._id,
 		partId: props.rundown.currentPartId,
@@ -88,7 +88,7 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
+})(class DashboardPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -96,7 +96,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 		this.state = {
 			outputLayers: {},
-			sourceLayers: {}
+			sourceLayers: {},
+			searchFilter: undefined
 		}
 	}
 
@@ -167,7 +168,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	}
 
 	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -175,8 +177,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 
 		this.usedHotkeys.length = 0
 	}
@@ -199,21 +201,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -223,21 +225,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		if (this.props.rundownBaselineAdLibs) {
 			this.props.rundownBaselineAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item, false, e)
-					}, 'keyup')
+					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-						}, 'keyup')
+						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(queueHotkey)
 					}
 				}
@@ -248,11 +250,11 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 			_.each(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
 					item.clearKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onClearAllSourceLayer(item, e)
-						}, 'keyup')
+						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(element)
 					})
 
@@ -260,11 +262,11 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 				if (item.isSticky && item.activateStickyKeyboardHotkey) {
 					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleSticky(item._id, e)
-						}, 'keyup')
+						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(element)
 					})
 				}
@@ -275,11 +277,21 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
+		queue = queue || this.props.shouldQueue
+
 		if (piece.invalid) {
 			NotificationCenter.push(new Notification(
 				t('Invalid AdLib'),
 				NoticeLevel.WARNING,
 				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
+			return
+		}
+		if (piece.floated) {
+			NotificationCenter.push(new Notification(
+				t('Floated AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Floated'),
 				'toggleAdLib'))
 			return
 		}
@@ -328,6 +340,12 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 		}
 	}
 
+	onFilterChange = (filter: string) => {
+		this.setState({
+			searchFilter: filter
+		})
+	}
+
 	render () {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -338,41 +356,44 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 					<div className='dashboard-panel'
 						style={{
 							width: filter.width >= 0 ?
-								(filter.width * BUTTON_GRID_WIDTH) + PANEL_MARGIN_WIDTH :
+								`calc((${filter.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
 								undefined,
 							height: filter.height >= 0 ?
-								(filter.height * BUTTON_GRID_HEIGHT) + PANEL_MARGIN_HEIGHT :
+								`calc((${filter.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
 								undefined,
 							left: filter.x >= 0 ?
-								(filter.x * BUTTON_GRID_WIDTH) :
+								`calc(${filter.x} * var(--dashboard-button-grid-width))` :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
 									undefined,
 							top: filter.y >= 0 ?
-								(filter.y * BUTTON_GRID_HEIGHT) :
+								`calc(${filter.y} * var(--dashboard-button-grid-height))` :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
 									undefined,
 							right: filter.x < 0 ?
-								((-1 * filter.x - 1) * BUTTON_GRID_WIDTH) :
+								`calc(${-1 * filter.x - 1} * var(--dashboard-button-grid-width))` :
 								filter.width < 0 ?
-									((-1 * filter.width - 1) * BUTTON_GRID_WIDTH) :
+									`calc(${-1 * filter.width - 1} * var(--dashboard-button-grid-width))` :
 									undefined,
 							bottom: filter.y < 0 ?
-								((-1 * filter.y - 1) * BUTTON_GRID_HEIGHT) :
+								`calc(${-1 * filter.y - 1} * var(--dashboard-button-grid-height))` :
 								filter.height < 0 ?
-									((-1 * filter.height - 1) * BUTTON_GRID_HEIGHT) :
+									`calc(${-1 * filter.height - 1} * var(--dashboard-button-grid-height))` :
 									undefined
 						}}
 					>
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
+						{ filter.enableSearch &&
+							<AdLibPanelToolbar
+								onFilterChange={this.onFilterChange} />
+						}
 						<div className='dashboard-panel__panel'>
-							{_.flatten(this.props.uiSegments.map(seg => seg.pieces))
-								.concat(this.props.rundownBaselineAdLibs)
-								.sort((a, b) => a._rank - b._rank)
-								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))
+							{this.props.rundownBaselineAdLibs
+								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
+								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton
 												key={item._id}
@@ -383,6 +404,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 												rundown={this.props.rundown}
 												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+												widthScale={filter.buttonWidthScale}
+												heightScale={filter.buttonHeightScale}
 											>
 												{item.name}
 									</DashboardPieceButton>

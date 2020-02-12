@@ -6,7 +6,7 @@ import {
 	Rundowns,
 	RundownHoldState
 } from '../../lib/collections/Rundowns'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, getHash } from '../../lib/lib'
 import {
 	Parts, Part
 } from '../../lib/collections/Parts'
@@ -31,8 +31,11 @@ import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 
-const MINIMUM_TAKE_SPAN = 1000
-
+let MINIMUM_TAKE_SPAN = 1000
+export function setMinimumTakeSpan (span: number) {
+	// Used in tests
+	MINIMUM_TAKE_SPAN = span
+}
 /*
 	The functions in this file are used to provide a pre-check, before calling the real functions.
 	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.
@@ -87,6 +90,7 @@ export function setNext (rundownId: string, nextPartId: string | null, setManual
 		if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
 		if (nextPart.invalid) return ClientAPI.responseError('Part is marked as invalid, cannot set as next.')
+		if (nextPart.floated) return ClientAPI.responseError('Part is marked as floated, cannot set as next.')
 	}
 
 	if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) {
@@ -99,8 +103,7 @@ export function moveNext (
 	rundownId: string,
 	horisontalDelta: number,
 	verticalDelta: number,
-	setManually: boolean,
-	currentNextPieceId?: string
+	setManually: boolean
 ): ClientAPI.ClientResponse {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -110,18 +113,16 @@ export function moveNext (
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	if (!currentNextPieceId) {
-		if (!rundown.nextPartId) {
-			return ClientAPI.responseError('Rundown has no next part!')
-		}
+	if (!rundown.nextPartId && !rundown.currentPartId) {
+		return ClientAPI.responseError('Rundown has no next and no current part!')
 	}
+
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.moveNextPart(
 			rundownId,
 			horisontalDelta,
 			verticalDelta,
-			setManually,
-			currentNextPieceId
+			setManually
 		)
 	)
 }
@@ -161,6 +162,17 @@ export function resetAndActivate (rundownId: string, rehearsal?: boolean): Clien
 
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.resetAndActivateRundown(rundownId, rehearsal)
+	)
+}
+export function forceResetAndActivate (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	// Reset and activates a rundown, automatically deactivates any other running rundowns
+
+	check(rehearsal, Boolean)
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.forceResetAndActivateRundown(rundownId, rehearsal)
 	)
 }
 export function activate (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
@@ -254,7 +266,7 @@ export function pieceSetInOutPoints (rundownId: string, partId: string, pieceId:
 	}
 	const partCache = IngestDataCache.findOne({
 		rundownId: rundown._id,
-		partId: part.externalId,
+		partId: part._id,
 		type: IngestCacheType.PART
 	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
@@ -336,7 +348,7 @@ export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: s
 		ServerPlayoutAPI.sourceLayerStickyPieceStart(rundownId, sourceLayerId)
 	)
 }
-export function activateHold (rundownId: string) {
+export function activateHold (rundownId: string, undo?: boolean) {
 	check(rundownId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
@@ -349,13 +361,22 @@ export function activateHold (rundownId: string) {
 	if (!currentPart) throw new Meteor.Error(404, `Part "${rundown.currentPartId}" not found!`)
 	let nextPart = Parts.findOne({ _id: rundown.nextPartId })
 	if (!nextPart) throw new Meteor.Error(404, `Part "${rundown.nextPartId}" not found!`)
-	if (rundown.holdState) {
+	if (!undo && rundown.holdState) {
 		return ClientAPI.responseError(`Rundown is already doing a hold!`)
 	}
+	if (undo && rundown.holdState !== RundownHoldState.PENDING) {
+		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[rundown.holdState || 0]}`)
+	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.activateHold(rundownId)
-	)
+	if (undo) {
+		return ClientAPI.responseSuccess(
+			ServerPlayoutAPI.deactivateHold(rundownId)
+		)
+	} else {
+		return ClientAPI.responseSuccess(
+			ServerPlayoutAPI.activateHold(rundownId)
+		)
+	}
 }
 export function userSaveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return ClientAPI.responseSuccess(
@@ -464,6 +485,27 @@ export function regenerateRundown (rundownId: string) {
 	)
 }
 
+let restartToken: string | undefined = undefined
+
+export function generateRestartToken () {
+	restartToken = getHash('restart_' + getCurrentTime())
+	return ClientAPI.responseSuccess(
+		restartToken
+	)
+}
+
+export function restartCore (token: string) {
+	check(token, String)
+
+	if (token !== getHash(UserActionAPI.RESTART_SALT + restartToken))
+		throw new Meteor.Error(401, `Restart token is invalid`)
+
+	setTimeout(() => {
+		process.exit(0)
+	}, 3000)
+	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
+}
+
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
@@ -492,6 +534,9 @@ methods[UserActionAPI.methods.activate] = function (rundownId: string, rehearsal
 }
 methods[UserActionAPI.methods.deactivate] = function (rundownId: string): ClientAPI.ClientResponse {
 	return deactivate.call(this, rundownId)
+}
+methods[UserActionAPI.methods.forceResetAndActivate] = function (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	return forceResetAndActivate.call(this, rundownId, rehearsal)
 }
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)
@@ -526,8 +571,8 @@ methods[UserActionAPI.methods.segmentAdLibPieceStop] = function (rundownId: stri
 methods[UserActionAPI.methods.sourceLayerStickyPieceStart] = function (rundownId: string, sourceLayerId: string) {
 	return sourceLayerStickyPieceStart.call(this, rundownId, sourceLayerId)
 }
-methods[UserActionAPI.methods.activateHold] = function (rundownId: string): ClientAPI.ClientResponse {
-	return activateHold.call(this, rundownId)
+methods[UserActionAPI.methods.activateHold] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
+	return activateHold.call(this, rundownId, undo)
 }
 methods[UserActionAPI.methods.saveEvaluation] = function (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return userSaveEvaluation.call(this, evaluation)
@@ -567,6 +612,12 @@ methods[UserActionAPI.methods.mediaAbortAllWorkflows] = function () {
 }
 methods[UserActionAPI.methods.regenerateRundown] = function (rundownId: string) {
 	return regenerateRundown.call(this, rundownId)
+}
+methods[UserActionAPI.methods.generateRestartToken] = function () {
+	return generateRestartToken.call(this)
+}
+methods[UserActionAPI.methods.restartCore] = function (token: string) {
+	return restartCore.call(this, token)
 }
 
 // Apply methods:

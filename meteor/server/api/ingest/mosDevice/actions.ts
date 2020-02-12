@@ -24,7 +24,7 @@ export namespace MOSDeviceActions {
 						// Don't throw an error, instead return MISSING value
 						cb(null, UserActionAPI.ReloadRundownResponse.MISSING)
 					} else {
-						logger.error(err)
+						logger.error('Error in MOSDeviceActions.reloadRundown', err)
 						cb(err)
 					}
 				} else {
@@ -56,11 +56,11 @@ export namespace MOSDeviceActions {
 
 		if (oldPlayingPartExternalId) {
 			setStoryStatus(peripheralDevice._id, rundown, oldPlayingPartExternalId, MOS.IMOSObjectStatus.STOP)
-			.catch(e => logger.error(e))
+			.catch(e => logger.error('Error in setStoryStatus', e))
 		}
 		if (newPlayingPartExternalId) {
 			setStoryStatus(peripheralDevice._id, rundown, newPlayingPartExternalId, MOS.IMOSObjectStatus.PLAY)
-			.catch(e => logger.error(e))
+			.catch(e => logger.error('Error in setStoryStatus', e))
 		}
 	}
 	function setStoryStatus (deviceId: string, rundown: Rundown, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {

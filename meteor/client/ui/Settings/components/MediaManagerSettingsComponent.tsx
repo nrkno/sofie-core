@@ -82,6 +82,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedStorages: this.state.editedStorages
 			})
+		} else {
+			this.finishEditStorageItem(deviceId)
 		}
 	}
 	editFlowItem = (flowId: string) => {
@@ -90,6 +92,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedFlows: this.state.editedFlows
 			})
+		} else {
+			this.finishEditFlowItem(flowId)
 		}
 	}
 	editMonitorItem = (monitorId: string) => {
@@ -98,6 +102,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			this.setState({
 				editedMonitors: this.state.editedMonitors
 			})
+		} else {
+			this.finishEditMonitorItem(monitorId)
 		}
 	}
 	handleConfirmRemoveStorageCancel = (e) => {
@@ -278,6 +284,12 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 											<label className='field'>
 												{t('Media Path')}
 												<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.mediaPath'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Base path is a network share')}
+												<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.usePolling'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
 											</label>
 										</div>
 									</React.Fragment>))))}

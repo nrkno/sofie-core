@@ -80,6 +80,28 @@
 			margin-left: -1px;
 		}
 
+		@keyframes help-fade {
+			0% {
+				background-color: #fff
+			}
+			40% {
+				background-color: #fff
+			}
+			50% {
+				background-color: $ui-button-primary
+			}
+			60% {
+				background-color: #fff
+			}
+			100% {
+				background-color: #fff
+			}
+		}
+
+		&.status-bar__controls__button--has-messages {
+			animation: help-fade 8s 1;
+		}
+
 		&.status-bar__controls__button--take {
 			text-transform: uppercase;
 			font-weight: 700;
@@ -88,10 +110,6 @@
 			@media (pointer: coarse) {
 				display: inline !important;
 			}
-		}
-
-		> div[aria-label="animation"] {
-
 		}
 	}
 

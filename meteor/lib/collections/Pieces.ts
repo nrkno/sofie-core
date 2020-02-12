@@ -1,5 +1,4 @@
 import { RundownAPI } from '../api/rundown'
-import { TimelineTransition, Timeline } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
 import { PartTimings } from './Parts'
 import { registerCollection } from '../lib'
@@ -9,6 +8,7 @@ import {
 	IBlueprintPieceDB,
 	PieceLifespan,
 	BaseContent,
+	Timeline
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 
@@ -29,13 +29,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	hidden?: boolean
 	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
-	/** The transition used by this piece to transition to and from the piece */
-	transitions?: {
-		/** In transition for the piece */
-		inTransition?: TimelineTransition
-		/** The out transition for the piece */
-		outTransition?: TimelineTransition
-	}
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: string
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */

@@ -2,6 +2,7 @@ import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { fetchAfter } from '../../../lib/lib'
+import { moveNext } from '../userActions'
 
 function getRundownValidParts (rundown: Rundown) {
 	return rundown.getParts({
@@ -44,8 +45,16 @@ export namespace UpdateNext {
 	}
 	export function afterInsertParts (rundown: Rundown, newPartExternalIds: string[], removePrevious: boolean) {
 		if (rundown && rundown.active) {
-			// If manually chosen, and could have been removed then special case handling
-			if (rundown.nextPartManual && removePrevious) {
+
+			if (!rundown.nextPartId && rundown.currentPartId) {
+				// The playhead is probably at the end of the rundown
+
+				// Set Next forward
+				moveNext(rundown._id, 1, 0, false)
+
+			} else if (rundown.nextPartManual && removePrevious) {
+				// If a part was manually chosen as Next, that could have been removed by a Replacement
+
 				const allValidParts = getRundownValidParts(rundown)
 
 				// If the manually chosen part does not exist, assume it was the one that was removed

@@ -4,6 +4,10 @@ import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
+/**
+ * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
+ * Especially relevant for multi-user.
+ */
 export namespace ConfigRef {
 	export function getStudioConfigRef (studioId: string, configKey: string): string {
 		return '${studio.' + studioId + '.' + configKey + '}'
@@ -58,15 +62,17 @@ export namespace ConfigRef {
 					const config = _.find(showStyleCompound.config, (config) => config._id === configId)
 					if (config) {
 						return config.value
-					} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
-				}
+					} else {
+						return undefined
+					}
+				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
 			}
 		}
 		return undefined
 	}
 }
 
-export function compileStudioconfig (studio: Studio) {
+export function compileStudioConfig (studio: Studio) {
 	const res: {[key: string]: ConfigItemValue} = {}
 	_.each(studio.config, (c) => {
 		res[c._id] = c.value

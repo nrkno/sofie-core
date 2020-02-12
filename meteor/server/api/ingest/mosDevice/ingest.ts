@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown } from '../lib'
+import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -10,15 +10,15 @@ import {
 	fixIllegalObject,
 	parseMosString
 } from './lib'
-import { literal, asyncCollectionUpdate } from '../../../../lib/lib'
+import { literal, asyncCollectionUpdate, waitForPromiseAll } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
-	updateSegmentFromIngestData,
 	rundownSyncFunction,
 	RundownSyncFunctionPriority,
 	handleUpdatedRundownInner,
-	handleUpdatedPartInner
+	handleUpdatedPartInner,
+	updateSegmentsFromIngestData
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
@@ -31,8 +31,10 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments } from '../../../../lib/collections/Segments'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
-import { removeSegments } from '../../rundown'
+import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
+import { logger } from '../../../../lib/logging'
+import { Parts } from '../../../../lib/collections/Parts'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -242,6 +244,9 @@ export function handleMosDeleteStory (
 		const ingestPartIds = _.map(ingestParts, part => part.externalId)
 
 		const storyIds = _.map(stories, parseMosString)
+
+		logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
+
 		const missingIds = _.filter(storyIds, id => ingestPartIds.indexOf(id) === -1)
 		if (missingIds.length > 0) {
 			throw new Meteor.Error(
@@ -253,9 +258,9 @@ export function handleMosDeleteStory (
 		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
 		if (filteredParts.length === ingestParts.length) return // Nothing was removed
 
-		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
+		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
 
-		UpdateNext.ensureNextPartIsValid(rundown)
+		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
 	})
 }
 
@@ -276,10 +281,13 @@ function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngest
 export function handleInsertParts (
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
-	previousPartId: MOS.MosString128,
+	insertBeforeStoryId: MOS.MosString128 | null,
 	removePrevious: boolean,
 	newStories: MOS.IMOSROStory[]
 ) {
+	// inserts stories and all of their defined items before the referenced story in a Running Order
+	// ...and roStoryReplace message replaces the referenced story with another story or stories
+
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
@@ -290,13 +298,22 @@ export function handleInsertParts (
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const insertBeforePartIdStr = parseMosString(previousPartId)
-		const oldIndex = ingestParts.findIndex(p => p.externalId === insertBeforePartIdStr)
-		if (oldIndex === -1) {
-			throw new Meteor.Error(404, `Part ${insertBeforePartIdStr} in rundown ${rundown.externalId} not found`)
+		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
+		const insertIndex = (
+			!insertBeforePartExternalId ? // insert last
+				ingestParts.length :
+				ingestParts.findIndex(p => p.externalId === insertBeforePartExternalId)
+		)
+		if (insertIndex === -1) {
+			throw new Meteor.Error(404, `Part ${insertBeforePartExternalId} in rundown ${rundown.externalId} not found`)
 		}
 
 		const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true))
+
+		if (removePrevious) {
+			ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
+		}
+
 		const newPartIds = _.map(newParts, part => part.externalId)
 		const collidingPartIds = _.map(
 			_.filter(ingestParts, part => newPartIds.indexOf(part.externalId) !== -1),
@@ -310,10 +327,7 @@ export function handleInsertParts (
 		}
 
 		// Update parts list
-		ingestParts.splice(oldIndex, 0, ...newParts)
-		if (removePrevious) {
-			ingestParts.splice(oldIndex + 1, 1)
-		}
+		ingestParts.splice(insertIndex, 0, ...newParts)
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
 
@@ -359,14 +373,12 @@ export function handleSwapStories (
 		ingestParts[story1Index] = tmp
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, ingestParts)
-
-		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 export function handleMoveStories (
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
-	insertBefore: MOS.MosString128,
+	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
@@ -398,21 +410,20 @@ export function handleMoveStories (
 		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
 
 		// Find insert point
-		const insertBeforeStr = insertBefore ? parseMosString(insertBefore) || '' : ''
-		const insertIndex =
-			insertBeforeStr !== ''
-				? filteredParts.findIndex(p => p.externalId === insertBeforeStr)
-				: filteredParts.length
+		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
+		const insertIndex = (
+			!insertBeforePartExternalId ? // insert last
+				filteredParts.length :
+				filteredParts.findIndex(p => p.externalId === insertBeforePartExternalId)
+		)
 		if (insertIndex === -1) {
-			throw new Meteor.Error(404, `Part ${insertBefore} was not found in rundown ${rundown.externalId}`)
+			throw new Meteor.Error(404, `Part ${insertBeforeStoryId} was not found in rundown ${rundown.externalId}`)
 		}
 
 		// Reinsert parts
 		filteredParts.splice(insertIndex, 0, ...movingParts)
 
 		diffAndApplyChanges(studio, rundown, ingestRundown, filteredParts)
-
-		UpdateNext.ensureNextPartIsValid(rundown)
 	})
 }
 
@@ -430,112 +441,187 @@ function diffAndApplyChanges (
 	const newSegmentEntries = compileSegmentEntries(ingestSegments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
 
+	// Check if operation affect currently playing Part:
+	if (rundown.active && rundown.currentPartId) {
+		const currentPart = _.find(ingestParts, (ingestPart) => {
+			const partId = getPartId(rundown._id, ingestPart.externalId)
+			return partId === rundown.currentPartId
+		})
+		if (!currentPart) {
+			// Looks like the currently playing part has been removed.
+			logger.warn(`Currently playing part "${rundown.currentPartId}" was removed during ingestData. Unsyncing the rundown!`)
+			ServerRundownAPI.unsyncRundown(rundown._id)
+			return
+		} else {
+			// TODO: add logic for determining whether to allow changes to the currently playing Part.
+		}
+	}
+
+
 	// Save new cache
 	const newIngestRundown = _.clone(ingestRundown)
 	newIngestRundown.segments = ingestSegments
 	saveRundownCache(rundown._id, newIngestRundown)
 
-	// Update segment ranks
+	// Update segment ranks:
 	let ps: Array<Promise<any>> = []
-	_.each(segmentDiff.rankChanged, ranks => {
-		const rank = ranks[1]
+	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
 		ps.push(
 			asyncCollectionUpdate(
 				Segments,
 				{
 					rundownId: rundown._id,
-					_id: getSegmentId(rundown._id, newIngestRundown.segments[rank].externalId)
+					_id: getSegmentId(rundown._id, segmentExternalId)
 				},
 				{
 					$set: {
-						_rank: rank
+						_rank: newRank
 					}
 				}
 			)
 		)
 	})
+	// Updated segments that has had their segment.externalId changed:
+	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+		// Move over those parts to the new segmentId.
+		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
+		ps.push(
+			asyncCollectionUpdate(
+				Parts,
+				{
+					rundownId: rundown._id,
+					segmentId: getSegmentId(rundown._id, oldSegmentExternalId)
+				},
+				{
+					$set: {
+						segmentId: getSegmentId(rundown._id, newSegmentExternalId)
+					}
+				},
+				{
+					multi: true
+				}
+			)
+		)
+	})
+
+	waitForPromiseAll(ps)
+
 	// Remove old segments
-	const removedSegmentIds = _.map(segmentDiff.removed, i =>
-		getSegmentId(rundown._id, ingestRundown.segments[i].externalId)
+	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
+		getSegmentId(rundown._id, segmentExternalId)
 	)
 	removeSegments(rundown._id, removedSegmentIds)
 
 	// Create/Update segments
-	for (const i of segmentDiff.changed) {
-		updateSegmentFromIngestData(studio, rundown, ingestSegments[i])
+	updateSegmentsFromIngestData(
+		studio,
+		rundown,
+		_.sortBy([
+			..._.values(segmentDiff.added),
+			..._.values(segmentDiff.changed)
+		], se => se.rank)
+	)
+}
+
+export interface SegmentEntries {
+	[segmentExternalId: string]: IngestSegment
+}
+export function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntries {
+	let segmentEntries: SegmentEntries = {}
+
+	_.each(ingestSegments, (ingestSegment: IngestSegment, rank: number) => {
+		if (segmentEntries[ingestSegment.externalId]) {
+			throw new Meteor.Error(500, `compileSegmentEntries: Non-unique segment external ID: "${ingestSegment.externalId}"`)
+		}
+		segmentEntries[ingestSegment.externalId] = _.clone(ingestSegment)
+	})
+
+	return segmentEntries
+}
+export interface DiffSegmentEntries {
+	added: {[segmentExternalId: string]: IngestSegment}
+	changed: {[segmentExternalId: string]: IngestSegment}
+	removed: {[segmentExternalId: string]: IngestSegment}
+	unchanged: {[segmentExternalId: string]: IngestSegment}
+
+	// The objects present below are also present in the collections above
+	/** Reference to segments which only had their ranks updated */
+	onlyRankChanged: {[segmentExternalId: string]: number} // contains the new rank
+	/** Reference to segments which has been REMOVED, but it looks like there is an ADDED segment that is closely related to the removed one */
+	onlyExternalIdChanged: {[segmentExternalId: string]: string} // contains the new externalId
+}
+export function diffSegmentEntries (
+	oldSegmentEntries: SegmentEntries,
+	newSegmentEntries: SegmentEntries
+): DiffSegmentEntries {
+	const diff: DiffSegmentEntries = {
+		added: {},
+		changed: {},
+		removed: {},
+		unchanged: {},
+
+		onlyRankChanged: {},
+		onlyExternalIdChanged: {},
 	}
-}
+	_.each(newSegmentEntries, (newSegmentEntry, segmentExternalId) => {
+		const oldSegmentEntry = oldSegmentEntries[segmentExternalId] as IngestSegment | undefined
+		if (oldSegmentEntry) {
 
-export interface SegmentEntry {
-	id: string
-	name: string
-	parts: string[]
-}
-function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntry[] {
-	return _.map(ingestSegments, s => ({
-		id: s.externalId,
-		name: s.name,
-		parts: _.map(s.parts, p => p.externalId)
-	}))
-}
-
-export function diffSegmentEntries (oldSegmentEntries: SegmentEntry[], newSegmentEntries: SegmentEntry[]) {
-	const rankChanged: number[][] = [] // (Old, New) index
-	const unchanged: number[] = [] // New index
-	const removed: number[] = [] // Old index
-	const changed: number[] = [] // New index
-
-	// Convert to object to track their original index in the arrays
-	const unusedOldSegmentEntries = _.map(oldSegmentEntries, (e, i) => ({ e, i }))
-	const unusedNewSegmentEntries = _.map(newSegmentEntries, (e, i) => ({ e, i }))
-
-	let prune: number[] = []
-
-	// Deep compare
-	_.each(newSegmentEntries, (e, i) => {
-		const matching = unusedOldSegmentEntries.findIndex(o => _.isEqual(o.e, e))
-		if (matching !== -1) {
-			if (i === unusedOldSegmentEntries[matching].i) {
-				unchanged.push(i)
+			// Deep compare
+			if (_.isEqual(newSegmentEntry, oldSegmentEntry)) {
+				diff.unchanged[segmentExternalId] = newSegmentEntry
 			} else {
-				rankChanged.push([unusedOldSegmentEntries[matching].i, i])
+				// The segments are not equal
+
+				// Check if it's only the rank that has changed:
+				if (
+					newSegmentEntry.rank !== oldSegmentEntry.rank &&
+					_.isEqual(
+						_.omit(newSegmentEntry, 'rank'),
+						_.omit(oldSegmentEntry, 'rank')
+					)
+				) {
+					// Only the rank changed
+					diff.onlyRankChanged[segmentExternalId] = newSegmentEntry.rank
+				}
+				diff.changed[segmentExternalId] = newSegmentEntry
 			}
 
-			unusedOldSegmentEntries.splice(matching, 1)
-			prune.push(i)
+		} else {
+			// Segment has been added
+			diff.added[segmentExternalId] = newSegmentEntry
+
 		}
 	})
 
-	// Remove any which were matching
-	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
-	prune = []
-
-	// Match any by name
-	_.each(unusedNewSegmentEntries, (e, i) => {
-		const matching = unusedOldSegmentEntries.findIndex(o => o.e.name === e.e.name)
-		if (matching !== -1) {
-			const oldItem = unusedOldSegmentEntries[matching]
-			if (e.e.id !== oldItem.e.id) {
-				// If Id has changed, then the old one needs to be explicitly removed
-				removed.push(oldItem.i)
-			}
-			changed.push(e.i)
-			unusedOldSegmentEntries.splice(matching, 1)
-			prune.push(i)
+	_.each(oldSegmentEntries, (oldSegmentEntry, segmentExternalId) => {
+		const newSegmentEntry = newSegmentEntries[segmentExternalId] as IngestSegment | undefined
+		if (!newSegmentEntry) {
+			diff.removed[segmentExternalId] = oldSegmentEntry
 		}
 	})
 
-	// Remove any which were matching
-	_.each(prune.reverse(), i => unusedNewSegmentEntries.splice(i, 1))
-	prune = []
+	// Handle when the externalId has change
+	_.each(diff.removed, (segmentEntry, segmentExternalId) => {
 
-	changed.push(..._.map(unusedNewSegmentEntries, e => e.i))
-	removed.push(..._.map(unusedOldSegmentEntries, e => e.i))
+		// try finding "it" in the added, using name
+		let newSegmentEntry = _.find(diff.added, (se) => se.name === segmentEntry.name)
+		if (!newSegmentEntry) {
+			// second try, match with any parts:
+			newSegmentEntry = _.find(diff.added, (se) => {
+				let found = false
+				_.each(segmentEntry.parts, (part) => {
+					if (found || _.find(se.parts, p => p.externalId === part.externalId)) {
+						found = true
+					}
+				})
+				return found
+			})
+		}
+		if (newSegmentEntry) {
+			diff.onlyExternalIdChanged[segmentExternalId] = newSegmentEntry.externalId
+		}
+	})
 
-	return {
-		rankChanged,
-		unchanged,
-		removed,
-		changed
-	}
+	return diff
 }

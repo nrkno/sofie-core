@@ -1,11 +1,11 @@
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
-import { ChannelFormat } from 'timeline-state-resolver-types'
 import {
 	IConfigItem,
 	BlueprintMappings,
-	BlueprintMapping
+	BlueprintMapping,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
@@ -58,7 +58,7 @@ export interface ITestToolsConfig {
 	recordings: {
 		deviceId?: string
 		channelIndex?: number
-		channelFormat: ChannelFormat
+		channelFormat: TSR.ChannelFormat
 		decklinkDevice?: number
 		filePrefix?: string
 		urlPrefix?: string

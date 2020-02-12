@@ -42,7 +42,7 @@ describe('Test external message queue static methods', () => {
 				studioId: studioEnv.studio._id,
 				showStyleVariantId: studioEnv.showStyleVariant._id,
 				showStyleBaseId: studioEnv.showStyleBase._id,
-				peripheralDeviceId: studioEnv.device._id,
+				peripheralDeviceId: studioEnv.ingestDevice._id,
 				created: now,
 				modified: now,
 				importVersions: {

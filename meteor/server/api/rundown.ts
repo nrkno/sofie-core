@@ -89,6 +89,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
  * @param segmentIds The Segment ids to be removed
  */
 export function removeSegments (rundownId: string, segmentIds: string[]): number {
+	logger.debug('removeSegments', rundownId, segmentIds)
 	const count = Segments.remove({
 		_id: { $in: segmentIds },
 		rundownId: rundownId
@@ -150,12 +151,6 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		// TODO - batch?
 		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
 	})
-
-	const rundown = Rundowns.findOne(rundownId)
-	if (rundown && rundown.active) {
-		// Ensure the next-part is still valid
-		UpdateNext.ensureNextPartIsValid(rundown)
-	}
 }
 /**
  * Update the ranks of all parts.
@@ -166,6 +161,8 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 export function updatePartRanks (rundownId: string): Array<Part> {
 	const allSegments = Segments.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
 	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
+
+	logger.debug(`updatePartRanks (${allParts.length} parts, ${allSegments.length} segments)`)
 
 	const rankedParts: Array<Part> = []
 	const partsToPutAfter: {[id: string]: Array<Part>} = {}
@@ -180,7 +177,10 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 	})
 
 	// Sort the parts by segment, then rank
-	const segmentIds = _.map(allSegments, seg => seg._id)
+	const segmentRanks: {[segmentId: string]: number} = {}
+	_.each(allSegments, seg => {
+		segmentRanks[seg._id] = seg._rank
+	})
 	rankedParts.sort((a, b) => {
 		let compareRanks = (ar: number, br: number) => {
 			if (ar === br) {
@@ -195,8 +195,8 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 		if (a.segmentId === b.segmentId) {
 			return compareRanks(a._rank, b._rank)
 		} else {
-			const aRank = segmentIds.indexOf(a.segmentId)
-			const bRank = segmentIds.indexOf(b.segmentId)
+			const aRank = segmentRanks[a.segmentId] || -1
+			const bRank = segmentRanks[b.segmentId] || -1
 			return compareRanks(aRank, bRank)
 		}
 	})
@@ -210,6 +210,7 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 			part._rank = newRank
 		}
 	})
+	logger.debug(`updatePartRanks: ${ps.length} parts updated`)
 
 	let hasAddedAnything = true
 	while (hasAddedAnything) {
@@ -248,6 +249,8 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 					})
 				}
 				delete partsToPutAfter[partId]
+			} else {
+				// TODO - part is invalid and should be deleted/warned about
 			}
 		})
 	}

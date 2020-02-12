@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions } from './typings/meteor'
+import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions, FindOptions } from './typings/meteor'
 import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
@@ -189,12 +189,13 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			}
 
 			if (options.afterRemove) {
-				Promise.resolve(p)
+				p = Promise.resolve(p)
 				.then(() => {
 					// console.log('+++ lib/lib.ts +++', Fiber.current)
 					if (options.afterRemove) options.afterRemove(oRemove)
 				})
 			}
+			if (p) ps.push(p)
 			change.removed++
 
 		}
@@ -309,14 +310,14 @@ export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }
 export function formatDateAsTimecode (date: Date) {
-	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: date, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: date, drop_frame: !Number.isInteger(Settings.frameRate) })
 	return tc.toString()
 }
 /**
  * @param duration time in milliseconds
  */
 export function formatDurationAsTimecode (duration: Time) {
-	const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: duration * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
+	const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: duration * Settings.frameRate / 1000, drop_frame: !Number.isInteger(Settings.frameRate) })
 	return tc.toString()
 }
 /**
@@ -335,6 +336,7 @@ export function formatDateTime (time: Time) {
 	let ss: any = d.getSeconds()
 
 	if (mm < 10) mm = '0' + mm
+	if (dd < 10) dd = '0' + dd
 	if (hh < 10) hh = '0' + hh
 	if (ii < 10) ii = '0' + ii
 	if (ss < 10) ss = '0' + ss
@@ -445,13 +447,25 @@ export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selec
 		}).fetch()[0]
 	}
 }
-export function getRank (beforeOrLast, after, i: number, count: number): number {
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before	Object before, null/undefined if inserted first
+ * @param after			Object after, null/undefined if inserted last
+ * @param i				If inserting multiple objects, this is the number of this object
+ * @param count			If inserting multiple objects, this is total count of objects
+ */
+export function getRank<T extends {_rank: number}> (
+	before: T | null | undefined,
+	after: T | null | undefined,
+	i: number = 0,
+	count: number = 1
+): number {
 	let newRankMax
 	let newRankMin
 
 	if (after) {
-		if (beforeOrLast) {
-			newRankMin = beforeOrLast._rank
+		if (before) {
+			newRankMin = before._rank
 			newRankMax = after._rank
 		} else {
 			// First
@@ -459,10 +473,10 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 			newRankMax = after._rank
 		}
 	} else {
-		if (beforeOrLast) {
+		if (before) {
 			// Last
-			newRankMin = beforeOrLast._rank
-			newRankMax = beforeOrLast._rank + 1
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
 		} else {
 			// Empty list
 			newRankMin = 0
@@ -664,24 +678,20 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 export function asyncCollectionFindFetch<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
-	options?: {
-		sort?: Mongo.SortSpecifier
-		skip?: number
-		limit?: number
-		fields?: Mongo.FieldSpecifier
-		reactive?: boolean
-		transform?: Function
-	}
+	options?: FindOptions
 ): Promise<Array<DocClass>> {
-	return new Promise((resolve, reject) => {
-		let results = collection.find(selector, options).fetch()
-		resolve(results)
+	// Make the collection fethcing in another Fiber:
+	const p = makePromise(() => {
+		return collection.find(selector, options).fetch()
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	waitTime(0)
+	return p
 }
 export function asyncCollectionFindOne<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
-): Promise<DocClass> {
+): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector)
 	.then((arr) => {
 		return arr[0]
@@ -789,6 +799,7 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 		cb(e)
 	})
 })
+/** Executes the provided function in another (asynchronous) Fiber, returning the result in a promise */
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
@@ -876,10 +887,10 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
  * Mutate a value on a object
  * @param obj Object
  * @param path Path to value in object
+ * @param substitutions Object any query values to use instead of $
  * @param mutator Operation to run on the object value
- * @returns Result of the mutator
  */
-export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: Object, key: string) => T): T {
+export function mutatePath<T> (obj: Object, path: string, substitutions: Object, mutator: (parentObj: Object, key: string) => T): void {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
 	let attrs = path.split('.')
@@ -887,19 +898,73 @@ export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: O
 	let lastAttr = _.last(attrs)
 	let attrsExceptLast = attrs.slice(0, -1)
 
-	let o = obj
-	_.each(attrsExceptLast, (attr) => {
-
-		if (!_.has(o,attr)) {
-			o[attr] = {}
-		} else {
-			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+	const generateWildcardAttrInfo = () => {
+		const keys = _.filter(_.keys(substitutions), k => k.indexOf(currentPath) === 0)
+		if (keys.length === 0) {
+			// This might be a bad assumption, but as this is for tests, lets go with it for now
+			throw new Meteor.Error(500, `missing parameters for $ in "${path}"`)
 		}
-		o = o[attr]
-	})
+
+		const query: any = {}
+		const trimmedSubstitutions: any = {}
+		_.each(keys, key => {
+			// Create a mini 'query' and new substitutions with trimmed keys
+			const remainingKey = key.substr(currentPath.length)
+			if (remainingKey.indexOf('$') === -1) {
+				query[remainingKey] = substitutions[key]
+			} else {
+				trimmedSubstitutions[remainingKey] = substitutions[key]
+			}
+		})
+
+		return {
+			query,
+			trimmedSubstitutions
+		}
+	}
+
+	let o = obj
+	let currentPath = ''
+	for (const attr of attrsExceptLast) {
+		if (attr === '$') {
+			if (!_.isArray(o)) throw new Meteor.Error(500, 'Object at "' + currentPath + '" is not an array ("' + o + '") (in path "' + path + '")')
+
+			const info = generateWildcardAttrInfo()
+			for (const obj of o) {
+				// mutate any objects which match
+				if (_.isMatch(obj, info.query)) {
+					mutatePath(obj, path.substr(currentPath.length + 2), info.trimmedSubstitutions, mutator)
+				}
+			}
+
+			// Break the outer loop, as it gets handled with the for loop above
+			break
+
+		} else {
+			if (!_.has(o,attr)) {
+				o[attr] = {}
+			} else {
+				if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+			}
+			o = o[attr]
+		}
+		currentPath += `${attr}.`
+	}
 	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
 
-	return mutator(o, lastAttr)
+	if (lastAttr === '$') {
+		if (!_.isArray(o)) throw new Meteor.Error(500, 'Object at "' + currentPath + '" is not an array ("' + o + '") (in path "' + path + '")')
+
+		const info = generateWildcardAttrInfo()
+		for (const childPath in o) {
+			// mutate any objects which match
+			if (_.isMatch(o[childPath], info.query)) {
+				mutator(o, childPath)
+			}
+		}
+	} else {
+		mutator(o, lastAttr)
+	}
 }
 /**
  * Push a value into a object, and ensure the array exists
@@ -907,7 +972,7 @@ export function mutatePath<T> (obj: Object, path: string, mutator: (parentObj: O
  * @param path Path to array in object
  * @param valueToPush Value to push onto array
  */
-export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T) {
 	let mutator = (o: Object, lastAttr: string) => {
 		if (!_.has(o,lastAttr)) {
 			o[lastAttr] = []
@@ -919,24 +984,42 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 		arr.push(valueToPush)
 		return arr
 	}
-	return mutatePath(obj, path, mutator)
+	mutatePath(obj, path, {}, mutator)
+}
+/**
+ * Push a value from a object, when the value matches
+ * @param obj Object
+ * @param path Path to array in object
+ * @param valueToPush Value to push onto array
+ */
+export function pullFromPath<T> (obj: Object, path: string, matchValue: T) {
+	let mutator = (o: Object, lastAttr: string) => {
+		if (_.has(o, lastAttr)) {
+			if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
+
+			return o[lastAttr] = _.filter(o[lastAttr], (entry: T) => !_.isMatch(entry, matchValue))
+		}
+	}
+	mutatePath(obj, path, {}, mutator)
 }
 /**
  * Set a value into a object
  * @param obj Object
  * @param path Path to value in object
+ * @param substitutions Object any query values to use instead of $
  * @param valueToPush Value to set
  */
-export function setOntoPath<T> (obj: Object, path: string, valueToSet: T) {
-	mutatePath(obj, path, (parentObj: Object, key: string) => parentObj[key] = valueToSet)
+export function setOntoPath<T> (obj: Object, path: string, substitutions: Object, valueToSet: T) {
+	mutatePath(obj, path, substitutions, (parentObj: Object, key: string) => parentObj[key] = valueToSet)
 }
 /**
  * Remove a value from a object
  * @param obj Object
  * @param path Path to value in object
+ * @param substitutions Object any query values to use instead of $
  */
-export function unsetPath (obj: Object, path: string) {
-	mutatePath(obj, path, (parentObj: Object, key: string) => delete parentObj[key])
+export function unsetPath (obj: Object, path: string, substitutions: Object) {
+	mutatePath(obj, path, substitutions, (parentObj: Object, key: string) => delete parentObj[key])
 }
 /**
  * Replaces all invalid characters in order to make the path a valid one
@@ -980,7 +1063,25 @@ export function trimIfString<T extends any> (value: T): T {
 	if (_.isString(value)) return value.trim()
 	return value
 }
-export const firstIfArray: ((<T>(value: T | T[] | null | undefined) => T | null | undefined) | (<T>(value: T | T[]) => T) | (<T>(value: T | T[] | undefined) => T | undefined))
-	= (value) => _.isArray(value) ? _.first(value) : value
+
+export function firstIfArray<T> (value: T | T[] | null | undefined): T | null | undefined
+export function firstIfArray<T> (value: T | T[] | null): T | null
+export function firstIfArray<T> (value: T | T[] | undefined): T | undefined
+export function firstIfArray<T> (value: T | T[]): T
+export function firstIfArray<T> (value: any): T {
+	return _.isArray(value) ? _.first(value) : value
+}
+
 
 export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)
+
+/**
+ * Wait for specified time
+ * @param time
+ */
+export function waitTime (time: number) {
+	let p = new Promise((resolve) => {
+		Meteor.setTimeout(resolve, time)
+	})
+	waitForPromise(p)
+}

@@ -262,7 +262,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						value = (this.state.inputValues[stepId] || {})[manualInput.attribute]
 					}
 					return (<div key={rank++}>
-						<h3 className='mhn mbsx mtl'>&gt; {manualInput.label} &lt;</h3>
+						<h3 className='mhn mbsx mtl'>{manualInput.label}</h3>
 						<div>{manualInput.description}</div>
 						<div>{
 							manualInput.inputType && manualInput.attribute ?

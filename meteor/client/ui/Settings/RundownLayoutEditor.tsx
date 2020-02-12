@@ -7,7 +7,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, DashboardLayout, ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -18,10 +18,13 @@ import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
+import { Link } from 'react-router-dom'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
+	studios: Studio[]
 }
 
 interface IState {
@@ -71,6 +74,24 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		)
 	}
 
+	onAddButton = (item: RundownLayoutBase) => {
+		const { t } = this.props
+
+		RundownLayouts.update(item._id, {
+			$push: {
+				actionButtons: literal<DashboardLayoutActionButton>({
+					_id: Random.id(),
+					label: t('Button'),
+					type: ActionButtonType.TAKE,
+					x: 0,
+					y: 0,
+					width: 3,
+					height: 3
+				})
+			}
+		})
+	}
+
 	onAddFilter = (item: RundownLayoutBase) => {
 		const { t } = this.props
 
@@ -108,6 +129,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
+	onRemoveButton = (item: RundownLayoutBase, button: DashboardLayoutActionButton) => {
+		RundownLayouts.update(item._id, {
+			$pull: {
+				actionButtons: {
+					_id: button._id
+				}
+			}
+		})
+	}
+
 	onRemoveFilter = (item: RundownLayoutBase, filter: RundownLayoutFilterBase) => {
 		RundownLayouts.update(item._id, {
 			$pull: {
@@ -129,11 +160,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			this.setState({
 				editedItems: this.state.editedItems
 			})
+		} else {
+			this.finishEditItem(item)
 		}
 	}
 
 	downloadItem = (item: RundownLayoutBase) => {
-		window.location.replace(`/shelfLayouts/${item._id}`)
+		window.location.replace(`/shelfLayouts/download/${item._id}`)
 	}
 
 	finishEditItem = (item: RundownLayoutBase) => {
@@ -148,11 +181,112 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	onDeleteLayout = (e: any, item: RundownLayoutBase) => {
-		callMethod(
-			e,
-			RundownLayoutsAPI.methods.removeRundownLayout,
-			item._id
-		)
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Delete layout?'),
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
+			onAccept: () => {
+				callMethod(
+					e,
+					RundownLayoutsAPI.methods.removeRundownLayout,
+					item._id
+				)
+			}
+
+		})
+	}
+
+	renderActionButtons (item: DashboardLayout) {
+		const { t } = this.props
+
+		return <React.Fragment>
+			<h4 className='mod mhs'>
+				{t('Action Buttons')}
+			</h4>
+			{item.actionButtons && item.actionButtons.map((button, index) => (
+				<div className='rundown-layout-editor-filter mod pan mas' key={button._id}>
+					<button className='action-btn right mod man pas' onClick={(e) => this.onRemoveButton(item, button)}>
+						<FontAwesomeIcon icon={faTrash} />
+					</button>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Label')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.label`}
+								obj={item}
+								type='text'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.type`}
+								obj={item}
+								type='dropdown'
+								options={ActionButtonType}
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('X')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.x`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Y')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.y`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Width')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.width`}
+								obj={item}
+								type='float'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Height')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.height`}
+								obj={item}
+								type='float'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+				</div>
+			))}
+		</React.Fragment>
 	}
 
 	renderFilters (item: RundownLayoutBase) {
@@ -203,7 +337,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.name`}
 								obj={item}
-								options={RundownLayoutType}
 								type='text'
 								collection={RundownLayouts}
 								className='input text-input input-l' />
@@ -218,7 +351,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.x`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -231,7 +363,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.y`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -244,7 +375,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.width`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
@@ -257,8 +387,31 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.height`}
 										obj={item}
-										options={RundownLayoutType}
 										type='int'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button width scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonWidthScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button height scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonHeightScale`}
+										obj={item}
+										type='float'
 										collection={RundownLayouts}
 										className='input text-input input-l' />
 								</label>
@@ -272,10 +425,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.rank`}
 								obj={item}
-								options={RundownLayoutType}
 								type='float'
 								collection={RundownLayouts}
 								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Enable search toolbar')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.enableSearch`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
 						</label>
 					</div>
 					<div className='mod mvs mhs'>
@@ -313,7 +477,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName='bghl'
 										attribute={`filters.${index}.includeClearInRundownBaseline`}
 										obj={item}
-										options={RundownLayoutType}
 										type='checkbox'
 										collection={RundownLayouts}
 										className='mod mas' />
@@ -418,6 +581,46 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Tags must contain')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.tags`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas'
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
+								mutateUpdateValue={(v) => undefined} />
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.tags`}
+								obj={item}
+								type='text'
+								collection={RundownLayouts}
+								className='input text-input input-l'
+								label={t('Filter Disabled')}
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
+								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+						</label>
+					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Register Shortcuts for this Panel')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.assignHotKeys`}
+										obj={item}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 				</div>
 			))}
 		</React.Fragment>
@@ -435,6 +638,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</th>
 					<td className='settings-studio-rundown-layouts-table__value c2'>
 						{item.type}
+					</td>
+					<td className='settings-studio-rundown-layouts-table__value c1'>
+						{this.props.studios.map(studio =>
+							<span className='pill' key={studio._id}>
+								<Link target='_blank' className='pill-link' to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>{studio.name}</Link>
+							</span>
+						)}
 					</td>
 					<td className='settings-studio-rundown-layouts-table__actions table-item-actions c3'>
 						<button className='action-btn' onClick={(e) => this.downloadItem(item)}>
@@ -486,13 +696,36 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									: null}
 							</div>
 							<div className='mod mls'>
-								<button className='btn btn-primary right' onClick={(e) => this.finishEditItem(item)}>
-									<FontAwesomeIcon icon={faCheck} />
-								</button>
 								<button className='btn btn-secondary' onClick={(e) => this.onAddFilter(item)}>
 									<FontAwesomeIcon icon={faPlus} />
+									&nbsp;
+									{item.type === RundownLayoutType.RUNDOWN_LAYOUT ?
+										t('Add tab') :
+									item.type === RundownLayoutType.DASHBOARD_LAYOUT ?
+										t('Add panel')
+										: null}
 								</button>
 							</div>
+							{ item.type === RundownLayoutType.DASHBOARD_LAYOUT ?
+								<React.Fragment>
+									<div>
+										{RundownLayoutsAPI.isDashboardLayout(item) ?
+											this.renderActionButtons(item)
+											: null}
+									</div>
+									<div className='mod mls'>
+										<button className='btn btn-primary right' onClick={(e) => this.finishEditItem(item)}>
+											<FontAwesomeIcon icon={faCheck} />
+										</button>
+										<button className='btn btn-secondary' onClick={(e) => this.onAddButton(item)}>
+											<FontAwesomeIcon icon={faPlus} />
+											&nbsp;
+											{t('Add button')}
+										</button>
+									</div>
+								</React.Fragment> :
+								null
+							}
 						</td>
 					</tr>
 				}
@@ -519,8 +752,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			let uploadFileContents = (e2.target as any).result
 
 			doModalDialog({
-				title: t('Update Blueprints?'),
-				yes: t('Update'),
+				title: t('Upload Layout?'),
+				yes: t('Upload'),
 				no: t('Cancel'),
 				message: <React.Fragment>
 					<p>{t('Are you sure you want to upload the shelf layout from the file "{{fileName}}"?',
@@ -528,7 +761,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents) {
-						fetchFrom('/shelfLayouts', {
+						fetchFrom(`/shelfLayouts/upload/${this.props.showStyleBase._id}`, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {

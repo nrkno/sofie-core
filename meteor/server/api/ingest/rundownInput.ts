@@ -22,7 +22,10 @@ import {
 	literal,
 	sumChanges,
 	anythingChanged,
-	ReturnType
+	ReturnType,
+	asyncCollectionUpsert,
+	asyncCollectionUpdate,
+	waitForPromise
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -34,11 +37,11 @@ import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
-import { postProcessPartBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment } from './ingestCache'
+import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
 import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -57,6 +60,18 @@ export function rundownSyncFunction<T extends Function> (rundownId: string, prio
 }
 
 export namespace RundownInput {
+	// Get info on the current rundowns from this device:
+	export function dataRundownList (self: any, deviceId: string, deviceToken: string) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRundownList')
+		return listIngestRundowns(peripheralDevice)
+	}
+	export function dataRundownGet (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRundownGet', rundownExternalId)
+		check(rundownExternalId, String)
+		return getIngestRundown(peripheralDevice, rundownExternalId)
+	}
 	// Delete, Create & Update Rundown (and it's contents):
 	export function dataRundownDelete (self: any, deviceId: string, deviceToken: string, rundownExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
@@ -125,6 +140,25 @@ export namespace RundownInput {
 	}
 }
 
+function getIngestRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
+	const rundown = Rundowns.findOne({
+		peripheralDeviceId: peripheralDevice._id,
+		externalId: rundownExternalId
+	})
+	if (!rundown) {
+		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+	}
+
+	return loadCachedRundownData(rundown._id, rundown.externalId)
+}
+function listIngestRundowns (peripheralDevice: PeripheralDevice): string[] {
+	const rundowns = Rundowns.find({
+		peripheralDeviceId: peripheralDevice._id
+	}).fetch()
+
+	return rundowns.map(r => r.externalId)
+}
+
 export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
@@ -132,10 +166,16 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		if (rundown) {
-			logger.info('Removing rundown ' + rundown._id)
 
 			if (canBeUpdated(rundown)) {
-				rundown.remove()
+				if (rundown.active) {
+					// Don't allow removing currently playing rundowns:
+					logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
+					ServerRundownAPI.unsyncRundown(rundown._id)
+				} else {
+					logger.info(`Removing rundown "${rundown._id}"`)
+					rundown.remove()
+				}
 			} else {
 				logger.info(`Rundown "${rundown._id}" cannot be updated`)
 				if (!rundown.unsynced) {
@@ -250,8 +290,11 @@ function updateRundownFromIngestData (
 		_id: dbRundownData._id
 	}, [dbRundownData], {
 		beforeInsert: (o) => {
-			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
+			o.created = getCurrentTime()
+			o.previousPartId = null
+			o.currentPartId = null
+			o.nextPartId = null
 			return o
 		},
 		beforeUpdate: (o) => {
@@ -271,7 +314,7 @@ function updateRundownFromIngestData (
 	const baselineObj: RundownBaselineObj = {
 		_id: Random.id(7),
 		rundownId: dbRundown._id,
-		objects: postProcessPartBaselineItems(blueprintRundownContext, rundownRes.baseline)
+		objects: postProcessRundownBaselineItems(blueprintRundownContext, rundownRes.baseline)
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
@@ -297,7 +340,7 @@ function updateRundownFromIngestData (
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
 
-		const context = new SegmentContext(dbRundown, studio, existingParts)
+		const context = new SegmentContext(dbRundown, studio, existingParts, ingestSegment.name)
 		context.handleNotesExternally = true
 		const res = blueprint.getSegment(context, ingestSegment)
 
@@ -340,6 +383,15 @@ function updateRundownFromIngestData (
 		saveIntoDb<Part, DBPart>(Parts, {
 			rundownId: rundownId,
 		}, parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundownId, parts)
 			}
@@ -409,21 +461,40 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		if (!canBeUpdated(rundown, segmentId)) return
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (updatedSegmentId) {
+			afterIngestChangedData(rundown, [updatedSegmentId])
+		}
 	})
+}
+export function updateSegmentsFromIngestData (
+	studio: Studio,
+	rundown: Rundown,
+	ingestSegments: IngestSegment[]
+) {
+	const changedSegmentIds: string[] = []
+	for (let ingestSegment of ingestSegments) {
+		const segmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (segmentId !== null) {
+			changedSegmentIds.push(segmentId)
+		}
+	}
+	if (changedSegmentIds.length > 0) {
+		afterIngestChangedData(rundown, changedSegmentIds)
+	}
 }
 /**
  * Run ingestData through blueprints and update the Segment
  * @param studio
  * @param rundown
  * @param ingestSegment
- * @returns true if data has changed
+ * @returns a segmentId if data has changed, null otherwise
  */
-export function updateSegmentFromIngestData (
+function updateSegmentFromIngestData (
 	studio: Studio,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): boolean {
+): string | null {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = getBlueprintOfRundown(rundown)
 
@@ -439,16 +510,32 @@ export function updateSegmentFromIngestData (
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
-	const context = new SegmentContext(rundown, studio, existingParts)
+	const context = new SegmentContext(rundown, studio, existingParts, ingestSegment.name)
 	context.handleNotesExternally = true
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
 
-	Segments.upsert({
-		_id: segmentId,
-		rundownId: rundown._id
-	}, newSegment)
+	waitForPromise(Promise.all([
+
+		// Update segment info:
+		asyncCollectionUpsert(Segments, {
+			_id: segmentId,
+			rundownId: rundown._id
+		}, newSegment),
+
+		// Move over parts from other segments:
+		asyncCollectionUpdate(Parts, {
+			rundownId: rundown._id,
+			segmentId: { $ne: segmentId },
+			dynamicallyInserted: { $ne: true },
+			_id: { $in: _.pluck(parts, '_id') }
+		}, { $set: {
+			segmentId: segmentId
+		}}, {
+			multi: true
+		})
+	]))
 
 	const changes = sumChanges(
 		saveIntoDb<Part, DBPart>(Parts, {
@@ -456,6 +543,15 @@ export function updateSegmentFromIngestData (
 			segmentId: segmentId,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted parts (such as adLib parts)
 		}, parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
 			afterRemoveAll (parts) {
 				afterRemoveParts(rundown._id, parts)
 			}
@@ -485,27 +581,22 @@ export function updateSegmentFromIngestData (
 				logger.debug(adLibPiece)
 			},
 			afterUpdate (adLibPiece) {
-				logger.debug('updated piece ' + adLibPiece._id)
+				logger.debug('updated adLibPiece ' + adLibPiece._id)
 			},
 			afterRemove (adLibPiece) {
-				logger.debug('deleted piece ' + adLibPiece._id)
+				logger.debug('deleted adLibPiece ' + adLibPiece._id)
 			}
 		})
 	)
-
-	const didChange = anythingChanged(changes)
-	if (didChange) {
-		afterIngestChangedData(rundown, [segmentId])
-	}
-	return didChange
+	return anythingChanged(changes) ? segmentId : null
 }
-function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
+export function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updatePartRanks(rundown._id)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	UpdateNext.ensureNextPartIsValid(rundown)
-	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
+	triggerUpdateTimelineAfterIngestData(rundown._id, changedSegmentIds)
 }
 
 export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
@@ -531,7 +622,11 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		updateSegmentFromIngestData(studio, rundown, ingestSegment)
+
+		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+		if (updatedSegmentId) {
+			afterIngestChangedData(rundown, [updatedSegmentId])
+		}
 	})
 }
 export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
@@ -556,7 +651,10 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	ingestSegment.parts.push(ingestPart)
 
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	if (updatedSegmentId) {
+		afterIngestChangedData(rundown, [updatedSegmentId])
+	}
 }
 
 function generateSegmentContents (
@@ -582,28 +680,12 @@ function generateSegmentContents (
 	}))
 
 	// Ensure all parts have a valid externalId set on them
-	const expectedPartIds = ingestSegment.parts.map(p => p.externalId)
-	const unknownParts = blueprintRes.parts.filter(p => expectedPartIds.indexOf(p.part.externalId) === -1)
-	const knownParts = blueprintRes.parts.filter(p => expectedPartIds.indexOf(p.part.externalId) !== -1)
+	const knownPartIds = blueprintRes.parts.map(p => p.part.externalId)
 
-	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || expectedPartIds.indexOf(note.origin.partId) === -1)
-
-	if (unknownParts.length > 0) {
-		const unknownIds = unknownParts.map(p => p.part.externalId).join(', ')
-		logger.warn(`Dropping some parts with unknown externalId: ${unknownIds}`)
-		segmentNotes.push({
-			type: NoteType.WARNING,
-			message: `Dropping parts with unknown externalId: ${unknownIds}`,
-			origin: {
-				name: 'ingest',
-				rundownId: rundownId,
-				segmentId: segmentId,
-			}
-		})
-	}
+	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || knownPartIds.indexOf(note.origin.partId) === -1)
 
 	const newSegment = literal<DBSegment>({
-		...(existingSegment || {}),
+		..._.omit(existingSegment || {}, 'isHidden'),
 		...blueprintRes.segment,
 		_id: segmentId,
 		rundownId: rundownId,
@@ -617,10 +699,8 @@ function generateSegmentContents (
 	const adlibPieces: AdLibPiece[] = []
 
 	// Parts
-	for (let blueprintPart of knownParts) {
+	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
-		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
-		// TODO - this loop needs to handle virtual parts properly
 
 		const notes = _.filter(allNotes, note => note.origin.partId === blueprintPart.part.externalId)
 		_.each(notes, note => note.origin.partId = partId)
@@ -632,10 +712,15 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: sourcePart.rank, // This gets updated to a rundown unique rank as a later step
+			_rank: i, // This gets updated to a rundown unique rank as a later step
 			notes: notes,
 		})
 		parts.push(part)
+
+		// This ensures that it doesn't accidently get played while hidden
+		if (blueprintRes.segment.isHidden) {
+			part.invalid = true
+		}
 
 		// Update pieces
 		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
@@ -643,7 +728,7 @@ function generateSegmentContents (
 
 		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
 		adlibPieces.push(...adlibs)
-	}
+	})
 
 	return {
 		newSegment,

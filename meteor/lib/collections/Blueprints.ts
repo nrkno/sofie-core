@@ -12,10 +12,11 @@ export interface Blueprint {
 	modified: number
 	created: number
 
+	blueprintId: string
 	blueprintType?: BlueprintManifestType
 
-	studioConfigManifest: ConfigManifestEntry[]
-	showStyleConfigManifest: ConfigManifestEntry[]
+	studioConfigManifest?: ConfigManifestEntry[]
+	showStyleConfigManifest?: ConfigManifestEntry[]
 
 	databaseVersion: {
 		showStyle: {

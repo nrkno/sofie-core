@@ -100,14 +100,14 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 			this.ctx.fillStyle = TIMELINE_GRID_LABEL_COLOR
 
-			const fps = Settings['frameRate']
+			const fps = Settings.frameRate
 
 			const secondTimeScale = this.props.timeScale * 1000
 
 			// timeScale is how many pixels does a second take
 			// secondsStep - draw the big, labeled line very X seconds
 			let secondsStep = 5 * 60
-			// interStep - drax X lines between every big line
+			// interStep - draw X lines between every big line
 			let interStep = 5
 			if ((secondTimeScale > 0) && (secondTimeScale < 1)) {
 				secondsStep = 600
@@ -169,7 +169,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 				if (isLabel === true) {
 					this.ctx.strokeStyle = LARGE_STEP_GRID_COLOR
-					let t = ((xPosition > breakX) && (this.props.scrollLeft > 0) ? baseN : base) + this.ring((i - interStep), maxTicks)
+					let t = ((xPosition > breakX) && (this.props.scrollLeft > 0) ? baseN : base) + (this.ring((i - interStep), maxTicks) * (secondsStep / interStep))
 
 					this.ctx.fillText(
 						RundownUtils.formatDiffToTimecode(t * 1000, false, false, true, false, true),

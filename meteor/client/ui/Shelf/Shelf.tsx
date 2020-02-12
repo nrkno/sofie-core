@@ -17,13 +17,15 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { DashboardActionButton } from './DashboardActionButton';
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -58,6 +60,7 @@ interface IState {
 	overrideHeight: number | undefined
 	moving: boolean
 	selectedTab: string | undefined
+	shouldQueue: boolean
 }
 
 const CLOSE_MARGIN = 45
@@ -95,7 +98,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined)
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined),
+			shouldQueue: false
 		}
 
 		const { t } = props
@@ -298,12 +302,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
 					{rundownLayout && rundownLayout.filters
 						.sort((a, b) => a.rank - b.rank)
-						.map(f =>
+						.map(panel =>
 							<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-								'selected': (this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`
+								'selected': (this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`
 							})}
-								key={f._id}
-								onClick={(e) => this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`)} tabIndex={0}>{f.name}</div>
+								key={panel._id}
+								onClick={(e) => this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)} tabIndex={0}>{panel.name}</div>
 						)}
 				</OverflowingContainer>
 				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
@@ -318,12 +322,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
 					registerHotkeys={true}
 					{...this.props}></AdLibPanel>
-				{rundownLayout && rundownLayout.filters.map(f =>
+				{rundownLayout && rundownLayout.filters.map(panel =>
 					<AdLibPanel
-						key={f._id}
-						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${f._id}`}
+						key={panel._id}
+						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
 						includeGlobalAdLibs={true}
-						filter={f}
+						filter={panel}
 						{...this.props}
 						/>
 				)}
@@ -333,20 +337,35 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		</React.Fragment>
 	}
 
+	onChangeQueueAdLib = (shouldQueue: boolean, e: any) => {
+		this.setState({
+			shouldQueue
+		})
+	}
+
 	renderDashboardLayout (rundownLayout: DashboardLayout) {
 		const { t } = this.props
 		return <div className='dashboard'>
 			{rundownLayout.filters
 				.sort((a, b) => a.rank - b.rank)
-				.map((f: DashboardLayoutFilter) =>
+				.map((panel: DashboardLayoutFilter) =>
 					<DashboardPanel
-						key={f._id}
+						key={panel._id}
 						includeGlobalAdLibs={true}
-						filter={f}
+						filter={panel}
 						visible={true}
-						{...this.props}
+						registerHotkeys={panel.assignHotKeys}
+						rundown={this.props.rundown}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.props.studioMode}
+						shouldQueue={this.state.shouldQueue}
 						/>
 			)}
+			{rundownLayout.actionButtons &&
+				<DashboardActionButtonGroup
+					rundown={this.props.rundown}
+					buttons={rundownLayout.actionButtons}
+					studioMode={this.props.studioMode} />}
 		</div>
 	}
 

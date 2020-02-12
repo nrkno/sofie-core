@@ -23,7 +23,7 @@ export namespace RundownUtils {
 		} else {
 			if (showPlus) sign = '+'
 		}
-		const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: milliseconds * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
+		const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: milliseconds * Settings.frameRate / 1000, drop_frame: !Number.isInteger(Settings.frameRate) })
 		const timeCodeString: String = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
@@ -103,8 +103,7 @@ export namespace RundownUtils {
 		scrollLeft: number,
 		scrollWidth: number,
 		part: PartUi,
-		partStartsAt:
-		number | undefined,
+		partStartsAt: number | undefined,
 		partDuration: number | undefined,
 		piece?: PieceUi
 	) {

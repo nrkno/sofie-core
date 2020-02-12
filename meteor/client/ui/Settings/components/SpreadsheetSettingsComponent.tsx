@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { translate } from 'react-i18next'
+const Tooltip = require('rc-tooltip')
 import {
 	PeripheralDevice,
 	PeripheralDevices,
@@ -12,6 +13,7 @@ import { SpreadsheetDeviceSettings } from '../../../../lib/collections/Periphera
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { fetchFrom } from '../../../lib/lib'
+import { getHelpMode } from '../../../lib/localStorage'
 interface ISpreadsheetSettingsComponentState {
 }
 interface ISpreadsheetSettingsComponentProps {
@@ -114,24 +116,28 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 		let device = this.props.device as SpreadsheetDevice
 		return (<div>
 			<div className='mod mvs mhn'>
-				<label className='field'>
-					{t('Application credentials')}
-					<div className='mdi'>
-						<div>
-							{t('Go to the url below and click on the "Enable the Drive API button". Then click on "Download Client configuration", save the credentials.json file and upload it here.')}
-						</div>
-						<div>
-							<a href='https://developers.google.com/drive/api/v3/quickstart/nodejs' target='_blank' >https://developers.google.com/drive/api/v3/quickstart/nodejs</a>
-						</div>
-
-						<div className='mdi'>
-							<input type='file' accept='application/json,.json' onChange={e => this.onUploadCredentialsFile(e)} />
-							<span className='mdfx'></span>
-						</div>
-					</div>
-				</label>
 				{
-					settings.secretCredentials ?
+					!settings.secretCredentials ?
+					<label className='field'>
+						{t('Application credentials')}
+						<div className='mdi'>
+							<div>
+								{t('Go to the url below and click on the "Enable the Drive API" button. Then click on "Download Client configuration", save the credentials.json file and upload it here.')}
+							</div>
+							<div>
+								<a href='https://developers.google.com/drive/api/v3/quickstart/nodejs' target='_blank' >https://developers.google.com/drive/api/v3/quickstart/nodejs</a>
+							</div>
+
+							<div className='mdi'>
+								<input type='file' accept='application/json,.json' onChange={e => this.onUploadCredentialsFile(e)} />
+								<span className='mdfx'></span>
+							</div>
+						</div>
+					</label> :
+					null
+				}
+				{
+					settings.secretCredentials && !settings.secretAccessToken ?
 					<label className='field'>
 						{t('Access token')}
 						<div className='mdi'>
@@ -158,14 +164,19 @@ export const SpreadsheetSettingsComponent = translate()(class SpreadsheetSetting
 				<label className='field'>
 					{t('Drive folder name')}
 					<div className='mdi'>
-						<EditAttribute
-							modifiedClassName='bghl'
-							attribute='settings.folderPath'
-							obj={this.props.device}
-							type='text'
-							collection={PeripheralDevices}
-							className='mdinput'
-						></EditAttribute>
+						<Tooltip
+							overlay={t('Provide the name of the folder to download rundowns from')}
+							visible={getHelpMode() && (!this.props.device.settings || !this.props.device.settings['folderPath'])}
+							placement='top'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.folderPath'
+								obj={this.props.device}
+								type='text'
+								collection={PeripheralDevices}
+								className='mdinput'
+							></EditAttribute>
+						</Tooltip>
 					</div>
 				</label>
 				<label className='field'>

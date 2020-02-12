@@ -19,6 +19,7 @@ import { fetchFrom } from '../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 
 interface IProps {
 	match: {
@@ -72,17 +73,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			let uploadFileContents = (e2.target as any).result
 			let blueprint = this.props.blueprint
 
+			// First attempt
 			doModalDialog({
 				title: t('Update Blueprints?'),
 				yes: t('Update'),
 				no: t('Cancel'),
 				message: <React.Fragment>
-					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
+					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents && blueprint) {
-						fetchFrom('/blueprints/restore/' + blueprint._id, {
+						fetchFrom(`/blueprints/restore/${blueprint._id}`, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
@@ -93,8 +95,47 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
 							// console.log('Blueprint restore success')
 						}).catch(err => {
-							// console.error('Blueprint restore failure: ', err)
-							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
+							if (err && err.toString().endsWith('[422]')) { // Needs a force flag
+
+								// Try again as a replace
+								doModalDialog({
+									title: t('Replace Blueprints?'),
+									yes: t('Replace'),
+									no: t('Cancel'),
+									warning: true,
+									message: <React.Fragment>
+										<p>{t('Are you sure you want to replace the blueprints with the file "{{fileName}}"?', { fileName: file.name })}</p>
+										<p>{t('Please note: This action is irreversible!')}</p>
+									</React.Fragment>,
+									onAccept: () => {
+										if (uploadFileContents && blueprint) {
+											fetchFrom(`/blueprints/restore/${blueprint._id}?force=1`, {
+												method: 'POST',
+												body: uploadFileContents,
+												headers: {
+													'content-type': 'text/javascript'
+												},
+											})
+											.then(response => {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
+												// console.log('Blueprint restore success')
+											}).catch((err: string) => {
+												// console.error('Blueprint restore failure: ', err)
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
+											})
+										}
+									},
+									onSecondary: () => {
+										this.setState({
+											uploadFileKey: Date.now()
+										})
+									}
+								})
+
+							} else {
+								// console.error('Blueprint restore failure: ', err)
+								NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
+							}
 						})
 					}
 				},
@@ -164,6 +205,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<label className='field'>
 						{t('Blueprint Name')}
+						{
+							!blueprint.name ?
+							<div className='error-notice inline'>
+								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -177,11 +225,24 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 					<div className='mod mvs mhn'>
 						{t('Blueprint Type')}: <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
+						{
+							!blueprint.blueprintType ?
+							<div className='error-notice inline'>
+								{t('Upload a new blueprint')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div> :
+							null
+						}
 					</div>
 					{ this.renderAssignment(blueprint) }
 					<div className='mod mvs mhn'>
 						<p className='mhn'>{t('Last modified')}: <Moment format='YYYY/MM/DD HH:mm:ss'>{blueprint.modified}</Moment></p>
 					</div>
+					{
+						blueprint.blueprintId ?
+						<div className='mod mvs mhn'>
+							<p className='mhn'>{t('Blueprint Id')}: {blueprint.blueprintId}</p>
+						</div> : null
+					}
 					{
 						blueprint.blueprintVersion ?
 						<div className='mod mvs mhn'>

@@ -17,7 +17,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	let externalId = 'abcde'
 	let segExternalId = 'zyxwv'
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().device
+		device = setupDefaultStudioEnvironment().ingestDevice
 	})
 
 	testInFiber('dataRundownCreate', () => {
@@ -988,16 +988,17 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(dynamicPart).toBeTruthy()
 
 		// Change the rank of the part it belongs to and this rank should update
-		segmentData.parts[1].rank = 5
+		segmentData.parts[0].rank = 5
 		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
 		dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(2.5)
+		expect(dynamicPart._rank).toEqual(0.5)
 
-		// Remove the part it is set to be after, and it should be removed
-		segmentData.parts[1].externalId = 'not-the-same'
-		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
-		dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeFalsy()
+		// // Invalidate the part it is set to be after, and it should be removed
+		// segmentData.parts[0].rank = 0
+		// Parts.update(dynamicPartId, { $set: { afterPart: 'not-a-real-part' } })
+		// Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
+		// dynamicPart = Parts.findOne(dynamicPartId) as Part
+		// expect(dynamicPart).toBeFalsy()
 	})
 })

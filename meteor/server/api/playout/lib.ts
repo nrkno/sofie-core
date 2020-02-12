@@ -16,7 +16,7 @@ import {
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
-import { updateSegmentFromIngestData } from '../ingest/rundownInput'
+import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
@@ -109,13 +109,19 @@ function resetRundownPlayhead (rundown: Rundown) {
 		$set: {
 			previousPartId: null,
 			currentPartId: null,
-			updateStoryStatus: null,
 			holdState: RundownHoldState.NONE,
 		}, $unset: {
 			startedPlayback: 1,
 			previousPersistentState: 1
 		}
 	})
+	// Also update locally:
+	rundown.previousPartId = null
+	rundown.currentPartId = null
+	rundown.holdState = RundownHoldState.NONE
+	delete rundown.startedPlayback
+	delete rundown.previousPersistentState
+
 
 	if (rundown.active) {
 		// put the first on queue:
@@ -150,7 +156,7 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)
 	const rundown = new Rundown(dbRundown)
 
-	updateSegmentFromIngestData(studio, rundown, ingestSegment)
+	updateSegmentsFromIngestData(studio, rundown, [ingestSegment])
 
 	const segment = Segments.findOne(dbPart.segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
@@ -173,6 +179,9 @@ export function setNextPart (
 		}
 		if (nextPart.invalid) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
+		}
+		if (nextPart.floated) {
+			throw new Meteor.Error(400, 'Part is marked as floated, cannot set as next.')
 		}
 
 		ps.push(resetPart(nextPart))
