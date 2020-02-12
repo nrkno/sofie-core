@@ -24,6 +24,38 @@
 	margin: 0.625rem;
 	user-select: none;
 
+	&.dashboard-panel--actions {
+		background-color: none !important;
+		background: none !important;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		border-color: transparent;
+		box-shadow: none;
+		pointer-events: none;
+		margin-top: 0.5555555555555555555em;
+		z-index: 10;
+
+		> .dashboard-panel__panel {
+			max-height: none;
+			overflow: visible;
+			background-color: none !important;
+			background: none !important;
+			border: none !important;
+
+			> .dashboard-panel__panel__button {
+				pointer-events: visible;
+			}
+
+			> .dashboard-panel__panel__button--standalone {
+				&.type--take {
+					background-color: $general-live-color;
+				}
+			}
+		}
+	}
+
 	.dashboard-panel__header {
 		margin: 0 0 0.625rem;
 		padding: 0;

@@ -17,13 +17,16 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { DashboardActionButton } from './DashboardActionButton';
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup';
+import { IBlueprintPieceGeneric, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -58,6 +61,8 @@ interface IState {
 	overrideHeight: number | undefined
 	moving: boolean
 	selectedTab: string | undefined
+	shouldQueue: boolean
+	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
 }
 
 const CLOSE_MARGIN = 45
@@ -95,7 +100,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined)
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined),
+			shouldQueue: false,
+			selectedPiece: undefined
 		}
 
 		const { t } = props
@@ -280,12 +287,18 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		})
 	}
 
-	switchTab (tab: string) {
+	switchTab = (tab: string) => {
 		this.setState({
 			selectedTab: tab
 		})
 
 		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, 'shelfTab', tab)
+	}
+
+	selectPiece = (piece: IBlueprintAdLibPieceDB | IBlueprintPieceDB) => {
+		this.setState({
+			selectedPiece: piece
+		})
 	}
 
 	renderRundownLayout (rundownLayout?: RundownLayout) {
@@ -317,6 +330,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				<AdLibPanel
 					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
 					registerHotkeys={true}
+					selectedPiece={this.state.selectedPiece}
+					onSelectPiece={this.selectPiece}
 					{...this.props}></AdLibPanel>
 				{rundownLayout && rundownLayout.filters.map(panel =>
 					<AdLibPanel
@@ -324,13 +339,25 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
 						includeGlobalAdLibs={true}
 						filter={panel}
+						selectedPiece={this.state.selectedPiece}
+						onSelectPiece={this.selectPiece}
 						{...this.props}
 						/>
 				)}
-				<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+				<GlobalAdLibPanel
+					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
+					selectedPiece={this.state.selectedPiece}
+					onSelectPiece={this.selectPiece}
+					{...this.props}></GlobalAdLibPanel>
 				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
 			</div>
 		</React.Fragment>
+	}
+
+	onChangeQueueAdLib = (shouldQueue: boolean, e: any) => {
+		this.setState({
+			shouldQueue
+		})
 	}
 
 	renderDashboardLayout (rundownLayout: DashboardLayout) {
@@ -345,9 +372,18 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						filter={panel}
 						visible={true}
 						registerHotkeys={panel.assignHotKeys}
-						{...this.props}
+						rundown={this.props.rundown}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.props.studioMode}
+						shouldQueue={this.state.shouldQueue}
+						selectedPiece={undefined}
 						/>
 			)}
+			{rundownLayout.actionButtons &&
+				<DashboardActionButtonGroup
+					rundown={this.props.rundown}
+					buttons={rundownLayout.actionButtons}
+					studioMode={this.props.studioMode} />}
 		</div>
 	}
 

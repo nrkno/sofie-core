@@ -23,7 +23,7 @@ import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
@@ -33,7 +33,7 @@ interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
 	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: any) => void
-	selectedPiece: AdLibPieceUi | undefined
+	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
@@ -253,10 +253,12 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 	visible: boolean
 	studioMode: boolean
+	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
+
+	onSelectPiece?: (piece: IBlueprintAdLibPieceDB) => void
 }
 
 interface IState {
-	selectedPiece: AdLibPiece | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
@@ -329,7 +331,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		super(props)
 
 		this.state = {
-			selectedPiece: undefined,
 			selectedSegment: undefined,
 			filter: undefined,
 			followLive: true
@@ -434,9 +435,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	onSelectAdLib = (piece: AdLibPieceUi) => {
 		// console.log(aSLine)
-		this.setState({
-			selectedPiece: piece
-		})
+		this.props.onSelectPiece && this.props.onSelectPiece(piece)
 	}
 
 	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
@@ -484,7 +483,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
 					onToggleSticky={this.onToggleStickyItem}
-					selectedPiece={this.state.selectedPiece}
+					selectedPiece={this.props.selectedPiece}
 					showStyleBase={this.props.showStyleBase}
 					rundownAdLibs={this.props.rundownAdLibs}
 					searchFilter={this.state.filter}

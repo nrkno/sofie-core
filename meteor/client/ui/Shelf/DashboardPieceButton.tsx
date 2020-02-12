@@ -26,7 +26,7 @@ export interface IAdLibListItem {
 	floated?: boolean
 }
 
-interface IDashboardButtonProps {
+export interface IDashboardButtonProps {
 	item: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
@@ -37,8 +37,8 @@ interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 }
-const DEFAULT_BUTTON_WIDTH = 6.40625
-const DEFAULT_BUTTON_HEIGHT = 5.625
+export const DEFAULT_BUTTON_WIDTH = 6.40625
+export const DEFAULT_BUTTON_HEIGHT = 5.625
 
 interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
