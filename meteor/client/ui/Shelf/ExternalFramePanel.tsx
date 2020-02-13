@@ -168,6 +168,8 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	receiveMOSItem (e: any, mosItem: IMOSItem) {
 		const { t, rundown } = this.props
 
+		console.log('Object received, passing onto blueprints', mosItem)
+
 		const targetBucket = Buckets.findOne()
 
 		doUserAction(t, e, UserActionAPI.methods.bucketAdlibImport, [
@@ -310,6 +312,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 		} else if (e.dataTransfer.items.length === 0 && e.dataTransfer.types.length === 0 && e.dataTransfer.files.length === 0) {
 			// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
 			// let's try and ask the plugin for some content maybe?
+			console.log('Requesting an object because of a dubious drop event')
 			this.sendMOSMessage(createMosItemRequest())
 		}
 	}
