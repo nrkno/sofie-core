@@ -61,6 +61,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
+import { Settings } from '../../lib/Settings';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1808,7 +1809,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 							'rundown-view--studio-mode': this.state.studioMode
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
-								{ this.state.studioMode && <KeyboardFocusMarker /> }
+								{ this.state.studioMode && !Settings.disableBlurBorder && <KeyboardFocusMarker /> }
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<RundownFullscreenControls

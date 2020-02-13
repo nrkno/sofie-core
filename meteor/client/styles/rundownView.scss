@@ -182,6 +182,15 @@ body.no-overflow {
     overflow-y: hidden;
 }
 
+@keyframes border-dance {
+  0% {
+    background-position: 0 0, 300px 100%, 0 150px, 100% 0;
+  }
+  100% {
+    background-position: 300px 0, 0 100%, 0 0, 100% 150px;
+  }
+}
+
 .rundown-view__focus-lost-frame {
 	position: fixed;
 	top: 0;
@@ -189,21 +198,16 @@ body.no-overflow {
 	bottom: 0;
 	right: 0;
 
-	border: 8px dashed $color-status-fatal;
-	border-image: repeating-linear-gradient(
-		315deg,
-		transparent,
-		transparent 10px,
-		$color-status-fatal 11px,
-		$color-status-fatal 31px,
-		transparent 32px) 8; 
-/* 	border-image: repeating-linear-gradient(
-		315deg,
-		#ffff00,
-		#ffff00 10px,
-		$color-status-fatal 11px,
-		$color-status-fatal 31px,
-		#ffff00 32px) 8;  */
+	background:
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%);
+	background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+	background-size: 30px 8px, 30px 8px, 8px 30px, 8px 30px;
+	background-position: 0 0, 100% 100%, 0 100%, 100% 0;
+	animation: border-dance 3s infinite linear;
+
 	z-index: 10000;
 	pointer-events: none;
 }
