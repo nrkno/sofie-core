@@ -61,6 +61,7 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
+import { Buckets, Bucket } from '../../lib/collections/Buckets';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1076,6 +1077,7 @@ interface ITrackedProps {
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
+	buckets?: Array<Bucket>
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: string
 }
@@ -1111,6 +1113,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 		rundownLayouts: rundown && RundownLayouts.find({
 			showStyleBaseId: rundown.showStyleBaseId }).fetch(),
+		buckets: rundown && Buckets.find({}).fetch(),
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {
 				$in: PeripheralDevices.find({
@@ -1900,6 +1903,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									segments={this.props.segments}
 									hotkeys={this.state.usedHotkeys}
 									rundown={this.props.rundown}
+									buckets={this.props.buckets}
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
