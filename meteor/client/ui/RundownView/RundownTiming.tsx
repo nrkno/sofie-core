@@ -304,40 +304,10 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				const lastStartedPlayback = part.getLastStartedPlayback()
 				const playOffset = part.timings && part.timings.playOffset && _.last(part.timings.playOffset) || 0
 
-				// asPlayed is the actual duration so far and expected durations in unplayed lines
-				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
-				// ignoring parts that don't count
-				if (
-					part.startedPlayback &&
-					lastStartedPlayback &&
-					!part.duration &&
-					lastStartedPlayback + (part.expectedDuration || 0) < now
-				) {
-					asPlayedRundownDuration += (now - lastStartedPlayback)
-				} else if (part.duration) {
-					asPlayedRundownDuration += part.duration
-				} else if (partCounts) {
-					asPlayedRundownDuration += part.expectedDuration || 0
-				}
-
-				// asDisplayed is the actual duration so far and expected durations in unplayed lines
-				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
-				if (
-					part.startedPlayback &&
-					lastStartedPlayback &&
-					!part.duration &&
-					lastStartedPlayback + (part.expectedDuration || 0) < now
-				) {
-					asDisplayedRundownDuration += (now - lastStartedPlayback)
-				} else {
-					asDisplayedRundownDuration += part.duration || part.expectedDuration || 0
-				}
-
 				let partDuration = 0
 				let partDisplayDuration = 0
 				let partDisplayDurationNoPlayback = 0
 				let displayDurationFromGroup = 0
-
 
 				// Display Duration groups are groups of two or more Parts, where some of them have an
 				// expectedDuration and some have 0.
@@ -348,10 +318,10 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				// using a separate displayDurationGroup processing flag simplifies implementation
 				if (part.displayDurationGroup
 					&& (
-					// either this is not the first element of the displayDurationGroup
-					(this.displayDurationGroups[part.displayDurationGroup] !== undefined) ||
-					// or there is a following member of this displayDurationGroup
-					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
+						// either this is not the first element of the displayDurationGroup
+						(this.displayDurationGroups[part.displayDurationGroup] !== undefined) ||
+						// or there is a following member of this displayDurationGroup
+						(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
 					)
 					&& !part.floated
 				) {
@@ -392,6 +362,45 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					this.partPlayed[part._id] = (part.duration || 0) - playOffset
 				}
 
+				
+				// asPlayed is the actual duration so far and expected durations in unplayed lines.
+				// If item is onAir right now, it's duration is counted as expected duration or current
+				// playback duration whichever is larger.
+				// Parts that don't count are ignored.
+				if (
+					part.startedPlayback &&
+					lastStartedPlayback &&
+					!part.duration
+				) {
+					asPlayedRundownDuration += Math.max(
+						(memberOfDisplayDurationGroup ?
+							Math.max(displayDurationFromGroup, part.expectedDuration || 0) :
+							part.expectedDuration || 0),
+						(now - lastStartedPlayback))
+				} else if (part.duration) {
+					asPlayedRundownDuration += part.duration
+				} else if (partCounts) {
+					asPlayedRundownDuration += part.expectedDuration || 0
+				}
+
+				// asDisplayed is the actual duration so far and expected durations in unplayed lines
+				// If item is onAir right now, it's duration is counted as expected duration or current
+				// playback duration whichever is larger.
+				// All parts are counted.
+				if (
+					part.startedPlayback &&
+					lastStartedPlayback &&
+					!part.duration
+				) {
+					asDisplayedRundownDuration += Math.max(
+						(memberOfDisplayDurationGroup ?
+							Math.max(displayDurationFromGroup, part.expectedDuration || 0) :
+							part.expectedDuration || 0),
+						(now - lastStartedPlayback))
+				} else {
+					asDisplayedRundownDuration += part.duration || part.expectedDuration || 0
+				}
+
 				// the part is the current part but has not yet started playback
 				if (this.props.rundown && this.props.rundown.currentPartId === part._id && !part.startedPlayback) {
 					currentRemaining = partDisplayDuration
@@ -408,7 +417,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					part.displayDurationGroup &&
 					!part.floated &&
 					!part.invalid &&
-					partCounts
+					(part.duration || partCounts)
 				) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration
