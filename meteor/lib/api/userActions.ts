@@ -12,6 +12,10 @@ import { RecordedFileId } from '../collections/RecordedFiles'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
+import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
+import { BucketId } from '../collections/Buckets'
+import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { BucketAdLibId } from '../collections/BucketAdlibs'
 
 export interface NewUserActionAPI {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -34,6 +38,8 @@ export interface NewUserActionAPI {
 	sourceLayerOnPartStop(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[])
 	baselineAdLibPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
 	sourceLayerStickyPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string): Promise<ClientAPI.ClientResponse<void>>
+	bucketAdlibImport(_userEvent: string, studioId: StudioId, showStyleVariantId: ShowStyleVariantId, bucketId: BucketId, ingestItem: IngestAdlib)
+	bucketAdlibStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: BucketAdLibId, queue?: boolean)
 	activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
 	saveEvaluation(userEvent: string, evaluation: EvaluationBase): Promise<ClientAPI.ClientResponse<void>>
 	storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string): Promise<ClientAPI.ClientResponse<SnapshotId>>
