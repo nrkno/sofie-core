@@ -22,7 +22,7 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { BucketAdLib, BucketAdLibs, BucketAdLibId } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
@@ -301,7 +301,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		})
 	}
-	export function startBucketAdlibPiece(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: BucketAdLibId, queue: boolean) {
+	export function startBucketAdlibPiece(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue: boolean) {
 		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
 		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
 

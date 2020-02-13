@@ -17,7 +17,8 @@ import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
 	UIMetricMode as MOSUIMetricMode,
-	createMosItemRequest
+	createMosItemRequest,
+	Events as MOSEvents
 } from '../../lib/data/mos/plugin-support'
 import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
 import { IMOSItem } from 'mos-connection'
@@ -93,6 +94,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	frame: HTMLIFrameElement
 	mounted: boolean = false
 	initialized: boolean = false
+	failedDragTimeout: number | undefined
 
 	awaitingReply: {
 		[key: string]: {
@@ -301,10 +303,21 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	}
 
 	onDragOver = (e: DragEvent) => {
+		if (this.failedDragTimeout) {
+			Meteor.clearTimeout(this.failedDragTimeout)
+		}
+
 		let dragAllowed = false
 		if (e.dataTransfer) {
 			if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 				// this is quite probably a MOS object
+				dragAllowed = true
+			} else if (
+				e.dataTransfer.items.length > 0 &&
+				e.dataTransfer.types.indexOf('text/plain') >= 0 &&
+				e.dataTransfer.files.length === 0
+			) {
+				// it might be a MOS object, but we can't know
 				dragAllowed = true
 			} else if (
 				e.dataTransfer.items.length === 0 &&
@@ -318,14 +331,33 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 			if (dragAllowed) {
 				e.dataTransfer.dropEffect = 'copy'
 				e.dataTransfer.effectAllowed = 'copy'
+
+				const event = new CustomEvent<{}>(MOSEvents.dragenter, {
+					cancelable: false
+				})
+				window.dispatchEvent(event)
+			} else {
+				e.dataTransfer.dropEffect = 'none'
+				e.dataTransfer.effectAllowed = 'none'
 			}
 		}
 
 		e.preventDefault()
+
+		this.failedDragTimeout = Meteor.setTimeout(this.onDragLeave, 75)
 	}
 
-	onDropEnter = (e: DragEvent) => {
+	onDragEnter = (e: DragEvent) => {
 		e.preventDefault()
+	}
+
+	onDragLeave = (e: DragEvent) => {
+		this.failedDragTimeout = undefined
+		console.log(e)
+		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
+			cancelable: false
+		})
+		window.dispatchEvent(event)
 	}
 
 	onDrop = (e: DragEvent) => {
@@ -333,12 +365,34 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 			if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 				// this is quite probably a MOS object, let's try and ingest it
 				this.actMOSMessage(e, e.dataTransfer.getData('Text'))
-			} else if (e.dataTransfer.items.length === 0 && e.dataTransfer.types.length === 0 && e.dataTransfer.files.length === 0) {
+			} else if (
+				e.dataTransfer.items.length > 0 &&
+				e.dataTransfer.types.indexOf('text/plain') > 0 &&
+				e.dataTransfer.files.length === 0
+			) {
+				const idx = e.dataTransfer.types.indexOf('text/plain')
+				const data = e.dataTransfer
+				e.dataTransfer.items.item(idx).getAsString((text: string) => {
+					if (text.trim().endsWith('</mos>')) {
+						this.actMOSMessage(e, data.getData('Text'))
+					}
+				})
+			} else if (
+				e.dataTransfer.items.length === 0 &&
+				e.dataTransfer.types.length === 0 &&
+				e.dataTransfer.files.length === 0
+			) {
 				// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
 				// let's try and ask the plugin for some content maybe?
+				console.log('Requesting an object because of a dubious drop event')
 				this.sendMOSMessage(createMosItemRequest())
 			}
 		}
+
+		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
+			cancelable: false
+		})
+		window.dispatchEvent(event)
 	}
 
 	registerHandlers = () => {
@@ -346,13 +400,20 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 		document.addEventListener('keyup', this.onKeyEvent)
 
 		document.addEventListener('dragover', this.onDragOver)
-		document.addEventListener('dropenter', this.onDropEnter)
+		document.addEventListener('dragenter', this.onDragEnter)
+		document.addEventListener('dragexit', this.onDragLeave)
 		document.addEventListener('drop', this.onDrop)
 	}
 
 	unregisterHandlers = () => {
 		document.removeEventListener('keydown', this.onKeyEvent)
 		document.removeEventListener('keydown', this.onKeyEvent)
+
+		document.removeEventListener('dragover', this.onDragOver)
+		document.removeEventListener('dragenter', this.onDragEnter)
+		document.removeEventListener('dragleave', this.onDragLeave)
+		document.removeEventListener('dragexit', this.onDragLeave)
+		document.removeEventListener('drop', this.onDrop)
 	}
 
 	componentDidUpdate(prevProps: IProps) {

@@ -569,7 +569,7 @@ export function bucketAdlibImport(studioId: StudioId, showStyleVariantId: ShowSt
 	return ClientAPI.responseSuccess(undefined)
 }
 
-export function bucketAdlibStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: BucketAdLibId, queue?: boolean) {
+export function bucketAdlibStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue?: boolean) {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -676,7 +676,7 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	bucketAdlibImport(_userEvent: string, studioId: StudioId, showStyleVariantId: ShowStyleVariantId, bucketId: BucketId, ingestItem: IngestAdlib) {
 		return makePromise(() => bucketAdlibImport(studioId, showStyleVariantId, bucketId, ingestItem))
 	}
-	bucketAdlibStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: BucketAdLibId, queue?: boolean) {
+	bucketAdlibStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue?: boolean) {
 		return makePromise(() => bucketAdlibStart(rundownPlaylistId, partInstanceId, bucketAdlibId, queue))
 	}
 	activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {

@@ -1,5 +1,6 @@
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
+import { check } from 'meteor/check'
 import { setMeteorMethods, Methods } from '../methods'
 import { BucketsAPI } from '../../lib/api/buckets'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'

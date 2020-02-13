@@ -136,7 +136,7 @@ export function postProcessRundownBaselineItems(innerContext: RundownContext, ba
 	})
 }
 
-export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig: IBlueprintAdLibPiece, blueprintId: string, bucketId: BucketId, importVersions: RundownImportVersions): BucketAdLib {
+export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig: IBlueprintAdLibPiece, blueprintId: BlueprintId, bucketId: BucketId, importVersions: RundownImportVersions): BucketAdLib {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}

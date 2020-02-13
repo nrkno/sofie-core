@@ -391,21 +391,32 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.props.studioMode}
 									rundownLayout={this.props.rundownLayout}
+									buckets={this.props.buckets}
 									shouldQueue={this.state.shouldQueue}
 									onChangeQueueAdLib={this.changeQueueAdLib}
 								/> :
-								// ultimate fallback if not found
-								<ShelfRundownLayout
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									studioMode={this.props.studioMode}
-									hotkeys={this.props.hotkeys}
-									rundownLayout={undefined}
-									selectedTab={this.state.selectedTab}
-									selectedPiece={this.state.selectedPiece}
-									onSelectPiece={this.selectPiece}
-									onSwitchTab={this.switchTab}
-								/>
+								(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
+									<ShelfDashboardLayout
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										buckets={this.props.buckets}
+										studioMode={this.props.studioMode}
+										rundownLayout={this.props.rundownLayout}
+										shouldQueue={this.state.shouldQueue}
+										onChangeQueueAdLib={this.changeQueueAdLib}
+									/> :
+									// ultimate fallback if not found
+									<ShelfRundownLayout
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										studioMode={this.props.studioMode}
+										hotkeys={this.props.hotkeys}
+										rundownLayout={undefined}
+										selectedTab={this.state.selectedTab}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
+										onSwitchTab={this.switchTab}
+									/>
 					}
 				</ErrorBoundary>
 			</div>

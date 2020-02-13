@@ -1240,6 +1240,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.subscribe(PubSub.studios, {
 						_id: playlist.studioId
 					})
+					this.subscribe(PubSub.buckets, {
+
+					})
 				}
 			})
 			this.autorun(() => {

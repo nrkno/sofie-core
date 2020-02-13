@@ -1,4 +1,4 @@
-import { PieceGeneric } from './Pieces'
+import { PieceGeneric, PieceId } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
@@ -9,10 +9,8 @@ import { StudioId } from './Studios'
 import { ShowStyleVariantId } from './ShowStyleVariants'
 import { BucketId } from './Buckets'
 
-export type BucketAdLibId = ProtectedString<'BucketAdLibId'>
-
 export interface BucketAdLib extends IBlueprintAdLibPiece {
-	_id: BucketAdLibId
+	_id: PieceId
 	bucketId: BucketId
 
 	studioId: StudioId
