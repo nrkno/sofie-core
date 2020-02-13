@@ -42,7 +42,9 @@ export namespace RundownTiming {
 		totalRundownDuration?: number
 		/** This is the content remaining to be played in the rundown (based on the expectedDurations).  */
 		remainingRundownDuration?: number
-		/** This is the tottal duration of the rundown: as planned for the unplayed content, and as-run for the played-out. */
+		/** This is the total duration of the rundown: as planned for the unplayed (skipped & future) content, and as-run for the played-out. */
+		asDisplayedRundownDuration?: number
+		/** This is the complete duration of the rundown: as planned for the unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
 		asPlayedRundownDuration?: number
 		/** this is the countdown to each of the parts relative to the current on air part. */
 		partCountdown?: {
@@ -261,6 +263,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
 		let asPlayedRundownDuration = 0
+		let asDisplayedRundownDuration = 0
 		let waitAccumulator = 0
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
@@ -288,6 +291,13 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					currentAIndex = aIndex
 				}
 
+				const partCounts = (
+					rundown.outOfOrderTiming ||
+					!rundown.active ||
+					(itIndex >= currentAIndex && currentAIndex >= 0) ||
+					(itIndex >= nextAIndex && nextAIndex >= 0 && currentAIndex === -1)
+				)
+
 				// expected is just a sum of expectedDurations
 				totalRundownDuration += part.expectedDuration || 0
 
@@ -296,6 +306,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 				// asPlayed is the actual duration so far and expected durations in unplayed lines
 				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
+				// ignoring parts that don't count
 				if (
 					part.startedPlayback &&
 					lastStartedPlayback &&
@@ -303,8 +314,23 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					lastStartedPlayback + (part.expectedDuration || 0) < now
 				) {
 					asPlayedRundownDuration += (now - lastStartedPlayback)
+				} else if (part.duration) {
+					asPlayedRundownDuration += part.duration
+				} else if (partCounts) {
+					asPlayedRundownDuration += part.expectedDuration || 0
+				}
+
+				// asDisplayed is the actual duration so far and expected durations in unplayed lines
+				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
+				if (
+					part.startedPlayback &&
+					lastStartedPlayback &&
+					!part.duration &&
+					lastStartedPlayback + (part.expectedDuration || 0) < now
+				) {
+					asDisplayedRundownDuration += (now - lastStartedPlayback)
 				} else {
-					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0)
+					asDisplayedRundownDuration += part.duration || part.expectedDuration || 0
 				}
 
 				let partDuration = 0
@@ -382,12 +408,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					part.displayDurationGroup &&
 					!part.floated &&
 					!part.invalid &&
-					(
-						rundown.outOfOrderTiming ||
-						!rundown.active ||
-						(itIndex >= currentAIndex && currentAIndex >= 0) ||
-						(itIndex >= nextAIndex && nextAIndex >= 0 && currentAIndex === -1)
-					)
+					partCounts
 				) {
 					this.displayDurationGroups[part.displayDurationGroup] =
 						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration
@@ -416,12 +437,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				if (
 					!part.startedPlayback &&
 					!part.floated &&
-					(
-						rundown.outOfOrderTiming ||
-						!rundown.active ||
-						(itIndex >= currentAIndex && currentAIndex >= 0) ||
-						(itIndex >= nextAIndex && nextAIndex >= 0 && currentAIndex === -1)
-					)
+					partCounts
 				) {
 					remainingRundownDuration += part.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
@@ -493,6 +509,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		this.durations = Object.assign(this.durations, literal<RundownTiming.RundownTimingContext>({
 			totalRundownDuration,
 			remainingRundownDuration,
+			asDisplayedRundownDuration,
 			asPlayedRundownDuration,
 			partCountdown: _.object(this.linearParts),
 			partDurations: this.partDurations,

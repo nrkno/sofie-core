@@ -22,7 +22,7 @@ interface ISegmentPropsHeader {
 	segment: SegmentUi
 	rundown: Rundown
 	totalDuration: number
-	segmentLiveDurations: TimeMap
+	partLiveDurations: TimeMap
 	segmentStartsAt?: TimeMap
 }
 
@@ -71,7 +71,7 @@ const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
 }
 
 const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
-	const segmentDuration = props.segmentLiveDurations ? props.segment.items.map((i) => props.segmentLiveDurations[i._id]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
+	const segmentDuration = props.partLiveDurations ? props.segment.items.map((i) => props.partLiveDurations[i._id]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
 
 	return props.segment.items && (
 		<div className={ClassNames('rundown__overview__segment', {
@@ -85,7 +85,7 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 					<PartOverview part={item}
 						key={item._id}
 						totalDuration={props.totalDuration}
-						segmentLiveDurations={props.segmentLiveDurations}
+						segmentLiveDurations={props.partLiveDurations}
 						segmentStartsAt={props.segmentStartsAt}
 						isLive={props.rundown.currentPartId === item._id}
 						isNext={props.rundown.nextPartId === item._id}
@@ -161,8 +161,8 @@ class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOver
 							return <SegmentOverview
 								segment={item}
 								key={item._id}
-								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.rundown.expectedDuration || 1)}
-								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
+								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asDisplayedRundownDuration) || 1, this.props.rundown.expectedDuration || 1)}
+								partLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
 								rundown={this.props.rundown}
 								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
 								/>
