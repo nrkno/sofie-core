@@ -88,6 +88,10 @@ export interface DBRundown extends IBlueprintRundownDB {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
+
+	/** Should the timing calculations assume out-of-order playback */
+	/** If false (default), past unplayed parts will be treated as played with 0 duration */
+	outOfOrderTiming?: boolean
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
@@ -126,6 +130,7 @@ export class Rundown implements DBRundown {
 	public dataSource: string
 	public notes?: Array<RundownNote>
 	public previousPersistentState?: TimelinePersistentState
+	public outOfOrderTiming?: boolean
 	_: any
 
 	constructor (document: DBRundown) {
