@@ -12,12 +12,28 @@ const dataAttributeNames = {
 	CLIP: 'clip'
 }
 
+/**
+ * Performs a search on the Quantel Server using the query parameters from
+ * the request querystring and creates a list of the items found.
+ *
+ * Sets up event listeneres for user interaction with the list, and calls
+ * the given callbacks provided.
+ *
+ * @param {object} callbacks
+ * @param {function} callbacks.onTargetSelect - called when user selects a clip
+ * @param {function} callbacks.onTargetCancel - called when the user cancels a clip selection
+ */
 async function init({ onTargetSelect, onTargetCancel }) {
 	const params = new URLSearchParams(document.location.search.substring(1))
 	const server = params.get('server')
 	const titleQuery = params.get('title')
+	const poolIdQuery = params.get('poolId')
+	const createdQuery = params.get('created')
 
-	const clips = await performSearch({ server, query: { title: titleQuery } })
+	const clips = await performSearch({
+		server,
+		query: { title: titleQuery, poolId: poolIdQuery, created: createdQuery }
+	})
 	buildClipList(clips)
 	setupDragTracking(classNames.CLIP_ITEM, {
 		onDragStart: (clipItem, dataTransfer) => {

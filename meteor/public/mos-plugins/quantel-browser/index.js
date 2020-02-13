@@ -1,7 +1,7 @@
 import { init as uiInit } from './ui/index.js'
 import { setSelected, getSelected, clearSelected } from './state.js'
 import { initListeners as messagingInitListeners, sendData } from './messaging.js'
-import { create } from './mos/ncsItemCreator.js'
+import { createQuantelClipNcsItem } from './mos/ncsItemCreator.js'
 
 uiInit({
 	onTargetCancel: () => {
@@ -18,7 +18,7 @@ messagingInitListeners({
 	onNcsItemRequest: () => {
 		const selected = getSelected()
 		if (selected && window.parent) {
-			const ncsItem = create(selected)
+			const ncsItem = createQuantelClipNcsItem(selected)
 			sendData(window.parent, ncsItem)
 		}
 	}
