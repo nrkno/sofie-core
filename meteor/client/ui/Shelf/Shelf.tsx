@@ -29,6 +29,8 @@ import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { IBlueprintPieceGeneric, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
+import { ShelfRundownLayout } from './ShelfRundownLayout'
+import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -68,7 +70,7 @@ interface IState {
 }
 
 const CLOSE_MARGIN = 45
-const DEFAULT_TAB = ShelfTabs.ADLIB
+export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	private _mouseStart: {
@@ -303,123 +305,10 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		})
 	}
 
-	renderRundownLayout (rundownLayout?: RundownLayout) {
-		const { t } = this.props
-		return <React.Fragment>
-			<div className='rundown-view__shelf__tabs'>
-				<OverflowingContainer className='rundown-view__shelf__tabs__tab-group'>
-					<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-						'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB
-					})} onClick={(e) => this.switchTab(ShelfTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
-					{rundownLayout && rundownLayout.filters
-						.sort((a, b) => a.rank - b.rank)
-						.map(panel =>
-							<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-								'selected': (this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`
-							})}
-								key={panel._id}
-								onClick={(e) => this.switchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)} tabIndex={0}>{panel.name}</div>
-						)}
-				</OverflowingContainer>
-				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB
-				})} onClick={(e) => this.switchTab(ShelfTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
-				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
-					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS
-				})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
-			</div>
-			<div className='rundown-view__shelf__panel super-dark'>
-				<AdLibPanel
-					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
-					registerHotkeys={true}
-					selectedPiece={this.state.selectedPiece}
-					onSelectPiece={this.selectPiece}
-					{...this.props}></AdLibPanel>
-				{rundownLayout && rundownLayout.filters.map(panel =>
-					RundownLayoutsAPI.isFilter(panel) ?
-						<AdLibPanel
-							key={panel._id}
-							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-							includeGlobalAdLibs={true}
-							filter={panel}
-							selectedPiece={this.state.selectedPiece}
-							onSelectPiece={this.selectPiece}
-							{...this.props}
-							/> :
-					RundownLayoutsAPI.isExternalFrame(panel) ?
-						<ExternalFramePanel
-							key={panel._id}
-							panel={panel}
-							layout={rundownLayout}
-							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-							{...this.props}
-							/> :
-						undefined
-				)}
-				<GlobalAdLibPanel
-					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
-					selectedPiece={this.state.selectedPiece}
-					onSelectPiece={this.selectPiece}
-					{...this.props}></GlobalAdLibPanel>
-				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
-			</div>
-		</React.Fragment>
-	}
-
-	onChangeQueueAdLib = (shouldQueue: boolean, e: any) => {
+	changeQueueAdLib = (shouldQueue: boolean, e: any) => {
 		this.setState({
 			shouldQueue
 		})
-	}
-
-	renderDashboardLayout (rundownLayout: DashboardLayout) {
-		const { t } = this.props
-		return <div className='dashboard'>
-			{rundownLayout.filters
-				.sort((a, b) => a.rank - b.rank)
-				.map((panel) =>
-					RundownLayoutsAPI.isFilter(panel) ?
-						(panel as DashboardLayoutFilter).showAsTimeline ?
-							<TimelineDashboardPanel
-								key={panel._id}
-								includeGlobalAdLibs={true}
-								filter={panel}
-								visible={true}
-								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-								rundown={this.props.rundown}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.props.studioMode}
-								shouldQueue={this.state.shouldQueue}
-								selectedPiece={undefined}
-								/> :
-							<DashboardPanel
-								key={panel._id}
-								includeGlobalAdLibs={true}
-								filter={panel}
-								visible={true}
-								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-								rundown={this.props.rundown}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.props.studioMode}
-								shouldQueue={this.state.shouldQueue}
-								selectedPiece={undefined}
-								/> :
-					RundownLayoutsAPI.isExternalFrame(panel) ?
-						<ExternalFramePanel
-							key={panel._id}
-							panel={panel}
-							layout={rundownLayout}
-							visible={true}
-							rundown={this.props.rundown}
-							/> :
-						undefined
-			)}
-			{rundownLayout.actionButtons &&
-				<DashboardActionButtonGroup
-					rundown={this.props.rundown}
-					buttons={rundownLayout.actionButtons}
-					studioMode={this.props.studioMode} />}
-		</div>
 	}
 
 	render () {
@@ -434,11 +323,38 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				<ErrorBoundary>
 				{
 					(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
-						this.renderRundownLayout(this.props.rundownLayout) :
+						<ShelfRundownLayout
+							rundown={this.props.rundown}
+							showStyleBase={this.props.showStyleBase}
+							studioMode={this.props.studioMode}
+							hotkeys={this.props.hotkeys}
+							rundownLayout={this.props.rundownLayout}
+							selectedTab={this.state.selectedTab}
+							selectedPiece={this.state.selectedPiece}
+							onSelectPiece={this.selectPiece}
+							onSwitchTab={this.switchTab}
+							/> :
 					(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
-						this.renderDashboardLayout(this.props.rundownLayout) :
+						<ShelfDashboardLayout
+							rundown={this.props.rundown}
+							showStyleBase={this.props.showStyleBase}
+							studioMode={this.props.studioMode}
+							rundownLayout={this.props.rundownLayout}
+							shouldQueue={this.state.shouldQueue}
+							onChangeQueueAdLib={this.changeQueueAdLib}
+							/> :
 						// ultimate fallback if not found
-						this.renderRundownLayout()
+						<ShelfRundownLayout
+							rundown={this.props.rundown}
+							showStyleBase={this.props.showStyleBase}
+							studioMode={this.props.studioMode}
+							hotkeys={this.props.hotkeys}
+							rundownLayout={undefined}
+							selectedTab={this.state.selectedTab}
+							selectedPiece={this.state.selectedPiece}
+							onSelectPiece={this.selectPiece}
+							onSwitchTab={this.switchTab}
+							/>
 				}
 				</ErrorBoundary>
 			</div>

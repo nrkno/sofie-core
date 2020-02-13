@@ -16,7 +16,7 @@ export interface IDashboardButtonGroupProps {
 	studioMode: boolean
 	rundown: Rundown
 
-	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
+	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
 }
 
 export const DashboardActionButtonGroup = translate()(class DashboardActionButtonGroup extends React.Component<Translated<IDashboardButtonGroupProps>> {

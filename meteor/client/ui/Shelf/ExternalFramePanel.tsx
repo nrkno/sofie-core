@@ -306,6 +306,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	}
 
 	onDrop = (e: DragEvent) => {
+		debugger
 		if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 			// this is quite probably a MOS object, let's try and ingest it
 			this.actMOSMessage(e, e.dataTransfer.getData('Text'))
@@ -382,7 +383,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 			ref={this.setElement}
 			className='external-frame-panel__iframe'
 			src={this.props.panel.url}
-			sandbox='allow-forms allow-popups allow-scripts'></iframe>
+			sandbox='allow-forms allow-popups allow-scripts allow-same-origin'></iframe>
 		</div> 
 	}
 })

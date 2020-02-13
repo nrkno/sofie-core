@@ -35,7 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { invalidateAt } from '../../lib/invalidatingTime';
+import { invalidateAt } from '../../lib/invalidatingTime'
 
 interface IState {
 	outputLayers: {
@@ -52,11 +52,11 @@ const BUTTON_GRID_HEIGHT = 0.61803
 
 const HOTKEY_GROUP = 'DashboardPanel'
 
-interface IDashboardPanelProps {
+export interface IDashboardPanelProps {
 	shouldQueue: boolean
 }
 
-interface IDashboardPanelTrackedProps {
+export interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieces: {
 		[key: string]: Piece[]
