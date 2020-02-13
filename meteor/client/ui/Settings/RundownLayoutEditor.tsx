@@ -18,8 +18,8 @@ import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios';
-// import { Link } from 'react-router-dom'
+import { Studio } from '../../../lib/collections/Studios'
+import { Link } from 'react-router-dom'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
@@ -748,6 +748,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</th>
 					<td className='settings-studio-rundown-layouts-table__value c2'>
 						{item.type}
+					</td>
+					<td className='settings-studio-rundown-layouts-table__value c1'>
+						{this.props.studios.map(studio =>
+							<span className='pill'><Link to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`} className='pill-link' target='_blank'>{studio.name}</Link></span>
+						)}
 					</td>
 					<td className='settings-studio-rundown-layouts-table__actions table-item-actions c3'>
 						<button className='action-btn' onClick={(e) => this.downloadItem(item)}>
