@@ -1,4 +1,5 @@
 import { QuantelAgent } from '../agents/quantel/quantel-agent.js'
+import { create } from '../mos/ncsItemCreator.js'
 
 export { init }
 
@@ -19,10 +20,13 @@ async function init({ onTargetSelect, onTargetCancel }) {
 	const clips = await performSearch({ server, query: { title: titleQuery } })
 	buildClipList(clips)
 	setupDragTracking(classNames.CLIP_ITEM, {
-		onDragStart: (clipItem) => {
+		onDragStart: (clipItem, dataTransfer) => {
 			const guid = clipItem.dataset[dataAttributeNames.GUID]
 			if (guid) {
 				onTargetSelect(guid)
+
+				const ncsItem = create(selected)
+				dataTransfer.setData('text', new XMLSerializer().serializeToString(ncsItem))
 			}
 		},
 		onDragEnd: (clipItem) => {
@@ -35,9 +39,9 @@ async function init({ onTargetSelect, onTargetCancel }) {
 }
 
 function setupDragTracking(className, { onDragStart, onDragEnd }) {
-	document.addEventListener('dragstart', ({ target }) => {
+	document.addEventListener('dragstart', ({ target, dataTransfer }) => {
 		if (target.classList.contains(className)) {
-			onDragStart(target)
+			onDragStart(target, dataTransfer)
 		}
 	})
 
