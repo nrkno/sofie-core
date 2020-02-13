@@ -220,11 +220,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		adLibPieces: BucketAdLibs.find({
 			bucketId: props.bucket._id
 		}, {
-			sort: {
-				'_rank': 1,
-				'name': 1
-			}
-		}).fetch(),
+				sort: {
+					'_rank': 1,
+					'name': 1
+				}
+			}).fetch(),
 		studio: props.playlist.getStudio(),
 		unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
 		showStyleVariantId
