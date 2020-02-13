@@ -406,7 +406,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 				ref={this.setElement}
 				className='external-frame-panel__iframe'
 				src={this.props.panel.url}
-				sandbox='allow-forms allow-popups allow-scripts'></iframe>
+				sandbox='allow-forms allow-popups allow-scripts allow-same-origin'></iframe>
 		</div>
 	}
 })

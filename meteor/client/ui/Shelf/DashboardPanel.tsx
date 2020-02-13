@@ -55,11 +55,11 @@ const BUTTON_GRID_HEIGHT = 0.61803
 
 const HOTKEY_GROUP = 'DashboardPanel'
 
-interface IDashboardPanelProps {
+export interface IDashboardPanelProps {
 	shouldQueue: boolean
 }
 
-interface IDashboardPanelTrackedProps {
+export interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieceInstanceIds: {
 		[adlibId: string]: PieceInstanceId[]

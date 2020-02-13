@@ -25,6 +25,7 @@ interface IState {
 }
 
 interface IDashboardPanelProps {
+	shouldQueue: boolean
 }
 
 interface IDashboardPanelTrackedProps {
@@ -34,7 +35,7 @@ interface IDashboardPanelTrackedProps {
 	}
 }
 
-export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
