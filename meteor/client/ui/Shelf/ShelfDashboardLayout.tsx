@@ -17,6 +17,7 @@ export interface IShelfDashboardLayoutProps {
 	playlist: RundownPlaylist
 	buckets: Bucket[] | undefined
 	showStyleBase: ShowStyleBase
+	buckets: Bucket[] | undefined
 	studioMode: boolean
 	shouldQueue: boolean
 	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
@@ -63,6 +64,16 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							playlist={props.playlist}
 						/> :
 						undefined
+			)}
+		{buckets &&
+			buckets.map(bucket =>
+				<BucketPanel
+					key={unprotectString(bucket._id)}
+					playlist={props.playlist}
+					showStyleBase={props.showStyleBase}
+					shouldQueue={props.shouldQueue}
+					bucket={bucket}
+				/>
 			)}
 		{rundownLayout.actionButtons &&
 			<DashboardActionButtonGroup
