@@ -281,7 +281,8 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 	sendMOSMessage = (data: string) => {
 		if (this.frame && this.frame.contentWindow) {
-			this.frame.contentWindow.postMessage(data, MODULE_BROWSER_ORIGIN)
+			const url = new URL(this.props.panel.url)
+			this.frame.contentWindow.postMessage(data, `${url.protocol}//${url.host}${url.port ? ':' + url.port : ''}`)
 		}
 	}
 
