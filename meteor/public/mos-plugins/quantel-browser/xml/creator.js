@@ -32,6 +32,8 @@ function addNodes(obj, rootNode) {
 			value.forEach((element) => {
 				rootNode.appendChild(createNode(name, element, doc))
 			})
+		} else if (name.startsWith('@')) {
+			rootNode.setAttribute(name.substring(1), String(value))
 		} else {
 			rootNode.appendChild(createNode(name, value, doc))
 		}
@@ -39,10 +41,6 @@ function addNodes(obj, rootNode) {
 }
 
 function createNode(name, value, doc) {
-	if (name.startsWith('@')) {
-		return createAttributeNode(name.substring(1), value, doc)
-	}
-
 	if (name === '#textContent') {
 		return doc.createTextNode(String(value))
 	}
