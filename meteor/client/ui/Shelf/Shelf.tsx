@@ -342,6 +342,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							showStyleBase={this.props.showStyleBase}
 							studioMode={this.props.studioMode}
 							rundownLayout={this.props.rundownLayout}
+							buckets={this.props.buckets}
 							shouldQueue={this.state.shouldQueue}
 							onChangeQueueAdLib={this.changeQueueAdLib}
 							/> :

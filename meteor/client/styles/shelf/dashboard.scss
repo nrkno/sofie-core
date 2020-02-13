@@ -27,6 +27,22 @@ $dashboard-button-height: 5.625em;
 	margin: 0.625rem;
 	user-select: none;
 
+	&.dashboard-panel__panel--bucket {
+		&.dashboard-panel__panel--bucket-active {
+			&::after {
+				content: ' ';
+				display: block;
+				background-color: rgba(0, 183, 255, 0.5);
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				border-radius: 10px;
+			}
+		}
+	}
+
 	&.dashboard-panel--actions {
 		background-color: none !important;
 		background: none !important;

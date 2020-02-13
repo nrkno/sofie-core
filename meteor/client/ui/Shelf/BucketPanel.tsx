@@ -11,9 +11,7 @@ import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
-import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
-import * as faList from '@fortawesome/fontawesome-free-solid/faList'
-import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
+import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
@@ -38,7 +36,8 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { IDashboardPanelProps, getUnfinishedPiecesReactive, DashboardPanelInner, IDashboardPanelTrackedProps, dashboardElementPosition } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
-import { Bucket } from '../../../lib/collections/Buckets';
+import { Bucket } from '../../../lib/collections/Buckets'
+import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 
 const HOTKEY_GROUP = 'BucketPanel'
 
@@ -49,6 +48,7 @@ interface IState {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
+	dropActive: boolean
 }
 
 export interface IBucketPanelProps {
@@ -80,7 +80,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 		this.state = {
 			outputLayers: {},
-			sourceLayers: {}
+			sourceLayers: {},
+			dropActive: false
 		}
 	}
 
@@ -123,6 +124,14 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		this.subscribe(PubSub.showStyleBases, {
 			_id: this.props.rundown.showStyleBaseId
 		})
+
+		window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
+		window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
+	}
+
+	componentWillUnmount () {
+		window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
+		window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 	}
 
 	isAdLibOnAir (adLib: BucketAdLib) {
@@ -130,6 +139,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			return true
 		}
 		return false
+	}
+
+	onDragEnter = () => {
+		this.setState({
+			dropActive: true
+		})
+	}
+
+	onDragLeave = () => {
+		this.setState({
+			dropActive: false
+		})
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
@@ -186,22 +207,24 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	render () {
 		if (this.props.showStyleBase) {
 			return (
-				<div className='dashboard-panel'
+				<div className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
+					'dashboard-panel__panel--bucket-active': this.state.dropActive
+				})}
 					style={dashboardElementPosition({
-						x: 0,
+						x: -1,
 						y: 0,
 						width: 9,
 						height: -1
 					})}
 				>
 					<h4 className='dashboard-panel__header'>
-						{this.props.bucket.name}
+						<FontAwesomeIcon icon={faBars} />&nbsp;{this.props.bucket.name}
 					</h4>
 					{/* { filter.enableSearch &&
 						<AdLibPanelToolbar
 							onFilterChange={this.onFilterChange} />
 					} */}
-					<div className={ClassNames('dashboard-panel__panel', 'dashboard-panel__panel--bucket')}>
+					<div className='dashboard-panel__panel'>
 						{this.props.adLibPieces
 							.map((item: BucketAdLib) => {
 								return <DashboardPieceButton

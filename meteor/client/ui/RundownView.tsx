@@ -1254,6 +1254,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 				this.subscribe(PubSub.rundownLayouts, {
 					showStyleBaseId: rundown.showStyleBaseId
 				})
+				this.subscribe(PubSub.buckets, {
+
+				})
 			}
 		})
 		this.autorun(() => {
