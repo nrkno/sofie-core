@@ -60,13 +60,13 @@ export namespace BucketsAPI {
 		const heaviestBucket = Buckets.find({
 			studioId
 		}, {
-			sort: {
-				_rank: 1
-			},
-			fields: {
-				_rank: 1
-			}
-		}).fetch().reverse()[0]
+				sort: {
+					_rank: 1
+				},
+				fields: {
+					_rank: 1
+				}
+			}).fetch().reverse()[0]
 
 		let rank = 1
 		if (heaviestBucket) {

@@ -45,6 +45,7 @@ export interface IShelfProps {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
+	buckets?: Array<Bucket>
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
