@@ -1,5 +1,5 @@
 import { QuantelAgent } from '../agents/quantel/quantel-agent.js'
-import { create } from '../mos/ncsItemCreator.js'
+import { createQuantelClipNcsItem } from '../mos/ncsItemCreator.js'
 
 export { init }
 
@@ -41,7 +41,7 @@ async function init({ onTargetSelect, onTargetCancel }) {
 			if (guid) {
 				onTargetSelect(guid)
 
-				const ncsItem = create(clipItem)
+				const ncsItem = createQuantelClipNcsItem(clipItem)
 				dataTransfer.setData('text', new XMLSerializer().serializeToString(ncsItem))
 			}
 		},
