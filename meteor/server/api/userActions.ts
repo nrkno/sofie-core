@@ -506,6 +506,10 @@ export function restartCore (token: string) {
 	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
 }
 
+export function noop () {
+	return ClientAPI.responseSuccess()
+}
+
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
@@ -618,6 +622,12 @@ methods[UserActionAPI.methods.generateRestartToken] = function () {
 }
 methods[UserActionAPI.methods.restartCore] = function (token: string) {
 	return restartCore.call(this, token)
+}
+methods[UserActionAPI.methods.guiFocused] = function () {
+	return noop.call(this)
+}
+methods[UserActionAPI.methods.guiBlurred] = function () {
+	return noop.call(this)
 }
 
 // Apply methods:

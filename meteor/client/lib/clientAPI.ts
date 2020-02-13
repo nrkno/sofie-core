@@ -31,7 +31,11 @@ function eventContextForLog (e: any): string {
 	if (_.isString(e)) {
 		return e
 	} else if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
-		str = e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + (e.currentTarget.innerText ? ` "${e.currentTarget.innerText}"` : '')
+		let contents = ''
+		if (e.currentTarget.localName !== 'body' && e.currentTarget.innerText) {
+			contents = ` "${e.currentTarget.innerText}"`
+		}
+		str = e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + contents
 	} else if (e.key && e.code) {
 		str = e.type + ': ' + keyboardEventToShortcut(e as ExtendedKeyboardEvent)
 	} else {

@@ -37,7 +37,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPart } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -45,7 +45,7 @@ import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction, callMethod } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
@@ -70,7 +70,8 @@ interface IKeyboardFocusMarkerState {
 interface IKeyboardFocusMarkerProps {
 }
 class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
-	keyboardFocusInterval: number
+	private keyboardFocusInterval: number
+	private static readonly SYNTHETIC_TIMER_EVENT = { type: 'interval' }
 
 	constructor (props: IKeyboardFocusMarkerProps) {
 		super(props)
@@ -81,10 +82,11 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 	}
 
 	componentDidMount () {
-		this.keyboardFocusInterval = Meteor.setInterval(this.checkFocus, 3000)
+		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(KeyboardFocusMarker.SYNTHETIC_TIMER_EVENT), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
 		document.body.addEventListener('mousedown', this.checkFocus)
+		document.addEventListener('visibilitychange', this.checkFocus)
 	}
 
 	componentWillUnmount () {
@@ -92,14 +94,21 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
 		document.body.removeEventListener('mousedown', this.checkFocus)
+		document.removeEventListener('visibilitychange', this.checkFocus)
 	}
 
-	checkFocus = () => {
+	checkFocus = (e: object) => {
 		const focusNow = document.hasFocus()
 		if (this.state.inFocus !== focusNow) {
 			this.setState({
 				inFocus: focusNow
 			})
+			const viewInfo = [ window.location.href + window.location.search, window.innerWidth, window.innerHeight, getAllowStudio(), getAllowConfigure(), getAllowService() ]
+			if (focusNow) {
+				callMethod(e, UserActionAPI.methods.guiFocused, viewInfo)
+			} else {
+				callMethod(e, UserActionAPI.methods.guiBlurred, viewInfo)
+			}
 		}
 	}
 

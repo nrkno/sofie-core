@@ -6,6 +6,10 @@ import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { setMinimumTakeSpan } from '../userActions'
 import { UserActionAPI as OriginalUserActionAPI } from '../../../lib/api/userActions'
 import { getHash } from '../../../lib/lib'
+import { ClientAPI } from '../../../lib/api/client'
+import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
+
+require('../client') // include in order to create the Meteor methods needed
 
 namespace UserActionAPI { // Using our own method definition, to catch external API changes
 	export enum methods {
@@ -56,7 +60,10 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 		'regenerateRundown'					= 'userAction.ingest.regenerateRundown',
 
 		'generateRestartToken'				= 'userAction.system.generateRestartToken',
-		'restartCore'						= 'userAction.system.restartCore'
+		'restartCore'						= 'userAction.system.restartCore',
+
+		'guiFocused'						= 'guiState.focused',
+		'guiBlurred'						= 'guiState.blurred'
 	}
 }
 
@@ -226,5 +233,31 @@ describe('User Actions', () => {
 		jest.runAllTimers()
 
 		expect(mockExit).toHaveBeenCalledTimes(1)
+	})
+
+	testInFiber('GUI Status', () => {
+		expect(
+			Meteor.call(ClientAPI.methods.execMethod, 'mousedown', UserActionAPI.methods.guiFocused, [ 'dummyClientData' ])
+		).toMatchObject({ success: 200 })
+		const logs0 = UserActionsLog.find({
+			method: UserActionAPI.methods.guiFocused,
+		}).fetch()
+		expect(logs0).toHaveLength(1)
+		expect(logs0[0]).toMatchObject({
+			context: 'mousedown',
+			args: JSON.stringify([ [ 'dummyClientData' ] ])
+		})
+
+		expect(
+			Meteor.call(ClientAPI.methods.execMethod, 'interval', UserActionAPI.methods.guiBlurred, [ 'dummyClientData' ])
+		).toMatchObject({ success: 200 })
+		const logs1 = UserActionsLog.find({
+			method: UserActionAPI.methods.guiBlurred
+		}).fetch()
+		expect(logs1).toHaveLength(1)
+		expect(logs1[0]).toMatchObject({
+			context: 'interval',
+			args: JSON.stringify([ [ 'dummyClientData' ] ])
+		})
 	})
 })
