@@ -406,12 +406,12 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 					}
 				})
 			}
-
-			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
-				cancelable: false
-			})
-			window.dispatchEvent(event)
 		}
+
+		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
+			cancelable: false
+		})
+		window.dispatchEvent(event)
 	}
 
 	registerHandlers = () => {
