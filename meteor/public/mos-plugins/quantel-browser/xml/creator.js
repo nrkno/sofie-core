@@ -1,5 +1,17 @@
 export { objectToXml }
 
+/**
+ * Converts a JavaScript object (does not have to be JSON) to an XML document.
+ *
+ * Special syntax:
+ * - properties that have a name starting with a @ will be created as attributes
+ * - properties named #textContent will be created as text nodes
+ *
+ * @param {object} obj - a JavaScript object
+ * @param {string} rootName - name for the XML document root node
+ *
+ * @returns {XMLDocument} - an XML document representation of the input object
+ */
 function objectToXml(obj, rootName) {
 	const doc = new Document()
 	const root = doc.createElement(rootName)
@@ -28,7 +40,7 @@ function addNodes(obj, rootNode) {
 
 function createNode(name, value, doc) {
 	if (name.startsWith('@')) {
-		return createAttributeNode(name, value, doc)
+		return createAttributeNode(name.substring(1), value, doc)
 	}
 
 	if (name === '#textContent') {
