@@ -68,6 +68,7 @@ import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
+import { Buckets, Bucket } from '../../lib/collections/Buckets'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1060,6 +1061,7 @@ interface ITrackedProps {
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
+	buckets?: Array<Bucket>
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
 }
@@ -1100,6 +1102,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownLayouts: rundowns.length > 0 ?
 			RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() :
 			undefined,
+		buckets: playlist && Buckets.find({}).fetch(),
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {
 				$in: PeripheralDevices.find({

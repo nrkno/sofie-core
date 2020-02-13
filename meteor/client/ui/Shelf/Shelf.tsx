@@ -29,6 +29,7 @@ import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
+import { Bucket } from '../../../lib/collections/Buckets'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -36,11 +37,12 @@ export enum ShelfTabs {
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys'
 }
-export interface ShelfProps {
+export interface IShelfProps {
 	isExpanded: boolean
 	// segments: Array<SegmentUi>
 	// liveSegment?: SegmentUi
 	playlist: RundownPlaylist
+	buckets?: Array<Bucket>
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -70,7 +72,7 @@ interface IState {
 const CLOSE_MARGIN = 45
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
-export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
+export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
 	private _mouseStart: {
 		x: number
 		y: number
@@ -95,7 +97,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		global?: boolean
 	}> = []
 
-	constructor(props: Translated<ShelfProps>) {
+	constructor(props: Translated<IShelfProps>) {
 		super(props)
 
 		this.state = {
@@ -165,7 +167,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		})
 	}
 
-	componentDidUpdate(prevProps: ShelfProps, prevState: IState) {
+	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
 		if ((prevProps.isExpanded !== this.props.isExpanded) || (prevState.shelfHeight !== this.state.shelfHeight)) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
 				// console.log(this.state.expanded, this.getHeight())
