@@ -30,7 +30,8 @@ import {
 	prepareSaveIntoDb,
 	savePreparedChanges,
 	Optional,
-	PreparedChangesChangesDoc
+	PreparedChangesChangesDoc,
+	omit
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -382,36 +383,16 @@ function updateRundownFromIngestData (
 
 	if (Settings.allowUnsyncedSegments) {
 		// Remove part updates for parts with these segment Ids
-		const removeWithSegmentId: string[] = []
-
-		// Filter out segment updates that must be rejected
-		removeWithSegmentId.push(...processSegmentChangesToReject(dbRundown, prepareSaveSegments.removed, 'removed'))
-		removeWithSegmentId.push(...processSegmentChangesToReject(dbRundown, prepareSaveSegments.inserted, 'inserted'))
-		removeWithSegmentId.push(...processSegmentChangesToRejectSpecial(dbRundown, prepareSaveSegments.changed))
-
-		console.log(`SEGMENTS TO REJECT: ${JSON.stringify(removeWithSegmentId)}`)
+		const removeWithSegmentId: string[] = processSegmentChangesToReject(dbRundown, prepareSaveSegments)
 
 		// Remove part updates associated with rejected segment updates
-		removePartUpdatesBySegmentId(prepareSaveParts.removed, removeWithSegmentId)
-		removePartUpdatesBySegmentId(prepareSaveParts.inserted, removeWithSegmentId)
-		removePartUpdatesBySegmentIdSpecial(prepareSaveParts.changed, removeWithSegmentId)
+		const removeWithPartId: string[] = removePartUpdatesBySegmentId(dbRundown, prepareSaveParts, removeWithSegmentId)
 
 		// Remove piece updates for pieces with these part Ids
-		const removeWithPartId: string[] = []
-
-		// Filter out part updates that must be rejected
-		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts.removed, 'removed'))
-		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts.inserted, 'inserted'))
-		removeWithPartId.push(...processPartChangesToRejectSpecial(dbRundown, prepareSaveParts.changed))	
-
-		console.log(`PARTS TO REJECT: ${JSON.stringify(removeWithPartId)}`)
+		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts))
 
 		// Remove piece updates that must be rejected
-		console.log(`REMOVED: ${prepareSavePieces.removed.length}`)
-		removePieceUpdatesByPartId(prepareSavePieces.removed, removeWithPartId)
-		console.log(`REMOVED: ${prepareSavePieces.removed.length}`)
-		removePieceUpdatesByPartId(prepareSavePieces.inserted, removeWithPartId)
-		removePieceUpdatesByPartIdSpecial(prepareSavePieces.changed, removeWithPartId)
+		removePieceUpdatesByPartId(prepareSavePieces, removeWithPartId)
 	}
 
 	changes = sumChanges(
@@ -906,147 +887,186 @@ function printChanges (changes: Optional<PreparedChanges<{_id: string}>>): strin
 	return str
 }
 
-function removePartUpdatesBySegmentId(arr: DBPart[], segmentIds: string[]) {
-	const partsToRemove: DBPart[] = []
+/**
+ * Removes parts that have segmentIds specified.
+ * @param changes Changes to filter.
+ * @param segmentIds Segment Ids to remove.
+ */
+function removePartUpdatesBySegmentId(rundown: Rundown, changes: PreparedChanges<DBPart>, segmentIds: string[]): string[] {
+	const partIds: string[] = []
 
-	arr.forEach((part) => {
+	changes.removed = changes.removed.filter((part) => {
 		if (segmentIds.includes(part.segmentId)) {
-			partsToRemove.push(part)
+			partIds.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
 		}
+		return true
 	})
 
-	partsToRemove.forEach(p => {
-		arr.splice(arr.indexOf(p), 1)
+	changes.inserted = changes.inserted.filter((part) => {
+		if (segmentIds.includes(part.segmentId)) {
+			partIds.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
 	})
-}
 
-function removePartUpdatesBySegmentIdSpecial(arr: PreparedChangesChangesDoc<DBPart>[], segmentIds: string[]) {
-	const partsToRemove: PreparedChangesChangesDoc<DBPart>[] = []
-
-	arr.forEach((part) => {
+	changes.changed = changes.changed.filter((part) => {
 		if (segmentIds.includes(part.doc.segmentId)) {
-			partsToRemove.push(part)
+			partIds.push(part.doc._id)
+			partIds.push(part.oldId)
+			ServerRundownAPI.unsync(rundown._id, part.doc.segmentId)
+			return false
 		}
+		return true
 	})
 
-	partsToRemove.forEach(p => {
-		arr.splice(arr.indexOf(p), 1)
-	})
+	return partIds
 }
 
-function removePieceUpdatesByPartId(arr: Piece[], partIds: string[]) {
-	const piecesToRemove: Piece[] = []
-
-	arr.forEach((piece) => {
-		if (partIds.includes(piece.partId)) {
-			piecesToRemove.push(piece)
-		}
-	})
-
-	console.log(`REMOVING PIECES ${piecesToRemove.map(p => p._id)}`)
-
-	piecesToRemove.forEach(p => {
-		arr.splice(arr.indexOf(p), 1)
-	})
+/**
+ * Removes pieces that have partIds specified.
+ * @param changes Changed to filter.
+ * @param partIds Part Ids to remove.
+ */
+function removePieceUpdatesByPartId(changes: PreparedChanges<Piece>, partIds: string[]) {
+	changes.removed = changes.removed.filter((piece) => !partIds.includes(piece.partId))
+	changes.inserted = changes.inserted.filter((piece) => !partIds.includes(piece.partId))
+	changes.changed = changes.changed.filter((piece) => !partIds.includes(piece.doc.partId))
 }
 
-function removePieceUpdatesByPartIdSpecial (arr: PreparedChangesChangesDoc<Piece>[], partIds: string[]) {
-	const piecesToRemove: PreparedChangesChangesDoc<Piece>[] = []
-	arr.forEach((piece) => {
-		if (partIds.includes(piece.doc.partId)) {
-			piecesToRemove.push(piece)
-		}
-	})
-
-	console.log(`REMOVING PIECES ${piecesToRemove.map(p => p.doc._id)}`)
-
-	piecesToRemove.forEach((piece) => {
-		arr.splice(arr.indexOf(piece), 1)
-	})		
-}
-
-function processSegmentChangesToReject (rundown: Rundown, segments: DBSegment[], field: keyof Omit<PreparedChanges<Piece>, 'changed'>): string[] {
-	console.log(`CHANGES FOR ${field} : ${segments.length}`)
+/**
+ * Filters out changes to segments that should be rejected and unsyncs segments that have become unsynced.
+ * @param rundown Rundown the changes belong to.
+ * @param changes Changes to check.
+ */
+function processSegmentChangesToReject (rundown: Rundown, changes: PreparedChanges<DBSegment>): string[] {
 	const removeWithSegmentId: string[] = []
 
-	segments.forEach((segment) => {
-		const existingSegment = Segments.findOne({ _id: segment._id })
-		if (
-			!isUpdateAllowed(rundown, {}, { [field]: [segment] }, {}) ||
-			(existingSegment && !canBeUpdated(rundown, existingSegment))
-		) {
+	changes.inserted = changes.inserted.filter((segment) => {
+		if (rejectSegmentUpdate(rundown, segment, 'inserted')) {
 			removeWithSegmentId.push(segment._id)
-			segments.splice(segments.indexOf(segment), 1)
-			
-			if (existingSegment && !existingSegment.unsynced) {
-				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
-			}
+			ServerRundownAPI.unsync(rundown._id, segment._id)
+			return false
 		}
+		return true
+	})
+
+	changes.removed = changes.removed.filter((segment) => {
+		if (rejectSegmentUpdate(rundown, segment, 'removed')) {
+			removeWithSegmentId.push(segment._id)
+			ServerRundownAPI.unsync(rundown._id, segment._id)
+			return false
+		}
+		return true
+	})
+
+	changes.changed = changes.changed.filter((segment) => {
+		if (rejectSegmentUpdate(rundown, segment.doc, 'changed')) {
+			removeWithSegmentId.push(segment.doc._id)
+			removeWithSegmentId.push(segment.oldId)
+			ServerRundownAPI.unsync(rundown._id, segment.doc._id)
+			ServerRundownAPI.unsync(rundown._id, segment.oldId)
+			return false
+		}
+		return true
 	})
 
 	return removeWithSegmentId
 }
 
-function processSegmentChangesToRejectSpecial (rundown: Rundown, segments: PreparedChangesChangesDoc<DBSegment>[]): string[] {
-	console.log(`CHANGES FOR changes : ${segments.length}`)
+/**
+ * Checks if a segment update should be rejected.
+ * @param rundown Rundown the part belongs to.
+ * @param existingSegment Segment the part belongs to.
+ * @param part Part to update.
+ * @param field Type of update.
+ */
+function rejectSegmentUpdate (rundown: Rundown, segment: DBSegment, field: keyof PreparedChanges<DBSegment>, existingSegment?: Segment): boolean {
+	return !isUpdateAllowed(rundown, {}, { [field]: [segment] }, {}) || (!!existingSegment && !canBeUpdated(rundown, existingSegment))
+}
+
+/**
+ * Filters out changes to parts that should be rejected and unsyncs segments that have become unsynced.
+ * @param rundown Rundown the changes belong to.
+ * @param changes Changes to check.
+ */
+function processPartChangesToReject (rundown: Rundown, changes: PreparedChanges<DBPart>): string[] {
+	const removeWithPartId: string[] = []
 	const removeWithSegmentId: string[] = []
 
-	segments.forEach((segment) => {
-		const existingSegment = Segments.findOne({ _id: segment.doc._id })
-		if (
-			!isUpdateAllowed(rundown, {}, { changed: [{ doc: segment.doc, oldId: segment.oldId }] }, {}) ||
-			(existingSegment && !canBeUpdated(rundown, existingSegment))
-		) {
-			removeWithSegmentId.push(segment.doc._id)
-			segments.splice(segments.indexOf(segment), 1)
-			
-			if (existingSegment && !existingSegment.unsynced) {
-				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
-			}
-		}
-	})
-
-	return removeWithSegmentId
-}
-
-function processPartChangesToReject (rundown: Rundown, arr: DBPart[], field: keyof Omit<PreparedChanges<Piece>, 'changed'>): string[] {
-	const removeWithPartId: string[] = []
-
-	arr.forEach(part => {
+	changes.inserted = changes.inserted.filter((part) => {
 		const existingSegment = Segments.findOne({ _id: part.segmentId })
-		if (
-			!isUpdateAllowed(rundown, {}, {}, { [field]: [part] }) ||
-			(existingSegment && !canBeUpdated(rundown, existingSegment))
-		) {
+		if (removeWithSegmentId.includes(part.segmentId) || rejectPartUpdate(rundown, part, 'inserted', existingSegment)) {
 			removeWithPartId.push(part._id)
-			arr.splice(arr.indexOf(part), 1)
-
-			if (existingSegment && !existingSegment.unsynced) {
-				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
-			}
+			removeWithSegmentId.push(part.segmentId)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
 		}
+		return true
+	})
+
+	changes.removed = changes.removed.filter((part) => {
+		const existingSegment = Segments.findOne({ _id: part.segmentId })
+		if (removeWithSegmentId.includes(part.segmentId) || rejectPartUpdate(rundown, part, 'removed', existingSegment)) {
+			removeWithPartId.push(part._id)
+			removeWithSegmentId.push(part.segmentId)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+
+	changes.changed = changes.changed.filter((part) => {
+		const existingSegment = Segments.findOne({ _id: part.doc.segmentId })
+		if (removeWithSegmentId.includes(part.doc.segmentId) || rejectPartUpdate(rundown, part.doc, 'changed', existingSegment)) {
+			removeWithPartId.push(part.doc._id)
+			removeWithPartId.push(part.oldId)
+			removeWithSegmentId.push(part.doc.segmentId)
+			ServerRundownAPI.unsync(rundown._id, part.doc.segmentId)
+			return false
+		}
+		return true
+	})
+
+	// Perform a second pass to catch parts before an on-air part that may now be in an unsynced segment.
+	changes.inserted = changes.inserted.filter((part) => {
+		if (removeWithSegmentId.includes(part.segmentId)) {
+			removeWithPartId.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+	changes.removed = changes.removed.filter((part) => {
+		if (removeWithSegmentId.includes(part.segmentId)) {
+			removeWithPartId.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+	changes.changed = changes.changed.filter((part) => {
+		if (removeWithSegmentId.includes(part.doc.segmentId)) {
+			removeWithPartId.push(part.doc._id)
+			ServerRundownAPI.unsync(rundown._id, part.doc.segmentId)
+			return false
+		}
+		return true
 	})
 
 	return removeWithPartId
 }
 
-function processPartChangesToRejectSpecial (rundown: Rundown, arr: PreparedChangesChangesDoc<DBPart>[]): string[] {
-	const removeWithPartId: string[] = []
-
-	arr.forEach(part => {
-		const existingSegment = Segments.findOne({ _id: part.doc.segmentId })
-		if (
-			!isUpdateAllowed(rundown, {}, {}, { changed: [part] }) ||
-			(existingSegment && !canBeUpdated(rundown, existingSegment))
-		) {
-			removeWithPartId.push(part.doc._id)
-			arr.splice(arr.indexOf(part), 1)
-
-			if (existingSegment && !existingSegment.unsynced) {
-				ServerRundownAPI.unsync(rundown._id, existingSegment._id)
-			}
-		}
-	})
-
-	return removeWithPartId
+/**
+ * Checks if a part update should be rejected.
+ * @param rundown Rundown the part belongs to.
+ * @param existingSegment Segment the part belongs to.
+ * @param part Part to update.
+ * @param field Type of update.
+ */
+function rejectPartUpdate (rundown: Rundown, part: DBPart, field: keyof PreparedChanges<Part>, existingSegment?: Segment): boolean {
+	return !isUpdateAllowed(rundown, {}, {}, { [field]: [part] }) || (!!existingSegment && !canBeUpdated(rundown, existingSegment))
 }
