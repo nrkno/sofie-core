@@ -25,7 +25,7 @@ async function init({ onTargetSelect, onTargetCancel }) {
 			if (guid) {
 				onTargetSelect(guid)
 
-				const ncsItem = create(selected)
+				const ncsItem = create(clipItem)
 				dataTransfer.setData('text', new XMLSerializer().serializeToString(ncsItem))
 			}
 		},
