@@ -1,52 +1,11 @@
-import { NoraPayload, IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration';
-import { objectToXML } from '../mos/plugin-support'
+import { IBlueprintPieceGeneric, NoraContent } from 'tv-automation-sofie-blueprints-integration';
+import { generateMosPluginItemXml } from '../../parsers/mos/mosXml2Js';
 
-export { createMosObjectXmlStringNoraBluePrintPiece }
-
-function createMosObjectXmlStringNoraBluePrintPiece (piece: IBlueprintPieceGeneric): string {
-	if (!piece.content || !piece.content.payload) {
+export function createMosObjectXmlStringNoraBluePrintPiece (piece: IBlueprintPieceGeneric): string {
+	const noraContent = piece.content as NoraContent | undefined
+	if (!noraContent || !noraContent.externalPayload) {
 		throw new Error('Not a Nora blueprint piece')
 	}
 
-	const noraPayload = piece.content.payload as NoraPayload
-
-	const doc = objectToXML({
-		ncsItem: {
-			item: {
-				itemSlug: null,
-				objID: piece.externalId,
-				mosExternalMetadata: [{
-					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/content',
-					mosPayload: {
-						metadata: {
-							selection: {
-								design: {
-									id: noraPayload.manifest
-								},
-								type: {
-									id: noraPayload.template.layer
-								},
-								mal: {
-									id: noraPayload.template.name
-								}
-							},
-							type: noraPayload.template.layer,
-							userContext: {}
-						},
-						template: noraPayload.template,
-						content: noraPayload.content
-					}
-				}, {
-					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/timing',
-					mosPayload: {
-						timeIn: 0,
-						duration: piece.content.sourceDuration
-					}
-				}]
-			},
-		}
-	}, 'mos'
-	)
-
-	return new XMLSerializer().serializeToString(doc)
+	return generateMosPluginItemXml(noraContent.externalPayload)
 }
