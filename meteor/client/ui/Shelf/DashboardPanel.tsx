@@ -39,7 +39,7 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/col
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { getNextPiecesReactive } from './AdLibRegionPanel'
-import { PartInstanceId } from '../../../lib/collections/PartInstances';
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 interface IState {
 	outputLayers: {
