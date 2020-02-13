@@ -445,6 +445,18 @@ export function resyncRundown (rundownId: string) {
 		ServerRundownAPI.resyncRundown(rundownId)
 	)
 }
+export function resyncSegment (rundownId: string, segmentId: string) {
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	// if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you need to deactivate it before resyncing it.`)
+
+	let segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.resyncSegment(rundownId)
+	)
+}
 export function recordStop (studioId: string) {
 	check(studioId, String)
 	const record = RecordedFiles.findOne({

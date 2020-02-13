@@ -1589,6 +1589,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 	}
 
+	onResyncSegment = (segmentId: string, e: any) => {
+		const { t } = this.props
+		if (this.state.studioMode && this.props.rundown) {
+			doUserAction(t, undefined, UserActionAPI.methods.resyncSegment, [this.props.rundown._id, segmentId], (err, response) => {
+				
+			})
+		}
+	}
+
 	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const { t } = this.props
 		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentPartId) {
@@ -1907,6 +1916,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									rundown={this.props.rundown}
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
+									onResyncSegment={this.onResyncSegment}
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>

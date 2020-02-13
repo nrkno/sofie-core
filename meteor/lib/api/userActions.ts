@@ -41,6 +41,7 @@ export namespace UserActionAPI {
 
 		'removeRundown'						= 'userAction.removeRundown',
 		'resyncRundown'						= 'userAction.resyncRundown',
+		'resyncSegment'						= 'userAction.resyncSegment',
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',

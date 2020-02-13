@@ -50,7 +50,7 @@ export namespace IngestActions {
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			throw new Meteor.Error(400, `The device ${device._id} uses MOS, and it does not support the method "reloadSegment"`)
 		} else if (
-			// device.type === PeripheralDeviceAPI.DeviceType.INEWS
+			device.type === PeripheralDeviceAPI.DeviceType.INEWS ||
 			device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET
 		) {
 			return GenericDeviceActions.reloadSegment(device, rundown, segment)

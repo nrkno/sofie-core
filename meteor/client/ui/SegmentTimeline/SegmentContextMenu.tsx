@@ -6,10 +6,13 @@ import { Part } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
+import { Segment } from '../../../lib/collections/Segments'
+import i18next = require('i18next')
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: string | null, e: any) => void
+	onResyncSegment (segmentId: string, e: any)
 	rundown?: Rundown
 	studioMode: boolean
 	contextMenuContext: any
@@ -25,6 +28,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 	render () {
 		const { t } = this.props
 
+		const segment = this.getSegmentFromContext()
 		const part = this.getPartFromContext()
 		const timecode = this.getTimePosition()
 		const startsAt = this.getSLStartsAt()
@@ -58,11 +62,42 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 									<span>{t('Clear queued segment')}</span>
 								</MenuItem>
 							}
+							{
+								this.menuItemResyncSegment(t, segment)
+							}
 						</React.Fragment>}
 					</ContextMenu>
 				</Escape>
+				: segment && segment.unsynced ?
+					<Escape to='document'>
+						<ContextMenu id='segment-timeline-context-menu'>
+							<React.Fragment>
+								{
+									this.menuItemResyncSegment(t, segment)
+								}
+							</React.Fragment>
+						</ContextMenu>
+					</Escape>
 				: null
 		)
+	}
+
+	menuItemResyncSegment = (t: (key: string | string[], options?: i18next.TranslationOptions<object> | undefined) => any, segment: Segment | null) => {
+		if (segment && segment.unsynced) {
+			return (
+				<MenuItem onClick={(e) => this.props.onResyncSegment(segment._id, e)}>
+					<span>{t('Re-Sync segment')}</span>
+				</MenuItem>
+			)
+		}
+	}
+
+	getSegmentFromContext = (): Segment | null => {
+		if (this.props.contextMenuContext && this.props.contextMenuContext.segment) {
+			return this.props.contextMenuContext.segment
+		} else {
+			return null
+		}
 	}
 
 	getPartFromContext = (): Part | null => {
