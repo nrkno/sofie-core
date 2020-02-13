@@ -134,7 +134,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 				'live': this.props.isOnAir
-			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
+			}, this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: this.props.widthScale ?
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
@@ -147,7 +147,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				data-obj-id={this.props.item._id}
 				>
 				{
-					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					this.props.layer && (this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
 						this.renderVTLiveSpeak() :
 						null
 				}
