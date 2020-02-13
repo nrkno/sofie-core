@@ -170,6 +170,8 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	receiveMOSItem(e: any, mosItem: IMOSItem) {
 		const { t, playlist } = this.props
 
+		console.log('Object received, passing onto blueprints', mosItem)
+
 		const targetBucket = Buckets.findOne()
 		let targetRundown: Rundown | undefined
 		let currentPart
