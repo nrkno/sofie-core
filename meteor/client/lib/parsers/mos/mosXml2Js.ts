@@ -39,11 +39,25 @@ export function fixMosData (o: any): any {
 	}
 }
 
-export function parseMosPluginItemXml(xmlString: string): IMOSItem | undefined {
+export interface MosPluginMessage {
+	ncsReqAppInfo?: boolean
+	item?: IMOSItem
+}
+
+export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | undefined {
 	const doc = nodeToObj(domparser.parseFromString(xmlString, 'text/xml')) as any
 
-	if (doc && doc.mos && doc.mos.ncsItem && doc.mos.ncsItem.item) {
-		return MosParser.xml2Item(doc.mos.ncsItem.item)
+	if (doc && doc.mos) {
+		const res: MosPluginMessage = {}
+		if (doc.mos.ncsReqAppInfo) {
+			res.ncsReqAppInfo = true
+		}
+
+		if (doc.mos.ncsItem && doc.mos.ncsItem.item) {
+			res.item = MosParser.xml2Item(doc.mos.ncsItem.item)
+		}
+
+		return res
 	} else {
 		return undefined
 	}
@@ -95,10 +109,9 @@ export function generateMosPluginItemXml(item: IMOSItem): string {
 				mosSchema: md.MosSchema,
 				mosPayload: md.MosPayload
 			}
-			
 		}) as any
 	}
-	
+
 	const builder = MosParser.item2xml(tmpItem)
 	return `<mos><ncsItem>${builder.toString()}</ncsItem></mos>`
 }

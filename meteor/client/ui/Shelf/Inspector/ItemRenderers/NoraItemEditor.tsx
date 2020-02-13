@@ -1,9 +1,8 @@
-import { NoraPayload } from 'tv-automation-sofie-blueprints-integration'
 import * as React from 'react'
 import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
-import { mosXmlString2Js } from '../../../../lib/parsers/mos/mosXml2Js'
-import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/Pieces'
+import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
 import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
+import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/Pieces'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
@@ -63,17 +62,17 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		}
 
 		console.log('Received message', event)
-		const data: any = event.data && mosXmlString2Js(event.data)
+		const data = event.data && parseMosPluginMessageXml(event.data)
 		console.log('Message data', data)
 
-		if (data.mos) {
-			return this.handleMosMessage(data.mos)
+		if (data) {
+			return this.handleMosMessage(data)
 		}
 
 		console.log('Unknown message', data)
 	}
 
-	handleMosMessage(mos: any) {
+	handleMosMessage(mos: MosPluginMessage) {
 		if (mos.ncsReqAppInfo) {
 			this.sendAppInfo(this.iframe.contentWindow)
 

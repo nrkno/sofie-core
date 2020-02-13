@@ -1,4 +1,4 @@
-import {parseMosPluginItemXml, fixMosData, generateMosPluginItemXml} from '../mosXml2Js'
+import {parseMosPluginMessageXml, fixMosData, generateMosPluginItemXml} from '../mosXml2Js'
 import {readFileSync} from 'fs'
 import {join} from 'path'
 import * as parser from 'xml2json'
@@ -35,16 +35,16 @@ describe('MOS XML to JavaScript object parser', () => {
 			const jsonDoc = JSON.parse(sample1JsonStr)
 
 			it('should match the json representation', () => {
-				const actual = parseMosPluginItemXml(sample1XmlStr);
-				const actualJson = fixMosData(actual) // Strip out any MosString etc
+				const actual = parseMosPluginMessageXml(sample1XmlStr);
+				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
 
 				expect(actualJson).toEqual(jsonDoc)
 			})
 
 			it('converting via xml should be lossless', () => {
 				const generatedXml = generateMosPluginItemXml(jsonDoc)
-				const actual = parseMosPluginItemXml(generatedXml);
-				const actualJson = fixMosData(actual) // Strip out any MosString etc
+				const actual = parseMosPluginMessageXml(generatedXml);
+				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
 
 				expect(actualJson).toEqual(jsonDoc)
 			})
