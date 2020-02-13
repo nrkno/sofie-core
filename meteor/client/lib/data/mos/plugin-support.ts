@@ -1,17 +1,68 @@
-import { isArray } from 'util';
+import { isArray } from 'util'
 
-export function createMosAppInfoXmlString ():string {
+const PackageInfo = require('../../../../package.json')
+
+export enum AckStatus {
+	ACK = 'ACK',
+	Error = 'ERROR'
+}
+
+export enum UIMetricMode {
+	Contained = 'CONTAINED',
+	NonModal = 'NONMODAL',
+	Toolbar = 'TOOLBAR',
+	ModalDialog = 'MODALDIALOG'
+}
+
+export interface UIMetric {
+	startx: number
+	starty: number
+	endx: number
+	endy: number
+	mode: UIMetricMode
+	canClose?: boolean
+}
+
+export function createMosItemRequest () {
 	const doc = objectToXML({
+		ncsItemRequest: {}
+	},
+	'mos')
 
-		//TODO: this is a hardcoded placeholder just to have something.
-		// The Nora plugin doesn't actually check the value or use it for anything
-		// the values might possibly be the same used to fill out a userContext node
+	return new XMLSerializer().serializeToString(doc)
+}
+
+export function createMosAckString (status?: AckStatus, statusDescription?: string):string {
+	const doc = objectToXML({
+		ncsAck: {
+			status,
+			statusDescription
+		}
+	},
+	'mos')
+
+	return new XMLSerializer().serializeToString(doc)
+}
+
+export function createMosAppInfoXmlString (uiMetrics?: UIMetric[]):string {
+	const doc = objectToXML({
 		ncsID: 'sofie-core',
 			ncsAppInfo: {
 				ncsInformation: {
-				//TODO: this is completely bogus. The Nora plugin doesn't actually check the values
 					userID: 'sofie system',
-					software: 'sofie-core'
+					runContext: 'BROWSE',
+					software: {
+						manufacturer: 'Sofie Project',
+						product: 'Sofie TV Automation',
+						version: PackageInfo.version || 'UNSTABLE'
+					},
+					uiMetric: uiMetrics ? uiMetrics.map((metric, index) => {
+						return Object.assign({}, metric, {
+							_attributes: {
+								num: index.toString()
+							}
+						})
+					}) : undefined
 				}
 			}	
 		},
@@ -36,14 +87,25 @@ function addNodes (obj: object, rootNode: Node): void {
 	for (const name of Object.keys(obj)) {
 		const value = obj[ name ]
 
-		if(isArray(value)) {
+		if (typeof value === 'object' && name === '_attributes') {
+			for (const attrName of Object.keys(value)) {
+				rootNode.appendChild(createAttribute(attrName, value[attrName], doc))
+			}
+		} else if (isArray(value)) {
 			value.forEach((element) => {
 				rootNode.appendChild(createNode(name, element, doc))
 			})
-		} else {
+		} else if (value !== undefined) {
 			rootNode.appendChild(createNode(name, value, doc))
 		}
 	}
+}
+
+function createAttribute(name: string, value: any, doc:Document) {
+	const attr = doc.createAttribute(name)
+	attr.textContent = value
+
+	return attr
 }
 
 function createNode(name:string, value:any, doc:Document) {

@@ -2,11 +2,30 @@ import * as React from 'react'
 import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
-import { RundownLayoutExternalFrame, RundownLayoutBase, DashboardLayoutExternalFrame } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutExternalFrame,
+	RundownLayoutBase,
+	DashboardLayoutExternalFrame
+} from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { literal } from '../../../lib/lib'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
+import {
+	createMosAppInfoXmlString,
+	UIMetric as MOSUIMetric,
+	UIMetricMode as MOSUIMetricMode,
+	createMosItemRequest
+} from '../../lib/data/mos/plugin-support'
+import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
+import { IMOSItem } from 'mos-connection'
+import { doUserAction } from '../../lib/userAction'
+import { translate } from 'react-i18next'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { UserActionAPI } from '../../../lib/api/userActions'
+import { Buckets } from '../../../lib/collections/Buckets'
+import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 
 const PackageInfo = require('../../../package.json')
 
@@ -68,7 +87,7 @@ interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessag
 	}
 }
 
-export class ExternalFramePanel extends React.Component<IProps> {
+export const ExternalFramePanel = translate()(class ExternalFramePanel extends React.Component<Translated<IProps>> {
 	frame: HTMLIFrameElement
 	mounted: boolean = false
 	initialized: boolean = false
@@ -92,7 +111,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 	}
 
 	onKeyEvent = (e: KeyboardEvent) => {
-		this.sendMessage(literal<SofieExternalMessage>({
+		this.sendSofieMessage(literal<SofieExternalMessage>({
 			id: Random.id(),
 			type: SofieExternalMessageType.KEYBOARD_EVENT,
 			// Send the event sanitized to prevent sending huge objects
@@ -111,11 +130,68 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		if (e.origin === "null" && this.frame && e.source === this.frame.contentWindow) {
 			const data = e.data || e['message']
 			if (!data) return
-			this.actMessage(data)
+			if (data.type) {
+				this.actSofieMessage(data)
+			} else {
+				this.actMOSMessage(e, data)
+			}
 		}
 	}
 
-	actMessage = (message: SofieExternalMessage) => {
+	actMOSMessage = (e: any, message: any) => {
+		const data: MosPluginMessage | undefined = parseMosPluginMessageXml(message)
+
+		if (data) {
+			return this.handleMosMessage(e, data)
+		}
+	}
+
+	sendMOSAppInfo () {
+		let uiMetrics: MOSUIMetric[] | undefined = undefined
+		if (this.frame) {
+			const size = this.frame.getClientRects().item(0)
+			if (size) {
+				uiMetrics = [
+					literal<MOSUIMetric>({
+						startx: size.left,
+						starty: size.top,
+						endx: size.left + size.width,
+						endy: size.top + size.height,
+						mode: MOSUIMetricMode.Contained
+					})
+				]
+			}
+		}
+		this.sendMOSMessage(createMosAppInfoXmlString(uiMetrics))
+	}
+
+	receiveMOSItem (e: any, mosItem: IMOSItem) {
+		const { t, rundown } = this.props
+
+		const targetBucket = Buckets.findOne()
+
+		doUserAction(t, e, UserActionAPI.methods.bucketAdlibImport, [
+			rundown.studioId,
+			rundown.showStyleVariantId,
+			targetBucket ? targetBucket._id : '',
+			literal<IngestAdlib>({
+				externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
+				name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
+				payloadType: 'MOS',
+				payload: mosItem
+			})
+		])
+	}
+
+	handleMosMessage = (e: any, mos: MosPluginMessage) => {
+		if (mos.ncsReqAppInfo) {
+			this.sendMOSAppInfo()
+		} else if (mos.item) {
+			this.receiveMOSItem(e, mos.item)
+		}
+	}
+
+	actSofieMessage = (message: SofieExternalMessage) => {
 		check(message.id, String)
 		check(message.type, String)
 
@@ -133,7 +209,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		switch (message.type) {
 			// perform a three-way handshake: HELLO -> WELCOME -> ACK
 			case SofieExternalMessageType.HELLO:
-				this.sendMessageAwaitReply(literal<WelcomeSofieExternalMessage>({
+				this.sendSofieMessageAwaitReply(literal<WelcomeSofieExternalMessage>({
 					id: Random.id(),
 					replyToId: message.id,
 					type: SofieExternalMessageType.WELCOME,
@@ -145,12 +221,12 @@ export class ExternalFramePanel extends React.Component<IProps> {
 				}), true).then((e) => {
 					if (e.type === SofieExternalMessageType.ACK) {
 						this.initialized = true
-						this.sendCurrentState()
+						this.sendSofieCurrentState()
 					}
 				}).catch(e => console.warn)
 				break
 			case SofieExternalMessageType.FOCUS_IN:
-				this.sendMessage(literal<SofieExternalMessage>({
+				this.sendSofieMessage(literal<SofieExternalMessage>({
 					id: Random.id(),
 					replyToId: message.id,
 					type: SofieExternalMessageType.ACK
@@ -161,32 +237,38 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}
 	}
 
-	sendMessageAwaitReply = (message: SofieExternalMessage, uninitialized?: boolean): Promise<SofieExternalMessage> => {
+	sendSofieMessageAwaitReply = (message: SofieExternalMessage, uninitialized?: boolean): Promise<SofieExternalMessage> => {
 		return new Promise((resolve, reject) => {
 			if (this.initialized || uninitialized) {
 				this.awaitingReply[message.id] = { resolve, reject }
-				this.sendMessage(message, uninitialized)
+				this.sendSofieMessage(message, uninitialized)
 			} else {
 				reject(new Error('ExternalFramePanel guest not initialized'))
 			}
 		})
 	}
 
-	sendMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
+	sendSofieMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
 		if (this.frame && this.frame.contentWindow && (this.initialized || uninitialized)) {
 			this.frame.contentWindow.postMessage(data, "*")
 		}
 	}
 
-	sendCurrentState () {
-		this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+	sendMOSMessage = (data: string) => {
+		if (this.frame && this.frame.contentWindow) {
+			this.frame.contentWindow.postMessage(data, MODULE_BROWSER_ORIGIN)
+		}
+	}
+
+	sendSofieCurrentState () {
+		this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 			id: Random.id(),
 			type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 			payload: {
 				partId: this.props.rundown.currentPartId
 			}
 		}))
-		this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+		this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 			id: Random.id(),
 			type: SofieExternalMessageType.NEXT_PART_CHANGED,
 			payload: {
@@ -195,9 +277,50 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}))
 	}
 
+	onDragOver = (e: DragEvent) => {
+		let dragAllowed = false
+		if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
+			// this is quite probably a MOS object
+			dragAllowed = true
+		} else if (
+			e.dataTransfer.items.length === 0 &&
+			e.dataTransfer.types.length === 0 &&
+			e.dataTransfer.files.length === 0
+		) {
+			// it might be a MOS object, but we can't know
+			dragAllowed = true
+		}
+
+		if (dragAllowed) {
+			e.dataTransfer.dropEffect = 'copy'
+			e.dataTransfer.effectAllowed = 'copy'
+		}
+
+		e.preventDefault()
+	}
+
+	onDropEnter = (e: DragEvent) => {
+		e.preventDefault()
+	}
+
+	onDrop = (e: DragEvent) => {
+		if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
+			// this is quite probably a MOS object, let's try and ingest it
+			this.actMOSMessage(e, e.dataTransfer.getData('Text'))
+		} else if (e.dataTransfer.items.length === 0 && e.dataTransfer.types.length === 0 && e.dataTransfer.files.length === 0) {
+			// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
+			// let's try and ask the plugin for some content maybe?
+			this.sendMOSMessage(createMosItemRequest())
+		}
+	}
+
 	registerHandlers = () => {
 		document.addEventListener('keydown', this.onKeyEvent)
 		document.addEventListener('keyup', this.onKeyEvent)
+
+		document.addEventListener('dragover', this.onDragOver)
+		document.addEventListener('dropenter', this.onDropEnter)
+		document.addEventListener('drop', this.onDrop)
 	}
 
 	unregisterHandlers = () => {
@@ -207,7 +330,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 
 	componentDidUpdate (prevProps: IProps) {
 		if (prevProps.rundown.currentPartId !== this.props.rundown.currentPartId) {
-			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+			this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
 				type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 				payload: {
@@ -218,7 +341,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 		}
 
 		if (prevProps.rundown.nextPartId !== this.props.rundown.nextPartId) {
-			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
+			this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
 				type: SofieExternalMessageType.NEXT_PART_CHANGED,
 				payload: {
@@ -259,4 +382,4 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			sandbox='allow-forms allow-popups allow-scripts'></iframe>
 		</div> 
 	}
-}
+})
