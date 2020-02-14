@@ -448,13 +448,12 @@ export function resyncRundown (rundownId: string) {
 export function resyncSegment (rundownId: string, segmentId: string) {
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	// if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you need to deactivate it before resyncing it.`)
 
 	let segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.resyncSegment(rundownId)
+		ServerRundownAPI.resyncSegment(segmentId)
 	)
 }
 export function recordStop (studioId: string) {
@@ -618,6 +617,9 @@ methods[UserActionAPI.methods.removeRundown] = function (rundownId: string) {
 }
 methods[UserActionAPI.methods.resyncRundown] = function (rundownId: string) {
 	return resyncRundown.call(this, rundownId)
+}
+methods[UserActionAPI.methods.resyncSegment] = function (rundownId: string, segmentId: string) {
+	return resyncSegment.call(this, rundownId, segmentId)
 }
 methods[UserActionAPI.methods.recordStop] = function (studioId: string) {
 	return recordStop.call(this, studioId)

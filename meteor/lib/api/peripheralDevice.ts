@@ -130,6 +130,7 @@ export enum methods {
 	'dataPartUpdate'	= 'peripheralDevice.rundown.partUpdate',
 
 	'resyncRundown'			= 'peripheralDevice.mos.roResync',
+	'resyncSegment'			= 'peripheralDevice.mos.segmentResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
