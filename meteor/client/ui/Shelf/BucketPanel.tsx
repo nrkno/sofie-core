@@ -228,6 +228,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						width: 9,
 						height: -1
 					})}
+					data-bucket-id={this.props.bucket._id}
 				>
 					<h4 className='dashboard-panel__header'>
 						<FontAwesomeIcon icon={faBars} />&nbsp;{this.props.bucket.name}

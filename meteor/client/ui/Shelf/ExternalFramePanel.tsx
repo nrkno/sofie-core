@@ -346,7 +346,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 		e.preventDefault()
 
-		this.failedDragTimeout = Meteor.setTimeout(this.onDragLeave, 75)
+		this.failedDragTimeout = Meteor.setTimeout(this.onDragLeave, 150)
 	}
 
 	onDragEnter = (e: DragEvent) => {
