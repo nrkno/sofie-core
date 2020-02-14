@@ -550,6 +550,10 @@ export function restartCore (token: string) {
 	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
 }
 
+export function noop () {
+	return ClientAPI.responseSuccess()
+}
+
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
@@ -668,6 +672,12 @@ methods[UserActionAPI.methods.bucketAdlibImport] = function (studioId: string, s
 }
 methods[UserActionAPI.methods.bucketAdlibStart] = function (rundownId: string, partId: string, bucketAdlibId: string, queue?: boolean) {
 	return bucketAdlibStart.call(this, rundownId, partId, bucketAdlibId, queue)
+}
+methods[UserActionAPI.methods.guiFocused] = function () {
+	return noop.call(this)
+}
+methods[UserActionAPI.methods.guiBlurred] = function () {
+	return noop.call(this)
 }
 
 // Apply methods:
