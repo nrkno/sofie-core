@@ -17,12 +17,14 @@ export interface ISettings {
 	// Should the Rundown view User Interface default all segments to "collapsed" state?
 	// Default: false
 	defaultToCollapsedSegments: boolean,
-  // Should the segment in the Rundown view automatically rewind after it stops being live?
-  // Default: false
+	// Should the segment in the Rundown view automatically rewind after it stops being live?
+	// Default: false
 	autoRewindLeavingSegment: boolean,
 	// Should the Current and Next segments be automatically made expanded (uncollapsed)?
 	// Default: false
 	autoExpandCurrentNextSegment: boolean
+	// Disable blur border in RundownView
+	disableBlurBorder: boolean
 }
 
 export let Settings: ISettings
@@ -34,7 +36,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	'frameRate': 25,
 	'defaultToCollapsedSegments': false,
 	'autoExpandCurrentNextSegment': false,
-	'autoRewindLeavingSegment': false
+	'autoRewindLeavingSegment': false,
+	'disableBlurBorder': false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

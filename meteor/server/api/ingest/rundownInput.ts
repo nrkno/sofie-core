@@ -685,7 +685,7 @@ function generateSegmentContents (
 	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || knownPartIds.indexOf(note.origin.partId) === -1)
 
 	const newSegment = literal<DBSegment>({
-		...(existingSegment || {}),
+		..._.omit(existingSegment || {}, 'isHidden'),
 		...blueprintRes.segment,
 		_id: segmentId,
 		rundownId: rundownId,
@@ -716,6 +716,11 @@ function generateSegmentContents (
 			notes: notes,
 		})
 		parts.push(part)
+
+		// This ensures that it doesn't accidently get played while hidden
+		if (blueprintRes.segment.isHidden) {
+			part.invalid = true
+		}
 
 		// Update pieces
 		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)

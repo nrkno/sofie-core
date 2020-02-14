@@ -100,6 +100,15 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		) {
 			return false
 		}
+		// Item tags needs to contain all of the strings in the tags array
+		if (
+			filter.tags !== undefined &&
+			filter.tags.reduce((p, v) => {
+				return p && (item.tags && item.tags.indexOf(v) >= 0)
+			}, true) === false
+		) {
+			return false
+		}
 	}
 	if (searchFilter) {
 		return uppercaseLabel.indexOf(searchFilter.toUpperCase()) >= 0

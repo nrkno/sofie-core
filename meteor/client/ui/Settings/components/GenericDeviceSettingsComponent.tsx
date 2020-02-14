@@ -116,13 +116,15 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			}
 		}
 		if (itemConfig.defaultType === undefined) throw new Error('defaultType not set: ' + itemConfig.id)
+
+		defaults[itemConfig.typeField || 'type'] = itemConfig.defaultType
+
 		for (const prop of itemConfig.config[itemConfig.defaultType]) {
-			if ((prop as SubDeviceConfigManifestEntry).defaultVal) {
+			if ((prop as SubDeviceConfigManifestEntry).defaultVal !== undefined) {
 				createDefault(prop.id.split('.'), (prop as SubDeviceConfigManifestEntry).defaultVal, defaults)
 			}
 		}
 
-		defaults[itemConfig.typeField || 'type'] = itemConfig.defaultType
 
 		if (!itemConfig.isSubDevices) {
 			const device = PeripheralDevices.findOne(this.props.device._id)!

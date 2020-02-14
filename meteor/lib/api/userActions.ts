@@ -54,7 +54,10 @@ export namespace UserActionAPI {
 		'regenerateRundown'					= 'userAction.ingest.regenerateRundown',
 
 		'generateRestartToken'				= 'userAction.system.generateRestartToken',
-		'restartCore'						= 'userAction.system.restartCore'
+		'restartCore'						= 'userAction.system.restartCore',
+
+		'guiFocused'						= 'guiState.focused',
+		'guiBlurred'						= 'guiState.blurred'
 	}
 
 	export enum ReloadRundownResponse {
