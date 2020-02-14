@@ -1,0 +1,23 @@
+<mos>
+	<ncsItem>
+		<item>
+			<itemID>2</itemID>
+			<itemSlug/>
+			<objID/>
+			<objSlug/>
+			<mosID>quantelplugin.sofie</mosID>
+			<mosPlugInID>Sofie.QuantelPlugin</mosPlugInID>
+			<mosAbstract/>
+			<objPaths>
+				<objPath techDescription="VIDEO">undefined</objPath>
+			</objPaths>
+			<itemEdDur/>
+			<mosExternalMetadata>
+				<mosScope>OBJECT</mosScope>
+				<mosPayload>
+					<objType>VIDEO</objType>
+				</mosPayload>
+			</mosExternalMetadata>
+		</item>
+	</ncsItem>
+</mos> 

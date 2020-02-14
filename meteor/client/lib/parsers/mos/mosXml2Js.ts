@@ -64,7 +64,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 }
 
 function nodeToObj(node: Node): object | string | null {
-	if (node.childNodes) {
+	if (node.childNodes && node.childNodes.length) {
 		const obj = {}
 
 		for (const n of node.childNodes) {
@@ -95,7 +95,7 @@ function nodeToObj(node: Node): object | string | null {
 		return obj
 	}
 
-	return {}
+	return ""
 }
 
 export function generateMosPluginItemXml(item: IMOSItem): string {
