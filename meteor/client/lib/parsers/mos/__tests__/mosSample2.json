@@ -1,0 +1,16 @@
+{
+	"ID": "2",
+	"ObjectID": "",
+	"MOSID": "quantelplugin.sofie",
+	"Paths": [],
+	"EditorialDuration": "",
+	"MosExternalMetaData": [{
+		"MosScope": "OBJECT",
+		"MosSchema": "undefined",
+		"MosPayload": {
+			"objType": "VIDEO"
+		}
+	}],
+	"mosAbstract": "",
+	"ObjectSlug": ""
+}

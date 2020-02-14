@@ -11,7 +11,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { literal } from '../../../lib/lib'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
+import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
@@ -142,6 +142,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 	actMOSMessage = (e: any, message: any) => {
 		const data: MosPluginMessage | undefined = parseMosPluginMessageXml(message)
+		console.log('converted mos', message, JSON.stringify(fixMosData(data)))
 
 		if (data) {
 			return this.handleMosMessage(e, data)
@@ -182,7 +183,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 				externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
 				name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
 				payloadType: 'MOS',
-				payload: mosItem
+				payload: fixMosData(mosItem)
 			})
 		])
 	}
