@@ -36,7 +36,8 @@ interface PrompterConfig {
 export enum PrompterConfigMode {
 	MOUSE = 'mouse',
 	KEYBOARD = 'keyboard',
-	SHUTTLEKEYBOARD = 'shuttlekeyboard'
+	SHUTTLEKEYBOARD = 'shuttlekeyboard',
+	JOYCON = 'joycon'
 }
 interface IProps {
 	match?: {
