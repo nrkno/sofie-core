@@ -1,12 +1,15 @@
-import { IngestAdlib } from "tv-automation-sofie-blueprints-integration";
-import { ShowStyleCompound } from "../../../lib/collections/ShowStyleVariants";
-import { Studio } from "../../../lib/collections/Studios";
-import { getBlueprintOfRundown, loadShowStyleBlueprints } from "../blueprints/cache";
-import { ShowStyleContext } from "../blueprints/context";
-import { postProcessAdLibPieces, postProcessBucketAdLib } from "../blueprints/postProcess";
-import { RundownImportVersions } from "../../../lib/collections/Rundowns";
-import { PackageInfo } from "../../coreSystem";
-import { BucketAdLibs } from "../../../lib/collections/BucketAdlibs";
+import { IngestAdlib } from "tv-automation-sofie-blueprints-integration"
+import { ShowStyleCompound } from "../../../lib/collections/ShowStyleVariants"
+import { Studio } from "../../../lib/collections/Studios"
+import { getBlueprintOfRundown, loadShowStyleBlueprints } from "../blueprints/cache"
+import { ShowStyleContext } from "../blueprints/context"
+import { postProcessAdLibPieces, postProcessBucketAdLib } from "../blueprints/postProcess"
+import { RundownImportVersions } from "../../../lib/collections/Rundowns"
+import { PackageInfo } from "../../coreSystem"
+import { BucketAdLibs } from "../../../lib/collections/BucketAdlibs"
+import { ExpectedMediaItem } from "../../../lib/collections/ExpectedMediaItems"
+import { PieceGeneric } from "../../../lib/collections/Pieces"
+import { updateExpectedMediaItemForBucketAdLibPiece, cleanUpExpectedMediaItemForBucketAdLibPiece } from "../expectedMediaItems"
 
 export function updateBucketAdlibFromIngestData (showStyle: ShowStyleCompound, studio: Studio, bucketId: string, ingestData: IngestAdlib): string | null {
 	const { blueprint, blueprintId } = loadShowStyleBlueprints(showStyle)
@@ -25,21 +28,31 @@ export function updateBucketAdlibFromIngestData (showStyle: ShowStyleCompound, s
 
 	if (!rawAdlib) {
 		// Cleanup any old copied
-		BucketAdLibs.remove({
+		const oldAdLibs = BucketAdLibs.find({
 			externalId: ingestData.externalId,
 			showStyleVariantId: showStyle.showStyleVariantId,
 			studioId: studio._id
-		})
+		}).fetch()
 
+		cleanUpExpectedMediaItemForBucketAdLibPiece(oldAdLibs.map(adlib => adlib._id))
+
+		BucketAdLibs.remove({
+			_id: {
+				$in: oldAdLibs.map(adlib => adlib._id)
+			}
+		})
+		
 		return null
 	} else {
 		const adlib = postProcessBucketAdLib(context, rawAdlib, blueprintId, bucketId, importVersions)
-
+		
 		BucketAdLibs.upsert({
 			externalId: ingestData.externalId,
 			showStyleVariantId: showStyle.showStyleVariantId,
 			studioId: studio._id
 		}, adlib)
+
+		updateExpectedMediaItemForBucketAdLibPiece(adlib._id, adlib.bucketId)
 
 		return adlib._id
 	}

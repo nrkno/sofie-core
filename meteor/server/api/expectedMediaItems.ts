@@ -10,6 +10,7 @@ import { Parts } from '../../lib/collections/Parts'
 import { setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
+import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -40,6 +41,48 @@ function generateExpectedMediaItems (rundownId: string, studioId: string, piece:
 
 	return result
 }
+
+export const cleanUpExpectedMediaItemForBucketAdLibPiece: (adLibIds: string[]) => void
+= syncFunctionIgnore(function cleanUpExpectedMediaItemForBucketAdLibPiece (adLibIds: string[]) {
+	check(adLibIds, [ String ])
+
+	const removedItems = ExpectedMediaItems.remove({
+		bucketAdLibPieceId: {
+			$in: adLibIds
+		}
+	})
+
+	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
+})
+
+export const updateExpectedMediaItemForBucketAdLibPiece: (adLibId: string, bucketId: string) => void
+= syncFunctionIgnore(function updateExpectedMediaItemForBucketAdLibPiece (adLibId: string, bucketId: string) {
+	check(adLibId, String)
+
+	const piece = BucketAdLibs.findOne(adLibId)
+	if (!piece) {
+		throw new Meteor.Error(404, `Bucket AdLib "${adLibId}" not found!`)
+	}
+
+	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds) {
+		(piece.content.mediaFlowIds as string[]).forEach(function (flow) {
+			const id = getHash(PieceType.ADLIB + '_' + piece._id + '_' + flow + '_' + piece.bucketId)
+			ExpectedMediaItems.insert({
+				_id: id,
+				label: piece.name,
+				disabled: false,
+				lastSeen: getCurrentTime(),
+				mediaFlowId: flow,
+				path: this[0].toString(),
+				url: this[1].toString(),
+				studioId: piece.studioId,
+
+				bucketId: piece.bucketId,
+				bucketAdLibPieceId: piece._id
+			})
+		}, [piece.content.fileName, piece.content.path])
+	}
+})
 
 export const updateExpectedMediaItemsOnRundown: (rundownId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItemsOnRundown (rundownId: string) {
