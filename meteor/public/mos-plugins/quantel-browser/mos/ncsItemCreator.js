@@ -19,17 +19,23 @@ function createQuantelClipNcsItem({ title, guid, clipFrameCount }) {
 					itemID: 2,
 					itemSlug: title,
 					objID: guid,
+					objSlug: title,
 					mosID: 'quantelplugin.sofie',
 					mosPlugInID: 'Sofie.QuantelPlugin',
 					mosAbstract: {},
 					objPaths: {
 						objPath: {
-							['@techDescription']: 'Quantel clip',
+							['@techDescription']: 'VIDEO',
 							['#textContent']: guid
 						}
 					},
 					itemEdDur: clipFrameCount,
-					mosExternalMetadata: {}
+					mosExternalMetadata: {
+						mosScope: 'OBJECT',
+						mosPayload: {
+							objType: 'VIDEO'
+						}
+					}
 				}
 			}
 		},
