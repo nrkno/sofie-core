@@ -169,7 +169,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	if (Meteor.isClient) {
 		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 	}
-	const timeoutTime = 3000
+	const timeoutTime = 10000
 	// logger.debug('command created: ' + functionName)
 	const cursor = PeripheralDeviceCommands.find({
 		_id: commandId
