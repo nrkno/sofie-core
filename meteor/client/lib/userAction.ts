@@ -123,7 +123,7 @@ function userActionMethodName (
 
 		case UserActionAPI.methods.setInOutPoints: return t('Setting In/Out points')
 		
-		case UserActionAPI.methods.bucketAdlibImport: return t('Importing Bucker Adlib-piece')
+		case UserActionAPI.methods.bucketAdlibImport: return t('Importing Bucket Adlib-piece')
 		case UserActionAPI.methods.bucketAdlibStart: return t('Starting Bucket Adlib-piece')
 	}
 	return method // fallback
