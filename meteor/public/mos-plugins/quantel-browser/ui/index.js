@@ -10,7 +10,8 @@ const classNames = {
 }
 
 const dataAttributeNames = {
-	CLIP: 'clip'
+	CLIP: 'clip',
+	GUID: 'guid'
 }
 
 /**
@@ -42,7 +43,7 @@ async function init({ onTargetSelect, onTargetCancel }) {
 			if (guid) {
 				onTargetSelect(guid)
 
-				const ncsItem = createQuantelClipNcsItem(getSelected())
+				const ncsItem = createQuantelClipNcsItem(clips.find((clip) => clip.guid === guid))
 				dataTransfer.setData('text', new XMLSerializer().serializeToString(ncsItem))
 			}
 		},
