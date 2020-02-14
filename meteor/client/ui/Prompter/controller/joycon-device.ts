@@ -23,13 +23,16 @@ export class JoyconController extends ControllerAbstract {
 	private _updateSpeedHandle: number | null = null
 	private _lastSpeed = 0
 	private _currentPosition = 0
+	private __hasReachedEnd: boolean = true
 	private _joycon: Object | null = null
+	private _haptic: Object | null = null
 
 	constructor (view: PrompterViewInner) {
 		super(view)
 		window.addEventListener('gamepadconnected', e => {
 			if(!this._joycon) {
 				this._joycon = e.gamepad
+				this._haptic = this._joycon.vibrationActuator
 				this._updateScrollPosition()
 			}
 		})
@@ -89,7 +92,18 @@ export class JoyconController extends ControllerAbstract {
 		if (this._currentPosition !== undefined && scrollPosition !== undefined) {
 			if (this._currentPosition === scrollPosition) {
 				// We tried to move, but haven't
+				if(!this._hasReachedEnd && this._lastSpeed !== 0) {
+					this._hasReachedEnd = true
+					this._haptic.playEffect('dual-rumble', {duration: .03, startDelay: 0, strongMagnitude: .08, weakMagnitude: 0})
+					setTimeout(() => {
+						this._haptic.playEffect('dual-rumble', {duration: .02, startDelay: 0, strongMagnitude: .04, weakMagnitude: 0})
+					}, 70)
+				}
+
+				// we stopped moving, either by hitting the boundaries or by letting the joystick go
 				this._lastSpeed = 0
+			} else {
+				this._hasReachedEnd = false
 			}
 			this._currentPosition = scrollPosition
 		}
