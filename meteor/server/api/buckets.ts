@@ -7,6 +7,8 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { literal } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
 import { BucketSecurity } from '../security/buckets'
+import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems';
 
 function createNewBucket(name: string) {
 	const newBucket = literal<Bucket>({
@@ -21,6 +23,12 @@ function createNewBucket(name: string) {
 
 function removeBucket(id: string) {
 	Buckets.remove(id)
+	BucketAdLibs.remove({
+		bucketId: id
+	})
+	ExpectedMediaItems.remove({
+		bucketId: id
+	})
 }
 
 let methods: Methods = {}
