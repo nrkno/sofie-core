@@ -66,7 +66,7 @@ describe('MOS XML to JavaScript object parser', () => {
 				const actual = parseMosPluginMessageXml(generatedXml);
 				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
 
-				expect(actualJson).toEqual(stripEmptyStrings(jsonDoc))
+				expect(actualJson).toEqual(jsonDoc)
 			})
 		})
 		
@@ -88,7 +88,10 @@ describe('MOS XML to JavaScript object parser', () => {
 				const actual = parseMosPluginMessageXml(generatedXml);
 				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
 
-				expect(actualJson).toEqual(stripEmptyStrings(jsonDoc))
+				jsonDoc.EditorialDuration = {} + ''
+				delete jsonDoc.ObjectSlug
+
+				expect(actualJson).toEqual(jsonDoc)
 			})
 		})
 
