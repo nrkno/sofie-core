@@ -144,7 +144,6 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 	actMOSMessage = (e: any, message: any) => {
 		const data: MosPluginMessage | undefined = parseMosPluginMessageXml(message)
-		console.log('converted mos', message, JSON.stringify(fixMosData(data)))
 
 		if (data) {
 			return this.handleMosMessage(e, data)
