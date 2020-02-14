@@ -1,5 +1,6 @@
 import { IMOSObject, IMOSItem, MosString128, IMOSScope, MosTime, MosDuration } from "mos-connection";
 import { Parser as MosParser } from 'mos-connection/dist/mosModel/Parser'
+import * as MosUtils from 'mos-connection/dist/utils/Utils'
 import * as _ from 'underscore'
 
 /**
@@ -45,7 +46,7 @@ export interface MosPluginMessage {
 }
 
 export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | undefined {
-	const doc = nodeToObj(domparser.parseFromString(xmlString, 'text/xml')) as any
+	const doc: any = MosUtils.xml2js(xmlString)
 
 	if (doc && doc.mos) {
 		const res: MosPluginMessage = {}
@@ -61,41 +62,6 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 	} else {
 		return undefined
 	}
-}
-
-function nodeToObj(node: Node): object | string | null {
-	if (node.childNodes && node.childNodes.length) {
-		const obj = {}
-
-		for (const n of node.childNodes) {
-			const { nodeName } = n
-
-			switch (nodeName) {
-				case '#text':
-					const { textContent } = n
-					if (textContent && textContent.trim() !== '') {
-						return textContent
-					}
-					break
-				default:
-					const child = nodeToObj(n)
-					if (obj.hasOwnProperty(nodeName)) {
-						if (_.isArray(obj[nodeName])) {
-							obj[nodeName].push(child)
-						} else {
-							obj[nodeName] = [obj[nodeName], child]
-						}
-
-					} else  {
-						obj[nodeName] = child
-					}
-			}
-		}
-
-		return obj
-	}
-
-	return ""
 }
 
 export function generateMosPluginItemXml(item: IMOSItem): string {
