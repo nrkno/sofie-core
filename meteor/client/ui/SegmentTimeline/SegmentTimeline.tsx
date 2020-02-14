@@ -718,7 +718,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						/>
 					}
 					{
-						this.props.segment.unsynced &&
+						Settings.allowUnsyncedSegments && this.props.segment.unsynced &&
 						t('UNSYNCED')
 					}
 				</div>

@@ -8,6 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { Segment } from '../../../lib/collections/Segments'
 import i18next = require('i18next')
+import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
@@ -68,7 +69,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 						</React.Fragment>}
 					</ContextMenu>
 				</Escape>
-				: segment && segment.unsynced ?
+				: Settings.allowUnsyncedSegments && segment && segment.unsynced ?
 					<Escape to='document'>
 						<ContextMenu id='segment-timeline-context-menu'>
 							<React.Fragment>
