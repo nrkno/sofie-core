@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
