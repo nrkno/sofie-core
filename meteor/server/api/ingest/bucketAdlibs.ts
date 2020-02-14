@@ -9,6 +9,7 @@ import { PackageInfo } from '../../coreSystem'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { BucketId } from '../../../lib/collections/Buckets'
 import { PieceId } from '../../../lib/collections/Pieces'
+import { cleanUpExpectedMediaItemForBucketAdLibPiece, updateExpectedMediaItemForBucketAdLibPiece } from '../expectedMediaItems'
 
 export function updateBucketAdlibFromIngestData(showStyle: ShowStyleCompound, studio: Studio, bucketId: BucketId, ingestData: IngestAdlib): PieceId | null {
 	const { blueprint, blueprintId } = loadShowStyleBlueprints(showStyle)
@@ -27,10 +28,18 @@ export function updateBucketAdlibFromIngestData(showStyle: ShowStyleCompound, st
 
 	if (!rawAdlib) {
 		// Cleanup any old copied
-		BucketAdLibs.remove({
+		const oldAdLibs = BucketAdLibs.find({
 			externalId: ingestData.externalId,
 			showStyleVariantId: showStyle.showStyleVariantId,
 			studioId: studio._id
+		}).fetch()
+
+		cleanUpExpectedMediaItemForBucketAdLibPiece(oldAdLibs.map(adlib => adlib._id))
+
+		BucketAdLibs.remove({
+			_id: {
+				$in: oldAdLibs.map(adlib => adlib._id)
+			}
 		})
 
 		return null
@@ -42,6 +51,8 @@ export function updateBucketAdlibFromIngestData(showStyle: ShowStyleCompound, st
 			showStyleVariantId: showStyle.showStyleVariantId,
 			studioId: studio._id
 		}, adlib)
+
+		updateExpectedMediaItemForBucketAdLibPiece(adlib._id, adlib.bucketId)
 
 		return adlib._id
 	}
