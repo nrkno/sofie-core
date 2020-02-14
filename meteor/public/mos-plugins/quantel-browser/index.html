@@ -5,15 +5,51 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Quantel Clip Browser</title>
 		<style type="text/css">
+			@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700&display=swap&subset=latin-ext');
 			body {
 				color: #fff;
-				font-family: Roboto;
+				font-family: 'Roboto Condensed';
 				font-weight: 400;
+				font-size: 1.1em;
+				margin: 1em;
+			}
+			ol {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			ol > li {
+				display: block;
+				position: relative;
+				padding: 5px 0 5px 1.5em;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+				user-select: none;
+			}
+			ol > li:last-child {
+				border-bottom: none;
+			}
+			ol > li::before {
+				display: block;
+				position: absolute;
+				content: ' ';
+				border-radius: 100%;
+				width: 0.8em;
+				height: 0.8em;
+				top: 50%;
+				left: 0;
+				transform: translate(0, -50%);
+				overflow: hidden;
+				background: linear-gradient(to bottom, #1769ff 50%, #18791c 50%);
+			}
+			ol > li:hover {
+				background: rgba(255, 255, 255, 0.1);
 			}
 		</style>
 	</head>
 	<body>
-		<ol class="clips"></ol>
+		<ol class="clips">
+			<li>Dupa</li>
+		</ol>
 		<script src="./index.js" type="module"></script>
 	</body>
 </html>
