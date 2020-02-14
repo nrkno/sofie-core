@@ -342,20 +342,22 @@ export namespace ServerPlayoutAPI {
 			}))
 
 			let partM = {
+				$set: {
+					taken: true
+				} as Partial<Part>,
+				$unset: {} as { [key in keyof Part]: 0 | 1 },
 				$push: {
 					'timings.take': now,
 					'timings.playOffset': timeOffset || 0
 				}
 			}
 			if (previousPartEndState) {
-				partM['$set'] = literal<Partial<Part>>({
-					previousPartEndState: previousPartEndState
-				})
+				partM.$set.previousPartEndState = previousPartEndState
 			} else {
-				partM['$unset'] = {
-					previousPartEndState: 1
-				}
+				partM.$unset.previousPartEndState = 1
 			}
+			if (Object.keys(partM.$set).length === 0) delete partM.$set
+			if (Object.keys(partM.$unset).length === 0) delete partM.$unset
 			ps.push(asyncCollectionUpdate(Parts, takePart._id, partM))
 			if (m.previousPartId) {
 				ps.push(asyncCollectionUpdate(Parts, m.previousPartId, {
