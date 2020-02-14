@@ -102,7 +102,6 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 	}
 
 	addNewItem = (itemConfig: TableConfigManifestEntry, path: string) => {
-		debugger
 		// create obj for db from defaults
 		let setObject = {}
 		const defaults = {}
