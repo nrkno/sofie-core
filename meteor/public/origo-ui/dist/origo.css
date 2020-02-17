@@ -1266,6 +1266,9 @@ html, body {
   font-size: 16px;
   letter-spacing: 0.5px; }
 
+body {
+  font-size: 1rem; }
+
 p,
 center,
 .table {

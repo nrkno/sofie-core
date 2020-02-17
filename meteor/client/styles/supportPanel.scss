@@ -3,8 +3,8 @@
 
 .status-bar__controls__button.support__toggle-button {
 	position: fixed;
-    right: 5px;
-    bottom: 5px;
+    right: rem(5px);
+    bottom: rem(5px);
     z-index: 310;
     text-align: left;
 
@@ -26,16 +26,16 @@
 
 .support-pop-up-panel {
 	position: fixed;
-    bottom: 13px;
+    bottom: rem(13px);
     right: 0;
     left: auto;
-    margin-right: 60px;
+    margin-right: rem(60px);
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-    padding: 15px 20px;
+    padding: rem(15px) rem(20px);
     z-index: 290;
-	min-height: 50px;
-    max-width: 350px;
+	min-height: rem(50px);
+    max-width: rem(350px);
     
     .support-pop-up-panel__actions {
         margin-top: 1em;

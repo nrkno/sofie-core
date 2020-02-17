@@ -3,15 +3,15 @@
 
 .notification-pop-ups {
     position: fixed;
-    top: 64px;
-    right: 75px;
+    top: 4rem;
+    right: 4.6875rem;
     bottom: 0;
-    width: 400px;
+    width: 25rem;
     z-index: 1000;
     color: #000;
     mask-image: linear-gradient(to bottom, black 0, black 60%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 0, black 60%, transparent 100%);
-    padding: 0 10px;
+    padding: 0 0.625rem;
     overflow: hidden;
     pointer-events: none;
 
@@ -27,22 +27,22 @@
         pointer-events: auto;
 
         &:first-child {
-            margin-top: 15px;
+            margin-top: 0.9375rem;
         }
 
         &:last-child {
-            margin-bottom: 15px;
+            margin-bottom: 0.9375rem;
         }
 
         > .notification-pop-up__header {
             display: block;
             flex: 0;
-            min-width: 40px;
+            min-width: 2.5rem;
             background: $color-status-minor-warning;
             color: $color-status-minor-warning-text;
 
             text-align: center;
-            padding-top: 10px;
+            padding-top: 0.625rem;
         }
 
         &.warning {
@@ -75,7 +75,7 @@
 
         > .notification-pop-up__contents {
             flex: 1;
-            padding: 10px 15px;
+            padding: 0.625rem 0.9375rem;
             cursor: default;
 
             > .notification-pop-up__actions {
@@ -96,8 +96,8 @@
 
         > .notification-pop-up__dismiss {
             flex: 0;
-            min-width: 40px;
-            padding: 10px 10px 0;
+            min-width: 2.5rem;
+            padding: 0.625rem 0.625rem 0;
 
             > .notification-pop-up__dismiss__button {
                 display: block;
@@ -185,7 +185,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: calc(#{$notification-center-width} + 75px);
+    width: calc(#{$notification-center-width} + 4.6875rem);
     z-index: 290;
 
     &::before {
@@ -194,8 +194,8 @@
         position: absolute;
         top: 0;
         bottom: 0;
-        left: -10px;
-        width: 10px;
+        left: -0.625rem;
+        width: 0.625rem;
         background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 100%);
     }
 
@@ -206,7 +206,7 @@
 
     .notification-pop-ups {
         position: absolute;
-        top: 59px;
+        top: ‭3.6875‬rem;
         left: 0;
         bottom: 0;
         overflow: auto;
@@ -259,7 +259,7 @@
 .rundown-view .notification-center-panel {
     background: #eee;
     color: #000;
-    top: 64px;
+    top: 4rem;
 
     &::before {
         content: ' ';
@@ -267,8 +267,8 @@
         position: absolute;
         top: 0;
         bottom: 0;
-        left: -10px;
-        width: 10px;
+        left: -0.625rem;
+        width: 0.625rem;
         background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 100%);
     }
 
@@ -311,10 +311,10 @@
 
 @media screen and (max-width: 1600px) {
     .notification-center-panel {
-        width: calc(25vw + 75px) !important;
+        width: calc(25vw + 4.6875rem) !important;
 
         .notification-pop-ups {
-            width: calc(25vw + 10px) !important;
+            width: calc(25vw + 0.625rem) !important;
         }
     }
 
