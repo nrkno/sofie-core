@@ -373,7 +373,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				})
 
 				const itemsByLayer = _.groupBy(part.pieces, (item) => {
-					return item.outputLayerId + '_' + item.sourceLayerId
+					return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened ?
+						item.outputLayerId + '_' + item.sourceLayer.exclusiveGroup :
+						item.outputLayerId + '_' + item.sourceLayerId
 				})
 				// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 				// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
@@ -382,10 +384,10 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 					for (let i = 1; i < sortedItems.length; i++) {
 						const currentItem = sortedItems[i]
 						const previousItem = sortedItems[i - 1]
-						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null && previousItem.renderedDuration !== null && currentItem.renderedDuration !== null &&
+						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null &&
 							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined) {
-							if ((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
-							 (previousItem.infiniteMode)
+							if ((previousItem.infiniteMode) ||
+								(previousItem.renderedDuration !== null && (previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint))
 								) {
 								previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
 								previousItem.cropped = true

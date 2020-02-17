@@ -654,27 +654,31 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				return a._rank - b._rank
 			}), (outputLayer) => {
 				if (outputLayer.used) {
+					const isCollapsable = outputLayer.sourceLayers !== undefined && outputLayer.sourceLayers.length > 1 && !outputLayer.isFlattened
 					return (
 						<div key={outputLayer._id} className={ClassNames('segment-timeline__output-layer-control', {
-							'collapsable': outputLayer.sourceLayers !== undefined && outputLayer.sourceLayers.length > 1,
-							'collapsed': this.props.collapsedOutputs[outputLayer._id] === true
+							'collapsable': isCollapsable,
+							'collapsed': (this.props.collapsedOutputs[outputLayer._id] !== undefined) ?
+								(this.props.collapsedOutputs[outputLayer._id] === true) :
+								(outputLayer.isDefaultCollapsed)
 						})}>
 							<div className='segment-timeline__output-layer-control__label'
 								data-output-id={outputLayer._id}
 								tabIndex={0}
-								onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>
+								onClick={(e) => isCollapsable && this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>
 								{outputLayer.name}
 							</div>
 							{(
-								outputLayer.sourceLayers !== undefined &&
-								outputLayer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
-									.map((sourceLayer, index, array) => {
-										return (
-											<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer' data-source-id={sourceLayer._id}>
-												{(array.length === 1 || sourceLayer.name === outputLayer.name) ? ' ' : sourceLayer.name}
-											</div>
-										)
-									})
+								(outputLayer.sourceLayers !== undefined && !outputLayer.isFlattened) ?
+									outputLayer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
+										.map((sourceLayer, index, array) => {
+											return (
+												<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer' data-source-id={sourceLayer._id}>
+													{(array.length === 1 || sourceLayer.name === outputLayer.name) ? ' ' : sourceLayer.name}
+												</div>
+											)
+										}) :
+									<div key={outputLayer._id + '_flattened'} className='segment-timeline__output-layer-control__layer' data-source-id={outputLayer.sourceLayers.map(i => i._id).join(',')}>&nbsp;</div>
 							)}
 						</div>
 					)

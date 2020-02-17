@@ -16,7 +16,9 @@ import {
 	setAllowSpeaking,
 	setAllowService,
 	getAllowService,
-	setHelpMode
+	setHelpMode,
+	setUIZoom,
+	getUIZoom
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -67,6 +69,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['speak']) setAllowSpeaking(params['speak'] === '1')
 		if (params['service']) setAllowService(params['service'] === '1')
 		if (params['help']) setHelpMode(params['help'] === '1')
+		if (params['zoom'] && typeof params['zoom'] === 'string') {
+			setUIZoom(parseFloat(params['zoom'] as string || '1') / 100 || 1)
+		}
 
 		if (params['admin']) {
 			const val = params['admin'] === '1'
@@ -110,6 +115,11 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		m.locale(i18n.language)
 		document.documentElement.lang = i18n.language
 		setInterval(this.cronJob, CRON_INTERVAL)
+
+		const uiZoom = getUIZoom()
+		if (uiZoom !== 1) {
+			document.documentElement.style.fontSize = (uiZoom * 16) + 'px'
+		}
 	}
 
 	render () {
