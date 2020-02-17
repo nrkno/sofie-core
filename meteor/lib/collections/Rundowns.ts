@@ -16,6 +16,7 @@ import { RundownNote, GenericNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { createMongoCollection } from './lib'
+import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -195,6 +196,7 @@ export class Rundown implements DBRundown {
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
 		IngestDataCache.remove({ rundownId: this._id })
 		ExpectedMediaItems.remove({ rundownId: this._id })
+		ExpectedPlayoutItems.remove({ rundownId: this._id })
 	}
 	touch () {
 		if (getCurrentTime() - this.modified > 3600 * 1000) {

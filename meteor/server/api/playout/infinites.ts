@@ -179,6 +179,10 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   newPiece.startedPlayback = existingPiece.startedPlayback
 			   newPiece.stoppedPlayback = existingPiece.stoppedPlayback
 			   newPiece.timings = existingPiece.timings
+
+			   if (newPiece.expectedPlayoutItems) {
+				   newPiece.expectedPlayoutItems = []
+			   }
 		   }
 
 		   let pieceToInsert: Piece | null = (allowInsert ? newPiece : null)
@@ -271,7 +275,7 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 			break
 		}
 
-		continuations.forEach(i => Pieces.remove(i))
+		continuations.forEach(i => Pieces.remove(i._id))
 	}
 
 	// ensure adlib is extended correctly if infinite

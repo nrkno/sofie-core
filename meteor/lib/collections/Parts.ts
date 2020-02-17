@@ -160,6 +160,9 @@ export class Part implements DBPart {
 			}, options)
 		).fetch()
 	}
+	getAllAdLibPieces () {
+		return this.getAdLibPieces()
+	}
 	getTimings () {
 		// return a chronological list of timing events
 		let events: Array<{time: Time, type: string, elapsed: Time}> = []

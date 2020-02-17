@@ -11,9 +11,17 @@ import {
 	Timeline
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { ExpectedPlayoutItemGeneric } from './ExpectedPlayoutItems'
+
+// TMP!!!!!!!!!!!!!!!!!!!!
+// This is to be moved into IBlueprintPieceGeneric
+interface IBlueprintPieceGeneriTMPToBeInBlueprints {
+	expectedPlayoutItems?: Array<ExpectedPlayoutItemGeneric>
+}
+
 
 /** A Single item in a "line": script, VT, cameras */
-export interface PieceGeneric extends IBlueprintPieceGeneric {
+export interface PieceGeneric extends IBlueprintPieceGeneric, IBlueprintPieceGeneriTMPToBeInBlueprints {
 	// ------------------------------------------------------------------
 	_id: string
 	/** ID of the source object in MOS */

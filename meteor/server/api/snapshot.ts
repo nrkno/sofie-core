@@ -55,6 +55,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { TimelineEnable } from 'timeline-state-resolver-types/dist/superfly-timeline'
 import { substituteObjectIds } from './playout/lib'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 
 interface RundownSnapshot {
 	version: string
@@ -71,6 +72,7 @@ interface RundownSnapshot {
 	adLibPieces: Array<AdLibPiece>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
+	expectedPlayoutItems: Array<ExpectedPlayoutItem>
 }
 interface SystemSnapshot {
 	version: string
@@ -126,6 +128,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()
+	const expectedPlayoutItems = ExpectedPlayoutItems.find({ rundownId: rundownId }).fetch()
 	const baselineObjs = RundownBaselineObjs.find({ rundownId: rundownId }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: rundownId }).fetch()
 
@@ -152,7 +155,8 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 		pieces,
 		adLibPieces,
 		mediaObjects,
-		expectedMediaItems
+		expectedMediaItems,
+		expectedPlayoutItems,
 	}
 }
 
@@ -506,6 +510,7 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	saveIntoDb(Pieces, { rundownId: rundownId }, updateItemIds(snapshot.pieces, false))
 	saveIntoDb(AdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, updateItemIds(snapshot.expectedMediaItems, true))
+	saveIntoDb(ExpectedPlayoutItems, { rundownId: snapshot.rundownId }, updateItemIds(snapshot.expectedPlayoutItems, true))
 
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
 

@@ -50,6 +50,8 @@ import { PartNote, NoteType } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
+import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -428,6 +430,7 @@ function updateRundownFromIngestData (
 			}
 		})
 	)
+
 	const didChange = anythingChanged(changes)
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
@@ -593,6 +596,7 @@ function updateSegmentFromIngestData (
 export function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
+	updateExpectedPlayoutItemsOnRundown(rundown._id)
 	updatePartRanks(rundown._id)
 	updateSourceLayerInfinitesAfterPart(rundown)
 	UpdateNext.ensureNextPartIsValid(rundown)
