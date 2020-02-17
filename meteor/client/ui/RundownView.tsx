@@ -61,7 +61,8 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } f
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
-import { Settings } from '../../lib/Settings';
+import { Settings } from '../../lib/Settings'
+import { PointerLockCursor } from '../lib/PointerLockCursor'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1908,6 +1909,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
 									rundown={this.props.rundown}
 								/> }
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<PointerLockCursor />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf
