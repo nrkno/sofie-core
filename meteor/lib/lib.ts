@@ -162,22 +162,20 @@ export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface exte
 
 			if (!eql) {
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
-				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id})
+				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id })
 			} else {
 				preparedChanges.unchanged.push(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
-				let p: Promise<any> | undefined
 				let oInsert = (options.beforeInsert ? options.beforeInsert(o) : o)
 				preparedChanges.inserted.push(oInsert)
 			}
 		}
 		delete removeObjs['' + o[identifier]]
 	})
-	_.each(removeObjs, function (obj: DocClass, key) {
+	_.each(removeObjs, function (obj: DocClass) {
 		if (obj) {
-			let p: Promise<any> | undefined
 			let oRemove: DBInterface = (options.beforeRemove ? options.beforeRemove(obj) : obj)
 			preparedChanges.removed.push(oRemove)
 		}
@@ -197,8 +195,6 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
 	const ps: Array<Promise<any>> = []
-
-	const removeObjs: {[id: string]: DocClass} = {}
 
 	const newObjIds: {[identifier: string]: true} = {}
 	const checkInsertId = (id) => {
@@ -270,7 +266,7 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 	waitForPromiseAll(ps)
 
 	if (options.afterRemoveAll) {
-		const objs = _.compact(_.values(removeObjs))
+		const objs = _.compact(preparedChanges.removed || [])
 		if (objs.length > 0) {
 			options.afterRemoveAll(objs)
 		}
