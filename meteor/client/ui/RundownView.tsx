@@ -239,7 +239,8 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_NEXT_UP = 'shift+f10',
 	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR	= 'backspace'
+	RUNDOWN_LOG_ERROR	= 'backspace',
+	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = ''
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -1601,6 +1602,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		const { t } = this.props
 		if (this.state.studioMode && (segmentId || segmentId === null) && this.props.rundown) {
 			doUserAction(t, e, UserActionAPI.methods.setNextSegment, [this.props.rundown._id, segmentId], (err, res) => {
+				if (err) console.error(err)
 				this.setState({
 					manualSetAsNext: true
 				})

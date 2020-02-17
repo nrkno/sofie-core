@@ -170,7 +170,7 @@ export function createPieceGroup (
 		}
 	})
 }
-export function getResolvedPieces (part: Part): Piece[] {
+export function getResolvedPieces (part: Part, allPieces?: Piece[]): Piece[] {
 	// TODO - was this mangled for endState and could it have broken something else?
 	let pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
 

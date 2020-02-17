@@ -394,8 +394,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							layout={rundownLayout}
 							visible={true}
 							rundown={this.props.rundown}
-							showStyleBase={this.props.showStyleBase}
-							studioMode={this.props.studioMode}
 							{...this.props}
 							/> :
 						undefined

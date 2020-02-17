@@ -1,6 +1,7 @@
 import { check } from 'meteor/check'
 import { PieceGeneric, Piece } from '../../../lib/collections/Pieces'
-import { ExpectedPlayoutItem, ExpectedPlayoutItemGeneric, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
