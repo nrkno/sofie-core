@@ -391,6 +391,9 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 			rundownId: rundownId,
 			partId: currentPartId,
 			dynamicallyInserted: true,
+			startedPlayback: {
+				$exists: true
+			},
 			$and: [
 				{
 					$or: [{
