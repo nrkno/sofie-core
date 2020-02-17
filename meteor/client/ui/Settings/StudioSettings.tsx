@@ -314,6 +314,19 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<i>{t('The layer in a channel to use')}</i>
 					</label>
 				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Preview when not on air')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.previewWhenNotOnAir'}
+							obj={this.props.studio}
+							type='checkbox'
+							collection={Studios}
+							className='input'></EditAttribute>
+						<i>{t('Whether to load to first frame')}</i>
+					</label>
+				</div>
 			</React.Fragment>
 		)
 	}
