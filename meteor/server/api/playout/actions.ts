@@ -108,7 +108,12 @@ export function deactivateRundownInner (rundown: Rundown) {
 
 	IngestActions.notifyCurrentPlayingPart(rundown, null)
 }
-export function prepareStudioForBroadcast (studio: Studio) {
+/**
+ * Prepares studio before a broadcast is about to start
+ * @param studio
+ * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
+ */
+export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boolean) {
 	logger.info('prepareStudioForBroadcast ' + studio._id)
 
 	const ssrcBgs: Array<IConfigItem> = _.compact([
@@ -124,7 +129,6 @@ export function prepareStudioForBroadcast (studio: Studio) {
 	}).fetch()
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
-		let okToDestoryStuff = true
 		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
 			if (err) {
 				logger.error(err)
@@ -133,14 +137,39 @@ export function prepareStudioForBroadcast (studio: Studio) {
 			}
 		}, 'devicesMakeReady', okToDestoryStuff)
 
-		if (ssrcBgs.length > 0) {
-			PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-				if (err) {
-					logger.error(err)
-				} else {
-					logger.info('Added Super Source BG to Atem')
-				}
-			}, 'uploadFileToAtem', ssrcBgs)
+		if (okToDestoryStuff) {
+			if (ssrcBgs.length > 0) {
+				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+					if (err) {
+						logger.error(err)
+					} else {
+						logger.info('Added Super Source BG to Atem')
+					}
+				}, 'uploadFileToAtem', ssrcBgs)
+			}
 		}
+	})
+}
+/**
+ * Makes a studio "stand down" after a broadcast
+ * @param studio
+ * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
+ */
+export function standDownStudio (studio: Studio, okToDestoryStuff: boolean) {
+	logger.info('standDownStudio ' + studio._id)
+
+	let playoutDevices = PeripheralDevices.find({
+		studioId: studio._id,
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+	}).fetch()
+
+	_.each(playoutDevices, (device: PeripheralDevice) => {
+		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+			if (err) {
+				logger.error(err)
+			} else {
+				logger.info('devicesStandDown OK')
+			}
+		}, 'devicesStandDown', okToDestoryStuff)
 	})
 }
