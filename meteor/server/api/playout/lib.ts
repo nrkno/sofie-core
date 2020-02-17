@@ -55,6 +55,7 @@ export function resetRundown (rundown: Rundown) {
 			duration: 1,
 			previousPartEndState: 1,
 			startedPlayback: 1,
+			taken: 1,
 			timings: 1,
 			runtimeArguments: 1,
 			stoppedPlayback: 1
@@ -538,6 +539,7 @@ function resetPart (part: DBPart): Promise<void> {
 			duration: 1,
 			previousPartEndState: 1,
 			startedPlayback: 1,
+			taken: 1,
 			runtimeArguments: 1,
 			dirty: 1,
 			stoppedPlayback: 1

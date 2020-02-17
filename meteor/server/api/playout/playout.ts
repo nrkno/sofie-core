@@ -356,31 +356,36 @@ export namespace ServerPlayoutAPI {
 			let partInstanceM: any = {
 				$set: {
 					isTaken: true,
+					'part.taken': true
 				},
+				$unset: {} as { string: 0 | 1 },
 				$push: {
 					'part.timings.take': now,
 					'part.timings.playOffset': timeOffset || 0
 				}
 			}
 			let partM = {
+				$set: {
+					taken: true
+				} as Partial<Part>,
+				$unset: {} as { [key in keyof Part]: 0 | 1 },
 				$push: {
 					'timings.take': now,
 					'timings.playOffset': timeOffset || 0
 				}
 			}
 			if (previousPartEndState) {
-				partInstanceM['$set']['part.previousPartEndState'] = previousPartEndState
-				partM['$set'] = literal<Partial<Part>>({
-					previousPartEndState: previousPartEndState
-				})
+				partInstanceM.$set['part.previousPartEndState'] = previousPartEndState
+				partM.$set.previousPartEndState = previousPartEndState
 			} else {
-				partInstanceM['$unset'] = {
-					'part.previousPartEndState': 1
-				}
-				partM['$unset'] = {
-					previousPartEndState: 1
-				}
+				partInstanceM.$unset['part.previousPartEndState'] = 1
+				partM.$unset.previousPartEndState = 1
 			}
+			if (Object.keys(partM.$set).length === 0) delete partM.$set
+			if (Object.keys(partM.$unset).length === 0) delete partM.$unset
+			if (Object.keys(partInstanceM.$set).length === 0) delete partInstanceM.$set
+			if (Object.keys(partInstanceM.$unset).length === 0) delete partInstanceM.$unset
+
 			ps.push(asyncCollectionUpdate(PartInstances, takePartInstance._id, partInstanceM))
 			// TODO-PartInstance - pending new data flow
 			ps.push(asyncCollectionUpdate(Parts, takePartInstance.part._id, partM))
@@ -1093,53 +1098,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownPlaylistId, String)
 		check(sourceLayerId, String)
 
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Playout, () => {
-			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!playlist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
-
-			const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
-			if (!currentPartInstance) throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
-
-			const rundown = Rundowns.findOne(currentPartInstance.rundownId)
-			if (!rundown) throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
-
-			let showStyleBase = rundown.getShowStyleBase()
-
-			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
-			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
-			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
-
-			const lastPieceInstances = PieceInstances.find({
-				rundownId: rundown._id,
-				'piece.sourceLayerId': sourceLayer._id,
-				'piece.startedPlayback': {
-					$exists: true
-				}
-			}, {
-				sort: {
-					'piece.startedPlayback': -1
-				},
-				limit: 1
-			}).fetch()
-
-			if (lastPieceInstances.length > 0) {
-				const lastPiece = convertPieceToAdLibPiece(lastPieceInstances[0].piece)
-				const newAdLibPieceInstance = convertAdLibToPieceInstance(lastPiece, currentPartInstance, false)
-
-				PieceInstances.insert(newAdLibPieceInstance)
-				// TODO-PartInstance - pending new data flow
-				Pieces.insert(newAdLibPieceInstance.piece)
-
-				// logger.debug('adLibItemStart', newPiece)
-
-				cropInfinitesOnLayer(rundown, currentPartInstance, newAdLibPieceInstance)
-				stopInfinitesRunningOnLayer(playlist, rundown, currentPartInstance, newAdLibPieceInstance.piece.sourceLayerId)
-
-				updateTimeline(playlist.studioId)
-			}
-		})
+		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(rundownPlaylistId, sourceLayerId)
 	}
 	export function sourceLayerOnPartStop (rundownPlaylistId: string, partInstanceId: string, sourceLayerId: string) {
 		check(rundownPlaylistId, String)

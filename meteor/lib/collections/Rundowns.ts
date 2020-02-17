@@ -12,7 +12,7 @@ import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { RundownNote } from '../api/notes'
+import { RundownNote, GenericNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
@@ -298,12 +298,12 @@ export class Rundown implements DBRundown {
 		})
 		return timings
 	}
-	getNotes (): Array<RundownNote> {
-		let notes: Array<RundownNote> = []
-		notes = notes.concat(this.notes || [])
+	// getNotes (): Array<RundownNote> {
+	// 	let notes: Array<RundownNote> = []
+	// 	notes = notes.concat(this.notes || [])
 
-		return notes
-	}
+	// 	return notes
+	// }
 	appendNote (note: RundownNote): void {
 		Rundowns.update(this._id, {$push: {
 			notes: note

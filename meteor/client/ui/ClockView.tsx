@@ -88,6 +88,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 						}
 						return literal<PartUi>({
 							instance,
+							partId: part._id,
 							pieces: [],
 							renderedDuration: part.expectedDuration ? 0 : displayDuration,
 							startsAt: 0,

@@ -27,7 +27,7 @@ export interface IAdLibListItem {
 	floated?: boolean
 }
 
-interface IDashboardButtonProps {
+export interface IDashboardButtonProps {
 	item: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
@@ -38,8 +38,8 @@ interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 }
-const DEFAULT_BUTTON_WIDTH = 6.40625
-const DEFAULT_BUTTON_HEIGHT = 5.625
+export const DEFAULT_BUTTON_WIDTH = 6.40625
+export const DEFAULT_BUTTON_HEIGHT = 5.625
 
 interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
@@ -135,7 +135,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 				'live': this.props.isOnAir
-			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
+			}, this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: this.props.widthScale ?
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
@@ -148,7 +148,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				data-obj-id={this.props.item._id}
 				>
 				{
-					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					this.props.layer && (this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
 						this.renderVTLiveSpeak() :
 						null
 				}

@@ -13,7 +13,7 @@ import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, GenericNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 
@@ -77,7 +77,7 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
-	notes: Array<PartNote>
+	notes: Array<GenericNote>
 	mosStatus: PeripheralDeviceAPI.StatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
@@ -151,12 +151,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	})
 
-	const segments = Segments.find({ rundownId: { $in: props.rundownIDs } }).fetch()
-
-	let notes: Array<PartNote> = []
-	_.each(segments, s => {
-		notes = notes.concat(s.getNotes(true, true))
-	})
+	let notes: Array<GenericNote> = props.playlist.getAllStoredNotes()
 
 	return {
 		notes,
@@ -226,7 +221,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 
 	}
-	clickNote (e, note: PartNote) {
+	clickNote (e, note: GenericNote) {
 		e.preventDefault()
 
 		let segmentId = note.origin.segmentId

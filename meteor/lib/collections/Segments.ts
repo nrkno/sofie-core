@@ -33,6 +33,7 @@ export class Segment implements DBSegment {
 	public status?: string
 	public expanded?: boolean
 	public notes?: Array<PartNote>
+	public isHidden?: boolean
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {
@@ -55,19 +56,19 @@ export class Segment implements DBSegment {
 			}, options)
 		).fetch()
 	}
-	getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
-		let notes: Array<PartNote> = []
+	// getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
+	// 	let notes: Array<PartNote> = []
 
-		if (includeParts) {
-			const parts = this.getParts()
-			_.each(parts, l => {
-				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
-			})
-		}
+	// 	if (includeParts) {
+	// 		const parts = this.getParts()
+	// 		_.each(parts, l => {
+	// 			notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
+	// 		})
+	// 	}
 
-		notes = notes.concat(this.notes || [])
-		return notes
-	}
+	// 	notes = notes.concat(this.notes || [])
+	// 	return notes
+	// }
 }
 
 // export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })

@@ -6,7 +6,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment } from '../../../lib/collections/Segments'
 import { Part, Parts } from '../../../lib/collections/Parts'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -28,7 +28,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter, RundownLayoutFilterBase, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal, normalizeArray } from '../../../lib/lib'
+import { literal, extendMandadory, normalizeArray } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
@@ -100,6 +100,15 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 			filter.label.reduce((p, v) => {
 				return p || uppercaseLabel.indexOf(v.toUpperCase()) >= 0
 			}, false) === false
+		) {
+			return false
+		}
+		// Item tags needs to contain all of the strings in the tags array
+		if (
+			filter.tags !== undefined &&
+			filter.tags.reduce((p, v) => {
+				return p && (item.tags && item.tags.indexOf(v) >= 0)
+			}, true) === false
 		) {
 			return false
 		}
@@ -392,81 +401,82 @@ export interface IAdLibPanelTrackedProps {
 }
 
 export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
-	let liveSegment: AdlibSegmentUi | undefined = undefined
-
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse: { [key: string]: number} = {}
 
-	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
-	let segments: Array<Segment> = props.playlist.getSegments(undefined, {
-		fields: {
-			'_id': 1,
-			'_rank': 1,
-			'name': 1,
-			'rundownId': 1
+	if (!props.playlist || !props.showStyleBase) {
+		return {
+			uiSegments: [],
+			liveSegment: undefined,
+			sourceLayerLookup,
+			rundownBaselineAdLibs: []
 		}
-	})
+	}
 
+	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
+	
+	const segments = props.playlist.getSegments()
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
-	const uiSegments = memoizedIsolatedAutorun((
+	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun((
 		currentPartId: string,
 		nextPartId: string,
 		segments: Segment[],
 		sourceLayerLookup: SourceLayerLookup,
 		sourceHotKeyUse: { [key: string]: number}
 	) => {
-		return segments ? segments.map((segSource) => {
-			const segParts = segSource.getParts(undefined, {
-				fields: {
-					'_id': 1,
-					'_rank': 1,
-					'name': 1,
-					'rundownId': 1
-				}
-			})
+		if (!segments) {
+			return {
+				uiSegments: [],
+				liveSegment: undefined,
+				uiPartSegmentMap: new Map<string, AdlibSegmentUi>()
+			}
+		}
 
-			const seg = literal<AdlibSegmentUi>({
-				...segSource,
-				parts: segParts,
-				// Filled in below
+		let liveSegment: AdlibSegmentUi | undefined
+		const uiSegmentMap = new Map<string, AdlibSegmentUi>()
+		const uiSegments: Array<AdlibSegmentUi> = segments.map((segment) => {
+			const segmentUi = literal<AdlibSegmentUi>({
+				...segment,
+				parts: [],
+				pieces: [],
+				status: undefined,
+				expanded: undefined,
 				isLive: false,
-				isNext: false,
+				isNext: false
 			})
+			uiSegmentMap.set(segmentUi._id, segmentUi)
+			return segmentUi
+		})
+		
+		// This is a map of partIds mapped onto segments they are part of
+		const uiPartSegmentMap = new Map<string, AdlibSegmentUi>()
 
-			let segmentAdLibPieces: Array<AdLibPiece> = []
-			seg.parts.forEach((part) => {
+		props.playlist.getParts({
+			segmentId: {
+				$in: Array.from(uiSegmentMap.keys())
+			}
+		}, ).forEach((part) => {
+			const segment = uiSegmentMap.get(part.segmentId)
+			if (segment) {
+				segment.parts.push(part)
 				if (part._id === currentPartId) {
-					seg.isLive = true
-					liveSegment = seg
+					segment.isLive = true
+					liveSegment = segment
 				}
 				if (part._id === nextPartId) {
-					seg.isNext = true
+					segment.isNext = true
 				}
-				segmentAdLibPieces = segmentAdLibPieces.concat(part.getAdLibPieces())
-			})
-			seg.pieces = segmentAdLibPieces
-
-			// automatically assign hotkeys based on adLibItem index
-			if (seg.isLive) {
-				seg.pieces.forEach((item) => {
-					let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
-
-					if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-						let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-						const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
-						if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-							item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
-							// add one to the usage hash table
-							sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-						}
-					}
-				})
+				uiPartSegmentMap.set(part._id, segment)
 			}
-			return seg
-		}) : []
+		})
+		return {
+			uiSegments,
+			uiPartSegmentMap,
+			liveSegment
+		}
 	},
 	'uiSegments',
 	currentPartInstance ? currentPartInstance.part._id : undefined,
@@ -474,6 +484,39 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	segments,
 	sourceLayerLookup,
 	sourceHotKeyUse)
+
+	AdLibPieces.find({
+		rundownId: {
+			$in: props.playlist.getRundownIDs(),
+		},
+		partId: {
+			$in: Array.from(uiPartSegmentMap.keys())
+		}
+	}, {
+		sort: { _rank: 1 }
+	}).fetch().forEach((piece) => {
+		const segment = uiPartSegmentMap.get(piece.partId!)
+		if (segment) {
+			segment.pieces!.push(piece)
+		}
+	})
+
+	if (liveSegment) {
+		liveSegment.pieces!.forEach((item) => {
+			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+
+			if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
+				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
+				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+					item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
+					// add one to the usage hash table
+					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+				}
+			}
+		})
+	}
+
 
 	let currentRundown: Rundown | undefined = undefined
 	let rundownBaselineAdLibs: Array<AdLibPieceUi> = []

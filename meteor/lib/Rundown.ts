@@ -115,6 +115,8 @@ export function getResolvedSegment (
 	isNextSegment: boolean,
 	/** The part that is currently on air, if the Segment is on air */
 	currentLivePart: PartExtended | undefined,
+	/** The part that is currently set as next, if the Segment is next */
+	currentNextPart: PartExtended | undefined,
 	/** A flag if any of the Parts have a Piece on a Layer with the 'Remote' flag on */
 	hasRemoteItems: boolean,
 	/** A flag if any of the Parts have a Piece on a Layer with the 'Guest' flag on */
@@ -129,6 +131,7 @@ export function getResolvedSegment (
 	let isLiveSegment = false
 	let isNextSegment = false
 	let currentLivePart: PartExtended | undefined = undefined
+	let currentNextPart: PartExtended | undefined = undefined
 	// let nextPart: PartExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
@@ -204,7 +207,7 @@ export function getResolvedSegment (
 		const TIMELINE_TEMP_OFFSET = 1
 
 		// create a lookup map to match original pieces to their resolved counterparts
-		let piecesLookup: IPieceExtendedDictionary = {}
+		let piecesLookup = new Map<string, PieceExtended>()
 		// a buffer to store durations for the displayDuration groups
 		const displayDurationGroups: _.Dictionary<number> = {}
 
@@ -240,6 +243,7 @@ export function getResolvedSegment (
 			}
 			if (nextPartInstance && nextPartInstance._id === partE.instance._id) {
 				isNextSegment = true
+				currentNextPart = partE
 			}
 			autoNextPart = !!(
 				currentLivePart &&
@@ -302,10 +306,11 @@ export function getResolvedSegment (
 				}
 
 				// add the piece to the map to make future searches quicker
-				piecesLookup[piece.instance.piece._id] = piece
-				if (piece.instance.piece.continuesRefId && piecesLookup[piece.instance.piece.continuesRefId]) {
-					piecesLookup[piece.instance.piece.continuesRefId].continuedByRef = piece
-					piece.continuesRef = piecesLookup[piece.instance.piece.continuesRefId]
+				piecesLookup.set(piece.instance.piece._id, piece)
+				const continues = piece.instance.piece.continuesRefId && piecesLookup.get(piece.instance.piece.continuesRefId)
+				if (piece.instance.piece.continuesRefId && continues) {
+					continues.continuedByRef = piece
+					piece.continuesRef = continues
 				}
 			})
 
@@ -316,9 +321,9 @@ export function getResolvedSegment (
 			_.each(tlResolved.objects, (obj) => {
 				if (obj.resolved.resolved) {
 					// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
-					let piece = piecesLookup[obj.content.id]
+					let piece = piecesLookup.get(obj.content.id)
 					const instance = obj.resolved.instances[0]
-					if (instance) {
+					if (piece && instance) {
 						piece.renderedDuration = instance.end ? (instance.end - instance.start) : null
 
 						// if there is no renderedInPoint, use 0 as the starting time for the item
@@ -463,6 +468,7 @@ export function getResolvedSegment (
 		parts: partsE,
 		isLiveSegment,
 		currentLivePart,
+		currentNextPart,
 		isNextSegment,
 		hasAlreadyPlayed,
 		hasGuestItems,

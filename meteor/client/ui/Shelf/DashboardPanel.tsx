@@ -50,6 +50,7 @@ interface IState {
 interface IDashboardPanelProps {
 	searchFilter?: string | undefined
 	mediaPreviewUrl?: string
+	shouldQueue: boolean
 }
 
 interface IDashboardPanelTrackedProps {
@@ -61,7 +62,7 @@ interface IDashboardPanelTrackedProps {
 
 const HOTKEY_GROUP = 'DashboardPanel'
 
-export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	const unfinishedPieceInstances = _.groupBy(props.playlist.currentPartInstanceId ? PieceInstances.find({
 		partInstanceId: props.playlist.currentPartInstanceId,
 		'piece.startedPlayback': {
@@ -307,6 +308,8 @@ export const DashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboard
 
 	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
+
+		queue = queue || this.props.shouldQueue
 
 		if (adlibPiece.invalid) {
 			NotificationCenter.push(new Notification(

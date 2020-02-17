@@ -38,7 +38,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import { scrollToPart, scrollToPosition, scrollToSegment, maintainFocusOnPartInstance, scrollToPartInstance } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
@@ -46,7 +46,7 @@ import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction, callMethod } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
@@ -64,14 +64,18 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { AdlibSegmentUi } from './Shelf/AdLibPanel'
 import { OffsetPosition } from '../utils/positions'
+import { Settings } from '../../lib/Settings';
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
 }
-class KeyboardFocusMarker extends React.Component<{}, IKeyboardFocusMarkerState> {
-	keyboardFocusInterval: number
+interface IKeyboardFocusMarkerProps {
+}
+class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
+	private keyboardFocusInterval: number
+	private static readonly SYNTHETIC_TIMER_EVENT = { type: 'interval' }
 
 	constructor (props) {
 		super(props)
@@ -82,10 +86,11 @@ class KeyboardFocusMarker extends React.Component<{}, IKeyboardFocusMarkerState>
 	}
 
 	componentDidMount () {
-		this.keyboardFocusInterval = Meteor.setInterval(this.checkFocus, 3000)
+		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(KeyboardFocusMarker.SYNTHETIC_TIMER_EVENT), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
 		document.body.addEventListener('mousedown', this.checkFocus)
+		document.addEventListener('visibilitychange', this.checkFocus)
 	}
 
 	componentWillUnmount () {
@@ -93,14 +98,21 @@ class KeyboardFocusMarker extends React.Component<{}, IKeyboardFocusMarkerState>
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
 		document.body.removeEventListener('mousedown', this.checkFocus)
+		document.removeEventListener('visibilitychange', this.checkFocus)
 	}
 
-	checkFocus = () => {
+	checkFocus = (e: object) => {
 		const focusNow = document.hasFocus()
 		if (this.state.inFocus !== focusNow) {
 			this.setState({
 				inFocus: focusNow
 			})
+			const viewInfo = [ window.location.href + window.location.search, window.innerWidth, window.innerHeight, getAllowStudio(), getAllowConfigure(), getAllowService() ]
+			if (focusNow) {
+				callMethod(e, UserActionAPI.methods.guiFocused, viewInfo)
+			} else {
+				callMethod(e, UserActionAPI.methods.guiBlurred, viewInfo)
+			}
 		}
 	}
 
@@ -1122,7 +1134,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownPlaylistId: playlistId,
 		rundowns,
-		segments: playlist ? playlist.getSegments() : [],
+		segments: playlist ? playlist.getSegments({
+			isHidden: {
+				$ne: true
+			}
+		}) : [],
 		playlist,
 		studio,
 		showStyleBase: rundowns.length > 0 ?
@@ -1858,7 +1874,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 							'rundown-view--studio-mode': this.state.studioMode
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
-								{ this.state.studioMode && <KeyboardFocusMarker /> }
+								{ this.state.studioMode && !Settings.disableBlurBorder && <KeyboardFocusMarker /> }
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<RundownFullscreenControls

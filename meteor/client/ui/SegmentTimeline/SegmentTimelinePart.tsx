@@ -49,7 +49,7 @@ interface ISourceLayerProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	relative?: boolean
+	relative: boolean
 	totalSegmentDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
@@ -163,15 +163,19 @@ interface IOutputGroupProps {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
+	relative: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
-class OutputGroup extends React.Component<IOutputGroupProps> {
+class OutputGroup extends React.PureComponent<IOutputGroupProps> {
+	static whyDidYouRender = true
+	
 	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
 			return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
 				.map((sourceLayer) => {
 					return <SourceLayer key={sourceLayer._id}
 						{...this.props}
+						relative={this.props.relative}
 						layer={sourceLayer}
 						playlist={this.props.playlist}
 						outputLayer={this.props.layer}
@@ -226,7 +230,7 @@ interface IProps {
 	autoNextPart: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
-	relative?: boolean
+	relative: boolean
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
@@ -339,6 +343,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
+	shouldComponentUpdate (nextProps: WithTiming<IProps>, nextState: IState) {
+		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
+	}
+
 	getLayerStyle () {
 		// this.props.part.expectedDuration ||
 		if (this.props.relative) {
@@ -407,7 +415,17 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 				if (layer.used) {
 					return (
 						<OutputGroup key={layer._id}
-							{...this.props}
+							collapsedOutputs={this.props.collapsedOutputs}
+							followLiveLine={this.props.followLiveLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							onContextMenu={this.props.onContextMenu}
+							onFollowLiveLine={this.props.onFollowLiveLine}
+							onPieceClick={this.props.onPieceClick}
+							onPieceDoubleClick={this.props.onPieceDoubleClick}
+							scrollLeft={this.props.scrollLeft}
+							scrollWidth={this.props.scrollWidth}
+							relative={this.props.relative}
 							mediaPreviewUrl={ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}

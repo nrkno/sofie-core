@@ -4,9 +4,9 @@ import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, extendMandadory, normalizeArray } from '../../../lib/lib'
+import { getCurrentTime, extendMandadory, normalizeArray, literal } from '../../../lib/lib'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Segment } from '../../../lib/collections/Segments'
+import { Segment, DBSegment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RundownTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -16,7 +16,7 @@ import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
 
-interface SegmentUi extends Segment {
+interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
 }
 
@@ -128,38 +128,37 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 	if (props.rundownPlaylistId) playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 	let segments: Array<SegmentUi> = []
 	if (playlist) {
-		segments = playlist.getSegments().map((s) => extendMandadory<Segment, SegmentUi>(s, {
-			items: []
-		}))
-		const segmentsMap = normalizeArray(segments, '_id')
-		const parts = playlist.getParts()
-		const partInstances = playlist.getActivePartInstances()
+		const segmentMap = new Map<string, SegmentUi>()
+		segments = playlist.getSegments({
+			isHidden: {
+				$ne: true
+			}
+		}).map((segment) => {
+			const segmentUi = literal<SegmentUi>({
+				...segment,
+				items: []
+			}) 
+			segmentMap.set(segment._id, segmentUi)
+			return segmentUi
+		})
 
-		parts.forEach(p => {
-			const instance = findPartInstanceOrWrapToTemporary(partInstances, p)
-			segmentsMap[p.segmentId].items.push({
+		const partInstances = playlist.getActivePartInstances()
+		playlist.getParts({
+			segmentId: {
+				$in: Array.from(segmentMap.keys())
+			}
+		}).map((part) => {
+			const instance = findPartInstanceOrWrapToTemporary(partInstances, part)
+			const partUi = literal<PartUi>({
+				partId: part._id,
 				instance,
 				pieces: [],
 				renderedDuration: 0,
 				startsAt: 0,
 				willProbablyAutoNext: false
 			})
+			segmentMap.get(part.segmentId)!.items.push(partUi)
 		})
-
-		// segments = _.map(playlist.getSegments(), (segment) => {
-		// 	return extendMandadory<Segment, SegmentUi>(segment, {
-		// 		items: _.map(segment.getParts(), (part) => {
-		// 			let sle = extendMandadory<Part, PartExtended>(part, {
-		// 				pieces: [],
-		// 				renderedDuration: 0,
-		// 				startsAt: 0,
-		// 				willProbablyAutoNext: false
-		// 			})
-
-		// 			return extendMandadory<PartExtended, PartUi>(sle, {})
-		// 		})
-		// 	})
-		// })
 	}
 	return {
 		segments,

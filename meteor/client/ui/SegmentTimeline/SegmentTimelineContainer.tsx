@@ -29,6 +29,9 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { literal } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
+export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
+export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
+const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 import { Settings } from '../../../lib/Settings'
 
 export interface SegmentUi extends SegmentExtended {
@@ -90,6 +93,7 @@ interface ITrackedProps {
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
 	currentLivePart: PartUi | undefined,
+	currentNextPart: PartUi | undefined,
 	hasRemoteItems: boolean,
 	hasGuestItems: boolean,
 	hasAlreadyPlayed: boolean,
@@ -110,6 +114,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			isLiveSegment: false,
 			isNextSegment: false,
 			currentLivePart: undefined,
+			currentNextPart: undefined,
 			hasRemoteItems: false,
 			hasGuestItems: false,
 			hasAlreadyPlayed: false,
@@ -121,7 +126,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
 	let notes: Array<PartNote> = []
 	_.each(o.parts, (part) => {
-		notes = notes.concat(part.instance.part.getNotes(true), part.instance.part.getInvalidReasonNotes())
+		notes = notes.concat(part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase), part.instance.part.getInvalidReasonNotes())
 	})
 	notes = notes.concat(segment.notes || [])
 
@@ -131,6 +136,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		segmentNotes: notes,
 		isLiveSegment: o.isLiveSegment,
 		currentLivePart: o.currentLivePart,
+		currentNextPart: o.currentNextPart,
 		isNextSegment: o.isNextSegment,
 		hasAlreadyPlayed: o.hasAlreadyPlayed,
 		hasRemoteItems: o.hasRemoteItems,
@@ -195,9 +201,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	isLiveSegment: boolean
 	isVisible: boolean
+	rundownCurrentPartInstanceId: string | null
 	timelineDiv: HTMLDivElement
 	intersectionObserver: IntersectionObserver | undefined
 	mountedTime: number
+	playbackSimulationPercentage: number = 0
+
 
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
@@ -212,6 +221,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		this.isLiveSegment = props.isLiveSegment || false
 		this.isVisible = false
+	}
+
+	shouldComponentUpdate (nextProps: IProps & ITrackedProps, nextState: IState) {
+		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
 	}
 
 	componentWillMount () {
@@ -229,6 +242,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentDidMount () {
+		this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
 			this.startLive()
@@ -242,7 +256,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		})
 	}
 
-	componentDidUpdate (prevProps) {
+	componentDidUpdate (prevProps: IProps & ITrackedProps) {
+		if (this.rundownCurrentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
+			this.playbackSimulationPercentage = 0
+		}
+
+		this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
+
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -254,12 +274,33 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 		}
 
+		if (
+			// the segment isn't live, is next, and the nextPartId has changed
+			!this.props.isLiveSegment &&
+			this.props.isNextSegment &&
+			this.props.currentNextPart &&
+			this.props.playlist.nextPartInstanceId &&
+			prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId
+		) {
+			const partOffset = this.context.durations &&
+				this.context.durations.partDisplayStartsAt &&
+				(this.context.durations.partDisplayStartsAt[this.props.currentNextPart.partId]
+					- this.context.durations.partDisplayStartsAt[this.props.parts[0].instance.part._id])
+				|| 0
+
+			if (this.state.scrollLeft > partOffset) {
+				this.setState({
+					scrollLeft: partOffset
+				})
+			}
+		}
+
 		// rewind all scrollLeft's to 0 on rundown activate
-		if (this.props.playlist && this.props.playlist.active && prevProps.rundown && !prevProps.rundown.active) {
+		if (this.props.playlist && this.props.playlist.active && prevProps.playlist && !prevProps.playlist.active) {
 			this.setState({
 				scrollLeft: 0
 			})
-		} else if (this.props.playlist && !this.props.playlist.active && prevProps.rundown && prevProps.rundown.active) {
+		} else if (this.props.playlist && !this.props.playlist.active && prevProps.playlist && prevProps.playlist.active) {
 			this.setState({
 				livePosition: 0
 			})
@@ -310,18 +351,39 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
 			const currentLivePart = this.props.currentLivePart.instance.part
 
+			let simulationPercentage = this.playbackSimulationPercentage
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
 				(this.context.durations.partDisplayStartsAt[currentLivePart._id]
 					- this.context.durations.partDisplayStartsAt[this.props.parts[0].instance.part._id])
 				|| 0
 
+			let isExpectedToPlay: boolean = currentLivePart.startedPlayback || false
+			const lastTake = currentLivePart.getLastTake()
 			const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
+			let virtualStartedPlayback = ((lastTake || 0) > (lastStartedPlayback || -1)) ? lastTake : lastStartedPlayback
+			if (currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
+				isExpectedToPlay = true
+				// console.log('Simulated playback')
+
+				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
+				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
+					// console.log('Within crossfade range', virtualStartedPlayback, lastStartedPlayback, simulationPercentage)
+					if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
+						// console.log(simulationPercentage)
+						virtualStartedPlayback = (simulationPercentage * lastStartedPlayback) + ((1 - simulationPercentage) * lastTake)
+					}
+				}
+			}
 			const lastPlayOffset = currentLivePart.getLastPlayOffset() || 0
 
-			let newLivePosition = currentLivePart.startedPlayback && lastStartedPlayback ?
-				(e.detail.currentTime - lastStartedPlayback + partOffset) :
+			let newLivePosition = (isExpectedToPlay) && virtualStartedPlayback ?
+				(e.detail.currentTime - virtualStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
+
+			if (lastStartedPlayback && simulationPercentage < 1) {
+				this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
+			}
 
 			this.setState(_.extend({
 				livePosition: newLivePosition
@@ -397,6 +459,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 
+	onZoomChange = (newScale: number, e: any) => {
+		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
+	}
+
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
@@ -429,7 +495,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
 				onShowEntireSegment={this.onShowEntireSegment}
-				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
+				onZoomChange={this.onZoomChange}
 				onScroll={this.onScroll}
 				followingPart={this.props.followingPart}
 				isLastSegment={this.props.isLastSegment}

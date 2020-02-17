@@ -197,11 +197,11 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					</div>
 					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.timelineWidth / this.props.timeScale}
-						onScroll={(left, e) => this.props.onScroll(left, e)}
+						onScroll={this.props.onScroll}
 						segmentDuration={this.getSegmentDuration()}
 						liveLineHistorySize={this.props.liveLineHistorySize}
 						timeScale={this.props.timeScale}
-						onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
+						onZoomChange={this.props.onZoomChange} />
 					{this.renderMiniLiveLine()}
 				</div>
 			</div>
@@ -248,6 +248,8 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
+	static whyDidYouRender = true
+	
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
@@ -428,7 +430,23 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			{this.props.parts.map((part, index) => {
 				return (
 					<SegmentTimelinePart key={part.partId}
-						{...this.props}
+						segment={this.props.segment}
+						playlist={this.props.playlist}
+						studio={this.props.studio}
+						collapsedOutputs={this.props.collapsedOutputs}
+						isCollapsed={this.props.isCollapsed}
+						scrollLeft={this.props.scrollLeft}
+						timeScale={this.props.timeScale}
+						autoNextPart={this.props.autoNextPart}
+						followLiveLine={this.props.followLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						onScroll={this.props.onScroll}
+						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+						onCollapseSegmentToggle={this.props.onCollapseSegmentToggle}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onContextMenu={this.props.onContextMenu}
+						relative={false}
 						onPieceClick={this.props.onItemClick}
 						onPieceDoubleClick={this.props.onItemDoubleClick}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
