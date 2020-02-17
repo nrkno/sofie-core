@@ -278,32 +278,6 @@ export class Rundown implements DBRundown {
 			Rundowns.update(this._id, { $set: { modified: m } })
 		}
 	}
-	getTimings () {
-		let timings: Array<{
-			time: Time,
-			type: string,
-			part: string,
-			elapsed: Time
-		}> = []
-		_.each(this.getParts(), (part: Part) => {
-			_.each(part.getTimings(), (t) => {
-
-				timings.push({
-					time: t.time,
-					elapsed: t.elapsed,
-					type: t.type,
-					part: part._id
-				})
-			})
-		})
-		return timings
-	}
-	// getNotes (): Array<RundownNote> {
-	// 	let notes: Array<RundownNote> = []
-	// 	notes = notes.concat(this.notes || [])
-
-	// 	return notes
-	// }
 	appendNote (note: RundownNote): void {
 		Rundowns.update(this._id, {$push: {
 			notes: note
