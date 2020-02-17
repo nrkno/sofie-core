@@ -157,6 +157,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	if (
 		(typeof props.rundown !== typeof nextProps.rundown) ||
 		(
+			props.rundown.nextSegmentId !== nextProps.rundown.nextSegmentId &&
+			(
+				props.rundown.nextSegmentId === props.segmentId ||
+				nextProps.rundown.nextSegmentId === props.segmentId
+			)
+		) ||
+		(
 			(
 				props.rundown.currentPartId !== nextProps.rundown.currentPartId ||
 				props.rundown.nextPartId !== nextProps.rundown.nextPartId
@@ -472,6 +479,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				followLiveSegments={this.props.followLiveSegments}
 				isLiveSegment={this.props.isLiveSegment}
 				isNextSegment={this.props.isNextSegment}
+				isQueuedSegment={this.props.rundown.nextSegmentId === this.props.segmentId}
 				hasRemoteItems={this.props.hasRemoteItems}
 				hasGuestItems={this.props.hasGuestItems}
 				autoNextPart={this.props.autoNextPart}

@@ -578,6 +578,23 @@ body.no-overflow {
 		}
 	}
 
+	&.queued {
+		.segment-timeline__title {
+			position: relative;
+			&::after {
+				content: ' ';
+				position: absolute;
+				top: 0;
+				right: 0;
+				width: 2em;
+				height: 2em;
+				background: $segment-title-background-color-next;
+				clip-path: polygon(0 0, 100% 0, 100% 100%);
+				pointer-events: none;
+			}
+		}
+	}
+
 
 	&.has-played {
 		.segment-timeline__title {

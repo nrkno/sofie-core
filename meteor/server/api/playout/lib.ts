@@ -12,14 +12,16 @@ import {
 	Time,
 	pushOntoPath,
 	clone,
-	toc
+	toc,
+	fetchAfter
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
 import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
-import { DBSegment, Segments } from '../../../lib/collections/Segments'
+import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
+import { TimelineEnable } from 'superfly-timeline'
 
 /**
  * Reset the rundown:
@@ -126,9 +128,12 @@ function resetRundownPlayhead (rundown: Rundown) {
 
 	if (rundown.active) {
 		// put the first on queue:
-		setNextPart(rundown, _.first(parts) || null)
+		const part = rundown.getParts().find(p => !p.invalid)
+		if (part) {
+			setNextPart(rundown, part, null)
+		}
 	} else {
-		setNextPart(rundown, null)
+		setNextPart(rundown, null, null)
 	}
 }
 export function getPreviousPartForSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
@@ -168,10 +173,16 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 export function setNextPart (
 	rundown: Rundown,
 	nextPart: DBPart | null,
+	currentPart: DBPart | null,
 	setManually?: boolean,
-	nextTimeOffset?: number | undefined
-) {
+	nextTimeOffset?: number | undefined,
+	) {
 	let ps: Array<Promise<any>> = []
+	const movingToNewSegment = (
+		!currentPart ||
+		!nextPart ||
+		nextPart.segmentId !== currentPart.segmentId
+	)
 	if (nextPart) {
 
 		if (nextPart.rundownId !== rundown._id) throw new Meteor.Error(409, `Part "${nextPart._id}" not part of rundown "${rundown._id}"`)
@@ -213,8 +224,86 @@ export function setNextPart (
 		rundown.nextPartId = null
 		rundown.nextPartManual = !!setManually
 	}
+	if (movingToNewSegment && rundown.nextSegmentId) {
+		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
+			$unset: {
+				nextSegmentId: 1
+			}
+		}))
+		delete rundown.nextSegmentId
+	}
 
 	waitForPromiseAll(ps)
+}
+export function setNextSegment (
+	rundown: Rundown,
+	nextSegment: Segment | null
+) {
+	if (nextSegment) {
+
+		if (nextSegment.rundownId !== rundown._id) throw new Meteor.Error(409, `Segment "${nextSegment._id}" not part of rundown "${rundown._id}"`)
+
+		// Just run so that errors will be thrown if something wrong:
+		getNextPartSegment(nextSegment.getParts(), true)
+
+		Rundowns.update(rundown._id, {
+			$set: {
+				nextSegmentId: nextSegment._id,
+			}
+		})
+		rundown.nextSegmentId = nextSegment._id
+
+	} else {
+		Rundowns.update(rundown._id, {
+			$unset: {
+				nextSegmentId: 1
+			}
+		})
+		delete rundown.nextSegmentId
+	}
+}
+export function getNextPart (
+	rundown: Rundown,
+	partsInRundown: Part[],
+	takePart: Part
+): Part | undefined {
+
+	const partAfter = fetchAfter(partsInRundown, {
+		invalid: { $ne: true }
+	}, takePart._rank)
+
+	if (
+		rundown.nextSegmentId && (
+			!partAfter ||
+			partAfter.segmentId !== takePart.segmentId
+		)
+	) {
+
+		const partsInSegment = _.filter(partsInRundown, p => p.segmentId === rundown.nextSegmentId)
+
+		const nextPart = getNextPartSegment(
+			partsInSegment,
+			false
+		)
+		if (nextPart) {
+			return nextPart
+		} // else: return the normally next
+	}
+	return partAfter
+}
+export function getNextPartSegment (
+	partsInSegment: Part[],
+	throwOnNoFound?: boolean
+): Part | undefined {
+	const firstvalidPartInSegment = _.find(partsInSegment, p => !p.invalid)
+
+	if (throwOnNoFound) {
+		if (!partsInSegment.length) throw new Meteor.Error(400, 'Segment is empty')
+		if (!firstvalidPartInSegment) throw new Meteor.Error(400, 'Segment contains no valid parts')
+		if (firstvalidPartInSegment.invalid) throw new Meteor.Error(400, 'Internal error: invalid part selected')
+	}
+	return firstvalidPartInSegment
+
 }
 
 function resetPart (part: DBPart): Promise<void> {

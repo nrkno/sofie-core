@@ -6,6 +6,7 @@ export namespace UserActionAPI {
 	export enum methods {
 		'take' 									= 'userAction.take',
 		'setNext' 								= 'userAction.setNext',
+		'setNextSegment' 						= 'userAction.setNextSegment',
 		'moveNext' 								= 'userAction.moveNext',
 
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
