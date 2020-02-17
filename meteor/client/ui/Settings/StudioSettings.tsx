@@ -684,6 +684,30 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Lookahead Target Objects (Default = 1)')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'mappings.' + layerId + '.lookaheadDepth'}
+												obj={this.props.studio}
+												type='int'
+												collection={Studios}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Lookahead Maximum Search Distance (Default = unlimited/-1')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'mappings.' + layerId + '.lookaheadMaxSearchDistance'}
+												obj={this.props.studio}
+												type='int'
+												collection={Studios}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
 									{
 										mappingIsCasparCG(mapping) ?
 											this.renderCasparCGMappingSettings(layerId) :
