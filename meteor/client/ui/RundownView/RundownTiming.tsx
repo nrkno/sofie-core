@@ -10,6 +10,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
+import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -219,7 +220,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		this.onRefreshTimer()
 
-		window['rundownTimingContext'] = this.durations 
+		window['rundownTimingContext'] = this.durations
 	}
 
 	componentDidUpdate (prevProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -655,7 +656,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 
 	render () {
 		const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
-		return (<span className={ClassNames(this.props.className, 
+		return (<span className={ClassNames(this.props.className,
 				!!(Math.floor((displayTimecode || 0) / 1000) > 0) ? this.props.heavyClassName : undefined
 			)}>{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>)
 	}
@@ -689,7 +690,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 			// if (displayTime === 0 && prevDisplayTime !== undefined) {
 			// 	text = 'Zero'
 			// }
-			
+
 			if (text) {
 				SpeechSynthesiser.speak(text, 'countdown')
 			}
@@ -752,17 +753,18 @@ class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>>
  * @return number
  */
 export function computeSegmentDuration (
-	timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>
+	timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>, display?: boolean
 ): number {
 	let partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 
 	return partIds.reduce((memo, item) => {
-		return partDurations ?
-				partDurations[item] !== undefined ?
-				memo + partDurations[item] :
-				memo
-			: 0
+		const partDuration = (partDurations ?
+			 partDurations[item] !== undefined ?
+				 partDurations[item] :
+				 0
+			 : 0) || (display ? DEFAULT_DISPLAY_DURATION : 0)
+		return memo + partDuration
 	}, 0)
 }
