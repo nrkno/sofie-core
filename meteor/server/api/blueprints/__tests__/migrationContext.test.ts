@@ -4,7 +4,7 @@ import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/dat
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { literal } from '../../../../lib/lib'
-import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, BlueprintMapping, IConfigItem, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'

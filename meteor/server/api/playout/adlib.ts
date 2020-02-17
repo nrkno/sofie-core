@@ -158,6 +158,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		if (queue) {
 			// keep infinite pieces
+			// TODO - what does this actually do? It looks like a bad attempt to efficiently update infinites, but that it will cause problems
 			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
 				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
 				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
@@ -165,6 +166,15 @@ export namespace ServerPlayoutAdLibAPI {
 					Pieces.insert(newPiece)
 				}
 			})
+
+			// Copy across adlib-preroll and other properties needed on the part
+			if (newPiece.adlibPreroll !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						prerollDuration: newPiece.adlibPreroll
+					}
+				})
+			}
 
 			ServerPlayoutAPI.setNextPartInner(rundown, partId)
 		} else {
@@ -208,7 +218,8 @@ export namespace ServerPlayoutAdLibAPI {
 			dynamicallyInserted: true,
 			afterPart: part.afterPart || part._id,
 			typeVariant: 'adlib',
-			prerollDuration: adLibPiece.adlibPreroll
+			prerollDuration: adLibPiece.adlibPreroll,
+			expectedDuration: adLibPiece.expectedDuration
 		})
 
 		updatePartRanks(rundown._id) // place in order

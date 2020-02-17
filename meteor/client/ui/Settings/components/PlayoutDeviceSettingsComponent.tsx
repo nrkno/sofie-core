@@ -200,7 +200,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 												this.renderSisyfosDeviceSettings(subDevice, deviceId) :
 											subDevice.type === TSR.DeviceType.QUANTEL ?
 												this.renderQuantelDeviceSettings(subDevice, deviceId) :
-											subDevice.type === PlayoutDeviceType.VIZMSE ?
+											subDevice.type === TSR.DeviceType.VIZMSE ?
 											this.renderVizMSEDeviceSettings(subDevice, deviceId) :
 											null
 										}
@@ -479,7 +479,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderVizMSEDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderVizMSEDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: string) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>

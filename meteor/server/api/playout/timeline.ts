@@ -7,7 +7,8 @@ import {
 	getPieceGroupId,
 	TimelineObjHoldMode,
 	OnGenerateTimelineObj,
-	TSR
+	TSR,
+	PieceLifespan
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import {
@@ -435,7 +436,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 		if (activeRundown.previousPartId) {
 			previousPart = rundownData.partsMap[activeRundown.previousPartId]
-			if (!previousPart) throw new Meteor.Error(404, `Part "${activeRundown.previousPartId}" not found!`)
+			if (!previousPart) logger.warn(`Part "${activeRundown.previousPartId}" not found!`)
 		}
 	}
 
@@ -447,8 +448,8 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 	if (currentPart) {
 
 		const currentPieces = currentPart.getAllPieces()
-		const currentInfinitePieces = currentPieces.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
-		const currentNormalItems = currentPieces.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+		const currentInfinitePieces = currentPieces.filter(l => (l.infiniteMode! > PieceLifespan.OutOnNextPart && l.infiniteId))
+		const currentNormalItems = currentPieces.filter(l => !(l.infiniteMode! > PieceLifespan.OutOnNextPart && l.infiniteId))
 
 		let allowTransition = false
 
@@ -496,7 +497,10 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
-			const infiniteGroup = createPartGroup(currentPart, { duration: piece.enable.duration || undefined })
+			const infiniteGroup = createPartGroup(currentPart, {
+				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
+				duration: piece.enable.duration || undefined
+			})
 			infiniteGroup.id = getPartGroupId(piece._id) + '_infinite'
 			infiniteGroup.priority = 1
 
@@ -523,6 +527,14 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 							infiniteGroup.enable.duration = offsetTimelineEnableExpression(piece.userDuration.duration, previousPartsDuration)
 						}
 					}
+				}
+			}
+
+			// If this piece does not continue in the next part, then set it to end with the part it belongs to
+			if (nextPart && currentPart.autoNext && infiniteGroup.enable.duration === undefined) {
+				const nextItem = _.find(rundownData.pieces, (p => p.partId === nextPart!._id && p.infiniteId === piece.infiniteId))
+				if (!nextItem) {
+					infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
 				}
 			}
 
