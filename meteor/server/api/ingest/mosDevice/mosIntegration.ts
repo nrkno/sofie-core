@@ -70,7 +70,7 @@ export namespace MosIntegration {
 			Parts.update(part._id, {$set: {
 				status: status.Status
 			}})
-			// TODO-PartInstance
+			// TODO-PartInstance - pending new data flow
 			PartInstances.update({
 				'part._id': part._id,
 				reset: { $ne: true }

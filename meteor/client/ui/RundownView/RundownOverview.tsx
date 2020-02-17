@@ -142,13 +142,13 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 			return segmentUi
 		})
 
-		const partInstances = playlist.getActivePartInstances()
+		const partInstancesMap = playlist.getActivePartInstancesMap()
 		playlist.getParts({
 			segmentId: {
 				$in: Array.from(segmentMap.keys())
 			}
 		}).map((part) => {
-			const instance = findPartInstanceOrWrapToTemporary(partInstances, part)
+			const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
 			const partUi = literal<PartUi>({
 				partId: part._id,
 				instance,

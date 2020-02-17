@@ -70,7 +70,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 		let rundownIds: string[] = []
 
 		if (playlist) {
-			const allPartInstances = playlist.getActivePartInstances()
+			const allPartInstancesMap = playlist.getActivePartInstancesMap()
 			segments = _.map(playlist.getSegments(), (segment) => {
 				const displayDurationGroups: _.Dictionary<number> = {}
 				const parts = segment.getParts()
@@ -78,7 +78,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 
 				return extendMandadory<DBSegment, SegmentUi>(segment, {
 					items: _.map(parts, (part, index) => {
-						const instance = findPartInstanceOrWrapToTemporary(allPartInstances, part)
+						const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
 						if (part.displayDurationGroup && (
 							(displayDurationGroups[part.displayDurationGroup]) ||
 							// or there is a following member of this displayDurationGroup

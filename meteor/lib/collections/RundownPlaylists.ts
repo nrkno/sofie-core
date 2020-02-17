@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise } from '../lib'
+import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise, normalizeArrayFunc } from '../lib'
 import { RundownHoldState, Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
 import { Segments, Segment } from './Segments'
@@ -311,6 +311,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			reset: { $ne: true }
 		}
 		return this.getAllPartInstances(newSelector, options)
+	}
+	getActivePartInstancesMap (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+		const instances = this.getActivePartInstances(selector, options)
+		return normalizeArrayFunc(instances, i => i.part._id)
 	}
 	fetchAllPlayoutData (): RundownPlaylistPlayoutData {
 		const rundowns = Rundowns.find({ playlistId: this._id }, {

@@ -152,7 +152,7 @@ export function getResolvedSegment (
 
 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 	const segmentsAndParts = playlist.getSegmentsAndPartsSync()
-	const activePartInstances = playlist.getActivePartInstances()
+	const activePartInstancesMap = playlist.getActivePartInstancesMap()
 
 	const partsInSegment = _.filter(segmentsAndParts.parts, p => p.segmentId === segment._id)
 
@@ -161,7 +161,7 @@ export function getResolvedSegment (
 			let tmpFollowingPart = fetchNext(segmentsAndParts.parts, last(partsInSegment))
 
 			if (tmpFollowingPart) {
-				const tmpFollowingPartInstance = findPartInstanceOrWrapToTemporary(activePartInstances, tmpFollowingPart)
+				const tmpFollowingPartInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, tmpFollowingPart)
 				const pieces = getPieceInstancesForPartInstance(tmpFollowingPartInstance)
 
 				followingPart = literal<PartExtended>({
@@ -215,7 +215,7 @@ export function getResolvedSegment (
 		let previousPart: PartExtended | undefined
 		// fetch all the pieces for the parts
 		partsE = _.map(partsInSegment, (part, itIndex) => {
-			const partInstance = findPartInstanceOrWrapToTemporary(activePartInstances, part)
+			const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface

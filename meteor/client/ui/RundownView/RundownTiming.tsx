@@ -129,7 +129,7 @@ interface IRundownTimingProviderState {
 }
 interface IRundownTimingProviderTrackedProps {
 	parts: Array<Part>
-	partInstances: Array<PartInstance>
+	partInstancesMap: { [partId: string]: PartInstance | undefined }
 }
 
 /**
@@ -142,14 +142,14 @@ export const RundownTimingProvider =
 withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
 	let parts: Array<Part> = []
-	let partInstances: Array<PartInstance> = []
+	let partInstancesMap: { [partId: string]: PartInstance | undefined } = {}
 	if (props.playlist) {
 		parts = props.playlist.getParts()
-		partInstances = props.playlist.getActivePartInstances()
+		partInstancesMap = props.playlist.getActivePartInstancesMap()
 	}
 	return {
 		parts,
-		partInstances
+		partInstancesMap
 	}
 })(class RundownTimingProvider extends MeteorReactComponent<
 	IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState
@@ -272,14 +272,14 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 		let debugConsole = ''
 
-		const { playlist, parts, partInstances } = this.props
+		const { playlist, parts, partInstancesMap } = this.props
 
 		let nextAIndex = -1
 		let currentAIndex = -1
 
 		if (playlist && parts) {
 			parts.forEach((origPart, itIndex) => {
-				const partInstance = findPartInstanceOrWrapToTemporary(partInstances, origPart)
+				const partInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, origPart)
 
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1

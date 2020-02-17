@@ -90,13 +90,13 @@ export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
 		_id: `${part._id}_tmp_instance`,
 		rundownId: part.rundownId,
 		segmentId: part.segmentId,
-		takeCount: -1, // TODO - is this any good?
+		takeCount: -1,
 		part: new Part(part)
 	}, true)
 }
 
-export function findPartInstanceOrWrapToTemporary (partInstances: PartInstance[], part: DBPart): PartInstance {
-	return partInstances.find(instance => instance.part._id === part._id) || wrapPartToTemporaryInstance(part)
+export function findPartInstanceOrWrapToTemporary (partInstances: { [partId: string]: PartInstance | undefined }, part: DBPart): PartInstance {
+	return partInstances[part._id] || wrapPartToTemporaryInstance(part)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>('partInstances', { transform: (doc) => applyClassToDocument(PartInstance, doc) })
