@@ -107,14 +107,14 @@ function generateCacheForRundown (rundownId: string, ingestRundown: IngestRundow
 	return cacheEntries
 }
 function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegment): IngestDataCacheObj[] {
-	const segmentExternalId = getSegmentId(rundownId, ingestSegment.externalId)
+	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const cacheEntries: Array<IngestDataCacheObjSegment | IngestDataCacheObjPart> = []
 
 	const segment: IngestDataCacheObjSegment = {
-		_id: `${rundownId}_${segmentExternalId}`,
+		_id: `${rundownId}_${segmentId}`,
 		type: IngestCacheType.SEGMENT,
 		rundownId: rundownId,
-		segmentId: segmentExternalId,
+		segmentId: segmentId,
 		modified: getCurrentTime(),
 		data: {
 			...ingestSegment,
@@ -124,18 +124,18 @@ function generateCacheForSegment (rundownId: string, ingestSegment: IngestSegmen
 	cacheEntries.push(segment)
 
 	_.each(ingestSegment.parts, part => {
-		cacheEntries.push(generateCacheForPart(rundownId, segmentExternalId, part))
+		cacheEntries.push(generateCacheForPart(rundownId, segmentId, part))
 	})
 
 	return cacheEntries
 }
-function generateCacheForPart (rundownId: string, segmentExternalId: string, part: IngestPart): IngestDataCacheObjPart {
+function generateCacheForPart (rundownId: string, segmentId: string, part: IngestPart): IngestDataCacheObjPart {
 	const partId = getPartId(rundownId, part.externalId)
 	return {
 		_id: `${rundownId}_${partId}`,
 		type: IngestCacheType.PART,
 		rundownId: rundownId,
-		segmentId: segmentExternalId,
+		segmentId: segmentId,
 		partId: partId,
 		modified: getCurrentTime(),
 		data: part

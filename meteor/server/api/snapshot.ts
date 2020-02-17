@@ -34,7 +34,7 @@ import {
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineObjRundown } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
@@ -44,7 +44,7 @@ import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
+import { AudioContent, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -53,6 +53,8 @@ import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { TimelineEnable } from 'timeline-state-resolver-types/dist/superfly-timeline'
+import { substituteObjectIds } from './playout/lib'
 
 interface RundownSnapshot {
 	version: string
@@ -398,48 +400,114 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 
 function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
-	let rundownId = snapshot.rundownId
+	const oldRundownId = snapshot.rundownId
 
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	if (rundownId !== snapshot.rundown._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${rundownId}", "${snapshot.rundown._id}!"`)
-
-	let dbRundown = Rundowns.findOne(rundownId)
-
-	if (dbRundown && !dbRundown.unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked Rundown!`)
+	if (oldRundownId !== snapshot.rundown._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${oldRundownId}", "${snapshot.rundown._id}!"`)
 
 	if (!snapshot.rundown.unsynced) {
 		snapshot.rundown.unsynced = true
 		snapshot.rundown.unsyncedTime = getCurrentTime()
 	}
 
-	snapshot.rundown.active					= (dbRundown ? dbRundown.active : false)
-	snapshot.rundown.currentPartId		= (dbRundown ? dbRundown.currentPartId : null)
-	snapshot.rundown.nextPartId			= (dbRundown ? dbRundown.nextPartId : null)
-	snapshot.rundown.notifiedCurrentPlayingPartExternalId = (dbRundown ? dbRundown.notifiedCurrentPlayingPartExternalId : undefined)
+	const rundownId = snapshot.rundown._id = Random.id()
+	snapshot.rundown.restoredFromSnapshotId = snapshot.rundownId
+	snapshot.rundown.peripheralDeviceId = ''
+	snapshot.rundown.active = false
+	snapshot.rundown.currentPartId = null
+	snapshot.rundown.nextPartId = null
+	snapshot.rundown.notifiedCurrentPlayingPartExternalId = undefined
 
 	const studios = Studios.find().fetch()
-	if (studios.length === 1) snapshot.rundown.studioId = studios[0]._id
+	const snapshotStudioExists = studios.find(studio => studio._id === snapshot.rundown.studioId)
+	if (studios.length >= 1 && !snapshotStudioExists) {
+		// TODO Choose better than just the fist
+		snapshot.rundown.studioId = studios[0]._id
+	}
 
 	const showStyleVariants = ShowStyleVariants.find().fetch()
-	if (showStyleVariants.length === 1) {
+	const snapshotShowStyleVariantExists = showStyleVariants.find(variant => variant._id === snapshot.rundown.showStyleVariantId && variant.showStyleBaseId === snapshot.rundown.showStyleBaseId)
+	if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
+		// TODO Choose better than just the fist
 		snapshot.rundown.showStyleBaseId = showStyleVariants[0].showStyleBaseId
 		snapshot.rundown.showStyleVariantId = showStyleVariants[0]._id
 	}
 
+	// List any ids that need updating on other documents
+	const partIdMap: { [key: string]: string } = {}
+	_.each(snapshot.parts, part => {
+		const oldId = part._id
+		partIdMap[oldId] = part._id = Random.id()
+	})
+	const segmentIdMap: { [key: string]: string } = {}
+	_.each(snapshot.segments, segment => {
+		const oldId = segment._id
+		segmentIdMap[oldId] = segment._id = Random.id()
+	})
+	const pieceIdMap: { [key: string]: string } = {}
+	_.each(snapshot.pieces, piece => {
+		const oldId = piece._id
+		pieceIdMap[oldId] = piece._id = Random.id()
+	})
+
+	const enableIdMap: { [key: string]: string | undefined } = {}
+	_.each(pieceIdMap, (newId, oldId) => {
+		enableIdMap[getPieceGroupId(oldId)] = getPieceGroupId(newId)
+		enableIdMap[getPieceFirstObjectId(oldId)] = getPieceFirstObjectId(newId)
+	})
+
+	// Apply the updates of any properties to any document
+	function updateItemIds<T extends { _id: string, rundownId: string, partId?: string, segmentId?: string, infiniteId?: string, enable?: TimelineEnable }> (objs: T[], updateId: boolean): T[] {
+		return objs.map(obj => {
+			if (obj.rundownId) {
+				obj.rundownId = rundownId
+			}
+
+			if (obj.partId) {
+				obj.partId = partIdMap[obj.partId]
+			}
+			if (obj.segmentId) {
+				obj.segmentId = segmentIdMap[obj.segmentId]
+			}
+			if (obj.infiniteId) {
+				obj.infiniteId = pieceIdMap[obj.infiniteId]
+			}
+
+			if (obj.enable) {
+				obj.enable = substituteObjectIds(obj.enable, enableIdMap)
+			}
+
+			if (updateId) {
+				obj._id = Random.id()
+			}
+
+			// Find any timeline objects
+			const content = (obj as any).content as Piece['content']
+			const tlObjects: TimelineObjRundown[] = content ? content.timelineObjects || [] : (obj as any).objects
+			_.each(tlObjects, (tlObj: TimelineObjRundown) => {
+				tlObj.rundownId = rundownId
+				tlObj.enable = substituteObjectIds(tlObj.enable, enableIdMap)
+			})
+
+			return obj
+		})
+	}
+
 	saveIntoDb(Rundowns, { _id: rundownId }, [snapshot.rundown])
-	saveIntoDb(IngestDataCache, { rundownId: rundownId }, snapshot.ingestData)
+	saveIntoDb(IngestDataCache, { rundownId: rundownId }, updateItemIds(snapshot.ingestData, true))
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(RundownBaselineObjs, { rundownId: rundownId }, snapshot.baselineObjs)
-	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, snapshot.baselineAdlibs)
-	saveIntoDb(Segments, { rundownId: rundownId }, snapshot.segments)
-	saveIntoDb(Parts, { rundownId: rundownId }, snapshot.parts)
-	saveIntoDb(Pieces, { rundownId: rundownId }, snapshot.pieces)
-	saveIntoDb(AdLibPieces, { rundownId: rundownId }, snapshot.adLibPieces)
+	saveIntoDb(RundownBaselineObjs, { rundownId: rundownId }, updateItemIds(snapshot.baselineObjs, true))
+	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.baselineAdlibs, true))
+	saveIntoDb(Segments, { rundownId: rundownId }, updateItemIds(snapshot.segments, false))
+	saveIntoDb(Parts, { rundownId: rundownId }, updateItemIds(snapshot.parts, false))
+	saveIntoDb(Pieces, { rundownId: rundownId }, updateItemIds(snapshot.pieces, false))
+	saveIntoDb(AdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.adLibPieces, true))
+	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, updateItemIds(snapshot.expectedMediaItems, true))
+
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
-	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
 
 	logger.info(`Restore done`)
 }

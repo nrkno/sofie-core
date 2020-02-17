@@ -42,6 +42,7 @@ export interface DBRundown extends IBlueprintRundownDB {
 	showStyleBaseId: string
 	/** The peripheral device the rundown originates from */
 	peripheralDeviceId: string
+	restoredFromSnapshotId?: string
 	created: Time
 	modified: Time
 
@@ -108,6 +109,7 @@ export class Rundown implements DBRundown {
 	public studioId: string
 	public showStyleBaseId: string
 	public peripheralDeviceId: string
+	public restoredFromSnapshotId?: string
 	public created: Time
 	public modified: Time
 	public importVersions: RundownImportVersions

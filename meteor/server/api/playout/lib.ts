@@ -406,6 +406,25 @@ export function onPartHasStoppedPlaying (part: Part, stoppedPlayingTime: Time) {
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
 	}
 }
+
+export function substituteObjectIds (rawEnable: TimelineEnable, idMap: { [oldId: string]: string | undefined }) {
+	const replaceIds = (str: string) => {
+		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
+			const id = m.substr(1, m.length - 1)
+			return `#${idMap[id] || id}`
+		})
+	}
+
+	const enable = clone(rawEnable)
+
+	for (const key of _.keys(enable)) {
+		if (typeof enable[key] === 'string') {
+			enable[key] = replaceIds(enable[key])
+		}
+	}
+
+	return enable
+}
 export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string, ignoreOriginal?: boolean): T[] {
 	const getUpdatePrefixedId = (o: T) => {
 		let id = o.id
@@ -423,27 +442,16 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		idMap[o.id] = getUpdatePrefixedId(o)
 	})
 
-	const replaceIds = (str: string) => {
-		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
-			const id = m.substr(1, m.length - 1)
-			return `#${idMap[id] || id}`
-		})
-	}
+	return objList.map(rawObj => {
+		const obj = clone(rawObj)
 
-	return objList.map(i => {
-		const o = clone(i)
-		o.id = getUpdatePrefixedId(o)
+		obj.id = getUpdatePrefixedId(obj)
+		obj.enable = substituteObjectIds(obj.enable, idMap)
 
-		for (const key of _.keys(o.enable)) {
-			if (typeof o.enable[key] === 'string') {
-				o.enable[key] = replaceIds(o.enable[key])
-			}
+		if (typeof obj.inGroup === 'string') {
+			obj.inGroup = idMap[obj.inGroup] || obj.inGroup
 		}
 
-		if (typeof o.inGroup === 'string') {
-			o.inGroup = idMap[o.inGroup] || o.inGroup
-		}
-
-		return o
+		return obj
 	})
 }
