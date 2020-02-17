@@ -39,6 +39,7 @@ describe('lib/Rundown', () => {
 			isLiveSegment: false,
 			isNextSegment: false,
 			currentLivePart: undefined,
+			currentNextPart: undefined,
 			hasRemoteItems: false,
 			hasGuestItems: false,
 			hasAlreadyPlayed: false,

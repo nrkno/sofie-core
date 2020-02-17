@@ -4,6 +4,7 @@ exports[`lib/Rundown getResolvedSegment 1`] = `
 Object {
   "autoNextPart": false,
   "currentLivePart": undefined,
+  "currentNextPart": undefined,
   "followingPart": Object {
     "instance": PartInstance {
       "_id": "randomId9011_part1_0_tmp_instance",
@@ -21,6 +22,7 @@ Object {
       "segmentId": "randomId9011_segment1",
       "takeCount": -1,
     },
+    "partId": "randomId9011_part1_0",
     "pieces": Array [],
     "renderedDuration": 0,
     "startsAt": 0,
@@ -50,6 +52,7 @@ Object {
         "segmentId": "randomId9011_segment0",
         "takeCount": -1,
       },
+      "partId": "randomId9011_part0_0",
       "pieces": Array [
         Object {
           "instance": Object {
@@ -553,6 +556,7 @@ Object {
         "segmentId": "randomId9011_segment0",
         "takeCount": -1,
       },
+      "partId": "randomId9011_part0_1",
       "pieces": Array [],
       "renderedDuration": 3000,
       "startsAt": 3000,

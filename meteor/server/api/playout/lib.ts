@@ -189,7 +189,8 @@ export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 			startedPlayback: 1,
 			timings: 1,
 			runtimeArguments: 1,
-			stoppedPlayback: 1
+			stoppedPlayback: 1,
+			taken: 1
 		}
 	}, { multi: true })
 
