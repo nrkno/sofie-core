@@ -133,7 +133,7 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 		}).map((segment) => {
 			const segmentUi = extendMandadory<Segment, SegmentUi>(segment, {
 				items: []
-			}) 
+			})
 			segmentMap.set(segment._id, segmentUi)
 			return segmentUi
 		})

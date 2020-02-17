@@ -406,7 +406,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			subsReady: false
 		}
 	}
-	
+
 	componentWillUnmount () {
 		super.componentWillUnmount()
 	}
@@ -462,7 +462,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 	}
 
-	shouldComponentUpdate(nextProps, nextState): boolean {
+	shouldComponentUpdate (nextProps, nextState): boolean {
 		clearTimeout(this._debounceUpdate)
 		this.props = nextProps
 		this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)

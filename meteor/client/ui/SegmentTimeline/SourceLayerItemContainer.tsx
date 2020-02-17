@@ -143,7 +143,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 					pieceCopy.status = status
 					pieceCopy.contentMetaData = metadata
-					
+
 					if (
 						pieceCopy.content &&
 						pieceCopy.content.sourceDuration === undefined &&

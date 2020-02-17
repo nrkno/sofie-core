@@ -299,20 +299,20 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactivePartNotes (rRundownId: string) {
 		const t = i18nTranslator
 
-		function getSegmentPartNotes(rRundownId: string) {
+		function getSegmentPartNotes (rRundownId: string) {
 			let notes: Array<PartNote & {rank: number}> = []
 			const segments = Segments.find({
 				rundownId: rRundownId
-			}, { sort: { _rank: 1 }}).fetch()
+			}, { sort: { _rank: 1 } }).fetch()
 
 			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
 				rank: segment._rank,
 				notes: segment.notes
-			} ])) as { [key: string ]: { notes: PartNote[], rank: number } } 
+			} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
 			Parts.find({
 				rundownId: rRundownId,
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 }}).map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
+			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
 			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 				return o.notes.map(note => _.extend(note, {
 					rank: o.rank

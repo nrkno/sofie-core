@@ -289,7 +289,7 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 				content2: 			'piece'
 			}, !!rundown.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		}  else if (part) {
+		} else if (part) {
 			logger.error(`Part "${piece.partId}" not found in reportPieceHasStopped "${piece._id}"`)
 		} else {
 			logger.error(`Rundown "${piece.rundownId}" not found in reportPieceHasStopped "${piece._id}"`)

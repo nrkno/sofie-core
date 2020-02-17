@@ -440,7 +440,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		segmentId: {
 			$in: Array.from(uiSegmentMap.keys())
 		}
-	}, ).forEach((part) => {
+	},).forEach((part) => {
 		const segment = uiSegmentMap.get(part.segmentId)
 		if (segment) {
 			segment.parts.push(part)

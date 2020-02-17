@@ -287,7 +287,7 @@ export class Rundown implements DBRundown {
 		const segmentNotes = _.object(this.getSegments().map(segment => [ segment._id, {
 			rank: segment._rank,
 			notes: segment.notes
-		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } } 
+		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
 		this.getParts().map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
 		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 			return o.notes.map(note => _.extend(note, {

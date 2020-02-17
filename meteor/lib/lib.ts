@@ -162,7 +162,7 @@ export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface exte
 
 			if (!eql) {
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
-				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id})
+				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id })
 			} else {
 				preparedChanges.unchanged.push(oldObj)
 			}

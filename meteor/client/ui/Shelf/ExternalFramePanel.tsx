@@ -98,17 +98,17 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			// Send the event sanitized to prevent sending huge objects
 			payload: _.omit(_.omit(e,
 				['currentTarget',
-				'path',
-				'srcElement',
-				'target',
-				'view',
-				'sourceCapabilities']
+					'path',
+					'srcElement',
+					'target',
+					'view',
+					'sourceCapabilities']
 			), (value, key) => typeof value === 'function')
 		}))
 	}
 
 	onReceiveMessage = (e: MessageEvent) => {
-		if (e.origin === "null" && this.frame && e.source === this.frame.contentWindow) {
+		if (e.origin === 'null' && this.frame && e.source === this.frame.contentWindow) {
 			const data = e.data || e['message']
 			if (!data) return
 			this.actMessage(data)
@@ -174,7 +174,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 
 	sendMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
 		if (this.frame && this.frame.contentWindow && (this.initialized || uninitialized)) {
-			this.frame.contentWindow.postMessage(data, "*")
+			this.frame.contentWindow.postMessage(data, '*')
 		}
 	}
 
@@ -257,6 +257,6 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			className='external-frame-panel__iframe'
 			src={this.props.panel.url}
 			sandbox='allow-forms allow-popups allow-scripts'></iframe>
-		</div> 
+		</div>
 	}
 }

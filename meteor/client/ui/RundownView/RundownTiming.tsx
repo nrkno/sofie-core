@@ -657,7 +657,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 	render () {
 		const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
 		return (<span className={ClassNames(this.props.className,
-				!!(Math.floor((displayTimecode || 0) / 1000) > 0) ? this.props.heavyClassName : undefined
+				(Math.floor((displayTimecode || 0) / 1000) > 0) ? this.props.heavyClassName : undefined
 			)}>{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>)
 	}
 
