@@ -13,6 +13,7 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
+import { INewsSettingsComponent } from './components/INewsSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -73,6 +74,10 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					/>
 				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
 					return <SpreadsheetSettingsComponent
+						device={this.props.device}
+					/>
+				case PeripheralDeviceAPI.DeviceType.INEWS:
+					return <INewsSettingsComponent
 						device={this.props.device}
 					/>
 			}

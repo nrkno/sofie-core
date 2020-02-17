@@ -1,23 +1,35 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { updatePartRanks } from '../../rundown'
+import { updatePartRanks, ServerRundownAPI } from '../../rundown'
+import { ServerPlayoutAPI } from '../../playout/playout'
+import { RundownInput } from '../rundownInput'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
 describe('Test ingest actions for rundowns and segments', () => {
 
 	let device: PeripheralDevice
+	let device2: PeripheralDevice
 	let externalId = 'abcde'
 	let segExternalId = 'zyxwv'
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+		const env = setupDefaultStudioEnvironment()
+		device = env.ingestDevice
+
+		device2 = setupMockPeripheralDevice(
+			PeripheralDeviceAPI.DeviceCategory.INGEST,
+			// @ts-ignore
+			'mockDeviceType',
+			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			env.studio
+		)
 	})
 
 	testInFiber('dataRundownCreate', () => {
