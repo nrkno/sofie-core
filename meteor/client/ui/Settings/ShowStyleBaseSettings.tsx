@@ -719,6 +719,18 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.stickyOriginalOnly'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Sticky: Only use original pieces')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
 											{t('Activate Sticky Item Shortcut')}
 											<EditAttribute
 												modifiedClassName='bghl'

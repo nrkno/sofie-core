@@ -288,13 +288,22 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
 			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
 
-			const lastPieces = Pieces.find({
+			const query = literal<Mongo.Query<Piece>>({
 				rundownId: rundown._id,
 				sourceLayerId: sourceLayer._id,
 				startedPlayback: {
 					$exists: true
 				}
-			}, {
+			})
+
+			if (sourceLayer.stickyOriginalOnly) {
+				// Ignore adlibs if using original only
+				query.adLibSourceId = {
+					$exists: false
+				}
+			}
+
+			const lastPieces = Pieces.find(query, {
 				sort: {
 					startedPlayback: -1
 				},
