@@ -435,7 +435,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 
 	// This is a map of partIds mapped onto segments they are part of
 	const uiPartSegmentMap = new Map<string, SegmentUi>()
-	
+
 	props.rundown.getParts({
 		segmentId: {
 			$in: Array.from(uiSegmentMap.keys())

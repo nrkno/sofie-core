@@ -401,22 +401,22 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
 					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', this.constructor.name)
+						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleSticky(sourceLayer._id, e)
-						}, 'keyup', this.constructor.name)
+						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(element)
 					})
 				}
 			})
 
 			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
-				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.constructor.name)
+				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 				mousetrapHelper.bind(hotkey, (e: ExtendedKeyboardEvent) => {
 					preventDefault(e)
 					this.onClearAllSourceLayers(sourceLayers, e)
-				}, 'keyup', this.constructor.name)
+				}, 'keyup', HOTKEY_GROUP)
 				this.usedHotkeys.push(hotkey)
 			})
 		}

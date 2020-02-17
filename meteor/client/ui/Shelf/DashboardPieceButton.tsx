@@ -9,12 +9,13 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
+import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -125,6 +126,16 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		}
 	}
 
+	renderSplits () {
+		const splitAdLib = this.props.item as AdLibPieceUi
+		if (splitAdLib && splitAdLib.content) {
+			const splitContent = splitAdLib.content as SplitsContent
+			return (
+				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+			)
+		}
+	}
+
 	render () {
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
@@ -149,8 +160,12 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				data-obj-id={this.props.item._id}
 				>
 				{
-					this.props.layer && (this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					!this.props.layer ?
+						null :
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
 						this.renderVTLiveSpeak() :
+					(this.props.layer.type === SourceLayerType.SPLITS) ?
+						this.renderSplits() :
 						null
 				}
 				<span className='dashboard-panel__panel__button__label'>{this.props.item.name}</span>

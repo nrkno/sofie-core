@@ -368,7 +368,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								key={panel._id}
 								includeGlobalAdLibs={true}
 								filter={panel}
-								visible={true}
+								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
 								rundown={this.props.rundown}
 								showStyleBase={this.props.showStyleBase}
@@ -379,7 +379,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								key={panel._id}
 								includeGlobalAdLibs={true}
 								filter={panel}
-								visible={true}
+								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
 								rundown={this.props.rundown}
 								showStyleBase={this.props.showStyleBase}

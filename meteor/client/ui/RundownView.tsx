@@ -268,12 +268,16 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 							{RundownUtils.formatDiffToTimecode(this.props.rundown.startedPlayback - this.props.rundown.expectedStart, true, false, true, true, true)}
 						</span>) || undefined
 					:
-					(this.props.rundown.expectedStart &&
+					(this.props.rundown.expectedStart ?
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundown.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundown.expectedStart, true, false, true, true, true)}
+						</span>
+						:
+						<span className={ClassNames('timing-clock countdown plan-start left')}>
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundown.name}>{this.props.rundown.name}</span>
 						</span>) || undefined
 				}
 				<span className='timing-clock time-now'>
@@ -1139,6 +1143,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(
 class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	private readonly LIVELINE_HISTORY_SIZE = 100
 
 	private bindKeys: Array<{
 		key: string,

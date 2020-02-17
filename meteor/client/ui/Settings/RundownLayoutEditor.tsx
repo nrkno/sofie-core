@@ -611,6 +611,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='mod mas' />
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Overflow horizontally')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.overflowHorizontally`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
 				</React.Fragment>
 			}
 		</React.Fragment>
