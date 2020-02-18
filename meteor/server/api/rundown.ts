@@ -126,8 +126,9 @@ export function afterRemoveSegments (rundownId: string, segmentIds: string[]) {
  * This will NOT trigger an update of the timeline
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
+ * @param skipEnsure For when caller is handling state changes themselves.
  */
-export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
+export function afterRemoveParts (rundownId: string, removedParts: DBPart[], skipEnsure?: boolean) {
 	saveIntoDb(Parts, {
 		rundownId: rundownId,
 		dynamicallyInserted: true,
@@ -135,7 +136,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	}, [], {
 		afterRemoveAll (parts) {
 			// Do the same for any affected dynamicallyInserted Parts
-			afterRemoveParts(rundownId, parts)
+			afterRemoveParts(rundownId, parts, skipEnsure)
 		}
 	})
 
@@ -170,7 +171,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 	})
 
 	const rundown = Rundowns.findOne(rundownId)
-	if (rundown && rundown.active) {
+	if (rundown && rundown.active && !skipEnsure) {
 		// Ensure the next-part is still valid
 		UpdateNext.ensureNextPartIsValid(rundown)
 	}

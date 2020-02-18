@@ -239,7 +239,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (alreadyQueuedPart) {
 			if (rundown.currentPartId !== alreadyQueuedPart._id) {
 				Parts.remove(alreadyQueuedPart._id)
-				afterRemoveParts(rundown._id, [alreadyQueuedPart])
+				afterRemoveParts(rundown._id, [alreadyQueuedPart], true)
 			}
 		}
 
