@@ -22,7 +22,7 @@ export namespace UpdateNext {
 				}
 
 				// Check if the part is the same
-				const newNextPart = selectNextPart(currentPartInstance, allParts)
+				const newNextPart = selectNextPart(playlist, currentPartInstance, allParts)
 				if (newNextPart && nextPartInstance && newNextPart.part._id === nextPartInstance.part._id) {
 					return
 				}
@@ -36,7 +36,7 @@ export namespace UpdateNext {
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			} else if (!nextPartInstance) {
 				// Don't have a currentPart or a nextPart, so set next to first in the show
-				const newNextPart = selectNextPart(null, allParts)
+				const newNextPart = selectNextPart(playlist, null, allParts)
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			}
 		}
@@ -49,7 +49,7 @@ export namespace UpdateNext {
 
 				// Try and choose something
 				const { currentPartInstance } = playlist.getSelectedPartInstances()
-				const newNextPart = selectNextPart(currentPartInstance || null, playlist.getParts())
+				const newNextPart = selectNextPart(playlist, currentPartInstance || null, playlist.getParts())
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 
 			} else if (playlist.nextPartManual && removePrevious) {
