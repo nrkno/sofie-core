@@ -111,13 +111,6 @@ export function deactivateRundownInner (rundown: Rundown) {
 export function prepareStudioForBroadcast (studio: Studio) {
 	logger.info('prepareStudioForBroadcast ' + studio._id)
 
-	const ssrcBgs: Array<IConfigItem> = _.compact([
-		studio.config.find((o) => o._id === 'atemSSrcBackground'),
-		studio.config.find((o) => o._id === 'atemSSrcBackground2')
-	])
-	if (ssrcBgs.length > 1) logger.info(ssrcBgs[0].value + ' and ' + ssrcBgs[1].value + ' will be loaded to atems')
-	if (ssrcBgs.length > 0) logger.info(ssrcBgs[0].value + ' will be loaded to atems')
-
 	let playoutDevices = PeripheralDevices.find({
 		studioId: studio._id,
 		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
@@ -132,15 +125,5 @@ export function prepareStudioForBroadcast (studio: Studio) {
 				logger.info('devicesMakeReady OK')
 			}
 		}, 'devicesMakeReady', okToDestoryStuff)
-
-		if (ssrcBgs.length > 0) {
-			PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-				if (err) {
-					logger.error(err)
-				} else {
-					logger.info('Added Super Source BG to Atem')
-				}
-			}, 'uploadFileToAtem', ssrcBgs)
-		}
 	})
 }
