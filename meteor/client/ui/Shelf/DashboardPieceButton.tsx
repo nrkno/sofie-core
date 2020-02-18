@@ -163,7 +163,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				{
 					!this.props.layer ?
 						null :
-					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
 						this.renderVTLiveSpeak() :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
 						this.renderSplits() :
