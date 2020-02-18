@@ -483,8 +483,11 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: MongoSelector<T>, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
+export function fetchBefore<T> (
+	collection: Mongo.Collection<T>,
+	selector: MongoSelector<T> = {},
+	rank: number = Number.POSITIVE_INFINITY
+): T {
 	return collection.find(_.extend(selector, {
 		_rank: { $lt: rank }
 	}), {
@@ -495,24 +498,28 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: MongoSelector<T>, rank: number | null): T | undefined {
-	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
+export function fetchNext<T extends { _id: string }> (
+	values: Array<T>,
+	currentValue: T | undefined
+): T | undefined {
 
-	selector = _.extend({}, selector, {
-		_rank: { $gt: rank }
+	if (!currentValue) return values[0]
+
+	let nextValue: T | undefined
+	let found: boolean = false
+	return _.find(values, (value) => {
+		if (found) {
+			nextValue = value
+			return true
+		}
+
+		if (currentValue._id) {
+			found = (currentValue._id === value._id)
+		} else {
+			found = (currentValue === value)
+		}
+		return false
 	})
-
-	if (_.isArray(collection)) {
-		return _.find(collection, (o) => mongoWhere(o, selector))
-	} else {
-		return collection.find(selector, {
-			sort: {
-				_rank: 1,
-				_id: 1
-			},
-			limit: 1
-		}).fetch()[0]
-	}
 }
 /**
  * Returns a rank number, to be used to insert new objects in a ranked list
@@ -552,6 +559,14 @@ export function getRank<T extends {_rank: number}> (
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 }
+export function normalizeArrayFunc<T> (array: Array<T>, getKey: (o: T) => string): {[indexKey: string]: T} {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = getKey(array[i])
+		normalizedObject[key] = array[i]
+	}
+	return normalizedObject as { [key: string]: T }
+}
 export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexKey: string]: T} {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -559,6 +574,10 @@ export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexK
 		normalizedObject[key] = array[i]
 	}
 	return normalizedObject as { [key: string]: T }
+}
+/** Convenience function, to be used when length of array has previously been verified */
+export function last<T> (values: T[]): T {
+	return _.last(values) as T
 }
 
 const rateLimitCache: {[name: string]: number} = {}
@@ -742,7 +761,7 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 	}
 }
 
-export function asyncCollectionFindFetch<DocClass, DBInterface> (
+export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	options?: FindOptions
@@ -755,7 +774,7 @@ export function asyncCollectionFindFetch<DocClass, DBInterface> (
 	waitTime(0)
 	return p
 }
-export function asyncCollectionFindOne<DocClass, DBInterface> (
+export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
 ): Promise<DocClass | undefined> {
@@ -764,7 +783,7 @@ export function asyncCollectionFindOne<DocClass, DBInterface> (
 		return arr[0]
 	})
 }
-export function asyncCollectionInsert<DocClass, DBInterface> (
+export function asyncCollectionInsert<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
 ): Promise<string> {
@@ -775,8 +794,14 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 		})
 	})
 }
+export function asyncCollectionInsertMany<DocClass extends DBInterface, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	docs: DBInterface[],
+): Promise<string[]> {
+	return Promise.all(_.map(docs, doc => asyncCollectionInsert(collection, doc)))
+}
 /** Insert document, and ignore if document already exists */
-export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
+export function asyncCollectionInsertIgnore<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
 ): Promise<string> {
@@ -793,7 +818,7 @@ export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
 		})
 	})
 }
-export function asyncCollectionUpdate<DocClass, DBInterface> (
+export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	modifier: MongoModifier<DBInterface>,
@@ -808,7 +833,7 @@ export function asyncCollectionUpdate<DocClass, DBInterface> (
 	})
 }
 
-export function asyncCollectionUpsert<DocClass, DBInterface> (
+export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	modifier: MongoModifier<DBInterface>,
@@ -823,7 +848,7 @@ export function asyncCollectionUpsert<DocClass, DBInterface> (
 	})
 }
 
-export function asyncCollectionRemove<DocClass, DBInterface> (
+export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
 
@@ -848,16 +873,17 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
-	Promise.all(ps)
-	.then((result) => {
-		cb(null, result)
-	})
-	.catch((e) => {
-		cb(e)
-	})
-})
+export function waitForPromiseAll<T> (ps: Array<Promise<T>>): Array<T> {
+	return waitForPromise(Promise.all(ps))
+}
+
+/**
+ * Convert a promise to a "synchronous" Fiber function
+ * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
+ * If the fiber rejects, the function in the Fiber will "throw"
+ */
 export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)
 	Promise.resolve(p)
 	.then((result) => {
 		cb(null, result)

@@ -12,6 +12,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 
@@ -32,7 +33,7 @@ interface IListViewItemProps {
 	outputLayer?: IOutputLayer
 	onSelectAdLib: (aSLine: IAdLibListItem) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 interface IAdLibListItemTrackedProps {
@@ -44,7 +45,7 @@ const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
-	const { status } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
 	return {
 		status
@@ -87,7 +88,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}

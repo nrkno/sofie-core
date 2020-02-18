@@ -3,7 +3,7 @@
 import * as _ from 'underscore'
 // import {} from 'mocha'
 
-import { Rundown, DBRundown, RundownData } from '../../../lib/collections/Rundowns'
+import { Rundown, DBRundown, PlayoutRundownData } from '../../../lib/collections/Rundowns'
 import { Part, DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -29,7 +29,7 @@ interface IPropsHeader {
 	partStartsAt: number
 	partDuration: number
 	piece: PieceUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -61,13 +61,13 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
 
-			if (piece.content) {
-				switch (this.props.layer.type) {
+			if (piece.instance.piece.content) {
+				switch (this.props.piece.sourceLayer.type) {
 					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
+						objId = (piece.instance.piece.content as VTContent).fileName.toUpperCase()
 						break
 					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						objId = (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
 						break
 				}
 			}
@@ -75,7 +75,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}
@@ -103,17 +103,27 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
 				// TODO - this query appears to be unable to load any data
-				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
+				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece.instance.piece) })
 
 				if (timelineObj) {
-					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
+					// Deep clone the required bits
+					const origPiece = (overrides.piece || props.piece) as PieceUi
+					const pieceCopy = {
+						...(overrides.piece || props.piece),
+						instance: {
+							...origPiece.instance,
+							piece: {
+								...origPiece.instance.piece,
+								enable: timelineObj.enable
+							}
+						}
+					}
 
-					pieceCopy.enable = timelineObj.enable
 					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
 						pieceCopy.renderedInPoint = timelineObj.enable.start
 					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
-						if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
-							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
+						if (props.part && props.part.instance.part.startedPlayback && props.part.instance.part.getLastStartedPlayback()) {
+							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.instance.part.getLastStartedPlayback() || 0)
 						} else {
 							pieceCopy.renderedInPoint = 0
 						}
@@ -137,25 +147,34 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status, contentDuration } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().settings)
-				if (status !== props.piece.status || metadata) {
-					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
-
-					pieceCopy.status = status
-					pieceCopy.contentMetaData = metadata
+				const { metadata, status, contentDuration } = checkPieceContentStatus(props.piece.instance.piece, props.piece.sourceLayer, props.playlist.getStudio().settings)
+				if (status !== props.piece.instance.piece.status || metadata) {
+					// Deep clone the required bits
+					const origPiece = (overrides.piece || props.piece) as PieceUi
+					const pieceCopy: PieceUi = {
+						...(overrides.piece || props.piece),
+						instance: {
+							...origPiece.instance,
+							piece: {
+								...origPiece.instance.piece,
+								status: status,
+								contentMetaData: metadata
+							}
+						}
+					}
 
 					if (
-						pieceCopy.content &&
-						pieceCopy.content.sourceDuration === undefined &&
+						pieceCopy.instance.piece.content &&
+						pieceCopy.instance.piece.content.sourceDuration === undefined &&
 						contentDuration !== undefined
 					) {
-						pieceCopy.content.sourceDuration = contentDuration
+						pieceCopy.instance.piece.content.sourceDuration = contentDuration
 					}
 
 					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
 				}
 			} else {
-				console.error(`Piece "${props.piece._id}" has no sourceLayer:`, props.piece)
+				console.error(`Piece "${props.piece.instance.piece._id}" has no sourceLayer:`, props.piece)
 			}
 
 			this.forceUpdate()

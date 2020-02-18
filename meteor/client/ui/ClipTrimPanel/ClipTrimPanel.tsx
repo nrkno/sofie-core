@@ -13,7 +13,7 @@ import { Settings } from '../../../lib/Settings'
 
 export interface IProps {
 	pieceId: string
-	rundownId: string
+	playlistId: string
 	partId: string
 	studioId: string
 

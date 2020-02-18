@@ -163,33 +163,6 @@ export class Part implements DBPart {
 	getAllAdLibPieces () {
 		return this.getAdLibPieces()
 	}
-	getTimings () {
-		// return a chronological list of timing events
-		let events: Array<{time: Time, type: string, elapsed: Time}> = []
-		_.each(['take', 'takeDone', 'startedPlayback', 'takeOut', 'stoppedPlayback', 'next'], (key) => {
-			if (this.timings) {
-				_.each(this.timings[key], (t: Time) => {
-					events.push({
-						time: t,
-						type: key,
-						elapsed: 0
-					})
-				})
-			}
-		})
-		let prevEv: any = null
-		return _.map(
-			_.sortBy(events, e => e.time),
-			(ev) => {
-				if (prevEv) {
-					ev.elapsed = ev.time - prevEv.time
-				}
-				prevEv = ev
-				return ev
-			}
-		)
-
-	}
 	getInvalidReasonNotes (): Array<PartNote> {
 		return this.invalidReason ? [
 			{
@@ -204,41 +177,7 @@ export class Part implements DBPart {
 			}
 		] : []
 	}
-	getNotes (runtimeNotes?: boolean): Array<PartNote> {
-		let notes: Array<PartNote> = []
-		notes = notes.concat(this.notes || [])
-
-		if (runtimeNotes) {
-			const pieces = this.getPieces()
-			const rundown = this.getRundown()
-			const studio = rundown && rundown.getStudio()
-			const showStyleBase = rundown && rundown.getShowStyleBase()
-			const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-			_.each(pieces, (piece) => {
-				// TODO: check statuses (like media availability) here
-
-				if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
-					const part = partLookup[piece.sourceLayerId]
-					const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
-					if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
-						notes.push({
-							type: NoteType.WARNING,
-							origin: {
-								name: 'Media Check',
-								rundownId: this.rundownId,
-								segmentId: this.segmentId,
-								partId: this._id,
-								pieceId: piece._id
-							},
-							message: st.message || ''
-						})
-					}
-				}
-			})
-		}
-		return notes
-	}
-	getMinimumReactiveNotes (rundown: Rundown, studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
+	getMinimumReactiveNotes (studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
 		let notes: Array<PartNote> = []
 		notes = notes.concat(this.notes || [])
 
@@ -288,6 +227,13 @@ export class Part implements DBPart {
 
 		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
+	isPlayable () {
+		return isPartPlayable(this)
+	}
+}
+
+export function isPartPlayable (part: DBPart) {
+	return !part.invalid && !part.floated
 }
 
 export const Parts: TransformedCollection<Part, DBPart>

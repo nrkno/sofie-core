@@ -5,6 +5,7 @@ import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosParentDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
@@ -13,6 +14,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType, GenericNote } from '../../../lib/api/notes'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 
 interface IMOSStatusProps {
@@ -57,7 +59,8 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 
 interface IProps {
 	studio: Studio
-	rundown: Rundown
+	playlist: RundownPlaylist
+	rundownIDs: string[]
 }
 
 interface IState {
@@ -148,7 +151,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		}
 	})
 
-	let notes: Array<GenericNote> = props.rundown.getAllStoredNotes()
+	let notes: Array<GenericNote> = props.playlist.getAllStoredNotes()
 
 	return {
 		notes,
@@ -161,7 +164,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 		playoutDevices: playout.onlineOffline
 	}
 }, (data, props: IProps, nextProps: IProps) => {
-	if (props.rundown._id === nextProps.rundown._id && props.studio._id === nextProps.studio._id) return false
+	if (props.playlist._id === nextProps.playlist._id && props.studio._id === nextProps.studio._id) return false
 	return true
 })(class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	private notificationTimeout: number

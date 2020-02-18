@@ -5,6 +5,7 @@ import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
 import { Part } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
+import { RundownPlaylist, RundownPlaylists } from '../collections/RundownPlaylists'
 
 export enum PrompterMethods {
 	getPrompterData = 'PrompterMethods.getPrompterData'
@@ -22,14 +23,15 @@ export interface PrompterData {
 
 export namespace PrompterAPI {
 
-	export function getPrompterData (rundownId: string): PrompterData {
+	export function getPrompterData (playlistId: string): PrompterData {
 
-		check(rundownId, String)
+		check(playlistId, String)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		let playlist = RundownPlaylists.findOne(playlistId)
 
-		let parts = rundown.getParts({
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+
+		let parts = playlist.getParts({
 			floated: {
 				$ne: true
 			}

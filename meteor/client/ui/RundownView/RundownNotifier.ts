@@ -26,6 +26,7 @@ import { PartNote, NoteType, GenericNote } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -64,7 +65,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _unsentExternalMessagesStatus: Notification | undefined = undefined
 	private _unsentExternalMessageStatusDep: Tracker.Dependency
 
-	constructor (rundownId: string, showStyleBase: ShowStyleBase, studio: Studio) {
+	constructor (playlistId: string, showStyleBase: ShowStyleBase, studio: Studio) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -79,20 +80,32 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 		this.autorun(() => {
 			// console.log('RundownViewNotifier 1')
-			const rRundownId = rundownId
+			const rundowns = Rundowns.find({
+				playlistId: playlistId
+			}, {
+				fields: {
+					'_id': 1,
+					'_rank': 1,
+				},
+				sort: {
+					'_rank': 1
+				}
+			}).fetch()
+			const rIds = rundowns.map(i => i._id)
+			const rPlaylistId = playlistId
 			// console.log('rRundownId: ' + rRundownId)
 
-			this.reactiveRundownStatus(rRundownId)
-			this.reactiveVersionStatus(rRundownId)
+			this.reactiveRundownStatus(rPlaylistId, rIds)
+			this.reactiveVersionStatus(rIds)
 
-			if (rRundownId) {
+			if (rPlaylistId) {
 				this.autorun(() => {
 					// console.log('RundownViewNotifier 1-1')
 					if (showStyleBase && studio) {
-						this.reactiveMediaStatus(rRundownId, showStyleBase, studio)
-						this.reactivePartNotes(rRundownId)
+						this.reactiveMediaStatus(rIds, showStyleBase, studio)
+						this.reactivePartNotes(rIds)
 						this.reactivePeripheralDeviceStatus(studio._id)
-						this.reactiveQueueStatus(studio._id, rRundownId)
+						this.reactiveQueueStatus(studio._id, playlistId)
 					} else {
 						this.cleanUpMediaStatus()
 					}
@@ -139,84 +152,92 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._notifier.stop()
 	}
 
-	private reactiveRundownStatus (rundownId: string | undefined) {
+	private reactiveRundownStatus (playlistId: string | undefined, rundownIds: string[]) {
 		const t = i18nTranslator
 		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
-			const rundown = Rundowns.findOne(rundownId)
-			if (rundown) {
-				let unsyncedId = rundown._id + '_unsynced'
-				let newNotification: Notification | undefined = undefined
-
-				if (rundown.unsynced) {
-					newNotification = new Notification(
-						unsyncedId,
-						NoticeLevel.CRITICAL,
-						t('The Rundown has been UNSYNCED from ENPS! No data updates will currently come through.'),
-						'Rundown',
-						getCurrentTime(),
-						true,
-						[
-							{
-								label: t('Re-Sync'),
-								type: 'primary',
-								action: () => {
-									doModalDialog({
-										title: t('Re-Sync Rundown'),
-										message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output)'),
-										yes: t('Re-Sync'),
-										no: t('Cancel'),
-										onAccept: (event) => {
-											doUserAction(t, event, UserActionAPI.methods.resyncRundown, [rundownId], (err, response) => {
-												if (!err && response) {
-													handleRundownReloadResponse(t, rundown, response.result)
-												}
-											})
-										}
-									})
-								}
-							},
-							// {
-							// 	label: t('Delete'),
-							// 	type: 'delete'
-							// }
-						],
-						-1
-					)
-					newNoteIds.push(unsyncedId)
+			const playlist = RundownPlaylists.findOne(playlistId)
+			const rundowns = Rundowns.find({
+				_id: {
+					$in: rundownIds
 				}
-				if (newNotification && !Notification.isEqual(this._rundownStatus[unsyncedId], newNotification)) {
-					this._rundownStatus[unsyncedId] = newNotification
-					this._rundownStatusDep.changed()
-				} else if (!newNotification && this._rundownStatus[unsyncedId]) {
-					delete this._rundownStatus[unsyncedId]
-					this._rundownStatusDep.changed()
-				}
+			}).fetch()
 
-				let rundownNotesId = rundown._id + '_ronotes_'
-				if (rundown.notes) {
-					rundown.notes.forEach((note) => {
-						const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type
-						const newNotification = new Notification(
-							rundownNoteId,
-							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-							note.message,
+			if (playlist && rundowns) {
+				rundowns.forEach((rundown) => {
+					let unsyncedId = rundown._id + '_unsynced'
+					let newNotification: Notification | undefined = undefined
+
+					if (rundown.unsynced) {
+						newNotification = new Notification(
+							unsyncedId,
+							NoticeLevel.CRITICAL,
+							t('The Rundown has been UNSYNCED from ENPS! No data updates will currently come through.'),
 							'Rundown',
 							getCurrentTime(),
 							true,
-							[],
+							[
+								{
+									label: t('Re-sync'),
+									type: 'primary',
+									action: () => {
+										doModalDialog({
+											title: t('Re-sync Rundown'),
+											message: t('Are you sure you want to re-sync the Rundown?\n(If the currently playing Part has been changed, this can affect the output)'),
+											yes: t('Re-sync'),
+											no: t('Cancel'),
+											onAccept: (event) => {
+												doUserAction(t, event, UserActionAPI.methods.resyncRundown, [ rundown._id ], (err, response) => {
+													if (!err && response) {
+														handleRundownReloadResponse(t, playlist, response.result)
+													}
+												})
+											}
+										})
+									}
+								},
+								// {
+								// 	label: t('Delete'),
+								// 	type: 'delete'
+								// }
+							],
 							-1
 						)
-						if (!Notification.isEqual(this._rundownStatus[rundownNoteId], newNotification)) {
-							this._rundownStatus[rundownNoteId] = newNotification
-							this._rundownStatusDep.changed()
-						}
-						newNoteIds.push(rundownNoteId)
-					})
-				}
+						newNoteIds.push(unsyncedId)
+					}
+					if (newNotification && !Notification.isEqual(this._rundownStatus[unsyncedId], newNotification)) {
+						this._rundownStatus[unsyncedId] = newNotification
+						this._rundownStatusDep.changed()
+					} else if (!newNotification && this._rundownStatus[unsyncedId]) {
+						delete this._rundownStatus[unsyncedId]
+						this._rundownStatusDep.changed()
+					}
+
+					let rundownNotesId = rundown._id + '_ronotes_'
+					if (rundown.notes) {
+						rundown.notes.forEach((note) => {
+							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type
+							const newNotification = new Notification(
+								rundownNoteId,
+								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+								note.message,
+								'Rundown',
+								getCurrentTime(),
+								true,
+								[],
+								-1
+							)
+							if (!Notification.isEqual(this._rundownStatus[rundownNoteId], newNotification)) {
+								this._rundownStatus[rundownNoteId] = newNotification
+								this._rundownStatusDep.changed()
+							}
+							newNoteIds.push(rundownNoteId)
+						})
+					}
+				})
 			}
 
 			_.difference(oldNoteIds, newNoteIds).forEach((item) => {
@@ -296,13 +317,15 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactivePartNotes (rRundownId: string) {
+	private reactivePartNotes (rRundownIds: string[]) {
 		const t = i18nTranslator
 
-		function getSegmentPartNotes (rRundownId: string) {
+		function getSegmentPartNotes (rRundownIds: string[]) {
 			let notes: Array<PartNote & {rank: number}> = []
 			const segments = Segments.find({
-				rundownId: rRundownId
+				rundownId: {
+					$in: rRundownIds
+				}
 			}, { sort: { _rank: 1 } }).fetch()
 
 			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
@@ -310,7 +333,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				notes: segment.notes
 			} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
 			Parts.find({
-				rundownId: rRundownId,
+				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
 			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
 			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
@@ -326,7 +349,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		this.autorun(() => {
 			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
-			getSegmentPartNotes(rRundownId).forEach((item: PartNote & {rank: number}) => {
+			getSegmentPartNotes(rRundownIds).forEach((item: PartNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
@@ -361,11 +384,11 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus (rRundownId: string, showStyleBase: ShowStyleBase, studio: Studio) {
+	private reactiveMediaStatus (rRundownIds: string[], showStyleBase: ShowStyleBase, studio: Studio) {
 		const t = i18nTranslator
 
 		let oldItemIds: Array<string> = []
-		const rPieces = reactiveData.getRPieces(rRundownId)
+		const rPieces = reactiveData.getRPieces(rRundownIds)
 		this.autorun((comp: Tracker.Computation) => {
 			const pieces = rPieces.get()
 			const newItemIds = pieces.map(item => item._id)
@@ -373,7 +396,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
-				if (sourceLayer && part) {
+				if (segment && sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
@@ -390,7 +413,7 @@ class RundownViewNotifier extends WithManagedTracker {
 									label: t('Show issue'),
 									type: 'default'
 								}
-							], part._rank)
+							], segment._rank * 1000 + part._rank)
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':
@@ -435,29 +458,33 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveVersionStatus (rRundownId: string) {
+	private reactiveVersionStatus (rRundownIds: string[]) {
 
 		const updatePeriod = 30000 // every 30s
 
 		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
-		this._rundownImportVersionInterval = rRundownId ? Meteor.setInterval(() => this.updateVersionStatus(rRundownId), updatePeriod) : undefined
+		this._rundownImportVersionInterval = rRundownIds ? Meteor.setInterval(() => this.updateVersionStatus(rRundownIds), updatePeriod) : undefined
 
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RundownViewNotifier 5')
 
 			// Track the rundown as a dependency of this autorun
-			const rundown = Rundowns.findOne(rRundownId)
-			if (rundown) {
-				this.updateVersionStatus(rundown._id)
+			const rundowns = Rundowns.find({
+				_id: {
+					$in: rRundownIds
+				}
+			}).fetch()
+			if (rundowns.length > 0) {
+				this.updateVersionStatus(rundowns.map(i => i._id))
 			}
 		})
 	}
 
-	private reactiveQueueStatus (studioId: string, rundownId: string) {
+	private reactiveQueueStatus (studioId: string, playlistId: string) {
 		const t = i18nTranslator
 		let reactiveUnsentMessageCount: ReactiveVar<number>
-		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, rundownId: rundownId })
-		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, rundownId)
+		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
+		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
 		this.autorun(() => {
 			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {
 				this._unsentExternalMessagesStatus = new Notification(`unsent_${studioId}`, NoticeLevel.WARNING, t('External message queue has unsent messages.'), 'ExternalMessageQueue', getCurrentTime(), true, undefined, -1)
@@ -470,38 +497,40 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private updateVersionStatus (rundownId: string) {
+	private updateVersionStatus (rundownIds: string[]) {
 		const t = i18nTranslator
 
 		// console.log('update_version_status, ' + rundownId)
 
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
-		Meteor.call(RundownAPI.methods.rundownNeedsUpdating, rundownId, (err: Error, versionMismatch: string) => {
-			let newNotification: Notification | undefined = undefined
-			if (err) {
-				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'rundown_' + rundownId, getCurrentTime(), true, undefined, -1)
-			} else if (versionMismatch) {
-				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), 'rundown_' + rundownId, getCurrentTime(), true, [
-					{
-						label: t('Reload ENPS Data'),
-						type: 'primary',
-						action: (e) => {
-							const reloadFunc = reloadRundownClick.get()
-							if (reloadFunc) {
-								reloadFunc(e)
+		rundownIds.map(rundownId => {
+			Meteor.call(RundownAPI.methods.rundownNeedsUpdating, rundownId, (err: Error, versionMismatch: string) => {
+				let newNotification: Notification | undefined = undefined
+				if (err) {
+					newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'rundown_' + rundownId, getCurrentTime(), true, undefined, -1)
+				} else if (versionMismatch) {
+					newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), 'rundown_' + rundownId, getCurrentTime(), true, [
+						{
+							label: t('Reload ENPS Data'),
+							type: 'primary',
+							action: (e) => {
+								const reloadFunc = reloadRundownClick.get()
+								if (reloadFunc) {
+									reloadFunc(e)
+								}
 							}
 						}
-					}
-				], -1)
-			}
+					], -1)
+				}
 
-			if (newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
-				this._rundownImportVersionStatus = newNotification
-				this._rundownImportVersionStatusDep.changed()
-			} else if (!newNotification && this._rundownImportVersionStatus) {
-				this._rundownImportVersionStatus = undefined
-				this._rundownImportVersionStatusDep.changed()
-			}
+				if (newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
+					this._rundownImportVersionStatus = newNotification
+					this._rundownImportVersionStatusDep.changed()
+				} else if (!newNotification && this._rundownImportVersionStatus) {
+					this._rundownImportVersionStatus = undefined
+					this._rundownImportVersionStatusDep.changed()
+				}
+			})
 		})
 	}
 
@@ -549,7 +578,7 @@ interface IProps {
 	// 		studioId?: string
 	// 	}
 	// }
-	rundownId: string,
+	playlistId: string,
 	studio: Studio
 	showStyleBase: ShowStyleBase
 }
@@ -559,11 +588,11 @@ export const RundownNotifier = class extends React.Component<IProps> {
 
 	constructor (props: IProps) {
 		super(props)
-		this.notifier = new RundownViewNotifier(props.rundownId, props.showStyleBase, props.studio)
+		this.notifier = new RundownViewNotifier(props.playlistId, props.showStyleBase, props.studio)
 	}
 
 	shouldComponentUpdate (nextProps: IProps): boolean {
-		if ((this.props.rundownId === nextProps.rundownId) &&
+		if ((this.props.playlistId === nextProps.playlistId) &&
 			(this.props.showStyleBase._id === nextProps.showStyleBase._id) &&
 			(this.props.studio._id === nextProps.studio._id)) {
 			return false
@@ -573,7 +602,7 @@ export const RundownNotifier = class extends React.Component<IProps> {
 
 	componentDidUpdate () {
 		this.notifier.stop()
-		this.notifier = new RundownViewNotifier(this.props.rundownId, this.props.showStyleBase, this.props.studio)
+		this.notifier = new RundownViewNotifier(this.props.playlistId, this.props.showStyleBase, this.props.studio)
 	}
 
 	componentWillUnmount () {

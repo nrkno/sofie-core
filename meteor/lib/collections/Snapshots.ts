@@ -31,7 +31,7 @@ export interface SnapshotItem extends SnapshotBase {
 export interface SnapshotRundown extends SnapshotBase {
 	type: SnapshotType.RUNDOWN
 	studioId: string
-	rundownId: string
+	playlistId: string
 }
 export interface SnapshotSystem extends SnapshotBase {
 	type: SnapshotType.SYSTEM

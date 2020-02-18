@@ -11,6 +11,7 @@ import { check } from 'meteor/check'
 import { Parts } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -47,15 +48,15 @@ setMeteorMethods({
 	'debug_removeRundown' (id: string) {
 		logger.debug('Remove rundown "' + id + '"')
 
-		const rundown = Rundowns.findOne(id)
-		if (rundown) rundown.remove()
+		const playlist = RundownPlaylists.findOne(id)
+		if (playlist) playlist.remove()
 	},
 
 	'debug_removeAllRos' () {
 		logger.debug('Remove all rundowns')
 
-		Rundowns.find({}).forEach((rundown) => {
-			rundown.remove()
+		RundownPlaylists.find({}).forEach((playlist) => {
+			playlist.remove()
 		})
 	},
 

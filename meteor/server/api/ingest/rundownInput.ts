@@ -29,13 +29,19 @@ import {
 	PreparedChanges,
 	prepareSaveIntoDb,
 	savePreparedChanges,
+	asyncCollectionFindOne,
+	waitForPromiseAll,
+	asyncCollectionRemove,
+	normalizeArray,
+	normalizeArrayFunc,
+	asyncCollectionInsert,
 	Optional
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, produceRundownPlaylistInfo } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -46,7 +52,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../l
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
@@ -56,6 +62,11 @@ import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
 import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Mongo } from 'meteor/mongo'
+import { isTooCloseToAutonext } from '../playout/lib'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances, wrapPieceToInstance, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -169,22 +180,32 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
+	// TODO - this is the wrong id being used...
 	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown) {
+		const playlist = getRundownPlaylist(rundown)
 
-			if (canBeUpdated(rundown)) {
-				if (!isUpdateAllowed(rundown, { removed: [rundown] }, {}, {})) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
-				} else {
-					logger.info(`Removing rundown "${rundown._id}"`)
-					rundown.remove()
+		if (canBeUpdated(rundown)) {
+			let okToRemove: boolean = true
+			if (!isUpdateAllowed(playlist, rundown, { removed: [rundown] }, {}, {})) {
+				const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+
+				if ((currentPartInstance && currentPartInstance.rundownId === rundown._id) || (isTooCloseToAutonext(currentPartInstance) && nextPartInstance && nextPartInstance.rundownId === rundown._id)) {
+					okToRemove = false
 				}
+			}
+			if (okToRemove) {
+				logger.info(`Removing rundown "${rundown._id}"`)
+				rundown.remove()
 			} else {
-				logger.info(`Rundown "${rundown._id}" cannot be updated`)
-				if (!rundown.unsynced) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
-				}
+				// Don't allow removing currently playing rundown playlists:
+				logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
+				ServerRundownAPI.unsyncRundown(rundown._id)
+			}
+		 } else {
+			logger.info(`Rundown "${rundown._id}" cannot be updated`)
+			if (!rundown.unsynced) {
+				ServerRundownAPI.unsyncRundown(rundown._id)
 			}
 		}
 	})
@@ -269,16 +290,16 @@ function updateRundownFromIngestData (
 				core: PackageInfo.version,
 			},
 
-			// omit the below fields
-			previousPartId: null,
-			currentPartId: null,
-			nextPartId: null,
+			// omit the below fields:
 			created: 0,
 			modified: 0,
 
 			peripheralDeviceId: '', // added later
-			dataSource: '' // added later
-		}), ['previousPartId', 'currentPartId', 'nextPartId', 'created', 'modified', 'peripheralDeviceId', 'dataSource'])
+			dataSource: '', // added later
+
+			playlistId: '', // added later
+			_rank: 0 // added later
+		}), ['created', 'modified', 'peripheralDeviceId', 'dataSource'])
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
@@ -290,15 +311,32 @@ function updateRundownFromIngestData (
 	}
 
 	// Save rundown into database:
-	let changes = saveIntoDb(Rundowns, {
+	const rundownChanges = saveIntoDb(Rundowns, {
 		_id: dbRundownData._id
 	}, [dbRundownData], {
 		beforeInsert: (o) => {
 			o.modified = getCurrentTime()
 			o.created = getCurrentTime()
-			o.previousPartId = null
-			o.currentPartId = null
-			o.nextPartId = null
+			return o
+		},
+		beforeUpdate: (o) => {
+			o.modified = getCurrentTime()
+			return o
+		}
+	})
+
+	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
+
+	// TODO-ASAP - wont this wipe out any existing playlist data?
+	const playlistChanges = saveIntoDb(RundownPlaylists, {
+		_id: rundownPlaylistInfo.rundownPlaylist._id
+	}, [rundownPlaylistInfo.rundownPlaylist], {
+		beforeInsert: (o) => {
+			o.created = getCurrentTime()
+			o.modified = getCurrentTime()
+			o.previousPartInstanceId = null
+			o.currentPartInstanceId = null
+			o.nextPartInstanceId = null
 			return o
 		},
 		beforeUpdate: (o) => {
@@ -309,6 +347,8 @@ function updateRundownFromIngestData (
 
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
+
+	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
 
 	// Save the baseline
 	const blueprintRundownContext = new RundownContext(dbRundown, studio)
@@ -324,12 +364,10 @@ function updateRundownFromIngestData (
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, 'baseline')
 
-	const existingRundownParts = Parts.find({
-		rundownId: dbRundown._id,
-		dynamicallyInserted: { $ne: true }
-	}).fetch()
+	const segmentsAndParts = waitForPromise(dbRundown.getSegmentsAndParts())
+	const existingRundownParts = _.filter(segmentsAndParts.parts, part => part.dynamicallyInserted !== true)
+	const existingSegments = segmentsAndParts.segments
 
-	const existingSegments = Segments.find({ rundownId: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
@@ -355,7 +393,6 @@ function updateRundownFromIngestData (
 		adlibPieces.push(...segmentContents.adlibPieces)
 	})
 
-
 	// Prepare updates:
 	const prepareSaveSegments = prepareSaveIntoDb(Segments, {
 		rundownId: rundownId
@@ -377,8 +414,9 @@ function updateRundownFromIngestData (
 		return false
 	}
 
-	changes = sumChanges(
-		changes,
+	const allChanges = sumChanges(
+		rundownChanges,
+		playlistChanges,
 		// Save the baseline
 		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs, {
 			rundownId: dbRundown._id,
@@ -446,13 +484,113 @@ function updateRundownFromIngestData (
 		})
 	)
 
-	const didChange = anythingChanged(changes)
+	syncChangesToSelectedPartInstances(dbRundown.getRundownPlaylist(), parts, segmentPieces)
+
+	const didChange = anythingChanged(allChanges)
 	if (didChange) {
 		afterIngestChangedData(dbRundown, _.map(segments, s => s._id))
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	return didChange
+}
+
+function syncChangesToSelectedPartInstances (playlist: RundownPlaylist, parts: DBPart[], pieces: Piece[]) {
+	// TODO-PartInstances - to be removed once new data flow
+
+	const ps: Array<Promise<any>> = []
+
+	function syncPartChanges (partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
+		// We need to do this locally to avoid wiping out any stored changes
+		if (partInstance) {
+			const newPart = parts.find(p => p._id === partInstance.part._id)
+			// The part missing is ok, as it should never happen to the current one (and if it does it is better to just keep playing)
+			// Or if it was the next, then that will be resolved by a future call to updatenext
+			if (newPart) {
+				ps.push(asyncCollectionUpdate(PartInstances, partInstance._id, {
+					$set: {
+						part: {
+							...partInstance.part,
+							...newPart
+						}
+					}
+				}))
+
+				// Pieces
+				const piecesForPart = pieces.filter(p => p.partId === newPart._id)
+				const currentPieceInstances = rawPieceInstances.filter(p => p.partInstanceId === partInstance._id)
+				const currentPieceInstancesMap = normalizeArrayFunc(currentPieceInstances, p => p.piece._id)
+
+				// insert
+				const newPieces = piecesForPart.filter(p => !currentPieceInstancesMap[p._id])
+				const insertedIds: string[] = []
+				for (const newPiece of newPieces) {
+					const newPieceInstance = wrapPieceToInstance(newPiece, partInstance._id)
+					ps.push(asyncCollectionInsert(PieceInstances, newPieceInstance))
+					insertedIds.push(newPieceInstance._id)
+				}
+
+				// prune
+				ps.push(asyncCollectionRemove(PieceInstances, {
+					partInstanceId: partInstance._id,
+					'piece._id': { $not: { $in: piecesForPart.map(p => p._id) } },
+					dynamicallyInserted: { $ne: true }
+				}))
+
+				// update
+				for (const instance of currentPieceInstances) {
+					const piece = piecesForPart.find(p => p._id === instance.piece._id)
+					// If missing that is because the remove is still running, but that is fine
+					if (piece) {
+						ps.push(asyncCollectionUpdate(PieceInstances, instance._id, {
+							$set: {
+								piece: {
+									...instance.piece,
+									...piece
+								}
+							}
+						}))
+					}
+				}
+			}
+		}
+	}
+
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	const partInstanceIds = _.compact([currentPartInstance, nextPartInstance]).map(i => i._id)
+	const rawPieceInstances = partInstanceIds ? PieceInstances.find({ partInstanceId: { $in: partInstanceIds } }).fetch() : []
+	syncPartChanges(currentPartInstance, rawPieceInstances)
+	syncPartChanges(nextPartInstance, rawPieceInstances)
+
+	waitForPromiseAll(ps)
+}
+
+function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
+	let rundowns: DBRundown[] = []
+	let selector: Mongo.Selector<DBRundown> = {}
+	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
+		selector = { playlistExternalId: currentRundown.playlistExternalId }
+		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+	} else if (!currentRundown.playlistExternalId) {
+		selector = { _id: currentRundown._id }
+		rundowns = [ currentRundown ]
+	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
+		throw new Meteor.Error(501, `Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`)
+	} else {
+		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
+	}
+
+	const updated = rundowns.map(r => {
+		if (order[r._id] !== undefined) {
+			r.playlistId = playlist._id
+			r._rank = order[r._id]
+		} else {
+			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+		}
+		return r
+	})
+
+	saveIntoDb(Rundowns, selector, updated)
 }
 
 function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
@@ -528,6 +666,7 @@ function updateSegmentFromIngestData (
 		_id: segmentId,
 		rundownId: rundown._id,
 	})
+	// The segment may not yet exist (if it had its id changed), so we need to fetch the old ones manually
 	const existingParts = Parts.find({
 		rundownId: rundown._id,
 		segmentId: segmentId,
@@ -642,15 +781,25 @@ function updateSegmentFromIngestData (
 			}
 		})
 	)
+
+	syncChangesToSelectedPartInstances(rundown.getRundownPlaylist(), parts, segmentPieces)
+
 	return anythingChanged(changes) ? segmentId : null
 }
-export function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
+function afterIngestChangedData (rundown: Rundown, changedSegmentIds: string[]) {
+	const pPlaylist = asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId })
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(rundown._id)
 	updateExpectedPlayoutItemsOnRundown(rundown._id)
-	updatePartRanks(rundown._id)
+	updatePartRanks(rundown)
 	updateSourceLayerInfinitesAfterPart(rundown)
-	UpdateNext.ensureNextPartIsValid(rundown)
+
+	const playlist = waitForPromise(pPlaylist)
+	if (!playlist) {
+		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
+	}
+	UpdateNext.ensureNextPartIsValid(playlist)
+
 	triggerUpdateTimelineAfterIngestData(rundown._id, changedSegmentIds)
 }
 
@@ -785,7 +934,7 @@ function generateSegmentContents (
 			_id: partId,
 			rundownId: rundownId,
 			segmentId: newSegment._id,
-			_rank: i, // This gets updated to a rundown unique rank as a later step
+			_rank: i, // This gets updated to a rank unique within its segment in a later step
 			notes: notes,
 		})
 		parts.push(part)
@@ -812,6 +961,7 @@ function generateSegmentContents (
 }
 
 export function isUpdateAllowed (
+	rundownPlaylist: RundownPlaylist,
 	rundown: Rundown,
 	rundownChanges: Optional<PreparedChanges<DBRundown>>,
 	segmentChanges: Optional<PreparedChanges<DBSegment>>,
@@ -825,7 +975,7 @@ export function isUpdateAllowed (
 		return false
 	}
 
-	if (rundown.active) {
+	if (rundownPlaylist.active) {
 
 		if (allowed && rundownChanges.removed && rundownChanges.removed.length) {
 			_.each(rundownChanges.removed, rd => {
@@ -836,10 +986,11 @@ export function isUpdateAllowed (
 				}
 			})
 		}
-		if (rundown.currentPartId) {
+		const { currentPartInstance } = rundownPlaylist.getSelectedPartInstances()
+		if (currentPartInstance) {
 			if (allowed && partChanges.removed && partChanges.removed.length) {
 				_.each(partChanges.removed, part => {
-					if (rundown.currentPartId === part._id) {
+					if (currentPartInstance.part._id === part._id) {
 						// Don't allow removing currently playing part
 						logger.warn(`Not allowing removal of currently playing part "${part._id}", making rundown unsynced instead`)
 						allowed = false
@@ -847,11 +998,10 @@ export function isUpdateAllowed (
 				})
 			}
 			if (allowed && segmentChanges.removed && segmentChanges.removed.length) {
-				const currentPart = rundown.getParts({ _id: rundown.currentPartId })[0]
 				_.each(segmentChanges.removed, segment => {
-					if (currentPart.segmentId === segment._id) {
+					if (currentPartInstance.segmentId === segment._id) {
 						// Don't allow removing segment with currently playing part
-						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}", making rundown unsynced instead`)
+						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPartInstance.part._id}", making rundown unsynced instead`)
 						allowed = false
 					}
 				})

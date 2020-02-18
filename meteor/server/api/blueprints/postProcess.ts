@@ -1,7 +1,8 @@
 import * as _ from 'underscore'
 import { Piece } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { getHash } from '../../../lib/lib'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { extendMandadory, getHash } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
@@ -38,7 +39,7 @@ export function postProcessPieces (innerContext: RundownContext, pieces: IBluepr
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const obj = convertTimelineObject(innerContext.rundown._id, o)
+				const obj = convertTimelineObject(o)
 
 				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_' + (i++))
 
@@ -74,7 +75,7 @@ export function postProcessAdLibPieces (innerContext: RundownContext, adLibPiece
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const obj = convertTimelineObject(innerContext.rundown._id, o)
+				const obj = convertTimelineObject(o)
 
 				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_adlib_' + (i++))
 
@@ -92,7 +93,7 @@ export function postProcessAdLibPieces (innerContext: RundownContext, adLibPiece
 export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(objs), (baseObj, i) => {
-		const obj = convertTimelineObject('', baseObj)
+		const obj = convertTimelineObject(baseObj)
 
 		if (!obj.id) obj.id = getHash('baseline_' + (i++))
 
@@ -103,13 +104,12 @@ export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRT
 	})
 }
 
-function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): TimelineObjRundown {
+function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObjRundown {
 	return {
 		...o,
 		id: o.id,
 		_id: '', // set later
 		studioId: '', // set later
-		rundownId: rundownId,
 		objectType: TimelineObjType.RUNDOWN,
 	}
 }
@@ -117,7 +117,7 @@ function convertTimelineObject (rundownId: string, o: TimelineObjectCoreExt): Ti
 export function postProcessRundownBaselineItems (innerContext: RundownContext, baselineItems: TSR.Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric, i): TimelineObjGeneric => {
-		const obj: TimelineObjGeneric = convertTimelineObject(innerContext.rundown._id, o)
+		const obj: TimelineObjGeneric = convertTimelineObject(o)
 
 		if (!obj.id) obj.id = innerContext.getHashId('baseline_' + (i++))
 

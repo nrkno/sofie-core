@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime, literal } from '../../lib/lib'
@@ -31,9 +32,17 @@ import { Spinner } from '../lib/Spinner'
 
 const PackageInfo = require('../../package.json')
 
+interface RundownPlaylistUi extends RundownPlaylist {
+	status: string
+	airStatus: string
+	unsynced: boolean
+	studioName: string
+	showStyles: Array<{ id: string, baseName: string, variantName: string }>
+}
+
 interface IRundownListItemProps {
 	key: string,
-	rundown: RundownUI
+	rundown: RundownPlaylistUi
 }
 
 interface IRundownListItemStats {
@@ -44,20 +53,20 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
-	getRundownLink (rundownId) {
+	getRundownLink (rundownId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
 	}
-	getStudioLink (studioId) {
+	getStudioLink (studioId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(studioId))
 	}
-	getshowStyleBaseLink (showStyleBaseId) {
+	getshowStyleBaseLink (showStyleBaseId: string) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
 	}
 
-	confirmDelete (rundown: Rundown) {
+	confirmDelete (playlist: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -65,16 +74,16 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRundown, [rundown._id])
+				doUserAction(t, e, UserActionAPI.methods.removeRundown, [playlist._id])
 			},
 			message: (
-				t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) + '\n' +
+				t('Are you sure you want to delete the "{{name}}" rundown?', { name: playlist.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})
 	}
 
-	confirmReSyncRO (rundown: Rundown) {
+	confirmReSyncRO (rundown: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
 			title: t('Re-Sync this rundown?'),
@@ -119,8 +128,15 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<td className='rundown-list-item__showStyle'>
 						{
 							getAllowConfigure() ?
-							<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyleBaseId)}>{`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`}</Link> :
-							`${this.props.rundown.showStyleBaseName}-${this.props.rundown.showStyleVariantName}`
+								(
+									this.props.rundown.showStyles.length === 1 ?
+									<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyles[0].id)}>{`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}`}</Link> :
+									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+								) : (
+									this.props.rundown.showStyles.length === 1 ?
+									`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}` :
+									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+								)
 						}
 					</td>
 					<td className='rundown-list-item__created'>
@@ -188,7 +204,7 @@ enum ToolTipStep {
 
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
-	rundowns: Array<RundownUI>
+	rundowns: Array<RundownPlaylistUi>
 }
 
 interface IRundownsListState {
@@ -196,7 +212,7 @@ interface IRundownsListState {
 	subsReady: boolean
 }
 
-export const RundownList = translateWithTracker(() => {
+export const RundownList = translateWithTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -206,17 +222,28 @@ export const RundownList = translateWithTracker(() => {
 
 	return {
 		coreSystem: getCoreSystem(),
-		rundowns: _.map(Rundowns.find({}, { sort: { created: -1 } }).fetch(), (rundown) => {
-			const studio = _.find(studios, s => s._id === rundown.studioId)
-			const showStyleBase = _.find(showStyleBases, s => s._id === rundown.showStyleBaseId)
-			const showStyleVariant = _.find(showStyleVariants, s => s._id === rundown.showStyleVariantId)
+		rundowns: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((playlist: RundownPlaylistUi) => {
+			const linkedRundowns = playlist.getRundowns()
+			playlist.airStatus = linkedRundowns.map(rundown => rundown.airStatus).join(', ')
+			playlist.status = linkedRundowns.map(rundown => rundown.status).join(', ')
+			playlist.unsynced = linkedRundowns.reduce((mem, rundown) => mem || rundown.unsynced || false, false)
 
-			return {
-				...rundown,
-				studioName: studio && studio.name || 'N/A',
-				showStyleBaseName: showStyleBase && showStyleBase.name || 'N/A',
-				showStyleVariantName: showStyleVariant && showStyleVariant.name || 'N/A'
-			}
+			const studio = _.find(studios, s => s._id === playlist.studioId)
+
+			playlist.studioName = studio && studio.name || ''
+			playlist.showStyles = _.uniq(
+				linkedRundowns.map(rundown => [rundown.showStyleBaseId, rundown.showStyleVariantId]), false, (ids) => ids[0] + '_' + ids[1]
+				).map(combo => {
+					const showStyleBase = _.find(showStyleBases, style => style._id === combo[0])
+					const showStyleVariant = _.find(showStyleVariants, variant => variant._id === combo[1])
+
+					return {
+						id: showStyleBase && showStyleBase._id || '',
+						baseName: showStyleBase && showStyleBase.name || '',
+						variantName: showStyleVariant && showStyleVariant.name || ''
+					}
+				})
+			return playlist
 		})
 	}
 })(
@@ -253,30 +280,24 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 	componentDidMount () {
 		const { t } = this.props
-		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
-			if (err) {
-				// console.error(err)
-				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
-				return
-			}
 
-			this.setState({
-				systemStatus: systemStatus
-			})
-		})
-
-		this.subscribe(PubSub.rundowns, {})
+		// Subscribe to data:
+		this.subscribe(PubSub.rundownPlaylists, {})
 		this.subscribe(PubSub.studios, {})
 
 		this.autorun(() => {
 			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
 			const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleVariantId))
+			const playlistIds = _.uniq(RundownPlaylists.find().fetch().map(i => i._id))
 
 			this.subscribe(PubSub.showStyleBases, {
 				_id: { $in: showStyleBaseIds }
 			})
 			this.subscribe(PubSub.showStyleVariants, {
 				_id: { $in: showStyleVariantIds }
+			})
+			this.subscribe(PubSub.rundowns, {
+				playlistId: { $in: playlistIds }
 			})
 		})
 
@@ -287,6 +308,18 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 					subsReady: subsReady
 				})
 			}
+		})
+
+		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
+			if (err) {
+				// console.error(err)
+				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
+				return
+			}
+
+			this.setState({
+				systemStatus: systemStatus
+			})
 		})
 	}
 
@@ -331,7 +364,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		</React.Fragment>
 	}
 
-	renderRundowns (list: RundownUI[]) {
+	renderRundowns (list: RundownPlaylistUi[]) {
 		const { t } = this.props
 
 		return list.length > 0 ?

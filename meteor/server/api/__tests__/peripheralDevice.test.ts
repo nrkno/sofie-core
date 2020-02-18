@@ -15,6 +15,7 @@ import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 describe('test peripheralDevice general API methods', () => {
 
@@ -22,6 +23,20 @@ describe('test peripheralDevice general API methods', () => {
 	beforeAll(() => {
 		device = setupDefaultStudioEnvironment().ingestDevice
 		let rundownID = 'rundown0'
+		let rundownPlaylistID = 'rundownPlaylist0'
+		RundownPlaylists.insert({
+			_id: rundownPlaylistID,
+			externalId: 'mock_rpl',
+			name: 'Mock',
+			studioId: '',
+			peripheralDeviceId: '',
+			created: 0,
+			modified: 0,
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null,
+			active: true
+		})
 		Rundowns.insert({
 			_id: rundownID,
 			externalId: rundownID,
@@ -30,9 +45,8 @@ describe('test peripheralDevice general API methods', () => {
 			showStyleVariantId: 'variant0',
 			name: 'test rundown',
 			created: 1000,
-			currentPartId: null,
-			nextPartId: null,
-			previousPartId: null,
+			playlistId: rundownPlaylistID,
+			_rank: 0,
 			dataSource: 'mock',
 			peripheralDeviceId: 'testMosDevice',
 			modified: getCurrentTime(),
@@ -43,7 +57,6 @@ describe('test peripheralDevice general API methods', () => {
 				blueprint: 'on',
 				core: 'plate'
 			},
-			active: true,
 		})
 		let segmentID = 'segment0'
 		Segments.insert({

@@ -505,7 +505,7 @@ describe('Test blueprint post-process', () => {
 				_id: '',
 				name: '',
 				externalId: '',
-				enable: {},
+				enable: { start: 0 },
 				sourceLayerId: '',
 				outputLayerId: '',
 				partId: '',

@@ -24,6 +24,7 @@ import { runInFiber } from '../../../__mocks__/Fibers'
 import { sendSOAPMessage } from '../integration/soap'
 import { sendSlackMessageToWebhook } from '../integration/slack'
 import { sendRabbitMQMessage } from '../integration/rabbitMQ'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 // import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {
@@ -33,12 +34,26 @@ describe('Test external message queue static methods', () => {
 	beforeAll(async () => {
 		await runInFiber(() => {
 			let now = getCurrentTime()
+			RundownPlaylists.insert({
+				_id: 'playlist_1',
+				externalId: 'mock_rpl',
+				name: 'Mock',
+				studioId: '',
+				peripheralDeviceId: '',
+				created: 0,
+				modified: 0,
+				currentPartInstanceId: 'part_now',
+				nextPartInstanceId: 'partNext',
+				previousPartInstanceId: null,
+				active: true
+			})
 			Rundowns.insert({
 				_id: 'rundown_1',
 				name: 'Mockito 1',
 				externalId: 'mockito',
-				currentPartId: 'part_now',
-				nextPartId: 'partNext',
+				playlistId: 'playlist_1',
+				_rank: 0,
+
 				studioId: studioEnv.studio._id,
 				showStyleVariantId: studioEnv.showStyleVariant._id,
 				showStyleBaseId: studioEnv.showStyleBase._id,
@@ -52,7 +67,6 @@ describe('Test external message queue static methods', () => {
 					blueprint: 'on',
 					core: 'plate'
 				},
-				previousPartId: null,
 				dataSource: 'frank'
 			})
 			rundown = Rundowns.findOne() as Rundown

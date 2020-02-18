@@ -21,13 +21,16 @@ import {
 	Rundown,
 	Rundowns
 } from '../../lib/collections/Rundowns'
-import { Part, Parts } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
+import { Parts } from '../../lib/collections/Parts'
+import { Pieces } from '../../lib/collections/Pieces'
 import { logger } from '../../lib/logging'
 import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
 import { getBlueprintOfRundown } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 
 const EVENT_WAIT_TIME = 500
 
@@ -64,7 +67,7 @@ function handleEvent (event: AsRunLogEvent): void {
 		try {
 			if (event.rundownId) {
 
-				const rundown = Rundowns.findOne(event.rundownId) as Rundown
+				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
 				const { blueprint } = getBlueprintOfRundown(rundown)
@@ -89,46 +92,78 @@ function handleEvent (event: AsRunLogEvent): void {
 
 // Convenience functions:
 
-export function reportRundownHasStarted (rundownOrId: Rundown | string, timestamp?: Time) {
+export function reportRundownHasStarted (playlistOrId: RundownPlaylist | string, rundownOrId: Rundown | string, timestamp?: Time) {
 	// Called when the first part in rundown starts playing
 
-	let rundown = (
+	const rundown = (
 		_.isString(rundownOrId) ?
 		Rundowns.findOne(rundownOrId) :
 		rundownOrId
 	)
-	if (rundown) {
+	const playlist = (
+		_.isString(playlistOrId) ?
+		RundownPlaylists.findOne(playlistOrId) :
+		playlistOrId
+	)
+	if (rundown && playlist) {
 		Rundowns.update(rundown._id, {
 			$set: {
 				startedPlayback: timestamp
 			}
 		})
+
+		if (!playlist.startedPlayback) {
+			RundownPlaylists.update(playlist._id, {
+				$set: {
+					startedPlayback: timestamp
+				}
+			})
+		}
+
 		// also update local object:
 		rundown.startedPlayback = timestamp
 
-		let event = pushAsRunLog({
+		const event = pushAsRunLog({
 			studioId: rundown.studioId,
 			rundownId: rundown._id,
 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			content2: 'rundown'
-		}, !!rundown.rehearsal, timestamp)
+		}, !!playlist.rehearsal, timestamp)
 		if (event) handleEvent(event)
-	} else logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
+	} else if (playlist) {
+		logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
+ }
+	else {
+		logger.error(`playlist not found in reportRundownHasStarted "${playlistOrId}"`)
+ }
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
-export function reportPartHasStarted (partOrId: Part | string , timestamp: Time) {
+export function reportPartHasStarted (partInstanceOrId: PartInstance | string , timestamp: Time) {
 
-	let part = (
-		_.isString(partOrId) ?
-		Parts.findOne(partOrId) :
-		partOrId
+	let partInstance = (
+		_.isString(partInstanceOrId) ?
+		PartInstances.findOne(partInstanceOrId) :
+		partInstanceOrId
 	)
-	if (part) {
+	if (partInstance) {
 		let rundown: Rundown | undefined
 
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(Parts, part._id, {
+			asyncCollectionUpdate(PartInstances, partInstance._id, {
+				$set: {
+					'part.startedPlayback': true,
+					'part.stoppedPlayback': false,
+					isTaken: true
+				},
+				$push: {
+					'part.timings.startedPlayback': timestamp
+				}
+			}),
+			asyncCollectionFindOne(Rundowns, partInstance.rundownId),
+
+			// TODO-PartInstance - pending new data flow
+			asyncCollectionUpdate(Parts, partInstance.part._id, {
 				$set: {
 					startedPlayback: true,
 					stoppedPlayback: false,
@@ -136,82 +171,107 @@ export function reportPartHasStarted (partOrId: Part | string , timestamp: Time)
 				$push: {
 					'timings.startedPlayback': timestamp
 				}
-			}),
-			asyncCollectionFindOne(Rundowns, part.rundownId)
+			})
 		])
 		rundown = r[1]
 		// also update local object:
-		part.startedPlayback = true
-		part.stoppedPlayback = false
-		pushOntoPath(part, 'timings.startedPlayback', timestamp)
+		partInstance.part.startedPlayback = true
+		partInstance.part.stoppedPlayback = false
+		pushOntoPath(partInstance.part, 'timings.startedPlayback', timestamp)
 
 		if (rundown) {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
-				segmentId:			part.segmentId,
-				partId:		part._id,
+				segmentId:			partInstance.segmentId,
+				partInstanceId:		partInstance.part._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'part'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else logger.error(`rundown "${part.rundownId}" not found in reportPartHasStarted "${part._id}"`)
-	} else logger.error(`part not found in reportPartHasStarted "${partOrId}"`)
+		} else {
+			logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
+		}
+	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
 }
-export function reportPartHasStopped (partOrId: Part | string , timestamp: Time) {
+export function reportPartHasStopped (partInstanceOrId: PartInstance | string , timestamp: Time) {
 
-	let part = (
-		_.isString(partOrId) ?
-		Parts.findOne(partOrId) :
-		partOrId
+	let partInstance = (
+		_.isString(partInstanceOrId) ?
+		PartInstances.findOne(partInstanceOrId) :
+		partInstanceOrId
 	)
-	if (part) {
+	if (partInstance) {
 		let rundown: Rundown | undefined
 
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(Parts, part._id, {
+			asyncCollectionUpdate(PartInstances, partInstance._id, {
+				$set: {
+					'part.stoppedPlayback': true,
+				},
+				$push: {
+					'part.timings.stoppedPlayback': timestamp
+				}
+			}),
+			asyncCollectionFindOne(Rundowns, partInstance.rundownId),
+
+			// TODO-PartInstance - pending new data flow
+			asyncCollectionUpdate(Parts, partInstance.part._id, {
 				$set: {
 					stoppedPlayback: true,
 				},
 				$push: {
 					'timings.stoppedPlayback': timestamp
 				}
-			}),
-			asyncCollectionFindOne(Rundowns, part.rundownId)
+			})
 		])
 		rundown = r[1]
 		// also update local object:
-		part.stoppedPlayback = true
-		pushOntoPath(part, 'timings.stoppedPlayback', timestamp)
+		partInstance.part.stoppedPlayback = true
+		pushOntoPath(partInstance.part, 'timings.stoppedPlayback', timestamp)
 
 		if (rundown) {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
-				segmentId:			part.segmentId,
-				partId:		part._id,
+				segmentId:			partInstance.segmentId,
+				partInstanceId:		partInstance.part._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'part'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
 			return event
-		} else logger.error(`rundown "${part.rundownId}" not found in reportPartHasStopped "${part._id}"`)
-	} else logger.error(`part not found in reportPartHasStopped "${partOrId}"`)
+		} else logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
+	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
 }
 
-export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Time) {
+export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string, timestamp: Time) {
 
-	let piece = (
-		_.isString(pieceOrId) ?
-		Pieces.findOne(pieceOrId) :
-		pieceOrId
+	let pieceInstance = (
+		_.isString(pieceInstanceOrId) ?
+		PieceInstances.findOne(pieceInstanceOrId) :
+		pieceInstanceOrId
 	)
-	if (piece) {
-
+	if (pieceInstance) {
 		let rundown: Rundown | undefined
-		let part: Part | undefined
+		let partInstance: PartInstance | undefined
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(Pieces, piece._id, {
+			asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
+				$set: {
+					'piece.startedPlayback': timestamp,
+					'piece.stoppedPlayback': 0
+				},
+				$push: {
+					'piece.timings.startedPlayback': timestamp
+				}
+			}),
+			asyncCollectionFindOne(Rundowns, pieceInstance.rundownId),
+			asyncCollectionFindOne(PartInstances, pieceInstance.partInstanceId),
+
+			// TODO-PartInstance - pending new data flow
+			asyncCollectionUpdate(Pieces, pieceInstance.piece._id, {
 				$set: {
 					startedPlayback: timestamp,
 					stoppedPlayback: 0
@@ -220,80 +280,91 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 					'timings.startedPlayback': timestamp
 				}
 			}),
-			asyncCollectionFindOne(Rundowns, piece.rundownId),
-			asyncCollectionFindOne(Parts, piece.partId)
 		])
 		rundown = r[1]
-		part = r[2]
-		// also update local object:
-		piece.startedPlayback = timestamp
-		piece.stoppedPlayback = 0
-		pushOntoPath(piece, 'timings.startedPlayback', timestamp)
+		partInstance = r[2]
 
-		if (rundown && part) {
+		// also update local object:
+		pieceInstance.piece.startedPlayback = timestamp
+		pieceInstance.piece.stoppedPlayback = 0
+		pushOntoPath(pieceInstance.piece, 'timings.startedPlayback', timestamp)
+
+		if (!partInstance) {
+			logger.error(`PartInstance "${pieceInstance.partInstanceId}" not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
+		} else if (!rundown) {
+			logger.error(`Rundown "${pieceInstance.rundownId}" not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
+		} else {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
-				segmentId:			part.segmentId,
-				partId:		piece.partId,
-				pieceId:	piece._id,
+				segmentId:			partInstance.segmentId,
+				partInstanceId:		partInstance.part._id,
+				pieceInstanceId:	pieceInstance.piece._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'piece'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else if (part) {
-			logger.error(`Part "${piece.partId}" not found in reportPieceHasStarted "${piece._id}"`)
-		} else {
-			logger.error(`Rundown "${piece.rundownId}" not found in reportPieceHasStarted "${piece._id}"`)
 		}
 
-	} else logger.error(`piece not found in reportPieceHasStarted "${pieceOrId}"`)
+	} else logger.error(`PieceInstance not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
 }
-export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Time) {
+export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | string, timestamp: Time) {
 
-	let piece = (
-		_.isString(pieceOrId) ?
-		Pieces.findOne(pieceOrId) :
-		pieceOrId
+	let pieceInstance = (
+		_.isString(pieceInstanceOrId) ?
+		PieceInstances.findOne(pieceInstanceOrId) :
+		pieceInstanceOrId
 	)
-	if (piece) {
-
-		let rundown: Rundown | undefined
-		let part: Part | undefined
+	if (pieceInstance) {
+		let rundown: Rundown
+		let partInstance: PartInstance
 		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(Pieces, piece._id, {
+			asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
+				$set: {
+					'piece.stoppedPlayback': timestamp
+				},
+				$push: {
+					'piece.timings.stoppedPlayback': timestamp
+				}
+			}),
+			asyncCollectionFindOne(Rundowns, pieceInstance.rundownId),
+			asyncCollectionFindOne(PartInstances, pieceInstance.partInstanceId),
+
+			// TODO-PartInstance - pending new data flow
+			asyncCollectionUpdate(Pieces, pieceInstance.piece._id, {
 				$set: {
 					stoppedPlayback: timestamp
 				},
 				$push: {
 					'timings.stoppedPlayback': timestamp
 				}
-			}),
-			asyncCollectionFindOne(Rundowns, piece.rundownId),
-			asyncCollectionFindOne(Parts, piece.partId)
+			})
 		])
 		rundown = r[1]
-		part = r[2]
-		// also update local object:
-		piece.stoppedPlayback = timestamp
-		pushOntoPath(piece, 'timings.stoppedPlayback', timestamp)
+		partInstance = r[2]
 
-		if (rundown && part) {
+		// also update local object:
+		pieceInstance.piece.stoppedPlayback = timestamp
+		pushOntoPath(pieceInstance.piece, 'timings.stoppedPlayback', timestamp)
+
+		if (!partInstance) {
+			logger.error(`PartInstance "${pieceInstance.partInstanceId}" not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
+		} else if (!rundown) {
+			logger.error(`Rundown "${pieceInstance.rundownId}" not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
+		} else {
+			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
-				segmentId:			part.segmentId,
-				partId:		piece.partId,
-				pieceId:	piece._id,
+				segmentId:			partInstance.segmentId,
+				partInstanceId:		partInstance.part._id,
+				pieceInstanceId:	pieceInstance.piece._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'piece'
-			}, !!rundown.rehearsal, timestamp)
+			}, !!playlist.rehearsal, timestamp)
 			if (event) handleEvent(event)
-		} else if (part) {
-			logger.error(`Part "${piece.partId}" not found in reportPieceHasStopped "${piece._id}"`)
-		} else {
-			logger.error(`Rundown "${piece.rundownId}" not found in reportPieceHasStopped "${piece._id}"`)
 		}
 
-	} else logger.error(`piece not found in reportPieceHasStopped "${pieceOrId}"`)
+	} else logger.error(`piece not found in reportPieceHasStopped "${pieceInstanceOrId}"`)
 }

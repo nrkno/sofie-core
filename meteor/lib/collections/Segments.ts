@@ -40,9 +40,6 @@ export class Segment implements DBSegment {
 			this[key] = document[key]
 		})
 	}
-	getRundown () {
-		return Rundowns.findOne(this.rundownId)
-	}
 	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
@@ -55,19 +52,6 @@ export class Segment implements DBSegment {
 				sort: { _rank: 1 }
 			}, options)
 		).fetch()
-	}
-	getNotes (includeParts?: boolean, runtimeNotes?: boolean) {
-		let notes: Array<PartNote> = []
-
-		if (includeParts) {
-			const parts = this.getParts()
-			_.each(parts, l => {
-				notes = notes.concat(l.getNotes(runtimeNotes)).concat(l.getInvalidReasonNotes())
-			})
-		}
-
-		notes = notes.concat(this.notes || [])
-		return notes
 	}
 }
 

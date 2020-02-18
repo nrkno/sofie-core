@@ -12,7 +12,7 @@ interface MockedCollection {
 	mockReset: jest.MockInstance<void, any[]>['mockReset']
 }
 
-export function mockupCollection<A, B> (
+export function mockupCollection<A extends B, B> (
 	collection0: TransformedCollection<A, B>
 ) {
 

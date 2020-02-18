@@ -3,6 +3,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { Studios } from '../../lib/collections/Studios'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
@@ -51,7 +52,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				let rundown = Rundowns.findOne(evaluation.rundownId)
+				let rundown = RundownPlaylists.findOne(evaluation.playlistId)
 				let hostUrl = studio.settings.sofieUrl
 
 				slackMessage += (

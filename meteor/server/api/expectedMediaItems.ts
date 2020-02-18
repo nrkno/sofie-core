@@ -16,6 +16,8 @@ export enum PieceType {
 	ADLIB = 'adlib'
 }
 
+// TODO-PartInstance generate these for when the part has no need, but the instance still references something
+
 function generateExpectedMediaItems (rundownId: string, studioId: string, piece: PieceGeneric, pieceType: string): ExpectedMediaItem[] {
 	const result: ExpectedMediaItem[] = []
 

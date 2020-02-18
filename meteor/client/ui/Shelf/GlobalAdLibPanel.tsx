@@ -2,8 +2,9 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -19,7 +20,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib'
+import { literal, normalizeArray } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -28,6 +29,8 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { PartInstances } from '../../../lib/collections/PartInstances'
+import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
@@ -37,7 +40,7 @@ interface IListViewPropsHeader {
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 interface IListViewStateHeader {
@@ -119,7 +122,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
-										rundown={this.props.rundown}
+										playlist={this.props.playlist}
 									/>
 								)
 							} else if (item.sourceLayerId && item.outputLayerId &&
@@ -134,7 +137,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
-										rundown={this.props.rundown}
+										playlist={this.props.playlist}
 									/>
 								)
 							} else {
@@ -230,26 +233,8 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	}
 })
 
-export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
-	isGlobal?: boolean
-	isHidden?: boolean
-}
-
-export interface SegmentUi extends Segment {
-	/** Pieces belonging to this part */
-	parts: Array<Part>
-	items?: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-}
-
-interface ISourceLayerLookup {
-	[key: string]: ISourceLayer
-}
-
 interface IProps {
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	visible: boolean
 	studioMode: boolean
@@ -257,39 +242,42 @@ interface IProps {
 
 interface IState {
 	selectedPiece: AdLibPiece | undefined
-	selectedSegment: SegmentUi | undefined
+	selectedSegment: AdlibSegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
 }
 interface ITrackedProps {
-	sourceLayerLookup: ISourceLayerLookup
+	sourceLayerLookup: { [id: string]: ISourceLayer }
 	rundownAdLibs: Array<AdLibPieceUi>
+	currentRundown: Rundown | undefined
 }
 
 const HOTKEY_GROUP = 'GlobalAdLibPanel'
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	meteorSubscribe(PubSub.rundownBaselineAdLibPieces, {
-		rundownId: props.rundown._id
-	})
-	meteorSubscribe(PubSub.showStyleBases, {
-		_id: props.rundown.showStyleBaseId
-	})
+	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
-	const sourceLayerLookup: ISourceLayerLookup = (
-		props.showStyleBase && props.showStyleBase.sourceLayers ?
-		_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
-		{}
-	)
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
 	let rundownAdLibs: Array<AdLibPieceUi> = []
+	let currentRundown: Rundown | undefined = undefined
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
-	if (props.rundown) {
-		let rundownAdLibItems = RundownBaselineAdLibPieces.find({ rundownId: props.rundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
+	if (props.playlist) {
+		const rundowns = props.playlist.getRundowns()
+		const rMap = normalizeArray(rundowns, '_id')
+		currentRundown = rundowns[0]
+		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		if (partInstanceId) {
+			const partInstance = PartInstances.findOne(partInstanceId)
+			if (partInstance) {
+				currentRundown = rMap[partInstance.rundownId]
+			}
+		}
+
+		let rundownAdLibItems = RundownBaselineAdLibPieces.find({ rundownId: currentRundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
 		rundownAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: AdLibPieceUi = _.clone(item)
@@ -320,7 +308,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	return {
 		sourceLayerLookup,
-		rundownAdLibs
+		rundownAdLibs,
+		currentRundown
 	}
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -338,6 +327,17 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	componentDidMount () {
 		this.refreshKeyboardHotkeys()
+
+		this.autorun(() => {
+			if (this.props.currentRundown) {
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: this.props.currentRundown._id
+				})
+				this.subscribe(PubSub.showStyleBases, {
+					_id: this.props.currentRundown.showStyleBaseId
+				})
+			}
+		})
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
@@ -433,9 +433,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
+		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.rundown._id, sourceLayerId])
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
 		}
 	}
 
@@ -446,35 +446,35 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		})
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (piece.invalid) {
+		if (adlibPiece.invalid) {
 			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
 			return
 		}
-		if (piece.floated) {
+		if (adlibPiece.floated) {
 			NotificationCenter.push(new Notification(t('Floated AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Floated'), 'toggleAdLib'))
 			return
 		}
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
-			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
-			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId] &&
+			!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable) {
+			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 
-		if (this.props.rundown && this.props.rundown.currentPartId && piece.isGlobal) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false])
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.rundown._id, this.props.rundown.currentPartId, _.map(sourceLayers, sl => sl._id)
+				this.props.playlist._id, this.props.playlist.currentPartInstanceId, _.map(sourceLayers, sl => sl._id)
 			])
 		}
 	}
@@ -496,14 +496,14 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					showStyleBase={this.props.showStyleBase}
 					rundownAdLibs={this.props.rundownAdLibs}
 					searchFilter={this.state.filter}
-					rundown={this.props.rundown} />
+					playlist={this.props.playlist} />
 			</React.Fragment>
 		)
 	}
 
 	render () {
 		if (this.props.visible) {
-			if (!this.props.rundown) {
+			if (!this.props.currentRundown) {
 				return <Spinner />
 			} else {
 				return (

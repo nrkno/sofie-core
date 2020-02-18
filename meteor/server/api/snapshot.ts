@@ -29,7 +29,8 @@ import {
 	formatDateTime,
 	fixValidPath,
 	saveIntoDb,
-	sumChanges
+	sumChanges,
+	normalizeArray
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
@@ -44,7 +45,7 @@ import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { AudioContent, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration'
+import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -52,23 +53,28 @@ import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/Inges
 import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { TimelineEnable } from 'timeline-state-resolver-types/dist/superfly-timeline'
 import { substituteObjectIds } from './playout/lib'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 
-interface RundownSnapshot {
+interface RundownPlaylistSnapshot {
 	version: string
-	rundownId: string
+	playlistId: string
 	snapshot: SnapshotRundown
-	rundown: Rundown
+	playlist: RundownPlaylist
+	rundowns: Array<Rundown>
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	baselineObjs: Array<RundownBaselineObj>
 	baselineAdlibs: Array<RundownBaselineAdLibItem>
 	segments: Array<Segment>
 	parts: Array<Part>
+	partInstances: Array<PartInstance>
 	pieces: Array<Piece>
+	pieceInstances: Array<PieceInstance>
 	adLibPieces: Array<AdLibPiece>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
@@ -92,7 +98,7 @@ interface DebugSnapshot {
 	studioId?: string
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
-	activeRundowns: Array<RundownSnapshot>
+	activeRundownPlaylists: Array<RundownPlaylistSnapshot>
 	timeline: Array<TimelineObjGeneric>
 	userActionLog: Array<UserActionsLogItem>
 	deviceSnaphots: Array<DeviceSnapshot>
@@ -103,56 +109,64 @@ interface DeviceSnapshot {
 	replyTime: Time
 	content: any
 }
-type AnySnapshot = RundownSnapshot | SystemSnapshot | DebugSnapshot
+type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot
 
 /**
  * Create a snapshot of all items related to a rundown
- * @param rundownId
+ * @param playlistId
  */
-function createRundownSnapshot (rundownId: string): RundownSnapshot {
+function createRundownSnapshot (playlistId: string): RundownPlaylistSnapshot {
 	let snapshotId = Random.id()
-	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${rundownId}"`)
+	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${playlistId}"`)
 
-	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404,`Rundown ${rundownId} not found`)
-	const ingestData = IngestDataCache.find({ rundownId: rundownId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
-	const userActions = UserActionsLog.find({ args: { $regex: `.*"${rundownId}".*` } }).fetch()
+	const playlist = RundownPlaylists.findOne(playlistId)
+	if (!playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
+	const rundowns = playlist.getRundowns()
+	const rundownIds = rundowns.map(i => i._id)
+	const ingestData = IngestDataCache.find({ rundownId: { $in: rundownIds } }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
+	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join('|') + `).*` } }).fetch()
 
-	const segments = Segments.find({ rundownId }).fetch()
-	const parts = Parts.find({ rundownId }).fetch()
-	const pieces = Pieces.find({ rundownId }).fetch()
-	const adLibPieces = AdLibPieces.find({ rundownId }).fetch()
+	const segments = playlist.getSegments()
+	const parts = playlist.getParts()
+	const partInstances = playlist.getAllPartInstances()
+	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
+	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
 		...pieces.filter(piece => piece.content && piece.content.fileName).map((piece) => ((piece.content as AudioContent).fileName)),
-		...adLibPieces.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName))
+		...adLibPieces.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName)),
+		...baselineAdlibs.filter(adLibPiece => adLibPiece.content && adLibPiece.content.fileName).map((adLibPiece) => ((adLibPiece.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map(i => i._id) } }).fetch()
-	const expectedPlayoutItems = ExpectedPlayoutItems.find({ rundownId: rundownId }).fetch()
-	const baselineObjs = RundownBaselineObjs.find({ rundownId: rundownId }).fetch()
-	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: rundownId }).fetch()
+	const expectedPlayoutItems = ExpectedPlayoutItems.find({ rundownId: { $in: rundownIds } }).fetch()
+	const baselineObjs = RundownBaselineObjs.find({ rundownId: { $in: rundownIds } }).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
-		rundownId: rundownId,
+		playlistId,
 		snapshot: {
 			_id: snapshotId,
 			created: getCurrentTime(),
 			type: SnapshotType.RUNDOWN,
-			rundownId: rundownId,
-			studioId: rundown.studioId,
-			name: `Rundown_${rundown.name}_${rundown._id}_${formatDateTime(getCurrentTime())}`,
+			playlistId,
+			studioId: playlist.studioId,
+			name: `Rundown_${playlist.name}_${playlist._id}_${formatDateTime(getCurrentTime())}`,
 			version: CURRENT_SYSTEM_VERSION
 		},
-		rundown,
+		playlist,
+		rundowns,
 		ingestData,
 		userActions,
 		baselineObjs,
 		baselineAdlibs,
 		segments,
 		parts,
+		partInstances,
 		pieces,
+		pieceInstances,
 		adLibPieces,
 		mediaObjects,
 		expectedMediaItems,
@@ -252,13 +266,13 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 
 	let systemSnapshot = createSystemSnapshot(studioId)
 
-	let activeROs = Rundowns.find({
+	let activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
 		active: true,
 	}).fetch()
 
-	let activeRundownSnapshots = _.map(activeROs, (rundown) => {
-		return createRundownSnapshot(rundown._id)
+	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
+		return createRundownSnapshot(playlist._id)
 	})
 
 	let timeline = Timeline.find().fetch()
@@ -300,7 +314,7 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 			version: CURRENT_SYSTEM_VERSION
 		},
 		system: systemSnapshot,
-		activeRundowns: activeRundownSnapshots,
+		activeRundownPlaylists: activePlaylistSnapshots,
 		timeline: timeline,
 		userActionLog: userActionLogLatest,
 		deviceSnaphots: deviceSnaphots
@@ -394,7 +408,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
 
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown
-		return restoreFromRundownSnapshot(snapshot as RundownSnapshot)
+		return restoreFromRundownSnapshot(snapshot as RundownPlaylistSnapshot)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) { // A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
@@ -402,49 +416,93 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
+function restoreFromRundownSnapshot (snapshot: RundownPlaylistSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
-	const oldRundownId = snapshot.rundownId
+	const oldPlaylistId = snapshot.playlistId
 
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	if (oldRundownId !== snapshot.rundown._id) throw new Meteor.Error(500, `Restore snapshot: rundownIds don\'t match, "${oldRundownId}", "${snapshot.rundown._id}!"`)
+	// // TODO: Import old snapshot - development only
+	// if (!playlistId && (snapshot as any).rundownId) {
+	// 	const rundownId = (snapshot as any).rundownId
+	// 	saveIntoDb(Rundowns, { _id: rundownId }, [ (snapshot as any).rundown ])
+	// 	saveIntoDb(IngestDataCache, { rundownId }, snapshot.ingestData)
+	// 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
+	// 	saveIntoDb(RundownBaselineObjs, { rundownId }, snapshot.baselineObjs)
+	// 	saveIntoDb(RundownBaselineAdLibPieces, { rundownId }, snapshot.baselineAdlibs)
+	// 	saveIntoDb(Segments, { rundownId }, snapshot.segments)
+	// 	saveIntoDb(Parts, { rundownId }, snapshot.parts)
+	// 	saveIntoDb(Pieces, { rundownId }, snapshot.pieces)
+	// 	saveIntoDb(AdLibPieces, { rundownId }, snapshot.adLibPieces)
+	// 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
+	// 	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
 
-	if (!snapshot.rundown.unsynced) {
-		snapshot.rundown.unsynced = true
-		snapshot.rundown.unsyncedTime = getCurrentTime()
-	}
+	// 	logger.info('Restore single rundown done')
 
-	const rundownId = snapshot.rundown._id = Random.id()
-	snapshot.rundown.restoredFromSnapshotId = snapshot.rundownId
-	snapshot.rundown.peripheralDeviceId = ''
-	snapshot.rundown.active = false
-	snapshot.rundown.currentPartId = null
-	snapshot.rundown.nextPartId = null
-	snapshot.rundown.notifiedCurrentPlayingPartExternalId = undefined
+	// 	return
+	// }
+
+	if (oldPlaylistId !== snapshot.playlist._id) throw new Meteor.Error(500, `Restore snapshot: playlistIds don\'t match, "${oldPlaylistId}", "${snapshot.playlist._id}!"`)
+
+	// const dbPlaylist = RundownPlaylists.findOne(playlistId)
+	// const dbRundowns = dbPlaylist ? dbPlaylist.getRundowns() : []
+	// const dbRundownMap = normalizeArray(dbRundowns, '_id')
+
+	// const unsynced = dbRundowns.reduce((p, v) => (p || v.unsynced), false)
+	// if (unsynced) throw new Meteor.Error(500, `Not allowed to restore into synced Rundown!`)
 
 	const studios = Studios.find().fetch()
-	const snapshotStudioExists = studios.find(studio => studio._id === snapshot.rundown.studioId)
+	const snapshotStudioExists = studios.find(studio => studio._id === snapshot.playlist.studioId)
 	if (studios.length >= 1 && !snapshotStudioExists) {
 		// TODO Choose better than just the fist
-		snapshot.rundown.studioId = studios[0]._id
+		snapshot.playlist.studioId = studios[0]._id
 	}
 
-	const showStyleVariants = ShowStyleVariants.find().fetch()
-	const snapshotShowStyleVariantExists = showStyleVariants.find(variant => variant._id === snapshot.rundown.showStyleVariantId && variant.showStyleBaseId === snapshot.rundown.showStyleBaseId)
-	if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
-		// TODO Choose better than just the fist
-		snapshot.rundown.showStyleBaseId = showStyleVariants[0].showStyleBaseId
-		snapshot.rundown.showStyleVariantId = showStyleVariants[0]._id
-	}
+	const playlistId = snapshot.playlist._id = Random.id()
+	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
+	snapshot.playlist.peripheralDeviceId = ''
+	snapshot.playlist.active = false
+	snapshot.playlist.currentPartInstanceId = null
+	snapshot.playlist.nextPartInstanceId = null
+
+	snapshot.rundowns.forEach(rd => {
+		if (!rd.unsynced) {
+			rd.unsynced = true
+			rd.unsyncedTime = getCurrentTime()
+		}
+
+		rd.restoredFromSnapshotId = rd._id
+		rd.peripheralDeviceId = ''
+		rd.notifiedCurrentPlayingPartExternalId = undefined
+		rd.studioId = snapshot.playlist.studioId
+
+		const showStyleVariants = ShowStyleVariants.find().fetch()
+		const snapshotShowStyleVariantExists = showStyleVariants.find(variant => variant._id === rd.showStyleVariantId && variant.showStyleBaseId === rd.showStyleBaseId)
+		if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
+			// TODO Choose better than just the fist
+			rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
+			rd.showStyleVariantId = showStyleVariants[0]._id
+		}
+	})
 
 	// List any ids that need updating on other documents
+	const rundownIdMap: { [key: string]: string } = {}
+	_.each(snapshot.rundowns, rd => {
+		const oldId = rd._id
+		rundownIdMap[oldId] = rd._id = Random.id()
+	})
 	const partIdMap: { [key: string]: string } = {}
 	_.each(snapshot.parts, part => {
 		const oldId = part._id
 		partIdMap[oldId] = part._id = Random.id()
+	})
+	const partInstanceIdMap: { [key: string]: string } = {}
+	_.each(snapshot.partInstances, partInstance => {
+		const oldId = partInstance._id
+		partInstanceIdMap[oldId] = partInstance._id = Random.id()
+		partInstance.part._id = partIdMap[partInstance.part._id] || Random.id()
 	})
 	const segmentIdMap: { [key: string]: string } = {}
 	_.each(snapshot.segments, segment => {
@@ -456,18 +514,26 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 		const oldId = piece._id
 		pieceIdMap[oldId] = piece._id = Random.id()
 	})
+	const pieceInstanceIdMap: { [key: string]: string } = {}
+	_.each(snapshot.pieceInstances, pieceInstance => {
+		const oldId = pieceInstance._id
+		pieceInstanceIdMap[oldId] = pieceInstance._id = Random.id()
+		pieceInstance.piece._id = pieceIdMap[pieceInstance.piece._id] || Random.id()
+	})
 
 	const enableIdMap: { [key: string]: string | undefined } = {}
 	_.each(pieceIdMap, (newId, oldId) => {
 		enableIdMap[getPieceGroupId(oldId)] = getPieceGroupId(newId)
 		enableIdMap[getPieceFirstObjectId(oldId)] = getPieceFirstObjectId(newId)
 	})
+	
+	const rundownIds = snapshot.rundowns.map(r => r._id)
 
 	// Apply the updates of any properties to any document
-	function updateItemIds<T extends { _id: string, rundownId: string, partId?: string, segmentId?: string, infiniteId?: string, enable?: TimelineEnable }> (objs: T[], updateId: boolean): T[] {
-		return objs.map(obj => {
+	function updateItemIds<T extends { _id: string, rundownId: string, partId?: string, segmentId?: string, infiniteId?: string, enable?: TSR.Timeline.TimelineEnable }> (objs: T[], updateId: boolean): T[] {
+		const updateIds = (obj) => {
 			if (obj.rundownId) {
-				obj.rundownId = rundownId
+				obj.rundownId = rundownIdMap[obj.rundownId]
 			}
 
 			if (obj.partId) {
@@ -492,27 +558,37 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 			const content = (obj as any).content as Piece['content']
 			const tlObjects: TimelineObjRundown[] = content ? content.timelineObjects || [] : (obj as any).objects
 			_.each(tlObjects, (tlObj: TimelineObjRundown) => {
-				tlObj.rundownId = rundownId
 				tlObj.enable = substituteObjectIds(tlObj.enable, enableIdMap)
 			})
 
+			if (obj.part) {
+				updateIds(obj.part)
+			}
+			if (obj.piece) {
+				updateIds(obj.piece)
+			}
+
 			return obj
-		})
+		}
+		return objs.map(obj => updateIds(obj))
 	}
+	
 
-	saveIntoDb(Rundowns, { _id: rundownId }, [snapshot.rundown])
-	saveIntoDb(IngestDataCache, { rundownId: rundownId }, updateItemIds(snapshot.ingestData, true))
+	saveIntoDb(RundownPlaylists, { _id: playlistId }, [ snapshot.playlist ])
+	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
+	saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true))
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(RundownBaselineObjs, { rundownId: rundownId }, updateItemIds(snapshot.baselineObjs, true))
-	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.baselineAdlibs, true))
-	saveIntoDb(Segments, { rundownId: rundownId }, updateItemIds(snapshot.segments, false))
-	saveIntoDb(Parts, { rundownId: rundownId }, updateItemIds(snapshot.parts, false))
-	saveIntoDb(Pieces, { rundownId: rundownId }, updateItemIds(snapshot.pieces, false))
-	saveIntoDb(AdLibPieces, { rundownId: rundownId }, updateItemIds(snapshot.adLibPieces, true))
-	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, updateItemIds(snapshot.expectedMediaItems, true))
-	saveIntoDb(ExpectedPlayoutItems, { rundownId: snapshot.rundownId }, updateItemIds(snapshot.expectedPlayoutItems, true))
-
+	saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.baselineObjs, true))
+	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } },  updateItemIds(snapshot.baselineAdlibs, true))
+	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
+	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
+	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
+	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
+	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
+	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
+	saveIntoDb(ExpectedMediaItems, { partId: { $in: _.keys(partIdMap) } }, updateItemIds(snapshot.expectedMediaItems, true))
+	saveIntoDb(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.expectedPlayoutItems, true))
 
 	logger.info(`Restore done`)
 }
@@ -542,9 +618,9 @@ export function storeSystemSnapshot (studioId: string | null, reason: string) {
 	let s = createSystemSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function storeRundownSnapshot (rundownId: string, reason: string) {
-	check(rundownId, String)
-	let s = createRundownSnapshot(rundownId)
+export function storeRundownSnapshot (rundownPlaylistId: string, reason: string) {
+	check(rundownPlaylistId, String)
+	let s = createRundownSnapshot(rundownPlaylistId)
 	return storeSnaphot(s, reason)
 }
 export function storeDebugSnapshot (studioId: string, reason: string) {

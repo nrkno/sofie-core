@@ -45,6 +45,9 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
+import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -147,12 +150,14 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 				_rank: 0,
 				name: 'Camera',
 				type: SourceLayerType.CAMERA,
+				exclusiveGroup: 'main'
 			}),
 			literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
 				type: SourceLayerType.VT,
+				exclusiveGroup: 'main'
 			})
 		],
 		config: [],
@@ -399,6 +404,35 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 		ingestDevice
 	}
 }
+export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0?: string): { rundownId: string, playlistId: string } {
+
+	const rundownId = rundownId0 || Random.id()
+
+	const playlist: DBRundownPlaylist = {
+
+		_id: 'playlist_' + rundownId,
+
+		externalId: 'MOCK_RUNDOWNPLAYLIST',
+		peripheralDeviceId: env.ingestDevice._id,
+		studioId: env.studio._id,
+
+		name: 'Default RundownPlaylist',
+		created: getCurrentTime(),
+		modified: getCurrentTime(),
+
+		active: false,
+		rehearsal: false,
+		currentPartInstanceId: null,
+		nextPartInstanceId: null,
+		previousPartInstanceId: null,
+	}
+	const playlistId = RundownPlaylists.insert(playlist)
+
+	return {
+		rundownId: setupDefaultRundown(env, playlistId, rundownId),
+		playlistId
+	}
+}
 export function setupEmptyEnvironment () {
 
 	const core = setupMockCore({})
@@ -407,7 +441,7 @@ export function setupEmptyEnvironment () {
 		core
 	}
 }
-export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: string): string {
+export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string, rundownId: string): string {
 	const rundown: DBRundown = {
 
 		peripheralDeviceId: env.ingestDevice._id,
@@ -415,9 +449,12 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
 
+		playlistId: playlistId,
+		_rank: 0,
 
-		_id: rundownId0 || Random.id(),
-		externalId: 'MOCK_EXTERNAL_ID',
+
+		_id: rundownId,
+		externalId: 'MOCK_RUNDOWN',
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),
@@ -430,15 +467,9 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 			core: ''
 		},
 
-		active: false,
-		rehearsal: false,
-		currentPartId: null,
-		nextPartId: null,
-		previousPartId: null,
-
 		dataSource: 'mock'
 	}
-	const rundownId = Rundowns.insert(rundown)
+	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {
 		_id: rundownId + '_segment0',
@@ -493,6 +524,23 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 			}
 			Pieces.insert(piece001)
 
+			const adLibPiece000: AdLibPiece = {
+				_id: rundownId + '_adLib000',
+				_rank: 0,
+				expectedDuration: 1000,
+				infiniteMode: PieceLifespan.Normal,
+				externalId: 'MOCK_ADLIB_000',
+				partId: part00._id,
+				disabled: false,
+				rundownId: segment0.rundownId,
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				name: 'AdLib 0',
+				sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+				outputLayerId: env.showStyleBase.outputLayers[0]._id
+			}
+
+			AdLibPieces.insert(adLibPiece000)
+
 		const part01: DBPart = {
 			_id: rundownId + '_part0_1',
 			segmentId: segment0._id,
@@ -532,7 +580,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 			_id: rundownId + '_part1_0',
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
-			_rank: 10,
+			_rank: 0,
 			externalId: 'MOCK_PART_1_0',
 			title: 'Part 1 0',
 			typeVariant: ''
@@ -543,7 +591,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 			_id: rundownId + '_part1_1',
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
-			_rank: 11,
+			_rank: 1,
 			externalId: 'MOCK_PART_1_1',
 			title: 'Part 1 1',
 			typeVariant: ''
@@ -554,7 +602,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 			_id: rundownId + '_part1_2',
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
-			_rank: 12,
+			_rank: 2,
 			externalId: 'MOCK_PART_1_2',
 			title: 'Part 1 2',
 			typeVariant: ''
@@ -569,6 +617,35 @@ export function setupDefaultRundown (env: DefaultEnvironment, rundownId0?: strin
 		name: 'Segment 2'
 	}
 	Segments.insert(segment2)
+
+	const globalAdLib0: RundownBaselineAdLibItem = {
+		_id: rundownId + '_globalAdLib0',
+		_rank: 0,
+		externalId: 'MOCK_GLOBAL_ADLIB_0',
+		disabled: false,
+		infiniteMode: PieceLifespan.Infinite,
+		rundownId: segment0.rundownId,
+		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		name: 'Global AdLib 0',
+		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id
+	}
+
+	const globalAdLib1: RundownBaselineAdLibItem = {
+		_id: rundownId + '_globalAdLib1',
+		_rank: 0,
+		externalId: 'MOCK_GLOBAL_ADLIB_1',
+		disabled: false,
+		infiniteMode: PieceLifespan.Infinite,
+		rundownId: segment0.rundownId,
+		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		name: 'Global AdLib 1',
+		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id
+	}
+
+	RundownBaselineAdLibPieces.insert(globalAdLib0)
+	RundownBaselineAdLibPieces.insert(globalAdLib1)
 
 	return rundownId
 }

@@ -1,11 +1,11 @@
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
-export function areThereActiveRundownsInStudio (studioId: string, excludeRundownId?: string): Rundown[] {
-	let anyOtherActiveRundowns = Rundowns.find({
+export function areThereActiveRundownPlaylistsInStudio (studioId: string, excludeRundownPlaylistId?: string): RundownPlaylist[] {
+	let anyOtherActiveRundowns = RundownPlaylists.find({
 		studioId: studioId,
 		active: true,
 		_id: {
-			$ne: excludeRundownId || ''
+			$ne: excludeRundownPlaylistId || ''
 		}
 	}).fetch()
 

@@ -22,7 +22,6 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	/** Studio installation Id */
 	studioId: string
-	rundownId?: string
 
 	objectType: TimelineObjType
 
@@ -31,6 +30,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** The id of the group object this object is in  */
 	inGroup?: string
 
+	// TODO - this needs to be scrapped. there is already a metaData property
 	metadata?: {
 		[key: string]: any
 	}
@@ -59,8 +59,6 @@ export interface TimelineObjStat extends TimelineObjGeneric {
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
-	/** Rundown Id */
-	rundownId: string
 }
 export interface TimelineObjRecording extends TimelineObjGeneric {
 	objectType: TimelineObjType.RECORDING

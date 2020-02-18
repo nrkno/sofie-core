@@ -1,19 +1,20 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, DBRundown } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
-	fetchBefore,
 	getRank,
-	fetchAfter,
 	getCurrentTime,
 	asyncCollectionUpdate,
-	waitForPromiseAll
+	waitForPromiseAll,
+	getHash,
+	literal,
+	waitForPromise
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -25,7 +26,7 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowS
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultRundownPlaylist } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -34,6 +35,9 @@ import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
+import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PartInstances } from '../../lib/collections/PartInstances'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -81,6 +85,107 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 		return {
 			variant: showStyleVariant,
 			base: showStyleBase
+		}
+	}
+}
+
+export interface RundownPlaylistAndOrder {
+	rundownPlaylist: DBRundownPlaylist
+	order: {
+		[ key: string ]: number
+	}
+}
+
+export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
+	const context = new StudioConfigContext(studio)
+
+	const studioBlueprint = loadStudioBlueprints(studio)
+	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
+
+	if (currentRundown.playlistExternalId && studioBlueprint.blueprint.getRundownPlaylistInfo) {
+
+		// Note: We have to use the ExternalId of the playlist here, since we actually don't know the id of the playlist yet
+		const allRundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+
+		if (!_.find(allRundowns, (rd => rd._id === currentRundown._id))) throw new Meteor.Error(500, `produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in collection!`)
+
+		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(
+			allRundowns
+		)
+		if (!playlistInfo) throw new Meteor.Error(500, `blueprint.getRundownPlaylistInfo() returned null for externalId "${currentRundown.playlistExternalId}"`)
+
+		const playlistId = getHash(playlistInfo.playlist.externalId)
+
+		const existingPlaylist = RundownPlaylists.findOne(playlistId)
+
+		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
+			_id: playlistId,
+			externalId: playlistInfo.playlist.externalId,
+			studioId: studio._id,
+			name: playlistInfo.playlist.name,
+			expectedStart: playlistInfo.playlist.expectedStart,
+			expectedDuration: playlistInfo.playlist.expectedDuration,
+
+			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
+			modified: getCurrentTime(),
+
+			peripheralDeviceId: '',
+
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null
+		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId', 'created' ])) as DBRundownPlaylist
+
+		if (peripheralDevice) {
+			playlist.peripheralDeviceId = peripheralDevice._id
+		}
+
+		let order = playlistInfo.order
+		if (!order) {
+			const allRundowns = Rundowns.find({
+				playlistExternalId: playlist.externalId
+			}, {
+				sort: {
+					name: 1
+				}
+			}).fetch()
+			order = _.object(allRundowns.map((i, index) => [i._id, index + 1]))
+		}
+
+		return {
+			rundownPlaylist: playlist,
+			order: order
+		}
+	} else {
+		const playlistId = getHash(currentRundown._id)
+
+		const existingPlaylist = RundownPlaylists.findOne(playlistId)
+
+		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
+			_id: playlistId,
+			externalId: currentRundown.externalId,
+			studioId: studio._id,
+			name: currentRundown.name,
+			expectedStart: currentRundown.expectedStart,
+			expectedDuration: currentRundown.expectedDuration,
+
+			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
+			modified: getCurrentTime(),
+
+			peripheralDeviceId: '',
+
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null
+		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId' ])) as DBRundownPlaylist
+
+		if (peripheralDevice) {
+			playlist.peripheralDeviceId = peripheralDevice._id
+		}
+
+		return {
+			rundownPlaylist: playlist,
+			order: _.object([[currentRundown._id, 1]])
 		}
 	}
 }
@@ -139,7 +244,7 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
 		}
 	})
 
-	// Clean up all the db parts that belong to the removed Parts
+	// Clean up all the db items that belong to the removed Parts
 	// TODO - is there anything else to remove?
 
 	ExpectedPlayoutItems.remove({
@@ -187,77 +292,66 @@ export function afterRemovePieces (rundownId: string, removedPieces: Array<Piece
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  * @param rundownId
  */
-export function updatePartRanks (rundownId: string): Array<Part> {
-	const allSegments = Segments.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
-	const allParts = Parts.find({ rundownId: rundownId }, { sort: { _rank: 1 } }).fetch()
+export function updatePartRanks (rundown: Rundown): Array<Part> {
+	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point, or do we not care about their rank?
 
-	logger.debug(`updatePartRanks (${allParts.length} parts, ${allSegments.length} segments)`)
+	const pSegmentsAndParts = rundown.getSegmentsAndParts()
 
-	const rankedParts: Array<Part> = []
-	const partsToPutAfter: {[id: string]: Array<Part>} = {}
+	const { segments, parts: orgParts } = waitForPromise(pSegmentsAndParts)
 
-	_.each(allParts, (part) => {
+	logger.debug(`updatePartRanks (${orgParts.length} parts, ${segments.length} segments)`)
+
+	const parts: Array<Part> = []
+	const partsToPutAfter: {[partId: string]: Array<Part>} = {}
+
+	_.each(orgParts, (part) => {
 		if (part.afterPart) {
 			if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
 			partsToPutAfter[part.afterPart].push(part)
 		} else {
-			rankedParts.push(part)
-		}
-	})
-
-	// Sort the parts by segment, then rank
-	const segmentRanks: {[segmentId: string]: number} = {}
-	_.each(allSegments, seg => {
-		segmentRanks[seg._id] = seg._rank
-	})
-	rankedParts.sort((a, b) => {
-		let compareRanks = (ar: number, br: number) => {
-			if (ar === br) {
-				return 0
-			} else if (ar < br) {
-				return -1
-			} else {
-				return 1
-			}
-		}
-
-		if (a.segmentId === b.segmentId) {
-			return compareRanks(a._rank, b._rank)
-		} else {
-			const aRank = segmentRanks[a.segmentId] || -1
-			const bRank = segmentRanks[b.segmentId] || -1
-			return compareRanks(aRank, bRank)
+			parts.push(part)
 		}
 	})
 
 	let ps: Array<Promise<any>> = []
-	// Ensure that the parts are all correctly rannnnked
-	_.each(rankedParts, (part, newRank) => {
+
+	// Update _rank and save to database:
+	let newRank = 0
+	let prevSegmentId = ''
+	_.each(parts, (part) => {
+		if (part.segmentId !== prevSegmentId) {
+			newRank = 0
+			prevSegmentId = part.segmentId
+		}
 		if (part._rank !== newRank) {
 			ps.push(asyncCollectionUpdate(Parts, part._id, { $set: { _rank: newRank } }))
 			// Update in place, for the upcoming algorithm
 			part._rank = newRank
 		}
+		newRank++
 	})
 	logger.debug(`updatePartRanks: ${ps.length} parts updated`)
 
+	// Insert the parts that are to be put after other parts:
 	let hasAddedAnything = true
 	while (hasAddedAnything) {
 		hasAddedAnything = false
 
-		_.each(partsToPutAfter, (dynamicParts, partId) => {
-
+		_.each(partsToPutAfter, (dynamicParts, insertAfterPartId) => {
 			let partBefore: Part | null = null
 			let partAfter: Part | null = null
 			let insertI = -1
-			_.each(rankedParts, (part, i) => {
-				if (part._id === partId) {
+			_.each(parts, (part, i) => {
+				if (part._id === insertAfterPartId) {
 					partBefore = part
 
 					insertI = i + 1
-				} else if (partBefore && !partAfter) {
+				} else if (
+					partBefore &&
+					part.segmentId === partBefore.segmentId &&
+					!partAfter
+				) {
 					partAfter = part
-
 				}
 			})
 
@@ -270,14 +364,18 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 						if (dynamicPart._rank !== newRank) {
 							dynamicPart._rank = newRank
 							ps.push(asyncCollectionUpdate(Parts, dynamicPart._id, { $set: { _rank: dynamicPart._rank } }))
+							ps.push(asyncCollectionUpdate(PartInstances, {
+								'part._id': dynamicPart._id,
+								reset: { $ne: true }
+							}, { $set: { 'part._rank': dynamicPart._rank } }))
 						}
 
-						rankedParts.splice(insertI, 0, dynamicPart)
+						parts.splice(insertI, 0, dynamicPart)
 						insertI++
 						hasAddedAnything = true
 					})
 				}
-				delete partsToPutAfter[partId]
+				delete partsToPutAfter[insertAfterPartId]
 			} else {
 				// TODO - part is invalid and should be deleted/warned about
 			}
@@ -286,19 +384,19 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 
 	waitForPromiseAll(ps)
 
-	return rankedParts
+	return parts
 }
 
 export namespace ServerRundownAPI {
-	export function removeRundown (rundownId: string) {
-		check(rundownId, String)
-		logger.info('removeRundown ' + rundownId)
+	export function removeRundown (playlistId: string) {
+		check(playlistId, String)
+		logger.info('removeRundown ' + playlistId)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		if (rundown.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}".`)
+		const playlist = RundownPlaylists.findOne(playlistId)
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+		if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${playlistId}".`)
 
-		rundown.remove()
+		playlist.remove()
 	}
 	export function resyncRundown (rundownId: string): UserActionAPI.ReloadRundownResponse {
 		check(rundownId, String)
@@ -364,8 +462,8 @@ export namespace ClientRundownAPI {
 }
 
 let methods: Methods = {}
-methods[RundownAPI.methods.removeRundown] = (rundownId: string) => {
-	return ServerRundownAPI.removeRundown(rundownId)
+methods[RundownAPI.methods.removeRundown] = (playlistId: string) => {
+	return ServerRundownAPI.removeRundown(playlistId)
 }
 methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
 	return ServerRundownAPI.resyncRundown(rundownId)

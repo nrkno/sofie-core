@@ -10,6 +10,7 @@ import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-bl
 import { updatePartRanks, ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
+import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -82,9 +83,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData)
 
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
-			externalId: rundownData.externalId
+			externalId: rundownData.externalId,
+			playlistId: rundownPlaylist._id
 		})
 		expect(typeof rundown.touch).toEqual('function')
 
@@ -144,10 +152,19 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
 
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId,
+			name: rundownData.name
+		})
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
+		expect(RundownPlaylists.find().count()).toBe(1)
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
-			name: rundownData.name
+			name: rundownData.name,
+			playlistId: rundownPlaylist._id
 		})
 		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
@@ -307,6 +324,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
 
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
+		expect(RundownPlaylists.find().count()).toBe(1)
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId
@@ -373,6 +397,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			]
 		}
 		Meteor.call(PeripheralDeviceAPI.methods.dataRundownUpdate, device._id, device.token, rundownData)
+
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
+		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
@@ -908,7 +939,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updatePartRanks(rundown._id)
+		updatePartRanks(rundown)
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
 		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
@@ -973,9 +1004,30 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const part = Parts.findOne({ externalId: 'part1' }) as Part
 		expect(part).toBeTruthy()
 
-		const dynamicPartId = 'dynamic1'
 		Parts.insert({
-			_id: dynamicPartId,
+			_id: 'dynamic0',
+			_rank: 999998,
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			externalId: '',
+			title: 'Dynamic',
+			typeVariant: 'dynamic',
+			dynamicallyInserted: true,
+			afterPart: part._id
+		})
+		Parts.insert({
+			_id: 'dynamic1',
+			_rank: 999999,
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			externalId: '',
+			title: 'Dynamic',
+			typeVariant: 'dynamic',
+			dynamicallyInserted: true,
+			afterPart: 'dynamic0'
+		})
+		Parts.insert({
+			_id: 'dynamic2',
 			_rank: 999999,
 			rundownId: rundown._id,
 			segmentId: part.segmentId,
@@ -985,33 +1037,53 @@ describe('Test ingest actions for rundowns and segments', () => {
 			dynamicallyInserted: true,
 			afterPart: part._id
 		})
-		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
+		expect(Parts.findOne('dynamic0')).toBeTruthy()
+		expect(Parts.findOne('dynamic1')).toBeTruthy()
+		expect(Parts.findOne('dynamic2')).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updatePartRanks(rundown._id)
-		let dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(1.5)
+		updatePartRanks(rundown)
+
+		let part1 = Parts.findOne({ externalId: 'part1' }) as Part
+		expect(part1._rank).toEqual(1)
+
+		let dynamicPart0 = Parts.findOne('dynamic0') as Part
+		let dynamicPart1 = Parts.findOne('dynamic1') as Part
+		let dynamicPart2 = Parts.findOne('dynamic2') as Part
+
+		expect(dynamicPart0._rank).toBeGreaterThan(part1._rank)
+		expect(dynamicPart1._rank).toBeGreaterThan(dynamicPart0._rank)
+		expect(dynamicPart2._rank).toBeGreaterThan(dynamicPart1._rank)
+
 
 		// Update the segment owning the part and it should remain
 		const segmentData = rundownData.segments[0]
 		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
-		dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeTruthy()
+		const dynamicPart0New = Parts.findOne('dynamic0') as Part
+		expect(dynamicPart0New).toBeTruthy()
 
 		// Change the rank of the part it belongs to and this rank should update
 		segmentData.parts[0].rank = 5
 		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
-		dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeTruthy()
-		expect(dynamicPart._rank).toEqual(0.5)
+		part1 = Parts.findOne({ externalId: 'part1' }) as Part
+		expect(part1._rank).toEqual(0)
+		let part0 = Parts.findOne({ externalId: 'part0' }) as Part
+		expect(part0._rank).toEqual(1)
+		dynamicPart0 = Parts.findOne('dynamic0') as Part
+		dynamicPart1 = Parts.findOne('dynamic1') as Part
+		dynamicPart2 = Parts.findOne('dynamic2') as Part
+
+		expect(dynamicPart0._rank).toBeGreaterThan(part1._rank)
+		expect(dynamicPart1._rank).toBeGreaterThan(dynamicPart0._rank)
+		expect(dynamicPart2._rank).toBeGreaterThan(dynamicPart1._rank)
+		expect(part0._rank).toBeGreaterThan(dynamicPart2._rank)
 
 		// // Invalidate the part it is set to be after, and it should be removed
 		// segmentData.parts[0].rank = 0
-		// Parts.update(dynamicPartId, { $set: { afterPart: 'not-a-real-part' } })
+		// Parts.update(dynamicPart0Id, { $set: { afterPart: 'not-a-real-part' } })
 		// Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
-		// dynamicPart = Parts.findOne(dynamicPartId) as Part
-		// expect(dynamicPart).toBeFalsy()
+		// dynamicPart0 = Parts.findOne(dynamicPart0Id) as Part
+		// expect(dynamicPart0).toBeFalsy()
 	})
 
 	testInFiberOnly('unsyncing of rundown', () => {
@@ -1090,6 +1162,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
+		// TODO-Next2020Q1 - fix
 		ServerPlayoutAPI.takeNextPart(rundown._id)
 		expect(getRundown().currentPartId).toEqual(parts[0]._id)
 

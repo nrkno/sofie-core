@@ -26,7 +26,6 @@ export namespace UserActionAPI {
 		'segmentAdLibPieceStart'				= 'userAction.segmentAdLibPieceStart',
 		'sourceLayerOnPartStop'					= 'userAction.sourceLayerOnPartStop',
 		'baselineAdLibPieceStart'				= 'userAction.baselineAdLibPieceStart',
-		'segmentAdLibPieceStop'					= 'userAction.segmentAdLibPieceStop',
 
 		'sourceLayerStickyPieceStart'			= 'userAction.sourceLayerStickyPieceStart',
 
