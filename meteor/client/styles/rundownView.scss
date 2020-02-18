@@ -288,7 +288,7 @@ body.no-overflow {
 
 				.overtime {
 					color: $general-fast-color;
-					text-shadow: 0px 0px 6px $general-fast-color;
+					text-shadow: 0px 0px 6px $general-fast-color--shadow;
 				}
 			}
 
@@ -337,7 +337,7 @@ body.no-overflow {
 
 				&.light {
 					color: $general-fast-color;
-					text-shadow: 0px 0px 6px var(--general-fast-color--shadow);
+					text-shadow: 0px 0px 6px $general-fast-color--shadow;
 					background: none;
 				}
 			}
