@@ -149,7 +149,9 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				data-obj-id={this.props.item._id}
 				>
 				{
-					this.props.layer && (this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					!this.props.layer ?
+						null :
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
 						this.renderVTLiveSpeak() :
 						null
 				}
