@@ -10,13 +10,14 @@ import { check, Match } from 'meteor/check'
 import { Studio, Studios } from '../../lib/collections/Studios'
 import {
 	Snapshots,
-	SnapshotRundown,
+	DeprecatedSnapshotRundown,
 	SnapshotType,
 	SnapshotSystem,
 	SnapshotDebug,
-	SnapshotBase
+	SnapshotBase,
+	SnapshotRundownPlaylist
 } from '../../lib/collections/Snapshots'
-import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, DBRundown } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Part, Parts } from '../../lib/collections/Parts'
@@ -53,17 +54,35 @@ import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/Inges
 import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
+
+interface DeprecatedRundownSnapshot { // Old, from the times before rundownPlaylists
+	version: string
+	rundownId: string
+	snapshot: DeprecatedSnapshotRundown
+	rundown: DBRundown
+	ingestData: Array<IngestDataCacheObj>
+	userActions: Array<UserActionsLogItem>
+	baselineObjs: Array<RundownBaselineObj>
+	baselineAdlibs: Array<RundownBaselineAdLibItem>
+	segments: Array<Segment>
+	parts: Array<Part>
+	pieces: Array<Piece>
+	adLibPieces: Array<AdLibPiece>
+	mediaObjects: Array<MediaObject>
+	expectedMediaItems: Array<ExpectedMediaItem>
+}
 
 interface RundownPlaylistSnapshot {
 	version: string
 	playlistId: string
-	snapshot: SnapshotRundown
-	playlist: RundownPlaylist
-	rundowns: Array<Rundown>
+	snapshot: SnapshotRundownPlaylist
+	playlist: DBRundownPlaylist
+	rundowns: Array<DBRundown>
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	baselineObjs: Array<RundownBaselineObj>
@@ -106,15 +125,15 @@ interface DeviceSnapshot {
 	replyTime: Time
 	content: any
 }
-type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot
+type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot | DeprecatedRundownSnapshot
 
 /**
  * Create a snapshot of all items related to a rundown
  * @param playlistId
  */
-function createRundownSnapshot (playlistId: string): RundownPlaylistSnapshot {
+function createRundownPlaylistSnapshot (playlistId: string): RundownPlaylistSnapshot {
 	let snapshotId = Random.id()
-	logger.info(`Generating Rundown snapshot "${snapshotId}" for rundown "${playlistId}"`)
+	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	if (!playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
@@ -146,7 +165,7 @@ function createRundownSnapshot (playlistId: string): RundownPlaylistSnapshot {
 		snapshot: {
 			_id: snapshotId,
 			created: getCurrentTime(),
-			type: SnapshotType.RUNDOWN,
+			type: SnapshotType.RUNDOWNPLAYLIST,
 			playlistId,
 			studioId: playlist.studioId,
 			name: `Rundown_${playlist.name}_${playlist._id}_${formatDateTime(getCurrentTime())}`,
@@ -267,7 +286,7 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 	}).fetch()
 
 	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
-		return createRundownSnapshot(playlist._id)
+		return createRundownPlaylistSnapshot(playlist._id)
 	})
 
 	let timeline = Timeline.find().fetch()
@@ -402,8 +421,14 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
 
-	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown
-		return restoreFromRundownSnapshot(snapshot as RundownPlaylistSnapshot)
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown (to be deprecated)
+		if ((snapshot as RundownPlaylistSnapshot).playlistId) { // temporary check, from snapshots where the type was rundown, but it actually was a rundownPlaylist
+			return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot)
+		} else {
+			return restoreFromDeprecatedRundownSnapshot(snapshot as DeprecatedRundownSnapshot)
+		}
+	} else if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) { // A snapshot of a rundownPlaylist
+		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) { // A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
 	} else {
@@ -411,7 +436,24 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromRundownSnapshot (snapshot: RundownPlaylistSnapshot) {
+function restoreFromDeprecatedRundownSnapshot (snapshot0: DeprecatedRundownSnapshot) {
+	// Convert the Rundown snaphost into a rundown playlist
+	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
+
+	const snapshot = _.clone(snapshot0) as any as RundownPlaylistSnapshot
+
+	// Make up a rundownPlaylist:
+	snapshot.playlist = makePlaylistFromRundown_1_0_0(snapshot0.rundown)
+	snapshot.playlistId = snapshot.playlist._id
+
+	delete snapshot['rundown']
+	snapshot.rundowns = [snapshot0.rundown]
+	snapshot.rundowns[0]._rank = 0
+	snapshot.rundowns[0].playlistId = snapshot.playlist._id
+
+	return restoreFromRundownPlaylistSnapshot(snapshot)
+}
+function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
 	let playlistId = snapshot.playlistId
 
@@ -510,9 +552,9 @@ export function storeSystemSnapshot (studioId: string | null, reason: string) {
 	let s = createSystemSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function storeRundownSnapshot (rundownId: string, reason: string) {
+export function storeRundownPlaylistSnapshot (rundownId: string, reason: string) {
 	check(rundownId, String)
-	let s = createRundownSnapshot(rundownId)
+	let s = createRundownPlaylistSnapshot(rundownId)
 	return storeSnaphot(s, reason)
 }
 export function storeDebugSnapshot (studioId: string, reason: string) {
@@ -559,10 +601,10 @@ Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, respon
 		return createSystemSnapshot(params.studioId)
 	})
 })
-Picker.route('/snapshot/rundown/:rundownId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+Picker.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
-		check(params.rundownId, String)
-		return createRundownSnapshot(params.rundownId)
+		check(params.playlistId, String)
+		return createRundownPlaylistSnapshot(params.playlistId)
 	})
 })
 Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
@@ -613,7 +655,7 @@ methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId: string | null, 
 	return storeSystemSnapshot(studioId, reason)
 }
 methods[SnapshotFunctionsAPI.STORE_RUNDOWN_SNAPSHOT] = (rundownId: string, reason: string) => {
-	return storeRundownSnapshot(rundownId, reason)
+	return storeRundownPlaylistSnapshot(rundownId, reason)
 }
 methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string, reason: string) => {
 	return storeDebugSnapshot(studioId, reason)

@@ -1,8 +1,7 @@
-import { literal, getCurrentTime } from '../../lib/lib'
-import { ensureCollectionProperty } from './lib'
+import { getCurrentTime } from '../../lib/lib'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { makePlaylistFromRundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 import { Random } from 'meteor/random'
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 
@@ -60,31 +59,10 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [ // <--- To be set to an absolute ver
 					playlistId: ''
 				}]
 			}).forEach((rundown) => {
-				const r = rundown as any as Rundown_1_0_0
 				const playlistId = Random.id()
-				RundownPlaylists.insert(literal<DBRundownPlaylist>({
-					_id: playlistId,
-					externalId: r.externalId,
-					active: r.active,
-					rehearsal: r.rehearsal,
-					created: r.created,
-					// currentPartId: r.currentPartId,
-					currentPartInstanceId: null,
-					// nextPartId: r.nextPartId,
-					nextPartInstanceId: null,
-					expectedDuration: r.expectedDuration,
-					expectedStart: r.expectedStart,
-					holdState: r.holdState,
-					name: r.name,
-					nextPartManual: r.nextPartManual,
-					nextTimeOffset: r.nextTimeOffset,
-					peripheralDeviceId: r.peripheralDeviceId,
-					// previousPartId: r.previousPartId,
-					previousPartInstanceId: null,
-					startedPlayback: r.startedPlayback,
-					studioId: r.studioId,
-					modified: getCurrentTime()
-				}))
+				const playlist = makePlaylistFromRundown_1_0_0(rundown, playlistId)
+				playlist.modified = getCurrentTime()
+				RundownPlaylists.insert(playlist)
 				Rundowns.update(rundown._id, {
 					$set: {
 						playlistId,

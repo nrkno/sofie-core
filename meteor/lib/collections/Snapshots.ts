@@ -5,7 +5,8 @@ import { createMongoCollection } from './lib'
 
 
 export enum SnapshotType {
-	RUNDOWN = 'rundown',
+	RUNDOWN = 'rundown', // to be deprecated?
+	RUNDOWNPLAYLIST = 'rundownplaylist',
 	SYSTEM = 'system',
 	DEBUG = 'debug'
 }
@@ -28,8 +29,13 @@ export interface SnapshotItem extends SnapshotBase {
 	rundownId?: string
 }
 
-export interface SnapshotRundown extends SnapshotBase {
+export interface DeprecatedSnapshotRundown extends SnapshotBase { // From the times before rundownPlaylists
 	type: SnapshotType.RUNDOWN
+	studioId: string
+	rundownId: string
+}
+export interface SnapshotRundownPlaylist extends SnapshotBase {
+	type: SnapshotType.RUNDOWNPLAYLIST
 	studioId: string
 	playlistId: string
 }

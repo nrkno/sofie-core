@@ -11,7 +11,7 @@ import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances } from './PartInstances'
 import { PieceInstance, PieceInstances } from './PieceInstances'
-import { GenericNote, RundownNote } from '../api/notes';
+import { GenericNote, RundownNote } from '../api/notes'
 
 export interface DBRundownPlaylist {
 	_id: string
@@ -413,7 +413,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}
 		})
 	}
-	
+
 	getAllStoredNotes (): Array<GenericNote & {rank: number}> {
 		const rundownNotes: RundownNote[] = _.flatten(_.compact(this.getRundowns().map(r => r.notes)))
 
@@ -423,7 +423,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const segmentNotes = _.object(this.getSegments().map(segment => [ segment._id, {
 			rank: segment._rank,
 			notes: segment.notes
-		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } } 
+		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
 		this.getParts().map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
 		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 			return o.notes.map(note => _.extend(note, {

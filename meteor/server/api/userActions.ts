@@ -20,7 +20,7 @@ import {
 import { Studios } from '../../lib/collections/Studios'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { storeRundownSnapshot } from './snapshot'
+import { storeRundownPlaylistSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
 import { ServerTestToolsAPI, getStudioConfig } from './testTools'
@@ -383,7 +383,7 @@ export function userSaveEvaluation (evaluation: EvaluationBase): ClientAPI.Clien
 }
 export function userStoreRundownSnapshot (rundownId: string, reason: string) {
 	return ClientAPI.responseSuccess(
-		storeRundownSnapshot(rundownId, reason)
+		storeRundownPlaylistSnapshot(rundownId, reason)
 	)
 }
 export function removeRundown (playlistId: string) {
