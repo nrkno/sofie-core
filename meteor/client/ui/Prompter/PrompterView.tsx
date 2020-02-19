@@ -16,7 +16,7 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { objectPathGet, firstIfArray, literal } from '../../../lib/lib'
 import { Parts } from '../../../lib/collections/Parts'
-import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
+import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/prompter'
 import { Segments } from '../../../lib/collections/Segments'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -386,24 +386,15 @@ interface IPrompterProps {
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	playlist: RundownPlaylist | undefined,
-	currentPartInstanceId: string,
-	nextPartInstanceId: string,
 	prompterData: PrompterData
 }
 
 type ScrollAnchor = [number, string] | null
 
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
-
-	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
-
-	let prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
+	const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
 
 	return {
-		playlist,
-		currentPartInstanceId: playlist && playlist.currentPartInstanceId || '',
-		nextPartInstanceId: playlist && playlist.nextPartInstanceId || '',
 		prompterData
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
@@ -506,84 +497,70 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 	renderPrompterData (prompterData: PrompterData) {
 
+		const getPartStatus = (part: PrompterDataPart) => {
+			if (prompterData.currentPartId === part.id) {
+				return 'live'
+			} else if (prompterData.nextPartId === part.id) {
+				return 'next'
+			} else {
+				return null
+			}
+		}
+
 		let lines: React.ReactNode[] = []
-		let previousSegmentId = ''
-		let previousPartId = ''
-		let isSegmentHidden: boolean = false
-		_.each(prompterData.lines, (line, i: number) => {
 
-			let currentNextLine: 'live' | 'next' | null = null
+		_.each(prompterData.segments, segment => {
+			if (segment.parts.length === 0) {
+				return
+			}
 
-			currentNextLine = (
-				this.props.currentPartInstanceId === line.partId ? 'live' :
-					this.props.nextPartInstanceId === line.partId ? 'next' :
-						null
+			const firstPart = segment.parts[0]
+			const firstPartStatus = getPartStatus(firstPart)
+
+			lines.push(
+				<div
+					key={'segment_' + segment.id}
+					className={ClassNames(
+						'prompter-segment',
+						'scroll-anchor',
+						'segment-' + segment.id,
+						'part-' + firstPart.id,
+						firstPartStatus
+					)}
+				>
+					{segment.title || 'N/A'}
+				</div>
 			)
 
-			if (line.segmentId !== previousSegmentId) {
-				let segment = Segments.findOne(line.segmentId)
-				isSegmentHidden = false
-				if (segment && segment.isHidden) {
-					isSegmentHidden = true
-				}
-
-				if (!isSegmentHidden) {
-					lines.push(
-						<div
-							key={'segment_' + line.segmentId + '_' + line.id}
-							className={ClassNames(
-								'prompter-segment',
-								'scroll-anchor',
-								'segment-' + line.segmentId,
-								'part-' + line.partId,
-								currentNextLine
-							)}
-						>
-							{segment ? segment.name : 'N/A'}
-						</div>
-					)
-				}
-			} else if (line.partId !== previousPartId) {
-
-				let part = Parts.findOne(line.partId)
-				let title: string = part ? part.title : 'N/A'
-				if (part && part.typeVariant && part.typeVariant.toString && part.typeVariant.toString().toLowerCase().trim() === 'full') {
-					title = 'FULL'
-				}
-				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
-
-				if (!isSegmentHidden) {
-					lines.push(
-						<div
-							key={'part_' + line.partId + '_' + line.id}
-							className={ClassNames(
-								'prompter-part',
-								'scroll-anchor',
-								'part-' + line.partId,
-								currentNextLine
-							)}
-						>
-							{title}
-						</div>
-					)
-				}
-			}
-			previousSegmentId = line.segmentId
-			previousPartId = line.partId
-
-			if (!isSegmentHidden) {
+			_.each(segment.parts, part => {
 				lines.push(
 					<div
-						key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
+						key={'part_' + part.id}
 						className={ClassNames(
-							'prompter-line',
-							(!line.text ? 'empty' : undefined)
+							'prompter-part',
+							'scroll-anchor',
+							'part-' + part.id,
+							getPartStatus(part)
 						)}
 					>
-						{line.text || ''}
+						{part.title || 'N/A'}
 					</div>
 				)
-			}
+
+				_.each(part.lines, line => {
+					lines.push(
+						<div
+							key={'line_' + part.id + '_' + segment.id + '_' + line.id}
+							className={ClassNames(
+								'prompter-line',
+								(!line.text ? 'empty' : undefined)
+							)}
+						>
+							{line.text || ''}
+						</div>
+					)
+				})
+			})
 		})
 
 		return lines
@@ -591,7 +568,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	render () {
 		const { t } = this.props
 
-		if (this.props.prompterData && this.props.playlist) {
+		if (this.props.prompterData) {
 			return (
 				<div
 					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
@@ -625,13 +602,13 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						}}
 					>
 						<div className='prompter-break begin'>
-							{this.props.playlist.name}
+							{this.props.prompterData.title}
 						</div>
 
 						{this.renderPrompterData(this.props.prompterData)}
 
 						{
-							this.props.prompterData.lines.length ?
+							this.props.prompterData.segments.length ?
 								<div className='prompter-break end'>
 									—{t('End of script')}—
 							</div> : null
