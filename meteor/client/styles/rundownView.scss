@@ -851,6 +851,12 @@ body.no-overflow {
 					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
 			}
 		}
+		.segment-timeline__part.gap {
+			.segment-timeline__part__invalid-cover {
+				background: #000;
+				z-index: 0;
+			}
+		}
 	}
 
 	/* The timeline itself is constructed out of three overlapping layers:
@@ -1143,6 +1149,18 @@ body.no-overflow {
 					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
 					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
 
+			}
+
+			&.gap {
+				.segment-timeline__part__invalid-cover {
+					z-index: 0;
+					background: #000;
+					background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgNTAgMTAwIiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgCglzdHlsZT0iZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjEuNTsiPgoJPHBhdGggZD0iTTAsNDljMCwwIDMsLTE1IDEyLC0xNWMxNSwwIDEwLDI5IDI2LDI5YzksMCAxMiwtMTQgMTIsLTE0IiBzdHlsZT0iZmlsbDpub25lO3N0cm9rZTojZmZmO3N0cm9rZS13aWR0aDoxcHg7Ii8+Cjwvc3ZnPg==);
+					background-repeat: repeat-x;
+    				background-position: right center;
+					background-attachment: local;
+					background-size: 1.8em auto;
+				}
 			}
 
 			&:not(.live) {
@@ -1862,6 +1880,12 @@ body.no-overflow {
 							min-height: 0.4em;
 							border-bottom: 1px solid $segment-layer-separator-color;
 						}
+					}
+				}
+
+				&.gap {
+					.segment-timeline__part__invalid-cover {
+						background-size: contain;
 					}
 				}
 			}

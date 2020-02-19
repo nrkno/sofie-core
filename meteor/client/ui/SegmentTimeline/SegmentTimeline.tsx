@@ -81,6 +81,7 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
 	followingPart: PartUi | undefined
 	isLastSegment: boolean
+	lastValidPartIndex: number | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -170,6 +171,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={this.props.segment._id === this.props.rundown.currentPartId && part.startedPlayback && part.getLastStartedPlayback() ? this.props.livePosition - (part.getLastStartedPlayback() || 0) : null}
 					isLastInSegment={false}
+					isAfterLastValidInSegmentAndItsLive={false}
 					isLastSegment={false} />
 			)
 		})
@@ -553,8 +555,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	renderTimeline () {
+		let partIsLive = false
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
+				let previousPartIsLive = partIsLive 
+				partIsLive = part._id === this.props.rundown.currentPartId
 				return (
 					<SegmentTimelinePart key={part._id}
 						segment={this.props.segment}
@@ -580,6 +585,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						firstPartInSegment={this.props.parts[0]}
 						isLastSegment={this.props.isLastSegment}
 						isLastInSegment={index === (this.props.parts.length - 1)}
+						isAfterLastValidInSegmentAndItsLive={(index === (this.props.lastValidPartIndex || 0) + 1) && previousPartIsLive && !!this.props.rundown.nextPartId}
 						part={part} />
 				)
 			})}
