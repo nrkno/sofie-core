@@ -347,7 +347,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				}
 
 				// Handle invalid parts by overriding the values to preset values for Invalid parts
-				if (part.invalid) {
+				if (part.invalid && !part.gap) {
 					currentRemaining = 0
 					partDuration = 0
 					partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
