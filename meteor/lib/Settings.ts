@@ -19,7 +19,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	'autoExpandCurrentNextSegment': false,
 	'autoRewindLeavingSegment': false,
 	'defaultTimeScale': 1,
-	'allowUnsyncedSegments': true
+	'allowUnsyncedSegments': true,
+	'allowGrabbingTimeline': false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
