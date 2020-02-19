@@ -318,7 +318,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					this.displayDurationGroups[part.displayDurationGroup] =
 						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
 					displayDurationFromGroup = part.displayDuration
-						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], this.props.defaultDuration || DEFAULT_DURATION)
+						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], part.gap ? 1 : this.props.defaultDuration || DEFAULT_DURATION)
 					memberOfDisplayDurationGroup = true
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
