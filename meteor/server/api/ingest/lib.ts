@@ -5,6 +5,7 @@ import { PeripheralDevice, PeripheralDevices, getStudioIdFromDevice } from '../.
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { Segment } from '../../../lib/collections/Segments'
 
 export function getRundownId (studio: Studio, rundownExternalId: string) {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
@@ -56,12 +57,19 @@ function updateDeviceLastDataReceived (deviceId: string) {
 	})
 }
 
-export function canBeUpdated (rundown: Rundown | undefined, _segmentId?: string, _partId?: string) {
+export function canBeUpdated (rundown: Rundown | undefined, segment?: Segment) {
 	if (!rundown) return true
 	if (rundown.unsynced) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}
+
+	if (!segment) return true
+	if (segment.unsynced) {
+		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
+		return false
+	}
+
 
 	// TODO
 	return true

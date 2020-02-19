@@ -7,6 +7,8 @@ export interface ISettings {
 	autoExpandCurrentNextSegment: boolean,
 	autoRewindLeavingSegment: boolean,
 	defaultTimeScale: number
+	/** Wether to enable unsyncing of segements in case a data-update is rejected. Default functionality is to just unsync the whole rundown */
+	allowUnsyncedSegments: boolean
 }
 
 export let Settings: ISettings
@@ -16,7 +18,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	'defaultToCollapsedSegments': false,
 	'autoExpandCurrentNextSegment': false,
 	'autoRewindLeavingSegment': false,
-	'defaultTimeScale': 1
+	'defaultTimeScale': 1,
+	'allowUnsyncedSegments': true
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

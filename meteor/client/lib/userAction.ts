@@ -117,6 +117,7 @@ function userActionMethodName (
 
 		case UserActionAPI.methods.removeRundown: return t('Removing Rundown')
 		case UserActionAPI.methods.resyncRundown: return t('Re-Syncing Rundown')
+		case UserActionAPI.methods.resyncSegment: return t('Re-Syncing Segment')
 
 		case UserActionAPI.methods.recordStop: return t('Stopping recording')
 		case UserActionAPI.methods.recordStart: return t('Starting recording')

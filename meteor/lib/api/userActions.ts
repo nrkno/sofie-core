@@ -41,6 +41,7 @@ export namespace UserActionAPI {
 
 		'removeRundown'						= 'userAction.removeRundown',
 		'resyncRundown'						= 'userAction.resyncRundown',
+		'resyncSegment'						= 'userAction.resyncSegment',
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',
@@ -55,10 +56,10 @@ export namespace UserActionAPI {
 		'regenerateRundown'					= 'userAction.ingest.regenerateRundown'
 	}
 
-	export enum ReloadRundownResponse {
+	export enum TriggerReloadDataResponse {
 		/** When reloading has been successfully completed */
 		COMPLETED = 'ok',
-		/** When reloading has successfully started, and will finish asynchronously */
+		/** When reloading has successfully started, and will finish asynchronously (data updates will follow later) */
 		WORKING = 'working',
 		/** When reloading cannot continue, because the rundown is missing */
 		MISSING = 'missing'

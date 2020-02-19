@@ -241,7 +241,7 @@ export function reloadData (rundownId: string) {
 }
 export function unsyncRundown (rundownId: string) {
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.unsyncRundown(rundownId)
+		ServerRundownAPI.unsync(rundownId)
 	)
 }
 export function disableNextPiece (rundownId: string, undo?: boolean) {
@@ -445,6 +445,17 @@ export function resyncRundown (rundownId: string) {
 		ServerRundownAPI.resyncRundown(rundownId)
 	)
 }
+export function resyncSegment (rundownId: string, segmentId: string) {
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+	let segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.resyncSegment(segmentId)
+	)
+}
 export function recordStop (studioId: string) {
 	check(studioId, String)
 	const record = RecordedFiles.findOne({
@@ -606,6 +617,9 @@ methods[UserActionAPI.methods.removeRundown] = function (rundownId: string) {
 }
 methods[UserActionAPI.methods.resyncRundown] = function (rundownId: string) {
 	return resyncRundown.call(this, rundownId)
+}
+methods[UserActionAPI.methods.resyncSegment] = function (rundownId: string, segmentId: string) {
+	return resyncSegment.call(this, rundownId, segmentId)
 }
 methods[UserActionAPI.methods.recordStop] = function (studioId: string) {
 	return recordStop.call(this, studioId)

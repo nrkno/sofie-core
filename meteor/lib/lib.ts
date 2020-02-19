@@ -107,9 +107,15 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		options
 	)
 }
+
+export interface PreparedChangesChangesDoc<T> {
+	doc: T
+	oldId: string
+}
+
 export interface PreparedChanges<T> {
 	inserted: T[]
-	changed: {doc: T, oldId: string}[]
+	changed: PreparedChangesChangesDoc<T>[]
 	removed: T[]
 	unchanged: T[]
 }

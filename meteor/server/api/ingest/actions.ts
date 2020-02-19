@@ -1,37 +1,59 @@
-import { getRundown, getPeripheralDeviceFromRundown } from './lib'
+import * as _ from 'underscore'
+import { getPeripheralDeviceFromRundown } from './lib'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { check } from 'meteor/check'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown } from '../playout/lib'
-import { handleUpdatedRundown, handleUpdatedRundownForStudio } from './rundownInput'
+import { handleUpdatedRundownForStudio, handleUpdatedSegment } from './rundownInput'
 import { logger } from '../../logging'
-import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studios } from '../../../lib/collections/Studios'
 import { UserActionAPI } from '../../../lib/api/userActions'
-import { INewsDeviceActions } from './iNewsDevice/actions'
+import { Segment } from '../../../lib/collections/Segments'
+import { WrapAsyncCallback } from '../../../lib/lib'
+import { IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import { GenericDeviceActions } from './genericDevice/actions'
 
 /*
-This file contains actions that can be performed on an ingest-device (MOS-device)
+This file contains actions that can be performed on an ingest-device
 */
 export namespace IngestActions {
 	/**
 	 * Trigger a reload of a rundown
 	 */
-	export function reloadRundown (rundown: Rundown): UserActionAPI.ReloadRundownResponse {
+	export function reloadRundown (rundown: Rundown): UserActionAPI.TriggerReloadDataResponse {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			return MOSDeviceActions.reloadRundown(device, rundown)
-		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
-			// TODO
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
-			return INewsDeviceActions.reloadRundown(device, rundown)
+		} else if (
+			device.type === PeripheralDeviceAPI.DeviceType.INEWS
+			// device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET
+		) {
+			return GenericDeviceActions.reloadRundown(device, rundown)
+		} else {
+			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
+		}
+
+	}
+	/**
+	 * Trigger a reload of a single Segment
+	 */
+	export function reloadSegment (rundown: Rundown, segment: Segment): UserActionAPI.TriggerReloadDataResponse {
+		const device = getPeripheralDeviceFromRundown(rundown)
+
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+			throw new Meteor.Error(400, `The device ${device._id} uses MOS, and it does not support the method "reloadSegment"`)
+		} else if (
+			device.type === PeripheralDeviceAPI.DeviceType.INEWS ||
+			device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET
+		) {
+			return GenericDeviceActions.reloadSegment(device, rundown, segment)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
 		}

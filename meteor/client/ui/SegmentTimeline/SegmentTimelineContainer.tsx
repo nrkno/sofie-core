@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -24,6 +24,9 @@ import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Settings } from '../../../lib/Settings'
+import { doUserAction } from '../../lib/userAction'
+import { translate } from 'react-i18next'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 const SPEAK_ADVANCE = 500
 export const SIMULATED_PLAYBACK_MARGIN = 2000
@@ -96,7 +99,7 @@ interface ITrackedProps {
 	followingPart: PartUi | undefined
 	lastValidPartIndex: number | undefined
 }
-export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 	const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
@@ -207,7 +210,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	return false
-})(class extends MeteorReactComponent<IProps & ITrackedProps, IState> {
+})(class extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -320,6 +323,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			}
 
 			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
+
+			if (this.props.segmentui && this.props.segmentui.unsynced) {
+				const { t } = this.props
+				doUserAction(t, undefined, UserActionAPI.methods.resyncSegment, [this.props.rundown._id, this.props.segmentui._id], (err, response) => {
+					if (!err && response) {
+						// TODO: Maybe report something to the user?
+					}
+				})
+			}
 		}
 
 		// segment is becoming next
@@ -587,5 +599,4 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onHeaderNoteClick={this.props.onHeaderNoteClick} />
 		) || null
 	}
-}
-)
+}))

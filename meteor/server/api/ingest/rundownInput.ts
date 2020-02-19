@@ -29,7 +29,9 @@ import {
 	PreparedChanges,
 	prepareSaveIntoDb,
 	savePreparedChanges,
-	Optional
+	Optional,
+	PreparedChangesChangesDoc,
+	omit
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -56,6 +58,8 @@ import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
 import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { Settings } from '../../../lib/Settings'
+import { isArray } from 'util'
 
 export enum RundownSyncFunctionPriority {
 	Ingest = 0,
@@ -175,7 +179,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 
 			if (canBeUpdated(rundown)) {
 				if (!isUpdateAllowed(rundown, { removed: [rundown] }, {}, {})) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
+					ServerRundownAPI.unsync(rundown._id)
 				} else {
 					logger.info(`Removing rundown "${rundown._id}"`)
 					rundown.remove()
@@ -183,7 +187,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 			} else {
 				logger.info(`Rundown "${rundown._id}" cannot be updated`)
 				if (!rundown.unsynced) {
-					ServerRundownAPI.unsyncRundown(rundown._id)
+					ServerRundownAPI.unsync(rundown._id)
 				}
 			}
 		}
@@ -372,9 +376,23 @@ function updateRundownFromIngestData (
 	}, adlibPieces)
 
 	// determine if update is allowed here
-	if (!isUpdateAllowed(dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundown(dbRundown._id)
+	if (!isUpdateAllowed(dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts, Settings.allowUnsyncedSegments)) {
+		ServerRundownAPI.unsync(dbRundown._id)
 		return false
+	}
+
+	if (Settings.allowUnsyncedSegments) {
+		// Remove part updates for parts with these segment Ids
+		const removeWithSegmentId: string[] = processSegmentChangesToReject(dbRundown, prepareSaveSegments)
+
+		// Remove part updates associated with rejected segment updates
+		const removeWithPartId: string[] = removePartUpdatesBySegmentId(dbRundown, prepareSaveParts, removeWithSegmentId)
+
+		// Remove piece updates for pieces with these part Ids
+		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts))
+
+		// Remove piece updates that must be rejected
+		removePieceUpdatesByPartId(prepareSavePieces, removeWithPartId)
 	}
 
 	changes = sumChanges(
@@ -466,9 +484,9 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `handleRemovedSegment: Segment "${segmentId}" not found`)
 
-		if (canBeUpdated(rundown, segmentId)) {
+		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(rundown, {}, { removed: [segment] }, {})) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				ServerRundownAPI.unsync(rundown._id, segment._id)
 			} else {
 				if (removeSegments(rundownId, [segmentId]) === 0) {
 					throw new Meteor.Error(404, `handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`)
@@ -477,14 +495,16 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		}
 	})
 }
-function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
+export function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
 	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-		if (!canBeUpdated(rundown, segmentId)) return
+		const segment = Segments.findOne(segmentId)
+
+		if (!canBeUpdated(rundown, segment)) return
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
@@ -580,7 +600,7 @@ function updateSegmentFromIngestData (
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundown(rundown._id)
+		ServerRundownAPI.unsync(rundown._id, segmentId)
 		return null
 	}
 
@@ -645,8 +665,9 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
 
+		const segment = Segments.findOne(segmentId)
 
-		if (canBeUpdated(rundown, segmentId, partId)) {
+		if (canBeUpdated(rundown, segment)) {
 			const part = Parts.findOne({
 				_id: partId,
 				segmentId: segmentId,
@@ -654,8 +675,9 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 			})
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
+			logger.info('THIS SHOULD FAIL')
 			if (!isUpdateAllowed(rundown, {}, {}, { removed: [part] })) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				ServerRundownAPI.unsync(rundown._id, segmentId)
 			} else {
 
 				// Blueprints will handle the deletion of the Part
@@ -689,7 +711,10 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
 
-	if (!canBeUpdated(rundown, segmentId, partId)) return
+	const segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(500, `Segment "${segmentId}" not found`)
+
+	if (!canBeUpdated(rundown, segment)) return
 
 	const part = Parts.findOne({
 		_id: partId,
@@ -698,20 +723,26 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 	})
 
 	if (
-		part && !isUpdateAllowed(rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })) {
-		ServerRundownAPI.unsyncRundown(rundown._id)
+		part && !isUpdateAllowed(rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })
+	) {
+		ServerRundownAPI.unsync(rundown._id, segmentId)
 	} else {
 
-		// Blueprints will handle the creation of the Part
-		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
-		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
-		ingestSegment.parts.push(ingestPart)
+		if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: segment, oldId: segment._id }] }, { })) {
+			ServerRundownAPI.unsync(rundown._id, segmentId)
+		} else {
+			// Blueprints will handle the creation of the Part
+			const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
+			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
+			ingestSegment.parts.push(ingestPart)
 
-		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-		const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
-		if (updatedSegmentId) {
-			afterIngestChangedData(rundown, [updatedSegmentId])
+			saveSegmentCache(rundown._id, segmentId, ingestSegment)
+			const updatedSegmentId = updateSegmentFromIngestData(studio, rundown, ingestSegment)
+			if (updatedSegmentId) {
+				afterIngestChangedData(rundown, [updatedSegmentId])
+			}
 		}
+
 	}
 }
 
@@ -795,7 +826,8 @@ export function isUpdateAllowed (
 	rundown: Rundown,
 	rundownChanges: Optional<PreparedChanges<DBRundown>>,
 	segmentChanges: Optional<PreparedChanges<DBSegment>>,
-	partChanges: Optional<PreparedChanges<DBPart>>
+	partChanges: Optional<PreparedChanges<DBPart>>,
+	unsyncedSegmentAllowed?: boolean
 ): boolean {
 	let allowed: boolean = true
 
@@ -811,27 +843,27 @@ export function isUpdateAllowed (
 			_.each(rundownChanges.removed, rd => {
 				if (rundown._id === rd._id) {
 					// Don't allow removing an active rundown
-					logger.warn(`Not allowing removal of current active rundown "${rd._id}", making rundown unsynced instead`)
+					logger.warn(`Not allowing removal of current active rundown "${rd._id}"`)
 					allowed = false
 				}
 			})
 		}
 		if (rundown.currentPartId) {
-			if (allowed && partChanges.removed && partChanges.removed.length) {
+			if (allowed && partChanges.removed && partChanges.removed.length && !unsyncedSegmentAllowed) {
 				_.each(partChanges.removed, part => {
 					if (rundown.currentPartId === part._id) {
 						// Don't allow removing currently playing part
-						logger.warn(`Not allowing removal of currently playing part "${part._id}", making rundown unsynced instead`)
+						logger.warn(`Not allowing removal of currently playing part "${part._id}"`)
 						allowed = false
 					}
 				})
 			}
-			if (allowed && segmentChanges.removed && segmentChanges.removed.length) {
+			if (allowed && segmentChanges.removed && segmentChanges.removed.length && !unsyncedSegmentAllowed) {
 				const currentPart = rundown.getParts({ _id: rundown.currentPartId })[0]
 				_.each(segmentChanges.removed, segment => {
 					if (currentPart.segmentId === segment._id) {
 						// Don't allow removing segment with currently playing part
-						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}", making rundown unsynced instead`)
+						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}"`)
 						allowed = false
 					}
 				})
@@ -853,4 +885,188 @@ function printChanges (changes: Optional<PreparedChanges<{_id: string}>>): strin
 	if (changes.removed)	str += _.map(changes.removed,	doc => 'remove:' + doc._id).join(',')
 
 	return str
+}
+
+/**
+ * Removes parts that have segmentIds specified.
+ * @param changes Changes to filter.
+ * @param segmentIds Segment Ids to remove.
+ */
+function removePartUpdatesBySegmentId(rundown: Rundown, changes: PreparedChanges<DBPart>, segmentIds: string[]): string[] {
+	const partIds: string[] = []
+
+	changes.removed = changes.removed.filter((part) => {
+		if (segmentIds.includes(part.segmentId)) {
+			partIds.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+
+	changes.inserted = changes.inserted.filter((part) => {
+		if (segmentIds.includes(part.segmentId)) {
+			partIds.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+
+	changes.changed = changes.changed.filter((part) => {
+		if (segmentIds.includes(part.doc.segmentId)) {
+			partIds.push(part.doc._id)
+			partIds.push(part.oldId)
+			ServerRundownAPI.unsync(rundown._id, part.doc.segmentId)
+			return false
+		}
+		return true
+	})
+
+	return partIds
+}
+
+/**
+ * Removes pieces that have partIds specified.
+ * @param changes Changed to filter.
+ * @param partIds Part Ids to remove.
+ */
+function removePieceUpdatesByPartId(changes: PreparedChanges<Piece>, partIds: string[]) {
+	changes.removed = changes.removed.filter((piece) => !partIds.includes(piece.partId))
+	changes.inserted = changes.inserted.filter((piece) => !partIds.includes(piece.partId))
+	changes.changed = changes.changed.filter((piece) => !partIds.includes(piece.doc.partId))
+}
+
+/**
+ * Filters out changes to segments that should be rejected and unsyncs segments that have become unsynced.
+ * @param rundown Rundown the changes belong to.
+ * @param changes Changes to check.
+ */
+function processSegmentChangesToReject (rundown: Rundown, changes: PreparedChanges<DBSegment>): string[] {
+	const removeWithSegmentId: string[] = []
+
+	changes.inserted = changes.inserted.filter((segment) => {
+		if (rejectSegmentUpdate(rundown, segment, 'inserted')) {
+			removeWithSegmentId.push(segment._id)
+			ServerRundownAPI.unsync(rundown._id, segment._id)
+			return false
+		}
+		return true
+	})
+
+	changes.removed = changes.removed.filter((segment) => {
+		if (rejectSegmentUpdate(rundown, segment, 'removed')) {
+			removeWithSegmentId.push(segment._id)
+			ServerRundownAPI.unsync(rundown._id, segment._id)
+			return false
+		}
+		return true
+	})
+
+	changes.changed = changes.changed.filter((segment) => {
+		if (rejectSegmentUpdate(rundown, segment.doc, 'changed')) {
+			removeWithSegmentId.push(segment.doc._id)
+			removeWithSegmentId.push(segment.oldId)
+			ServerRundownAPI.unsync(rundown._id, segment.doc._id)
+			ServerRundownAPI.unsync(rundown._id, segment.oldId)
+			return false
+		}
+		return true
+	})
+
+	return removeWithSegmentId
+}
+
+/**
+ * Checks if a segment update should be rejected.
+ * @param rundown Rundown the part belongs to.
+ * @param existingSegment Segment the part belongs to.
+ * @param part Part to update.
+ * @param field Type of update.
+ */
+function rejectSegmentUpdate (rundown: Rundown, segment: DBSegment, field: keyof PreparedChanges<DBSegment>, existingSegment?: Segment): boolean {
+	return !isUpdateAllowed(rundown, {}, { [field]: [segment] }, {}) || (!!existingSegment && !canBeUpdated(rundown, existingSegment))
+}
+
+/**
+ * Filters out changes to parts that should be rejected and unsyncs segments that have become unsynced.
+ * @param rundown Rundown the changes belong to.
+ * @param changes Changes to check.
+ */
+function processPartChangesToReject (rundown: Rundown, changes: PreparedChanges<DBPart>): string[] {
+	const removeWithPartId: string[] = []
+	const removeWithSegmentId: string[] = []
+
+	changes.inserted = changes.inserted.filter((part) => {
+		const existingSegment = Segments.findOne({ _id: part.segmentId })
+		if (removeWithSegmentId.includes(part.segmentId) || rejectPartUpdate(rundown, part, 'inserted', existingSegment)) {
+			removeWithPartId.push(part._id)
+			removeWithSegmentId.push(part.segmentId)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+
+	changes.removed = changes.removed.filter((part) => {
+		const existingSegment = Segments.findOne({ _id: part.segmentId })
+		if (removeWithSegmentId.includes(part.segmentId) || rejectPartUpdate(rundown, part, 'removed', existingSegment)) {
+			removeWithPartId.push(part._id)
+			removeWithSegmentId.push(part.segmentId)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+
+	changes.changed = changes.changed.filter((part) => {
+		const existingSegment = Segments.findOne({ _id: part.doc.segmentId })
+		if (removeWithSegmentId.includes(part.doc.segmentId) || rejectPartUpdate(rundown, part.doc, 'changed', existingSegment)) {
+			removeWithPartId.push(part.doc._id)
+			removeWithPartId.push(part.oldId)
+			removeWithSegmentId.push(part.doc.segmentId)
+			ServerRundownAPI.unsync(rundown._id, part.doc.segmentId)
+			return false
+		}
+		return true
+	})
+
+	// Perform a second pass to catch parts before an on-air part that may now be in an unsynced segment.
+	changes.inserted = changes.inserted.filter((part) => {
+		if (removeWithSegmentId.includes(part.segmentId)) {
+			removeWithPartId.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+	changes.removed = changes.removed.filter((part) => {
+		if (removeWithSegmentId.includes(part.segmentId)) {
+			removeWithPartId.push(part._id)
+			ServerRundownAPI.unsync(rundown._id, part.segmentId)
+			return false
+		}
+		return true
+	})
+	changes.changed = changes.changed.filter((part) => {
+		if (removeWithSegmentId.includes(part.doc.segmentId)) {
+			removeWithPartId.push(part.doc._id)
+			ServerRundownAPI.unsync(rundown._id, part.doc.segmentId)
+			return false
+		}
+		return true
+	})
+
+	return removeWithPartId
+}
+
+/**
+ * Checks if a part update should be rejected.
+ * @param rundown Rundown the part belongs to.
+ * @param existingSegment Segment the part belongs to.
+ * @param part Part to update.
+ * @param field Type of update.
+ */
+function rejectPartUpdate (rundown: Rundown, part: DBPart, field: keyof PreparedChanges<Part>, existingSegment?: Segment): boolean {
+	return !isUpdateAllowed(rundown, {}, {}, { [field]: [part] }) || (!!existingSegment && !canBeUpdated(rundown, existingSegment))
 }
