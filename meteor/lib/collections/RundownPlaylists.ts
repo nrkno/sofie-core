@@ -2,10 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise, normalizeArrayFunc } from '../lib'
+import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise, normalizeArrayFunc, mongoWhere } from '../lib'
 import { RundownHoldState, Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
-import { Segments, Segment } from './Segments'
+import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part } from './Parts'
 import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
@@ -165,26 +165,28 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		}, options)).fetch()
 		return RundownPlaylist._sortSegments(segments, rundowns)
 	}
-	getParts (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Part[] { // TODO - remove ordering, and rename to getUnorderedParts?
-		// const rundowns = this.getRundowns(undefined, {
-		// 	fields: {
-		// 		_id: 1,
-		// 		_rank: 1,
-		// 		name: 1
-		// 	}
-		// })
-		// const parts = Parts.find(_.extend({
-		// 	rundownId: {
-		// 		$in: rundowns.map(i => i._id)
-		// 	}
-		// }, selector), {
-		// 	sort: {
-		// 		rundownId: 1,
-		// 		_rank: 1
-		// 	}
-		// }).fetch()
-		// return RundownPlaylist._sortParts(parts, rundowns)
+	getAllOrderedParts () {
 		const { parts } = this.getSegmentsAndPartsSync()
+		return parts
+	}
+	getUnorderedParts (selector?: MongoSelector<DBRundownPlaylist>): Part[] {
+		const rundowns = this.getRundowns(undefined, {
+			fields: {
+				_id: 1,
+				_rank: 1,
+				name: 1
+			}
+		})
+		const parts = Parts.find(_.extend({
+			rundownId: {
+				$in: rundowns.map(i => i._id)
+			}
+		}, selector), {
+			sort: {
+				rundownId: 1,
+				_rank: 1
+			}
+		}).fetch()
 		return parts
 	}
 	/**
@@ -399,7 +401,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	static _sortParts (parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
 	}
-	static _sortPartsInner (parts: Part[], sortedSegments: Segment[]) {
+	static _sortPartsInner (parts: Part[], sortedSegments: DBSegment[]) {
 		const segmentRanks: {[segmentId: string]: number} = {}
 		_.each(sortedSegments, (segment, i) => segmentRanks[segment._id] = i)
 
@@ -424,7 +426,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			rank: segment._rank,
 			notes: segment.notes
 		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
-		this.getParts().map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
+		this.getUnorderedParts().map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
 		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 			return o.notes.map(note => _.extend(note, {
 				rank: o.rank

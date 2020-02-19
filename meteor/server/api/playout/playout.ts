@@ -990,7 +990,7 @@ export namespace ServerPlayoutAPI {
 
 						reportPartHasStarted(playingPartInstance, startedPlayback)
 
-						const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
+						const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts())
 						libSetNextPart(playlist, nextPart ? nextPart.part : null)
 					} else {
 						// a part is being played that has not been selected for playback by Core
@@ -1015,7 +1015,7 @@ export namespace ServerPlayoutAPI {
 
 							reportPartHasStarted(playingPartInstance, startedPlayback)
 
-							const nextPart = selectNextPart(playingPartInstance, playlist.getParts())
+							const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts())
 							libSetNextPart(playlist, nextPart ? nextPart.part : null)
 						}
 

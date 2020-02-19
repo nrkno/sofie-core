@@ -31,11 +31,7 @@ export namespace PrompterAPI {
 
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
-		let parts = playlist.getParts({
-			floated: {
-				$ne: true
-			}
-		})
+		let parts = playlist.getAllOrderedParts().filter(p => !p.floated)
 
 		let data: PrompterData = {
 			lines: []

@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
-import { fetchNext } from '../../../lib/lib'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
 import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
@@ -12,7 +11,7 @@ export namespace UpdateNext {
 		// Ensure the next-id is still valid
 		if (playlist && playlist.active && playlist.nextPartInstanceId) {
 			const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-			const allParts = playlist.getParts()
+			const allParts = playlist.getAllOrderedParts()
 
 			if (currentPartInstance) {
 				// Leave the manually chosen part
@@ -49,12 +48,12 @@ export namespace UpdateNext {
 
 				// Try and choose something
 				const { currentPartInstance } = playlist.getSelectedPartInstances()
-				const newNextPart = selectNextPart(currentPartInstance || null, playlist.getParts())
+				const newNextPart = selectNextPart(currentPartInstance || null, playlist.getAllOrderedParts())
 				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 
 			} else if (playlist.nextPartManual && removePrevious) {
 				const { nextPartInstance } = playlist.getSelectedPartInstances()
-				const allParts = playlist.getParts()
+				const allParts = playlist.getAllOrderedParts()
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
 				const currentNextPart = nextPartInstance ? allParts.find(part => part._id === nextPartInstance.part._id) : undefined

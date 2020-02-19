@@ -144,7 +144,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 	let parts: Array<Part> = []
 	let partInstancesMap: { [partId: string]: PartInstance | undefined } = {}
 	if (props.playlist) {
-		parts = props.playlist.getParts()
+		parts = props.playlist.getAllOrderedParts()
 		partInstancesMap = props.playlist.getActivePartInstancesMap()
 	}
 	return {

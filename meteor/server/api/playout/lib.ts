@@ -291,7 +291,7 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 
 	if (rundownPlaylist.active) {
 		// put the first on queue:
-		const firstPart = selectNextPart(null, rundownPlaylist.getParts())
+		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts())
 		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(rundownPlaylist, null)

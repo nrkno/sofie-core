@@ -454,11 +454,11 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		// This is a map of partIds mapped onto segments they are part of
 		const uiPartSegmentMap = new Map<string, AdlibSegmentUi>()
 
-		props.playlist.getParts({
+		props.playlist.getUnorderedParts({
 			segmentId: {
 				$in: Array.from(uiSegmentMap.keys())
 			}
-		}, ).forEach((part) => {
+		}).forEach((part) => {
 			const segment = uiSegmentMap.get(part.segmentId)
 			if (segment) {
 				segment.parts.push(part)
@@ -472,6 +472,13 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 				uiPartSegmentMap.set(part._id, segment)
 			}
 		})
+		
+
+		uiSegmentMap.forEach(segment => {
+			// Sort parts by rank
+			segment.parts = _.sortBy(segment.parts, p => p._rank)
+		})
+
 		return {
 			uiSegments,
 			uiPartSegmentMap,

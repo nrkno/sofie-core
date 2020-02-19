@@ -143,7 +143,7 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 		})
 
 		const partInstancesMap = playlist.getActivePartInstancesMap()
-		playlist.getParts({
+		playlist.getUnorderedParts({
 			segmentId: {
 				$in: Array.from(segmentMap.keys())
 			}
@@ -158,6 +158,11 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 				willProbablyAutoNext: false
 			})
 			segmentMap.get(part.segmentId)!.items.push(partUi)
+		})
+
+		segmentMap.forEach(segment => {
+			// Sort parts by rank
+			segment.items = _.sortBy(segment.items, p => p.instance.part._rank)
 		})
 	}
 	return {

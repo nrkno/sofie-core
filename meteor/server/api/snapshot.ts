@@ -143,7 +143,7 @@ function createRundownPlaylistSnapshot (playlistId: string): RundownPlaylistSnap
 	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join('|') + `).*` } }).fetch()
 
 	const segments = playlist.getSegments()
-	const parts = playlist.getParts()
+	const parts = playlist.getAllOrderedParts()
 	const partInstances = playlist.getAllPartInstances()
 	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
