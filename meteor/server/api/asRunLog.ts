@@ -185,7 +185,7 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			partInstance.segmentId,
-				partInstanceId:		partInstance.part._id,
+				partInstanceId:		partInstance._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'part'
 			}, !!playlist.rehearsal, timestamp)
@@ -237,7 +237,7 @@ export function reportPartHasStopped (partInstanceOrId: PartInstance | string , 
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			partInstance.segmentId,
-				partInstanceId:		partInstance.part._id,
+				partInstanceId:		partInstance._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'part'
 			}, !!playlist.rehearsal, timestamp)
@@ -299,7 +299,7 @@ export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			partInstance.segmentId,
-				partInstanceId:		partInstance.part._id,
+				partInstanceId:		partInstance._id,
 				pieceInstanceId:	pieceInstance.piece._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'piece'
@@ -358,7 +358,7 @@ export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | string
 				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			partInstance.segmentId,
-				partInstanceId:		partInstance.part._id,
+				partInstanceId:		partInstance._id,
 				pieceInstanceId:	pieceInstance.piece._id,
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'piece'
