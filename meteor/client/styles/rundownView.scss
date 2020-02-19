@@ -1170,6 +1170,18 @@ body.no-overflow {
 					background-attachment: local;
 					background-size: 1.8em auto;
 				}
+
+				.segment-timeline__part__nextline--endline {
+					border-left-style: dotted;
+
+					&::before {
+						display: none;
+					}
+					
+					&::after {
+						display: none;
+					}
+				}
 			}
 
 			&:not(.live) {
