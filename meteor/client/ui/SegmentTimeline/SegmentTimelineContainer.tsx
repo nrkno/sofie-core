@@ -29,7 +29,9 @@ import { translate } from 'react-i18next'
 import { UserActionAPI } from '../../../lib/api/userActions'
 
 const SPEAK_ADVANCE = 500
-export const SIMULATED_PLAYBACK_MARGIN = 2000
+export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
+export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
+const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -81,9 +83,9 @@ interface IState {
 	},
 	collapsed: boolean,
 	followLiveLine: boolean,
-	livePosition: number,
 	displayTimecode: number
-	autoExpandCurrentNextSegment: boolean
+	autoExpandCurrentNextSegment: boolean,
+	livePosition: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
@@ -221,6 +223,8 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 	timelineDiv: HTMLDivElement
 	intersectionObserver: IntersectionObserver | undefined
 	mountedTime: number
+	playbackSimulationPercentage: number = 0
+
 
 	private _prevDisplayTime: number
 
@@ -242,9 +246,9 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 				),
 			scrollLeft: 0,
 			followLiveLine: false,
-			livePosition: 0,
 			displayTimecode: 0,
-			autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment
+			autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
+			livePosition: 0
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -293,9 +297,14 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 		})
 	}
 
-	componentDidUpdate (prevProps) {
+	componentDidUpdate (prevProps: IProps & ITrackedProps) {
+		if (this.rundownCurrentSegmentId !== this.props.rundown.currentPartId) {
+			this.playbackSimulationPercentage = 0
+		}
+
 		this.rundownCurrentSegmentId = this.props.rundown.currentPartId
 		// segment is becoming live
+		
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
@@ -414,6 +423,7 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 
 	onAirLineRefresh = (e: TimingEvent) => {
 		if (this.props.isLiveSegment && this.props.currentLivePart) {
+			let simulationPercentage = this.playbackSimulationPercentage
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
 				(this.context.durations.partDisplayStartsAt[this.props.currentLivePart._id]
@@ -422,19 +432,34 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 
 			let isExpectedToPlay: boolean = this.props.currentLivePart.startedPlayback || false
 			const lastTake = this.props.currentLivePart.getLastTake()
-			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback() || lastTake
-			if (this.props.currentLivePart.taken && lastTake && (lastTake + SIMULATED_PLAYBACK_MARGIN > e.detail.currentTime)) {
+			const lastStartedPlayback = this.props.currentLivePart.getLastStartedPlayback()
+			let virtualStartedPlayback = lastStartedPlayback || lastTake
+			if (this.props.currentLivePart.taken && lastTake && ((lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime))) {
 				isExpectedToPlay = true
+				// console.log('Simulated playback')
+				
+				// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
+				if (lastStartedPlayback && (lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime)) {
+					// console.log('Within crossfade range', virtualStartedPlayback, lastStartedPlayback, simulationPercentage)
+					if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
+						// console.log(simulationPercentage)
+						virtualStartedPlayback = (simulationPercentage * lastStartedPlayback) + ((1 - simulationPercentage) * lastTake)
+					}
+				}
 			}
 			const lastPlayOffset = this.props.currentLivePart.getLastPlayOffset() || 0
 
-			let newLivePosition = (isExpectedToPlay) && lastStartedPlayback ?
-				(e.detail.currentTime - lastStartedPlayback + partOffset) :
+			let newLivePosition = (isExpectedToPlay) && virtualStartedPlayback ?
+				(e.detail.currentTime - virtualStartedPlayback + partOffset) :
 				(partOffset + lastPlayOffset)
 
 			let onAirPartDuration = (this.props.currentLivePart.duration || this.props.currentLivePart.expectedDuration || 0)
 			if (this.props.currentLivePart.displayDurationGroup && !this.props.currentLivePart.displayDuration) {
 				onAirPartDuration = this.props.currentLivePart.renderedDuration || onAirPartDuration
+			}
+
+			if (lastStartedPlayback && simulationPercentage < 1) {
+				this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
 			}
 
 			this.setState(_.extend({
