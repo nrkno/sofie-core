@@ -413,8 +413,9 @@ export namespace ServerPlayoutAPI {
 			// 	nextPartInstance: undefined
 			// }
 
-			libSetNextPart(playlist, nextPart ? nextPart.part : null)
 			waitForPromiseAll(ps)
+			// Once everything is synced, we can choose the next part
+			libSetNextPart(playlist, nextPart ? nextPart.part : null)
 			ps = []
 
 			// update playoutData
