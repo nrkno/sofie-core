@@ -66,8 +66,8 @@ export enum RundownSyncFunctionPriority {
 	Ingest = 0,
 	Playout = 10,
 }
-export function rundownSyncFunction<T extends Function> (rundownId: string, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
-	return syncFunction(fcn, `ingest_rundown_${rundownId}`, undefined, priority)()
+export function rundownSyncFunction<T extends Function> (rundownPlaylistId: string, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
+	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
 }
 
 export namespace RundownInput {
@@ -205,9 +205,6 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 }
 export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	handleUpdatedRundownForStudio(studio, peripheralDevice, ingestRundown, dataSource)
-}
-export function handleUpdatedRundownForStudio (studio: Studio, peripheralDevice: PeripheralDevice | undefined, ingestRundown: IngestRundown, dataSource: string) {
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 	if (peripheralDevice && peripheralDevice.studioId !== studio._id) {
 		throw new Meteor.Error(500, `PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio._id}"`)
@@ -544,6 +541,7 @@ function syncChangesToSelectedPartInstances (playlist: RundownPlaylist, parts: D
 	syncPartChanges(nextPartInstance, rawPieceInstances)
 
 	waitForPromiseAll(ps)
+	console.log('done')
 }
 
 function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {

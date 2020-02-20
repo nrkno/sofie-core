@@ -6,10 +6,10 @@ import { updateTimeline } from '../playout/timeline'
 
 let methods: Methods = {}
 
-methods['debug_rundownRunBlueprints'] = (rundownId: string, purgeExisting?: boolean) => {
-	check(rundownId, String)
+methods['debug_playlistRunBlueprints'] = (rundownPlaylistId: string, purgeExisting?: boolean) => {
+	check(rundownPlaylistId, String)
 
-	IngestActions.regenerateRundown(rundownId, purgeExisting)
+	IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
 }
 
 methods['debug_updateTimeline'] = (studioId: string) => {

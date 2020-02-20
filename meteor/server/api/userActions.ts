@@ -467,18 +467,18 @@ export function mediaAbortAllWorkflows () {
 		MediaManagerAPI.abortAllWorkflows()
 	)
 }
-export function regenerateRundown (rundownId: string) {
-	check(rundownId, String)
+export function regenerateRundown (rundownPlaylistId: string) {
+	check(rundownPlaylistId, String)
 
-	const rundown = RundownPlaylists.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
+	const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
-	if (rundown.active) {
-		return ClientAPI.responseError(`Rundown is active, please deactivate it before regenerating it.`)
+	if (rundownPlaylist.active) {
+		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
 	return ClientAPI.responseSuccess(
-		IngestActions.regenerateRundown(rundownId)
+		IngestActions.regenerateRundownPlaylist(rundownPlaylistId)
 	)
 }
 

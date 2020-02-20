@@ -8,7 +8,7 @@ import { check } from 'meteor/check'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown } from '../playout/lib'
-import { handleUpdatedRundown, handleUpdatedRundownForStudio } from './rundownInput'
+import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownSyncFunction, handleUpdatedRundownInner } from './rundownInput'
 import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -79,35 +79,39 @@ export namespace IngestActions {
 	/**
 	 * Run the cached data through blueprints in order to re-generate the Rundown
 	 */
-	export function regenerateRundown (rundownId: string, purgeExisting?: boolean) {
-		check(rundownId, String)
+	export function regenerateRundownPlaylist (rundownPlaylistId: string, purgeExisting?: boolean) {
+		check(rundownPlaylistId, String)
 
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) {
-			throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
-		}
+		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+		if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
-		logger.info(`Regenerating rundown ${rundown.name} (${rundown._id})`)
-
-		const peripheralDevice = PeripheralDevices.findOne(
-			rundown.peripheralDeviceId
-		)
-		if (!peripheralDevice) {
-			logger.info(`Rundown has no valid PeripheralDevices. Running without`)
-		}
-		const studio = Studios.findOne(rundown.studioId)
+		logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
+		
+		const studio = Studios.findOne(rundownPlaylist.studioId)
 		if (!studio) {
-			throw new Meteor.Error(404,`Studios "${rundown.studioId}" was not found for rundown "${rundown._id}"`)
+			throw new Meteor.Error(404,`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`)
 		}
 
-		const ingestRundown = loadCachedRundownData(rundownId, rundown.externalId)
-		if (purgeExisting) {
-			rundown.remove()
-		} else {
-			// Reset the rundown (remove adlibs, etc):
-			resetRundown(rundown)
-		}
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Ingest, () => {
+			rundownPlaylist.getRundowns().forEach(rundown => {
+				if (rundown.studioId !== studio._id) {
+					logger.warning(`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`)
+				}
+				const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+				if (!peripheralDevice) {
+					logger.info(`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`)
+				}
+				
+				const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+				if (purgeExisting) {
+					rundown.remove()
+				} else {
+					// Reset the rundown (remove adlibs, etc):
+					resetRundown(rundown)
+				}
 
-		handleUpdatedRundownForStudio(studio, peripheralDevice, ingestRundown, rundown.dataSource)
+				handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
+			})
+		})
 	}
 }
