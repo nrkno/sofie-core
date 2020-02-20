@@ -201,9 +201,9 @@ export function deactivate (rundownPlaylistId: string): ClientAPI.ClientResponse
 	)
 
 }
-export function reloadData (rundownId: string) {
+export function reloadData (rundownPlaylistId: string) {
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.reloadData(rundownId)
+		ServerPlayoutAPI.reloadData(rundownPlaylistId)
 	)
 }
 export function unsyncRundown (rundownId: string) {
@@ -394,13 +394,13 @@ export function removeRundown (playlistId: string) {
 		ServerRundownAPI.removeRundown(playlistId)
 	)
 }
-export function resyncRundown (rundownId: string) {
-	let rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+export function resyncRundown (playlistId: string) {
+	let playlist = RundownPlaylists.findOne(playlistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 	// if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you need to deactivate it before resyncing it.`)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.resyncRundown(rundownId)
+		ServerRundownAPI.resyncRundown(playlistId)
 	)
 }
 export function recordStop (studioId: string) {
@@ -537,11 +537,11 @@ methods[UserActionAPI.methods.activate] = function (rundownPlaylistId: string, r
 methods[UserActionAPI.methods.deactivate] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
 	return deactivate.call(this, rundownPlaylistId)
 }
-methods[UserActionAPI.methods.forceResetAndActivate] = function (rundownId: string, rehearsal: boolean): ClientAPI.ClientResponse {
-	return forceResetAndActivate.call(this, rundownId, rehearsal)
+methods[UserActionAPI.methods.forceResetAndActivate] = function (rundownPlaylistId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	return forceResetAndActivate.call(this, rundownPlaylistId, rehearsal)
 }
-methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
-	return reloadData.call(this, rundownId)
+methods[UserActionAPI.methods.reloadData] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
+	return reloadData.call(this, rundownPlaylistId)
 }
 methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): ClientAPI.ClientResponse {
 	return unsyncRundown.call(this, rundownId)

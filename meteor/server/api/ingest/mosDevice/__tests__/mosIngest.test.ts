@@ -24,7 +24,7 @@ const Segments = mockupCollection(_Segments)
 const Parts = mockupCollection(_Parts)
 
 function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
-	const sortedParts = Rundown._sortParts(parts, segments)
+	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
 
 	const groupedParts = _.groupBy(sortedParts, p => p.segmentId)
 	const arr: [string, DBPart[]][] = _.pairs(groupedParts)

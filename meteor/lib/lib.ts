@@ -810,6 +810,12 @@ export function waitForPromiseAll<T> (ps: Array<Promise<T>>): Array<T> {
 	return waitForPromise(Promise.all(ps))
 }
 
+export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
+export function waitForPromiseObj <T extends object> (obj: Promisify<T>): T {
+	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
+	return _.object(_.keys(obj), values)
+}
+
 /**
  * Convert a promise to a "synchronous" Fiber function
  * Makes the Fiber wait for the promise to resolve, then return the value of the promise.

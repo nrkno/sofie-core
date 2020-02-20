@@ -83,17 +83,17 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		})
 	}
 
-	confirmReSyncRO (rundown: RundownPlaylist) {
+	confirmReSyncRO (playlist: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
 			title: t('Re-Sync this rundown?'),
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [rundown._id])
+				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [playlist._id])
 			},
 			message: (
-				t('Are you sure you want to re-sync the "{{name}}" rundown with MOS script?', { name: rundown.name }) + '\n' +
+				t('Are you sure you want to re-sync the "{{name}}" rundown with MOS script?', { name: playlist.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})

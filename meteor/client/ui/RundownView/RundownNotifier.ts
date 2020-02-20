@@ -502,6 +502,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		// console.log('update_version_status, ' + rundownId)
 
+		// TODO-ASAP this wont show multiple correctly (but is that ok?)
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
 		rundownIds.map(rundownId => {
 			Meteor.call(RundownAPI.methods.rundownNeedsUpdating, rundownId, (err: Error, versionMismatch: string) => {

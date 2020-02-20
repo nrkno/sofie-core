@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-
+import { logger } from '../../../lib/logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
@@ -129,6 +129,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 		   // TODO - this guard is useless, as all shows have klokke and logo as infinites throughout...
 		   // This should instead do a check after each iteration to check if anything changed (even fields such as name on the piece)
 		   // If nothing changed, then it is safe to assume that it doesnt need to go further
+		   logger.info('Stopping infinite propogation early')
 		   return
 	   }
 

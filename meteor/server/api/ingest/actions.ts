@@ -41,6 +41,11 @@ export namespace IngestActions {
 	 * @param currentPlayingPart
 	 */
 	export function notifyCurrentPlayingPart (rundown: Rundown, currentPlayingPart: Part | null) {
+		if (!rundown.peripheralDeviceId) {
+			logger.warn(`Rundown "${rundown._id} has no peripheralDevice. Skipping notifyCurrentPlayingPart`)
+			return
+		}
+		
 		const device = getPeripheralDeviceFromRundown(rundown)
 		const playlist = RundownPlaylists.findOne(rundown.playlistId)
 

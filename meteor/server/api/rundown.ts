@@ -368,13 +368,15 @@ export namespace ServerRundownAPI {
 
 		playlist.remove()
 	}
-	export function resyncRundown (rundownId: string): UserActionAPI.ReloadRundownResponse {
-		check(rundownId, String)
-		logger.info('resyncRundown ' + rundownId)
+	export function resyncRundown (playlistId: string): UserActionAPI.ReloadRundownResponse {
+		check(playlistId, String)
+		logger.info('resyncRundown ' + playlistId)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		const playlist = RundownPlaylists.findOne(playlistId)
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
+
+		// TODO-ASAP
 		Rundowns.update(rundown._id, {
 			$set: {
 				unsynced: false
@@ -431,8 +433,8 @@ let methods: Methods = {}
 methods[RundownAPI.methods.removeRundown] = (playlistId: string) => {
 	return ServerRundownAPI.removeRundown(playlistId)
 }
-methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
-	return ServerRundownAPI.resyncRundown(rundownId)
+methods[RundownAPI.methods.resyncRundown] = (playlistId: string) => {
+	return ServerRundownAPI.resyncRundown(playlistId)
 }
 methods[RundownAPI.methods.unsyncRundown] = (rundownId: string) => {
 	return ServerRundownAPI.unsyncRundown(rundownId)

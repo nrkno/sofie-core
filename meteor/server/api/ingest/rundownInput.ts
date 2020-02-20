@@ -31,7 +31,9 @@ import {
 	asyncCollectionRemove,
 	normalizeArray,
 	normalizeArrayFunc,
-	asyncCollectionInsert
+	asyncCollectionInsert,
+	asyncCollectionFindFetch,
+	waitForPromiseObj
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
@@ -533,15 +535,19 @@ function syncChangesToSelectedPartInstances (playlist: RundownPlaylist, parts: D
 			}
 		}
 	}
+	
+	// Every PartInstance that is not reset needs to be kept in sync for now.
+	// Its bad, but that is what the infinites logic requires
+	const { partInstances, pieceInstances } = waitForPromiseObj({
+		partInstances: asyncCollectionFindFetch(PartInstances, { reset: { $ne: true } }),
+		pieceInstances: asyncCollectionFindFetch(PieceInstances, { reset: { $ne: true } })
+	})
 
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-	const partInstanceIds = _.compact([currentPartInstance, nextPartInstance]).map(i => i._id)
-	const rawPieceInstances = partInstanceIds ? PieceInstances.find({ partInstanceId: { $in: partInstanceIds } }).fetch() : []
-	syncPartChanges(currentPartInstance, rawPieceInstances)
-	syncPartChanges(nextPartInstance, rawPieceInstances)
-
+	_.each(partInstances, partInstance => {
+		syncPartChanges(partInstance, pieceInstances)
+	})
+	
 	waitForPromiseAll(ps)
-	console.log('done')
 }
 
 function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
