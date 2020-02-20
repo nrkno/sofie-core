@@ -172,7 +172,7 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 		if (!options.sort) {
-			parts = Rundown._sortParts(parts, segmentsInOrder || this.getSegments())
+			parts = RundownPlaylist._sortPartsInner(parts, segmentsInOrder || this.getSegments())
 		}
 		return parts
 	}
@@ -192,31 +192,8 @@ export class Rundown implements DBRundown {
 		const segments = await pSegments
 		return {
 			segments: segments,
-			parts: Rundown._sortParts(await pParts, segments)
+			parts: RundownPlaylist._sortPartsInner(await pParts, segments)
 		}
-	}
-	/** Synchronous version of getSegmentsAndParts, to be used client-side */
-	getSegmentsAndPartsSync (): { segments: Segment[], parts: Part[] } {
-
-		const segments = Segments.find({
-			rundownId: this._id
-		}, { sort: { _rank: 1 } }).fetch()
-
-		const parts = Parts.find({
-			rundownId: this._id
-		}, { sort: { _rank: 1 } }).fetch()
-
-		return {
-			segments: segments,
-			parts: Rundown._sortParts(parts, segments)
-		}
-	}
-	static _sortParts<T extends DBPart> (parts: T[], segments: DBSegment[]): T[] {
-
-		const segmentRanks: {[segmentId: string]: number} = {}
-		_.each(segments, segment => segmentRanks[segment._id] = segment._rank)
-
-		return _.sortBy(parts, part => [segmentRanks[part.segmentId], part._rank])
 	}
 	getGlobalAdLibPieces (selector?: MongoSelector<AdLibPiece>, options?: FindOptions) {
 		selector = selector || {}
