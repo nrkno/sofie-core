@@ -228,6 +228,67 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		document.removeEventListener('mouseleave', this.dropHandle)
 		document.removeEventListener('mousemove', this.dragHandle)
 
+		this.endResize()
+
+		e.preventDefault()
+	}
+
+	dragHandle = (e: MouseEvent) => {
+		this.setState({
+			overrideHeight: e.clientY - this._mouseOffset.y
+		})
+
+		e.preventDefault()
+	}
+
+	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
+		document.addEventListener('mouseup', this.dropHandle)
+		document.addEventListener('mouseleave', this.dropHandle)
+		document.addEventListener('mousemove', this.dragHandle)
+
+		this.beginResize(e.clientX, e.clientY, e.currentTarget)
+
+		e.preventDefault()
+	}
+
+	touchMoveHandle = (e: TouchEvent) => {
+		this.setState({
+			overrideHeight: e.touches[0].clientY - this._mouseOffset.y
+		})
+
+		e.preventDefault()
+	}
+
+	touchOffHandle = (e: TouchEvent) => {
+		document.removeEventListener('touchmove', this.touchMoveHandle)
+		document.removeEventListener('touchcancel', this.touchOffHandle)
+		document.removeEventListener('touchend', this.touchOffHandle)
+
+		this.endResize()
+
+		e.preventDefault()
+	}
+
+	touchOnHandle = (e: React.TouchEvent<HTMLDivElement>) => {
+		document.addEventListener('touchmove', this.touchMoveHandle, {
+			passive: false
+		})
+		document.addEventListener('touchcancel', this.touchOffHandle)
+		document.addEventListener('touchend', this.touchOffHandle, {
+			passive: false
+		})
+
+		if (e.touches.length > 1) {
+			this.touchOffHandle(e.nativeEvent)
+			return
+		}
+
+		this.beginResize(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget)
+
+		e.preventDefault()
+	}
+
+	endResize = () => {
 		let stateChange = {
 			moving: false,
 			overrideHeight: undefined
@@ -255,21 +316,11 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		localStorage.setItem('rundownView.shelf.shelfHeight', this.state.shelfHeight)
 	}
 
-	dragHandle = (e: MouseEvent) => {
-		this.setState({
-			overrideHeight: e.clientY - this._mouseOffset.y
-		})
-	}
+	beginResize = (x: number, y: number, targetElement: HTMLElement) => {
+		this._mouseStart.x = x
+		this._mouseStart.y = y
 
-	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
-		document.addEventListener('mouseup', this.dropHandle)
-		document.addEventListener('mouseleave', this.dropHandle)
-		document.addEventListener('mousemove', this.dragHandle)
-
-		this._mouseStart.x = e.clientX
-		this._mouseStart.y = e.clientY
-
-		const handlePosition = getElementDocumentOffset(e.currentTarget)
+		const handlePosition = getElementDocumentOffset(targetElement)
 		if (handlePosition) {
 			this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseStart.x
 			this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseStart.y
@@ -388,7 +439,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			<div className={ClassNames('rundown-view__shelf dark', {
 				'full-viewport': fullViewport
 			})} style={fullViewport ? undefined : this.getStyle()}>
-				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
+				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle} onTouchStart={this.touchOnHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>}
 				<ErrorBoundary>
