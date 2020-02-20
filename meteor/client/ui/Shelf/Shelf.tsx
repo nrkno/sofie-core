@@ -237,7 +237,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 
 	dragHandle = (e: MouseEvent) => {
 		this.setState({
-			overrideHeight: e.clientY - this._mouseOffset.y
+			overrideHeight: e.clientY + this._mouseOffset.y
 		})
 
 		e.preventDefault()
@@ -255,7 +255,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 
 	touchMoveHandle = (e: TouchEvent) => {
 		this.setState({
-			overrideHeight: e.touches[0].clientY - this._mouseOffset.y
+			overrideHeight: e.touches[0].clientY + this._mouseOffset.y
 		})
 
 		e.preventDefault()
@@ -322,10 +322,11 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		this._mouseStart.x = x
 		this._mouseStart.y = y
 
-		const handlePosition = getElementDocumentOffset(targetElement)
+		const handlePosition = getElementDocumentOffset(targetElement.parentElement)
 		if (handlePosition) {
 			this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseStart.x
 			this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseStart.y
+			debugger
 		}
 
 		this._mouseDown = Date.now()
