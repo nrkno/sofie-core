@@ -64,13 +64,13 @@ export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 
 export interface PartPlaybackStartedResult {
 	rundownId: string,
-	partId: string,
+	partInstanceId: string,
 	time: number
 }
 export type PartPlaybackStoppedResult = PartPlaybackStartedResult
 export interface PiecePlaybackStartedResult {
 	rundownId: string,
-	pieceId: string,
+	pieceInstanceId: string,
 	time: number
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult

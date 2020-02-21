@@ -144,7 +144,7 @@ export function createPieceGroupFirstObject (
 			callBack: 'piecePlaybackStarted',
 			callBackData: {
 				rundownId: pieceInstance.rundownId,
-				pieceId: pieceInstance._id
+				pieceInstanceId: pieceInstance._id
 			},
 			callBackStopped: 'piecePlaybackStopped' // Will cause a callback to be called, when the object stops playing:
 		},

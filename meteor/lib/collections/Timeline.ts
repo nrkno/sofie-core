@@ -86,7 +86,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown { // used fo
 		callBackStopped: 'partPlaybackStopped'
 		callBackData: {
 			rundownId: string
-			partId: string
+			partInstanceId: string
 		}
 	}
 }
@@ -98,7 +98,7 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used f
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
 			rundownId: string,
-			pieceId: string
+			pieceInstanceId: string
 		}
 	}
 }

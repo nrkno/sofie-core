@@ -201,10 +201,10 @@ export namespace ServerPeripheralDeviceAPI {
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.partId, String)
+		check(r.partInstanceId, String)
 
 		// Meteor.call('playout_partPlaybackStart', r.rundownId, r.partId, r.time)
-		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownId, r.partId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownId, r.partInstanceId, r.time)
 	}
 	export function partPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PartPlaybackStoppedResult) {
 		// This is called from the playout-gateway when an
@@ -213,9 +213,9 @@ export namespace ServerPeripheralDeviceAPI {
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.partId, String)
+		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownId, r.partId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownId, r.partInstanceId, r.time)
 	}
 	export function piecePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -224,10 +224,10 @@ export namespace ServerPeripheralDeviceAPI {
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.pieceId, String)
+		check(r.pieceInstanceId, String)
 
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
-		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceInstanceId, r.time)
 	}
 	export function piecePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -236,10 +236,10 @@ export namespace ServerPeripheralDeviceAPI {
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.pieceId, String)
+		check(r.pieceInstanceId, String)
 
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
-		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceInstanceId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string, cb?: Function) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
