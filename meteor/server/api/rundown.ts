@@ -164,28 +164,38 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 
 	logger.debug(`updatePartRanks (${allParts.length} parts, ${allSegments.length} segments)`)
 
-	const rankedParts: Array<Part> = []
-	const partsToPutAfter: {[id: string]: Array<Part>} = {}
-
-	_.each(allParts, (part) => {
-		if (part.afterPart) {
-			if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
-			partsToPutAfter[part.afterPart].push(part)
-		} else {
-			rankedParts.push(part)
-		}
-	})
-
-	// Sort the parts by segment, then rank
 	const segmentRanks: {[segmentId: string]: number} = {}
 	_.each(allSegments, seg => {
 		segmentRanks[seg._id] = seg._rank
 	})
+
+	const rankedParts: Array<Part> = []
+	const partsToPutAfter: {[id: string]: Array<Part>} = {}
+
+	const orphanedParts: DBPart[] = []
+	const missingSegmentIds: {[segmentId: string]: true} = {}
+
+	_.each(allParts, (part) => {
+		// Check for if the segment of the part is missing:
+		if (segmentRanks[part.segmentId] === undefined) {
+			orphanedParts.push(part)
+			missingSegmentIds[part.segmentId] = true
+		} else {
+			if (part.afterPart) {
+				if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
+				partsToPutAfter[part.afterPart].push(part)
+			} else {
+				rankedParts.push(part)
+			}
+		}
+	})
+
 	const getSegmentRank = (segmentId: string) => {
 		const rank = segmentRanks[segmentId]
 		return rank === undefined ? -1 : rank
 	}
 
+	// Sort the parts by segment, then rank
 	rankedParts.sort((a, b) => {
 		let compareRanks = (ar: number, br: number) => {
 			if (ar === br) {
@@ -205,11 +215,16 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 			return compareRanks(aRank, bRank)
 		}
 	})
+	if (orphanedParts.length > 0) {
+		const orphanedPartIds = _.map(orphanedParts, p => p._id)
+		logger.error(`updatePartRanks: Some orphaned parts exist for unknown segments: ${_.keys(missingSegmentIds).join(', ')}`)
+		logger.info(`Removing orphaned parts: ${orphanedPartIds.join(',')}`)
 
-	// Check for any parts with missing segments
-	const missingSegmentIds = _.filter(_.keys(_.groupBy(rankedParts, p => p.segmentId)), id => segmentRanks[id] === undefined)
-	if (missingSegmentIds.length > 0) {
-		logger.error(`updatePartRanks: Some orphaned parts exist for unknown segments: ${missingSegmentIds.join(', ')}`)
+		Parts.remove({
+			rundownId: rundownId,
+			_id: { $in: orphanedPartIds }
+		})
+		afterRemoveParts(rundownId, orphanedParts)
 	}
 
 	let ps: Array<Promise<any>> = []
