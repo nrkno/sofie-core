@@ -14,15 +14,80 @@ export interface MediaManagerDeviceSettings {
 	/** Cron job time - how often to check the file system for consistency - do a poll of the filesystem to check that the files are where they are supposed to be, clean out expired files */
 	cronJobTime?: number
 
-	/** Connection details for the media scanner */
-	mediaScanner: {
-		host: string
-		port: number
-	}
+	/** Connection details for media access via HTTP server */
+	httpPort?: number
+	/** Connection details for media access via HTTPS server */
+	httpsPort?: number
 
 	/** A list of Monitors, which will monitor media statuses */
 	monitors?: {
 		[monitorId: string]: MonitorSettings
+	}
+
+	/** Local path configuration for media manager system */
+	paths?: {
+		/** Cammand to execute to run `ffmpeg` */
+		ffmpeg?: string
+		/** Command to execute to run `ffprobe` */
+		ffprobe?: string
+		/** Folder to store generated resources. Defaults to where media manager is started */
+		resources?: string
+	}
+
+	/** Configuration of thumbnail size */
+	thumbnails?: {
+		/** Width of thumbnail in pixels. Default is `256` */
+		width?: number
+		/** Height of thumbnail in pixels. Set height to `-1` - the default - to preserve aspect */
+		height?: number
+		/** Sub-folder of `paths.resources` where thumbnails are stored. Defaults to `.../thumbnails` */
+		folder?: string // Not in use yet
+	}
+
+	/** Configuration for various kinds of advanced metadata generation */
+	metadata?: {
+		/** Enable field order detection. An expensive chcek that decodes the start of the video */
+		fieldOrder?: boolean
+		/** Number of frames to scan to determine files order. Neede sufficient motion, i.e. beyong title card */
+		fieldOrderScanDuration?: number
+
+		/** Enable scene change detection */
+		scenes?: boolean
+		/** Likelihood frame introduces new scene (`0.0` to `1.0`). Defaults to `0.4` */
+		sceneThreshold?: number
+
+		/** Enable freeze frame detection */
+		freezeDetection?: boolean
+		/** Noise tolerance - difference ratio between `0.0` to `1.0`. Default is `0.001` */
+		freezeNoise?: number
+		/** Duration of freeze before notification. Default is `2s` */
+		freezeDuration?: string
+
+		/** Enable black frame detection */
+		blackDetection?: boolean
+		/** Duration of black until notified. Default `2.0` */
+		blackDuration?: string
+		/** Ratio of black pixels per frame before frame is black. Value between `0.0` and `1.0` defaulting to `0.98` */
+		blackRatio?: number
+		/** Luminance threshold for a single pixel to be considered black. Default is `0.1` */
+		blackThreshold?: number
+
+		/** Merge black and freeze frame detection results. Default is `true` */
+		mergeBlacksAndFreezes?: boolean
+	}
+
+	/** Configuration of _hover-scrub_ preview generation */
+	previews?: {
+		/** Enable preview generation. Default is `false` */
+		enable?: boolean
+		/** Width of preview video in pixels. Default is `160` */
+		width?: number
+		/** Height of preview video in pixels. Set height to `-1` - the default - to preserve aspect */
+		height?: number
+		/** Bitrate for preview video. Default is `40k` */
+		bitrate?: string
+		/** Sub-folder of `paths.resources` where thumbnails are stored. Defaults to `.../previews` */
+		folder?: string
 	}
 }
 
@@ -108,8 +173,8 @@ export interface MonitorSettingsNull extends MonitorSettingsBase {
 export interface MonitorSettingsMediaScanner extends MonitorSettingsBase {
 	type: MonitorSettingsType.MEDIA_SCANNER
 	/** Host of the media-scanner PouchDB server */
-	host: string
-	port: number
+	// host: string
+	// port: number
 }
 export interface MonitorSettingsQuantel extends MonitorSettingsBase {
 	type: MonitorSettingsType.QUANTEL
