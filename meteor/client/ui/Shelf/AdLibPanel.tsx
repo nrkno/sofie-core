@@ -368,7 +368,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 export interface AdlibSegmentUi extends DBSegment {
 	/** Pieces belonging to this part */
 	parts: Array<Part>
-	pieces?: Array<AdLibPieceUi>
+	pieces: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
 }
@@ -420,7 +420,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	const segments = props.playlist.getSegments()
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
-	const { uiSegments, liveSegment } = memoizedIsolatedAutorun((
+	const { uiSegments: uiSegments0, liveSegment } = memoizedIsolatedAutorun((
 		currentPartId: string,
 		nextPartId: string,
 		segments: Segment[],
@@ -488,12 +488,16 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	
 	// This is a map of partIds mapped onto segments they are part of
 	const uiPartSegmentMap = new Map<string, AdlibSegmentUi>()
-	_.each(uiSegments, seg => {
+	const uiSegments: AdlibSegmentUi[] = []
+	_.each(uiSegments0, seg => {
+		const seg2 = {
+			...seg,
+			pieces: []
+		}
+		uiSegments.push(seg2)
+
 		_.each(seg.parts, part => {
-			uiPartSegmentMap.set(part._id, {
-				...seg,
-				pieces: []
-			})
+			uiPartSegmentMap.set(part._id, seg2)
 		})
 	})
 
@@ -508,13 +512,15 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		sort: { _rank: 1 }
 	}).fetch().forEach((piece) => {
 		const segment = uiPartSegmentMap.get(piece.partId!)
+		console.log()
+		
 		if (segment) {
-			segment.pieces!.push(piece)
+			segment.pieces.push(piece)
 		}
 	})
 
 	if (liveSegment) {
-		liveSegment.pieces!.forEach((item) => {
+		liveSegment.pieces.forEach((item) => {
 			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
 
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
