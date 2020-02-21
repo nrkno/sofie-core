@@ -167,14 +167,40 @@ export enum MonitorSettingsType {
 	MEDIA_SCANNER = 'mediascanner',
 	QUANTEL = 'quantel'
 }
+export interface WatchOptions { // See https://www.npmjs.com/package/chokidar#api
+	persistent?: boolean
+	ignored?: any
+	ignoreInitial?: boolean
+	followSymlinks?: boolean
+	cwd?: string
+	disableGlobbing?: boolean
+	usePolling?: boolean
+	useFsEvents?: boolean
+	alwaysStat?: boolean
+	depth?: number
+	interval?: number
+	binaryInterval?: number
+	ignorePermissionErrors?: boolean
+	atomic?: boolean | number
+	awaitWriteFinish?: boolean | {
+		stabilityThreshold?: number
+		pollInterval?: number
+	}
+}
 export interface MonitorSettingsNull extends MonitorSettingsBase {
 	type: MonitorSettingsType.NULL
 }
 export interface MonitorSettingsMediaScanner extends MonitorSettingsBase {
 	type: MonitorSettingsType.MEDIA_SCANNER
-	/** Host of the media-scanner PouchDB server */
-	// host: string
-	// port: number
+
+	/** Paths that media manager should watch to check for content */
+	paths: string | Array<string>
+	/** See https://www.npmjs.com/package/chokidar#api */
+	scanner: WatchOptions
+	/** CasparCG (shared) media path */
+	casparMediaPath: string
+	/** Maximum number of times to try and scan a file. */
+	retryLimit: number
 }
 export interface MonitorSettingsQuantel extends MonitorSettingsBase {
 	type: MonitorSettingsType.QUANTEL
