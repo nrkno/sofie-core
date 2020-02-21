@@ -3,7 +3,8 @@ import * as _ from 'underscore'
 export namespace UIStateStorage {
 	let _collapsedState: {
 		[key: string]: {
-			[key: string]: boolean | BooleanMap | string | number
+			_modified: number | null
+			[key: string]: boolean | BooleanMap | string | number | null
 		}
 	} = {}
 	const NAMESPACE = 'uiState'
@@ -22,9 +23,9 @@ export namespace UIStateStorage {
 	}
 	_cleanUp()
 
-	export function setItem (scope: string, tag: string, value: boolean | BooleanMap | string | number) {
+	export function setItem (scope: string, tag: string, value: boolean | BooleanMap | string | number, permament?: boolean) {
 		_collapsedState[scope] = _collapsedState[scope] || {}
-		_collapsedState[scope]['_modified'] = Date.now()
+		_collapsedState[scope]['_modified'] = permament ? Date.now() : null
 		_collapsedState[scope][tag] = value
 		_persist()
 	}
@@ -46,7 +47,7 @@ export namespace UIStateStorage {
 	}
 
 	export function getItem (scope: string, tag: string, defaultValue: boolean | BooleanMap | string | number | undefined): boolean | BooleanMap | string | number | undefined {
-		return (_collapsedState[scope] || {})[tag] !== undefined ? _collapsedState[scope][tag] : defaultValue
+		return (_collapsedState[scope] || {})[tag] !== undefined ? (_collapsedState[scope][tag] || undefined) : defaultValue
 	}
 
 	function _persist () {
