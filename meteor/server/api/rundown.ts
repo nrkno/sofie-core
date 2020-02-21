@@ -181,6 +181,11 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 	_.each(allSegments, seg => {
 		segmentRanks[seg._id] = seg._rank
 	})
+	const getSegmentRank = (segmentId: string) => {
+		const rank = segmentRanks[segmentId]
+		return rank === undefined ? -1 : rank
+	}
+
 	rankedParts.sort((a, b) => {
 		let compareRanks = (ar: number, br: number) => {
 			if (ar === br) {
@@ -195,11 +200,17 @@ export function updatePartRanks (rundownId: string): Array<Part> {
 		if (a.segmentId === b.segmentId) {
 			return compareRanks(a._rank, b._rank)
 		} else {
-			const aRank = segmentRanks[a.segmentId] || -1
-			const bRank = segmentRanks[b.segmentId] || -1
+			const aRank = getSegmentRank(a.segmentId)
+			const bRank = getSegmentRank(b.segmentId)
 			return compareRanks(aRank, bRank)
 		}
 	})
+
+	// Check for any parts with missing segments
+	const missingSegmentIds = _.filter(_.keys(_.groupBy(rankedParts, p => p.segmentId)), id => segmentRanks[id] === undefined)
+	if (missingSegmentIds.length > 0) {
+		logger.error(`updatePartRanks: Some orphaned parts exist for unknown segments: ${missingSegmentIds.join(', ')}`)
+	}
 
 	let ps: Array<Promise<any>> = []
 	// Ensure that the parts are all correctly rannnnked
