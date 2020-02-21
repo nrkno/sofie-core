@@ -10,6 +10,10 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	_id: string
 	bucketId: string
 
+	/**
+	 * If an AdLib within the Bucket doesn't match the studioId/showStyleVariantId combination
+	 * the adLib will be shown as disabled
+	 */
 	studioId: string
 	showStyleVariantId: string
 	
