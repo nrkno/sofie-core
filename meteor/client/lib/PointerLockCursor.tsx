@@ -13,7 +13,7 @@ interface IState {
 let PointerLockCursorSingleton: PointerLockCursor
 
 export class PointerLockCursor extends React.Component<{}, IState> {
-	constructor(props) {
+	constructor (props) {
 		super(props)
 
 		PointerLockCursorSingleton = this
@@ -25,7 +25,7 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<Escape to='viewport'>
 				<div style={{

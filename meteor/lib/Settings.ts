@@ -9,6 +9,8 @@ export interface ISettings {
 	defaultTimeScale: number
 	/** Wether to enable unsyncing of segements in case a data-update is rejected. Default functionality is to just unsync the whole rundown */
 	allowUnsyncedSegments: boolean
+	// Allow grabbing the entire timeline
+	allowGrabbingTimeline: boolean
 }
 
 export let Settings: ISettings

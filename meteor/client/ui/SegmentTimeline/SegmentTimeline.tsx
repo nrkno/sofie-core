@@ -441,6 +441,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!Settings.allowGrabbingTimeline) return
 		if (!this._touchAttached && !this._mouseAttached) {
 			// if mouse down is on a piece - abort
 			if ((e.target as HTMLDivElement).classList.contains('segment-timeline__piece')) return
@@ -735,7 +736,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<div className='segment-timeline__timeline-background' />
 				<TimelineGrid {...this.props}
 					onResize={this.onTimelineResize} />
-				<div className={ClassNames('segment-timeline__timeline-container', {
+				<div
+					className={ClassNames('segment-timeline__timeline-container', {
+						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,
 						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed
 					})}
 					onMouseDownCapture={this.onTimelineMouseDown}
