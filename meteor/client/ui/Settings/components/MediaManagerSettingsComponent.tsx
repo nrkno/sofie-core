@@ -515,7 +515,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 								</div>
 
 								{
-									monitor.type === MonitorSettingsType.MEDIA_SCANNER ?
+									monitor.type === MonitorSettingsType.WATCHER ?
 									<React.Fragment>
 										<div className='mod mvs mhs'>
 											<label className='field'>
