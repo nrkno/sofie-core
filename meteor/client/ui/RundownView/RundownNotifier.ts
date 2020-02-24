@@ -25,7 +25,7 @@ import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType, GenericNote } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
-import { handleRundownReloadResponse } from '../RundownView'
+import { handleRundownPlaylistReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
@@ -190,9 +190,9 @@ class RundownViewNotifier extends WithManagedTracker {
 											yes: t('Re-sync'),
 											no: t('Cancel'),
 											onAccept: (event) => {
-												doUserAction(t, event, UserActionAPI.methods.resyncRundown, [ rundown._id ], (err, response) => {
+												doUserAction(t, event, UserActionAPI.methods.resyncRundownPlaylist, [ rundown._id ], (err, response) => {
 													if (!err && response) {
-														handleRundownReloadResponse(t, playlist, response.result)
+														handleRundownPlaylistReloadResponse(t, playlist, response.result)
 													}
 												})
 											}
@@ -331,7 +331,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
 				rank: segment._rank,
 				notes: segment.notes
-			} ])) as { [key: string ]: { notes: PartNote[], rank: number } } 
+			} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
 			Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }

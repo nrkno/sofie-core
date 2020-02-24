@@ -64,9 +64,14 @@ import { isTooCloseToAutonext } from '../playout/lib'
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances, wrapPieceToInstance, PieceInstance } from '../../../lib/collections/PieceInstances'
 
+/** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
-	Ingest = 0,
-	Playout = 10,
+	/** Events initiated from external (ingest) devices */
+	INGEST = 0,
+	/** Events initiated from user, for triggering ingest actions */
+	USER_INGEST = 9,
+	/** Events initiated from user, for playout */
+	USER_PLAYOUT = 10
 }
 export function rundownSyncFunction<T extends Function> (rundownPlaylistId: string, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
 	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
@@ -176,7 +181,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 
@@ -212,7 +217,7 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingest
 		throw new Meteor.Error(500, `PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio._id}"`)
 	}
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => handleUpdatedRundownInner(studio, rundownId, ingestRundown, dataSource, peripheralDevice))
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => handleUpdatedRundownInner(studio, rundownId, ingestRundown, dataSource, peripheralDevice))
 }
 export function handleUpdatedRundownInner (studio: Studio, rundownId: string, ingestRundown: IngestRundown, dataSource?: string, peripheralDevice?: PeripheralDevice) {
 	const existingDbRundown = Rundowns.findOne(rundownId)
@@ -535,7 +540,7 @@ function syncChangesToSelectedPartInstances (playlist: RundownPlaylist, parts: D
 			}
 		}
 	}
-	
+
 	// Every PartInstance that is not reset needs to be kept in sync for now.
 	// Its bad, but that is what the infinites logic requires
 	const { partInstances, pieceInstances } = waitForPromiseObj({
@@ -546,7 +551,7 @@ function syncChangesToSelectedPartInstances (playlist: RundownPlaylist, parts: D
 	_.each(partInstances, partInstance => {
 		syncPartChanges(partInstance, pieceInstances)
 	})
-	
+
 	waitForPromiseAll(ps)
 }
 
@@ -582,7 +587,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		if (canBeUpdated(rundown, segmentId)) {
@@ -596,7 +601,7 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 		if (!canBeUpdated(rundown, segmentId)) return
@@ -755,7 +760,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const partId = getPartId(rundown._id, partExternalId)
@@ -785,7 +790,7 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 
 		handleUpdatedPartInner(studio, rundown, segmentExternalId, ingestPart)

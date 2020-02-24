@@ -19,10 +19,13 @@ export namespace RundownAPI {
 	}
 
 	export enum methods {
-		'removeRundown' = 'rundown.removeRundown',
-		'resyncRundown' = 'rundown.resyncRundown',
-		'unsyncRundown' = 'rundown.unsyncRundown',
-		'rundownNeedsUpdating' = 'rundown.rundownNeedsUpdating'
+		'removeRundownPlaylist' = 'rundown.removeRundownPlaylist',
+		'resyncRundownPlaylist' = 'rundown.resyncRundownPlaylist',
+
+		'removeRundown' 		= 'rundown.removeRundown',
+		'resyncRundown' 		= 'rundown.resyncRundown',
+		'unsyncRundown' 		= 'rundown.unsyncRundown',
+		'rundownNeedsUpdating' 	= 'rundown.rundownNeedsUpdating'
 	}
 }
 

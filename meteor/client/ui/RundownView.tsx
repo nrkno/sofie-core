@@ -64,7 +64,7 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { AdlibSegmentUi } from './Shelf/AdLibPanel'
 import { OffsetPosition } from '../utils/positions'
-import { Settings } from '../../lib/Settings';
+import { Settings } from '../../lib/Settings'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -890,7 +890,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.playlist._id, changeRehearsal], (err, response) => {
 				if (!err && response) {
-					if (!handleRundownReloadResponse(t, this.props.playlist, response.result)) {
+					if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, response.result)) {
 						if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
 							scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
 						}
@@ -2053,21 +2053,33 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 }
 )
 
-export function handleRundownReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundownPlaylist: RundownPlaylist, result: UserActionAPI.ReloadRundownResponse): boolean {
+export function handleRundownPlaylistReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundownPlaylist: RundownPlaylist, result: UserActionAPI.ReloadRundownPlaylistResponse): boolean {
 	let hasDoneSomething = false
-	if (result === UserActionAPI.ReloadRundownResponse.MISSING) {
+
+	let missingRundownId: string | null = null
+	_.each(result.rundownsResponses, r => {
+		if (r.response === UserActionAPI.ReloadRundownResponse.MISSING) {
+			missingRundownId = r.rundownId
+		}
+	})
+	if (missingRundownId) {
+		const missingRundown = Rundowns.findOne(missingRundownId)
+		const missingRundownName = missingRundown ? missingRundown.name : 'N/A'
 		hasDoneSomething = true
 		const notification = NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL,
-			t('Rundown {{rundownName}} is missing, what do you want to do?', { rundownName: rundownPlaylist.name }),
+			t('Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do you want to do?', {
+				rundownName: missingRundownName,
+				playlistName: rundownPlaylist.name
+			}),
 			'userAction',
 			undefined,
 			true, [
 				// actions:
 				{
-					label: t('Mark rundown as unsynced'),
+					label: t('Mark the rundown as unsynced'),
 					type: 'default',
 					action: () => {
-						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ rundownPlaylist._id ], (err) => {
+						doUserAction(t, 'Missing rundown action', UserActionAPI.methods.unsyncRundown, [ missingRundownId ], (err) => {
 							if (!err) {
 								notification.stop()
 							}
@@ -2075,15 +2087,37 @@ export function handleRundownReloadResponse (t: i18next.TranslationFunction<any,
 					}
 				},
 				{
-					label: t('Remove rundown'),
+					label: t('Remove just the rundown'),
 					type: 'default',
 					action: () => {
 						doModalDialog({
 							title: rundownPlaylist.name,
-							message: t('Do you really want to remove the rundown "{{rundownName}}"? This cannot be undone!', { rundownName: rundownPlaylist.name }),
+							message: t('Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}}? This cannot be undone!', {
+								rundownName: missingRundownName,
+								playlistName: rundownPlaylist.name
+							}),
 							onAccept: () => {
 								// nothing
-								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ rundownPlaylist._id ], (err) => {
+								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundown, [ missingRundownId ], (err) => {
+									if (!err) {
+										notification.stop()
+										window.location.assign(`/`)
+									}
+								})
+							},
+						})
+					}
+				},
+				{
+					label: t('Remove rundown playlist'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: rundownPlaylist.name,
+							message: t('Do you really want to remove the rundownPlaylist "{{rundownName}}"? This cannot be undone!', { rundownName: missingRundownName }),
+							onAccept: () => {
+								// nothing
+								doUserAction(t, 'Missing rundown action', UserActionAPI.methods.removeRundownPlaylist, [ rundownPlaylist._id ], (err) => {
 									if (!err) {
 										notification.stop()
 										window.location.assign(`/`)

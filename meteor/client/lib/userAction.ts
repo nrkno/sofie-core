@@ -92,8 +92,8 @@ function userActionMethodName (
 		case UserActionAPI.methods.prepareForBroadcast: return t('Preparing for broadcast')
 		case UserActionAPI.methods.resetRundown: return t('Resetting Rundown')
 		case UserActionAPI.methods.resetAndActivate: return t('Resetting and activating Rundown')
-		case UserActionAPI.methods.activate: return t('Activating Rundown')
-		case UserActionAPI.methods.deactivate: return t('Deactivating Rundown')
+		case UserActionAPI.methods.activate: return t('Activating Rundown Playlist')
+		case UserActionAPI.methods.deactivate: return t('Deactivating Rundown Playlist')
 		case UserActionAPI.methods.reloadData: return t('Reloading rundown data')
 
 		case UserActionAPI.methods.disableNextPiece: return t('Disabling next piece')
@@ -112,6 +112,9 @@ function userActionMethodName (
 		case UserActionAPI.methods.storeRundownSnapshot: return t('Creating Snapshot for debugging')
 
 		case UserActionAPI.methods.sourceLayerOnPartStop: return t('Stopping source layer')
+
+		case UserActionAPI.methods.removeRundownPlaylist: return t('Removing Rundown Playlist')
+		case UserActionAPI.methods.resyncRundownPlaylist: return t('Re-Syncing Rundown Playlist')
 
 		case UserActionAPI.methods.removeRundown: return t('Removing Rundown')
 		case UserActionAPI.methods.resyncRundown: return t('Re-Syncing Rundown')

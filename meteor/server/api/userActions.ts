@@ -201,9 +201,9 @@ export function deactivate (rundownPlaylistId: string): ClientAPI.ClientResponse
 	)
 
 }
-export function reloadData (rundownPlaylistId: string) {
+export function reloadRundownPlaylistData (rundownPlaylistId: string) {
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.reloadData(rundownPlaylistId)
+		ServerPlayoutAPI.reloadRundownPlaylistData(rundownPlaylistId)
 	)
 }
 export function unsyncRundown (rundownId: string) {
@@ -386,21 +386,36 @@ export function userStoreRundownSnapshot (rundownId: string, reason: string) {
 		storeRundownPlaylistSnapshot(rundownId, reason)
 	)
 }
-export function removeRundown (playlistId: string) {
+export function removeRundownPlaylist (playlistId: string) {
 	let playlist = RundownPlaylists.findOne(playlistId)
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.removeRundown(playlistId)
+		ServerRundownAPI.removeRundownPlaylist(playlistId)
 	)
 }
-export function resyncRundown (playlistId: string) {
+export function resyncRundownPlaylist (playlistId: string) {
 	let playlist = RundownPlaylists.findOne(playlistId)
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-	// if (rundown.active) return ClientAPI.responseError(`The Rundown is currently active, you need to deactivate it before resyncing it.`)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.resyncRundown(playlistId)
+		ServerRundownAPI.resyncRundownPlaylist(playlistId)
+	)
+}
+export function removeRundown (rundownId: string) {
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.removeRundown(rundownId)
+	)
+}
+export function resyncRundown (rundownId: string) {
+	let rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.resyncRundown(rundownId)
 	)
 }
 export function recordStop (studioId: string) {
@@ -541,7 +556,7 @@ methods[UserActionAPI.methods.forceResetAndActivate] = function (rundownPlaylist
 	return forceResetAndActivate.call(this, rundownPlaylistId, rehearsal)
 }
 methods[UserActionAPI.methods.reloadData] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
-	return reloadData.call(this, rundownPlaylistId)
+	return reloadRundownPlaylistData.call(this, rundownPlaylistId)
 }
 methods[UserActionAPI.methods.unsyncRundown] = function (rundownId: string): ClientAPI.ClientResponse {
 	return unsyncRundown.call(this, rundownId)
@@ -579,8 +594,14 @@ methods[UserActionAPI.methods.saveEvaluation] = function (evaluation: Evaluation
 methods[UserActionAPI.methods.storeRundownSnapshot] = function (rundownId: string, reason: string) {
 	return userStoreRundownSnapshot.call(this, rundownId, reason)
 }
-methods[UserActionAPI.methods.removeRundown] = function (playlistId: string) {
-	return removeRundown.call(this, playlistId)
+methods[UserActionAPI.methods.removeRundownPlaylist] = function (playlistId: string) {
+	return removeRundownPlaylist.call(this, playlistId)
+}
+methods[UserActionAPI.methods.resyncRundownPlaylist] = function (playlistId: string) {
+	return resyncRundownPlaylist.call(this, playlistId)
+}
+methods[UserActionAPI.methods.removeRundown] = function (rundownId: string) {
+	return removeRundown.call(this, rundownId)
 }
 methods[UserActionAPI.methods.resyncRundown] = function (rundownId: string) {
 	return resyncRundown.call(this, rundownId)

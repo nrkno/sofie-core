@@ -37,6 +37,9 @@ export namespace UserActionAPI {
 
 		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',
 
+		'removeRundownPlaylist'				= 'userAction.removeRundownPlaylist',
+		'resyncRundownPlaylist'				= 'userAction.resyncRundownPlaylist',
+
 		'removeRundown'						= 'userAction.removeRundown',
 		'resyncRundown'						= 'userAction.resyncRundown',
 
@@ -57,6 +60,13 @@ export namespace UserActionAPI {
 
 		'guiFocused'						= 'guiState.focused',
 		'guiBlurred'						= 'guiState.blurred'
+	}
+
+	export interface ReloadRundownPlaylistResponse {
+		rundownsResponses: {
+			rundownId: string
+			response: ReloadRundownResponse
+		}[]
 	}
 
 	export enum ReloadRundownResponse {

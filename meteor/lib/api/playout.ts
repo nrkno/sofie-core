@@ -6,7 +6,7 @@ export namespace PlayoutAPI {
 		'rundownResetAndActivate' 			= 'playout.rundownResetAndActivate',
 		'rundownActivate' 					= 'playout.rundownActivate',
 		'rundownDeactivate' 				= 'playout.rundownDeactivate',
-		'reloadData' 						= 'playout.reloadData',
+		'reloadRundownPlaylistData' 		= 'playout.reloadRundownPlaylistData',
 
 		'updateStudioBaseline'				= 'playout.updateStudioBaseline',
 		'shouldUpdateStudioBaseline'		= 'playout.shouldUpdateStudioBaseline',

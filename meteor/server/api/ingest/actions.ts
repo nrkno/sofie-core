@@ -45,7 +45,6 @@ export namespace IngestActions {
 			logger.warn(`Rundown "${rundown._id} has no peripheralDevice. Skipping notifyCurrentPlayingPart`)
 			return
 		}
-		
 		const device = getPeripheralDeviceFromRundown(rundown)
 		const playlist = RundownPlaylists.findOne(rundown.playlistId)
 
@@ -91,13 +90,13 @@ export namespace IngestActions {
 		if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
 		logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
-		
+
 		const studio = Studios.findOne(rundownPlaylist.studioId)
 		if (!studio) {
 			throw new Meteor.Error(404,`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`)
 		}
 
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.Ingest, () => {
+		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
 			rundownPlaylist.getRundowns().forEach(rundown => {
 				if (rundown.studioId !== studio._id) {
 					logger.warning(`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`)
@@ -106,7 +105,7 @@ export namespace IngestActions {
 				if (!peripheralDevice) {
 					logger.info(`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`)
 				}
-				
+
 				const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 				if (purgeExisting) {
 					rundown.remove()

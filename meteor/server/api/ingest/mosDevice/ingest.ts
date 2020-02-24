@@ -110,7 +110,7 @@ export function handleMosRundownData (
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh))
 		const groupedStories = groupIngestParts(parts)
 
@@ -164,7 +164,7 @@ export function handleMosRundownMetadata (
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrderBase.ID)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
 		if (!canBeUpdated(rundown)) return
 
@@ -197,7 +197,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 	const rundownId = getRundownIdFromMosRO(studio, story.RunningOrderId)
 	const partId = getPartIdFromMosStory(rundownId, story.ID)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(story.RunningOrderId))
 		// canBeUpdated is done inside handleUpdatedPartInner
 
@@ -237,7 +237,7 @@ export function handleMosDeleteStory (
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
@@ -296,7 +296,7 @@ export function handleInsertParts (
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
@@ -359,7 +359,7 @@ export function handleSwapStories (
 		)
 	}
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
@@ -395,7 +395,7 @@ export function handleMoveStories (
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
-	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Ingest, () => {
+	return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 

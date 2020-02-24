@@ -22,13 +22,13 @@ describe('codeControl rundown', () => {
 
 		let res: any[] = []
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest0', RundownSyncFunctionPriority.Ingest))
+			res.push(sync1('ingest0', RundownSyncFunctionPriority.INGEST))
 		}, 10)
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest1', RundownSyncFunctionPriority.Ingest))
+			res.push(sync1('ingest1', RundownSyncFunctionPriority.INGEST))
 		}, 30)
 		Meteor.setTimeout(() => {
-			res.push(sync1('playout0', RundownSyncFunctionPriority.Playout))
+			res.push(sync1('playout0', RundownSyncFunctionPriority.USER_PLAYOUT))
 		}, 50)
 
 		jest.advanceTimersByTime(350)

@@ -33,16 +33,16 @@ import { Spinner } from '../lib/Spinner'
 const PackageInfo = require('../../package.json')
 
 interface RundownPlaylistUi extends RundownPlaylist {
-	status: string
-	airStatus: string
-	unsynced: boolean
+	rundownStatus: string
+	rundownAirStatus: string
+	unsyncedRundowns: Rundown[]
 	studioName: string
 	showStyles: Array<{ id: string, baseName: string, variantName: string }>
 }
 
 interface IRundownListItemProps {
 	key: string,
-	rundown: RundownPlaylistUi
+	rundownPlaylist: RundownPlaylistUi
 }
 
 interface IRundownListItemStats {
@@ -53,9 +53,9 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
-	getRundownLink (rundownId: string) {
+	getRundownPlaylistLink (rundownPlaylistId: string) {
 		// double encoding so that "/" are handled correctly
-		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId))
+		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownPlaylistId))
 	}
 	getStudioLink (studioId: string) {
 		// double encoding so that "/" are handled correctly
@@ -66,35 +66,34 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
 	}
 
-	confirmDelete (playlist: RundownPlaylist) {
+	confirmDeleteRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
-			title: t('Delete this Item?'),
+			title: t('Delete this RundownPlaylist?'),
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRundown, [playlist._id])
+				doUserAction(t, e, UserActionAPI.methods.removeRundownPlaylist, [rundownPlaylist._id])
 			},
 			message: (
-				t('Are you sure you want to delete the "{{name}}" rundown?', { name: playlist.name }) + '\n' +
+				t('Are you sure you want to delete the "{{name}}" RundownPlaylist?', { name: rundownPlaylist.name }) + '\n' +
 				t('Please note: This action is irreversible!')
 			)
 		})
 	}
 
-	confirmReSyncRO (playlist: RundownPlaylist) {
+	confirmReSyncRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Re-Sync this rundown?'),
+			title: t('Re-Sync this rundownPlaylist?'),
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.resyncRundown, [playlist._id])
+				doUserAction(t, e, UserActionAPI.methods.resyncRundownPlaylist, [rundownPlaylist._id])
 			},
 			message: (
-				t('Are you sure you want to re-sync the "{{name}}" rundown with MOS script?', { name: playlist.name }) + '\n' +
-				t('Please note: This action is irreversible!')
+				t('Are you sure you want to re-sync all rundowns in playlist "{{name}}"?', { name: rundownPlaylist.name })
 			)
 		})
 	}
@@ -105,7 +104,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			<React.Fragment>
 				<tr className='rundown-list-item'>
 					<th className='rundown-list-item__name'>
-						{this.props.rundown.active ?
+						{this.props.rundownPlaylist.active ?
 							<Tooltip overlay={t('This rundown is currently active')} visible={getHelpMode()} placement='bottom'>
 								<div className='origo-pulse small right mrs'>
 									<div className='pulse-marker'>
@@ -116,72 +115,72 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 							</Tooltip>
 							: null
 						}
-						<Link to={this.getRundownLink(this.props.rundown._id)}>{this.props.rundown.name}</Link>
+						<Link to={this.getRundownPlaylistLink(this.props.rundownPlaylist._id)}>{this.props.rundownPlaylist.name}</Link>
 					</th>
 					<td className='rundown-list-item__studio'>
 						{
 							getAllowConfigure() ?
-							<Link to={this.getStudioLink(this.props.rundown.studioId)}>{this.props.rundown.studioName}</Link> :
-							this.props.rundown.studioName
+							<Link to={this.getStudioLink(this.props.rundownPlaylist.studioId)}>{this.props.rundownPlaylist.studioName}</Link> :
+							this.props.rundownPlaylist.studioName
 						}
 					</td>
 					<td className='rundown-list-item__showStyle'>
 						{
 							getAllowConfigure() ?
 								(
-									this.props.rundown.showStyles.length === 1 ?
-									<Link to={this.getshowStyleBaseLink(this.props.rundown.showStyles[0].id)}>{`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}`}</Link> :
-									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+									this.props.rundownPlaylist.showStyles.length === 1 ?
+									<Link to={this.getshowStyleBaseLink(this.props.rundownPlaylist.showStyles[0].id)}>{`${this.props.rundownPlaylist.showStyles[0].baseName} - ${this.props.rundownPlaylist.showStyles[0].variantName}`}</Link> :
+									t('Multiple ({{count}})', { count: this.props.rundownPlaylist.showStyles.length })
 								) : (
-									this.props.rundown.showStyles.length === 1 ?
-									`${this.props.rundown.showStyles[0].baseName} - ${this.props.rundown.showStyles[0].variantName}` :
-									t('Multiple ({{count}})', { count: this.props.rundown.showStyles.length })
+									this.props.rundownPlaylist.showStyles.length === 1 ?
+									`${this.props.rundownPlaylist.showStyles[0].baseName} - ${this.props.rundownPlaylist.showStyles[0].variantName}` :
+									t('Multiple ({{count}})', { count: this.props.rundownPlaylist.showStyles.length })
 								)
 						}
 					</td>
 					<td className='rundown-list-item__created'>
-						<MomentFromNow>{this.props.rundown.created}</MomentFromNow>
+						<MomentFromNow>{this.props.rundownPlaylist.created}</MomentFromNow>
 					</td>
 					<td className='rundown-list-item__airTime'>
-						{this.props.rundown.expectedStart &&
-							<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.rundown.expectedStart}</Moment>
+						{this.props.rundownPlaylist.expectedStart &&
+							<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.rundownPlaylist.expectedStart}</Moment>
 						}
 					</td>
 					<td className='rundown-list-item__duration'>
-						{this.props.rundown.expectedDuration &&
-							RundownUtils.formatDiffToTimecode(this.props.rundown.expectedDuration, false, false, true, false, true)
+						{this.props.rundownPlaylist.expectedDuration &&
+							RundownUtils.formatDiffToTimecode(this.props.rundownPlaylist.expectedDuration, false, false, true, false, true)
 						}
 					</td>
 					<td className='rundown-list-item__status'>
-						{this.props.rundown.status}
+						{this.props.rundownPlaylist.rundownStatus}
 					</td>
 					<td className='rundown-list-item__air-status'>
-						{this.props.rundown.airStatus}
+						{this.props.rundownPlaylist.rundownAirStatus}
 					</td>
 					<td className='rundown-list-item__actions'>
 						{
-							(this.props.rundown.unsynced || getAllowConfigure() || getAllowService()) ?
+							(this.props.rundownPlaylist.unsyncedRundowns.length > 0 || getAllowConfigure() || getAllowService()) ?
 							<Tooltip overlay={t('Delete')} placement='top'>
-								<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.rundown)}>
+								<button className='action-btn' onClick={(e) => this.confirmDeleteRundownPlaylist(this.props.rundownPlaylist)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</Tooltip> : null
 						}
 						{
-							this.props.rundown.unsynced ?
-							<Tooltip overlay={t('Re-sync with MOS')} placement='top'>
-								<button className='action-btn' onClick={(e) => this.confirmReSyncRO(this.props.rundown)}>
+							this.props.rundownPlaylist.unsyncedRundowns.length > 0 ?
+							<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement='top'>
+								<button className='action-btn' onClick={(e) => this.confirmReSyncRundownPlaylist(this.props.rundownPlaylist)}>
 									<FontAwesomeIcon icon={faSync} />
 								</button>
 							</Tooltip> : null
 						}
 					</td>
 				</tr>
-				{this.props.rundown.startedPlayback !== undefined && this.props.rundown.expectedDuration !== undefined && this.props.rundown.active &&
+				{this.props.rundownPlaylist.startedPlayback !== undefined && this.props.rundownPlaylist.expectedDuration !== undefined && this.props.rundownPlaylist.active &&
 					<tr className='hl expando-addon'>
 						<td colSpan={8}>
 							<ActiveProgressBar
-								rundown={this.props.rundown}
+								rundown={this.props.rundownPlaylist}
 							/>
 						</td>
 					</tr>
@@ -204,7 +203,7 @@ enum ToolTipStep {
 
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
-	rundowns: Array<RundownPlaylistUi>
+	rundownPlaylists: Array<RundownPlaylistUi>
 }
 
 interface IRundownsListState {
@@ -222,17 +221,17 @@ export const RundownList = translateWithTracker((props) => {
 
 	return {
 		coreSystem: getCoreSystem(),
-		rundowns: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((playlist: RundownPlaylistUi) => {
-			const linkedRundowns = playlist.getRundowns()
-			playlist.airStatus = linkedRundowns.map(rundown => rundown.airStatus).join(', ')
-			playlist.status = linkedRundowns.map(rundown => rundown.status).join(', ')
-			playlist.unsynced = linkedRundowns.reduce((mem, rundown) => mem || rundown.unsynced || false, false)
+		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } }).fetch().map((playlist: RundownPlaylistUi) => {
+			const rundownsInPlaylist = playlist.getRundowns()
+			playlist.rundownAirStatus = rundownsInPlaylist.map(rundown => rundown.airStatus).join(', ')
+			playlist.rundownStatus = rundownsInPlaylist.map(rundown => rundown.status).join(', ')
+			playlist.unsyncedRundowns = rundownsInPlaylist.filter(rundown => rundown.unsynced)
 
 			const studio = _.find(studios, s => s._id === playlist.studioId)
 
 			playlist.studioName = studio && studio.name || ''
 			playlist.showStyles = _.uniq(
-				linkedRundowns.map(rundown => [rundown.showStyleBaseId, rundown.showStyleVariantId]), false, (ids) => ids[0] + '_' + ids[1]
+				rundownsInPlaylist.map(rundown => [rundown.showStyleBaseId, rundown.showStyleVariantId]), false, (ids) => ids[0] + '_' + ids[1]
 				).map(combo => {
 					const showStyleBase = _.find(showStyleBases, style => style._id === combo[0])
 					const showStyleVariant = _.find(showStyleVariants, variant => variant._id === combo[1])
@@ -259,14 +258,14 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 	}
 
 	tooltipStep () {
-		const synced = this.props.rundowns.filter(i => !i.unsynced)
-		const unsynced = this.props.rundowns.filter(i => i.unsynced)
+		const syncedRundownPlaylists = this.props.rundownPlaylists.filter(rundownPlaylist => rundownPlaylist.unsyncedRundowns.length === 0)
+		const unsyncedRundownPlaylists = this.props.rundownPlaylists.filter(rundownPlaylist => rundownPlaylist.unsyncedRundowns.length > 0)
 
 		if (
 			this.props.coreSystem &&
 			this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
-			synced.length === 0 &&
-			unsynced.length === 0
+			syncedRundownPlaylists.length === 0 &&
+			unsyncedRundownPlaylists.length === 0
 		) {
 			if (getAllowConfigure()) {
 				return ToolTipStep.TOOLTIP_RUN_MIGRATIONS
@@ -368,8 +367,8 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		const { t } = this.props
 
 		return list.length > 0 ?
-			list.map((rundown) => (
-				<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
+			list.map((rundownPlaylist) => (
+				<RundownListItem key={rundownPlaylist._id} rundownPlaylist={rundownPlaylist} t={this.props.t} />
 			)) :
 			<tr>
 				<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>
@@ -379,8 +378,8 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 	render () {
 		const { t } = this.props
 
-		const synced = this.props.rundowns.filter(i => !i.unsynced)
-		const unsynced = this.props.rundowns.filter(i => i.unsynced)
+		const syncedRundownPlaylists = this.props.rundownPlaylists.filter(rundownPlaylist => rundownPlaylist.unsyncedRundowns.length === 0)
+		const unsyncedRundownPlaylists = this.props.rundownPlaylists.filter(rundownPlaylist => rundownPlaylist.unsyncedRundowns.length > 0)
 
 		return <React.Fragment>
 			{
@@ -390,8 +389,8 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				(
 					this.props.coreSystem &&
 					this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
-					synced.length === 0 &&
-					unsynced.length === 0
+					syncedRundownPlaylists.length === 0 &&
+					unsyncedRundownPlaylists.length === 0
 				) ?
 				<div className='mtl gutter has-statusbar'>
 					<h1>{t('Getting Started')}</h1>
@@ -466,17 +465,17 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 								</tr>
 							</thead>
 							<tbody>
-								{this.renderRundowns(synced)}
+								{this.renderRundowns(syncedRundownPlaylists)}
 							</tbody>
-							{unsynced.length > 0 && <tbody>
+							{unsyncedRundownPlaylists.length > 0 && <tbody>
 								<tr className='hl'>
 									<th colSpan={9} className='pvn phn'>
 										<h2 className='mtm mbs mhn'>{t('Unsynced from MOS')}</h2>
 									</th>
 								</tr>
 							</tbody>}
-							{unsynced.length > 0 && <tbody>
-								{this.renderRundowns(unsynced)}
+							{unsyncedRundownPlaylists.length > 0 && <tbody>
+								{this.renderRundowns(unsyncedRundownPlaylists)}
 							</tbody>}
 						</table>
 					</div> :
