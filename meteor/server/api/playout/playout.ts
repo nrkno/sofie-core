@@ -80,7 +80,7 @@ export namespace ServerPlayoutAPI {
 	 * Prepare the rundown for transmission
 	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
 	 */
-	export function prepareRundownForBroadcast (rundownPlaylistId: string) {
+	export function prepareRundownPlaylistForBroadcast (rundownPlaylistId: string) {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -95,18 +95,18 @@ export namespace ServerPlayoutAPI {
 			libResetRundownPlaylist(playlist)
 			prepareStudioForBroadcast(playlist.getStudio())
 
-			return libActivateRundownPlaylist(playlist, true) // Activate rundown (rehearsal)
+			return libActivateRundownPlaylist(playlist, true) // Activate rundownPlaylist (rehearsal)
 		})
 	}
 	/**
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
-	export function resetRundown (rundownPlaylistId: string) {
+	export function resetRundownPlaylist (rundownPlaylistId: string) {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(401, `rundownResetBroadcast can only be run in rehearsal!`)
+			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(401, `resetRundown can only be run in rehearsal!`)
 
 			libResetRundownPlaylist(playlist)
 
@@ -119,11 +119,11 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundown, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function resetAndActivateRundown (rundownPlaylistId: string, rehearsal?: boolean) {
+	export function resetAndActivateRundownPlaylist (rundownPlaylistId: string, rehearsal?: boolean) {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(402, `rundownResetAndActivate cannot be run when active!`)
+			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 
 			libResetRundownPlaylist(playlist)
 
@@ -168,7 +168,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Only activate the rundown, don't reset anything
 	 */
-	export function activateRundown (rundownPlaylistId: string, rehearsal: boolean) {
+	export function activateRundownPlaylist (rundownPlaylistId: string, rehearsal: boolean) {
 		check(rehearsal, Boolean)
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -180,7 +180,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Deactivate the rundown
 	 */
-	export function deactivateRundown (rundownPlaylistId: string) {
+	export function deactivateRundownPlaylist (rundownPlaylistId: string) {
 		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)

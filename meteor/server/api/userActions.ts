@@ -84,9 +84,9 @@ export function setNext (rundownPlaylistId: string, nextPartId: string | null, s
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
 
-	const rundown = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (!rundown.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
+	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	if (!playlist.active) return ClientAPI.responseError('RundownPlaylist is not active, please activate it before setting a part as Next')
 
 	let nextPart: Part | undefined
 	if (nextPartId) {
@@ -96,7 +96,7 @@ export function setNext (rundownPlaylistId: string, nextPartId: string | null, s
 		if (!nextPart.isPlayable()) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
 	}
 
-	if (rundown.holdState && rundown.holdState !== RundownHoldState.COMPLETE) {
+	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
@@ -138,19 +138,19 @@ export function prepareForBroadcast (rundownPlaylistId: string): ClientAPI.Clien
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.prepareRundownForBroadcast(rundownPlaylistId)
+		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(rundownPlaylistId)
 	)
 }
-export function resetRundown (rundownPlaylistId: string): ClientAPI.ClientResponse {
+export function resetRundownPlaylist (rundownPlaylistId: string): ClientAPI.ClientResponse {
 	check(rundownPlaylistId, String)
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (playlist.active && !playlist.rehearsal) {
-		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
+		return ClientAPI.responseError('RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.resetRundown(rundownPlaylistId)
+		ServerPlayoutAPI.resetRundownPlaylist(rundownPlaylistId)
 	)
 }
 export function resetAndActivate (rundownPlaylistId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
@@ -158,15 +158,15 @@ export function resetAndActivate (rundownPlaylistId: string, rehearsal?: boolean
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (playlist.active && !playlist.rehearsal) {
-		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
+		return ClientAPI.responseError('RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
-	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
+	const anyOtherActiveRundownPlaylists = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	if (anyOtherActiveRundownPlaylists.length) {
+		return ClientAPI.responseError(409, 'Only one rundownPlaylist can be active at the same time. Currently active rundownPlaylists: ' + _.map(anyOtherActiveRundownPlaylists, p => p.name).join(', '), anyOtherActiveRundownPlaylists)
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.resetAndActivateRundown(rundownPlaylistId, rehearsal)
+		ServerPlayoutAPI.resetAndActivateRundownPlaylist(rundownPlaylistId, rehearsal)
 	)
 }
 export function forceResetAndActivate (rundownPlaylistId: string, rehearsal: boolean): ClientAPI.ClientResponse {
@@ -190,14 +190,14 @@ export function activate (rundownPlaylistId: string, rehearsal: boolean): Client
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.activateRundown(rundownPlaylistId, rehearsal)
+		ServerPlayoutAPI.activateRundownPlaylist(playlist._id, rehearsal)
 	)
 }
 export function deactivate (rundownPlaylistId: string): ClientAPI.ClientResponse {
-	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.deactivateRundown(rundownPlaylistId)
+		ServerPlayoutAPI.deactivateRundownPlaylist(playlist._id)
 	)
 
 }
@@ -232,7 +232,7 @@ export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string,
 	check(pieceInstanceIdOrPieceIdToCopy, String)
 
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.currentPartInstanceId !== partInstanceId) return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
 
@@ -312,7 +312,7 @@ export function sourceLayerOnPartStop (rundownPlaylistId: string, partInstanceId
 	check(sourceLayerId, String)
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
@@ -339,7 +339,7 @@ export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLa
 	check(sourceLayerId, String)
 
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
 	if (!playlist.currentPartInstanceId) return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
 
@@ -351,7 +351,7 @@ export function activateHold (rundownPlaylistId: string, undo?: boolean) {
 	check(rundownPlaylistId, String)
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 
 	if (!playlist.currentPartInstanceId) return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
 	if (!playlist.nextPartInstanceId) return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
@@ -540,8 +540,8 @@ methods[UserActionAPI.methods.moveNext] = function (rundownPlaylistId: string, h
 methods[UserActionAPI.methods.prepareForBroadcast] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
 	return prepareForBroadcast.call(this, rundownPlaylistId)
 }
-methods[UserActionAPI.methods.resetRundown] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
-	return resetRundown.call(this, rundownPlaylistId)
+methods[UserActionAPI.methods.resetRundownPlaylist] = function (rundownPlaylistId: string): ClientAPI.ClientResponse {
+	return resetRundownPlaylist.call(this, rundownPlaylistId)
 }
 methods[UserActionAPI.methods.resetAndActivate] = function (rundownPlaylistId: string, rehearsal?: boolean): ClientAPI.ClientResponse {
 	return resetAndActivate.call(this, rundownPlaylistId, rehearsal)

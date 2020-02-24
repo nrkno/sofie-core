@@ -77,12 +77,12 @@ describe('Playout API', () => {
 		expect(Timeline.upsert).not.toHaveBeenCalled()
 		expect(Timeline.update).not.toHaveBeenCalled()
 
-		ServerPlayoutAPI.resetRundown(playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(playlistId0)
 		const orgRundownData = getAllRundownData(getRundown0())
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundown(playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(playlistId0, false)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
@@ -122,7 +122,7 @@ describe('Playout API', () => {
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
 		// Deactivate rundown:
-		ServerPlayoutAPI.deactivateRundown(playlistId0)
+		ServerPlayoutAPI.deactivateRundownPlaylist(playlistId0)
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
 			currentPartInstanceId: null,
@@ -138,7 +138,7 @@ describe('Playout API', () => {
 		expect(Timeline.update).toHaveBeenCalled()
 
 		// lastly: reset rundown
-		ServerPlayoutAPI.resetRundown(playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(playlistId0)
 
 		// Verify that the data is back to as it was before any of the operations:
 		const rundownData = getAllRundownData(getRundown0())
@@ -168,7 +168,7 @@ describe('Playout API', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.prepareRundownForBroadcast(playlistId0)
+		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(playlistId0)
 
 		expect(getPlaylist0()).toMatchObject({
 			active: true,

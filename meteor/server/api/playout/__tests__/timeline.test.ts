@@ -47,7 +47,7 @@ describe('Timeline', () => {
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundown(playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(playlistId0, false)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
@@ -85,7 +85,7 @@ describe('Timeline', () => {
 
 		{
 			// Deactivate rundown:
-			ServerPlayoutAPI.deactivateRundown(playlistId0)
+			ServerPlayoutAPI.deactivateRundownPlaylist(playlistId0)
 			expect(getPlaylist0()).toMatchObject({
 				active: false,
 				currentPartInstanceId: null,

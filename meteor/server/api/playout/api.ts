@@ -6,19 +6,19 @@ import { logger } from '../../logging'
 
 let methods: Methods = {}
 methods[PlayoutAPI.methods.rundownPrepareForBroadcast] = (playlistId: string) => {
-	return ServerPlayoutAPI.prepareRundownForBroadcast(playlistId)
+	return ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(playlistId)
 }
 methods[PlayoutAPI.methods.rundownResetRundown] = (playlistId: string) => {
-	return ServerPlayoutAPI.resetRundown(playlistId)
+	return ServerPlayoutAPI.resetRundownPlaylist(playlistId)
 }
 methods[PlayoutAPI.methods.rundownResetAndActivate] = (playlistId: string, rehearsal?: boolean) => {
-	return ServerPlayoutAPI.resetAndActivateRundown(playlistId, rehearsal)
+	return ServerPlayoutAPI.resetAndActivateRundownPlaylist(playlistId, rehearsal)
 }
 methods[PlayoutAPI.methods.rundownActivate] = (playlistId: string, rehearsal: boolean) => {
-	return ServerPlayoutAPI.activateRundown(playlistId, rehearsal)
+	return ServerPlayoutAPI.activateRundownPlaylist(playlistId, rehearsal)
 }
 methods[PlayoutAPI.methods.rundownDeactivate] = (playlistId: string) => {
-	return ServerPlayoutAPI.deactivateRundown(playlistId)
+	return ServerPlayoutAPI.deactivateRundownPlaylist(playlistId)
 }
 methods[PlayoutAPI.methods.reloadRundownPlaylistData] = (playlistId: string) => {
 	return ServerPlayoutAPI.reloadRundownPlaylistData(playlistId)

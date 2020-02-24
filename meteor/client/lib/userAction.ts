@@ -90,7 +90,7 @@ function userActionMethodName (
 		case UserActionAPI.methods.moveNext: return t('Moving Next')
 
 		case UserActionAPI.methods.prepareForBroadcast: return t('Preparing for broadcast')
-		case UserActionAPI.methods.resetRundown: return t('Resetting Rundown')
+		case UserActionAPI.methods.resetRundownPlaylist: return t('Resetting Rundown Playlist')
 		case UserActionAPI.methods.resetAndActivate: return t('Resetting and activating Rundown')
 		case UserActionAPI.methods.activate: return t('Activating Rundown Playlist')
 		case UserActionAPI.methods.deactivate: return t('Deactivating Rundown Playlist')

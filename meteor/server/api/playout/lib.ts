@@ -38,6 +38,9 @@ export function resetRundown (rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
 
+	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
+	// since that isn't tied to the rundown anymore.
+
 	Pieces.remove({
 		rundownId: rundown._id,
 		dynamicallyInserted: true
@@ -128,14 +131,10 @@ export function resetRundown (rundown: Rundown) {
 
 	// ensure that any removed infinites are restored
 	updateSourceLayerInfinitesAfterPart(rundown)
-
-	const playlist = RundownPlaylists.findOne(rundown.playlistId)
-	if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
-	resetRundownPlaylistPlayhead(playlist)
 }
 
 /**
- * Reset the rundown playlist (all of the rundowns within the playlist):
+ * Reset the rundownPlaylist (all of the rundowns within the playlist):
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
 export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {

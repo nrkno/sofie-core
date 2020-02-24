@@ -9,7 +9,7 @@ export namespace UserActionAPI {
 		'moveNext' 								= 'userAction.moveNext',
 
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
-		'resetRundown' 							= 'userAction.resetRundown',
+		'resetRundownPlaylist' 					= 'userAction.resetRundownPlaylist',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
 		'forceResetAndActivate' 				= 'userAction.forceResetAndActivate',
 		'activate' 								= 'userAction.activate',
@@ -53,7 +53,7 @@ export namespace UserActionAPI {
 		'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
 		'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
 
-		'regenerateRundown'					= 'userAction.ingest.regenerateRundown',
+		'regenerateRundownPlaylist'				= 'userAction.ingest.regenerateRundownPlaylist',
 
 		'generateRestartToken'				= 'userAction.system.generateRestartToken',
 		'restartCore'						= 'userAction.system.restartCore',
