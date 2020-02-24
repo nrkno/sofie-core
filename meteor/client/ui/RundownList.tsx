@@ -180,7 +180,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<tr className='hl expando-addon'>
 						<td colSpan={8}>
 							<ActiveProgressBar
-								rundown={this.props.rundownPlaylist}
+								rundownPlaylist={this.props.rundownPlaylist}
 							/>
 						</td>
 					</tr>
@@ -536,15 +536,15 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 )
 
 interface IActiveProgressBarProps {
-	rundown: Rundown
+	rundownPlaylist: RundownPlaylist
 }
 
-const ActiveProgressBar = timer(1000)(class extends React.Component<IActiveProgressBarProps> {
+const ActiveProgressBar = timer(1000)(class ActiveProgressBar extends React.Component<IActiveProgressBarProps> {
 	render () {
-		return (this.props.rundown.startedPlayback && this.props.rundown.expectedDuration ?
+		return (this.props.rundownPlaylist.startedPlayback && this.props.rundownPlaylist.expectedDuration ?
 			<div className='progress-bar'>
 				<div className='pb-indicator' style={{
-					'width': Math.min(((getCurrentTime() - this.props.rundown.startedPlayback) / this.props.rundown.expectedDuration) * 100, 100) + '%'
+					'width': Math.min(((getCurrentTime() - this.props.rundownPlaylist.startedPlayback) / this.props.rundownPlaylist.expectedDuration) * 100, 100) + '%'
 				}} />
 			</div> : null
 		)

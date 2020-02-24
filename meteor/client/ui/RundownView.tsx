@@ -138,9 +138,8 @@ interface ITimingWarningState {
 	plannedStartCloseShown?: boolean
 	plannedStartCloseShow?: boolean
 }
-
 const WarningDisplay = translate()(timer(5000)(
-	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
+	class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
 		private REHEARSAL_MARGIN = 1 * 60 * 1000
 
 		constructor (props: Translated<ITimingWarningProps>) {
@@ -211,8 +210,7 @@ const WarningDisplay = translate()(timer(5000)(
 			</ModalDialog>
 		}
 	}
-) as React.StatelessComponent<Translated<ITimingWarningProps>>)
-
+))
 interface ITimingDisplayProps {
 	rundownPlaylist: RundownPlaylist
 }
@@ -865,7 +863,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 
 		let doReset = () => {
 			this.rewindSegments() // Do a rewind right away
-			doUserAction(t, e, UserActionAPI.methods.resetRundown, [this.props.playlist._id], () => {
+			doUserAction(t, e, UserActionAPI.methods.resetRundownPlaylist, [this.props.playlist._id], () => {
 				this.deferFlushAndRewindSegments()
 			})
 		}
