@@ -14,14 +14,13 @@ export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
 	rundown: Rundown
 	showStyleBase: ShowStyleBase
-	buckets: Bucket[] | undefined
 	studioMode: boolean
 	shouldQueue: boolean
 	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
 }
 
 export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
-	const { rundownLayout, buckets } = props
+	const { rundownLayout } = props
 	return <div className='dashboard'>
 		{rundownLayout.filters
 			.sort((a, b) => a.rank - b.rank)
@@ -62,16 +61,6 @@ export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
 						/> :
 					undefined
 		)}
-		{buckets &&
-			buckets.map(bucket => 
-				<BucketPanel 
-					key={bucket._id}
-					rundown={props.rundown}
-					showStyleBase={props.showStyleBase}
-					shouldQueue={props.shouldQueue}
-					bucket={bucket}
-				/>
-			)}
 		{rundownLayout.actionButtons &&
 			<DashboardActionButtonGroup
 				rundown={props.rundown}

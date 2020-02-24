@@ -11,6 +11,8 @@ import { BucketSecurity } from '../security/buckets'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 
+const DEFAULT_BUCKET_WIDTH = 9
+
 function removeBucketAdLib(id: string) {
 	BucketAdLibs.remove({
 		_id: id
@@ -21,7 +23,9 @@ function removeBucketAdLib(id: string) {
 }
 
 function modifyBucket(id: string, bucket: Bucket) {
-	Buckets.update(id, _.omit(bucket, [ '_id' ]))
+	Buckets.update(id,
+		_.omit(bucket, [ '_id' ])
+	)
 }
 
 function emptyBucket(id: string) {
@@ -33,10 +37,15 @@ function emptyBucket(id: string) {
 	})
 }
 
-function createNewBucket(name: string) {
+function createNewBucket(name: string, studioId: string, userId: string | null) {
 	const newBucket = literal<Bucket>({
 		_id: Random.id(),
-		name: name
+		name: name,
+		studioId,
+		userId,
+		width: DEFAULT_BUCKET_WIDTH,
+		buttonWidthScale: 1,
+		buttonHeightScale: 1
 	})
 
 	Buckets.insert(newBucket)
@@ -59,7 +68,10 @@ methods[BucketsAPI.methods.modifyBucket] = function (id: string, bucket: Bucket)
 	check(id, String)
 	check(bucket, Object)
 
-	return ClientAPI.responseSuccess(modifyBucket(id, bucket))
+	if (BucketSecurity.allowWriteAccess(id)) {
+		return ClientAPI.responseSuccess(modifyBucket(id, bucket))
+	}
+	throw new Meteor.Error(403, 'Access denied')
 }
 methods[BucketsAPI.methods.removeBucketAdLib] = function (id: string) {
 	check(id, String)
@@ -71,15 +83,16 @@ methods[BucketsAPI.methods.emptyBucket] = function (id: string) {
 
 	return ClientAPI.responseSuccess(emptyBucket(id))
 }
-methods[BucketsAPI.methods.createBucket] = function (name: string) {
+methods[BucketsAPI.methods.createBucket] = function (name: string, studioId: string) {
 	check(name, String)
+	check(studioId, String)
 
-	return ClientAPI.responseSuccess(createNewBucket(name))
+	return ClientAPI.responseSuccess(createNewBucket(name, studioId, this.connection.userId))
 }
 methods[BucketsAPI.methods.removeBucket] = function (id: string) {
 	check(id, String)
 
-	if (BucketSecurity.allowWriteAccess(this.connection.userId)) {
+	if (BucketSecurity.allowWriteAccess(id)) {
 		removeBucket(id)
 		return ClientAPI.responseSuccess()
 	}

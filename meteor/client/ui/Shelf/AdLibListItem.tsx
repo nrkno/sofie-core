@@ -109,14 +109,14 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 				>
 				<td className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
-					RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					{
 						'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 						'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 						'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN
 					}
 				)}>
-					{this.props.layer && (this.props .layer.abbreviation || this.props.layer.name)}
+					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
 					{this.props.item.hotkey && mousetrapHelper.shortcutLabel(this.props.item.hotkey, _isMacLike)}

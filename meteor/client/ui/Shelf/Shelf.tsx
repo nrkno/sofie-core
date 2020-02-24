@@ -32,6 +32,7 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
+import { RundownViewBuckets } from './RundownViewBuckets';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -322,44 +323,55 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>}
-				<ErrorBoundary>
-				{
-					(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
-						<ShelfRundownLayout
-							rundown={this.props.rundown}
-							showStyleBase={this.props.showStyleBase}
-							studioMode={this.props.studioMode}
-							hotkeys={this.props.hotkeys}
-							rundownLayout={this.props.rundownLayout}
-							selectedTab={this.state.selectedTab}
-							selectedPiece={this.state.selectedPiece}
-							onSelectPiece={this.selectPiece}
-							onSwitchTab={this.switchTab}
-							/> :
-					(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
-						<ShelfDashboardLayout
-							rundown={this.props.rundown}
-							showStyleBase={this.props.showStyleBase}
-							studioMode={this.props.studioMode}
-							rundownLayout={this.props.rundownLayout}
+				<div className='rundown-view__shelf__contents'>
+					<div className='rundown-view__shelf__contents__pane fill'>
+						<ErrorBoundary>
+						{
+							(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
+								<ShelfRundownLayout
+									rundown={this.props.rundown}
+									showStyleBase={this.props.showStyleBase}
+									studioMode={this.props.studioMode}
+									hotkeys={this.props.hotkeys}
+									rundownLayout={this.props.rundownLayout}
+									selectedTab={this.state.selectedTab}
+									selectedPiece={this.state.selectedPiece}
+									onSelectPiece={this.selectPiece}
+									onSwitchTab={this.switchTab}
+									/> :
+							(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
+								<ShelfDashboardLayout
+									rundown={this.props.rundown}
+									showStyleBase={this.props.showStyleBase}
+									studioMode={this.props.studioMode}
+									rundownLayout={this.props.rundownLayout}
+									shouldQueue={this.state.shouldQueue}
+									onChangeQueueAdLib={this.changeQueueAdLib}
+									/> :
+								// ultimate fallback if not found
+								<ShelfRundownLayout
+									rundown={this.props.rundown}
+									showStyleBase={this.props.showStyleBase}
+									studioMode={this.props.studioMode}
+									hotkeys={this.props.hotkeys}
+									rundownLayout={undefined}
+									selectedTab={this.state.selectedTab}
+									selectedPiece={this.state.selectedPiece}
+									onSelectPiece={this.selectPiece}
+									onSwitchTab={this.switchTab}
+									/>
+						}
+						</ErrorBoundary>
+					</div>
+					<ErrorBoundary>
+						<RundownViewBuckets
 							buckets={this.props.buckets}
-							shouldQueue={this.state.shouldQueue}
-							onChangeQueueAdLib={this.changeQueueAdLib}
-							/> :
-						// ultimate fallback if not found
-						<ShelfRundownLayout
 							rundown={this.props.rundown}
+							shouldQueue={this.state.shouldQueue}
 							showStyleBase={this.props.showStyleBase}
-							studioMode={this.props.studioMode}
-							hotkeys={this.props.hotkeys}
-							rundownLayout={undefined}
-							selectedTab={this.state.selectedTab}
-							selectedPiece={this.state.selectedPiece}
-							onSelectPiece={this.selectPiece}
-							onSwitchTab={this.switchTab}
 							/>
-				}
-				</ErrorBoundary>
+					</ErrorBoundary>
+				</div>
 			</div>
 		)
 	}
