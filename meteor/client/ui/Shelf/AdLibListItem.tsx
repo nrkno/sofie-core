@@ -113,7 +113,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 			>
 				<td className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
-					RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					{
 						'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 						'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,

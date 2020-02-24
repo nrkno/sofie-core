@@ -13,7 +13,7 @@ import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
-import { BucketId } from '../collections/Buckets'
+import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 
 export interface NewUserActionAPI {
@@ -59,6 +59,11 @@ export interface NewUserActionAPI {
 	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
 	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucket(userEvent: string, id: BucketId, bucket: Bucket): Promise<ClientAPI.ClientResponse<void>>
+	bucketsEmptyBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsCreateNewBucket(userEvent: string, name: string, studioId: StudioId, userId: string | null): Promise<ClientAPI.ClientResponse<Bucket>>
+	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {

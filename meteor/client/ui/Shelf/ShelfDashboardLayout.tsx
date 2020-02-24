@@ -15,8 +15,8 @@ import { unprotectString } from '../../../lib/lib'
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
 	buckets: Bucket[] | undefined
+	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	shouldQueue: boolean
 	onChangeQueueAdLib: (isQueue: boolean, e: any) => void

@@ -40,10 +40,10 @@ import { ServerClientAPI } from './client'
 import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
 import { syncFunction } from '../codeControl'
 import { getShowStyleCompound, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
-import { BucketId, Buckets } from '../../lib/collections/Buckets'
+import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
-import { BucketAdLibId } from '../../lib/collections/BucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
+import { BucketsAPI } from './buckets'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -531,6 +531,31 @@ export function mediaAbortAllWorkflows() {
 		MediaManagerAPI.abortAllWorkflows()
 	)
 }
+export function bucketsRemoveBucket(id: BucketId) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.removeBucket(id)
+	)
+}
+export function bucketsModifyBucket(id: BucketId, bucket: Bucket) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.modifyBucket(id, bucket)
+	)
+}
+export function bucketsEmptyBucket(id: BucketId) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.emptyBucket(id)
+	)
+}
+export function bucketsCreateNewBucket(name: string, studioId: StudioId, userId: string | null) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.createNewBucket(name, studioId, userId)
+	)
+}
+export function bucketsRemoveBucketAdLib(id: PieceId) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.removeBucketAdLib(id)
+	)
+}
 export function regenerateRundownPlaylist(rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
 
@@ -738,6 +763,21 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	}
 	guiBlurred(_userEvent: string, _viewInfo: any[]) {
 		return makePromise(() => noop())
+	}
+	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
+		return makePromise(() => bucketsRemoveBucket(id))
+	}
+	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Bucket) {
+		return makePromise(() => bucketsModifyBucket(id, bucket))
+	}
+	bucketsEmptyBucket(_userEvent: string, id: BucketId) {
+		return makePromise(() => bucketsEmptyBucket(id))
+	}
+	bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
+		return makePromise(() => bucketsCreateNewBucket(name, studioId, userId))
+	}
+	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
+		return makePromise(() => bucketsRemoveBucketAdLib(id))
 	}
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {

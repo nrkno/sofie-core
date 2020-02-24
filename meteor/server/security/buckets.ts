@@ -1,13 +1,13 @@
 import { rejectFields } from './lib'
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
 
 export namespace BucketSecurity {
-	export function allowReadAccess (selector: object, token: string, context: any) {
+	export function allowReadAccess(selector: object, token: string, context: any) {
 
 		return true
 		// TODO: implement some security here
 	}
-	export function allowWriteAccess (id: string) {
+	export function allowWriteAccess(id: BucketId) {
 		// TODO
 
 		return true
@@ -16,15 +16,15 @@ export namespace BucketSecurity {
 // Setup rules:
 
 Buckets.allow({
-	insert (userId: string, doc: Bucket): boolean {
+	insert(userId: string, doc: Bucket): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return rejectFields(fields, [
 			'_id'
 		])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
 	}
 })

@@ -31,10 +31,10 @@ export interface Bucket {
 }
 export const Buckets: TransformedCollection<Bucket, Bucket> = createMongoCollection<Bucket>('buckets')
 registerCollection('Buckets', Buckets)
-// Meteor.startup(() => {
-// 	if (Meteor.isServer) {
-// 		Buckets._ensureIndex({
-// 			_rank: 1
-// 		})
-// 	}
-// })
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Buckets._ensureIndex({
+			studioId: 1
+		})
+	}
+})

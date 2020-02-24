@@ -30,6 +30,7 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
+import { RundownViewBuckets } from './RundownViewBuckets'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -389,9 +390,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								<ShelfDashboardLayout
 									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
+									buckets={this.props.buckets}
 									studioMode={this.props.studioMode}
 									rundownLayout={this.props.rundownLayout}
-									buckets={this.props.buckets}
 									shouldQueue={this.state.shouldQueue}
 									onChangeQueueAdLib={this.changeQueueAdLib}
 								/> :

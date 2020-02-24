@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 
-import { RundownSecurity } from '../security/rundowns'
+import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { Buckets } from '../../lib/collections/Buckets'
@@ -12,7 +12,7 @@ meteorPublish(PubSub.buckets, function (selector, token) {
 			token: 0
 		}
 	}
-	if (RundownSecurity.allowReadAccess(selector, token, this)) {
+	if (BucketSecurity.allowReadAccess(selector, token, this)) {
 		return Buckets.find(selector, modifier)
 	}
 	return null

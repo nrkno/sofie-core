@@ -11,9 +11,6 @@ import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
-import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownViewKbdShortcuts } from '../RundownView'
@@ -222,18 +219,15 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				<div className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
 					'dashboard-panel__panel--bucket-active': this.state.dropActive
 				})}
-					style={dashboardElementPosition({
-						x: -1,
-						y: 0,
-						width: 9,
-						height: -1
-					})}
 					data-bucket-id={this.props.bucket._id}
 				>
 					<h4 className='dashboard-panel__header'>
-						<FontAwesomeIcon icon={faBars} />&nbsp;{this.props.bucket.name}
+						{this.props.bucket.name}
 					</h4>
-					{/* { filter.enableSearch &&
+					{/* 
+					<FontAwesomeIcon icon={faBars} />&nbsp;
+					
+					{ filter.enableSearch &&
 						<AdLibPanelToolbar
 							onFilterChange={this.onFilterChange} />
 					} */}
