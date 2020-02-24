@@ -91,6 +91,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			this[key] = document[key]
 		})
 	}
+	/** Returns all Rundowns in the RundownPlaylist */
 	getRundowns (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
 		return Rundowns.find(
 			_.extend({
@@ -104,21 +105,18 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}, options)
 		).fetch()
 	}
+	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
 	getRundownIDs (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): string[] {
-		return Rundowns.find(
-			_.extend({
-				playlistId: this._id
-			}, selector),
-			_.extend({
-				sort: {
-					_rank: 1
-				},
-				fields: {
-					_rank: 1,
-					_id: 1
-				}
-			}, options)
-		).fetch().map(i => i._id)
+		return this.getRundowns(selector, _.extend({
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			fields: {
+				_rank: 1,
+				_id: 1
+			}
+		}, options)).map(i => i._id)
 	}
 	getRundownsMap (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
@@ -131,13 +129,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			RundownPlaylists.update(this._id, { $set: { modified: m } })
 		}
 	}
+	/** Remove this RundownPlaylist and all its contents */
 	remove () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		const allRundowns = Rundowns.find({
-			playlistId: this._id
-		}).fetch()
+		const allRundowns = this.getRundowns()
 		allRundowns.forEach(i => i.remove())
 	}
+	/** Return the studio for this RundownPlaylist */
 	getStudio (): Studio {
 		if (!this.studioId) throw new Meteor.Error(500,'Rundown is not in a studio!')
 		let studio = Studios.findOne(this.studioId)
@@ -146,6 +144,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
+	/** Returns all segments in their correct order for this RundownPlaylist */
 	getSegments (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Segment[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
@@ -190,7 +189,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		return parts
 	}
 	/**
-	 * Return ordered lists of all Segments and Parts in the rundown
+	 * Return ordered lists of all Segments and Parts of the rundowns
 	 */
 	async getSegmentsAndParts (rundowns0?: DBRundown[]): Promise<{ segments: Segment[], parts: Part[] }> {
 		let rundowns = rundowns0
