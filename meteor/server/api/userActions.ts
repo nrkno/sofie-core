@@ -7,7 +7,7 @@ import {
 	RundownHoldState,
 	RundownId
 } from '../../lib/collections/Rundowns'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, Omit, makePromise } from '../../lib/lib'
 import {
 	Parts, Part, PartId
 } from '../../lib/collections/Parts'
@@ -536,7 +536,7 @@ export function bucketsRemoveBucket(id: BucketId) {
 		BucketsAPI.removeBucket(id)
 	)
 }
-export function bucketsModifyBucket(id: BucketId, bucket: Bucket) {
+export function bucketsModifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
 	return ClientAPI.responseSuccess(
 		BucketsAPI.modifyBucket(id, bucket)
 	)
@@ -767,7 +767,7 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
 		return makePromise(() => bucketsRemoveBucket(id))
 	}
-	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Bucket) {
+	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
 		return makePromise(() => bucketsModifyBucket(id, bucket))
 	}
 	bucketsEmptyBucket(_userEvent: string, id: BucketId) {

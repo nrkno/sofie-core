@@ -60,7 +60,7 @@ export interface NewUserActionAPI {
 	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
-	bucketsModifyBucket(userEvent: string, id: BucketId, bucket: Bucket): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucket(userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>): Promise<ClientAPI.ClientResponse<void>>
 	bucketsEmptyBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsCreateNewBucket(userEvent: string, name: string, studioId: StudioId, userId: string | null): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
@@ -88,6 +88,12 @@ export enum UserActionAPIMethods {
 
 	'bucketAdlibImport' = 'userAction.bucketAdlibImport',
 	'bucketAdlibStart' = 'userAction.bucketAdlibStart',
+
+	'createBucket' = 'userAction.createBucket',
+	'removeBucket' = 'userAction.removeBucket',
+	'emptyBucket' = 'userAction.emptyBucket',
+	'modifyBucket' = 'userAction.modifyBucket',
+	'removeBucketAdLib' = 'userAction.removeBucketAdLib',
 
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',

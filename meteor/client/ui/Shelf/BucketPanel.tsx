@@ -11,6 +11,8 @@ import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
+import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownViewKbdShortcuts } from '../RundownView'
@@ -46,6 +48,7 @@ interface IState {
 		[key: string]: ISourceLayer
 	}
 	dropActive: boolean
+	bucketName: string
 }
 
 export interface IBucketPanelProps {
@@ -53,6 +56,8 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
+	editableName?: boolean
+	onNameChanged?: (e: any, newName: string) => void
 }
 
 export interface IBucketPanelTrackedProps {
@@ -72,17 +77,20 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 }, (data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
 	return !_.isEqual(props, nextProps)
 })(class BucketPanel extends MeteorReactComponent<Translated<IBucketPanelProps & IBucketPanelTrackedProps>, IState> {
+	_nameTextBox: HTMLInputElement | null = null
+
 	constructor(props: Translated<IBucketPanelProps & IBucketPanelTrackedProps>) {
 		super(props)
 
 		this.state = {
 			outputLayers: {},
 			sourceLayers: {},
-			dropActive: false
+			dropActive: false,
+			bucketName: props.bucket.name
 		}
 	}
 
-	static getDerivedStateFromProps(props: IAdLibPanelProps, state) {
+	static getDerivedStateFromProps(props: IBucketPanelProps & IBucketPanelTrackedProps, state) {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -97,13 +105,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			props.showStyleBase.sourceLayers.forEach((item) => {
 				tSLayers[item._id] = item
 			})
+		}
 
-			return _.extend(state, {
-				outputLayers: tOLayers,
-				sourceLayers: tSLayers
-			})
-		} else {
-			return state
+		return {
+			outputLayers: tOLayers,
+			sourceLayers: tSLayers
 		}
 	}
 
@@ -213,6 +219,55 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
+	onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			this.setState({
+				bucketName: this.props.bucket.name
+			}, () => {
+				this._nameTextBox && this._nameTextBox.blur()
+			})
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		} else if (e.key === 'Enter') {
+			this._nameTextBox && this._nameTextBox.blur()
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		}
+	}
+
+	onRenameTextBoxBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		if (!this.state.bucketName.trim()) {
+			this.setState({
+				bucketName: this.props.bucket.name
+			}, () => {
+				this.props.onNameChanged && this.props.onNameChanged(e, this.state.bucketName)
+			})
+		} else {
+			this.props.onNameChanged && this.props.onNameChanged(e, this.state.bucketName)
+		}
+	}
+
+	onRenameTextBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({
+			bucketName: e.target.value || ''
+		})
+	}
+
+	renameTextBoxFocus = (input: HTMLInputElement) => {
+		input.focus()
+		input.setSelectionRange(0, input.value.length)
+	}
+
+	onRenameTextBoxShow = (ref: HTMLInputElement) => {
+		if (ref && !this._nameTextBox) {
+			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
+			this.renameTextBoxFocus(ref)
+		}
+		this._nameTextBox = ref
+	}
+
 	render() {
 		if (this.props.showStyleBase) {
 			return (
@@ -221,9 +276,16 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				})}
 					data-bucket-id={this.props.bucket._id}
 				>
-					<h4 className='dashboard-panel__header'>
-						{this.props.bucket.name}
-					</h4>
+					{this.props.editableName ?
+						<input
+							className='h4 dashboard-panel__header'
+							value={this.state.bucketName}
+							onChange={this.onRenameTextBoxChange}
+							onBlur={this.onRenameTextBoxBlur}
+							ref={this.onRenameTextBoxShow}
+						/> :
+						<h4 className='dashboard-panel__header'><FontAwesomeIcon icon={faBars} />&nbsp;{this.state.bucketName}</h4>
+					}
 					{/* 
 					<FontAwesomeIcon icon={faBars} />&nbsp;
 					
@@ -257,4 +319,3 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	}
 
 })
-

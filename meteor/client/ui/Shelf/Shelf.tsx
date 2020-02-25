@@ -31,6 +31,7 @@ import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
+import { ContextMenuTrigger } from 'react-contextmenu'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -244,6 +245,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	dragHandle = (e: MouseEvent) => {
+		if (e.buttons !== 1) {
+			this.dropHandle(e)
+			return
+		}
+
 		this.setState({
 			overrideHeight: e.clientY + this._mouseOffset.y
 		})
@@ -252,6 +258,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (e.button !== 0) {
+			return
+		}
+
 		document.addEventListener('mouseup', this.dropHandle)
 		document.addEventListener('mouseleave', this.dropHandle)
 		document.addEventListener('mousemove', this.dragHandle)
@@ -320,6 +330,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 
 		this.setState(stateChange)
+
+		document.body.style.cursor = ''
+
 		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
@@ -337,6 +350,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 
 		this._mouseDown = Date.now()
+
+		document.body.style.cursor = 'grabbing'
 
 		this.setState({
 			moving: true
@@ -367,59 +382,74 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		const { t, fullViewport } = this.props
 		return (
 			<div className={ClassNames('rundown-view__shelf dark', {
-				'full-viewport': fullViewport
+				'full-viewport': fullViewport,
+				'moving': this.state.moving
 			})} style={fullViewport ? undefined : this.getStyle()}>
 				{!fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle} onTouchStart={this.touchOnHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>}
-				<ErrorBoundary>
-					{
-						(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
-							<ShelfRundownLayout
-								playlist={this.props.playlist}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.props.studioMode}
-								hotkeys={this.props.hotkeys}
-								rundownLayout={this.props.rundownLayout}
-								selectedTab={this.state.selectedTab}
-								selectedPiece={this.state.selectedPiece}
-								onSelectPiece={this.selectPiece}
-								onSwitchTab={this.switchTab}
-							/> :
-							(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
-								<ShelfDashboardLayout
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									buckets={this.props.buckets}
-									studioMode={this.props.studioMode}
-									rundownLayout={this.props.rundownLayout}
-									shouldQueue={this.state.shouldQueue}
-									onChangeQueueAdLib={this.changeQueueAdLib}
-								/> :
-								(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
-									<ShelfDashboardLayout
-										playlist={this.props.playlist}
-										showStyleBase={this.props.showStyleBase}
-										buckets={this.props.buckets}
-										studioMode={this.props.studioMode}
-										rundownLayout={this.props.rundownLayout}
-										shouldQueue={this.state.shouldQueue}
-										onChangeQueueAdLib={this.changeQueueAdLib}
-									/> :
-									// ultimate fallback if not found
+				<div className='rundown-view__shelf__contents'>
+					<ContextMenuTrigger id='bucket-context-menu' attributes={{
+						className: 'rundown-view__shelf__contents__pane fill'
+					}}>
+						<ErrorBoundary>
+							{
+								(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
 									<ShelfRundownLayout
 										playlist={this.props.playlist}
 										showStyleBase={this.props.showStyleBase}
 										studioMode={this.props.studioMode}
 										hotkeys={this.props.hotkeys}
-										rundownLayout={undefined}
+										rundownLayout={this.props.rundownLayout}
 										selectedTab={this.state.selectedTab}
 										selectedPiece={this.state.selectedPiece}
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
-									/>
-					}
-				</ErrorBoundary>
+									/> :
+									(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
+										<ShelfDashboardLayout
+											playlist={this.props.playlist}
+											showStyleBase={this.props.showStyleBase}
+											buckets={this.props.buckets}
+											studioMode={this.props.studioMode}
+											rundownLayout={this.props.rundownLayout}
+											shouldQueue={this.state.shouldQueue}
+											onChangeQueueAdLib={this.changeQueueAdLib}
+										/> :
+										(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
+											<ShelfDashboardLayout
+												playlist={this.props.playlist}
+												showStyleBase={this.props.showStyleBase}
+												buckets={this.props.buckets}
+												studioMode={this.props.studioMode}
+												rundownLayout={this.props.rundownLayout}
+												shouldQueue={this.state.shouldQueue}
+												onChangeQueueAdLib={this.changeQueueAdLib}
+											/> :
+											// ultimate fallback if not found
+											<ShelfRundownLayout
+												playlist={this.props.playlist}
+												showStyleBase={this.props.showStyleBase}
+												studioMode={this.props.studioMode}
+												hotkeys={this.props.hotkeys}
+												rundownLayout={undefined}
+												selectedTab={this.state.selectedTab}
+												selectedPiece={this.state.selectedPiece}
+												onSelectPiece={this.selectPiece}
+												onSwitchTab={this.switchTab}
+											/>
+							}
+						</ErrorBoundary>
+					</ContextMenuTrigger>
+					<ErrorBoundary>
+						<RundownViewBuckets
+							buckets={this.props.buckets}
+							playlist={this.props.playlist}
+							shouldQueue={this.state.shouldQueue}
+							showStyleBase={this.props.showStyleBase}
+						/>
+					</ErrorBoundary>
+				</div>
 			</div>
 		)
 	}

@@ -25,7 +25,7 @@ export namespace UIStateStorage {
 
 	export function setItem (scope: string, tag: string, value: boolean | BooleanMap | string | number, permament?: boolean) {
 		_collapsedState[scope] = _collapsedState[scope] || {}
-		_collapsedState[scope]['_modified'] = permament ? Date.now() : null
+		_collapsedState[scope]['_modified'] = permament ? null : Date.now()
 		_collapsedState[scope][tag] = value
 		_persist()
 	}

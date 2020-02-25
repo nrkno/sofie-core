@@ -34,7 +34,7 @@ $inspector-shelf-tabs-height: 2.3em;
 		clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		-webkit-clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		box-shadow: 0 0 20px #000;
-		cursor: -webkit-grab;
+		cursor: grab;
 		touch-action: none;
 
 		text-align: center;
@@ -45,6 +45,12 @@ $inspector-shelf-tabs-height: 2.3em;
 		&:hover {
 			transition: 0.2s color;
 			color: #777;
+		}
+	}
+
+	&.moving {
+		.rundown-view__shelf__handle {
+			cursor: grabbing;
 		}
 	}
 
@@ -67,6 +73,7 @@ $inspector-shelf-tabs-height: 2.3em;
 				user-select: none;
 				touch-action: none;
 				cursor: ew-resize;
+				overflow: hidden;
 
 				> .rundown-view__shelf__contents__pane__handle {
 					position: absolute;
@@ -91,7 +98,7 @@ $inspector-shelf-tabs-height: 2.3em;
 				margin-left: 0;
 			}
 
-			> .dashboard-panel__panel--bucket {
+			> div.react-contextmenu-wrapper > .dashboard-panel__panel--bucket, > .dashboard-panel__panel--bucket {
 				top: 0;
 				left: 0;
 				bottom: 0;

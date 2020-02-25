@@ -16,6 +16,8 @@ export interface Bucket {
 	_id: BucketId
 	/** A user-presentable name for a bucket */
 	name: string
+	/** Rank used for sorting buckets */
+	_rank: number
 
 	/** The studio this bucket belongs to, */
 	studioId: StudioId
@@ -23,7 +25,7 @@ export interface Bucket {
 	userId: string | null
 
 	/** The default width of the bucket. Can possibly be runtime-modified by the user (stored in localStorage?) */
-	width: number
+	width?: number
 
 	/** Scaling factors for the buttons. Quite possibly not settable in the UI at all? */
 	buttonWidthScale: number
