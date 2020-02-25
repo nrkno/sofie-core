@@ -222,7 +222,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 			rundownId,
 			parseMosString(story.RunningOrderId),
 			cachedPartData.segmentId,
-			cachedPartData.segmentId
+			unprotectString(cachedPartData.segmentId)
 		)
 
 		const ingestPart: IngestPart = cachedPartData.data

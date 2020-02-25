@@ -18,10 +18,10 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
 
-export interface IAdLibListItem extends AdLibPieceUi {
-	// _id: string
+export interface IAdLibListItem {
+	_id: PieceId
 	name: string
-	// status?: RundownAPI.PieceStatusCode
+	status?: RundownAPI.PieceStatusCode
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean

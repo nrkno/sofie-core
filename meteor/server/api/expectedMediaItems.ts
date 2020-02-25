@@ -1,6 +1,6 @@
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
-import { ExpectedMediaItems, ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
+import { ExpectedMediaItems, ExpectedMediaItem, ExpectedMediaItemId } from '../../lib/collections/ExpectedMediaItems'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Pieces, PieceGeneric } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -23,8 +23,9 @@ function generateExpectedMediaItems (rundownId: RundownId, studioId: StudioId, p
 	const result: ExpectedMediaItem[] = []
 
 	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds && piece.partId) {
+		const partId = piece.partId;
 		(piece.content.mediaFlowIds as string[]).forEach(function (flow) {
-			const id = protectString(getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + piece.partId))
+			const id = protectString<ExpectedMediaItemId>(getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + piece.partId))
 			result.push({
 				_id: id,
 				label: piece.name,
@@ -35,7 +36,7 @@ function generateExpectedMediaItems (rundownId: RundownId, studioId: StudioId, p
 				url: this[1].toString(),
 
 				rundownId: rundownId,
-				partId: piece.partId,
+				partId: partId,
 				studioId: studioId
 			})
 		}, [piece.content.fileName, piece.content.path])

@@ -10,7 +10,7 @@ const ObserveChangeBufferTimeout = 2000
 type Timeout = number
 
 export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: ProtectedString<any> }> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
-	const doUpdate = (id: string, obj: any) => {
+	const doUpdate = (id: Tb['_id'], obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
 
 		if (newHash !== obj[hashName]) {
@@ -43,7 +43,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 						// Perform hash update
 						const obj = collection.findOne(protectString(id))
 						if (obj) {
-							doUpdate(id, obj)
+							doUpdate(protectString(id), obj)
 						}
 					}, ObserveChangeBufferTimeout)
 				}

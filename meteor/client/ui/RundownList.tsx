@@ -37,7 +37,7 @@ interface RundownPlaylistUi extends RundownPlaylist {
 	rundownAirStatus: string
 	unsyncedRundowns: Rundown[]
 	studioName: string
-	showStyles: Array<{ id?: ShowStyleBaseId, baseName?: string, variantName?: string }>
+	showStyles: Array<{ id: ShowStyleBaseId, baseName?: string, variantName?: string }>
 }
 
 interface IRundownListItemProps {
@@ -230,18 +230,22 @@ export const RundownList = translateWithTracker((props) => {
 			const studio = _.find(studios, s => s._id === playlist.studioId)
 
 			playlist.studioName = studio && studio.name || ''
-			playlist.showStyles = _.uniq(
+			playlist.showStyles = _.compact(_.uniq(
 				rundownsInPlaylist.map(rundown => [rundown.showStyleBaseId, rundown.showStyleVariantId]), false, (ids) => ids[0] + '_' + ids[1]
 				).map(combo => {
 					const showStyleBase = _.find(showStyleBases, style => style._id === combo[0])
 					const showStyleVariant = _.find(showStyleVariants, variant => variant._id === combo[1])
 
-					return {
-						id: showStyleBase && showStyleBase._id || undefined,
-						baseName: showStyleBase && showStyleBase.name || undefined,
-						variantName: showStyleVariant && showStyleVariant.name || undefined
+					if (showStyleBase) {
+						return {
+							id: showStyleBase._id,
+							baseName: showStyleBase.name || undefined,
+							variantName: showStyleVariant && showStyleVariant.name || undefined
+						}
+					} else {
+						return undefined
 					}
-				})
+				}))
 			return playlist
 		})
 	}

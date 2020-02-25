@@ -113,7 +113,7 @@ methods[PeripheralDeviceAPI.methods.getMediaWorkFlowStepRevisions] = (deviceId: 
 methods[PeripheralDeviceAPI.methods.updateMediaWorkFlow] = (deviceId: PeripheralDeviceId, deviceToken: string, workFlowId: MediaWorkFlowId , obj: MediaWorkFlow | null) => {
 	return MediaManagerIntegration.updateMediaWorkFlow(deviceId, deviceToken, workFlowId, obj)
 }
-methods[PeripheralDeviceAPI.methods.updateMediaWorkFlowStep] = (deviceId: PeripheralDeviceId, deviceToken: string, docId: string, obj: MediaWorkFlowStep | null) => {
+methods[PeripheralDeviceAPI.methods.updateMediaWorkFlowStep] = (deviceId: PeripheralDeviceId, deviceToken: string, docId: MediaWorkFlowStepId, obj: MediaWorkFlowStep | null) => {
 	return MediaManagerIntegration.updateMediaWorkFlowStep(deviceId, deviceToken, docId, obj)
 }
 // Apply methods:

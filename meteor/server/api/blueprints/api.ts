@@ -167,8 +167,8 @@ let methods: Methods = {}
 methods[BlueprintAPI.methods.insertBlueprint] = () => {
 	return insertBlueprint()
 }
-methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
-	return removeBlueprint(id)
+methods[BlueprintAPI.methods.removeBlueprint] = (blueprintId: BlueprintId) => {
+	return removeBlueprint(blueprintId)
 }
 methods[BlueprintAPI.methods.assignSystemBlueprint] = (blueprintId?: BlueprintId) => {
 	return assignSystemBlueprint(blueprintId)

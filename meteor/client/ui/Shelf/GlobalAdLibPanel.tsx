@@ -20,7 +20,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray, unprotectString } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -102,7 +102,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			{
 				itemList.concat(this.props.rundownAdLibs).concat(this.props.showStyleBase.sourceLayers.filter(i => i.isSticky)
 					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
-						_id: layer._id,
+						_id: protectString(layer._id),
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 						status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -422,7 +422,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleStickyItem = (item: IAdLibListItem, e: any) => {
-		this.onToggleSticky(item._id, e)
+		this.onToggleSticky(unprotectString(item._id), e)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {

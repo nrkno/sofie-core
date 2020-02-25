@@ -7,7 +7,7 @@ import {
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, literal, waitForPromise, fetchNext, last } from './lib'
+import { normalizeArray, literal, waitForPromise, fetchNext, last, unprotectObject } from './lib'
 import { Segment, DBSegment } from './collections/Segments'
 import { Part, Parts, DBPart, PartId } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
@@ -257,7 +257,7 @@ export function getResolvedSegment (
 			// insert items into the timeline for resolution
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
-					id: getPieceGroupId(piece.instance.piece),
+					id: getPieceGroupId(unprotectObject(piece.instance.piece)),
 					enable: calculatePieceTimelineEnable(piece.instance.piece, TIMELINE_TEMP_OFFSET),
 					layer: piece.instance.piece.outputLayerId,
 					content: {
