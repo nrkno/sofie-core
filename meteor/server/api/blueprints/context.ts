@@ -10,7 +10,6 @@ import {
 	ShowStyleContext as IShowStyleContext,
 	RundownContext as IRundownContext,
 	SegmentContext as ISegmentContext,
-	PartContext as IPartContext,
 	EventContext as IEventContext,
 	AsRunEventContext as IAsRunEventContext,
 	PartEventContext as IPartEventContext,
@@ -34,7 +33,7 @@ import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, INoteBase } from '../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -71,92 +70,66 @@ export class CommonContext implements ICommonContext {
 	}
 }
 
+export interface RawNote extends INoteBase {
+	trackingId: string | undefined
+}
+
 export class NotesContext extends CommonContext implements INotesContext {
+	protected readonly _rundownId: RundownId
+	private readonly _contextName: string
+	private readonly _contextIdentifier: string
+	private readonly _handleNotesExternally: boolean
 
-	/** If the notes will be handled externally (using .getNotes()), set this to true */
-	public handleNotesExternally: boolean = false
-
-	protected _rundownId: RundownId
-	private _contextName: string
-	private _segmentId?: SegmentId
-	private _partId?: PartId
-
-	private savedNotes: Array<PartNote> = []
+	private readonly savedNotes: Array<RawNote> = []
 
 	constructor (
 		contextName: string,
-		rundownId: RundownId,
-		segmentId?: SegmentId,
-		partId?: PartId,
+		contextIdentifier: string,
+		handleNotesExternally: boolean
 	) {
-		super(
-			rundownId +
-			(
-				partId ? '_' + partId :
-				(
-					segmentId ? '_' + segmentId : ''
-				)
-			)
-		)
-		this._contextName		= contextName
-
-		// TODO - we should fill these in just before inserting into the DB instead
-		this._rundownId	= rundownId
-		this._segmentId			= segmentId
-		this._partId		= partId
-
+		super(contextIdentifier)
+		this._contextName = contextName
+		this._contextIdentifier = contextIdentifier
+		/** If the notes will be handled externally (using .getNotes()), set this to true */
+		this._handleNotesExternally = handleNotesExternally
 	}
 	/** Throw Error and display message to the user in the GUI */
-	error (message: string) {
+	error (message: string, trackingId?: string) {
 		check(message, String)
 		logger.error('Error from blueprint: ' + message)
 		this._pushNote(
 			NoteType.ERROR,
-			message
+			message,
+			trackingId
 		)
 		throw new Meteor.Error(500, message)
 	}
 	/** Save note, which will be displayed to the user in the GUI */
-	warning (message: string) {
+	warning (message: string, trackingId?: string) {
 		check(message, String)
 		this._pushNote(
 			NoteType.WARNING,
-			message
+			message,
+			trackingId
 		)
 	}
-	getNotes () {
+	getNotes (): RawNote[] {
 		return this.savedNotes
 	}
-	protected getLoggerIdentifier (): string {
-		let ids: string[] = []
-		if (this._rundownId) ids.push('rundownId: ' + this._rundownId)
-		if (this._segmentId) ids.push('segmentId: ' + this._segmentId)
-		if (this._partId) ids.push('partId: ' + this._partId)
-		return ids.join(',')
-	}
-	private _pushNote (type: NoteType, message: string) {
-		if (this.handleNotesExternally) {
+	protected _pushNote (type: NoteType, message: string, trackingId: string | undefined) {
+		if (this._handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
-				origin: {
-					name: this._getLoggerName(),
-					rundownId: this._rundownId,
-					segmentId: this._segmentId,
-					partId: this._partId
-				},
-				message: message
+				message: message,
+				trackingId: trackingId
 			})
 		} else {
 			if (type === NoteType.WARNING) {
-				logger.warn(`Warning from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
+				logger.warn(`Warning from "${this._contextName}"${trackingId ? `(${trackingId})` : ''}: "${message}"\n(${this._contextIdentifier})`)
 			} else {
-				logger.error(`Error from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
+				logger.error(`Error from "${this._contextName}"${trackingId ? `(${trackingId})` : ''}: "${message}"\n(${this._contextIdentifier})`)
 			}
 		}
-	}
-	private _getLoggerName (): string {
-		return this._contextName
-
 	}
 }
 
@@ -191,29 +164,19 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	private showStyleBaseId: ShowStyleBaseId
 	private showStyleVariantId: ShowStyleVariantId
 
-	private notes: NotesContext
+	readonly notesContext: NotesContext
 
 	constructor (
 		studio: Studio,
 		showStyleBaseId: ShowStyleBaseId,
 		showStyleVariantId: ShowStyleVariantId,
-		contextName?: string,
-		rundownId?: RundownId,
-		segmentId?: SegmentId,
-		partId?: PartId
+		notesContext: NotesContext
 	) {
 		super(studio)
 
 		this.showStyleBaseId = showStyleBaseId
 		this.showStyleVariantId = showStyleVariantId
-		this.notes = new NotesContext(contextName || studio.name, rundownId || protectString(''), segmentId, partId)
-	}
-
-	get handleNotesExternally () {
-		return this.notes.handleNotesExternally
-	}
-	set handleNotesExternally (val: boolean) {
-		this.notes.handleNotesExternally = val
+		this.notesContext = notesContext
 	}
 
 	getShowStyleBase (): ShowStyleBase {
@@ -238,19 +201,16 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	/** NotesContext */
 	error (message: string) {
-		this.notes.error(message)
+		this.notesContext.error(message)
 	}
 	warning (message: string) {
-		this.notes.warning(message)
-	}
-	getNotes () {
-		return this.notes.getNotes()
+		this.notesContext.warning(message)
 	}
 	getHashId (str: string, isNotUnique?: boolean) {
-		return this.notes.getHashId(str, isNotUnique)
+		return this.notesContext.getHashId(str, isNotUnique)
 	}
 	unhashId (hash: string) {
-		return this.notes.unhashId(hash)
+		return this.notesContext.unhashId(hash)
 	}
 }
 
@@ -262,8 +222,8 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor (rundown: Rundown, studio?: Studio, contextName?: string, segmentId?: SegmentId, partId?: PartId) {
-		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
+	constructor (rundown: Rundown, notesContext: NotesContext | undefined, studio?: Studio) {
+		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false))
 
 		this.rundownId = unprotectString(rundown._id)
 		this.rundown = unprotectObject(rundown)
@@ -277,8 +237,8 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
 	private readonly segment: Readonly<Segment>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], contextName: string) {
-		super(rundown, studio, contextName)
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[], notesContext: NotesContext) {
+		super(rundown, notesContext, studio)
 
 		if (_.isArray(runtimeArguments)) {
 			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
@@ -298,20 +258,6 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 	}
 }
 
-export class PartContext extends RundownContext implements IPartContext {
-	private readonly runtimeArguments: Readonly<BlueprintRuntimeArguments>
-
-	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments, contextName: string) {
-		super(rundown, studio, contextName)
-
-		this.runtimeArguments = runtimeArguments
-	}
-
-	getRuntimeArguments (): BlueprintRuntimeArguments {
-		return this.runtimeArguments
-	}
-}
-
 /** Events */
 
 export class EventContext extends CommonContext implements IEventContext {
@@ -322,7 +268,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 	readonly part: Readonly<IBlueprintPartInstance>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, partInstance: PartInstance) {
-		super(rundown, studio)
+		super(rundown, new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false), studio)
 
 		this.part = unprotectPartInstance(partInstance)
 	}
@@ -332,7 +278,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
-		super(rundown, studio)
+		super(rundown, new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false), studio)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
 

@@ -38,7 +38,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { IContextMenuContext } from '../RundownView'
 import { literal, unprotectString } from '../../../lib/lib'
@@ -53,7 +53,7 @@ interface IProps {
 	followLiveSegments: boolean,
 	studio: Studio
 	parts: Array<PartUi>
-	segmentNotes: Array<PartNote>
+	segmentNotes: Array<SegmentNote>
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -501,7 +501,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render () {
-		let notes: Array<PartNote> = this.props.segmentNotes
+		let notes: Array<SegmentNote> = this.props.segmentNotes
 
 		const { t } = this.props
 

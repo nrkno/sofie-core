@@ -5,7 +5,7 @@ import { Rundowns, RundownId } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
-import { PartNote } from '../api/notes'
+import { PartNote, SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 
 /** A string, identifying a Segment */
@@ -24,7 +24,7 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	expanded?: boolean
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<PartNote>
+	notes?: Array<SegmentNote>
 }
 export class Segment implements DBSegment {
 	public _id: SegmentId
@@ -35,7 +35,7 @@ export class Segment implements DBSegment {
 	public metaData?: { [key: string]: any }
 	public status?: string
 	public expanded?: boolean
-	public notes?: Array<PartNote>
+	public notes?: Array<SegmentNote>
 	public isHidden?: boolean
 
 	constructor (document: DBSegment) {

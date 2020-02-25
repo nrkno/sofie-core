@@ -45,7 +45,7 @@ import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
 import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, produceRundownPlaylistInfo } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
-import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
+import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import { RundownBaselineObj, RundownBaselineObjs, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
@@ -58,7 +58,7 @@ import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown,
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
@@ -262,14 +262,16 @@ function updateRundownFromIngestData (
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint
-	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id)
+	const notesContext = new NotesContext(`${showStyle.base.name}-${showStyle.variant.name}`, `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`, true)
+	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id, notesContext)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
 
 	// Ensure the ids in the notes are clean
-	const rundownNotes = _.map(blueprintContext.getNotes(), note => literal<PartNote>({
-		...note,
+	const rundownNotes = _.map(notesContext.getNotes(), note => literal<RundownNote>({
+		type: note.type,
+		message: note.message,
 		origin: {
-			name: note.origin.name,
+			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			rundownId: rundownId,
 		}
 	}))
@@ -356,7 +358,8 @@ function updateRundownFromIngestData (
 	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
 
 	// Save the baseline
-	const blueprintRundownContext = new RundownContext(dbRundown, studio)
+	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
+	const blueprintRundownContext = new RundownContext(dbRundown, rundownNotesContext, studio)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
@@ -368,6 +371,8 @@ function updateRundownFromIngestData (
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, showStyle.base.blueprintId)
+
+	// TODO - store notes from rundownNotesContext
 
 	const segmentsAndParts = waitForPromise(dbRundown.getSegmentsAndParts())
 	const existingRundownParts = _.filter(segmentsAndParts.parts, part => part.dynamicallyInserted !== true)
@@ -387,8 +392,8 @@ function updateRundownFromIngestData (
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, part => part.rank)
 
-		const context = new SegmentContext(dbRundown, studio, existingParts, ingestSegment.name)
-		context.handleNotesExternally = true
+		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
+		const context = new SegmentContext(dbRundown, studio, existingParts, notesContext)
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -668,8 +673,8 @@ function updateSegmentFromIngestData (
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, s => s.rank)
 
-	const context = new SegmentContext(rundown, studio, existingParts, ingestSegment.name)
-	context.handleNotesExternally = true
+	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
+	const context = new SegmentContext(rundown, studio, existingParts, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
@@ -828,7 +833,7 @@ export function handleUpdatedPartInner (studio: Studio, rundown: Rundown, segmen
 }
 
 function generateSegmentContents (
-	context: RundownContext,
+	context: SegmentContext,
 	blueprintId: BlueprintId,
 	ingestSegment: IngestSegment,
 	existingSegment: DBSegment | undefined,
@@ -837,22 +842,21 @@ function generateSegmentContents (
 ) {
 	const rundownId = context._rundown._id
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
-
-	const allNotes = _.map(context.getNotes(), note => literal<PartNote>({
-		...note,
-		origin: {
-			name: note.origin.name,
-			rundownId: rundownId,
-			segmentId: segmentId,
-			partId: note.origin.partId,
-			pieceId: note.origin.pieceId,
-		}
-	}))
+	const rawNotes = context.notesContext.getNotes()
 
 	// Ensure all parts have a valid externalId set on them
 	const knownPartIds = blueprintRes.parts.map(p => p.part.externalId)
 
-	const segmentNotes = _.filter(allNotes, note => !note.origin.partId || knownPartIds.indexOf(note.origin.partId) === -1)
+	const rawSegmentNotes = _.filter(rawNotes, note => !note.trackingId || knownPartIds.indexOf(note.trackingId) === -1)
+	const segmentNotes = _.map(rawSegmentNotes, note => literal<SegmentNote>({
+		type: note.type,
+		message: note.message,
+		origin: {
+			name: '', // TODO
+			rundownId,
+			segmentId
+		}
+	}))
 
 	const newSegment = literal<DBSegment>({
 		..._.omit(existingSegment || {}, 'isHidden'),
@@ -872,7 +876,17 @@ function generateSegmentContents (
 	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
 
-		const notes = _.filter(allNotes, note => note.origin.partId === blueprintPart.part.externalId)
+		const partRawNotes = _.filter(rawNotes, note => note.trackingId === blueprintPart.part.externalId)
+		const notes = _.map(partRawNotes, note => literal<PartNote>({
+			type: note.type,
+			message: note.message,
+			origin: {
+				name: '', // TODO
+				rundownId,
+				segmentId,
+				partId
+			}
+		}))
 		_.each(notes, note => note.origin.partId = partId)
 
 		const existingPart = _.find(existingParts, p => p._id === partId)

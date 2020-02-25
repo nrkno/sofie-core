@@ -349,7 +349,7 @@ export namespace ServerPlayoutAPI {
 				const time = getCurrentTime()
 				const resolvedPieces = getResolvedPieces(previousPartInstance)
 
-				const context = new RundownContext(takeRundown)
+				const context = new RundownContext(takeRundown, undefined)
 				previousPartEndState = blueprint.getEndStateForPart(context, playlist.previousPersistentState, previousPartInstance.part.previousPartEndState, unprotectObjectArray(resolvedPieces), time)
 				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 			}

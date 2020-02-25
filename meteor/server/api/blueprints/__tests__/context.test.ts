@@ -3,7 +3,7 @@ import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, De
 import { getHash, literal, protectString, unprotectObject } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
 import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR, IBlueprintPartInstance, IBlueprintPieceInstance } from 'tv-automation-sofie-blueprints-integration'
-import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartContext, PartEventContext, AsRunEventContext } from '../context'
+import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartEventContext, AsRunEventContext } from '../context'
 import { ConfigRef } from '../config'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
@@ -393,36 +393,6 @@ describe('Test blueprint api context', () => {
 			})
 			expect(context.getRuntimeArguments('part2')).toBeUndefined()
 			expect(context.getRuntimeArguments('part5')).toEqual({})
-		})
-	})
-
-	describe('PartContext', () => {
-		test('getRuntimeArguments with data', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = new PartContext(rundown, undefined, {
-				a: 'b',
-				c: 'd'
-			}, '')
-			expect(context.getStudio()).toBeTruthy()
-
-			expect(context.getRuntimeArguments()).toEqual({
-				a: 'b',
-				c: 'd'
-			})
-		})
-
-		test('getRuntimeArguments', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = new PartContext(rundown, undefined, {}, '')
-			expect(context.getStudio()).toBeTruthy()
-
-			expect(context.getRuntimeArguments()).toEqual({})
 		})
 	})
 

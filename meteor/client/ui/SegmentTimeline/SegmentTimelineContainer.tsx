@@ -22,7 +22,7 @@ import { RundownViewEvents, IContextMenuContext } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getAllowSpeaking } from '../../lib/localStorage'
-import { NoteType, PartNote } from '../../../lib/api/notes'
+import { NoteType, PartNote, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -90,7 +90,7 @@ interface IState {
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
 	parts: Array<PartUi>,
-	segmentNotes: Array<PartNote>,
+	segmentNotes: Array<SegmentNote>,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
 	currentLivePart: PartUi | undefined,
@@ -125,7 +125,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
-	let notes: Array<PartNote> = []
+	let notes: Array<SegmentNote> = []
 	_.each(o.parts, (part) => {
 		notes = notes.concat(part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase), part.instance.part.getInvalidReasonNotes())
 	})

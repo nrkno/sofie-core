@@ -341,7 +341,6 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: ShowStyleVarian
 					parts
 				}
 			},
-			// getPart?: (context: PartContext, ingestPart: IngestPart) => BlueprintResultPart | null,
 			// onRundownActivate?: (context: EventContext & RundownContext) => Promise<void>,
 			// onRundownFirstTake?: (context: EventContext & PartEventContext) => Promise<void>,
 			// onRundownDeActivate?: (context: EventContext & RundownContext) => Promise<void>,

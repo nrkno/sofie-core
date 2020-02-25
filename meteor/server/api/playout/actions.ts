@@ -70,7 +70,7 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const { blueprint } = getBlueprintOfRundown(rundown)
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, studio)))
+			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, undefined, studio)))
 			.catch(logger.error)
 		}
 	})
@@ -86,7 +86,7 @@ export function deactivateRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 		if (rundown) {
 			const { blueprint } = getBlueprintOfRundown(rundown)
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
+				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, undefined)))
 				.catch(logger.error)
 			}
 		}

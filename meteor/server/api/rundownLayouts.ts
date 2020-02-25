@@ -119,7 +119,7 @@ function (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseI
 	return ClientAPI.responseSuccess()
 }
 methods[RundownLayoutsAPI.methods.removeRundownLayout] =
-function (id: string) {
+function (id: RundownLayoutId) {
 	check(id, String)
 
 	if (RundownLayoutSecurity.allowWriteAccess(this.connection.userId)) {
