@@ -1,19 +1,20 @@
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
-import { getHash, literal } from '../../../../lib/lib'
+import { getHash, literal, protectString, unprotectObject } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
 import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR, IBlueprintPartInstance, IBlueprintPieceInstance } from 'tv-automation-sofie-blueprints-integration'
 import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartContext, PartEventContext, AsRunEventContext } from '../context'
 import { ConfigRef } from '../config'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { DBPart } from '../../../../lib/collections/Parts'
+import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { Pieces } from '../../../../lib/collections/Pieces'
-import { wrapPartToTemporaryInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { wrapPartToTemporaryInstance, PartInstance, PartInstances, unprotectPartInstance } from '../../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { SegmentId } from '../../../../lib/collections/Segments'
 
 describe('Test blueprint api context', () => {
 
@@ -21,7 +22,7 @@ describe('Test blueprint api context', () => {
 		_.each(rundown.getParts(), (part, i) => {
 			// make into a partInstance
 			PartInstances.insert({
-				_id: `${part._id}_instance`,
+				_id: protectString(`${part._id}_instance`),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				takeCount: i,
@@ -31,11 +32,11 @@ describe('Test blueprint api context', () => {
 			const count = ((i + 2) % 4) + 1 // Some consistent randomness
 			for (let i = 0; i < count; i++) {
 				PieceInstances.insert({
-					_id: `${part._id}_piece${i}`,
+					_id: protectString(`${part._id}_piece${i}`),
 					rundownId: rundown._id,
-					partInstanceId: `${part._id}_instance`,
+					partInstanceId: protectString(`${part._id}_instance`,)
 					piece: {
-						_id: `${part._id}_piece_inner${i}`,
+						_id: protectString(`${part._id}_piece_inner${i}`),
 						rundownId: rundown._id,
 						partId: part._id,
 						content: {
@@ -202,7 +203,7 @@ describe('Test blueprint api context', () => {
 			})
 		}
 
-		function getContext (studio: Studio, contextName?: string, rundownId?: string, segmentId?: string, partId?: string) {
+		function getContext (studio: Studio, contextName?: string, rundownId?: RundownId, segmentId?: SegmentId, partId?: PartId) {
 			const showStyleVariant = ShowStyleVariants.findOne() as ShowStyleVariant
 			expect(showStyleVariant).toBeTruthy()
 
@@ -432,7 +433,7 @@ describe('Test blueprint api context', () => {
 			expect(rundown).toBeTruthy()
 
 			const mockPart = {
-				_id: 'not-a-real-part'
+				_id: protectString('not-a-real-part')
 			}
 
 			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
@@ -446,7 +447,7 @@ describe('Test blueprint api context', () => {
 	describe('AsRunEventContext', () => {
 		function getContext (rundown: Rundown, event?: Partial<AsRunLogEvent>) {
 			const mockEvent: AsRunLogEvent = {
-				_id: `${rundown._id}_tmp`,
+				_id: protectString(`${rundown._id}_tmp`),
 				timestamp: Date.now(),
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
@@ -463,7 +464,7 @@ describe('Test blueprint api context', () => {
 			expect(rundown).toBeTruthy()
 
 			const mockEvent: AsRunLogEvent = {
-				_id: `${rundown._id}_tmp`,
+				_id: protectString(`${rundown._id}_tmp`),
 				timestamp: Date.now(),
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
@@ -479,7 +480,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getAllAsRunEvents()).toHaveLength(0)
 
 			AsRunLog.insert({
-				_id: `${rundown._id}_event1`,
+				_id: protectString(`${rundown._id}_event1`),
 				timestamp: Date.now() - 1000,
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
@@ -488,7 +489,7 @@ describe('Test blueprint api context', () => {
 			})
 			AsRunLog.insert(mockEvent)
 			AsRunLog.insert({
-				_id: `${rundown._id}_event2`,
+				_id: protectString(`${rundown._id}_event2`),
 				timestamp: Date.now() - 2000,
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
@@ -578,7 +579,7 @@ describe('Test blueprint api context', () => {
 			expect(rundown).toBeTruthy()
 
 			const context = getContext(rundown, {
-				segmentId: `${rundown._id}_segment0`
+				segmentId: protectString(`${rundown._id}_segment0`)
 			})
 
 			const segment = context.getSegment('') as IBlueprintSegmentDB
@@ -591,7 +592,7 @@ describe('Test blueprint api context', () => {
 			expect(rundown).toBeTruthy()
 
 			const context = getContext(rundown, {
-				segmentId: `${rundown._id}_segment1`
+				segmentId: protectString(`${rundown._id}_segment1`)
 			})
 
 			const segment = context.getSegment(`${rundown._id}_segment2`) as IBlueprintSegmentDB
@@ -679,7 +680,7 @@ describe('Test blueprint api context', () => {
 			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown, {
-				partInstanceId: `${rundown._id}_part1_1_instance`
+				partInstanceId: protectString(`${rundown._id}_part1_1_instance`)
 			})
 
 			const part = context.getPartInstance('') as IBlueprintPartInstance
@@ -693,7 +694,7 @@ describe('Test blueprint api context', () => {
 			generateSparsePieceInstances(rundown)
 
 			const context = getContext(rundown, {
-				partInstanceId: `${rundown._id}_part1_2_instance`
+				partInstanceId: protectString(`${rundown._id}_part1_2_instance`)
 			})
 
 			const part = context.getPartInstance(`${rundown._id}_part0_1_instance`) as IBlueprintPartInstance
@@ -742,7 +743,7 @@ describe('Test blueprint api context', () => {
 			expect(part).toBeTruthy()
 
 			const partInstance = wrapPartToTemporaryInstance(part)
-			const ingestPart = context.getIngestDataForPartInstance(partInstance)
+			const ingestPart = context.getIngestDataForPartInstance(unprotectPartInstance(partInstance))
 			expect(ingestPart).toBeUndefined()
 		})
 		test('getIngestDataForPartInstance - good', () => {

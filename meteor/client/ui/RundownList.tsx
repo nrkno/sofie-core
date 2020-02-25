@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
-import { getCurrentTime, literal } from '../../lib/lib'
+import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
@@ -23,8 +23,8 @@ import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
-import { Studios } from '../../lib/collections/Studios'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { Studios, StudioId } from '../../lib/collections/Studios'
+import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
@@ -37,7 +37,7 @@ interface RundownPlaylistUi extends RundownPlaylist {
 	rundownAirStatus: string
 	unsyncedRundowns: Rundown[]
 	studioName: string
-	showStyles: Array<{ id: string, baseName: string, variantName: string }>
+	showStyles: Array<{ id?: ShowStyleBaseId, baseName?: string, variantName?: string }>
 }
 
 interface IRundownListItemProps {
@@ -53,17 +53,17 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
-	getRundownPlaylistLink (rundownPlaylistId: string) {
+	getRundownPlaylistLink (rundownPlaylistId: RundownPlaylistId) {
 		// double encoding so that "/" are handled correctly
-		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownPlaylistId))
+		return '/rundown/' + encodeURIComponent(encodeURIComponent(unprotectString(rundownPlaylistId)))
 	}
-	getStudioLink (studioId: string) {
+	getStudioLink (studioId: StudioId) {
 		// double encoding so that "/" are handled correctly
-		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(studioId))
+		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(unprotectString(studioId)))
 	}
-	getshowStyleBaseLink (showStyleBaseId: string) {
+	getshowStyleBaseLink (showStyleBaseId: ShowStyleBaseId) {
 		// double encoding so that "/" are handled correctly
-		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
+		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(unprotectString(showStyleBaseId)))
 	}
 
 	confirmDeleteRundownPlaylist (rundownPlaylist: RundownPlaylist) {
@@ -237,9 +237,9 @@ export const RundownList = translateWithTracker((props) => {
 					const showStyleVariant = _.find(showStyleVariants, variant => variant._id === combo[1])
 
 					return {
-						id: showStyleBase && showStyleBase._id || '',
-						baseName: showStyleBase && showStyleBase.name || '',
-						variantName: showStyleVariant && showStyleVariant.name || ''
+						id: showStyleBase && showStyleBase._id || undefined,
+						baseName: showStyleBase && showStyleBase.name || undefined,
+						variantName: showStyleVariant && showStyleVariant.name || undefined
 					}
 				})
 			return playlist
@@ -368,7 +368,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 		return list.length > 0 ?
 			list.map((rundownPlaylist) => (
-				<RundownListItem key={rundownPlaylist._id} rundownPlaylist={rundownPlaylist} t={this.props.t} />
+				<RundownListItem key={unprotectString(rundownPlaylist._id)} rundownPlaylist={rundownPlaylist} t={this.props.t} />
 			)) :
 			<tr>
 				<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>

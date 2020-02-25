@@ -4,7 +4,7 @@ import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-m
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 import { Random } from 'meteor/random'
-import { literal } from '../../lib/lib'
+import { literal, unprotectString } from '../../lib/lib'
 import { ModalDialog, doModalDialog, ModalDialogQueueItem } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
@@ -243,7 +243,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.studios.map((studio) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(studio._id)} to={'/settings/studio/' + studio._id}>
 								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteStudio(studio) }}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
@@ -272,7 +272,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.showStyleBases.map((showStyleBase) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={showStyleBase._id} to={'/settings/showStyleBase/' + showStyleBase._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(showStyleBase._id)} to={'/settings/showStyleBase/' + showStyleBase._id}>
 								<div className='selectable clickable'>
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
@@ -306,7 +306,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.blueprints.map((blueprint) => {
 						return (
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={blueprint._id} to={'/settings/blueprint/' + blueprint._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(blueprint._id)} to={'/settings/blueprint/' + blueprint._id}>
 								<div className='selectable clickable'>
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
 										<FontAwesomeIcon icon={faTrash} />
@@ -334,25 +334,25 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					.filter((device) => {
 						return device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 					})
-					.map((item) => {
+					.map((device) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
-								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(item) }}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(device._id)} to={'/settings/peripheralDevice/' + device._id}>
+								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(device) }}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 								{
-									this.peripheralDeviceHasError(item) ?
+									this.peripheralDeviceHasError(device) ?
 									<button className='action-btn right error-notice'>
 										<FontAwesomeIcon icon={faExclamationTriangle} />
 									</button> :
 									null
 								}
-								<h3>{item.name}</h3>
+								<h3>{device.name}</h3>
 								<p>
-									{item.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(item.status.statusCode)}
+									{device.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(device.status.statusCode)}
 								</p>
 							</NavLink>,
-							<hr className='vsubtle man' key={item._id + '-hr'} />
+							<hr className='vsubtle man' key={device._id + '-hr'} />
 						]
 					})
 				}

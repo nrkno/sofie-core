@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { getCurrentTime, Time } from '../../../lib/lib'
+import { getCurrentTime, Time, unprotectString } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
@@ -13,7 +13,7 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import * as ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
@@ -21,7 +21,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 interface IExternalMessagesProps {
 }
 interface IExternalMessagesState {
-	studioId: string
+	studioId: StudioId | undefined
 }
 interface IExternalMessagesTrackedProps {
 	studios: Array<Studio>
@@ -35,7 +35,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 	constructor (props) {
 		super(props)
 		this.state = {
-			studioId: '',
+			studioId: undefined,
 		}
 	}
 	componentWillMount () {
@@ -61,7 +61,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 						{
 							_.map(this.props.studios, (studio) => {
 								return (
-									<li key={studio._id}>
+									<li key={unprotectString(studio._id)}>
 										<a href='#' onClick={() => this.onClickStudio(studio)}>{studio.name}</a>
 									</li>
 								)
@@ -82,7 +82,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 })
 
 interface IExternalMessagesInStudioProps {
-	studioId: string
+	studioId: StudioId
 }
 interface IExternalMessagesInStudioState {
 	// devices: Array<PeripheralDevice>
@@ -228,7 +228,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 			}
 		}
 		return (
-			<tr key={msg._id} className={ClassNames(classes)}>
+			<tr key={unprotectString(msg._id)} className={ClassNames(classes)}>
 				<td className='c2'>
 					{
 						getAllowConfigure() ? <React.Fragment>

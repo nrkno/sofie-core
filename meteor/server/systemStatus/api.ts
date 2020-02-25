@@ -3,6 +3,7 @@ import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
+import { protectString } from '../../lib/lib'
 
 let methods: Methods = {}
 
@@ -17,7 +18,7 @@ Picker.route('/health', (params, req: IncomingMessage, res: ServerResponse, next
 	health(status, res)
 })
 Picker.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	let status = getSystemStatus(params.studioId)
+	let status = getSystemStatus(protectString(params.studioId))
 	health(status, res)
 })
 function health (status: StatusResponse, res: ServerResponse) {

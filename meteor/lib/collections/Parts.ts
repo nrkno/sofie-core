@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
-import { Rundowns, Rundown } from './Rundowns'
+import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { AdLibPieces } from './AdLibPieces'
-import { Segments } from './Segments'
-import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
+import { Segments, SegmentId } from './Segments'
+import { applyClassToDocument, Time, registerCollection, normalizeArray, ProtectedString, ProtectedStringProperties } from '../lib'
 import { RundownAPI } from '../api/rundown'
 import { checkPieceContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
@@ -20,13 +20,18 @@ import { createMongoCollection } from './lib'
 import { Studio } from './Studios'
 import { ShowStyleBase } from './ShowStyleBases'
 
+/** A string, identifying a Part */
+export type PartId = ProtectedString<'PartId'>
+
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends IBlueprintPartDB {
+export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+	_id: PartId
 	/** Position inside the segment */
 	_rank: number
 
 	/** The rundown this line belongs to */
-	rundownId: string
+	rundownId: RundownId
+	segmentId: SegmentId
 
 	status?: string
 
@@ -55,7 +60,7 @@ export interface DBPart extends IBlueprintPartDB {
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 	/** if the part is inserted after another (for adlibbing) */
-	afterPart?: string
+	afterPart?: PartId
 	/** if the part was dunamically inserted (adlib) */
 	dynamicallyInserted?: boolean
 
@@ -101,12 +106,12 @@ export class Part implements DBPart {
 	}
 	public floated?: boolean
 	// From IBlueprintPartDB:
-	public _id: string
-	public segmentId: string
+	public _id: PartId
+	public segmentId: SegmentId
 	public timings?: PartTimings
 	// From DBPart:
 	public _rank: number
-	public rundownId: string
+	public rundownId: RundownId
 	public status?: string
 	public startedPlayback?: boolean
 	public taken?: boolean
@@ -114,7 +119,7 @@ export class Part implements DBPart {
 	public duration?: number
 	public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
-	public afterPart?: string
+	public afterPart?: PartId
 	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
 	public dirty?: boolean

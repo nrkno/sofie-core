@@ -1,24 +1,25 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime, registerCollection, asyncCollectionFindFetch } from '../lib'
+import { Time, applyClassToDocument, getCurrentTime, registerCollection, asyncCollectionFindFetch, ProtectedString, ProtectId, ProtectedStringProperties } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
-import { Studios, Studio } from './Studios'
+import { Studios, Studio, StudioId } from './Studios'
 import { Pieces } from './Pieces'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
-import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote, GenericNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
-import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
 import { PartInstances, PartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
+import { PeripheralDeviceId } from './PeripheralDevices'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -35,16 +36,18 @@ export interface RundownImportVersions {
 
 	core: string
 }
-
+/** A string, identifying a Rundown */
+export type RundownId = ProtectedString<'RundownId'>
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRundown extends IBlueprintRundownDB {
+export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
+	_id: RundownId
 	/** The id of the Studio this rundown is in */
-	studioId: string
+	studioId: StudioId
 
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
-	showStyleBaseId: string
+	showStyleBaseId: ShowStyleBaseId
 	/** The peripheral device the rundown originates from */
-	peripheralDeviceId: string
+	peripheralDeviceId: PeripheralDeviceId
 	created: Time
 	modified: Time
 
@@ -75,7 +78,7 @@ export interface DBRundown extends IBlueprintRundownDB {
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string
 	/** The id of the Rundown Playlist this rundown is in */
-	playlistId: string
+	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
 
@@ -92,12 +95,12 @@ export class Rundown implements DBRundown {
 		[key: string]: any
 	}
 	// From IBlueprintRundownDB:
-	public _id: string
-	public showStyleVariantId: string
+	public _id: RundownId
+	public showStyleVariantId: ShowStyleVariantId
 	// From DBRundown:
-	public studioId: string
-	public showStyleBaseId: string
-	public peripheralDeviceId: string
+	public studioId: StudioId
+	public showStyleBaseId: ShowStyleBaseId
+	public peripheralDeviceId: PeripheralDeviceId
 	public created: Time
 	public modified: Time
 	public importVersions: RundownImportVersions
@@ -110,7 +113,7 @@ export class Rundown implements DBRundown {
 	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
-	public playlistId: string
+	public playlistId: RundownPlaylistId
 	public _rank: number
 	_: any
 

@@ -1,6 +1,6 @@
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, protectString, getRandomId } from '../../lib/lib'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { makePlaylistFromRundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 import { Random } from 'meteor/random'
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
@@ -40,7 +40,7 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [ // <--- To be set to an absolute ver
 						$exists: false
 					}
 				}, {
-					playlistId: ''
+					playlistId: protectString('')
 				}]
 			}).count()
 			if (count > 0) {
@@ -56,10 +56,10 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [ // <--- To be set to an absolute ver
 						$exists: false
 					}
 				}, {
-					playlistId: ''
+					playlistId: protectString('')
 				}]
 			}).forEach((rundown) => {
-				const playlistId = Random.id()
+				const playlistId: RundownPlaylistId = getRandomId()
 				const playlist = makePlaylistFromRundown_1_0_0(rundown, playlistId)
 				playlist.modified = getCurrentTime()
 				RundownPlaylists.insert(playlist)

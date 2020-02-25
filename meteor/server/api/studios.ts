@@ -3,18 +3,19 @@ import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import { Methods, setMeteorMethods } from '../methods'
 import { StudiosAPI } from '../../lib/api/studios'
-import { Studios, Studio, DBStudio } from '../../lib/collections/Studios'
-import { literal } from '../../lib/lib'
+import { Studios, Studio, DBStudio, StudioId } from '../../lib/collections/Studios'
+import { literal, getRandomId } from '../../lib/lib'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 
-export function insertStudio (newId?: string): string {
+export function insertStudio (newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
 
 	let id = Studios.insert(literal<DBStudio>({
-		_id: newId || Random.id(),
+		_id: newId || getRandomId(),
 		name: 'New Studio',
-		// blueprintId?: string
+		// blueprintId?: BlueprintId
 		mappings: {},
 		supportedShowStyleBase: [],
 		config: [],
@@ -27,7 +28,7 @@ export function insertStudio (newId?: string): string {
 	}))
 	return id
 }
-export function removeStudio (id: string): void {
+export function removeStudio (id: StudioId): void {
 	check(id, String)
 
 	const studio = Studios.findOne(id)
@@ -47,8 +48,8 @@ let methods: Methods = {}
 methods[StudiosAPI.methods.insertStudio] = () => {
 	return insertStudio()
 }
-methods[StudiosAPI.methods.removeStudio] = (showStyleBaseId: string) => {
-	return removeStudio(showStyleBaseId)
+methods[StudiosAPI.methods.removeStudio] = (studioId: StudioId) => {
+	return removeStudio(studioId)
 }
 
 // Apply methods:

@@ -1,3 +1,5 @@
+import { RundownId } from '../collections/Rundowns'
+
 export namespace UserActionAPI {
 	/**
 	 * These methods are intended to be called by a user,
@@ -64,7 +66,7 @@ export namespace UserActionAPI {
 
 	export interface ReloadRundownPlaylistResponse {
 		rundownsResponses: {
-			rundownId: string
+			rundownId: RundownId
 			response: ReloadRundownResponse
 		}[]
 	}

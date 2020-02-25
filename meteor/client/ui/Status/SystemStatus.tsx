@@ -8,7 +8,7 @@ import { Meteor } from 'meteor/meteor'
 import * as i18next from 'react-i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
-import { getCurrentTime, getHash } from '../../../lib/lib'
+import { getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -214,7 +214,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		const { t } = this.props
 
 		return (
-			<div key={this.props.device._id} className='device-item'>
+			<div key={unprotectString(this.props.device._id)} className='device-item'>
 				<div className='status-container'>
 					<PeripheralDeviceStatus device={this.props.device} />
 
@@ -415,7 +415,7 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 		const { t } = this.props
 
 		return (
-			<div key={this.props.coreSystem._id} className='device-item'>
+			<div key={unprotectString(this.props.coreSystem._id)} className='device-item'>
 				<div className='status-container'>
 					<div className={ClassNames('device-status',
 							this.props.systemStatus && this.props.systemStatus.status && {
@@ -543,13 +543,13 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				device: device,
 				children: []
 			}
-			refs[device._id] = d
-			devicesToAdd[device._id] = d
+			refs[unprotectString(device._id)] = d
+			devicesToAdd[unprotectString(device._id)] = d
 		})
 		// Then, map and add devices:
 		_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 			if (d.device.parentDeviceId) {
-				let parent: DeviceInHierarchy = refs[d.device.parentDeviceId]
+				let parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
 				if (parent) {
 					parent.children.push(d)
 				} else {

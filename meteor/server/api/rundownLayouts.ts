@@ -1,28 +1,28 @@
-import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import { ClientAPI } from '../../lib/api/client'
 import { setMeteorMethods, Methods } from '../methods'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
-import { RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { literal } from '../../lib/lib'
+import { RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'
+import { literal, getRandomId, protectString } from '../../lib/lib'
 import { RundownLayoutSecurity } from '../security/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { BlueprintId } from '../../lib/collections/Blueprints'
 
 export function createRundownLayout (
 	name: string,
 	type: RundownLayoutType,
-	showStyleBaseId: string,
-	blueprintId: string | undefined,
+	showStyleBaseId: ShowStyleBaseId,
+	blueprintId: BlueprintId | undefined,
 	userId?: string | undefined
 ) {
 	RundownLayouts.insert(literal<RundownLayoutBase>({
-		_id: Random.id(),
+		_id: getRandomId(),
 		name,
 		showStyleBaseId,
 		blueprintId,
@@ -32,8 +32,8 @@ export function createRundownLayout (
 	}))
 }
 
-export function removeRundownLayout (id: string) {
-	RundownLayouts.remove(id)
+export function removeRundownLayout (layoutId: RundownLayoutId) {
+	RundownLayouts.remove(layoutId)
 }
 
 const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
@@ -44,7 +44,7 @@ postJsRoute.middleware(bodyParser.text({
 postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
-	const showStyleBaseId = params.showStyleBaseId
+	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
 
 	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 	if (!showStyleBase) {
@@ -81,7 +81,7 @@ postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incomin
 
 const getJsRoute = Picker.filter((req, res) => req.method === 'GET')
 getJsRoute.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	let layoutId = params.id
+	let layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
 
@@ -110,7 +110,7 @@ getJsRoute.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, re
 
 let methods: Methods = {}
 methods[RundownLayoutsAPI.methods.createRundownLayout] =
-function (name: string, type: RundownLayoutType, showStyleBaseId: string) {
+function (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
 	check(name, String)
 	check(type, String)
 	check(showStyleBaseId, String)

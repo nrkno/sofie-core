@@ -25,6 +25,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
+import { unprotectString } from '../../../lib/lib'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -398,7 +399,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
 				// case SourceLayerType.MIC:
-				return <MicSourceRenderer key={this.props.piece.instance._id}
+				return <MicSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -406,7 +407,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			case SourceLayerType.VT:
-				return <VTSourceRenderer key={this.props.piece.instance._id}
+				return <VTSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -415,7 +416,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 			case SourceLayerType.GRAPHICS:
 			case SourceLayerType.LOWER_THIRD:
-				return <L3rdSourceRenderer key={this.props.piece.instance._id}
+				return <L3rdSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -423,7 +424,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			case SourceLayerType.SPLITS:
-				return <SplitsSourceRenderer key={this.props.piece.instance._id}
+				return <SplitsSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -432,7 +433,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
 				// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
-				return <STKSourceRenderer key={this.props.piece.instance._id}
+				return <STKSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
@@ -442,7 +443,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 
 			case SourceLayerType.TRANSITION:
-				return <TransitionSourceRenderer key={this.props.piece.instance._id}
+				return <TransitionSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -450,7 +451,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			default:
-				return <DefaultLayerItemRenderer key={this.props.piece.instance._id}
+				return <DefaultLayerItemRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}

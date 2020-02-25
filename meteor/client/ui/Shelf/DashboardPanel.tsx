@@ -28,14 +28,14 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 
 interface IState {
 	outputLayers: {
@@ -56,7 +56,7 @@ interface IDashboardPanelProps {
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieceInstanceIds: {
-		[adlibId: string]: string[]
+		[adlibId: string]: PieceInstanceId[]
 	}
 }
 
@@ -83,7 +83,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 	}).fetch() : [], (instance) => instance.piece.adLibSourceId)
 
 	// Convert to array of ids as that is all that is needed
-	const unfinishedPieceInstanceIds: { [adlibId: string]: string[] } = {}
+	const unfinishedPieceInstanceIds: { [adlibId: string]: PieceInstanceId[] } = {}
 	_.each(unfinishedPieceInstances, (grp, id) => unfinishedPieceInstanceIds[id] = _.map(grp, instance => instance._id))
 
 	return {
@@ -115,11 +115,11 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 		} = {}
 
 		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((item) => {
-				tOLayers[item._id] = item
+			props.showStyleBase.outputLayers.forEach((outputLayer) => {
+				tOLayers[outputLayer._id] = outputLayer
 			})
-			props.showStyleBase.sourceLayers.forEach((item) => {
-				tSLayers[item._id] = item
+			props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
+				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
 			return _.extend(state, {
@@ -216,7 +216,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 	}
 
 	isAdLibOnAir (adLib: AdLibPieceUi) {
-		if (this.props.unfinishedPieceInstanceIds[adLib._id] && this.props.unfinishedPieceInstanceIds[adLib._id].length > 0) {
+		if (this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)] && this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)].length > 0) {
 			return true
 		}
 		return false
@@ -426,20 +426,20 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 							{this.props.rundownBaselineAdLibs
 								.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
-								.map((item: AdLibPieceUi) => {
+								.map((adLibPiece: AdLibPieceUi) => {
 									return <DashboardPieceButton
-												key={item._id}
-												item={item}
-												layer={this.state.sourceLayers[item.sourceLayerId]}
-												outputLayer={this.state.outputLayers[item.outputLayerId]}
+												key={unprotectString(adLibPiece._id)}
+												adLibListItem={adLibPiece}
+												layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
+												outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
 												playlist={this.props.playlist}
-												isOnAir={this.isAdLibOnAir(item)}
+												isOnAir={this.isAdLibOnAir(adLibPiece)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
 											>
-												{item.name}
+												{adLibPiece.name}
 									</DashboardPieceButton>
 								})}
 						</div>

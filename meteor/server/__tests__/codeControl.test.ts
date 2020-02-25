@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
-import { RundownSyncFunctionPriority, rundownSyncFunction } from '../api/ingest/rundownInput'
+import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction } from '../api/ingest/rundownInput'
 import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 
 const TIME_FUZZY = 200
@@ -17,7 +17,7 @@ describe('codeControl rundown', () => {
 	})
 	testInFiber('rundownSyncFunction', () => {
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownSyncFunction('ro1', priority, () => takesALongTimeInner(name))
+			return rundownPlaylistSyncFunction('ro1', priority, () => takesALongTimeInner(name))
 		}
 
 		let res: any[] = []

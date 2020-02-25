@@ -1,8 +1,9 @@
-import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlows, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 
 export namespace MediaManagerAPI {
 
@@ -13,7 +14,7 @@ export namespace MediaManagerAPI {
 				memo.push(workflow.deviceId)
 			}
 			return memo
-		}, [] as string[])
+		}, [] as PeripheralDeviceId[])
 		return waitForPromise(Promise.all(devices.map((deviceId) => {
 			return new Promise((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(deviceId, (err, res) => {
@@ -30,7 +31,7 @@ export namespace MediaManagerAPI {
 				memo.push(workflow.deviceId)
 			}
 			return memo
-		}, [] as string[])
+		}, [] as PeripheralDeviceId[])
 		return waitForPromise(Promise.all(devices.map((deviceId) => {
 			return new Promise((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(deviceId, (err, res) => {
@@ -41,7 +42,7 @@ export namespace MediaManagerAPI {
 		})))
 	}
 
-	export function restartWorkflow (workflowId: string) {
+	export function restartWorkflow (workflowId: MediaWorkFlowId) {
 		check(workflowId, String)
 
 		const workflow = MediaWorkFlows.findOne(workflowId)
@@ -54,7 +55,7 @@ export namespace MediaManagerAPI {
 			}, 'restartWorkflow', workflow._id)
 		}))
 	}
-	export function abortWorkflow (workflowId: string) {
+	export function abortWorkflow (workflowId: MediaWorkFlowId) {
 		check(workflowId, String)
 
 		const workflow = MediaWorkFlows.findOne(workflowId)
@@ -67,7 +68,7 @@ export namespace MediaManagerAPI {
 			}, 'abortWorkflow', workflow._id)
 		}))
 	}
-	export function prioritizeWorkflow (workflowId: string) {
+	export function prioritizeWorkflow (workflowId: MediaWorkFlowId) {
 		check(workflowId, String)
 
 		const workflow = MediaWorkFlows.findOne(workflowId)

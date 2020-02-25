@@ -2,9 +2,9 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
-import { literal, extendMandadory, getCurrentTime, clone } from '../../../lib/lib'
+import { literal, extendMandadory, getCurrentTime, clone, normalizeArray, protectString, unprotectObject, unprotectString } from '../../../lib/lib'
 import {
 	TimelineContentTypeOther,
 	TimelineObjPieceAbstract,
@@ -37,15 +37,14 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-export function orderPieces (pieces: Piece[], partId: string, partStarted?: number): Array<PieceResolved> {
+export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
 
-	const itemMap: { [key: string]: Piece } = {}
-	pieces.forEach(i => itemMap[i._id] = i)
+	const pieceMap = normalizeArray(pieces, '_id')
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
 		const obj = createPieceGroup({
-			_id: piece._id, // Set hte id to the same, as it is just for metadata
+			_id: piece._id, // Set the id to the same, as it is just for metadata
 			rundownId: piece.rundownId,
 			piece: piece
 		})
@@ -75,7 +74,7 @@ export function orderPieces (pieces: Piece[], partId: string, partStarted?: numb
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
 		const pieceInstanceId = (obj.metadata || {}).pieceId
-		const piece = _.clone(itemMap[pieceInstanceId]) as PieceResolved
+		const piece = _.clone(pieceMap[pieceInstanceId]) as PieceResolved
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			piece.resolvedStart = obj0.resolved.instances[0].start || 0
 			piece.resolved = true
@@ -129,11 +128,11 @@ export function createPieceGroupFirstObject (
 	firstObjClasses?: string[]
 ): (TimelineObjPieceAbstract & OnGenerateTimelineObj) {
 	return literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(pieceInstance.piece),
-		_id: '', // set later
-		studioId: '', // set later
-		pieceInstanceId: pieceInstance._id,
-		infinitePieceId: pieceInstance.piece.infiniteId,
+		id: getPieceFirstObjectId(unprotectObject(pieceInstance.piece)),
+		_id: protectString(''), // set later
+		studioId: protectString(''), // set later
+		pieceInstanceId: unprotectString(pieceInstance._id),
+		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
@@ -157,9 +156,9 @@ export function createPieceGroup (
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
 	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
-		id: getPieceGroupId(pieceInstance.piece),
-		_id: '', // set later
-		studioId: '', // set later
+		id: getPieceGroupId(unprotectObject(pieceInstance.piece)),
+		_id: protectString(''), // set later
+		studioId: protectString(''), // set later
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP
@@ -167,8 +166,8 @@ export function createPieceGroup (
 		children: [],
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
-		pieceInstanceId: pieceInstance._id,
-		infinitePieceId: pieceInstance.piece.infiniteId,
+		pieceInstanceId: unprotectString(pieceInstance._id),
+		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: calculatePieceTimelineEnable(pieceInstance.piece),
 		layer: pieceInstance.piece.sourceLayerId,
@@ -178,7 +177,7 @@ export function createPieceGroup (
 	})
 }
 
-function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pieceMap: { [key: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
+function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
 	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
 		time: baseTime
 	})
@@ -191,7 +190,7 @@ function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pie
 
 		if (!id) return
 
-		const pieceInstance = pieceMap[id]
+		const pieceInstance = pieceInstanceMap[id]
 		// Erm... How?
 		if (!pieceInstance) {
 			unresolvedIds.push(id)
@@ -218,8 +217,8 @@ function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pie
 	if (tlResolved.statistics.unresolvedCount > 0) {
 		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces for ${resolveForStr} (${unresolvedIds.join(', ')})`)
 	}
-	if (_.size(pieceMap) !== resolvedPieces.length) {
-		logger.warn(`Got ${resolvedPieces.length} ordered pieces. Expected ${_.size(pieceMap)}. for ${resolveForStr}`)
+	if (_.size(pieceInstanceMap) !== resolvedPieces.length) {
+		logger.warn(`Got ${resolvedPieces.length} ordered pieces. Expected ${_.size(pieceInstanceMap)}. for ${resolveForStr}`)
 	}
 
 	// Sort the pieces by time, then transitions first
@@ -251,8 +250,7 @@ function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pie
 export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceInstance[] {
 	const pieceInstances = partInstance.getAllPieceInstances()
 
-	const itemMap: { [key: string]: PieceInstance | undefined } = {}
-	pieceInstances.forEach(piece => itemMap[piece._id] = piece)
+	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const objs = pieceInstances.map(piece => clone(createPieceGroup(piece)))
 	objs.forEach(o => {
@@ -264,7 +262,7 @@ export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceIns
 		}
 	})
 
-	const resolvedPieces = resolvePieceTimeline(objs, 0, itemMap, `PartInstance #${partInstance._id}`)
+	const resolvedPieces = resolvePieceTimeline(objs, 0, pieceInststanceMap, `PartInstance #${partInstance._id}`)
 
 	// crop infinite pieces
 	resolvedPieces.forEach((pieceInstance, index, source) => {
@@ -294,8 +292,7 @@ export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistP
 		pieceInstances.push(...playoutData.selectedInstancePieces.filter(p => p.partInstanceId === playoutData.rundownPlaylist.nextPartInstanceId))
 	}
 
-	const itemMap: { [key: string]: PieceInstance | undefined } = {}
-	pieceInstances.forEach(instance => itemMap[instance._id] = instance)
+	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	objs.forEach(o => {
 		if (o.enable.start === 'now') {
@@ -303,7 +300,7 @@ export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistP
 		}
 	})
 
-	const resolvedPieces = resolvePieceTimeline(objs, now, itemMap, 'timeline')
+	const resolvedPieces = resolvePieceTimeline(objs, now, pieceInststanceMap, 'timeline')
 
 	// crop infinite pieces
 	resolvedPieces.forEach((instance, index, source) => {
@@ -350,8 +347,8 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						_id: '', // set later
-						studioId: '', // set later
+						_id: protectString(''), // set later
+						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN
 					})
 				})
@@ -373,7 +370,7 @@ export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, par
 
 	const newPieceId = Random.id()
 	const newPieceInstance = literal<PieceInstance>({
-		_id: `${partInstance._id}_${newPieceId}`,
+		_id: protectString(`${partInstance._id}_${newPieceId}`),
 		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id,
 		piece: {
@@ -404,8 +401,8 @@ export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, par
 		const objs = prefixAllObjectIds(_.compact(
 			_.map(contentObjects, (obj) => {
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-					_id: '', // set later
-					studioId: '', // set later
+					_id: protectString(''), // set later
+					studioId: protectString(''), // set later
 					objectType: TimelineObjType.RUNDOWN
 				})
 			})
@@ -415,7 +412,7 @@ export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, par
 	return newPieceInstance
 }
 
-// export function resolveActivePieces (playlistId: string, part: Part, now: number): Piece[] {
+// export function resolveActivePieces (playlistId: RundownPlaylistId, part: Part, now: number): Piece[] {
 // 	const pieces = part.getAllPieces()
 
 // 	const itemMap: { [key: string]: Piece } = {}

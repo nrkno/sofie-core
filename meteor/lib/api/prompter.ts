@@ -3,39 +3,41 @@ import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
-import { Part } from '../collections/Parts'
+import { Part, PartId } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
-import { RundownPlaylist, RundownPlaylists } from '../collections/RundownPlaylists'
-import { normalizeArray } from '../lib';
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
+import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
+import { SegmentId } from '../collections/Segments'
+import { PieceId } from '../collections/Pieces'
 
 export enum PrompterMethods {
 	getPrompterData = 'PrompterMethods.getPrompterData'
 }
 
 export interface PrompterDataSegment {
-	id: string
+	id: SegmentId
 	title: string | undefined
 	parts: PrompterDataPart[]
 }
 export interface PrompterDataPart {
-	id: string
+	id: PartId
 	title: string | undefined
-	lines: PrompterDataLine[]
+	pieces: PrompterDataPiece[]
 }
-export interface PrompterDataLine {
-	id: string
+export interface PrompterDataPiece {
+	id: PieceId
 	text: string
 }
 export interface PrompterData {
 	title: string
-	currentPartId: string | null
-	nextPartId: string | null
+	currentPartId: PartId | null
+	nextPartId: PartId | null
 	segments: Array<PrompterDataSegment>
 }
 
 export namespace PrompterAPI {
 
-	export function getPrompterData (playlistId: string): PrompterData {
+	export function getPrompterData (playlistId: RundownPlaylistId): PrompterData {
 
 		check(playlistId, String)
 
@@ -56,7 +58,7 @@ export namespace PrompterAPI {
 			segments: []
 		}
 
-		const piecesIncluded: string[] = []
+		const piecesIncluded: PieceId[] = []
 
 		_.each(groupedParts, (parts, segmentId) => {
 			const segment = segmentsMap[segmentId]
@@ -66,7 +68,7 @@ export namespace PrompterAPI {
 			}
 
 			const segmentData: PrompterDataSegment = {
-				id: segmentId,
+				id: protectString(segmentId),
 				title: segment ? segment.name : undefined,
 				parts: []
 			}
@@ -83,7 +85,7 @@ export namespace PrompterAPI {
 				const partData: PrompterDataPart = {
 					id: part._id,
 					title: title,
-					lines: []
+					pieces: []
 				}
 
 				_.each(part.getAllPieces(), (piece) => {
@@ -96,18 +98,18 @@ export namespace PrompterAPI {
 								return // piece already included in prompter script
 							}
 							piecesIncluded.push(piece.continuesRefId || piece._id)
-							partData.lines.push({
+							partData.pieces.push({
 								id: piece._id,
 								text: content.fullScript
 							})
 						}
-	
+
 					}
 				})
-				if (partData.lines.length === 0) {
+				if (partData.pieces.length === 0) {
 					// insert an empty line
-					partData.lines.push({
-						id: Random.id(),
+					partData.pieces.push({
+						id: getRandomId(),
 						text: ''
 					})
 				}

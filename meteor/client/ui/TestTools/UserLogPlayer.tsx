@@ -5,13 +5,13 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { MomentFromNow } from '../../lib/Moment'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionsLogItem, UserActionsLog } from '../../../lib/collections/UserActionsLog'
-import { Time, getCurrentTime } from '../../../lib/lib'
+import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as moment from 'moment'
 import { Meteor } from 'meteor/meteor'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import { UserActionsList } from '../Status/UserActivity'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
 import { UserActionAPI } from '../../../lib/api/userActions'
@@ -25,7 +25,7 @@ interface NextUserLogAction {
 interface IRecordingListProps {
 	match?: {
 		params?: {
-			rundownId: string
+			rundownId: RundownId
 		}
 	}
 }
@@ -212,7 +212,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 					{this.renderDatePicker()}
 				</div>
 				<div className='mod mvl'>
-					<UserActionsList items={this.props.log} renderButtons={this.renderButtons.bind(this)} />
+					<UserActionsList logItems={this.props.log} renderButtons={this.renderButtons.bind(this)} />
 				</div>
 			</div>
 		)
@@ -233,12 +233,12 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 
 	const rundownMap: IRundownSelectTrackedProps['rundowns'] = {}
 	_.each(rundowns, rundown => {
-		rundownMap[rundown._id] = `${rundown.name} (${rundown._id})`
+		rundownMap[unprotectString(rundown._id)] = `${rundown.name} (${rundown._id})`
 	})
 
 	_.each(snapshots, snapshot => {
-		if (snapshot.rundownId && !rundownMap[snapshot.rundownId]) {
-			rundownMap[snapshot.rundownId] = `${snapshot.rundownId}`
+		if (snapshot.rundownId && !rundownMap[unprotectString(snapshot.rundownId)]) {
+			rundownMap[unprotectString(snapshot.rundownId)] = `${snapshot.rundownId}`
 		}
 	})
 

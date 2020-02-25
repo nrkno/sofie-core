@@ -2,13 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 
 export function callMethod (e: any, methodName: string, ...params: any[]) {
 	Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), methodName, ...params)
 }
-export function callPeripheralDeviceFunction (e: any, deviceFunctionName: string, ...params: any[]) {
-	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), deviceFunctionName, ...params)
+export function callPeripheralDeviceFunction (e: any, deviceId: PeripheralDeviceId, ...params: any[]) {
+	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), deviceId, ...params)
 }
 
 export namespace PeripheralDevicesAPI {

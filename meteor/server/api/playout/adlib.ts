@@ -3,28 +3,28 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, literal } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Pieces, Piece } from '../../../lib/collections/Pieces'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, getPartBeforeSegment, getPreviousPart } from './lib'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer, updateSourceLayerInfinitesAfterPart } from './infinites'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
-import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 
 export namespace ServerPlayoutAdLibAPI {
-	export function pieceTakeNow (rundownPlaylistId: string, partInstanceId: string, pieceInstanceIdOrPieceIdToCopy: string) {
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	export function pieceTakeNow (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -55,12 +55,12 @@ export namespace ServerPlayoutAdLibAPI {
 								...obj,
 								// @ts-ignore _id
 								_id: obj.id || obj._id,
-								studioId: '', // set later
+								studioId: protectString(''), // set later
 								objectType: TimelineObjType.RUNDOWN
 							})
 						})
 					),
-					newPieceInstance._id
+					unprotectString(newPieceInstance._id)
 				)
 			}
 
@@ -104,8 +104,8 @@ export namespace ServerPlayoutAdLibAPI {
 			updateTimeline(rundown.studioId)
 		})
 	}
-	export function segmentAdLibPieceStart (rundownPlaylistId: string, partInstanceId: string, adLibPieceId: string, queue: boolean) {
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	export function segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean) {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -132,8 +132,8 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartAdLibPiece(rundownPlaylist, rundown, queue, partInstanceId, adLibPiece)
 		})
 	}
-	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: string, partInstanceId: string, baselineAdLibPieceId: string, queue: boolean) {
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, baselineAdLibPieceId: PieceId, queue: boolean) {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			logger.debug('rundownBaselineAdLibPieceStart')
 
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -159,7 +159,7 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartAdLibPiece(rundownPlaylist, rundown, queue, partInstanceId, adLibPiece)
 		})
 	}
-	function innerStartAdLibPiece (rundownPlaylist: RundownPlaylist, rundown: Rundown, queue: boolean, partInstanceId0: string, adLibPiece: AdLibPiece) {
+	function innerStartAdLibPiece (rundownPlaylist: RundownPlaylist, rundown: Rundown, queue: boolean, partInstanceId0: PartInstanceId, adLibPiece: AdLibPiece) {
 		if (adLibPiece.toBeQueued) {
 			// Allow adlib to request to always be queued
 			queue = true
@@ -203,7 +203,7 @@ export namespace ServerPlayoutAdLibAPI {
 			updateTimeline(rundown.studioId)
 		}
 	}
-	function adlibQueueInsertPartInstance (rundownPlaylist: RundownPlaylist, rundown: Rundown, afterPartInstance: PartInstance, adLibPiece: AdLibPiece) {
+	function adlibQueueInsertPartInstance (rundownPlaylist: RundownPlaylist, rundown: Rundown, afterPartInstance: PartInstance, adLibPiece: AdLibPiece): PartInstanceId {
 		logger.info('adlibQueueInsertPartInstance')
 
 		// check if there's already a queued part after this:
@@ -224,9 +224,9 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		}
 
-		const newPartInstanceId = Random.id()
+		const newPartInstanceId = protectString<PartInstanceId>(Random.id())
 		const newPart = literal<DBPart>({
-			_id: Random.id(),
+			_id: getRandomId(),
 			_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
 			externalId: '',
 			segmentId: afterPartInstance.segmentId,
@@ -252,8 +252,8 @@ export namespace ServerPlayoutAdLibAPI {
 
 		return newPartInstanceId
 	}
-	export function sourceLayerStickyPieceStart (rundownPlaylistId: string, sourceLayerId: string) {
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	export function sourceLayerStickyPieceStart (rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)

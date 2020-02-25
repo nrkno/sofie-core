@@ -2,7 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice,
-	PeripheralDevices} from '../../../lib/collections/PeripheralDevices'
+	PeripheralDevices,
+	PeripheralDeviceId} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -23,7 +24,7 @@ import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsCompon
 interface IDeviceSettingsProps {
 	match: {
 		params: {
-			deviceId: string
+			deviceId: PeripheralDeviceId
 		}
 	}
 }

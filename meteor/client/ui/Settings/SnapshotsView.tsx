@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SnapshotItem, Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
-import { getCurrentTime } from '../../../lib/lib'
+import { SnapshotItem, Snapshots, SnapshotType, SnapshotId } from '../../../lib/collections/Snapshots'
+import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
@@ -11,7 +11,7 @@ import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
@@ -26,7 +26,7 @@ interface IProps {
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
-	editSnapshotId: string | null
+	editSnapshotId: SnapshotId | null
 	removeSnapshots: boolean
 }
 interface ITrackedProps {
@@ -138,7 +138,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			})
 		}
 	}
-	takeSystemSnapshot = (studioId: string | null) => {
+	takeSystemSnapshot = (studioId: StudioId | null) => {
 		Meteor.call(SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT, studioId, `Requested by user`, (err) => {
 			if (err) {
 				// todo: notify user
@@ -154,7 +154,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		})
 	}
-	takeDebugSnapshot = (studioId: string) => {
+	takeDebugSnapshot = (studioId: StudioId) => {
 		Meteor.call(SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT, studioId, `Requested by user`, (err) => {
 			if (err) {
 				// todo: notify user
@@ -186,7 +186,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			removeSnapshots: !this.state.removeSnapshots
 		})
 	}
-	removeStoredSnapshot = (snapshotId: string) => {
+	removeStoredSnapshot = (snapshotId: SnapshotId) => {
 		let snapshot = Snapshots.findOne(snapshotId)
 		if (snapshot) {
 			doModalDialog({
@@ -240,7 +240,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</p>
 									{
 										_.map(this.props.studios, (studio) => {
-											return <div key={studio._id}>
+											return <div key={unprotectString(studio._id)}>
 												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}</button>
 											</div>
 										})
@@ -272,7 +272,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</tr>
 								{_.map(this.props.snapshots, (snapshot) => {
 									return (
-										<tr key={snapshot._id}>
+										<tr key={unprotectString(snapshot._id)}>
 											<td>
 												<button className='btn mod mhm' onClick={() => { this.restoreStoredSnapshot(snapshot._id) }}>{t('Restore')}</button>
 											</td>

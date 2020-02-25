@@ -1,7 +1,7 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../__mocks__/helpers/database'
 import { getResolvedSegment } from '../Rundown'
-import { RundownPlaylists } from '../collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartInstance, DBPartInstance } from '../collections/PartInstances'
 import * as _ from 'underscore'
 import { literal } from '../lib'
@@ -9,7 +9,7 @@ import { literal } from '../lib'
 
 describe('lib/Rundown', () => {
 	let env: DefaultEnvironment
-	let playlistId: string
+	let playlistId: RundownPlaylistId
 	beforeAll(() => {
 		env = setupDefaultStudioEnvironment()
 		playlistId = setupDefaultRundownPlaylist(env).playlistId

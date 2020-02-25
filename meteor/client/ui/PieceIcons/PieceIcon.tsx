@@ -13,14 +13,16 @@ import RemoteInputIcon from './Renderers/RemoteInput'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 interface IPropsHeader {
-	partInstanceId: string
-	rundownIds: string[]
-	showStyleBaseId: string
+	partInstanceId: PartInstanceId
+	rundownIds: RundownId[]
+	showStyleBaseId: ShowStyleBaseId
 }
 
 interface INamePropsHeader extends IPropsHeader {
@@ -129,7 +131,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 				case SourceLayerType.CAMERA :
 					const camContent = piece ? piece.content as CameraContent | undefined : undefined
 					return (
-						<CamInputIcon inputIndex={ camContent ? camContent.studioLabel : ''  } abbreviation={this.props.sourceLayer.abbreviation} />
+						<CamInputIcon inputIndex={ camContent ? camContent.studioLabel : '' } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 			}
 		}

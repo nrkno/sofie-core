@@ -4,8 +4,8 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as _ from 'underscore'
 
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
 
 import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
@@ -19,6 +19,8 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0'
 import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { StudioId } from '../../lib/collections/Studios'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -29,7 +31,7 @@ interface TimeMap {
 }
 
 interface RundownOverviewProps {
-	playlistId: string
+	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
 interface RundownOverviewState {
@@ -37,8 +39,8 @@ interface RundownOverviewState {
 interface RundownOverviewTrackedProps {
 	playlist?: RundownPlaylist
 	segments: Array<SegmentUi>
-	showStyleBaseId?: string
-	rundownIds: string[]
+	showStyleBaseId?: ShowStyleBaseId
+	rundownIds: RundownId[]
 }
 
 const Timediff = class extends React.Component<{ time: number }> {
@@ -66,8 +68,8 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 		let playlist: RundownPlaylist | undefined
 		if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
 		let segments: Array<SegmentUi> = []
-		let showStyleBaseId: string | undefined = undefined
-		let rundownIds: string[] = []
+		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
+		let rundownIds: RundownId[] = []
 
 		if (playlist) {
 			const allPartInstancesMap = playlist.getActivePartInstancesMap()
@@ -277,7 +279,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 	parts: Array<Part> | undefined
 	match: {
 		params: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }

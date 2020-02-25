@@ -52,15 +52,15 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				let rundown = RundownPlaylists.findOne(evaluation.playlistId)
+				let playlist = RundownPlaylists.findOne(evaluation.playlistId)
 				let hostUrl = studio.settings.sofieUrl
 
 				slackMessage += (
 					'rundown ' +
 					(
-						hostUrl && rundown ?
-						('*<' + hostUrl + '/rundown/' + rundown._id + '|' + rundown.name + '>*') :
-						(rundown && rundown.name || 'N/A')
+						hostUrl && playlist ?
+						('*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*') :
+						(playlist && playlist.name || 'N/A')
 					) +
 					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') + '\n' +
 					evaluationMessage + '\n' +

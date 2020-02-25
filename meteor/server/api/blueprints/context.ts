@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { getHash, formatDateAsTimecode, formatDurationAsTimecode } from '../../../lib/lib'
-import { DBPart } from '../../../lib/collections/Parts'
+import { getHash, formatDateAsTimecode, formatDurationAsTimecode, unprotectString, unprotectObject, unprotectObjectArray, protectString } from '../../../lib/lib'
+import { DBPart, PartId } from '../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
 import {
@@ -24,19 +24,22 @@ import {
 	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
-	IBlueprintPartDB
+	IBlueprintPartDB,
+	IBlueprintRundownDB,
+	IBlueprintAsRunLogEvent
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig } from './config'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { PartNote, NoteType } from '../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
+import { PieceInstances, unprotectPieceInstance } from '../../../lib/collections/PieceInstances'
+import { InternalIBlueprintPartInstance, PartInstanceId, unprotectPartInstance, PartInstance } from '../../../lib/collections/PartInstances'
 
 /** Common */
 
@@ -73,18 +76,18 @@ export class NotesContext extends CommonContext implements INotesContext {
 	/** If the notes will be handled externally (using .getNotes()), set this to true */
 	public handleNotesExternally: boolean = false
 
-	protected _rundownId: string
+	protected _rundownId: RundownId
 	private _contextName: string
-	private _segmentId?: string
-	private _partId?: string
+	private _segmentId?: SegmentId
+	private _partId?: PartId
 
 	private savedNotes: Array<PartNote> = []
 
 	constructor (
 		contextName: string,
-		rundownId: string,
-		segmentId?: string,
-		partId?: string,
+		rundownId: RundownId,
+		segmentId?: SegmentId,
+		partId?: PartId,
 	) {
 		super(
 			rundownId +
@@ -185,17 +188,25 @@ export class StudioContext extends StudioConfigContext implements IStudioContext
 /** Show Style Variant */
 
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	private showStyleBaseId: string
-	private showStyleVariantId: string
+	private showStyleBaseId: ShowStyleBaseId
+	private showStyleVariantId: ShowStyleVariantId
 
 	private notes: NotesContext
 
-	constructor (studio: Studio, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, rundownId?: string, segmentId?: string, partId?: string) {
+	constructor (
+		studio: Studio,
+		showStyleBaseId: ShowStyleBaseId,
+		showStyleVariantId: ShowStyleVariantId,
+		contextName?: string,
+		rundownId?: RundownId,
+		segmentId?: SegmentId,
+		partId?: PartId
+	) {
 		super(studio)
 
 		this.showStyleBaseId = showStyleBaseId
 		this.showStyleVariantId = showStyleVariantId
-		this.notes = new NotesContext(contextName || studio.name, rundownId || '', segmentId, partId)
+		this.notes = new NotesContext(contextName || studio.name, rundownId || protectString(''), segmentId, partId)
 	}
 
 	get handleNotesExternally () {
@@ -247,14 +258,16 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 export class RundownContext extends ShowStyleContext implements IRundownContext {
 	readonly rundownId: string
-	readonly rundown: Readonly<Rundown>
-	readonly playlistId: string
+	readonly rundown: Readonly<IBlueprintRundownDB>
+	readonly _rundown: Rundown
+	readonly playlistId: RundownPlaylistId
 
-	constructor (rundown: Rundown, studio?: Studio, contextName?: string, segmentId?: string, partId?: string) {
+	constructor (rundown: Rundown, studio?: Studio, contextName?: string, segmentId?: SegmentId, partId?: PartId) {
 		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
 
-		this.rundownId = rundown._id
-		this.rundown = rundown
+		this.rundownId = unprotectString(rundown._id)
+		this.rundown = unprotectObject(rundown)
+		this._rundown = rundown
 		this.playlistId = rundown.playlistId
 	}
 }
@@ -308,60 +321,60 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor (rundown: Rundown, studio: Studio | undefined, part: IBlueprintPartInstance) {
+	constructor (rundown: Rundown, studio: Studio | undefined, partInstance: PartInstance) {
 		super(rundown, studio)
 
-		this.part = part
+		this.part = unprotectPartInstance(partInstance)
 	}
 }
 
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
-	public readonly asRunEvent: Readonly<AsRunLogEvent>
+	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
 	constructor (rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
 		super(rundown, studio)
-		this.asRunEvent = asRunEvent
+		this.asRunEvent = unprotectObject(asRunEvent)
 	}
 
 	/** Get all asRunEvents in the rundown */
-	getAllAsRunEvents (): Array<AsRunLogEvent> {
-		return AsRunLog.find({
-			rundownId: this.rundown._id
+	getAllAsRunEvents (): Array<IBlueprintAsRunLogEvent> {
+		return unprotectObjectArray(AsRunLog.find({
+			rundownId: this._rundown._id
 		}, {
 			sort: {
 				timestamp: 1
 			}
-		}).fetch()
+		}).fetch())
 	}
 	/** Get all segments in this rundown */
 	getSegments (): Array<IBlueprintSegmentDB> {
-		return this.rundown.getSegments()
+		return unprotectObjectArray(this._rundown.getSegments())
 	}
 	/**
 	 * Returns a segment
-	 * @param id Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
+	 * @param segmentId Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
 	 */
-	getSegment (id?: string): IBlueprintSegmentDB | undefined {
-		id = id || this.asRunEvent.segmentId
-		check(id, String)
-		if (id) {
-			return this.rundown.getSegments({
-				_id: id
-			})[0]
+	getSegment (segmentId?: string): IBlueprintSegmentDB | undefined {
+		segmentId = segmentId || this.asRunEvent.segmentId
+		check(segmentId, String)
+		if (segmentId) {
+			return unprotectObject(this._rundown.getSegments({
+				_id: protectString(segmentId)
+			})[0])
 		}
 	}
 	/** Get all parts in this rundown */
 	getParts (): Array<IBlueprintPartDB> {
-		return this.rundown.getParts()
+		return unprotectObjectArray(this._rundown.getParts())
 	}
 	/** Get the part related to this AsRunEvent */
 	getPartInstance (partInstanceId?: string): IBlueprintPartInstance | undefined {
 		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
 		check(partInstanceId, String)
 		if (partInstanceId) {
-			return this.rundown.getAllPartInstances({
-				_id: partInstanceId
-			})[0]
+			return unprotectPartInstance(this._rundown.getAllPartInstances({
+				_id: protectString(partInstanceId)
+			})[0])
 		}
 	}
 	/** Get the mos story related to a part */
@@ -369,7 +382,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		check(part._id, String)
 
 		try {
-			return loadIngestDataCachePart(this.rundown._id, this.rundown.externalId, part._id, part.externalId).data
+			return loadIngestDataCachePart(this._rundown._id, this.rundown.externalId, protectString<PartId>(part._id), part.externalId).data
 		} catch (e) {
 			return undefined
 		}
@@ -380,7 +393,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown (): IngestRundown | undefined {
 		try {
-			return loadCachedRundownData(this.rundown._id, this.rundown.externalId)
+			return loadCachedRundownData(this._rundown._id, this.rundown.externalId)
 		} catch (e) {
 			return undefined
 		}
@@ -394,10 +407,10 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		check(pieceInstanceId, Match.Optional(String))
 		pieceInstanceId = pieceInstanceId || this.asRunEvent.pieceInstanceId
 		if (pieceInstanceId) {
-			return PieceInstances.findOne({
-				rundownId: this.rundown._id,
-				_id: pieceInstanceId
-			})
+			return unprotectPieceInstance(PieceInstances.findOne({
+				rundownId: this._rundown._id,
+				_id: protectString(pieceInstanceId)
+			}))
 		}
 	}
 	/**
@@ -407,10 +420,10 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	getPieceInstances (partInstanceId: string): Array<IBlueprintPieceInstance> {
 		check(partInstanceId, String)
 		if (partInstanceId) {
-			return PieceInstances.find({
-				rundownId: this.rundown._id,
-				partInstanceId: partInstanceId
-			}).fetch()
+			return unprotectObjectArray(PieceInstances.find({
+				rundownId: this._rundown._id,
+				partInstanceId: protectString(partInstanceId)
+			}).fetch()) as any // pieceinstande.piece is the issue
 		}
 		return []
 	}

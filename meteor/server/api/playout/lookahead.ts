@@ -3,13 +3,14 @@ import * as _ from 'underscore'
 import { LookaheadMode, Timeline as TimelineTypes, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { orderPieces } from './pieces'
-import { literal, clone } from '../../../lib/lib'
+import { literal, clone, unprotectString, protectString } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { selectNextPart } from './lib'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -95,7 +96,7 @@ interface PartAndPieces {
 
 export interface LookaheadObjectEntry {
 	obj: TimelineObjRundown
-	partId: string
+	partId: PartId
 }
 
 export interface LookaheadResult {
@@ -119,7 +120,7 @@ export function findLookaheadForlayer (
 		return res
 	}
 
-	function getPartInstancePieces (partInstanceId: string) {
+	function getPartInstancePieces (partInstanceId: PartInstanceId) {
 		return _.filter(playoutData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
 			return !!(
 				pieceInstance.partInstanceId === partInstanceId &&
@@ -187,11 +188,12 @@ export function findLookaheadForlayer (
 	// have pieces grouped by part, so we can look based on rank to choose the correct one
 	const piecesUsingLayerByPart: {[partId: string]: Piece[] | undefined} = {}
 	piecesUsingLayer.forEach(i => {
-		if (!piecesUsingLayerByPart[i.partId]) {
-			piecesUsingLayerByPart[i.partId] = []
+		const partId = unprotectString(i.partId)
+		if (!piecesUsingLayerByPart[partId]) {
+			piecesUsingLayerByPart[partId] = []
 		}
 
-		piecesUsingLayerByPart[i.partId]!.push(i)
+		piecesUsingLayerByPart[partId]!.push(i)
 	})
 
 	for (const part of futureParts) {
@@ -200,7 +202,7 @@ export function findLookaheadForlayer (
 			break
 		}
 
-		const pieces = piecesUsingLayerByPart[part._id] || []
+		const pieces = piecesUsingLayerByPart[unprotectString(part._id)] || []
 		if (pieces.length > 0 && part.isPlayable()) {
 			const partInfo = { part, pieces }
 			findObjectsForPart(playoutData, layer, previousPartInfo, partInfo, null)
@@ -217,10 +219,10 @@ function findObjectsForPart (
 	layer: string,
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
-	partInstanceId: string | null,
+	partInstanceId: PartInstanceId | null,
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activePlaylist = playoutData.rundownPlaylist
-	const activeRundown = playoutData.rundownsMap[partInfo.part.rundownId]
+	const activeRundown = playoutData.rundownsMap[unprotectString(partInfo.part.rundownId)]
 
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
@@ -238,11 +240,11 @@ function findObjectsForPart (
 					fixTimelineId(obj)
 					allObjs.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
 						...obj,
-						_id: '', // set later
-						studioId: '', // set later
+						_id: protectString(''), // set later
+						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
-						pieceInstanceId: pieceInstanceId,
-						infinitePieceId: piece.infiniteId
+						pieceInstanceId: unprotectString(pieceInstanceId),
+						infinitePieceId: unprotectString(piece.infiniteId)
 					}))
 				}
 			})
@@ -318,11 +320,11 @@ function findObjectsForPart (
 
 				res.push(literal<TimelineObjRundown & OnGenerateTimelineObj>({
 					...obj,
-					_id: '', // set later
-					studioId: '', // set later
+					_id: protectString(''), // set later
+					studioId: protectString(''), // set later
 					objectType: TimelineObjType.RUNDOWN,
-					pieceInstanceId: pieceInstanceId,
-					infinitePieceId: piece.infiniteId,
+					pieceInstanceId: unprotectString(pieceInstanceId),
+					infinitePieceId: unprotectString(piece.infiniteId),
 					content: newContent
 				}))
 			}

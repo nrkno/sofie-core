@@ -4,11 +4,11 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosParentDevice } from '../../../lib/collections/PeripheralDevices'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { Time, getCurrentTime } from '../../../lib/lib'
+import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Parts } from '../../../lib/collections/Parts'
@@ -60,7 +60,7 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 interface IProps {
 	studio: Studio
 	playlist: RundownPlaylist
-	rundownIDs: string[]
+	rundownIds: RundownId[]
 }
 
 interface IState {
@@ -314,16 +314,16 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 											{mosDisconnected.length ? <React.Fragment>
 												<h5>{t('Off-line devices')}</h5>
 												<ul>
-													{ mosDisconnected.map((dev) => {
-														return <li key={dev._id}>{dev.name}</li>
+													{ mosDisconnected.map((device) => {
+														return <li key={unprotectString(device._id)}>{device.name}</li>
 													})}
 												</ul>
 											</React.Fragment> : null}
 											{mosDevicesIssues.length ? <React.Fragment>
 												<h5>{t('Devices with issues')}</h5>
 												<ul>
-													{mosDevicesIssues.map((dev) => {
-														return <li key={dev._id}>{dev.name}</li>
+													{mosDevicesIssues.map((device) => {
+														return <li key={unprotectString(device._id)}>{device.name}</li>
 													})}
 												</ul>
 											</React.Fragment> : null}
@@ -349,16 +349,16 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 											{playoutDisconnected.length ? <React.Fragment>
 												<h5>{t('Off-line devices')}</h5>
 												<ul>
-													{playoutDisconnected.map((dev) => {
-														return <li key={dev._id}>{dev.name}</li>
+													{playoutDisconnected.map((device) => {
+														return <li key={unprotectString(device._id)}>{device.name}</li>
 													})}
 												</ul>
 											</React.Fragment> : null}
 											{playoutDevicesIssues.length ? <React.Fragment>
 												<h5>{t('Devices with issues')}</h5>
 												<ul>
-													{playoutDevicesIssues.map((dev) => {
-														return <li key={dev._id}>{dev.name}</li>
+													{playoutDevicesIssues.map((device) => {
+														return <li key={unprotectString(device._id)}>{device.name}</li>
 													})}
 												</ul>
 											</React.Fragment> : null}

@@ -15,9 +15,9 @@ import * as i18next from 'i18next'
 import Moment from 'react-moment'
 const Tooltip = require('rc-tooltip')
 import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
-import { Segment, Segments } from '../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
+import { Segment, Segments, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios } from '../../lib/collections/Studios'
 import { Part, Parts } from '../../lib/collections/Parts'
 
@@ -30,7 +30,7 @@ import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
 import { RundownOverview } from './RundownView/RundownOverview'
 import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
 
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
@@ -58,7 +58,7 @@ import { UserActionAPI } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
-import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
@@ -347,7 +347,7 @@ interface HotkeyDefinition {
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist,
 	studio: Studio,
-	rundownIDs: string[],
+	rundownIds: RundownId[],
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
@@ -645,7 +645,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 	}
 
 	handleAnotherPlaylistActive = (
-		rundownId: string,
+		playlistId: RundownPlaylistId,
 		rehersal: boolean,
 		err: ClientAPI.ClientResponseError,
 		clb?: Function
@@ -681,13 +681,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					label: t('Activate Anyway (GO ON AIR)'),
 					classNames: 'btn-primary',
 					on: (e) => {
-						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, false], handleResult)
+						doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [playlistId, false], handleResult)
 					}
 				}
 			],
 			warning: true,
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [rundownId, rehersal], handleResult)
+				doUserAction(t, e, UserActionAPI.methods.forceResetAndActivate, [playlistId, rehersal], handleResult)
 			}
 		})
 	}
@@ -1037,7 +1037,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							</div>
 						</div>
 						<TimingDisplay rundownPlaylist={this.props.playlist} />
-						<RundownSystemStatus studio={this.props.studio} playlist={this.props.playlist} rundownIDs={this.props.rundownIDs} />
+						<RundownSystemStatus studio={this.props.studio} playlist={this.props.playlist} rundownIds={this.props.rundownIds} />
 					</div>
 					<div className='row dark'>
 						<div className='col c12 rundown-overview'>
@@ -1056,10 +1056,10 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 interface IProps {
 	match?: {
 		params: {
-			playlistId: string
+			playlistId: RundownPlaylistId
 		}
 	}
-	playlistId?: string
+	playlistId?: RundownPlaylistId
 	inActiveRundownView?: boolean
 	onlyShelf?: boolean
 }
@@ -1098,7 +1098,7 @@ export enum RundownViewEvents {
 }
 
 interface ITrackedProps {
-	rundownPlaylistId: string
+	rundownPlaylistId: RundownPlaylistId
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
 	segments: Segment[]
@@ -1106,13 +1106,13 @@ interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
 	casparCGPlayoutDevices?: PeripheralDevice[]
-	rundownLayoutId?: string
+	rundownLayoutId?: RundownLayoutId
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
 	let playlistId
 	if (props.match && props.match.params.playlistId) {
-		playlistId = decodeURIComponent(props.match.params.playlistId)
+		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
 	} else if (props.playlistId) {
 		playlistId = props.playlistId
 	}
@@ -1154,7 +1154,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			subType: TSR.DeviceType.CASPARCG
 		}).fetch()) || undefined,
-		rundownLayoutId: String(params['layout'] || '')
+		rundownLayoutId: protectString(params['layout'] as string || '')
 	}
 })(
 class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1236,7 +1236,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 
 			// if couldn't find based on id, try matching part of the name
 			if (props.rundownLayoutId && !selectedLayout) {
-				selectedLayout = props.rundownLayouts.find((i) => i.name.indexOf(props.rundownLayoutId!) >= 0)
+				selectedLayout = props.rundownLayouts.find((i) => i.name.indexOf(unprotectString(props.rundownLayoutId!)) >= 0)
 			}
 
 			// if not, try the first RUNDOWN_LAYOUT available
@@ -1650,7 +1650,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			}
 		}
 	}
-	onHeaderNoteClick = (segmentId: string, level: NoteType) => {
+	onHeaderNoteClick = (segmentId: SegmentId, level: NoteType) => {
 		NotificationCenter.snoozeAll()
 		const isOpen = this.state.isNotificationsCenterOpen
 		this.setState({
@@ -1675,7 +1675,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 					this.props.playlist &&
 					this.props.showStyleBase
 				) {
-					return <ErrorBoundary key={segment._id}>
+					return <ErrorBoundary key={unprotectString(segment._id)}>
 							<VirtualElement
 								id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 								margin={'100% 0px 100% 0px'}
@@ -1915,7 +1915,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 												<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 											}
 											{this.state.studioMode && this.props.casparCGPlayoutDevices &&
-												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={i._id}>{t('Restart {{device}}', { device: i.name })}</button>)
+												this.props.casparCGPlayoutDevices.map(i => <button className='btn btn-primary' onClick={() => this.onRestartCasparCG(i)} key={unprotectString(i._id)}>{t('Restart {{device}}', { device: i.name })}</button>)
 											}
 										</SupportPopUp>
 									}
@@ -1930,7 +1930,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 								<RundownHeader
 									playlist={this.props.playlist}
 									studio={this.props.studio}
-									rundownIDs={this.props.rundowns.map(r => r._id)}
+									rundownIds={this.props.rundowns.map(r => r._id)}
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
@@ -2054,7 +2054,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 export function handleRundownPlaylistReloadResponse (t: i18next.TranslationFunction<any, object, string>, rundownPlaylist: RundownPlaylist, result: UserActionAPI.ReloadRundownPlaylistResponse): boolean {
 	let hasDoneSomething = false
 
-	let missingRundownId: string | null = null
+	let missingRundownId: RundownId | null = null
 	_.each(result.rundownsResponses, r => {
 		if (r.response === UserActionAPI.ReloadRundownResponse.MISSING) {
 			missingRundownId = r.rundownId

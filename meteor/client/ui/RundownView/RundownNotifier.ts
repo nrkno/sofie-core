@@ -8,25 +8,25 @@ import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Parts } from '../../../lib/collections/Parts'
-import { getCurrentTime } from '../../../lib/lib'
+import { Parts, PartId } from '../../../lib/collections/Parts'
+import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Segments } from '../../../lib/collections/Segments'
-import { Studio } from '../../../lib/collections/Studios'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Segments, SegmentId } from '../../../lib/collections/Segments'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType, GenericNote } from '../../../lib/api/notes'
-import { Pieces } from '../../../lib/collections/Pieces'
+import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -34,10 +34,10 @@ export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined
 export interface RONotificationEvent {
 	sourceLocator: {
 		name: string,
-		rundownId?: string,
-		segmentId?: string,
-		partId?: string,
-		pieceId?: string
+		rundownId?: RundownId,
+		segmentId?: SegmentId,
+		partId?: PartId,
+		pieceId?: PieceId
 	}
 }
 
@@ -65,7 +65,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _unsentExternalMessagesStatus: Notification | undefined = undefined
 	private _unsentExternalMessageStatusDep: Tracker.Dependency
 
-	constructor (playlistId: string, showStyleBase: ShowStyleBase, studio: Studio) {
+	constructor (playlistId: RundownPlaylistId, showStyleBase: ShowStyleBase, studio: Studio) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -152,7 +152,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._notifier.stop()
 	}
 
-	private reactiveRundownStatus (playlistId: string | undefined, rundownIds: string[]) {
+	private reactiveRundownStatus (playlistId: RundownPlaylistId | undefined, rundownIds: RundownId[]) {
 		const t = i18nTranslator
 		let oldNoteIds: Array<string> = []
 
@@ -249,10 +249,10 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactivePeripheralDeviceStatus (studioId: string | undefined) {
+	private reactivePeripheralDeviceStatus (studioId: StudioId | undefined) {
 		const t = i18nTranslator
 
-		let oldDevItemIds: Array<string> = []
+		let oldDevItemIds: PeripheralDeviceId[] = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
 		if (studioId) {
 			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
@@ -300,33 +300,33 @@ class RundownViewNotifier extends WithManagedTracker {
 						] : undefined,
 						-1)
 				}
-				if (newNotification && !Notification.isEqual(this._deviceStatus[item._id], newNotification)) {
-					this._deviceStatus[item._id] = newNotification
+				if (newNotification && !Notification.isEqual(this._deviceStatus[unprotectString(item._id)], newNotification)) {
+					this._deviceStatus[unprotectString(item._id)] = newNotification
 					this._deviceStatusDep.changed()
-				} else if (!newNotification && this._deviceStatus[item._id]) {
-					delete this._deviceStatus[item._id]
+				} else if (!newNotification && this._deviceStatus[unprotectString(item._id)]) {
+					delete this._deviceStatus[unprotectString(item._id)]
 					this._deviceStatusDep.changed()
 				}
 			})
 
-			_.difference(oldDevItemIds, newDevItemIds).forEach((item) => {
-				delete this._deviceStatus[item]
+			_.difference(oldDevItemIds, newDevItemIds).forEach((deviceId) => {
+				delete this._deviceStatus[unprotectString(deviceId)]
 				this._deviceStatusDep.changed()
 			})
 			oldDevItemIds = newDevItemIds
 		})
 	}
 
-	private reactivePartNotes (rRundownIds: string[]) {
+	private reactivePartNotes (rRundownIds: RundownId[]) {
 		const t = i18nTranslator
 
-		function getSegmentPartNotes(rRundownIds: string[]) {
+		function getSegmentPartNotes (rRundownIds: RundownId[]) {
 			let notes: Array<PartNote & {rank: number}> = []
 			const segments = Segments.find({
 				rundownId: {
 					$in: rRundownIds
 				}
-			}, { sort: { _rank: 1 }}).fetch()
+			}, { sort: { _rank: 1 } }).fetch()
 
 			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
 				rank: segment._rank,
@@ -335,7 +335,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 }}).map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
+			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
 			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 				return o.notes.map(note => _.extend(note, {
 					rank: o.rank
@@ -384,21 +384,21 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus (rRundownIds: string[], showStyleBase: ShowStyleBase, studio: Studio) {
+	private reactiveMediaStatus (rRundownIds: RundownId[], showStyleBase: ShowStyleBase, studio: Studio) {
 		const t = i18nTranslator
 
-		let oldItemIds: Array<string> = []
+		let oldPieceIds: PieceId[] = []
 		const rPieces = reactiveData.getRPieces(rRundownIds)
 		this.autorun((comp: Tracker.Computation) => {
 			const pieces = rPieces.get()
-			const newItemIds = pieces.map(item => item._id)
+			const newPieceIds = pieces.map(item => item._id)
 			pieces.forEach((piece) => {
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.partId)
 				const segment = part ? Segments.findOne(part.segmentId) : undefined
 				if (segment && sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
-					this._mediaStatusComps[piece._id] = Tracker.autorun(() => {
+					this._mediaStatusComps[unprotectString(piece._id)] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
 						if (mediaId) {
 							this.subscribe(PubSub.mediaObjects, studio._id, {
@@ -432,33 +432,34 @@ class RundownViewNotifier extends WithManagedTracker {
 							})
 						}
 
-						if (newNotification && !Notification.isEqual(this._mediaStatus[piece._id], newNotification)) {
-							this._mediaStatus[piece._id] = newNotification
+						if (newNotification && !Notification.isEqual(this._mediaStatus[unprotectString(piece._id)], newNotification)) {
+							this._mediaStatus[unprotectString(piece._id)] = newNotification
 							this._mediaStatusDep.changed()
-						} else if (!newNotification && this._mediaStatus[piece._id]) {
-							delete this._mediaStatus[piece._id]
+						} else if (!newNotification && this._mediaStatus[unprotectString(piece._id)]) {
+							delete this._mediaStatus[unprotectString(piece._id)]
 							this._mediaStatusDep.changed()
 						}
 					})
 				} else {
-					delete this._mediaStatus[piece._id]
+					delete this._mediaStatus[unprotectString(piece._id)]
 					this._mediaStatusDep.changed()
 				}
 			})
 
-			const removedItems = _.difference(oldItemIds, newItemIds)
-			removedItems.forEach((item) => {
-				delete this._mediaStatus[item]
-				this._mediaStatusComps[item].stop()
-				delete this._mediaStatusComps[item]
+			const removedPieceIds = _.difference(oldPieceIds, newPieceIds)
+			removedPieceIds.forEach((pieceId) => {
+				const pId = unprotectString(pieceId)
+				delete this._mediaStatus[pId]
+				this._mediaStatusComps[pId].stop()
+				delete this._mediaStatusComps[pId]
 
 				this._mediaStatusDep.changed()
 			})
-			oldItemIds = newItemIds
+			oldPieceIds = newPieceIds
 		})
 	}
 
-	private reactiveVersionStatus (rRundownIds: string[]) {
+	private reactiveVersionStatus (rRundownIds: RundownId[]) {
 
 		const updatePeriod = 30000 // every 30s
 
@@ -480,7 +481,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveQueueStatus (studioId: string, playlistId: string) {
+	private reactiveQueueStatus (studioId: StudioId, playlistId: RundownPlaylistId) {
 		const t = i18nTranslator
 		let reactiveUnsentMessageCount: ReactiveVar<number>
 		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
@@ -497,7 +498,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private updateVersionStatus (rundownIds: string[]) {
+	private updateVersionStatus (rundownIds: RundownId[]) {
 		const t = i18nTranslator
 
 		// console.log('update_version_status, ' + rundownId)
@@ -575,11 +576,11 @@ class RundownViewNotifier extends WithManagedTracker {
 interface IProps {
 	// match?: {
 	// 	params: {
-	// 		rundownId?: string
-	// 		studioId?: string
+	// 		rundownId?: RundownId
+	// 		studioId?: StudioId
 	// 	}
 	// }
-	playlistId: string,
+	playlistId: RundownPlaylistId,
 	studio: Studio
 	showStyleBase: ShowStyleBase
 }

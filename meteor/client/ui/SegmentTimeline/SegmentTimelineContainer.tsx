@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { Segment, Segments, DBSegment } from '../../../lib/collections/Segments'
+import { Segment, Segments, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
@@ -26,13 +26,14 @@ import { NoteType, PartNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString } from '../../../lib/lib'
 
 const SPEAK_ADVANCE = 500
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 import { Settings } from '../../../lib/Settings'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -61,7 +62,7 @@ export interface PieceUi extends PieceExtended {
 }
 interface IProps {
 	id: string
-	segmentId: string,
+	segmentId: SegmentId,
 	studio: Studio,
 	showStyleBase: ShowStyleBase,
 	playlist: RundownPlaylist,
@@ -201,7 +202,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	isLiveSegment: boolean
 	isVisible: boolean
-	rundownCurrentPartInstanceId: string | null
+	rundownCurrentPartInstanceId: PartInstanceId | null
 	timelineDiv: HTMLDivElement
 	intersectionObserver: IntersectionObserver | undefined
 	mountedTime: number
@@ -284,8 +285,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		) {
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
-				(this.context.durations.partDisplayStartsAt[this.props.currentNextPart.partId]
-					- this.context.durations.partDisplayStartsAt[this.props.parts[0].instance.part._id])
+				(this.context.durations.partDisplayStartsAt[unprotectString(this.props.currentNextPart.partId)]
+					- this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)])
 				|| 0
 
 			if (this.state.scrollLeft > partOffset) {
@@ -354,8 +355,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			let simulationPercentage = this.playbackSimulationPercentage
 			const partOffset = this.context.durations &&
 				this.context.durations.partDisplayStartsAt &&
-				(this.context.durations.partDisplayStartsAt[currentLivePart._id]
-					- this.context.durations.partDisplayStartsAt[this.props.parts[0].instance.part._id])
+				(this.context.durations.partDisplayStartsAt[unprotectString(currentLivePart._id)]
+					- this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)])
 				|| 0
 
 			let isExpectedToPlay: boolean = currentLivePart.startedPlayback || false
@@ -436,7 +437,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		} */
 	}
 
-	segmentRef = (el: SegmentTimelineClass, sId: string) => {
+	segmentRef = (el: SegmentTimelineClass, segmentId: SegmentId) => {
 		this.timelineDiv = el.timeline
 	}
 
@@ -468,7 +469,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			<SegmentTimeline
 				id={this.props.id}
 				segmentRef={this.segmentRef}
-				key={this.props.segmentui._id}
+				key={unprotectString(this.props.segmentui._id)}
 				segment={this.props.segmentui}
 				studio={this.props.studio}
 				parts={this.props.parts}

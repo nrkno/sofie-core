@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
@@ -15,15 +15,15 @@ import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/co
 import { evalBlueprints } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 
-export function insertBlueprint (type?: BlueprintManifestType, name?: string): string {
+export function insertBlueprint (type?: BlueprintManifestType, name?: string): BlueprintId {
 	return Blueprints.insert({
-		_id: Random.id(),
+		_id: getRandomId(),
 		name: name || 'New Blueprint',
 		code: '',
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
 
-		blueprintId: '',
+		blueprintId: protectString(''),
 		blueprintType: type,
 
 		studioConfigManifest: [],
@@ -40,16 +40,16 @@ export function insertBlueprint (type?: BlueprintManifestType, name?: string): s
 		minimumCoreVersion: ''
 	})
 }
-export function removeBlueprint (id: string) {
-	check(id, String)
-	if (!id) {
-		throw new Meteor.Error(404, `Blueprint id "${id}" was not found`)
+export function removeBlueprint (blueprintId: BlueprintId) {
+	check(blueprintId, String)
+	if (!blueprintId) {
+		throw new Meteor.Error(404, `Blueprint id "${blueprintId}" was not found`)
 	}
-	Blueprints.remove(id)
-	removeSystemStatus('blueprintCompability_' + id)
+	Blueprints.remove(blueprintId)
+	removeSystemStatus('blueprintCompability_' + blueprintId)
 }
 
-export function uploadBlueprint (blueprintId: string, body: string, blueprintName?: string, ignoreIdChange?: boolean): Blueprint {
+export function uploadBlueprint (blueprintId: BlueprintId, body: string, blueprintName?: string, ignoreIdChange?: boolean): Blueprint {
 	check(blueprintId, String)
 	check(body, String)
 	check(blueprintName, Match.Maybe(String))
@@ -64,7 +64,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 
 	const newBlueprint: Blueprint = {
 		_id: blueprintId,
-		name: existingBlueprint ? existingBlueprint.name : (blueprintName || blueprintId),
+		name: existingBlueprint ? existingBlueprint.name : (blueprintName || unprotectString(blueprintId)),
 		created: existingBlueprint ? existingBlueprint.created : getCurrentTime(),
 		code: body,
 		modified: getCurrentTime(),
@@ -74,7 +74,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 			studio: {},
 			showStyle: {}
 		},
-		blueprintId: '',
+		blueprintId: protectString(''),
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
@@ -95,7 +95,7 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 		throw new Meteor.Error(400, `Blueprint ${blueprintId} returned a manifest of unknown blueprintType "${blueprintManifest.blueprintType}"`)
 	}
 
-	newBlueprint.blueprintId				= blueprintManifest.blueprintId || ''
+	newBlueprint.blueprintId				= protectString(blueprintManifest.blueprintId || '')
 	newBlueprint.blueprintType				= blueprintManifest.blueprintType
 	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
@@ -140,18 +140,18 @@ export function uploadBlueprint (blueprintId: string, body: string, blueprintNam
 	return newBlueprint
 }
 
-function assignSystemBlueprint (id?: string) {
-	if (id !== undefined && id !== null) {
-		check(id, String)
+function assignSystemBlueprint (blueprintId?: BlueprintId) {
+	if (blueprintId !== undefined && blueprintId !== null) {
+		check(blueprintId, String)
 
-		const blueprint = Blueprints.findOne(id)
+		const blueprint = Blueprints.findOne(blueprintId)
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')
 
 		CoreSystem.update(SYSTEM_ID, {
 			$set: {
-				blueprintId: id
+				blueprintId: blueprintId
 			}
 		})
 	} else {
@@ -170,7 +170,7 @@ methods[BlueprintAPI.methods.insertBlueprint] = () => {
 methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
 	return removeBlueprint(id)
 }
-methods[BlueprintAPI.methods.assignSystemBlueprint] = (id?: string) => {
-	return assignSystemBlueprint(id)
+methods[BlueprintAPI.methods.assignSystemBlueprint] = (blueprintId?: BlueprintId) => {
+	return assignSystemBlueprint(blueprintId)
 }
 setMeteorMethods(methods)

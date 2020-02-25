@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { stringifyObjects, getHash } from '../lib'
+import { stringifyObjects, getHash, ProtectedString, protectString, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 
@@ -9,7 +9,7 @@ const ObserveChangeBufferTimeout = 2000
 
 type Timeout = number
 
-export function ObserveChangesForHash<Ta extends Tb, Tb> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
+export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: ProtectedString<any> }> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
 	const doUpdate = (id: string, obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
 
@@ -26,7 +26,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb> (collection: Transforme
 	} = {}
 
 	collection.find().observeChanges({
-		changed: (id, changedFields) => {
+		changed: (id: string, changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
 			delete changedFields[hashName]
 
@@ -41,7 +41,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb> (collection: Transforme
 						delete observedChangesTimeouts[id]
 
 						// Perform hash update
-						const obj = collection.findOne(id)
+						const obj = collection.findOne(protectString(id))
 						if (obj) {
 							doUpdate(id, obj)
 						}
@@ -53,7 +53,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb> (collection: Transforme
 
 	if (!skipEnsureUpdatedOnStart) {
 		const existing = collection.find().fetch()
-		_.each(existing, entry => doUpdate(entry['_id'], entry))
+		_.each(existing, entry => doUpdate(entry['_id'] as any, entry))
 	}
 }
 
@@ -64,7 +64,7 @@ export function createMongoCollection<T> (
 		idGeneration?: string
 		transform?: Function
 	}
-) {
+): TransformedCollection<T, any> {
 
 	// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
 

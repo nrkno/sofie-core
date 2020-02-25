@@ -3,13 +3,14 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
-import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from '../methods'
+import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport (timestamp: Time, errorObject: any, location: string) {
@@ -27,7 +28,7 @@ export namespace ServerClientAPI {
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
-		let actionId = Random.id()
+		let actionId: UserActionsLogItemId = getRandomId()
 
 		UserActionsLog.insert(literal<UserActionsLogItem>({
 			_id: actionId,
@@ -76,12 +77,12 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export function callPeripheralDeviceFunction (context: string, deviceId: string, functionName: string, ...args: any[]): Promise<any> {
+	export function callPeripheralDeviceFunction (context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]): Promise<any> {
 		check(deviceId, String)
 		check(functionName, String)
 		check(context, String)
 
-		let actionId = Random.id()
+		let actionId: UserActionsLogItemId = getRandomId()
 		let startTime = Date.now()
 
 		return new Promise((resolve, reject) => {
