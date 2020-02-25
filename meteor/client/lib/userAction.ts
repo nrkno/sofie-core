@@ -125,6 +125,12 @@ function userActionMethodName (
 		
 		case UserActionAPI.methods.bucketAdlibImport: return t('Importing Bucket Adlib-piece')
 		case UserActionAPI.methods.bucketAdlibStart: return t('Starting Bucket Adlib-piece')
+
+		case UserActionAPI.methods.createBucket: return t('Creating Bucket')
+		case UserActionAPI.methods.removeBucket: return t('Deleting Bucket')
+		case UserActionAPI.methods.emptyBucket: return t('Emptying Bucket')
+		case UserActionAPI.methods.modifyBucket: return t('Chaning Bucket')
+		case UserActionAPI.methods.removeBucketAdLib: return t('Removing Bucket Adlib-piece')
 	}
 	return method // fallback
 

@@ -60,7 +60,13 @@ export namespace UserActionAPI {
 		'restartCore'						= 'userAction.system.restartCore',
 
 		'guiFocused'						= 'guiState.focused',
-		'guiBlurred'						= 'guiState.blurred'
+		'guiBlurred'						= 'guiState.blurred',
+
+		'createBucket'						= 'userAction.buckets.createBucket',
+		'removeBucket'						= 'userAction.buckets.removeBucket',
+		'emptyBucket' 						= 'userAction.buckets.emptyBucket',
+		'modifyBucket'						= 'userAction.buckets.modifyBucket',
+		'removeBucketAdLib'					= 'userAction.buckets.removeBucketAdLib'
 	}
 
 	export enum ReloadRundownResponse {

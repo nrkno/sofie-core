@@ -6,7 +6,7 @@ import {
 	Rundowns,
 	RundownHoldState
 } from '../../lib/collections/Rundowns'
-import { getCurrentTime, getHash } from '../../lib/lib'
+import { getCurrentTime, getHash, Omit } from '../../lib/lib'
 import {
 	Parts, Part
 } from '../../lib/collections/Parts'
@@ -30,10 +30,12 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { areThereActiveRundownsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
-import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants';
-import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs';
-import { Buckets } from '../../lib/collections/Buckets';
-import { ServerPlayoutAdLibAPI } from './playout/adlib';
+import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
+import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
+import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import { ServerPlayoutAdLibAPI } from './playout/adlib'
+import { BucketsAPI } from './buckets'
+import { BucketSecurity } from '../security/buckets'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -554,6 +556,46 @@ export function noop () {
 	return ClientAPI.responseSuccess()
 }
 
+export function removeBucketAdLib(id: string) {
+	check(id, String)
+
+	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLib(id))
+}
+
+export function modifyBucket(id: string, bucket: Partial<Omit<Bucket, '_id'>>) {
+	check(id, String)
+	check(bucket, Object)
+
+	if (BucketSecurity.allowWriteAccess(id)) {
+		return ClientAPI.responseSuccess(BucketsAPI.modifyBucket(id, bucket))
+	}
+	throw new Meteor.Error(403, 'Access denied')
+}
+
+export function emptyBucket(id: string) {
+	check(id, String)
+
+	return ClientAPI.responseSuccess(BucketsAPI.emptyBucket(id))
+}
+
+export function createNewBucket(name: string, studioId: string, userId: string | null) {
+	check(name, String)
+	check(studioId, String)
+
+	return ClientAPI.responseSuccess(BucketsAPI.createNewBucket(name, studioId, this.connection.userId))
+}
+
+export function removeBucket(id: string) {
+	check(id, String)
+
+	if (BucketSecurity.allowWriteAccess(id)) {
+		BucketsAPI.removeBucket(id)
+		return ClientAPI.responseSuccess()
+	}
+	throw new Meteor.Error(403, 'Access denied')
+}
+
+
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
 }
@@ -678,6 +720,21 @@ methods[UserActionAPI.methods.guiFocused] = function () {
 }
 methods[UserActionAPI.methods.guiBlurred] = function () {
 	return noop.call(this)
+}
+methods[UserActionAPI.methods.modifyBucket] = function (id: string, bucket: Bucket) {
+	return modifyBucket.call(this, id, bucket)
+}
+methods[UserActionAPI.methods.removeBucketAdLib] = function (id: string) {
+	return removeBucketAdLib.call(this, id)
+}
+methods[UserActionAPI.methods.emptyBucket] = function (id: string) {
+	return emptyBucket.call(this, id)
+}
+methods[UserActionAPI.methods.createBucket] = function (name: string, studioId: string) {
+	return createNewBucket.call(this, name, studioId)
+}
+methods[UserActionAPI.methods.removeBucket] = function (id: string) {
+	return removeBucket.call(this, id)
 }
 
 // Apply methods:

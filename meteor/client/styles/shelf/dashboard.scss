@@ -76,12 +76,15 @@ $dashboard-button-height: 5.625em;
 	}
 
 	.dashboard-panel__header {
+		display: block;
 		margin: 0 0 0.625rem;
 		padding: 0;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		line-height: 1.1em;
+		width: 100%;
+		border: none;
 	}
 
 	> .adlib-panel__list-view__toolbar {

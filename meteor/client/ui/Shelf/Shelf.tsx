@@ -32,7 +32,8 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { RundownViewBuckets } from './RundownViewBuckets';
+import { RundownViewBuckets } from './RundownViewBuckets'
+import { ContextMenuTrigger } from 'react-contextmenu'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -246,6 +247,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	dragHandle = (e: MouseEvent) => {
+		if (e.buttons !== 1) {
+			this.dropHandle(e)
+			return
+		}
+
 		this.setState({
 			overrideHeight: e.clientY + this._mouseOffset.y
 		})
@@ -254,6 +260,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (e.button !== 0) {
+			return
+		}
+
 		document.addEventListener('mouseup', this.dropHandle)
 		document.addEventListener('mouseleave', this.dropHandle)
 		document.addEventListener('mousemove', this.dragHandle)
@@ -322,6 +332,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 
 		this.setState(stateChange)
+
+		document.body.style.cursor = ''
+
 		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
@@ -336,10 +349,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		if (handlePosition) {
 			this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseStart.x
 			this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseStart.y
-			debugger
 		}
 
 		this._mouseDown = Date.now()
+
+		document.body.style.cursor = 'grabbing'
 
 		this.setState({
 			moving: true
@@ -370,13 +384,16 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		const { t, fullViewport } = this.props
 		return (
 			<div className={ClassNames('rundown-view__shelf dark', {
-				'full-viewport': fullViewport
+				'full-viewport': fullViewport,
+				'moving': this.state.moving
 			})} style={fullViewport ? undefined : this.getStyle()}>
 				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle} onTouchStart={this.touchOnHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>}
 				<div className='rundown-view__shelf__contents'>
-					<div className='rundown-view__shelf__contents__pane fill'>
+					<ContextMenuTrigger id='bucket-context-menu' attributes={{
+						className: 'rundown-view__shelf__contents__pane fill'
+					}}>
 						<ErrorBoundary>
 						{
 							(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
@@ -414,7 +431,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									/>
 						}
 						</ErrorBoundary>
-					</div>
+					</ContextMenuTrigger>
 					<ErrorBoundary>
 						<RundownViewBuckets
 							buckets={this.props.buckets}

@@ -1123,7 +1123,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId),
 		rundownLayouts: rundown && RundownLayouts.find({
 			showStyleBaseId: rundown.showStyleBaseId }).fetch(),
-		buckets: rundown && Buckets.find({}).fetch(),
+		buckets: rundown && Buckets.find({}, {
+			sort: {
+				'_rank': 1
+			}
+		}).fetch(),
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {
 				$in: PeripheralDevices.find({
