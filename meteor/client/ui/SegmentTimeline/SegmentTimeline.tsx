@@ -688,7 +688,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					}}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag='div'>
-					<h2>
+					<h2 className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '') }
+						data-identifier={this.props.segment.identifier}>
 						{this.props.segment.name}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && <div className='segment-timeline__title__notes'>

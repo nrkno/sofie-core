@@ -5,6 +5,14 @@ $timeline-layer-height: 1em;
     width: 100%;
     max-width: 100%;
 }
+.segment-timeline__title__label.identifier::before {
+	content: attr(data-identifier);
+	background-color: #095709;
+	margin-right: 10px;
+	padding: 3px;
+	white-space: nowrap;
+	border-radius: 3px;
+}
 .segment-timeline__liveline {
     position: absolute;
     top: 2.3em;
