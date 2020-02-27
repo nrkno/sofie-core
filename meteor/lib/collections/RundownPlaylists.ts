@@ -430,7 +430,15 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			rank: segment._rank,
 			notes: segment.notes
 		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
-		this.getUnorderedParts().map(part => part.notes && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
+
+		this.getUnorderedParts().map(part => {
+			if (part.notes) {
+				const segmentNote = segmentNotes[unprotectString(part.segmentId)]
+				if (segmentNote) {
+					return segmentNote.notes.concat(part.notes)
+				}
+			}
+		})
 		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 			return o.notes.map(note => _.extend(note, {
 				rank: o.rank
