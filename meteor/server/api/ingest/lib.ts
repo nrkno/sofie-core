@@ -32,7 +32,7 @@ export function getStudioFromDevice (peripheralDevice: PeripheralDevice): Studio
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
 	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 	return studio
 }
 export function getRundownPlaylist (rundown: Rundown): RundownPlaylist {
@@ -43,7 +43,7 @@ export function getRundownPlaylist (rundown: Rundown): RundownPlaylist {
 }
 export function getRundown (rundownId: RundownId, externalRundownId: string): Rundown {
 	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, 'Rundown ' + externalRundownId + ' not found')
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)
 	rundown.touch()
 	return rundown
 }

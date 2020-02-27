@@ -16,6 +16,8 @@ import { mockupCollection } from '../../../../../__mocks__/helpers/lib'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { getRundownId } from '../../lib';
+import { Studio, Studios } from '../../../../../lib/collections/Studios';
 jest.mock('../../updateNext')
 
 require('../api.ts') // include in order to create the Meteor methods needed
@@ -138,7 +140,7 @@ describe('Test recieved mos ingest payloads', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, device._id, device.token, roData.ID)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown ${roData.ID.toString()} not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
@@ -186,7 +188,7 @@ describe('Test recieved mos ingest payloads', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.mosRoStatus, device._id, device.token, payload)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown ${externalId} not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
@@ -229,7 +231,7 @@ describe('Test recieved mos ingest payloads', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.mosRoReadyToAir, device._id, device.token, payload)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown ${externalId} not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
@@ -283,7 +285,7 @@ describe('Test recieved mos ingest payloads', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.mosRoStoryStatus, device._id, device.token, payload)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown ${rundownExternalId} not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
@@ -625,7 +627,7 @@ describe('Test recieved mos ingest payloads', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, device._id, device.token, story)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown ${story.RunningOrderId.toString()} not found`)
+			expect(e.message).toMatch(/not found/)
 		}
 	})
 

@@ -10,6 +10,8 @@ import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-bl
 import { updatePartRanks } from '../../rundown'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString, protectString } from '../../../../lib/lib'
+import { getRundownId } from '../lib';
+import { Studios, Studio } from '../../../../lib/collections/Studios';
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -483,7 +485,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.dataRundownDelete, device._id, device.token, externalId)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown ${externalId} not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
@@ -614,7 +616,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, 'wibble', ingestSegment)
 			expect(true).toBe(false)
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown wibble not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
@@ -719,12 +721,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentDelete, device._id, device.token, 'wibble', segExternalId)
 			expect(true).toBe(false) // Should throw rather than run this test
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown wibble not found`)
+			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
 	})
 
 	testInFiber('dataSegmentCreate non-existant rundown', () => {
-		expect(Rundowns.findOne()).toBeTruthy()
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -737,7 +740,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			Meteor.call(PeripheralDeviceAPI.methods.dataSegmentCreate, device._id, device.token, 'wibble', ingestSegment)
 			expect(true).toBe(false)
 		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown wibble not found`)
+			expect(e.message).toMatch(/not found/)
 		}
 	})
 
