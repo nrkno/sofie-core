@@ -408,7 +408,7 @@ export const RundownViewBuckets = translate()(
 							{t('Create new Bucket')}
 						</MenuItem>
 					</ContextMenu>
-				</Escape>
+				</Escape >
 				{buckets && buckets.map((bucket, index) =>
 					<div className='rundown-view__shelf__contents__pane'
 						key={unprotectString(bucket._id)}

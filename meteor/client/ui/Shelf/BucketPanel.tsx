@@ -186,6 +186,16 @@ interface BucketTargetCollectedProps {
 	connectDropTarget: ConnectDropTarget
 }
 
+interface BucketSourceCollectedProps {
+	connectDragSource: ConnectDragSource
+	connectDragPreview: ConnectDragPreview
+	isDragging: boolean
+}
+
+interface BucketTargetCollectedProps {
+	connectDropTarget: ConnectDropTarget
+}
+
 export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, IState, IBucketPanelTrackedProps>((props: Translated<IBucketPanelProps>) => {
 	let showStyleVariantId
 	const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
