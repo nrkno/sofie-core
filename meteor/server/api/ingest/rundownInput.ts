@@ -198,6 +198,12 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 				if ((currentPartInstance && currentPartInstance.rundownId === rundown._id) || (isTooCloseToAutonext(currentPartInstance) && nextPartInstance && nextPartInstance.rundownId === rundown._id)) {
 					okToRemove = false
 				}
+				if (!currentPartInstance && nextPartInstance) {
+					// The playlist is active, but hasn't started playing yet
+					if (nextPartInstance.rundownId === rundown._id) {
+						okToRemove = false
+					}
+				}
 			}
 			if (okToRemove) {
 				logger.info(`Removing rundown "${rundown._id}"`)
