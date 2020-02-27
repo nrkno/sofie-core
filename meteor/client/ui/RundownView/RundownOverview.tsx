@@ -157,7 +157,8 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 				startsAt: 0,
 				willProbablyAutoNext: false
 			})
-			segmentMap.get(part.segmentId)!.items.push(partUi)
+			const segment = segmentMap.get(part.segmentId)
+			if (segment) segment.items.push(partUi)
 		})
 
 		segmentMap.forEach(segment => {

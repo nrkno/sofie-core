@@ -243,6 +243,8 @@ interface IState {
 	isNext: boolean
 	isDurationSettling: boolean
 	liveDuration: number
+
+	isInsideViewport: boolean
 }
 
 const LIVE_LINE_TIME_PADDING = 150
@@ -278,6 +280,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			isLive,
 			isNext,
 			isDurationSettling: false,
+			isInsideViewport: false,
 			liveDuration: isLive ?
 				Math.max(
 				(
@@ -293,9 +296,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps) {
+	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
 		const isLive = (nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id)
 		const isNext = (nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id)
+
 
 		const nextPartInner = nextProps.part.instance.part
 
@@ -319,19 +323,31 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 				)
 				: 0
 
+		const isInsideViewport =
+			nextProps.relative ||
+			isLive ||
+			RundownUtils.isInsideViewport(
+				nextProps.scrollLeft,
+				nextProps.scrollWidth,
+				nextProps.part,
+				SegmentTimelinePart0.getPartStartsAt(nextProps),
+				SegmentTimelinePart0.getPartDuration(nextProps, liveDuration)
+			)
+
 		return ({
 			isLive,
 			isNext,
 			isDurationSettling,
-			liveDuration
+			liveDuration,
+			isInsideViewport
 		})
 	}
 
-	static getLiveLineTimePadding (timeScale) {
+	static getLiveLineTimePadding (timeScale): number {
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	static getCurrentLiveLinePosition (part: PartUi, currentTime: number) {
+	static getCurrentLiveLinePosition (part: PartUi, currentTime: number): number {
 		if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
 			if (part.instance.part.duration) {
 				return part.instance.part.duration
@@ -351,28 +367,28 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		// this.props.part.expectedDuration ||
 		if (this.props.relative) {
 			return {
-				width: (this.getPartDuration() / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				width: (SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				// width: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
-				minWidth: Math.floor(this.getPartDuration() * this.props.timeScale).toString() + 'px',
+				minWidth: Math.floor(SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) * this.props.timeScale).toString() + 'px',
 				// minWidth: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
 	}
 
-	getPartDuration (): number {
-		const part = this.props.part
-		const innerPart = part.instance.part
+	static getPartDuration (props: WithTiming<IProps>, liveDuration: number): number {
+		// const part = this.props.part
+		const innerPart = props.part.instance.part
 
 		return Math.max(
-			this.state.liveDuration,
+			liveDuration,
 			(innerPart.duration ||
-				this.props.timingDurations.partDisplayDurations && this.props.timingDurations.partDisplayDurations[unprotectString(innerPart._id)] ||
-				part.renderedDuration || 0)
+				props.timingDurations.partDisplayDurations && props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)] ||
+				props.part.renderedDuration || 0)
 		)
 
 		/* return part.duration !== undefined ? part.duration : Math.max(
@@ -380,28 +396,14 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 	}
 
-	getPartStartsAt (): number {
-		return Math.max(0, (this.props.firstPartInSegment &&
-			this.props.timingDurations.partDisplayStartsAt &&
+	static getPartStartsAt (props: WithTiming<IProps>): number {
+		return Math.max(0, (props.firstPartInSegment &&
+			props.timingDurations.partDisplayStartsAt &&
 			(
-				this.props.timingDurations.partDisplayStartsAt[unprotectString(this.props.part.instance.part._id)] -
-				this.props.timingDurations.partDisplayStartsAt[unprotectString(this.props.firstPartInSegment.instance.part._id)]
+				props.timingDurations.partDisplayStartsAt[unprotectString(props.part.instance.part._id)] -
+				props.timingDurations.partDisplayStartsAt[unprotectString(props.firstPartInSegment.instance.part._id)]
 			)
 		) || 0)
-	}
-
-	isInsideViewport () {
-		if (this.props.relative || this.state.isLive) {
-			return true
-		} else {
-			return RundownUtils.isInsideViewport(
-				this.props.scrollLeft,
-				this.props.scrollWidth,
-				this.props.part,
-				this.getPartStartsAt(),
-				this.getPartDuration()
-			)
-		}
 	}
 
 	renderTimelineOutputGroups (part: PartUi) {
@@ -431,8 +433,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							segment={this.props.segment}
 							part={part}
 							playlist={this.props.playlist}
-							startsAt={this.getPartStartsAt() || this.props.part.startsAt || 0}
-							duration={this.getPartDuration()}
+							startsAt={SegmentTimelinePart0.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
+							duration={SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)}
 							isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
 							isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
 							timeScale={this.props.timeScale}
@@ -483,7 +485,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			}
 		}
 
-		if (this.isInsideViewport()) {
+		if (this.state.isInsideViewport) {
 			return (
 				<div className={ClassNames('segment-timeline__part', {
 					'live': this.state.isLive,
@@ -525,7 +527,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							'floated': innerPart.floated
 						})} style={{
 							'left': (this.props.relative ?
-								((this.props.playlist.nextTimeOffset / (this.getPartDuration() || 1) * 100) + '%') :
+								((this.props.playlist.nextTimeOffset / (SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) || 1) * 100) + '%') :
 								((this.props.playlist.nextTimeOffset * this.props.timeScale) + 'px')),
 						}}>
 							<div className={ClassNames('segment-timeline__part__nextline__label', {
