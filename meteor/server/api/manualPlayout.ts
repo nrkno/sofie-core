@@ -4,11 +4,11 @@ import {
 } from '../methods'
 import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 import { Timeline, TimelineObjGeneric, getTimelineId } from '../../lib/collections/Timeline'
-import { Studios } from '../../lib/collections/Studios'
+import { Studios, StudioId } from '../../lib/collections/Studios'
 import { afterUpdateTimeline } from './playout/timeline'
 import { check } from 'meteor/check'
 
-function insertTimelineObject (studioId: string, timelineObject: TimelineObjGeneric) {
+function insertTimelineObject (studioId: StudioId, timelineObject: TimelineObjGeneric) {
 	check(studioId, String)
 	timelineObject.studioId = studioId
 	timelineObject._id = getTimelineId(timelineObject)
@@ -22,7 +22,7 @@ function insertTimelineObject (studioId: string, timelineObject: TimelineObjGene
 	}
 
 }
-function removeTimelineObject (studioId: string, id: string) {
+function removeTimelineObject (studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
 	let studio = Studios.findOne(studioId)
@@ -36,10 +36,10 @@ function removeTimelineObject (studioId: string, id: string) {
 }
 
 let methods: Methods = {}
-methods[ManualPlayoutAPI.methods.insertTimelineObject] = (studioId: string, timelineObject: TimelineObjGeneric) => {
+methods[ManualPlayoutAPI.methods.insertTimelineObject] = (studioId: StudioId, timelineObject: TimelineObjGeneric) => {
 	return insertTimelineObject(studioId, timelineObject)
 }
-methods[ManualPlayoutAPI.methods.removeTimelineObject] = (studioId: string, id: string) => {
+methods[ManualPlayoutAPI.methods.removeTimelineObject] = (studioId: StudioId, id: string) => {
 	return removeTimelineObject(studioId, id)
 }
 

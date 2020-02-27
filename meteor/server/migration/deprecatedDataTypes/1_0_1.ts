@@ -1,8 +1,13 @@
-import { Time, literal } from '../../../lib/lib'
+import { Time, literal, protectString } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { StudioId } from '../../../lib/collections/Studios'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PartId } from '../../../lib/collections/Parts'
 
 export interface Rundown {
 	externalId: string
@@ -14,11 +19,11 @@ export interface Rundown {
 	}
 	// From IBlueprintRundownDB:
 	_id: string
-	showStyleVariantId: string
+	showStyleVariantId: ShowStyleVariantId
 	// From DBRundown:
-	studioId: string
-	showStyleBaseId: string
-	peripheralDeviceId: string
+	studioId: StudioId
+	showStyleBaseId: ShowStyleBaseId
+	peripheralDeviceId: PeripheralDeviceId
 	created: Time
 	modified: Time
 	importVersions: RundownImportVersions
@@ -26,11 +31,11 @@ export interface Rundown {
 	airStatus?: string
 	active?: boolean
 	rehearsal?: boolean
-	currentPartId: string | null
-	nextPartId: string | null
+	currentPartId: PartId | null
+	nextPartId: PartId | null
 	nextTimeOffset?: number | null
 	nextPartManual?: boolean
-	previousPartId: string | null
+	previousPartId: PartId | null
 	startedPlayback?: Time
 	unsynced?: boolean
 	unsyncedTime?: Time
@@ -40,9 +45,9 @@ export interface Rundown {
 	notes?: Array<RundownNote>
 	previousPersistentState?: TimelinePersistentState
 }
-export function makePlaylistFromRundown_1_0_0 (rundown0: DBRundown, newPlaylistId?: string): DBRundownPlaylist {
+export function makePlaylistFromRundown_1_0_0 (rundown0: DBRundown, newPlaylistId?: RundownPlaylistId): DBRundownPlaylist {
 	const rundown = rundown0 as any as Rundown
-	if (!newPlaylistId) newPlaylistId = 'pl_' + rundown._id
+	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
 	const playlist = literal<DBRundownPlaylist>({
 		_id: newPlaylistId,
 		externalId: rundown.externalId,

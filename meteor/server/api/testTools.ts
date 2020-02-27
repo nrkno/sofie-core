@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Random } from 'meteor/random'
-import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
-import { Studios, Studio, ITestToolsConfig, MappingExt } from '../../lib/collections/Studios'
-import { getCurrentTime, literal, waitForPromise, getHash } from '../../lib/lib'
+import { RecordedFiles, RecordedFile, RecordedFileId } from '../../lib/collections/RecordedFiles'
+import { Studios, Studio, ITestToolsConfig, MappingExt, StudioId } from '../../lib/collections/Studios'
+import { getCurrentTime, literal, waitForPromise, getHash, getRandomId, protectString } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
@@ -50,7 +50,7 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 	return setTimelineId([
 		literal<TSR.TimelineObjCCGRecord & TimelineObjRecording>({
 			id: IDs.record,
-			_id: '',
+			_id: protectString(''),
 			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			enable: {
@@ -69,7 +69,7 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 		}),
 		literal<TSR.TimelineObjCCGInput & TimelineObjRecording>({
 			id: IDs.input,
-			_id: '', // set later,
+			_id: protectString(''), // set later,
 			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			enable: { while: 1 },
@@ -90,7 +90,7 @@ export namespace ServerTestToolsAPI {
 	/**
 	 * Stop a currently running recording
 	 */
-	export function recordStop (studioId: string) {
+	export function recordStop (studioId: StudioId) {
 		check(studioId, String)
 		const updated = RecordedFiles.update({
 			studioId: studioId,
@@ -108,7 +108,7 @@ export namespace ServerTestToolsAPI {
 		return true
 	}
 
-	export function recordStart (studioId: string, name: string) {
+	export function recordStart (studioId: StudioId, name: string) {
 		check(studioId, String)
 		check(name, String)
 		const studio = Studios.findOne(studioId)
@@ -148,11 +148,11 @@ export namespace ServerTestToolsAPI {
 		})
 		Studios.update(studio._id, { $set: setter })
 
-		const id = Random.id(7)
-		const path = (config.recordings.filePrefix || defaultConfig.prefix) + id + '.mp4'
+		const fileId: RecordedFileId = getRandomId(7)
+		const path = (config.recordings.filePrefix || defaultConfig.prefix) + fileId + '.mp4'
 
 		RecordedFiles.insert({
-			_id: id,
+			_id: fileId,
 			studioId: studioId,
 			modified: getCurrentTime(),
 			startedAt: getCurrentTime(),
@@ -165,10 +165,10 @@ export namespace ServerTestToolsAPI {
 		return true
 	}
 
-	export function recordDelete (id: string) {
-		check(id, String)
-		const file = RecordedFiles.findOne(id)
-		if (!file) throw new Meteor.Error(404, `Recording "${id}" was not found!`)
+	export function recordDelete (fileId: RecordedFileId) {
+		check(fileId, String)
+		const file = RecordedFiles.findOne(fileId)
+		if (!file) throw new Meteor.Error(404, `Recording "${fileId}" was not found!`)
 
 		const studio = Studios.findOne(file.studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`)
@@ -180,10 +180,10 @@ export namespace ServerTestToolsAPI {
 		.then(res => {
 			// 404 is ok, as it means file already doesnt exist. 200 is also good
 			if (res.statusCode !== 404 && res.statusCode !== 200) {
-				throw new Meteor.Error(500, `Failed to delete recording "${id}"!`)
+				throw new Meteor.Error(500, `Failed to delete recording "${fileId}"!`)
 			}
 
-			RecordedFiles.remove(id)
+			RecordedFiles.remove(fileId)
 
 			return true
 		})
@@ -192,14 +192,14 @@ export namespace ServerTestToolsAPI {
 }
 
 let methods: Methods = {}
-methods[TestToolsAPI.methods.recordStop] = (studioId: string) => {
+methods[TestToolsAPI.methods.recordStop] = (studioId: StudioId) => {
 	return ServerTestToolsAPI.recordStop(studioId)
 }
-methods[TestToolsAPI.methods.recordStart] = (studioId: string, name: string) => {
+methods[TestToolsAPI.methods.recordStart] = (studioId: StudioId, name: string) => {
 	return ServerTestToolsAPI.recordStart(studioId, name)
 }
-methods[TestToolsAPI.methods.recordDelete] = (id: string) => {
-	return ServerTestToolsAPI.recordDelete(id)
+methods[TestToolsAPI.methods.recordDelete] = (fileId: RecordedFileId) => {
+	return ServerTestToolsAPI.recordDelete(fileId)
 }
 
 // Transform methods:

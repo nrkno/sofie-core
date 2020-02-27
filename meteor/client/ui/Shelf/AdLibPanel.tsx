@@ -2,10 +2,10 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment, DBSegment } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
+import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { Part, Parts, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
@@ -28,7 +28,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter, RundownLayoutFilterBase, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal, extendMandadory, normalizeArray } from '../../../lib/lib'
+import { literal, extendMandadory, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
@@ -143,11 +143,11 @@ const AdLibListView = translate()(class extends React.Component<
 		} = {}
 
 		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((item) => {
-				tOLayers[item._id] = item
+			props.showStyleBase.outputLayers.forEach((outputLayer) => {
+				tOLayers[outputLayer._id] = outputLayer
 			})
-			props.showStyleBase.sourceLayers.forEach((item) => {
-				tSLayers[item._id] = item
+			props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
+				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
 			return _.extend(state, {
@@ -198,13 +198,13 @@ const AdLibListView = translate()(class extends React.Component<
 							this.props.searchFilter
 						)
 					).
-					map((item: AdLibPieceUi) =>
+					map((adLibPiece: AdLibPieceUi) =>
 						<AdLibListItem
-							key={item._id}
-							item={item}
-							selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
-							layer={this.state.sourceLayers[item.sourceLayerId]}
-							outputLayer={this.state.outputLayers[item.outputLayerId]}
+							key={unprotectString(adLibPiece._id)}
+							adLibListItem={adLibPiece}
+							selected={this.props.selectedPart && this.props.selectedPart._id === adLibPiece._id || false}
+							layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
+							outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 							onToggleAdLib={this.props.onToggleAdLib}
 							onSelectAdLib={this.props.onSelectAdLib}
 							playlist={this.props.playlist}
@@ -219,16 +219,16 @@ const AdLibListView = translate()(class extends React.Component<
 			.filter(a => this.props.filter ?
 				this.props.filter.currentSegment ? a.isLive : true
 				: true)
-			.map((seg) => {
+			.map((segment) => {
 				return (
-					<tbody key={seg._id}
+					<tbody key={unprotectString(segment._id)}
 						className={ClassNames(
 							'adlib-panel__list-view__list__segment',
-							'adlib-panel__list-view__item__' + seg._id,
+							'adlib-panel__list-view__item__' + segment._id,
 							{
-								'live': seg.isLive,
-								'next': seg.isNext && !seg.isLive,
-								'past': seg.parts.reduce((memo, item) => {
+								'live': segment.isLive,
+								'next': segment.isNext && !segment.isLive,
+								'past': segment.parts.reduce((memo, item) => {
 									return item.startedPlayback && item.duration ? memo : false
 								}, true) === true
 							})
@@ -236,11 +236,11 @@ const AdLibListView = translate()(class extends React.Component<
 					>
 						<tr className='adlib-panel__list-view__list__seg-header'>
 							<td colSpan={4}>
-								{seg.name}
+								{segment.name}
 							</td>
 						</tr>
 						{
-							seg.pieces && seg.pieces.
+							segment.pieces && segment.pieces.
 								filter((item) =>
 									matchFilter(
 										item,
@@ -252,8 +252,8 @@ const AdLibListView = translate()(class extends React.Component<
 								).
 								map((item: AdLibPieceUi) =>
 									<AdLibListItem
-										key={item._id}
-										item={item}
+										key={unprotectString(item._id)}
+										adLibListItem={item}
 										selected={this.props.selectedPart && this.props.selectedPart._id === item._id || false}
 										layer={this.state.sourceLayers[item.sourceLayerId]}
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
@@ -416,13 +416,13 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	}
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
-	
+
 	const segments = props.playlist.getSegments()
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
 	const { uiSegments: uiSegments0, liveSegment } = memoizedIsolatedAutorun((
-		currentPartId: string,
-		nextPartId: string,
+		currentPartId: PartId,
+		nextPartId: PartId,
 		segments: Segment[],
 		sourceLayerLookup: SourceLayerLookup,
 		sourceHotKeyUse: { [key: string]: number}
@@ -435,7 +435,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		}
 
 		let liveSegment: AdlibSegmentUi | undefined
-		const uiSegmentMap = new Map<string, AdlibSegmentUi>()
+		const uiSegmentMap = new Map<SegmentId, AdlibSegmentUi>()
 		const uiSegments: Array<AdlibSegmentUi> = segments.map((segment) => {
 			const segmentUi = literal<AdlibSegmentUi>({
 				...segment,
@@ -449,7 +449,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			uiSegmentMap.set(segmentUi._id, segmentUi)
 			return segmentUi
 		})
-		
+
 
 		props.playlist.getUnorderedParts({
 			segmentId: {
@@ -485,9 +485,9 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	segments,
 	sourceLayerLookup,
 	sourceHotKeyUse)
-	
+
 	// This is a map of partIds mapped onto segments they are part of
-	const uiPartSegmentMap = new Map<string, AdlibSegmentUi>()
+	const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 	const uiSegments: AdlibSegmentUi[] = []
 	_.each(uiSegments0, seg => {
 		const seg2 = {
@@ -513,7 +513,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	}).fetch().forEach((piece) => {
 		const segment = uiPartSegmentMap.get(piece.partId!)
 		console.log()
-		
+
 		if (segment) {
 			segment.pieces.push(piece)
 		}
@@ -556,14 +556,14 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		if (partInstanceId) {
 			const partInstance = PartInstances.findOne(partInstanceId)
 			if (partInstance) {
-				currentRundown = rMap[partInstance.rundownId]
+				currentRundown = rMap[unprotectString(partInstance.rundownId)]
 			}
 		}
 
 		if (currentRundown) {
 			// memoizedIsolatedAutorun
 
-			rundownBaselineAdLibs = memoizedIsolatedAutorun((currentRundownId: string, sourceLayerLookup: SourceLayerLookup, sourceLayers: ISourceLayer[], sourceHotKeyUse: { [key: string]: number}) => {
+			rundownBaselineAdLibs = memoizedIsolatedAutorun((currentRundownId: RundownId, sourceLayerLookup: SourceLayerLookup, sourceLayers: ISourceLayer[], sourceHotKeyUse: { [key: string]: number}) => {
 				let rundownAdLibItems = RundownBaselineAdLibPieces.find({
 					rundownId: currentRundownId
 				}, {
@@ -598,7 +598,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 				concat(props.showStyleBase.sourceLayers.filter(i => i.isSticky).
 					sort((a, b) => a._rank - b._rank).
 					map(layer => literal<AdLibPieceUi>({
-						_id: `sticky_${layer._id}`,
+						_id: protectString(`sticky_${layer._id}`),
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 						status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -607,7 +607,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 						expectedDuration: 0,
 						disabled: false,
 						externalId: layer._id,
-						rundownId: '',
+						rundownId: protectString(''),
 						sourceLayerId: layer._id,
 						outputLayerId: '',
 						_rank: 0
@@ -627,7 +627,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 				return sourceLayers.filter(i => !!i.clearKeyboardHotkey).
 					sort((a, b) => a._rank - b._rank).
 					map(layer => literal<AdLibPieceUi>({
-						_id: `clear_${layer._id}`,
+						_id: protectString(`clear_${layer._id}`),
 						hotkey: layer.clearKeyboardHotkey ? layer.clearKeyboardHotkey.split(',')[0] : '',
 						name: t('Clear {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 						status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -637,7 +637,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 						expectedDuration: 0,
 						disabled: false,
 						externalId: layer._id,
-						rundownId: '',
+						rundownId: protectString(''),
 						sourceLayerId: layer._id,
 						outputLayerId: '',
 						_rank: 0
@@ -867,7 +867,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 					'past': item.parts.reduce((memo, part) => {
 						return part.startedPlayback && part.duration ? memo : false
 					}, true) === true
-				})} onClick={(e) => this.onSelectSegment(item)} key={item._id} tabIndex={0}>
+				})} onClick={(e) => this.onSelectSegment(item)} key={unprotectString(item._id)} tabIndex={0}>
 					{item.name}
 				</li>
 			)

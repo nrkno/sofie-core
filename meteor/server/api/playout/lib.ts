@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { Rundown, Rundowns, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns, RundownHoldState, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { Parts, DBPart, Part, isPartPlayable } from '../../../lib/collections/Parts'
 import {
@@ -19,6 +19,8 @@ import {
 	asyncCollectionInsertMany,
 	waitForPromise,
 	asyncCollectionFindFetch,
+	unprotectString,
+	protectString,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -27,7 +29,7 @@ import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances, DBPartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 
 /**
@@ -200,7 +202,7 @@ export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 		dirty: true
 	}).fetch()
 	dirtyParts.forEach(part => {
-		refreshPart(rundownLookup[part.rundownId], part)
+		refreshPart(rundownLookup[unprotectString(part.rundownId)], part)
 		Parts.update(part._id, {$unset: {
 			dirty: 1
 		}})
@@ -296,7 +298,7 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 		setNextPart(rundownPlaylist, null)
 	}
 }
-export function getPartBeforeSegment (rundownId: string, dbSegment: DBSegment): Part | undefined {
+export function getPartBeforeSegment (rundownId: RundownId, dbSegment: DBSegment): Part | undefined {
 	const prevSegment = Segments.findOne({
 		rundownId: rundownId,
 		_rank: { $lt: dbSegment._rank }
@@ -329,7 +331,7 @@ export function getPreviousPart (dbPart: DBPart, rundown: Rundown) {
 	return prevPart
 }
 export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
-	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbRundown.externalId, dbPart.segmentId, dbPart.segmentId)
+	const ingestSegment = loadCachedIngestSegment(dbRundown._id, dbRundown.externalId, dbPart.segmentId, unprotectString(dbPart.segmentId))
 
 	const studio = Studios.findOne(dbRundown.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)
@@ -417,7 +419,7 @@ export function setNextPart (
 		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
 
 		// create new instance
-		let newInstanceId: string
+		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
@@ -425,7 +427,7 @@ export function setNextPart (
 			newInstanceId = nextPartInstance._id
 		} else {
 			// Create new isntance
-			newInstanceId = `${nextPart._id}_${Random.id()}`
+			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
 			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
 			ps.push(asyncCollectionInsert(PartInstances, {
 				_id: newInstanceId,
@@ -450,7 +452,7 @@ export function setNextPart (
 			))
 
 			// Remove any instances which havent been taken
-			const instancesIdsToRemove = waitForPromise(pNonTakenPartInstances).map(p => p._id).filter(id => id != newInstanceId)
+			const instancesIdsToRemove = waitForPromise(pNonTakenPartInstances).map(p => p._id).filter(id => id !== newInstanceId)
 			ps.push(asyncCollectionRemove(PartInstances, {
 				rundownId: { $in: acceptableRundowns },
 				_id: { $in: instancesIdsToRemove }

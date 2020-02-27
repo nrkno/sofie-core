@@ -19,7 +19,7 @@ import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTim
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
-import { getCurrentTime, literal } from '../../../lib/lib'
+import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
@@ -168,7 +168,7 @@ interface IOutputGroupProps {
 }
 class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
-	
+
 	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
 			return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
@@ -253,8 +253,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		filter: (durations: RundownTiming.RundownTimingContext) => {
 			durations = durations || {}
 
-			const partId = props.part.instance.part._id
-			const firstPartInSegmentId = props.firstPartInSegment ? props.firstPartInSegment.instance.part._id : undefined
+			const partId = unprotectString(props.part.instance.part._id)
+			const firstPartInSegmentId = props.firstPartInSegment ? unprotectString(props.firstPartInSegment.instance.part._id) : undefined
 			return [
 				(durations.partDurations || {})[partId],
 				(durations.partDisplayStartsAt || {})[partId],
@@ -286,7 +286,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							SegmentTimelinePart0.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.partDurations ?
-						(partInstance.part.displayDuration || props.timingDurations.partDurations[partInstance.part._id]) :
+						(partInstance.part.displayDuration || props.timingDurations.partDurations[unprotectString(partInstance.part._id)]) :
 						0
 				)
 				: 0
@@ -314,7 +314,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 									SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.partDurations ?
-						(nextPartInner.displayDuration || nextProps.timingDurations.partDurations[nextPartInner._id]) :
+						(nextPartInner.displayDuration || nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]) :
 						0
 				)
 				: 0
@@ -371,12 +371,12 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		return Math.max(
 			this.state.liveDuration,
 			(innerPart.duration ||
-				this.props.timingDurations.partDisplayDurations && this.props.timingDurations.partDisplayDurations[innerPart._id] ||
+				this.props.timingDurations.partDisplayDurations && this.props.timingDurations.partDisplayDurations[unprotectString(innerPart._id)] ||
 				part.renderedDuration || 0)
 		)
 
 		/* return part.duration !== undefined ? part.duration : Math.max(
-			((this.props.timingDurations.partDurations && this.props.timingDurations.partDurations[part._id]) || 0),
+			((this.props.timingDurations.partDurations && this.props.timingDurations.partDurations[unprotectString(part._id)]) || 0),
 			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 	}
 
@@ -384,8 +384,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		return Math.max(0, (this.props.firstPartInSegment &&
 			this.props.timingDurations.partDisplayStartsAt &&
 			(
-				this.props.timingDurations.partDisplayStartsAt[this.props.part.instance.part._id] -
-				this.props.timingDurations.partDisplayStartsAt[this.props.firstPartInSegment.instance.part._id]
+				this.props.timingDurations.partDisplayStartsAt[unprotectString(this.props.part.instance.part._id)] -
+				this.props.timingDurations.partDisplayStartsAt[unprotectString(this.props.firstPartInSegment.instance.part._id)]
 			)
 		) || 0)
 	}
@@ -544,7 +544,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 					}
 					{DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-							{this.props.livePosition} / {this.props.part.startsAt} / {((this.props.timingDurations || { partStartsAt: {} }).partStartsAt || {})[innerPart._id]}
+							{this.props.livePosition} / {this.props.part.startsAt} / {((this.props.timingDurations || { partStartsAt: {} }).partStartsAt || {})[unprotectString(innerPart._id)]}
 						</div>
 					}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextPart && !innerPart.autoNext &&

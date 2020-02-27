@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
-import { applyClassToDocument, Time, registerCollection } from '../lib'
+import { applyClassToDocument, Time, registerCollection, ProtectedString, ProtectedStringProperties, protectString, unprotectString, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPartInstance,
@@ -11,9 +11,21 @@ import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
 import { PieceInstance, PieceInstances } from './PieceInstances'
 import { Pieces } from './Pieces'
+import { RundownId } from './Rundowns'
+import { SegmentId } from './Segments'
 
-export interface DBPartInstance extends IBlueprintPartInstance {
-	rundownId: string
+/** A string, identifying a PartInstance */
+export type PartInstanceId = ProtectedString<'PartInstanceId'>
+export interface InternalIBlueprintPartInstance extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
+	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
+}
+export function unprotectPartInstance (partInstance: PartInstance): IBlueprintPartInstance {
+	return partInstance as any
+}
+
+export interface DBPartInstance extends InternalIBlueprintPartInstance {
+	_id: PartInstanceId
+	rundownId: RundownId
 
 	isScratch?: true
 
@@ -40,9 +52,9 @@ export class PartInstance implements DBPartInstance {
 
 	// From IBlueprintPartInstance:
 	public part: Part
-	public _id: string
-	public segmentId: string
-	public rundownId: string
+	public _id: PartInstanceId
+	public segmentId: SegmentId
+	public rundownId: RundownId
 
 	constructor (document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {
@@ -87,7 +99,7 @@ export class PartInstance implements DBPartInstance {
 
 export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
 	return new PartInstance({
-		_id: `${part._id}_tmp_instance`,
+		_id: protectString(`${part._id}_tmp_instance`),
 		rundownId: part.rundownId,
 		segmentId: part.segmentId,
 		takeCount: -1,
@@ -96,7 +108,7 @@ export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
 }
 
 export function findPartInstanceOrWrapToTemporary (partInstances: { [partId: string]: PartInstance | undefined }, part: DBPart): PartInstance {
-	return partInstances[part._id] || wrapPartToTemporaryInstance(part)
+	return partInstances[unprotectString(part._id)] || wrapPartToTemporaryInstance(part)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>('partInstances', { transform: (doc) => applyClassToDocument(PartInstance, doc) })

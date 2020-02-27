@@ -15,6 +15,7 @@ import {
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { unprotectString } from '../../../lib/lib'
 
 interface IProps {
 	playlist: RundownPlaylist
@@ -50,7 +51,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 							})
 							.map((piece) => {
 								return this.props.part && (
-									<SourceLayerItemContainer key={piece.instance._id}
+									<SourceLayerItemContainer key={unprotectString(piece.instance._id)}
 										{...this.props}
 										// The following code is fine, just withTracker HOC messing with available props
 										isLiveLine={false}

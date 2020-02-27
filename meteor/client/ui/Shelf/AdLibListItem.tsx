@@ -15,10 +15,12 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { unprotectString } from '../../../lib/lib'
 
 export interface IAdLibListItem {
-	_id: string,
-	name: string,
+	_id: PieceId
+	name: string
 	status?: RundownAPI.PieceStatusCode
 	hotkey?: string
 	isHidden?: boolean
@@ -27,7 +29,7 @@ export interface IAdLibListItem {
 }
 
 interface IListViewItemProps {
-	item: IAdLibListItem
+	adLibListItem: IAdLibListItem
 	selected: boolean
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
@@ -43,7 +45,7 @@ interface IAdLibListItemTrackedProps {
 const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
 export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>((props: IListViewItemProps) => {
-	const piece = props.item as any as AdLibPieceUi
+	const piece = props.adLibListItem as any as AdLibPieceUi
 
 	const { status } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
@@ -70,8 +72,8 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 	}
 
 	updateMediaObjectSubscription () {
-		if (this.props.item && this.props.layer) {
-			const piece = this.props.item as any as AdLibPieceUi
+		if (this.props.adLibListItem && this.props.layer) {
+			const piece = this.props.adLibListItem as any as AdLibPieceUi
 			let objId: string | undefined = undefined
 
 			switch (this.props.layer.type) {
@@ -91,7 +93,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 				})
 			}
 		} else {
-			console.error('One of the Piece\'s is invalid:', this.props.item)
+			console.error('One of the Piece\'s is invalid:', this.props.adLibListItem)
 		}
 	}
 
@@ -99,12 +101,12 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 		return (
 			<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
 				'selected': this.props.selected,
-				'invalid': this.props.item.invalid,
-				'floated': this.props.item.floated
-			})} key={this.props.item._id}
-				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
-				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
-				data-obj-id={this.props.item._id}
+				'invalid': this.props.adLibListItem.invalid,
+				'floated': this.props.adLibListItem.floated
+			})} key={unprotectString(this.props.adLibListItem._id)}
+				onClick={(e) => this.props.onSelectAdLib(this.props.adLibListItem)}
+				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey, e)}
+				data-obj-id={this.props.adLibListItem._id}
 				>
 				<td className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
@@ -118,7 +120,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 					{this.props.layer && (this.props .layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-					{this.props.item.hotkey && mousetrapHelper.shortcutLabel(this.props.item.hotkey, _isMacLike)}
+					{this.props.adLibListItem.hotkey && mousetrapHelper.shortcutLabel(this.props.adLibListItem.hotkey, _isMacLike)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}

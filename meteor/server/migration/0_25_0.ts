@@ -4,7 +4,7 @@ import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
-import { asyncCollectionInsert, asyncCollectionInsertIgnore, waitForPromiseAll, partial } from '../../lib/lib'
+import { asyncCollectionInsert, asyncCollectionInsertIgnore, waitForPromiseAll, partial, protectString } from '../../lib/lib'
 
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Evaluations } from '../../lib/collections/Evaluations'
@@ -105,9 +105,9 @@ addMigrationSteps('0.25.0', [
 	renamePropertiesInCollection('Evaluations',
 		Evaluations,
 		'Evaluations',
-			{
-				rundownId: 'runningOrderId'
-			} as any,
+		{
+			rundownId: 'runningOrderId'
+		} as any,
 		'migrateDatabaseCollections'
 	),
 	renamePropertiesInCollection('ExpectedMediaItems',

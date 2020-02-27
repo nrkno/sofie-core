@@ -7,9 +7,10 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 export interface IProps {
-	playlistId: string
+	playlistId: RundownPlaylistId
 	studio: Studio
 	selectedPiece: Piece
 

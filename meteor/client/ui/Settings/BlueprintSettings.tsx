@@ -5,7 +5,7 @@ import { Spinner } from '../../lib/Spinner'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprint, Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -20,11 +20,12 @@ import { UploadButton } from '../../lib/uploadButton'
 import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { unprotectString } from '../../../lib/lib'
 
 interface IProps {
 	match: {
 		params: {
-			blueprintId: string
+			blueprintId: BlueprintId
 		}
 	}
 }
@@ -149,7 +150,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		reader.readAsText(file)
 	}
 
-	assignSystemBlueprint (id: string | undefined) {
+	assignSystemBlueprint (id: BlueprintId | undefined) {
 		Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, id)
 	}
 
@@ -163,7 +164,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>{t('Assigned Show Styles:')}</p>
 						<p className='mod mhn mvs'>
 							{this.props.assignedShowStyles.length > 0 ?
-								this.props.assignedShowStyles.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${i._id}`}>{i.name}</Link></span>) :
+								this.props.assignedShowStyles.map(showStyleBase => <span key={unprotectString(showStyleBase._id)} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${showStyleBase._id}`}>{showStyleBase.name}</Link></span>) :
 								t('This Blueprint is not being used by any Show Style')}
 						</p>
 					</div>
@@ -174,7 +175,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>{t('Assigned Studios:')}</p>
 						<p className='mod mhn mvs'>
 							{this.props.assignedStudios.length > 0 ?
-								this.props.assignedStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
+								this.props.assignedStudios.map(i => <span key={unprotectString(i._id)} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
 								t('This Blueprint is not compatible with any Studio')}
 						</p>
 					</div>

@@ -20,7 +20,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -73,11 +73,11 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		} = {}
 
 		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((item) => {
-				tOLayers[item._id] = item
+			props.showStyleBase.outputLayers.forEach((outputLayer) => {
+				tOLayers[outputLayer._id] = outputLayer
 			})
-			props.showStyleBase.sourceLayers.forEach((item) => {
-				tSLayers[item._id] = item
+			props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
+				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
 			return _.extend(state, {
@@ -102,7 +102,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			{
 				itemList.concat(this.props.rundownAdLibs).concat(this.props.showStyleBase.sourceLayers.filter(i => i.isSticky)
 					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
-						_id: layer._id,
+						_id: protectString(layer._id),
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 						status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -116,8 +116,8 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 							) {
 								return (
 									<AdLibListItem
-										key={item._id}
-										item={item}
+										key={unprotectString(item._id)}
+										adLibListItem={item}
 										selected={this.props.selectedPiece && this.props.selectedPiece._id === item._id || false}
 										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
@@ -130,8 +130,8 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 							) {
 								return (
 									<AdLibListItem
-										key={item._id}
-										item={item}
+										key={unprotectString(item._id)}
+										adLibListItem={item}
 										selected={this.props.selectedPiece && this.props.selectedPiece._id === item._id || false}
 										layer={this.state.sourceLayers[item.sourceLayerId]}
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
@@ -273,7 +273,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (partInstanceId) {
 			const partInstance = PartInstances.findOne(partInstanceId)
 			if (partInstance) {
-				currentRundown = rMap[partInstance.rundownId]
+				currentRundown = rMap[unprotectString(partInstance.rundownId)]
 			}
 		}
 
@@ -422,7 +422,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleStickyItem = (item: IAdLibListItem, e: any) => {
-		this.onToggleSticky(item._id, e)
+		this.onToggleSticky(unprotectString(item._id), e)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {

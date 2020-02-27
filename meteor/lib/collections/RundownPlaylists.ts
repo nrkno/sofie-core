@@ -2,22 +2,27 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise, normalizeArrayFunc, mongoWhere } from '../lib'
-import { RundownHoldState, Rundowns, Rundown, DBRundown } from './Rundowns'
-import { Studio, Studios } from './Studios'
-import { Segments, Segment, DBSegment } from './Segments'
+import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise, normalizeArrayFunc, mongoWhere, ProtectedString, unprotectString } from '../lib'
+import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
+import { Studio, Studios, StudioId } from './Studios'
+import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part } from './Parts'
 import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { PartInstance, PartInstances } from './PartInstances'
+import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { PieceInstance, PieceInstances } from './PieceInstances'
 import { GenericNote, RundownNote } from '../api/notes'
+import { PeripheralDeviceId } from './PeripheralDevices'
+import { createMongoCollection } from './lib'
+
+/** A string, identifying a RundownPlaylist */
+export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 
 export interface DBRundownPlaylist {
-	_id: string
+	_id: RundownPlaylistId
 	externalId: string
-	studioId: string
-	peripheralDeviceId: string
+	studioId: StudioId
+	peripheralDeviceId: PeripheralDeviceId
 	name: string
 	created: Time
 	modified: Time
@@ -28,15 +33,15 @@ export interface DBRundownPlaylist {
 
 	active?: boolean
 	/** the id of the Live Part - if empty, no part in this rundown is live */
-	currentPartInstanceId: string | null
+	currentPartInstanceId: PartInstanceId | null
 	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	nextPartInstanceId: string | null
+	nextPartInstanceId: PartInstanceId | null
 	/** The time offset of the next line */
 	nextTimeOffset?: number | null
 	/** if nextPartId was set manually (ie from a user action) */
 	nextPartManual?: boolean
 	/** the id of the Previous Part */
-	previousPartInstanceId: string | null
+	previousPartInstanceId: PartInstanceId | null
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
@@ -64,10 +69,10 @@ export interface RundownPlaylistPlayoutData {
 }
 
 export class RundownPlaylist implements DBRundownPlaylist {
-	public _id: string
+	public _id: RundownPlaylistId
 	public externalId: string
-	public studioId: string
-	public peripheralDeviceId: string
+	public studioId: StudioId
+	public peripheralDeviceId: PeripheralDeviceId
 	public name: string
 	public created: Time
 	public modified: Time
@@ -78,11 +83,11 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public rehearsal?: boolean
 	public holdState?: RundownHoldState
 	public active?: boolean
-	public currentPartInstanceId: string | null
-	public nextPartInstanceId: string | null
+	public currentPartInstanceId: PartInstanceId | null
+	public nextPartInstanceId: PartInstanceId | null
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
-	public previousPartInstanceId: string | null
+	public previousPartInstanceId: PartInstanceId | null
 
 	public previousPersistentState?: TimelinePersistentState
 
@@ -106,7 +111,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
-	getRundownIDs (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): string[] {
+	getRundownIDs (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): RundownId[] {
 		return this.getRundowns(selector, _.extend({
 			sort: {
 				_rank: 1,
@@ -269,7 +274,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			parts: RundownPlaylist._sortPartsInner(parts, segments)
 		}
 	}
-	getSelectedPartInstances (rundownIds0?: string[]) {
+	getSelectedPartInstances (rundownIds0?: RundownId[]) {
 		let rundownIds = rundownIds0
 		if (!rundownIds) {
 			rundownIds = this.getRundownIDs()
@@ -315,7 +320,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 	getActivePartInstancesMap (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
 		const instances = this.getActivePartInstances(selector, options)
-		return normalizeArrayFunc(instances, i => i.part._id)
+		return normalizeArrayFunc(instances, i => unprotectString(i.part._id))
 	}
 	fetchAllPlayoutData (): RundownPlaylistPlayoutData {
 		const rundowns = Rundowns.find({ playlistId: this._id }, {
@@ -391,8 +396,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			if (a.rundownId === b.rundownId) {
 				return a._rank - b._rank
 			} else {
-				const rdA = rundownsMap[a.rundownId]
-				const rdB = rundownsMap[b.rundownId]
+				const rdA = rundownsMap[unprotectString(a.rundownId)]
+				const rdB = rundownsMap[unprotectString(b.rundownId)]
 				return rdA._rank - rdB._rank
 			}
 		})
@@ -402,14 +407,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 	static _sortPartsInner (parts: Part[], sortedSegments: DBSegment[]) {
 		const segmentRanks: {[segmentId: string]: number} = {}
-		_.each(sortedSegments, (segment, i) => segmentRanks[segment._id] = i)
+		_.each(sortedSegments, (segment, i) => segmentRanks[unprotectString(segment._id)] = i)
 
 		return parts.sort((a, b) => {
 			if (a.segmentId === b.segmentId) {
 				return a._rank - b._rank
 			} else {
-				const segA = segmentRanks[a.segmentId]
-				const segB = segmentRanks[b.segmentId]
+				const segA = segmentRanks[unprotectString(a.segmentId)]
+				const segB = segmentRanks[unprotectString(b.segmentId)]
 				return segA - segB
 			}
 		})
@@ -425,7 +430,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			rank: segment._rank,
 			notes: segment.notes
 		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
-		this.getUnorderedParts().map(part => part.notes && segmentNotes[part.segmentId].notes.concat(part.notes))
+		this.getUnorderedParts().map(part => part.notes && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
 		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 			return o.notes.map(note => _.extend(note, {
 				rank: o.rank
@@ -437,7 +442,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 }
 
 export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist>
-	= new Mongo.Collection<RundownPlaylist>('rundownPlaylists', { transform: (doc) => applyClassToDocument(RundownPlaylist, doc) })
+= createMongoCollection<RundownPlaylist>('rundownPlaylists', { transform: (doc) => applyClassToDocument(RundownPlaylist, doc) })
 registerCollection('RundownPlaylists', RundownPlaylists)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

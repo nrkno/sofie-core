@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, unprotectObject } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -101,7 +101,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
 				// TODO - this query appears to be unable to load any data
-				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece.instance.piece) })
+				let timelineObj = Timeline.findOne({ id: getPieceGroupId(unprotectObject(props.piece.instance.piece)) })
 
 				if (timelineObj) {
 					// Deep clone the required bits

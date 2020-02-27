@@ -15,11 +15,14 @@ import {
 	asyncCollectionUpdate,
 	extendMandadory,
 	asyncCollectionUpsert,
-	getHash
+	getHash,
+	protectString,
+	isProtectedString
 } from '../../lib/lib'
 import {
 	Rundown,
-	Rundowns
+	Rundowns,
+	RundownId
 } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Pieces } from '../../lib/collections/Pieces'
@@ -28,9 +31,9 @@ import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } fro
 import { queueExternalMessages } from './ExternalMessageQueue'
 import { getBlueprintOfRundown } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
 
 const EVENT_WAIT_TIME = 500
 
@@ -38,7 +41,7 @@ export async function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal:
 	if (!timestamp) timestamp = getCurrentTime()
 
 	let event: AsRunLogEvent = extendMandadory<AsRunLogEventBase, AsRunLogEvent>(eventBase, {
-		_id: getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal),
+		_id: protectString(getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal)),
 		timestamp: timestamp,
 		rehersal: rehersal
 	})
@@ -92,16 +95,20 @@ function handleEvent (event: AsRunLogEvent): void {
 
 // Convenience functions:
 
-export function reportRundownHasStarted (playlistOrId: RundownPlaylist | string, rundownOrId: Rundown | string, timestamp?: Time) {
+export function reportRundownHasStarted (
+	playlistOrId: RundownPlaylist | RundownPlaylistId,
+	rundownOrId: Rundown | RundownId,
+	timestamp?: Time
+) {
 	// Called when the first part in rundown starts playing
 
 	const rundown = (
-		_.isString(rundownOrId) ?
+		isProtectedString(rundownOrId) ?
 		Rundowns.findOne(rundownOrId) :
 		rundownOrId
 	)
 	const playlist = (
-		_.isString(playlistOrId) ?
+		isProtectedString(playlistOrId) ?
 		RundownPlaylists.findOne(playlistOrId) :
 		playlistOrId
 	)
@@ -132,17 +139,16 @@ export function reportRundownHasStarted (playlistOrId: RundownPlaylist | string,
 		if (event) handleEvent(event)
 	} else if (playlist) {
 		logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
- }
-	else {
+	} else {
 		logger.error(`playlist not found in reportRundownHasStarted "${playlistOrId}"`)
- }
+	}
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
-export function reportPartHasStarted (partInstanceOrId: PartInstance | string , timestamp: Time) {
+export function reportPartHasStarted (partInstanceOrId: PartInstance | PartInstanceId , timestamp: Time) {
 
 	let partInstance = (
-		_.isString(partInstanceOrId) ?
+		isProtectedString(partInstanceOrId) ?
 		PartInstances.findOne(partInstanceOrId) :
 		partInstanceOrId
 	)
@@ -195,10 +201,10 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | string , 
 		}
 	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
 }
-export function reportPartHasStopped (partInstanceOrId: PartInstance | string , timestamp: Time) {
+export function reportPartHasStopped (partInstanceOrId: PartInstance | PartInstanceId , timestamp: Time) {
 
 	let partInstance = (
-		_.isString(partInstanceOrId) ?
+		isProtectedString(partInstanceOrId) ?
 		PartInstances.findOne(partInstanceOrId) :
 		partInstanceOrId
 	)
@@ -247,10 +253,10 @@ export function reportPartHasStopped (partInstanceOrId: PartInstance | string , 
 	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
 }
 
-export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string, timestamp: Time) {
+export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | PieceInstanceId, timestamp: Time) {
 
 	let pieceInstance = (
-		_.isString(pieceInstanceOrId) ?
+		isProtectedString(pieceInstanceOrId) ?
 		PieceInstances.findOne(pieceInstanceOrId) :
 		pieceInstanceOrId
 	)
@@ -309,10 +315,10 @@ export function reportPieceHasStarted (pieceInstanceOrId: PieceInstance | string
 
 	} else logger.error(`PieceInstance not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
 }
-export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | string, timestamp: Time) {
+export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | PieceInstanceId, timestamp: Time) {
 
 	let pieceInstance = (
-		_.isString(pieceInstanceOrId) ?
+		isProtectedString(pieceInstanceOrId) ?
 		PieceInstances.findOne(pieceInstanceOrId) :
 		pieceInstanceOrId
 	)
@@ -356,7 +362,7 @@ export function reportPieceHasStopped (pieceInstanceOrId: PieceInstance | string
 			const playlist = rundown.getRundownPlaylist()
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
-				rundownId:		rundown._id,
+				rundownId:			rundown._id,
 				segmentId:			partInstance.segmentId,
 				partInstanceId:		partInstance._id,
 				pieceInstanceId:	pieceInstance.piece._id,

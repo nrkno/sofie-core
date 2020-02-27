@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Rundowns, Rundown, DBRundown } from '../../lib/collections/Rundowns'
-import { Part, Parts, DBPart } from '../../lib/collections/Parts'
+import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
 import { Pieces } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { Segments } from '../../lib/collections/Segments'
+import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	getRank,
@@ -14,7 +14,10 @@ import {
 	waitForPromiseAll,
 	getHash,
 	literal,
-	waitForPromise
+	waitForPromise,
+	unprotectObjectArray,
+	protectString,
+	unprotectString
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -22,18 +25,18 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
-import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown, BlueprintResultRundownPlaylist } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultRundownPlaylist, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { UpdateNext } from './ingest/updateNext'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
-import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
 
@@ -56,7 +59,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 
 	if (!studioBlueprint.blueprint.getShowStyleId) throw new Meteor.Error(500, `Studio "${studio._id}" blueprint missing property getShowStyleId`)
 
-	const showStyleId = studioBlueprint.blueprint.getShowStyleId(context, showStyleBases, ingestRundown)
+	const showStyleId: ShowStyleBaseId | null = protectString(studioBlueprint.blueprint.getShowStyleId(context, unprotectObjectArray(showStyleBases) as any, ingestRundown))
 	if (showStyleId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
 		return null
@@ -72,7 +75,9 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
 	if (!showStyleBlueprint) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
-	const variantId = showStyleBlueprint.blueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
+	const variantId: ShowStyleVariantId | null = protectString(
+		showStyleBlueprint.blueprint.getShowStyleVariantId(context, unprotectObjectArray(showStyleVariants) as any, ingestRundown)
+	)
 	if (variantId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null in .getShowStyleVariantId`)
 		return null
@@ -89,9 +94,7 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 
 export interface RundownPlaylistAndOrder {
 	rundownPlaylist: DBRundownPlaylist
-	order: {
-		[ key: string ]: number
-	}
+	order: BlueprintResultOrderedRundowns
 }
 
 export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
@@ -112,7 +115,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 		)
 		if (!playlistInfo) throw new Meteor.Error(500, `blueprint.getRundownPlaylistInfo() returned null for externalId "${currentRundown.playlistExternalId}"`)
 
-		const playlistId = getHash(playlistInfo.playlist.externalId)
+		const playlistId: RundownPlaylistId = protectString(getHash(playlistInfo.playlist.externalId))
 
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
@@ -127,27 +130,24 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
 			modified: getCurrentTime(),
 
-			peripheralDeviceId: '',
+			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
 
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 			previousPartInstanceId: null
 		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId', 'created' ])) as DBRundownPlaylist
 
-		if (peripheralDevice) {
-			playlist.peripheralDeviceId = peripheralDevice._id
-		}
-
 		let order = playlistInfo.order
 		if (!order) {
-			const allRundowns = Rundowns.find({
+			// If no order is provided, fall back to sort the rundowns by their name:
+			const rundownsInPlaylist = Rundowns.find({
 				playlistExternalId: playlist.externalId
 			}, {
 				sort: {
 					name: 1
 				}
 			}).fetch()
-			order = _.object(allRundowns.map((i, index) => [i._id, index + 1]))
+			order = _.object(rundownsInPlaylist.map((i, index) => [i._id, index + 1]))
 		}
 
 		return {
@@ -155,7 +155,8 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			order: order
 		}
 	} else {
-		const playlistId = getHash(currentRundown._id)
+		// It's a rundown that "doesn't have a playlist", so we jsut make one up:
+		const playlistId: RundownPlaylistId = protectString(getHash(unprotectString(currentRundown._id)))
 
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
@@ -170,16 +171,12 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
 			modified: getCurrentTime(),
 
-			peripheralDeviceId: '',
+			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
 
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 			previousPartInstanceId: null
 		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId' ])) as DBRundownPlaylist
-
-		if (peripheralDevice) {
-			playlist.peripheralDeviceId = peripheralDevice._id
-		}
 
 		return {
 			rundownPlaylist: playlist,
@@ -193,7 +190,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
  * @param rundownId The Rundown id to remove from
  * @param segmentIds The Segment ids to be removed
  */
-export function removeSegments (rundownId: string, segmentIds: string[]): number {
+export function removeSegments (rundownId: RundownId, segmentIds: SegmentId[]): number {
 	logger.debug('removeSegments', rundownId, segmentIds)
 	const count = Segments.remove({
 		_id: { $in: segmentIds },
@@ -210,7 +207,7 @@ export function removeSegments (rundownId: string, segmentIds: string[]): number
  * @param rundownId Id of the Rundown
  * @param segmentIds Id of the Segments
  */
-export function afterRemoveSegments (rundownId: string, segmentIds: string[]) {
+export function afterRemoveSegments (rundownId: RundownId, segmentIds: SegmentId[]) {
 	// Remove the parts:
 	saveIntoDb(Parts, {
 		rundownId: rundownId,
@@ -230,7 +227,7 @@ export function afterRemoveSegments (rundownId: string, segmentIds: string[]) {
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
  */
-export function afterRemoveParts (rundownId: string, removedParts: DBPart[]) {
+export function afterRemoveParts (rundownId: RundownId, removedParts: DBPart[]) {
 	saveIntoDb(Parts, {
 		rundownId: rundownId,
 		dynamicallyInserted: true,
@@ -275,9 +272,10 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 	const partsToPutAfter: {[partId: string]: Array<Part>} = {}
 
 	_.each(orgParts, (part) => {
-		if (part.afterPart) {
-			if (!partsToPutAfter[part.afterPart]) partsToPutAfter[part.afterPart] = []
-			partsToPutAfter[part.afterPart].push(part)
+		const afterPart: string = unprotectString(part._id)
+		if (afterPart) {
+			if (!partsToPutAfter[afterPart]) partsToPutAfter[afterPart] = []
+			partsToPutAfter[afterPart].push(part)
 		} else {
 			parts.push(part)
 		}
@@ -287,7 +285,7 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 
 	// Update _rank and save to database:
 	let newRank = 0
-	let prevSegmentId = ''
+	let prevSegmentId: SegmentId = protectString('')
 	_.each(parts, (part) => {
 		if (part.segmentId !== prevSegmentId) {
 			newRank = 0
@@ -307,7 +305,9 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 	while (hasAddedAnything) {
 		hasAddedAnything = false
 
-		_.each(partsToPutAfter, (dynamicParts, insertAfterPartId) => {
+		_.each(partsToPutAfter, (dynamicParts, insertAfterPartId0) => {
+			const insertAfterPartId: PartId = protectString(insertAfterPartId0)
+
 			let partBefore: Part | null = null
 			let partAfter: Part | null = null
 			let insertI = -1
@@ -345,7 +345,7 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 						hasAddedAnything = true
 					})
 				}
-				delete partsToPutAfter[insertAfterPartId]
+				delete partsToPutAfter[insertAfterPartId0]
 			} else {
 				// TODO - part is invalid and should be deleted/warned about
 			}
@@ -359,7 +359,7 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 
 export namespace ServerRundownAPI {
 	/** Remove a RundownPlaylist and all its contents */
-	export function removeRundownPlaylist (playlistId: string) {
+	export function removeRundownPlaylist (playlistId: RundownPlaylistId) {
 		check(playlistId, String)
 		logger.info('removeRundownPlaylist ' + playlistId)
 
@@ -370,7 +370,7 @@ export namespace ServerRundownAPI {
 		playlist.remove()
 	}
 	/** Remove an individual rundown */
-	export function removeRundown (rundownId: string) {
+	export function removeRundown (rundownId: RundownId) {
 		check(rundownId, String)
 		logger.info('removeRundown ' + rundownId)
 
@@ -388,7 +388,7 @@ export namespace ServerRundownAPI {
 		rundown.remove()
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist (playlistId: string): UserActionAPI.ReloadRundownPlaylistResponse {
+	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): UserActionAPI.ReloadRundownPlaylistResponse {
 		check(playlistId, String)
 		logger.info('resyncRundownPlaylist ' + playlistId)
 
@@ -405,7 +405,7 @@ export namespace ServerRundownAPI {
 		}
 		return response
 	}
-	export function resyncRundown (rundownId: string): UserActionAPI.ReloadRundownResponse {
+	export function resyncRundown (rundownId: RundownId): UserActionAPI.ReloadRundownResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
@@ -421,7 +421,7 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadRundown(rundown)
 	}
-	export function unsyncRundown (rundownId: string): void {
+	export function unsyncRundown (rundownId: RundownId): void {
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 
@@ -435,7 +435,7 @@ export namespace ServerRundownAPI {
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownNeedsUpdating (rundownId: string) {
+	export function rundownNeedsUpdating (rundownId: RundownId) {
 		check(rundownId, String)
 		// logger.info('rundownNeedsUpdating ' + rundownId)
 
@@ -466,22 +466,22 @@ export namespace ClientRundownAPI {
 }
 
 let methods: Methods = {}
-methods[RundownAPI.methods.removeRundownPlaylist] = (playlistId: string) => {
+methods[RundownAPI.methods.removeRundownPlaylist] = (playlistId: RundownPlaylistId) => {
 	return ServerRundownAPI.removeRundownPlaylist(playlistId)
 }
-methods[RundownAPI.methods.resyncRundownPlaylist] = (playlistId: string) => {
+methods[RundownAPI.methods.resyncRundownPlaylist] = (playlistId: RundownPlaylistId) => {
 	return ServerRundownAPI.resyncRundownPlaylist(playlistId)
 }
-methods[RundownAPI.methods.removeRundown] = (rundownId: string) => {
+methods[RundownAPI.methods.removeRundown] = (rundownId: RundownId) => {
 	return ServerRundownAPI.removeRundown(rundownId)
 }
-methods[RundownAPI.methods.resyncRundown] = (rundownId: string) => {
+methods[RundownAPI.methods.resyncRundown] = (rundownId: RundownId) => {
 	return ServerRundownAPI.resyncRundown(rundownId)
 }
-methods[RundownAPI.methods.unsyncRundown] = (rundownId: string) => {
+methods[RundownAPI.methods.unsyncRundown] = (rundownId: RundownId) => {
 	return ServerRundownAPI.unsyncRundown(rundownId)
 }
-methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: string) => {
+methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: RundownId) => {
 	return ClientRundownAPI.rundownNeedsUpdating(rundownId)
 }
 // Apply methods:

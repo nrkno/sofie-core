@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
@@ -16,11 +16,12 @@ import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { StudioSelect } from './StudioSelect'
 import { PubSub } from '../../../lib/api/pubsub'
+import { unprotectString } from '../../../lib/lib'
 
 interface IRecordingListProps {
 	match?: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
@@ -156,7 +157,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	}
 	renderRecordingList () {
 		return this.props.files.map((file) => (
-			<RecordedFilesListItem key={file._id} file={file} onDeleteRecording={i => this.onDelete(i)} />
+			<RecordedFilesListItem key={unprotectString(file._id)} file={file} onDeleteRecording={i => this.onDelete(i)} />
 		))
 	}
 

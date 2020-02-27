@@ -1,20 +1,21 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
 import * as _ from 'underscore'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 export namespace reactiveData {
-	export function getRRundownId (rundownId: string): ReactiveVar<string | undefined> {
-		const rVar = new ReactiveVar<string | undefined>(undefined)
+	export function getRRundownId (rundownId: RundownId): ReactiveVar<RundownId | undefined> {
+		const rVar = new ReactiveVar<RundownId | undefined>(undefined)
 		Tracker.autorun(() => {
 			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
@@ -27,8 +28,8 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRRundownStudioId (rundownId: string): ReactiveVar<string | undefined> {
-		const rVar = new ReactiveVar<string | undefined>(undefined)
+	export function getRRundownStudioId (rundownId: RundownId): ReactiveVar<StudioId | undefined> {
+		const rVar = new ReactiveVar<StudioId | undefined>(undefined)
 		Tracker.autorun(() => {
 			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
@@ -41,8 +42,8 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRRundownShowStyleBaseId (rundownId: string): ReactiveVar<string | undefined> {
-		const rVar = new ReactiveVar<string | undefined>(undefined)
+	export function getRRundownShowStyleBaseId (rundownId: RundownId): ReactiveVar<ShowStyleBaseId | undefined> {
+		const rVar = new ReactiveVar<ShowStyleBaseId | undefined>(undefined)
 		Tracker.autorun(() => {
 			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
@@ -55,7 +56,7 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRStudio (studioId: string): ReactiveVar<Studio | undefined> {
+	export function getRStudio (studioId: StudioId): ReactiveVar<Studio | undefined> {
 		const rVar = new ReactiveVar<Studio | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
 		Tracker.autorun(() => {
 			const studio = Studios.findOne(studioId)
@@ -65,9 +66,9 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRPieces (rundownIds: string[]): ReactiveVar<Piece[]>
-	export function getRPieces (rundownId: string): ReactiveVar<Piece[]>
-	export function getRPieces (rundownId: string | string[]): ReactiveVar<Piece[]> {
+	// export function getRPieces (rundownIds: RundownId[]): ReactiveVar<Piece[]>
+	// export function getRPieces (rundownId: RundownId): ReactiveVar<Piece[]>
+	export function getRPieces (rundownId: RundownId | RundownId[]): ReactiveVar<Piece[]> {
 		const rVar = new ReactiveVar<Piece[]>([])
 
 		Tracker.autorun(() => {
@@ -100,7 +101,7 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRPeripheralDevices (studioId: string): ReactiveVar<PeripheralDevice[]> {
+	export function getRPeripheralDevices (studioId: StudioId): ReactiveVar<PeripheralDevice[]> {
 		const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 		Tracker.autorun(() => {
@@ -119,7 +120,7 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getUnsentExternalMessageCount (studioId: string, playlistId: string): ReactiveVar<number> {
+	export function getUnsentExternalMessageCount (studioId: StudioId, playlistId: RundownPlaylistId): ReactiveVar<number> {
 		const rVar = new ReactiveVar<number>(0)
 
 		Tracker.autorun(() => {

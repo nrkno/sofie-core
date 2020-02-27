@@ -2,7 +2,7 @@ import * as MOS from 'mos-connection'
 import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
@@ -63,7 +63,7 @@ export namespace MOSDeviceActions {
 			.catch(e => logger.error('Error in setStoryStatus', e))
 		}
 	}
-	function setStoryStatus (deviceId: string, rundown: Rundown, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {
+	function setStoryStatus (deviceId: PeripheralDeviceId, rundown: Rundown, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {
 		return new Promise((resolve, reject) => {
 			logger.debug('setStoryStatus', deviceId, rundown.externalId, storyId, status)
 			PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {

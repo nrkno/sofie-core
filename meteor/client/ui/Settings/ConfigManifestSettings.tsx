@@ -13,7 +13,7 @@ import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
-import { literal, DBObj, KeysByType } from '../../../lib/lib'
+import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
@@ -25,7 +25,9 @@ import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fo
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
-function getEditAttribute<DBInterface, DocClass extends DBInterface> (collection: TransformedCollection<DocClass, DBInterface>, object: DBInterface, item: BasicConfigManifestEntry, attribute: string) {
+function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocClass extends DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	object: DBInterface, item: BasicConfigManifestEntry, attribute: string) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
 			return <EditAttribute
@@ -66,7 +68,7 @@ function getEditAttribute<DBInterface, DocClass extends DBInterface> (collection
 	}
 }
 
-interface IConfigManifestSettingsProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface, DocClass extends DBInterface> {
+interface IConfigManifestSettingsProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface> {
 	manifest: ConfigManifestEntry[]
 
 	collection: TCol
@@ -84,7 +86,7 @@ interface IConfigManifestSettingsState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 
-interface IConfigManifestTableProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface, DocClass extends DBInterface> {
+interface IConfigManifestTableProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface> {
 	item: ConfigManifestEntryTable
 	baseAttribute: string
 

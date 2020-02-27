@@ -247,7 +247,7 @@ describe('Test mos update next part helpers', () => {
 		jest.clearAllMocks()
 	})
 
-	function resetPartIds (currentPartInstanceId: string | null, nextPartInstanceId: string | null, nextPartManual?: boolean) {
+	function resetPartIds (currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, nextPartManual?: boolean) {
 		RundownPlaylists.update(rundownPlaylistId, { $set: {
 			nextPartInstanceId: nextPartInstanceId,
 			currentPartInstanceId: currentPartInstanceId,

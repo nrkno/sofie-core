@@ -33,21 +33,22 @@ import {
 	IBlueprintRuntimeArgumentsItem,
 	TSR
 } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { uploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime } from '../../lib/lib'
-import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
+import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
-import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { string } from 'prop-types'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -66,7 +67,7 @@ export function setupMockPeripheralDevice (
 	doc = doc || {}
 
 	const defaultDevice: PeripheralDevice = {
-		_id: 'mockDevice' + (dbI++),
+		_id: protectString('mockDevice' + (dbI++)),
 		name: 'mockDevice',
 		studioId: studio ? studio._id : undefined,
 
@@ -113,9 +114,9 @@ export function setupMockStudio (doc?: Partial<DBStudio>): Studio {
 	doc = doc || {}
 
 	const defaultStudio: DBStudio = {
-		_id: 'mockStudio' + (dbI++),
+		_id: protectString('mockStudio' + (dbI++)),
 		name: 'mockStudio',
-		// blueprintId?: string
+		// blueprintId?: BlueprintId
 		mappings: {},
 		supportedShowStyleBase: [],
 		config: [],
@@ -130,11 +131,11 @@ export function setupMockStudio (doc?: Partial<DBStudio>): Studio {
 	Studios.insert(studio)
 	return studio
 }
-export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStudio>): ShowStyleBase {
+export function setupMockShowStyleBase (blueprintId: BlueprintId, doc?: Partial<ShowStyleBase>): ShowStyleBase {
 	doc = doc || {}
 
 	const defaultShowStyleBase: DBShowStyleBase = {
-		_id: 'mockShowStyleBase' + (dbI++),
+		_id: protectString('mockShowStyleBase' + (dbI++)),
 		name: 'mockShowStyleBase',
 		outputLayers: [
 			literal<IOutputLayer>({
@@ -178,11 +179,11 @@ export function setupMockShowStyleBase (blueprintId: string, doc?: Partial<DBStu
 	ShowStyleBases.insert(showStyleBase)
 	return showStyleBase
 }
-export function setupMockShowStyleVariant (showStyleBaseId: string, doc?: Partial<DBStudio>): ShowStyleVariant {
+export function setupMockShowStyleVariant (showStyleBaseId: ShowStyleBaseId, doc?: Partial<ShowStyleVariant>): ShowStyleVariant {
 	doc = doc || {}
 
 	const defaultShowStyleVariant: DBShowStyleVariant = {
-		_id: 'mockShowStyleVariant' + (dbI++),
+		_id: protectString('mockShowStyleVariant' + (dbI++)),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
 		config: [],
@@ -204,7 +205,7 @@ export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[
 	})
 	return `{default: (${code})()}`
 }
-export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
+export function setupMockStudioBlueprint (showStyleBaseId: ShowStyleBaseId): Blueprint {
 
 	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
 	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
@@ -213,7 +214,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 	const INTEGRATION_VERSION: string			= IntegrationInfo.version
 	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
-	const SHOW_STYLE_ID: string					= showStyleBaseId
+	const SHOW_STYLE_ID: string					= unprotectString(showStyleBaseId)
 
 	const code = packageBlueprint<StudioBlueprintManifest>({
 		// Constants to into code:
@@ -241,12 +242,12 @@ export function setupMockStudioBlueprint (showStyleBaseId: string): Blueprint {
 		}
 	})
 
-	const blueprintId = 'mockBlueprint' + (dbI++)
+	const blueprintId: BlueprintId = protectString('mockBlueprint' + (dbI++))
 	const blueprintName = 'mockBlueprint'
 
 	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
-export function setupMockShowStyleBlueprint (showStyleVariantId: string): Blueprint {
+export function setupMockShowStyleBlueprint (showStyleVariantId: ShowStyleVariantId): Blueprint {
 
 	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
 	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
@@ -255,7 +256,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 	const INTEGRATION_VERSION: string			= IntegrationInfo.version
 	const TSR_VERSION: string					= TSRInfo.version
 	const CORE_VERSION: string					= CURRENT_SYSTEM_VERSION
-	const SHOW_STYLE_VARIANT_ID: string			= showStyleVariantId
+	const SHOW_STYLE_VARIANT_ID: string			= unprotectString(showStyleVariantId)
 
 	const code = packageBlueprint<ShowStyleBlueprintManifest>({
 		// Constants to into code:
@@ -340,7 +341,6 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 					parts
 				}
 			},
-			// getPart?: (context: PartContext, ingestPart: IngestPart) => BlueprintResultPart | null,
 			// onRundownActivate?: (context: EventContext & RundownContext) => Promise<void>,
 			// onRundownFirstTake?: (context: EventContext & PartEventContext) => Promise<void>,
 			// onRundownDeActivate?: (context: EventContext & RundownContext) => Promise<void>,
@@ -351,14 +351,14 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: string): Bluepr
 		}
 	})
 
-	const blueprintId = 'mockBlueprint' + (dbI++)
+	const blueprintId: BlueprintId = protectString('mockBlueprint' + (dbI++))
 	const blueprintName = 'mockBlueprint'
 
 	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
-	showStyleBaseId: string
-	showStyleVariantId: string
+	showStyleBaseId: ShowStyleBaseId
+	showStyleVariantId: ShowStyleVariantId
 	studioBlueprint: Blueprint
 	showStyleBlueprint: Blueprint
 	showStyleBase: ShowStyleBase
@@ -372,8 +372,8 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 
 	const core = setupMockCore({})
 
-	const showStyleBaseId = Random.id()
-	const showStyleVariantId = Random.id()
+	const showStyleBaseId: ShowStyleBaseId = getRandomId()
+	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
 	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
 	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId)
@@ -404,13 +404,13 @@ export function setupDefaultStudioEnvironment (): DefaultEnvironment {
 		ingestDevice
 	}
 }
-export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0?: string): { rundownId: string, playlistId: string } {
+export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0?: RundownId): { rundownId: RundownId, playlistId: RundownPlaylistId } {
 
-	const rundownId = rundownId0 || Random.id()
+	const rundownId: RundownId = rundownId0 || getRandomId()
 
 	const playlist: DBRundownPlaylist = {
 
-		_id: 'playlist_' + rundownId,
+		_id: protectString('playlist_' + rundownId),
 
 		externalId: 'MOCK_RUNDOWNPLAYLIST',
 		peripheralDeviceId: env.ingestDevice._id,
@@ -441,7 +441,7 @@ export function setupEmptyEnvironment () {
 		core
 	}
 }
-export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string, rundownId: string): string {
+export function setupDefaultRundown (env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId): RundownId {
 	const rundown: DBRundown = {
 
 		peripheralDeviceId: env.ingestDevice._id,
@@ -472,7 +472,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {
-		_id: rundownId + '_segment0',
+		_id: protectString(rundownId + '_segment0'),
 		_rank: 0,
 		externalId: 'MOCK_SEGMENT_0',
 		rundownId: rundown._id,
@@ -482,7 +482,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 	/* tslint:disable:ter-indent*/
 	//
 		const part00: DBPart = {
-			_id: rundownId + '_part0_0',
+			_id: protectString(rundownId + '_part0_0'),
 			segmentId: segment0._id,
 			rundownId: rundown._id,
 			_rank: 0,
@@ -495,7 +495,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 		Parts.insert(part00)
 
 			const piece000: Piece = {
-				_id: rundownId + '_piece000',
+				_id: protectString(rundownId + '_piece000'),
 				externalId: 'MOCK_PIECE_000',
 				rundownId: rundown._id,
 				partId: part00._id,
@@ -510,7 +510,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			Pieces.insert(piece000)
 
 			const piece001: Piece = {
-				_id: rundownId + '_piece001',
+				_id: protectString(rundownId + '_piece001'),
 				externalId: 'MOCK_PIECE_001',
 				rundownId: rundown._id,
 				partId: part00._id,
@@ -525,7 +525,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			Pieces.insert(piece001)
 
 			const adLibPiece000: AdLibPiece = {
-				_id: rundownId + '_adLib000',
+				_id: protectString(rundownId + '_adLib000'),
 				_rank: 0,
 				expectedDuration: 1000,
 				infiniteMode: PieceLifespan.Normal,
@@ -542,7 +542,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			AdLibPieces.insert(adLibPiece000)
 
 		const part01: DBPart = {
-			_id: rundownId + '_part0_1',
+			_id: protectString(rundownId + '_part0_1'),
 			segmentId: segment0._id,
 			rundownId: segment0.rundownId,
 			_rank: 1,
@@ -553,7 +553,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 		Parts.insert(part01)
 
 			const piece010: Piece = {
-				_id: rundownId + '_piece010',
+				_id: protectString(rundownId + '_piece010'),
 				externalId: 'MOCK_PIECE_010',
 				rundownId: rundown._id,
 				partId: part00._id,
@@ -568,7 +568,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 			Pieces.insert(piece010)
 
 	const segment1: DBSegment = {
-		_id: rundownId + '_segment1',
+		_id: protectString(rundownId + '_segment1'),
 		_rank: 1,
 		externalId: 'MOCK_SEGMENT_2',
 		rundownId: rundown._id,
@@ -577,7 +577,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 	Segments.insert(segment1)
 
 		const part10: DBPart = {
-			_id: rundownId + '_part1_0',
+			_id: protectString(rundownId + '_part1_0'),
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
 			_rank: 0,
@@ -588,7 +588,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 		Parts.insert(part10)
 
 		const part11: DBPart = {
-			_id: rundownId + '_part1_1',
+			_id: protectString(rundownId + '_part1_1'),
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
 			_rank: 1,
@@ -599,7 +599,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 		Parts.insert(part11)
 
 		const part12: DBPart = {
-			_id: rundownId + '_part1_2',
+			_id: protectString(rundownId + '_part1_2'),
 			segmentId: segment1._id,
 			rundownId: segment1.rundownId,
 			_rank: 2,
@@ -610,7 +610,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 		Parts.insert(part12)
 
 	const segment2: DBSegment = {
-		_id: rundownId + '_segment2',
+		_id: protectString(rundownId + '_segment2'),
 		_rank: 2,
 		externalId: 'MOCK_SEGMENT_2',
 		rundownId: rundown._id,
@@ -619,7 +619,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 	Segments.insert(segment2)
 
 	const globalAdLib0: RundownBaselineAdLibItem = {
-		_id: rundownId + '_globalAdLib0',
+		_id: protectString(rundownId + '_globalAdLib0'),
 		_rank: 0,
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		disabled: false,
@@ -632,7 +632,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: string
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
-		_id: rundownId + '_globalAdLib1',
+		_id: protectString(rundownId + '_globalAdLib1'),
 		_rank: 0,
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		disabled: false,

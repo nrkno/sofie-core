@@ -3,7 +3,7 @@
 import * as _ from 'underscore'
 // import {} from 'mocha'
 
-import { Rundown, DBRundown, PlayoutRundownData } from '../../../lib/collections/Rundowns'
+import { Rundown, DBRundown } from '../../../lib/collections/Rundowns'
 import { Part, DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 
@@ -691,7 +691,7 @@ function addStartedPlayback (part: Part, time: number) {
 	part.timings.startedPlayback.push(time)
 }
 
-function createEmptyPiece (id: string, partId: string) {
+function createEmptyPiece (id: string, partId: PartId) {
 	const piece: Piece = {
 		_id: id,
 		externalId: id,

@@ -38,10 +38,12 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { IContextMenuContext } from '../RundownView'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString } from '../../../lib/lib'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { PartId } from '../../../lib/collections/Parts'
 
 interface IProps {
 	id: string
@@ -51,7 +53,7 @@ interface IProps {
 	followLiveSegments: boolean,
 	studio: Studio
 	parts: Array<PartUi>
-	segmentNotes: Array<PartNote>
+	segmentNotes: Array<SegmentNote>
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -77,7 +79,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: NoteType) => void
-	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
+	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	followingPart: PartUi | undefined
 	isLastSegment: boolean
 }
@@ -134,8 +136,8 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		if (this.context && this.context.durations) {
 			const durations = this.context.durations as RundownTiming.RundownTimingContext
 			this.props.parts.forEach((item) => {
-				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
-				const duration = Math.max((item.instance.part.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[item.instance.part._id] || 0)
+				// total += durations.partDurations ? durations.partDurations[unprotectString(item._id)] : (item.duration || item.renderedDuration || 1)
+				const duration = Math.max((item.instance.part.duration || item.renderedDuration || 0), durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)] || 0)
 				total += duration
 			})
 		} else {
@@ -151,7 +153,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	renderZoomTimeline () {
 		return this.props.parts.map((part, index, array) => {
 			return (
-				<SegmentTimelinePart key={part.partId}
+				<SegmentTimelinePart key={unprotectString(part.partId)}
 					segment={this.props.segment}
 					playlist={this.props.playlist}
 					studio={this.props.studio}
@@ -249,7 +251,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	static whyDidYouRender = true
-	
+
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
@@ -429,7 +431,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
 				return (
-					<SegmentTimelinePart key={part.partId}
+					<SegmentTimelinePart key={unprotectString(part.partId)}
 						segment={this.props.segment}
 						playlist={this.props.playlist}
 						studio={this.props.studio}
@@ -499,7 +501,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render () {
-		let notes: Array<PartNote> = this.props.segmentNotes
+		let notes: Array<SegmentNote> = this.props.segmentNotes
 
 		const { t } = this.props
 
@@ -512,10 +514,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
-		let countdownToPartId: string | undefined = undefined
+		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
 			const nextPart = this.props.isNextSegment ?
-				this.props.parts.find(p => p.instance._id == this.props.playlist.nextPartInstanceId) :
+				this.props.parts.find(p => p.instance._id === this.props.playlist.nextPartInstanceId) :
 				this.props.parts[0]
 
 			if (nextPart) {

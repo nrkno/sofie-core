@@ -7,16 +7,17 @@ import { Tracker } from 'meteor/tracker'
 import { Random } from 'meteor/random'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { objectPathGet, firstIfArray, literal } from '../../../lib/lib'
+import { objectPathGet, firstIfArray, literal, protectString } from '../../../lib/lib'
 import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -40,14 +41,14 @@ export enum PrompterConfigMode {
 interface IProps {
 	match?: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
 interface ITrackedProps {
 	rundownPlaylist?: RundownPlaylist
 	studio?: Studio
-	studioId?: string
+	studioId?: StudioId
 	// isReady: boolean
 }
 interface IState {
@@ -56,7 +57,7 @@ interface IState {
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	autoScrollPreviousPartInstanceId: string | null = null
+	autoScrollPreviousPartInstanceId: PartInstanceId | null = null
 
 	configOptions: PrompterConfig
 
@@ -105,7 +106,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			})
 		}
 
-		const playlistId = this.props.rundownPlaylist ? this.props.rundownPlaylist._id : ''
+		let playlistId: RundownPlaylistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id || protectString('')
+
 		this.autorun(() => {
 			let playlist = RundownPlaylists.findOne(playlistId)
 			if (playlistId) {
@@ -151,8 +153,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.checkScrollToCurrent()
 	}
 	checkScrollToCurrent () {
-		let playlistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id
-		let playlist = RundownPlaylists.findOne(playlistId || '')
+		let playlistId: RundownPlaylistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id || protectString('')
+		let playlist = RundownPlaylists.findOne(playlistId)
 
 		if (this.configOptions.followTake) {
 			if (playlist) {
@@ -258,7 +260,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 	checkCurrentTakeMarkers = () => {
-		const playlistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id
+		let playlistId: RundownPlaylistId = this.props.rundownPlaylist && this.props.rundownPlaylist._id || protectString('')
 		const playlist = RundownPlaylists.findOne(playlistId || '')
 
 		if (playlist !== undefined) {
@@ -379,7 +381,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 })(PrompterViewInner)
 
 interface IPrompterProps {
-	rundownPlaylistId: string
+	rundownPlaylistId: RundownPlaylistId
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
@@ -544,7 +546,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					</div>
 				)
 
-				_.each(part.lines, line => {
+				_.each(part.pieces, line => {
 					lines.push(
 						<div
 							key={'line_' + part.id + '_' + segment.id + '_' + line.id}

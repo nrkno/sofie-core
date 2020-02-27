@@ -5,7 +5,8 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import {
 	ExternalMessageQueue,
-	ExternalMessageQueueObj
+	ExternalMessageQueueObj,
+	ExternalMessageQueueObjId
 } from '../../lib/collections/ExternalMessageQueue'
 import {
 	ExternalMessageQueueObjSOAP,
@@ -15,7 +16,8 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	getCurrentTime,
-	removeNullyProperties
+	removeNullyProperties,
+	getRandomId
 } from '../../lib/lib'
 import { setMeteorMethods, Methods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
@@ -38,7 +40,7 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 		// Save the output into the message queue, for later processing:
 		let now = getCurrentTime()
 		let message2: ExternalMessageQueueObj = {
-			_id: Random.id(),
+			_id: getRandomId(),
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
@@ -229,24 +231,24 @@ Meteor.startup(() => {
 })
 
 let methods: Methods = {}
-methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
-	check(id, String)
-	ExternalMessageQueue.remove(id)
+methods[ExternalMessageQueueAPI.methods.remove] = (messageId: ExternalMessageQueueObjId) => {
+	check(messageId, String)
+	ExternalMessageQueue.remove(messageId)
 }
-methods[ExternalMessageQueueAPI.methods.toggleHold] = (id: string) => {
-	check(id, String)
-	let m = ExternalMessageQueue.findOne(id)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on toggleHold`)
-	ExternalMessageQueue.update(id, {$set: {
+methods[ExternalMessageQueueAPI.methods.toggleHold] = (messageId: ExternalMessageQueueObjId) => {
+	check(messageId, String)
+	let m = ExternalMessageQueue.findOne(messageId)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on toggleHold`)
+	ExternalMessageQueue.update(messageId, {$set: {
 		hold: !m.hold
 	}})
 }
-methods[ExternalMessageQueueAPI.methods.retry] = (id: string) => {
-	check(id, String)
-	let m = ExternalMessageQueue.findOne(id)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on retry`)
+methods[ExternalMessageQueueAPI.methods.retry] = (messageId: ExternalMessageQueueObjId) => {
+	check(messageId, String)
+	let m = ExternalMessageQueue.findOne(messageId)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on retry`)
 	let tryGap = getCurrentTime() - 1 * 60 * 1000
-	ExternalMessageQueue.update(id, {$set: {
+	ExternalMessageQueue.update(messageId, {$set: {
 		manualRetry: true,
 		hold: false,
 		errorFatal: false,

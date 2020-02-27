@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import * as bodyParser from 'body-parser'
 import { check, Match } from 'meteor/check'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
 	Snapshots,
 	DeprecatedSnapshotRundown,
@@ -15,9 +15,10 @@ import {
 	SnapshotSystem,
 	SnapshotDebug,
 	SnapshotBase,
-	SnapshotRundownPlaylist
+	SnapshotRundownPlaylist,
+	SnapshotId
 } from '../../lib/collections/Snapshots'
-import { Rundowns, Rundown, DBRundown } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Part, Parts } from '../../lib/collections/Parts'
@@ -31,10 +32,13 @@ import {
 	fixValidPath,
 	saveIntoDb,
 	sumChanges,
-	normalizeArray
+	normalizeArray,
+	protectString,
+	getRandomId,
+	unprotectString
 } from '../../lib/lib'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
@@ -47,14 +51,14 @@ import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylist, RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
@@ -62,7 +66,7 @@ import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/
 
 interface DeprecatedRundownSnapshot { // Old, from the times before rundownPlaylists
 	version: string
-	rundownId: string
+	rundownId: RundownId
 	snapshot: DeprecatedSnapshotRundown
 	rundown: DBRundown
 	ingestData: Array<IngestDataCacheObj>
@@ -79,7 +83,7 @@ interface DeprecatedRundownSnapshot { // Old, from the times before rundownPlayl
 
 interface RundownPlaylistSnapshot {
 	version: string
-	playlistId: string
+	playlistId: RundownPlaylistId
 	snapshot: SnapshotRundownPlaylist
 	playlist: DBRundownPlaylist
 	rundowns: Array<DBRundown>
@@ -98,7 +102,7 @@ interface RundownPlaylistSnapshot {
 }
 interface SystemSnapshot {
 	version: string
-	studioId: string | null
+	studioId: StudioId | null
 	snapshot: SnapshotSystem
 	studios: Array<Studio>
 	showStyleBases: Array<ShowStyleBase>
@@ -111,7 +115,7 @@ interface SystemSnapshot {
 }
 interface DebugSnapshot {
 	version: string
-	studioId?: string
+	studioId?: StudioId
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
 	activeRundownPlaylists: Array<RundownPlaylistSnapshot>
@@ -120,7 +124,7 @@ interface DebugSnapshot {
 	deviceSnaphots: Array<DeviceSnapshot>
 }
 interface DeviceSnapshot {
-	deviceId: string
+	deviceId: PeripheralDeviceId
 	created: Time
 	replyTime: Time
 	content: any
@@ -128,11 +132,11 @@ interface DeviceSnapshot {
 type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot | DeprecatedRundownSnapshot
 
 /**
- * Create a snapshot of all items related to a rundown
+ * Create a snapshot of all items related to a RundownPlaylist
  * @param playlistId
  */
-function createRundownPlaylistSnapshot (playlistId: string): RundownPlaylistSnapshot {
-	let snapshotId = Random.id()
+function createRundownPlaylistSnapshot (playlistId: RundownPlaylistId): RundownPlaylistSnapshot {
+	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
 
 	const playlist = RundownPlaylists.findOne(playlistId)
@@ -140,7 +144,11 @@ function createRundownPlaylistSnapshot (playlistId: string): RundownPlaylistSnap
 	const rundowns = playlist.getRundowns()
 	const rundownIds = rundowns.map(i => i._id)
 	const ingestData = IngestDataCache.find({ rundownId: { $in: rundownIds } }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
-	const userActions = UserActionsLog.find({ args: { $regex: `.*(` + rundownIds.concat(playlistId).map(i => `"${i}"`).join('|') + `).*` } }).fetch()
+	const userActions = UserActionsLog.find({
+		args: {
+			$regex: `.*(` + rundownIds.concat(playlistId as any).map(i => `"${i}"`).join('|') + `).*`
+		}
+	}).fetch()
 
 	const segments = playlist.getSegments()
 	const parts = playlist.getAllOrderedParts()
@@ -194,8 +202,8 @@ function createRundownPlaylistSnapshot (playlistId: string): RundownPlaylistSnap
  * If studioId is provided, only return items related to that studio
  * @param studioId (Optional) Only generate for a certain studio
  */
-function createSystemSnapshot (studioId: string | null): SystemSnapshot {
-	let snapshotId = Random.id()
+function createSystemSnapshot (studioId: StudioId | null): SystemSnapshot {
+	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
 	const coreSystem 		= getCoreSystem()
@@ -209,11 +217,11 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 	let queryBlueprints: MongoSelector<Blueprint> = {}
 
 	if (studioId) {
-		let showStyleBaseIds: string[] = []
+		let showStyleBaseIds: ShowStyleBaseId[] = []
 		_.each(studios, (studio) => {
 			showStyleBaseIds = showStyleBaseIds.concat(studio.supportedShowStyleBase)
 		})
-		queryShowStyleBases._id = ''
+		queryShowStyleBases._id = protectString('')
 		queryShowStyleBases = {
 			_id: { $in: showStyleBaseIds }
 		}
@@ -231,7 +239,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 	const devices 			= PeripheralDevices	.find(queryDevices).fetch()
 
 	if (studioId) {
-		let blueprintIds: string[] = []
+		let blueprintIds: BlueprintId[] = []
 		_.each(showStyleBases, (showStyleBase => {
 			blueprintIds = blueprintIds.concat(showStyleBase.blueprintId)
 		}))
@@ -271,8 +279,8 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
  * Create a snapshot of active rundowns related to a studio and all related data, for debug purposes
  * @param studioId
  */
-function createDebugSnapshot (studioId: string): DebugSnapshot {
-	let snapshotId = Random.id()
+function createDebugSnapshot (studioId: StudioId): DebugSnapshot {
+	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating Debug snapshot "${snapshotId}" for studio "${studioId}"`)
 
 	const studio = Studios.findOne(studioId)
@@ -360,7 +368,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 		}
 	}
 }
-function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): string {
+function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): SnapshotId {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
@@ -375,7 +383,7 @@ function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): str
 	fsWriteFile(filePath, str)
 
 	let id = Snapshots.insert({
-		_id: fileName,
+		_id: protectString(fileName),
 		fileName: fileName,
 		type: snapshot.snapshot.type,
 		created: snapshot.snapshot.created,
@@ -387,7 +395,7 @@ function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): str
 
 	return id
 }
-function retreiveSnapshot (snapshotId: string): AnySnapshot {
+function retreiveSnapshot (snapshotId: SnapshotId): AnySnapshot {
 	let snapshot = Snapshots.findOne(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
@@ -499,7 +507,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 			rd.unsyncedTime = getCurrentTime()
 		}
 
-		rd.notifiedCurrentPlayingPartExternalId = (dbRundownMap[rd._id] ? dbRundownMap[rd._id].notifiedCurrentPlayingPartExternalId : undefined)
+		rd.notifiedCurrentPlayingPartExternalId = (dbRundownMap[unprotectString(rd._id)] ? dbRundownMap[unprotectString(rd._id)].notifiedCurrentPlayingPartExternalId : undefined)
 		if (studios.length === 1) rd.studioId = studios[0]._id
 
 		const showStyleVariants = ShowStyleVariants.find().fetch()
@@ -547,27 +555,27 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	logger.info(`Restore done (added ${changes.added}, updated ${changes.updated}, removed ${changes.removed} documents)`)
 }
 
-export function storeSystemSnapshot (studioId: string | null, reason: string) {
+export function storeSystemSnapshot (studioId: StudioId | null, reason: string) {
 	if (!_.isNull(studioId)) check(studioId, String)
 	let s = createSystemSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function storeRundownPlaylistSnapshot (rundownId: string, reason: string) {
-	check(rundownId, String)
-	let s = createRundownPlaylistSnapshot(rundownId)
+export function storeRundownPlaylistSnapshot (playlistId: RundownPlaylistId, reason: string) {
+	check(playlistId, String)
+	let s = createRundownPlaylistSnapshot(playlistId)
 	return storeSnaphot(s, reason)
 }
-export function storeDebugSnapshot (studioId: string, reason: string) {
+export function storeDebugSnapshot (studioId: StudioId, reason: string) {
 	check(studioId, String)
 	let s = createDebugSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function restoreSnapshot (snapshotId: string) {
+export function restoreSnapshot (snapshotId: SnapshotId) {
 	check(snapshotId, String)
 	let snapshot = retreiveSnapshot(snapshotId)
 	return restoreFromSnapshot(snapshot)
 }
-export function removeSnapshot (snapshotId: string) {
+export function removeSnapshot (snapshotId: SnapshotId) {
 	check(snapshotId, String)
 
 	logger.info(`Removing snapshot ${snapshotId}`)
@@ -598,19 +606,19 @@ export function removeSnapshot (snapshotId: string) {
 Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
 		check(params.studioId, Match.Optional(String))
-		return createSystemSnapshot(params.studioId)
+		return createSystemSnapshot(protectString(params.studioId))
 	})
 })
 Picker.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
 		check(params.playlistId, String)
-		return createRundownPlaylistSnapshot(params.playlistId)
+		return createRundownPlaylistSnapshot(protectString(params.playlistId))
 	})
 })
 Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
 		check(params.studioId, String)
-		return createDebugSnapshot(params.studioId)
+		return createDebugSnapshot(protectString(params.studioId))
 	})
 })
 const postRoute = Picker.filter((req, res) => req.method === 'POST')
@@ -645,25 +653,25 @@ postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: Se
 Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
 		check(params.snapshotId, String)
-		return retreiveSnapshot(params.snapshotId)
+		return retreiveSnapshot(protectString(params.snapshotId))
 	})
 })
 
 // Setup methods:
 let methods: Methods = {}
-methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId: string | null, reason: string) => {
+methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId: StudioId | null, reason: string) => {
 	return storeSystemSnapshot(studioId, reason)
 }
-methods[SnapshotFunctionsAPI.STORE_RUNDOWN_SNAPSHOT] = (rundownId: string, reason: string) => {
-	return storeRundownPlaylistSnapshot(rundownId, reason)
+methods[SnapshotFunctionsAPI.STORE_RUNDOWN_PLAYLIST_SNAPSHOT] = (playlistId: RundownPlaylistId, reason: string) => {
+	return storeRundownPlaylistSnapshot(playlistId, reason)
 }
-methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string, reason: string) => {
+methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: StudioId, reason: string) => {
 	return storeDebugSnapshot(studioId, reason)
 }
-methods[SnapshotFunctionsAPI.RESTORE_SNAPSHOT] = (snapshotId: string) => {
+methods[SnapshotFunctionsAPI.RESTORE_SNAPSHOT] = (snapshotId: SnapshotId) => {
 	return restoreSnapshot(snapshotId)
 }
-methods[SnapshotFunctionsAPI.REMOVE_SNAPSHOT] = (snapshotId: string) => {
+methods[SnapshotFunctionsAPI.REMOVE_SNAPSHOT] = (snapshotId: SnapshotId) => {
 	return removeSnapshot(snapshotId)
 }
 // Apply methods:

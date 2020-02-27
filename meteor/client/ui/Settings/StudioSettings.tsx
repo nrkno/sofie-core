@@ -6,7 +6,8 @@ const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
-	MappingExt
+	MappingExt,
+	StudioId
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -22,12 +23,12 @@ import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/Pe
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
-import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, } from '../../../lib/collections/ShowStyleBases'
 import { LookaheadMode, BlueprintManifestType, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
-import { Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import { PlayoutAPI } from '../../../lib/api/playout'
 import {
 	mappingIsAbstract,
@@ -47,6 +48,7 @@ import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { unprotectString, protectString } from '../../../lib/lib'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -92,7 +94,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 	renderDevices () {
 		return (
 			this.props.studioDevices.map((device, index) => {
-				return <tr key={device._id}>
+				return <tr key={unprotectString(device._id)}>
 							<th className='settings-studio-device__name c3'>
 								<Link to={'/settings/peripheralDevice/' + device._id}>{device.name}</Link>
 							</th>
@@ -167,8 +169,8 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 								{
 									this.props.availableDevices.map((device) => {
 										return (
-											<div className='ctx-menu-item' key={device._id} onClick={(e) => this.onAddDevice(device)}>
-												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({device._id})
+											<div className='ctx-menu-item' key={unprotectString(device._id)} onClick={(e) => this.onAddDevice(device)}>
+												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({unprotectString(device._id)})
 											</div>
 										)
 									})
@@ -822,7 +824,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 interface IStudioSettingsProps {
 	match: {
 		params: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
@@ -833,12 +835,12 @@ interface IStudioSettingsTrackedProps {
 	studioDevices: Array<PeripheralDevice>
 	availableShowStyleVariants: Array<{
 		name: string,
-		value: string,
+		value: ShowStyleVariantId,
 		showStyleVariant: ShowStyleVariant
 	}>
 	availableShowStyleBases: Array<{
 		name: string,
-		value: string
+		value: ShowStyleBaseId
 		showStyleBase: ShowStyleBase
 	}>
 	availableDevices: Array<PeripheralDevice>
@@ -980,14 +982,14 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	getBlueprintOptions () {
 		const { t } = this.props
 
-		let options: { name: string, value: string | null }[] = [{
+		let options: { name: string, value: BlueprintId | null }[] = [{
 			name: t('None'),
-			value: '',
+			value: protectString(''),
 		}]
 
 		options.push(..._.map(Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO }).fetch(), (blueprint) => {
 			return {
-				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
+				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : unprotectString(blueprint._id),
 				value: blueprint._id
 			}
 		}))

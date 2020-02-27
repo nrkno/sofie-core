@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -8,10 +8,10 @@ import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
-import { Parts } from '../../lib/collections/Parts'
+import { Parts, PartId } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -45,7 +45,7 @@ setMeteorMethods({
 		}
 	},
 
-	'debug_removeRundown' (id: string) {
+	'debug_removeRundown' (id: RundownPlaylistId) {
 		logger.debug('Remove rundown "' + id + '"')
 
 		const playlist = RundownPlaylists.findOne(id)
@@ -60,7 +60,7 @@ setMeteorMethods({
 		})
 	},
 
-	'debug_updateSourceLayerInfinitesAfterPart' (rundownId: string, previousPartId?: string, runToEnd?: boolean) {
+	'debug_updateSourceLayerInfinitesAfterPart' (rundownId: RundownId, previousPartId?: PartId, runToEnd?: boolean) {
 		check(rundownId, String)
 		if (previousPartId) check(previousPartId, String)
 		if (runToEnd !== undefined) check(runToEnd, Boolean)

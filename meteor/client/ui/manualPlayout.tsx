@@ -17,6 +17,7 @@ import { EditAttribute } from '../lib/EditAttribute'
 import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
 import { PubSub } from '../../lib/api/pubsub'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { unprotectString } from '../../lib/lib'
 interface IManualPlayoutProps {
 }
 interface IManualPlayoutState {
@@ -183,7 +184,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				<h1>Manual control</h1>
 				{
 					_.map(this.getStudios(), (studio) => {
-						return <div key={studio._id}>
+						return <div key={unprotectString(studio._id)}>
 							<h2>{studio.name}</h2>
 							<h3 className='mhs'>ATEM Control</h3>
 							<table>

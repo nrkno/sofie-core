@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
-import { Piece } from '../../../lib/collections/Pieces'
+import { Piece, InternalIBlueprintPieceGeneric } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { extendMandadory, getHash } from '../../../lib/lib'
+import { extendMandadory, getHash, protectString, unprotectString, Omit } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
@@ -18,24 +18,28 @@ import {
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { PartId } from '../../../lib/collections/Parts'
 
-export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: string, partId: string): Piece[] {
+export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
 		let piece: Piece = {
-			...itemOrig,
-			rundownId: innerContext.rundown._id,
+			...itemOrig as Omit<IBlueprintPiece, '_id' | 'continuesRefId'>,
+			_id: protectString(itemOrig._id),
+			continuesRefId: protectString(itemOrig.continuesRefId),
+			rundownId: protectString(innerContext.rundown._id),
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN
 		}
 
-		if (!piece._id) piece._id = innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)
-		if (!piece.externalId && !piece.isTransition) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(piece._id)}")`)
+		if (!piece._id) piece._id = protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`))
+		if (!piece.externalId && !piece.isTransition) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 
-		if (partsUniqueIds[piece._id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(piece._id)}")`)
-		partsUniqueIds[piece._id] = true
+		if (partsUniqueIds[unprotectString(piece._id)]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+		partsUniqueIds[unprotectString(piece._id)] = true
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
@@ -54,24 +58,24 @@ export function postProcessPieces (innerContext: RundownContext, pieces: IBluepr
 	})
 }
 
-export function postProcessAdLibPieces (innerContext: RundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: string, partId?: string): AdLibPiece[] {
+export function postProcessAdLibPieces (innerContext: RundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: BlueprintId, partId?: PartId): AdLibPiece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
 		let piece: AdLibPiece = {
 			...itemOrig,
-			_id: innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`),
-			rundownId: innerContext.rundown._id,
+			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
+			rundownId: protectString(innerContext.rundown._id),
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			disabled: false
 		}
 
-		if (!piece.externalId) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(piece._id)}")`)
+		if (!piece.externalId) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 
-		if (partsUniqueIds[piece._id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(piece._id)}")`)
-		partsUniqueIds[piece._id] = true
+		if (partsUniqueIds[unprotectString(piece._id)]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+		partsUniqueIds[unprotectString(piece._id)] = true
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = _.map(_.compact(piece.content.timelineObjects), (o: TimelineObjectCoreExt) => {
@@ -108,8 +112,8 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObjRundown {
 	return {
 		...o,
 		id: o.id,
-		_id: '', // set later
-		studioId: '', // set later
+		_id: protectString(''), // set later
+		studioId: protectString(''), // set later
 		objectType: TimelineObjType.RUNDOWN,
 	}
 }

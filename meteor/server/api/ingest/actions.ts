@@ -8,12 +8,12 @@ import { check } from 'meteor/check'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown } from '../playout/lib'
-import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownSyncFunction, handleUpdatedRundownInner } from './rundownInput'
+import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
 import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { UserActionAPI } from '../../../lib/api/userActions'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -83,7 +83,7 @@ export namespace IngestActions {
 	/**
 	 * Run the cached data through blueprints in order to re-generate the Rundown
 	 */
-	export function regenerateRundownPlaylist (rundownPlaylistId: string, purgeExisting?: boolean) {
+	export function regenerateRundownPlaylist (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) {
 		check(rundownPlaylistId, String)
 
 		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -96,7 +96,7 @@ export namespace IngestActions {
 			throw new Meteor.Error(404,`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`)
 		}
 
-		return rundownSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
 			rundownPlaylist.getRundowns().forEach(rundown => {
 				if (rundown.studioId !== studio._id) {
 					logger.warning(`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`)

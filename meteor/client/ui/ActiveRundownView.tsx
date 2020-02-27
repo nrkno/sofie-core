@@ -6,7 +6,7 @@ import {
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { Studios, Studio } from '../../lib/collections/Studios'
+import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
@@ -17,7 +17,7 @@ import { PubSub } from '../../lib/api/pubsub'
 interface IProps {
 	match: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 		path: string
 	}
@@ -25,7 +25,7 @@ interface IProps {
 interface ITrackedProps {
 	playlist?: RundownPlaylist
 	studio?: Studio
-	studioId?: string
+	studioId?: StudioId
 	// isReady: boolean
 }
 interface IState {

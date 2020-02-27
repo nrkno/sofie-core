@@ -1,15 +1,15 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
-import { Pieces, Piece } from './collections/Pieces'
+import { Pieces, Piece, PieceId } from './collections/Pieces'
 import {
 	PieceLifespan,
 	getPieceGroupId,
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, literal, waitForPromise, fetchNext, last } from './lib'
+import { normalizeArray, literal, waitForPromise, fetchNext, last, unprotectObject } from './lib'
 import { Segment, DBSegment } from './collections/Segments'
-import { Part, Parts, DBPart } from './collections/Parts'
+import { Part, Parts, DBPart, PartId } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ShowStyleBase } from './collections/ShowStyleBases'
@@ -31,7 +31,7 @@ export interface SegmentExtended extends DBSegment {
 }
 
 export interface PartExtended {
-	partId: string
+	partId: PartId
 	instance: PartInstance
 	/** Pieces belonging to this part */
 	pieces: Array<PieceExtended>
@@ -207,7 +207,7 @@ export function getResolvedSegment (
 		const TIMELINE_TEMP_OFFSET = 1
 
 		// create a lookup map to match original pieces to their resolved counterparts
-		let piecesLookup = new Map<string, PieceExtended>()
+		let piecesLookup = new Map<PieceId, PieceExtended>()
 		// a buffer to store durations for the displayDuration groups
 		const displayDurationGroups: _.Dictionary<number> = {}
 
@@ -257,7 +257,7 @@ export function getResolvedSegment (
 			// insert items into the timeline for resolution
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
-					id: getPieceGroupId(piece.instance.piece),
+					id: getPieceGroupId(unprotectObject(piece.instance.piece)),
 					enable: calculatePieceTimelineEnable(piece.instance.piece, TIMELINE_TEMP_OFFSET),
 					layer: piece.instance.piece.outputLayerId,
 					content: {

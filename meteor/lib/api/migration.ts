@@ -1,4 +1,8 @@
 import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintId } from '../collections/Blueprints'
+import { ShowStyleBaseId } from '../collections/ShowStyleBases'
+import { StudioId } from '../collections/Studios'
+import { SnapshotId } from '../collections/Snapshots'
 
 export enum MigrationMethods {
 	'getMigrationStatus' 	= 'migration.getMigrationStatus',
@@ -24,7 +28,7 @@ export interface RunMigrationResult {
 	migrationCompleted: boolean
 	partialMigration: boolean
 	warnings: Array<string>
-	snapshot: string
+	snapshot: SnapshotId
 }
 export enum MigrationStepType {
 	CORE = 'core',
@@ -34,8 +38,8 @@ export enum MigrationStepType {
 export interface MigrationChunk {
 	sourceType: MigrationStepType
 	sourceName: string
-	blueprintId?: string // blueprint id
-	sourceId?: string // id in blueprint databaseVersions
+	blueprintId?: BlueprintId // blueprint id
+	sourceId?: ShowStyleBaseId | StudioId // id in blueprint databaseVersions
 	_dbVersion: string  // database version
 	_targetVersion: string  // target version
 	_steps: Array<string> // ref to step that use it

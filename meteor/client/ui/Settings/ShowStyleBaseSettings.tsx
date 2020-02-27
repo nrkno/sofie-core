@@ -7,7 +7,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, HotkeyDefinition, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { doModalDialog } from '../../lib/ModalDialog'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
@@ -15,7 +15,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -34,7 +34,7 @@ import { SettingsNavigation } from '../../lib/SettingsNavigation'
 interface IProps {
 	match: {
 		params: {
-			showStyleBaseId: string
+			showStyleBaseId: ShowStyleBaseId
 		}
 	}
 }
@@ -157,7 +157,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<p className='mod mhn mvs'>
 						{this.props.compatibleStudios.length > 0 ?
 							this.props.compatibleStudios.map(i =>
-								<span key={i._id} className='pill'>
+								<span key={unprotectString(i._id)} className='pill'>
 									<Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link>
 								</span>) :
 							t('This Show Style is not compatible with any Studio')}
@@ -1201,7 +1201,7 @@ interface IShowStyleVariantsProps {
 	showStyleVariants: Array<ShowStyleVariant>
 }
 interface IShowStyleVariantsSettingsState {
-	editedMappings: Array<string>
+	editedMappings: ProtectedString<any>[]
 }
 const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings extends React.Component<Translated<IShowStyleVariantsProps>, IShowStyleVariantsSettingsState> {
 	constructor (props: Translated<IShowStyleVariantsProps>) {
@@ -1211,10 +1211,10 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			editedMappings: []
 		}
 	}
-	isItemEdited = (layerId: string) => {
+	isItemEdited = (layerId: ProtectedString<any>) => {
 		return this.state.editedMappings.indexOf(layerId) >= 0
 	}
-	finishEditItem = (layerId: string) => {
+	finishEditItem = (layerId: ProtectedString<any>) => {
 		let index = this.state.editedMappings.indexOf(layerId)
 		if (index >= 0) {
 			this.state.editedMappings.splice(index, 1)
@@ -1223,7 +1223,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			})
 		}
 	}
-	editItem = (layerId: string) => {
+	editItem = (layerId: ProtectedString<any>) => {
 		if (this.state.editedMappings.indexOf(layerId) < 0) {
 			this.state.editedMappings.push(layerId)
 			this.setState({
@@ -1256,7 +1256,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 
 		return (
 			this.props.showStyleVariants.map((showStyleVariant, index) => {
-				return <React.Fragment key={showStyleVariant._id}>
+				return <React.Fragment key={unprotectString(showStyleVariant._id)}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(showStyleVariant._id)
 					})}>

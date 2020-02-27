@@ -1,10 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { MeteorPromiseCall, getCurrentTime } from '../lib'
-import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
+import { MeteorPromiseCall, getCurrentTime, protectString, getRandomId } from '../lib'
+import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { RundownId } from '../collections/Rundowns'
+import { PartInstanceId } from '../collections/PartInstances'
+import { PeripheralDeviceId } from '../collections/PeripheralDevices'
+import { PieceInstanceId } from '../collections/PieceInstances'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -54,7 +58,7 @@ export interface InitOptions {
 
 	name: string
 	connectionId: string
-	parentDeviceId?: string
+	parentDeviceId?: PeripheralDeviceId
 	versions?: {
 		[libraryName: string]: string
 	}
@@ -63,14 +67,14 @@ export interface InitOptions {
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 
 export interface PartPlaybackStartedResult {
-	rundownId: string,
-	partInstanceId: string,
+	rundownId: RundownId,
+	partInstanceId: PartInstanceId,
 	time: number
 }
 export type PartPlaybackStoppedResult = PartPlaybackStartedResult
 export interface PiecePlaybackStartedResult {
-	rundownId: string,
-	pieceInstanceId: string,
+	rundownId: RundownId,
+	pieceInstanceId: PieceInstanceId,
 	time: number
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
@@ -154,9 +158,9 @@ export function setStatus (id: string, token: string, status: StatusObject): Pro
 	return MeteorPromiseCall(methods.setStatus, id, token, status)
 }
 
-export function executeFunction (deviceId: string, cb: (err, result) => void, functionName: string, ...args: any[]) {
+export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result) => void, functionName: string, ...args: any[]) {
 
-	let commandId = Random.id()
+	let commandId: PeripheralDeviceCommandId = getRandomId()
 	PeripheralDeviceCommands.insert({
 		_id: commandId,
 		deviceId: deviceId,

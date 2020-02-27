@@ -5,6 +5,7 @@ import { Studios, Studio } from '../../lib/collections/Studios'
 import { ensureCollectionProperty } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { protectString } from '../../lib/lib'
 
 /**
  * This file contains system specific migration steps.
@@ -24,7 +25,7 @@ addMigrationSteps('0.1.0', [
 			// create default studio
 			logger.info(`Migration: Add default studio`)
 			Studios.insert({
-				_id: 'studio0',
+				_id: protectString('studio0'),
 				name: 'Default studio',
 				supportedShowStyleBase: [],
 				settings: {
