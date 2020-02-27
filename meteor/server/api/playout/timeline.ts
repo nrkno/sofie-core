@@ -65,6 +65,7 @@ import { prefixAllObjectIds } from './lib'
 import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
+import { isNumber } from 'util'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -720,6 +721,17 @@ function transformPartIntoTimeline (
 					piece.enable.start = `#${getPieceGroupId(transition)}.start ${transitionContentsDelayStr}`
 				} else if (piece.isTransition && transitionPieceDelay) {
 					piece.enable.start = Math.max(0, transitionPieceDelay)
+				}
+			}
+
+			if (piece.infiniteId && piece.infiniteId === piece._id) {
+				if (
+					piece.enable.start &&
+					isNumber(piece.enable.start) &&
+					piece.enable.start > 0 &&
+					piece.startedPlayback
+				) {
+					piece.enable.start = 0
 				}
 			}
 

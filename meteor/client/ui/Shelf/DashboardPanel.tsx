@@ -389,7 +389,6 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 	if (currentPartId) {
 		prospectivePieces = Pieces.find({
 			rundownId: rundownId,
-			partId: currentPartId,
 			dynamicallyInserted: true,
 			startedPlayback: {
 				$exists: true
