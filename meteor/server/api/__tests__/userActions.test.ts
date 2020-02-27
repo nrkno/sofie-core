@@ -19,7 +19,7 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 		'moveNext' 								= 'userAction.moveNext',
 
 		'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',
-		'resetRundown' 							= 'userAction.resetRundown',
+		'resetRundownPlaylist' 					= 'userAction.resetRundownPlaylist',
 		'resetAndActivate' 						= 'userAction.resetAndActivate',
 		'forceResetAndActivate' 				= 'userAction.forceResetAndActivate',
 		'activate' 								= 'userAction.activate',
@@ -42,7 +42,13 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 
 		'saveEvaluation' 						= 'userAction.saveEvaluation',
 
+		// 'partPlaybackStartedCallback'	= 'userAction.partPlaybackStartedCallback',
+		// 'piecePlaybackStartedCallback'= 'userAction.piecePlaybackStartedCallback',
+
 		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',
+
+		'removeRundownPlaylist'				= 'userAction.removeRundownPlaylist',
+		'resyncRundownPlaylist'				= 'userAction.resyncRundownPlaylist',
 
 		'removeRundown'						= 'userAction.removeRundown',
 		'resyncRundown'						= 'userAction.resyncRundown',
@@ -57,7 +63,7 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 		'mediaAbortAllWorkflows'				= 'userAction.mediamanager.abortAllWorkflows',
 		'mediaPrioritizeWorkflow'				= 'userAction.mediamanager.mediaPrioritizeWorkflow',
 
-		'regenerateRundown'					= 'userAction.ingest.regenerateRundown',
+		'regenerateRundownPlaylist'				= 'userAction.ingest.regenerateRundownPlaylist',
 
 		'generateRestartToken'				= 'userAction.system.generateRestartToken',
 		'restartCore'						= 'userAction.system.restartCore',
@@ -166,7 +172,7 @@ describe('User Actions', () => {
 		{
 			// Reset rundown:
 			expect(
-				Meteor.call(UserActionAPI.methods.resetRundown, playlistId0)
+				Meteor.call(UserActionAPI.methods.resetRundownPlaylist, playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()

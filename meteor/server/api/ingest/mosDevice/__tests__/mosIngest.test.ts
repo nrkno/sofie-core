@@ -5,10 +5,10 @@ import { PeripheralDeviceAPI } from '../../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
-import { Segments as _Segments, DBSegment, Segment } from '../../../../../lib/collections/Segments'
+import { Segments as _Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
 import { Parts as _Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
-import { literal, waitForPromise } from '../../../../../lib/lib'
+import { literal, waitForPromise, protectString } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
 import { UpdateNext } from '../../updateNext'
@@ -29,11 +29,11 @@ function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
 	const groupedParts = _.groupBy(sortedParts, p => p.segmentId)
 	const arr: [string, DBPart[]][] = _.pairs(groupedParts)
 	const idMap = _.map(arr, g => ({
-		segment: g[0],
+		segmentId: protectString<SegmentId>(g[0]),
 		parts: _.map(g[1], p => p.externalId)
 	}))
 	return _.sortBy(idMap, s => {
-		const obj = _.find(segments, s2 => s2._id === s.segment)
+		const obj = _.find(segments, s2 => s2._id === s.segmentId)
 		return obj ? obj._rank : 99999
 	})
 }
@@ -367,12 +367,12 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const partMap = mockRO.segmentIdMap()
 		partMap.splice(1, 0, {
-			segment: '9VE_IbHiHyW6VjY6Fi8fMJEgtS4_',
+			segmentId: '9VE_IbHiHyW6VjY6Fi8fMJEgtS4_',
 			parts: [newPartData.ID.toString()]
 		})
-		partMap[2].segment = 'Qz1OqWVatX_W4Sp5C0m8VhTTfME_'
-		partMap[3].segment = '8GUNgE7zUulco2K3yuhJ1Fyceeo_'
-		partMap[4].segment = 'XF9ZBDI5IouvkmTbounEfoJ6ijY_'
+		partMap[2].segmentId = 'Qz1OqWVatX_W4Sp5C0m8VhTTfME_'
+		partMap[3].segmentId = '8GUNgE7zUulco2K3yuhJ1Fyceeo_'
+		partMap[4].segmentId = 'XF9ZBDI5IouvkmTbounEfoJ6ijY_'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
 		expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
@@ -688,7 +688,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const parts = rundown.getParts({}, undefined, segments)
 
 		const partMap = mockRO.segmentIdMap()
-		partMap[0].segment = 'apDVfF5nk1_StK474hEUxLMZIag_'
+		partMap[0].segmentId = 'apDVfF5nk1_StK474hEUxLMZIag_'
 		partMap[0].parts[0] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p1'
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
@@ -767,7 +767,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[1].parts.push('ro1;s4;p1')
-		partMap[2].segment = 'sLfUx9cadyquE07Vw9byoX35G9I_'
+		partMap[2].segmentId = 'sLfUx9cadyquE07Vw9byoX35G9I_'
 		partMap[2].parts = partMap[2].parts.reverse()
 		partMap.splice(3, 1)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)

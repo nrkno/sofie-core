@@ -18,7 +18,7 @@ import {
 	setupDefaultStudioEnvironment
 } from '../../../__mocks__/helpers/database'
 import {
-	getCurrentTime
+	getCurrentTime, protectString
 } from '../../../lib/lib'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { sendSOAPMessage } from '../integration/soap'
@@ -35,23 +35,23 @@ describe('Test external message queue static methods', () => {
 		await runInFiber(() => {
 			let now = getCurrentTime()
 			RundownPlaylists.insert({
-				_id: 'playlist_1',
+				_id: protectString('playlist_1'),
 				externalId: 'mock_rpl',
 				name: 'Mock',
-				studioId: '',
-				peripheralDeviceId: '',
+				studioId: protectString(''),
+				peripheralDeviceId: protectString(''),
 				created: 0,
 				modified: 0,
-				currentPartInstanceId: 'part_now',
-				nextPartInstanceId: 'partNext',
+				currentPartInstanceId: protectString('part_now'),
+				nextPartInstanceId: protectString('partNext'),
 				previousPartInstanceId: null,
 				active: true
 			})
 			Rundowns.insert({
-				_id: 'rundown_1',
+				_id: protectString('rundown_1'),
 				name: 'Mockito 1',
 				externalId: 'mockito',
-				playlistId: 'playlist_1',
+				playlistId: protectString('playlist_1'),
 				_rank: 0,
 
 				studioId: studioEnv.studio._id,

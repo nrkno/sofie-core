@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
+import { literal, protectString } from '../../../../lib/lib'
 import { loadSystemBlueprints, loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown, WrappedStudioBlueprint } from '../cache'
 import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
@@ -35,10 +35,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint does not exist', () => {
 			const core = getCore()
-			core.blueprintId = 'fake_id'
+			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 
 			try {
 				loadSystemBlueprints(core)
@@ -49,10 +49,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint no type', () => {
 			const core = getCore()
-			core.blueprintId = 'fake_id'
+			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
 			try {
@@ -64,10 +64,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint wrong type', () => {
 			const core = getCore()
-			core.blueprintId = 'fake_id'
+			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
 
 			try {
@@ -79,7 +79,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint wrong internal type', () => {
 			const core = getCore()
-			core.blueprintId = 'fake_id'
+			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
@@ -95,7 +95,7 @@ describe('Test blueprint cache', () => {
 				getShowStyleId: () => null
 			})
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			try {
@@ -107,7 +107,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint correct type', () => {
 			const core = getCore()
-			core.blueprintId = 'fake_id'
+			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
@@ -119,7 +119,7 @@ describe('Test blueprint cache', () => {
 				minimumCoreVersion: '0.0.0'
 			})
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			const blueprint = loadSystemBlueprints(core)
@@ -144,10 +144,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint does not exist', () => {
 			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
+			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 
 			try {
 				loadStudioBlueprints(studio)
@@ -158,10 +158,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint no type', () => {
 			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
+			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
 			try {
@@ -173,10 +173,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint wrong type', () => {
 			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
+			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
 
 			try {
@@ -188,7 +188,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint wrong internal type', () => {
 			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
+			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
@@ -200,7 +200,7 @@ describe('Test blueprint cache', () => {
 				minimumCoreVersion: '0.0.0'
 			})
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			try {
@@ -212,7 +212,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint correct type', () => {
 			const studio = getStudio()
-			studio.blueprintId = 'fake_id'
+			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
@@ -228,7 +228,7 @@ describe('Test blueprint cache', () => {
 				getShowStyleId: () => null
 			})
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			const blueprint = loadStudioBlueprints(studio) as WrappedStudioBlueprint
@@ -260,10 +260,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint does not exist', () => {
 			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
+			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 
 			try {
 				loadShowStyleBlueprints(showStyle)
@@ -274,10 +274,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint no type', () => {
 			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
+			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
 			try {
@@ -289,10 +289,10 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint wrong type', () => {
 			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
+			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
 
 			try {
@@ -304,7 +304,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint wrong internal type', () => {
 			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
+			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
@@ -316,7 +316,7 @@ describe('Test blueprint cache', () => {
 				minimumCoreVersion: '0.0.0'
 			})
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			try {
@@ -328,7 +328,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Blueprint correct type', () => {
 			const showStyle = getShowStyle()
-			showStyle.blueprintId = 'fake_id'
+			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
 
 			const manifest = () => ({
@@ -346,7 +346,7 @@ describe('Test blueprint cache', () => {
 				getSegment: () => null as any as BlueprintResultSegment
 			})
 
-			Blueprints.remove('fake_id')
+			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
 			const blueprint = loadShowStyleBlueprints(showStyle)
@@ -357,14 +357,14 @@ describe('Test blueprint cache', () => {
 	describe('getBlueprintOfRundown', () => {
 		function getRundown () {
 			return new Rundown(literal<DBRundown>({
-				_id: 'ro1',
-				playlistId: 'pls0',
+				_id: protectString('ro1'),
+				playlistId: protectString('pls0'),
 				_rank: 1,
 				externalId: 'ro1',
-				studioId: 'studio0',
-				showStyleBaseId: '',
-				showStyleVariantId: 'variant0',
-				peripheralDeviceId: '',
+				studioId: protectString('studio0'),
+				showStyleBaseId: protectString(''),
+				showStyleVariantId: protectString('variant0'),
+				peripheralDeviceId: protectString(''),
 				dataSource: '',
 				created: 0,
 				modified: 0,
@@ -385,7 +385,7 @@ describe('Test blueprint cache', () => {
 		})
 		testInFiber('Missing showStyleBase', () => {
 			const rundown = getRundown()
-			rundown.showStyleBaseId = 'fake0'
+			rundown.showStyleBaseId = protectString('fake0')
 
 			try {
 				getBlueprintOfRundown(rundown, true)
@@ -419,7 +419,7 @@ describe('Test blueprint cache', () => {
 
 				jest.runTimersToTime(500)
 
-				rundown.showStyleBaseId = 'abc' // Not real
+				rundown.showStyleBaseId = protectString('abc') // Not real
 				const blueprint2 = getBlueprintOfRundown(rundown)
 				expect(blueprint2).toBeTruthy()
 

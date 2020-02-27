@@ -12,6 +12,7 @@ import { PeripheralDeviceCommands } from '../../../../lib/collections/Peripheral
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { protectString } from '../../../../lib/lib'
 
 // const Timeline = mockupCollection(OrgTimeline)
 
@@ -39,17 +40,17 @@ describe('Playout Actions', () => {
 		_.each(Rundowns.find().fetch(),rundown => rundown.remove())
 	})
 	testInFiber('activateRundown', () => {
-		const { playlistId: playlistId0 } = setupDefaultRundownPlaylist(env, 'ro0')
+		const { playlistId: playlistId0 } = setupDefaultRundownPlaylist(env, protectString('ro0'))
 		expect(playlistId0).toBeTruthy()
 
 		const getPlaylist0 = () => RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 
-		const { playlistId: playlistId1 } = setupDefaultRundownPlaylist(env, 'ro1')
+		const { playlistId: playlistId1 } = setupDefaultRundownPlaylist(env, protectString('ro1'))
 		expect(playlistId1).toBeTruthy()
 
 		const getPlaylist1 = () => RundownPlaylists.findOne(playlistId1) as RundownPlaylist
 
-		const { playlistId: playlistId2 } = setupDefaultRundownPlaylist(env, 'ro2')
+		const { playlistId: playlistId2 } = setupDefaultRundownPlaylist(env, protectString('ro2'))
 		expect(playlistId2).toBeTruthy()
 
 		const playlistRemoved = RundownPlaylists.findOne(playlistId2) as RundownPlaylist

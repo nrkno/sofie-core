@@ -619,10 +619,10 @@ function createEmptyRundownData () {
 	const rundown: DBRundown = {
 		_id: 'mock',
 		externalId: '',
-		studioId: '',
+		studioId: protectString(''),
 		showStyleBaseId: '',
 		showStyleVariantId: '',
-		peripheralDeviceId: '',
+		peripheralDeviceId: protectString(''),
 		name: 'Mock',
 		created: 0,
 		modified: 0,
@@ -654,7 +654,7 @@ function createEmptyPart (id: string, rundownData: RundownData) {
 		_id: id,
 		_rank: 1,
 		externalId: '',
-		segmentId: '',
+		segmentId: protectString(''),
 		rundownId: rundownData.rundown._id,
 		title: '',
 		typeVariant: ''

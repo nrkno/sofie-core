@@ -3,11 +3,12 @@ import { MeteorMock } from '../../../__mocks__/meteor'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
 import { ClientAPI } from '../../../lib/api/client'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, protectString } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
+import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -114,7 +115,7 @@ describe('ClientAPI', () => {
 	})
 
 	describe('callPeripheralDeviceFunction', () => {
-		const mockDeviceId = 'mockDeviceId'
+		const mockDeviceId: PeripheralDeviceId = protectString('mockDeviceId')
 		const mockFunctionName = 'mockFunction'
 		const mockFailingFunctionName = 'mockFailFunction'
 		const mockContext = 'Context description'

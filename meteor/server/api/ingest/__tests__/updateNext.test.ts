@@ -1,22 +1,22 @@
 import * as _ from 'underscore'
 import { runInFiber } from '../../../../__mocks__/Fibers'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, saveIntoDb } from '../../../../lib/lib'
+import { literal, saveIntoDb, protectString } from '../../../../lib/lib'
 
 import { UpdateNext } from '../updateNext'
 
 import { ServerPlayoutAPI } from '../../playout/playout'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { PartInstances, DBPartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
 jest.mock('../../playout/playout')
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
-const rundownId = 'mock_ro'
-const rundownPlaylistId = 'mock_rpl'
+const rundownId: RundownId = protectString('mock_ro')
+const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
 function createMockRO () {
 	const existing = Rundowns.findOne(rundownId)
 	if (existing) existing.remove()
@@ -25,8 +25,8 @@ function createMockRO () {
 		_id: rundownPlaylistId,
 		externalId: 'mock_rpl',
 		name: 'Mock',
-		studioId: '',
-		peripheralDeviceId: '',
+		studioId: protectString(''),
+		peripheralDeviceId: protectString(''),
 		created: 0,
 		modified: 0,
 		currentPartInstanceId: null,
@@ -39,10 +39,10 @@ function createMockRO () {
 		_id: rundownId,
 		externalId: 'mock_ro',
 		name: 'Mock',
-		studioId: '',
-		showStyleBaseId: '',
-		showStyleVariantId: '',
-		peripheralDeviceId: '',
+		studioId: protectString(''),
+		showStyleBaseId: protectString(''),
+		showStyleVariantId: protectString(''),
+		peripheralDeviceId: protectString(''),
 		dataSource: 'mock',
 		created: 0,
 		modified: 0,
@@ -55,28 +55,28 @@ function createMockRO () {
 		rundownId: rundownId
 	}, [
 		literal<DBSegment>({
-			_id: 'mock_segment1',
+			_id: protectString('mock_segment1'),
 			_rank: 1,
 			externalId: 's1',
 			rundownId: rundownId,
 			name: 'Segment1'
 		}),
 		literal<DBSegment>({
-			_id: 'mock_segment2',
+			_id: protectString('mock_segment2'),
 			_rank: 2,
 			externalId: 's2',
 			rundownId: rundownId,
 			name: 'Segment2'
 		}),
 		literal<DBSegment>({
-			_id: 'mock_segment3',
+			_id: protectString('mock_segment3'),
 			_rank: 3,
 			externalId: 's3',
 			rundownId: rundownId,
 			name: 'Segment3'
 		}),
 		literal<DBSegment>({
-			_id: 'mock_segment4',
+			_id: protectString('mock_segment4'),
 			_rank: 4,
 			externalId: 's4',
 			rundownId: rundownId,
@@ -87,45 +87,45 @@ function createMockRO () {
 	const rawInstances = [
 		// Segment 1
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance1',
+			_id: protectString('mock_part_instance1'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment1',
+			segmentId: protectString('mock_segment1'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part1',
+				_id: protectString('mock_part1'),
 				_rank: 1,
 				rundownId: rundownId,
-				segmentId: 'mock_segment1',
+				segmentId: protectString('mock_segment1'),
 				externalId: 'p1',
 				title: 'Part 1',
 				typeVariant: ''
 			})
 		}),
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance2',
+			_id: protectString('mock_part_instance2'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment1',
+			segmentId: protectString('mock_segment1'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part2',
+				_id: protectString('mock_part2'),
 				_rank: 2,
 				rundownId: rundownId,
-				segmentId: 'mock_segment1',
+				segmentId: protectString('mock_segment1'),
 				externalId: 'p2',
 				title: 'Part 2',
 				typeVariant: ''
 			})
 		}),
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance3',
+			_id: protectString('mock_part_instance3'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment1',
+			segmentId: protectString('mock_segment1'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part3',
+				_id: protectString('mock_part3'),
 				_rank: 3,
 				rundownId: rundownId,
-				segmentId: 'mock_segment1',
+				segmentId: protectString('mock_segment1'),
 				externalId: 'p3',
 				title: 'Part 3',
 				typeVariant: ''
@@ -133,30 +133,30 @@ function createMockRO () {
 		}),
 		// Segment 2
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance4',
+			_id: protectString('mock_part_instance4'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment2',
+			segmentId: protectString('mock_segment2'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part4',
+				_id: protectString('mock_part4'),
 				_rank: 0,
 				rundownId: rundownId,
-				segmentId: 'mock_segment2',
+				segmentId: protectString('mock_segment2'),
 				externalId: 'p4',
 				title: 'Part 4',
 				typeVariant: ''
 			})
 		}),
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance5',
+			_id: protectString('mock_part_instance5'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment2',
+			segmentId: protectString('mock_segment2'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part5',
+				_id: protectString('mock_part5'),
 				_rank: 1,
 				rundownId: rundownId,
-				segmentId: 'mock_segment2',
+				segmentId: protectString('mock_segment2'),
 				externalId: 'p5',
 				title: 'Part 5',
 				typeVariant: ''
@@ -164,15 +164,15 @@ function createMockRO () {
 		}),
 		// Segment 3
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance6',
+			_id: protectString('mock_part_instance6'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment3',
+			segmentId: protectString('mock_segment3'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part6',
+				_id: protectString('mock_part6'),
 				_rank: 0,
 				rundownId: rundownId,
-				segmentId: 'mock_segment3',
+				segmentId: protectString('mock_segment3'),
 				externalId: 'p6',
 				title: 'Part 6',
 				typeVariant: ''
@@ -180,30 +180,30 @@ function createMockRO () {
 		}),
 		// Segment 4
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance7',
+			_id: protectString('mock_part_instance7'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment4',
+			segmentId: protectString('mock_segment4'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part7',
+				_id: protectString('mock_part7'),
 				_rank: 0,
 				rundownId: rundownId,
-				segmentId: 'mock_segment4',
+				segmentId: protectString('mock_segment4'),
 				externalId: 'p7',
 				title: 'Part 7',
 				typeVariant: ''
 			})
 		}),
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance8',
+			_id: protectString('mock_part_instance8'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment4',
+			segmentId: protectString('mock_segment4'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part8',
+				_id: protectString('mock_part8'),
 				_rank: 1,
 				rundownId: rundownId,
-				segmentId: 'mock_segment4',
+				segmentId: protectString('mock_segment4'),
 				externalId: 'p8',
 				title: 'Part 8',
 				typeVariant: '',
@@ -211,15 +211,15 @@ function createMockRO () {
 			})
 		}),
 		literal<DBPartInstance>({
-			_id: 'mock_part_instance9',
+			_id: protectString('mock_part_instance9'),
 			rundownId: rundownId,
-			segmentId: 'mock_segment4',
+			segmentId: protectString('mock_segment4'),
 			takeCount: 0,
 			part: literal<DBPart>({
-				_id: 'mock_part9',
+				_id: protectString('mock_part9'),
 				_rank: 2,
 				rundownId: rundownId,
-				segmentId: 'mock_segment4',
+				segmentId: protectString('mock_segment4'),
 				externalId: 'p9',
 				title: 'Part 9',
 				typeVariant: ''
@@ -247,10 +247,10 @@ describe('Test mos update next part helpers', () => {
 		jest.clearAllMocks()
 	})
 
-	function resetPartIds (currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, nextPartManual?: boolean) {
+	function resetPartIds (currentPartInstanceId: string | null, nextPartInstanceId: string | null, nextPartManual?: boolean) {
 		RundownPlaylists.update(rundownPlaylistId, { $set: {
-			nextPartInstanceId: nextPartInstanceId,
-			currentPartInstanceId: currentPartInstanceId,
+			nextPartInstanceId: protectString(nextPartInstanceId),
+			currentPartInstanceId: protectString(currentPartInstanceId),
 			previousPartInstanceId: null,
 			nextPartManual: nextPartManual || false,
 		}})

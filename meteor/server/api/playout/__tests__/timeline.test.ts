@@ -10,6 +10,7 @@ import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { protectString } from '../../../../lib/lib'
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
@@ -18,7 +19,7 @@ describe('Timeline', () => {
 	})
 	testInFiber('non-existing studio', () => {
 		expect(() => {
-			updateTimeline('asdf')
+			updateTimeline(protectString('asdf'))
 		}).toThrowError(/not found/i)
 	})
 	testInFiber('Basic rundown', () => {

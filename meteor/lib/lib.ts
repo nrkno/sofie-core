@@ -295,13 +295,13 @@ export function partial<T> (o: Partial<T>) {
 }
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
-	_id: string
+	_id: ProtectedString<any>
 }
 export function partialExceptId<T> (o: Partial<T> & IDObj) {
 	return o
 }
 export interface ObjId {
-	_id: string
+	_id: ProtectedString<any>
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 

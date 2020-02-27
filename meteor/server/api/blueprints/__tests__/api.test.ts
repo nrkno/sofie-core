@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, Omit } from '../../../../lib/lib'
+import { literal, Omit, getRandomId, protectString } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
@@ -33,13 +33,13 @@ describe('Test blueprint management api', () => {
 			return existingBp
 		} else {
 			const blueprint: Blueprint = {
-				_id: Random.id(),
+				_id: getRandomId(),
 				name: 'Fake blueprint',
 				code: `{default: (() => 5)()}`,
 				created: 0,
 				modified: 0,
 
-				blueprintId: '',
+				blueprintId: protectString(''),
 				blueprintType: BlueprintManifestType.SYSTEM,
 
 				studioConfigManifest: [],
@@ -210,7 +210,7 @@ describe('Test blueprint management api', () => {
 	describe('uploadBlueprint', () => {
 		testInFiber('empty id', () => {
 			try {
-				uploadBlueprint('', '0')
+				uploadBlueprint(protectString(''), '0')
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint id "" is not valid`)
@@ -218,7 +218,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('empty body', () => {
 			try {
-				uploadBlueprint('blueprint99', '')
+				uploadBlueprint(protectString('blueprint99'), '')
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 failed to parse`)
@@ -226,7 +226,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('body not a manifest', () => {
 			try {
-				uploadBlueprint('blueprint99', `{default: (() => 5)()}`)
+				uploadBlueprint(protectString('blueprint99'), `{default: (() => 5)()}`)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 returned a manifest of type number`)
@@ -252,7 +252,7 @@ describe('Test blueprint management api', () => {
 				}
 			})
 			try {
-				uploadBlueprint('blueprint99', blueprintStr)
+				uploadBlueprint(protectString('blueprint99'), blueprintStr)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 returned a manifest of unknown blueprintType "undefined"`)
@@ -299,13 +299,13 @@ describe('Test blueprint management api', () => {
 				}
 			})
 
-			const blueprint = uploadBlueprint('tmp_showstyle', blueprintStr)
+			const blueprint = uploadBlueprint(protectString('tmp_showstyle'), blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
-				_id: 'tmp_showstyle',
+				_id: protectString('tmp_showstyle'),
 				name: 'tmp_showstyle',
 				blueprintType: BLUEPRINT_TYPE,
-				blueprintId: 'ss1',
+				blueprintId: protectString('ss1'),
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
 				TSRVersion: '0.3.0',
@@ -331,12 +331,12 @@ describe('Test blueprint management api', () => {
 				}
 			})
 
-			const blueprint = uploadBlueprint('tmp_studio', blueprintStr, 'tmp name')
+			const blueprint = uploadBlueprint(protectString('tmp_studio'), blueprintStr, 'tmp name')
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
-				_id: 'tmp_studio',
+				_id: protectString('tmp_studio'),
 				name: 'tmp name',
-				blueprintId: '',
+				blueprintId: protectString(''),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -364,12 +364,12 @@ describe('Test blueprint management api', () => {
 				}
 			})
 
-			const blueprint = uploadBlueprint('tmp_system', blueprintStr, 'tmp name')
+			const blueprint = uploadBlueprint(protectString('tmp_system'), blueprintStr, 'tmp name')
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
-				_id: 'tmp_system',
+				_id: protectString('tmp_system'),
 				name: 'tmp name',
-				blueprintId: 'sys',
+				blueprintId: protectString('sys'),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -405,7 +405,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: existingBlueprint._id,
 				name: existingBlueprint.name,
-				blueprintId: '',
+				blueprintId: protectString(''),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -435,7 +435,7 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-				blueprintId: 'ss1'
+				blueprintId: protectString('ss1')
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
@@ -445,7 +445,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: existingBlueprint._id,
 				name: existingBlueprint.name,
-				blueprintId: 'ss1',
+				blueprintId: protectString('ss1'),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
 				integrationVersion: '0.2.0',
@@ -475,7 +475,7 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-				blueprintId: 'ss1'
+				blueprintId: protectString('ss1')
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
@@ -505,7 +505,7 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-				blueprintId: 'ss1'
+				blueprintId: protectString('ss1')
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()

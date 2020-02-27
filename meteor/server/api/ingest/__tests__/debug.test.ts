@@ -7,6 +7,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists';
 
 require('../api.ts') // include in order to create the Meteor methods needed
 require('../debug.ts') // include in order to create the Meteor methods needed
@@ -51,6 +52,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId
 		})
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toMatchObject({
+			externalId: rundownData.externalId
+		})
 
 		// // Set to unsynced to ensure that flag gets ignored by the debug method
 		// Rundowns.update(rundown._id, {
@@ -63,7 +68,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Segments.remove({ rundownId: rundown._id })
 		Parts.remove({ rundownId: rundown._id })
 
-		Meteor.call('debug_rundownRunBlueprints', rundown._id, false)
+		Meteor.call('debug_playlistRunBlueprints', playlist._id, false)
 
 		// Ensure they were recreated
 		expect(Segments.find({ rundownId: rundown._id }).count()).not.toEqual(0)

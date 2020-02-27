@@ -6,7 +6,7 @@ import { Time, applyClassToDocument, registerCollection, normalizeArray, makePro
 import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
-import { Parts, Part } from './Parts'
+import { Parts, Part, DBPart } from './Parts'
 import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
@@ -405,7 +405,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	static _sortParts (parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
 	}
-	static _sortPartsInner (parts: Part[], sortedSegments: DBSegment[]) {
+	static _sortPartsInner<P extends DBPart> (parts: P[], sortedSegments: DBSegment[]): P[] {
 		const segmentRanks: {[segmentId: string]: number} = {}
 		_.each(sortedSegments, (segment, i) => segmentRanks[unprotectString(segment._id)] = i)
 

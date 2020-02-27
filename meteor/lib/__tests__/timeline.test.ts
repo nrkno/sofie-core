@@ -2,6 +2,7 @@ import { testInFiber } from '../../__mocks__/helpers/jest'
 import { transformTimeline } from '../timeline'
 import { DeviceType } from 'timeline-state-resolver-types'
 import { TimelineObjGeneric, TimelineObjType, TimelineObjRundown } from '../collections/Timeline'
+import { protectString } from '../lib'
 
 
 describe('lib/timeline', () => {
@@ -9,9 +10,9 @@ describe('lib/timeline', () => {
 
 		const timeline: TimelineObjRundown[] = [
 			{
-				_id: '0',
+				_id: protectString('0'),
 				id: '0',
-				studioId: 'studio0',
+				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -22,9 +23,9 @@ describe('lib/timeline', () => {
 				layer: 'L1'
 			},
 			{
-				_id: 'child0',
+				_id: protectString('child0'),
 				id: 'child0',
-				studioId: 'studio0',
+				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -36,9 +37,9 @@ describe('lib/timeline', () => {
 				inGroup: 'group0'
 			},
 			{
-				_id: 'child1',
+				_id: protectString('child1'),
 				id: 'child1',
-				studioId: 'studio0',
+				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -50,9 +51,9 @@ describe('lib/timeline', () => {
 				inGroup: 'group0'
 			},
 			{
-				_id: 'group0',
+				_id: protectString('group0'),
 				id: 'group0',
-				studioId: 'studio0',
+				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -64,9 +65,9 @@ describe('lib/timeline', () => {
 				isGroup: true
 			},
 			{
-				_id: '2',
+				_id: protectString('2'),
 				id: '2',
-				studioId: 'studio0',
+				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -84,9 +85,9 @@ describe('lib/timeline', () => {
 				partId: 'myPart0',
 			},
 			{
-				_id: '3',
+				_id: protectString('3'),
 				id: '3',
-				studioId: 'studio0',
+				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0
@@ -144,8 +145,8 @@ describe('lib/timeline', () => {
 			transformTimeline([
 				// @ts-ignore missing: id
 				{
-					_id: '0',
-					studioId: 'studio0',
+					_id: protectString('0'),
+					studioId: protectString('studio0'),
 					objectType: TimelineObjType.RUNDOWN,
 					enable: { start: 0 },
 					content: { deviceType: DeviceType.ABSTRACT },

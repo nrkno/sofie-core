@@ -1,31 +1,31 @@
 import { Random } from 'meteor/random'
-import { Rundowns, DBRundown } from '../../../lib/collections/Rundowns'
-import { literal } from '../../../lib/lib'
+import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
+import { literal, protectString, getRandomId } from '../../../lib/lib'
 import { setLoggerLevel } from '../logger'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
-import { DBPart, Parts } from '../../../lib/collections/Parts'
+import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
 import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
-import { Pieces, Piece } from '../../../lib/collections/Pieces'
+import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
-	const rplId0 = 'playlist0'
-	const rplId1 = 'playlist1'
-	const rdId0 = 'rundown0'
-	const rdId1 = 'rundown1'
-	const mockPart0 = 'mockPart0'
-	const mockPiece0 = 'mockPiece0'
-	const mockPart1 = 'mockPart1'
-	const mockPiece1 = 'mockPiece1'
-	const mockAdLibPiece0 = 'mockAdLib0'
+	const rplId0: RundownPlaylistId = protectString('playlist0')
+	const rplId1: RundownPlaylistId = protectString('playlist1')
+	const rdId0: RundownId = protectString('rundown0')
+	const rdId1: RundownId = protectString('rundown1')
+	const mockPart0: PartId = protectString('mockPart0')
+	const mockPiece0: PieceId = protectString('mockPiece0')
+	const mockPart1: PartId = protectString('mockPart1')
+	const mockPiece1: PieceId = protectString('mockPiece1')
+	const mockAdLibPiece0: PieceId = protectString('mockAdLib0')
 	const env = setupDefaultStudioEnvironment()
 
 	const mockBase = '\\RAZ_DWA_TRZY\\C\\'
@@ -37,18 +37,18 @@ describe('Expected Media Items', () => {
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
 
-	function setupRundown (rdId, rplId) {
+	function setupRundown (rdId: RundownId, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
 			_id: rplId,
 			externalId: 'mock_rpl',
 			name: 'Mock Playlist',
-			studioId: '',
-			peripheralDeviceId: '',
+			studioId: protectString(''),
+			peripheralDeviceId: protectString(''),
 			created: 0,
 			modified: 0,
-			currentPartInstanceId: '',
-			previousPartInstanceId: '',
-			nextPartInstanceId: '',
+			currentPartInstanceId: protectString(''),
+			previousPartInstanceId: protectString(''),
+			nextPartInstanceId: protectString(''),
 			active: true
 		})
 
@@ -77,7 +77,7 @@ describe('Expected Media Items', () => {
 			_rank: 0,
 		}))
 		Segments.insert(literal<DBSegment>({
-			_id: Random.id(),
+			_id: getRandomId(),
 			_rank: 1,
 			externalId: '',
 			metaData: {},
@@ -85,7 +85,7 @@ describe('Expected Media Items', () => {
 			rundownId: rdId
 		}))
 		Parts.insert(literal<DBPart>({
-			_id: rdId + '_' + mockPart0,
+			_id: protectString(rdId + '_' + mockPart0),
 			_rank: 1,
 			autoNext: false,
 			autoNextOverlap: 0,
@@ -95,12 +95,12 @@ describe('Expected Media Items', () => {
 			expectedDuration: 1,
 			externalId: '',
 			rundownId: rdId,
-			segmentId: '',
+			segmentId: protectString(''),
 			title: '',
 			typeVariant: ''
 		}))
 		Pieces.insert(literal<Piece>({
-			_id: rdId + '_' + mockPiece0,
+			_id: protectString(rdId + '_' + mockPiece0),
 			name: '',
 			enable: {
 				start: 0
@@ -109,7 +109,7 @@ describe('Expected Media Items', () => {
 			externalId: '',
 			metaData: {},
 			outputLayerId: LAYER_IDS.OUTPUT_PGM,
-			partId: rdId + '_' + mockPart0,
+			partId: protectString(rdId + '_' + mockPart0),
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -124,7 +124,7 @@ describe('Expected Media Items', () => {
 			})
 		}))
 		Parts.insert(literal<DBPart>({
-			_id: rdId + '_' + mockPart1,
+			_id: protectString(rdId + '_' + mockPart1),
 			_rank: 1,
 			autoNext: false,
 			autoNextOverlap: 0,
@@ -134,12 +134,12 @@ describe('Expected Media Items', () => {
 			expectedDuration: 1,
 			externalId: '',
 			rundownId: rdId,
-			segmentId: '',
+			segmentId: protectString(''),
 			title: '',
 			typeVariant: ''
 		}))
 		Pieces.insert(literal<Piece>({
-			_id: rdId + '_' + mockPiece1,
+			_id: protectString(rdId + '_' + mockPiece1),
 			name: '',
 			enable: {
 				start: 0,
@@ -148,7 +148,7 @@ describe('Expected Media Items', () => {
 			externalId: '',
 			metaData: {},
 			outputLayerId: LAYER_IDS.OUTPUT_PGM,
-			partId: rdId + '_' + mockPart1,
+			partId: protectString(rdId + '_' + mockPart1),
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -163,7 +163,7 @@ describe('Expected Media Items', () => {
 			})
 		}))
 		AdLibPieces.insert(literal<AdLibPiece>({
-			_id: rdId + '_' + mockAdLibPiece0,
+			_id: protectString(rdId + '_' + mockAdLibPiece0),
 			name: '',
 			_rank: 0,
 			adlibPreroll: 0,
@@ -174,7 +174,7 @@ describe('Expected Media Items', () => {
 			invalid: false,
 			metaData: {},
 			outputLayerId: LAYER_IDS.OUTPUT_PGM,
-			partId: rdId + '_' + mockPart1,
+			partId: protectString(rdId + '_' + mockPart1),
 			rundownId: rdId,
 			sourceLayerId: LAYER_IDS.SOURCE_VT0,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -227,10 +227,10 @@ describe('Expected Media Items', () => {
 	describe('Based on a Part', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
 			expect(Rundowns.findOne(rdId1)).toBeTruthy()
-			expect(Parts.findOne(rdId1 + '_' + mockPart0)).toBeTruthy()
-			expect(Pieces.find({ partId: rdId1 + '_' + mockPart0 }).count()).toBe(1)
+			expect(Parts.findOne(protectString(rdId1 + '_' + mockPart0))).toBeTruthy()
+			expect(Pieces.find({ partId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
 
-			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart0)
+			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart0))
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId1,
@@ -240,10 +240,10 @@ describe('Expected Media Items', () => {
 		})
 		testInFiber('Removes all ExpectedMediaItems if a Part has been deleted', () => {
 			Parts.remove({
-				_id: rdId1 + '_' + mockPart0
+				_id: protectString(rdId1 + '_' + mockPart0)
 			})
 
-			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart0)
+			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart0))
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId1,
@@ -258,7 +258,7 @@ describe('Expected Media Items', () => {
 				return
 			}
 
-			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart1)
+			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart1))
 
 			let items = ExpectedMediaItems.find({
 				rundownId: rdId1,
@@ -267,7 +267,7 @@ describe('Expected Media Items', () => {
 			expect(items).toHaveLength(2)
 
 			Rundowns.remove(rd._id)
-			updateExpectedMediaItemsOnPart(rdId1, rdId1 + '_' + mockPart1)
+			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart1))
 
 			items = ExpectedMediaItems.find({
 				rundownId: rdId1,

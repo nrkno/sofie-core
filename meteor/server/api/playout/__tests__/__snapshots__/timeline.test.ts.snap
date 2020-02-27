@@ -42,7 +42,7 @@ Array [
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partId": "randomId11002_part0_0_randomId11004",
+        "partInstanceId": "randomId11002_part0_0_randomId11004",
         "rundownId": "randomId11002",
       },
       "callBackStopped": "partPlaybackStopped",
@@ -119,7 +119,7 @@ Array [
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partId": "randomId11002_part0_0_randomId11004",
+        "partInstanceId": "randomId11002_part0_0_randomId11004",
         "rundownId": "randomId11002",
       },
       "callBackStopped": "partPlaybackStopped",

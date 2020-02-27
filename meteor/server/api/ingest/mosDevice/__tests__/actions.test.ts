@@ -6,10 +6,10 @@ import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/
 import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Parts } from '../../../../../lib/collections/Parts'
-import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId } from '../../../../../lib/collections/PeripheralDevices'
 import { MOSDeviceActions } from '../actions'
 import {
-	PeripheralDeviceCommands, PeripheralDeviceCommand
+	PeripheralDeviceCommands, PeripheralDeviceCommand, PeripheralDeviceCommandId
 } from '../../../../../lib/collections/PeripheralDeviceCommands'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 
@@ -41,7 +41,7 @@ describe('Test sending mos actions', () => { // TODO - these tests are strangely
 
 		// Listen for changes
 		observer = PeripheralDeviceCommands.find({ deviceId: device._id }).observeChanges({
-			added: (id: string) => {
+			added: (id: PeripheralDeviceCommandId) => {
 				const cmd = PeripheralDeviceCommands.findOne(id) as PeripheralDeviceCommand
 				expect(cmd).toBeTruthy()
 				expect(cmd.functionName).toEqual('triggerGetRunningOrder')
@@ -72,7 +72,7 @@ describe('Test sending mos actions', () => { // TODO - these tests are strangely
 
 		// Listen for changes
 		observer = PeripheralDeviceCommands.find({ deviceId: device._id }).observeChanges({
-			added: (id: string) => {
+			added: (id: PeripheralDeviceCommandId) => {
 				const cmd = PeripheralDeviceCommands.findOne(id) as PeripheralDeviceCommand
 				expect(cmd).toBeTruthy()
 				expect(cmd.functionName).toEqual('triggerGetRunningOrder')
@@ -120,7 +120,7 @@ describe('Test sending mos actions', () => { // TODO - these tests are strangely
 
 		// Listen for changes
 		observer = PeripheralDeviceCommands.find({ deviceId: device._id }).observeChanges({
-			added: (id: string) => {
+			added: (id: PeripheralDeviceCommandId) => {
 				const cmd = PeripheralDeviceCommands.findOne(id) as PeripheralDeviceCommand
 				expect(cmd).toBeTruthy()
 				expect(cmd.functionName).toEqual('triggerGetRunningOrder')

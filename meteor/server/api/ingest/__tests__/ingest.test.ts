@@ -5,10 +5,11 @@ import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
-import { Part, Parts } from '../../../../lib/collections/Parts'
+import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { updatePartRanks } from '../../rundown'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { unprotectString, protectString } from '../../../../lib/lib'
 
 require('../api.ts') // include in order to create the Meteor methods needed
 
@@ -489,7 +490,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	testInFiber('dataRundownDelete bad device', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.dataRundownDelete, device._id.slice(0, -1), device.token, externalId)
+			Meteor.call(PeripheralDeviceAPI.methods.dataRundownDelete, unprotectString(device._id).slice(0, -1), device.token, externalId)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
 			expect(e.message).toBe('[404] PeripheralDevice "mockDevice" not found')
@@ -912,7 +913,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const part = Parts.findOne({ externalId: 'part1' }) as Part
 		expect(part).toBeTruthy()
 
-		const dynamicPartId = 'dynamic1'
+		const dynamicPartId: PartId = protectString('dynamic1')
 		Parts.insert({
 			_id: dynamicPartId,
 			_rank: 999999,
@@ -993,7 +994,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(part).toBeTruthy()
 
 		Parts.insert({
-			_id: 'dynamic0',
+			_id: protectString('dynamic0'),
 			_rank: 999998,
 			rundownId: rundown._id,
 			segmentId: part.segmentId,
@@ -1004,7 +1005,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			afterPart: part._id
 		})
 		Parts.insert({
-			_id: 'dynamic1',
+			_id: protectString('dynamic1'),
 			_rank: 999999,
 			rundownId: rundown._id,
 			segmentId: part.segmentId,
@@ -1012,10 +1013,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			title: 'Dynamic',
 			typeVariant: 'dynamic',
 			dynamicallyInserted: true,
-			afterPart: 'dynamic0'
+			afterPart: protectString('dynamic0')
 		})
 		Parts.insert({
-			_id: 'dynamic2',
+			_id: protectString('dynamic2'),
 			_rank: 999999,
 			rundownId: rundown._id,
 			segmentId: part.segmentId,
@@ -1025,9 +1026,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 			dynamicallyInserted: true,
 			afterPart: part._id
 		})
-		expect(Parts.findOne('dynamic0')).toBeTruthy()
-		expect(Parts.findOne('dynamic1')).toBeTruthy()
-		expect(Parts.findOne('dynamic2')).toBeTruthy()
+		expect(Parts.findOne(protectString('dynamic0'))).toBeTruthy()
+		expect(Parts.findOne(protectString('dynamic1'))).toBeTruthy()
+		expect(Parts.findOne(protectString('dynamic2'))).toBeTruthy()
 
 		// Let the logic generate the correct rank first
 		updatePartRanks(rundown)
@@ -1035,9 +1036,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		let part1 = Parts.findOne({ externalId: 'part1' }) as Part
 		expect(part1._rank).toEqual(1)
 
-		let dynamicPart0 = Parts.findOne('dynamic0') as Part
-		let dynamicPart1 = Parts.findOne('dynamic1') as Part
-		let dynamicPart2 = Parts.findOne('dynamic2') as Part
+		let dynamicPart0 = Parts.findOne(protectString('dynamic0')) as Part
+		let dynamicPart1 = Parts.findOne(protectString('dynamic1')) as Part
+		let dynamicPart2 = Parts.findOne(protectString('dynamic2')) as Part
 
 		expect(dynamicPart0._rank).toBeGreaterThan(part1._rank)
 		expect(dynamicPart1._rank).toBeGreaterThan(dynamicPart0._rank)
@@ -1047,7 +1048,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		// Update the segment owning the part and it should remain
 		const segmentData = rundownData.segments[0]
 		Meteor.call(PeripheralDeviceAPI.methods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
-		const dynamicPart0New = Parts.findOne('dynamic0') as Part
+		const dynamicPart0New = Parts.findOne(protectString('dynamic0')) as Part
 		expect(dynamicPart0New).toBeTruthy()
 
 		// Change the rank of the part it belongs to and this rank should update
@@ -1057,9 +1058,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(part1._rank).toEqual(0)
 		let part0 = Parts.findOne({ externalId: 'part0' }) as Part
 		expect(part0._rank).toEqual(1)
-		dynamicPart0 = Parts.findOne('dynamic0') as Part
-		dynamicPart1 = Parts.findOne('dynamic1') as Part
-		dynamicPart2 = Parts.findOne('dynamic2') as Part
+		dynamicPart0 = Parts.findOne(protectString('dynamic0')) as Part
+		dynamicPart1 = Parts.findOne(protectString('dynamic1')) as Part
+		dynamicPart2 = Parts.findOne(protectString('dynamic2')) as Part
 
 		expect(dynamicPart0._rank).toBeGreaterThan(part1._rank)
 		expect(dynamicPart1._rank).toBeGreaterThan(dynamicPart0._rank)

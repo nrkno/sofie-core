@@ -42,7 +42,7 @@ Array [
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partId": "randomId10002_part0_0_randomId10005",
+        "partInstanceId": "randomId10002_part0_0_randomId10005",
         "rundownId": "randomId10002",
       },
       "callBackStopped": "partPlaybackStopped",

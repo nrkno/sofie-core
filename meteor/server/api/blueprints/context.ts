@@ -78,7 +78,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	protected readonly _rundownId: RundownId
 	private readonly _contextName: string
 	private readonly _contextIdentifier: string
-	private readonly _handleNotesExternally: boolean
+	private _handleNotesExternally: boolean
 
 	private readonly savedNotes: Array<RawNote> = []
 
@@ -115,6 +115,12 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 	getNotes (): RawNote[] {
 		return this.savedNotes
+	}
+	get handleNotesExternally (): boolean {
+		return this._handleNotesExternally
+	}
+	set handleNotesExternally (value: boolean) {
+		this._handleNotesExternally = value
 	}
 	protected _pushNote (type: NoteType, message: string, trackingId: string | undefined) {
 		if (this._handleNotesExternally) {
@@ -214,6 +220,12 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 	unhashId (hash: string) {
 		return this.notesContext.unhashId(hash)
+	}
+	get handleNotesExternally (): boolean {
+		return this.notesContext.handleNotesExternally
+	}
+	set handleNotesExternally (value: boolean) {
+		this.notesContext.handleNotesExternally = value
 	}
 }
 

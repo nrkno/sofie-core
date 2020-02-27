@@ -156,7 +156,9 @@ export const updateTimeline: (studioId: StudioId, forceNowToTime?: Time, playout
 	afterUpdateTimeline(studio, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
-})
+},
+'$0' // This causes syncFunctionIgnore to only use the first argument (studioId) when ignoring
+)
 /**
  * To be called after an update to the timeline has been made, will add/update the "statObj" - an object
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways

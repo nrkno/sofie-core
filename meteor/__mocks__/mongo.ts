@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit } from '../lib/lib'
+import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit, ProtectedString, unprotectString, protectString } from '../lib/lib'
 import { RandomMock } from './random'
-import { UpsertOptions, UpdateOptions, MongoSelector, FindOptions } from '../lib/typings/meteor'
+import { UpsertOptions, UpdateOptions, MongoSelector, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
@@ -10,8 +10,8 @@ const clone = require('fast-clone')
 
 interface ObserverEntry {
 	id: string
-	callbacks: Mongo.ObserveChangesCallbacks
 	query: any
+	callbacks: ObserveChangesCallbacks<any>
 }
 
 export namespace MongoMock {
@@ -22,7 +22,7 @@ export namespace MongoMock {
 		[id: string]: T
 	}
 	interface CollectionObject {
-		_id: string
+		_id: ProtectedString<any>
 	}
 
 	const mockCollections: MockCollections<any> = {}
@@ -195,13 +195,13 @@ export namespace MongoMock {
 		insert (doc: T, cb?: Function) {
 			try {
 				const d = _.clone(doc)
-				if (!d._id) d._id = RandomMock.id()
+				if (!d._id) d._id = protectString(RandomMock.id())
 
-				if (this.documents[d._id]) {
+				if (this.documents[unprotectString(d._id)]) {
 					throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
 				}
 
-				this.documents[d._id] = d
+				this.documents[unprotectString(d._id)] = d
 
 				_.each(_.clone(this.observers), obs => {
 					if (mongoWhere(d, obs.query)) {
@@ -242,7 +242,7 @@ export namespace MongoMock {
 				const docs = this.find(query)._fetchRaw()
 
 				_.each(docs, (doc) => {
-					delete this.documents[doc._id]
+					delete this.documents[unprotectString(doc._id)]
 				})
 				if (cb) cb(undefined, docs.length)
 				else return docs.length
@@ -279,7 +279,7 @@ export namespace MongoMock {
 			const collectionData = {}
 			_.each(data, (doc) => {
 				if (!doc._id) throw Error(`mockSetData: "${collectionName}": doc._id missing`)
-				collectionData[doc._id] = doc
+				collectionData[unprotectString(doc._id)] = doc
 			})
 			mockCollections[collectionName] = collectionData
 		} else {

@@ -6,7 +6,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION, clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { MigrationMethods, RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
-import { literal } from '../../../lib/lib'
+import { literal, protectString } from '../../../lib/lib'
 import { MigrationStepInputResult, BlueprintManifestType, MigrationStep, MigrationContextStudio, MigrationContextShowStyle } from 'tv-automation-sofie-blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
@@ -140,12 +140,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 				id: 'myCoreMockStep2',
 				canBeRunAutomatically: true,
 				validate: () => {
-					if (!Studios.findOne('studioMock2')) return 'No Studio found'
+					if (!Studios.findOne(protectString('studioMock2'))) return 'No Studio found'
 					return false
 				},
 				migrate: () => {
 					Studios.insert({
-						_id: 'studioMock2',
+						_id: protectString('studioMock2'),
 						name: 'Default studio',
 						supportedShowStyleBase: [],
 						settings: {
@@ -164,12 +164,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 				id: 'myCoreMockStep3',
 				canBeRunAutomatically: true,
 				validate: () => {
-					if (!Studios.findOne('studioMock3')) return 'No Studio found'
+					if (!Studios.findOne(protectString('studioMock3'))) return 'No Studio found'
 					return false
 				},
 				migrate: () => {
 					Studios.insert({
-						_id: 'studioMock3',
+						_id: protectString('studioMock3'),
 						name: 'Default studio',
 						supportedShowStyleBase: [],
 						settings: {
@@ -188,12 +188,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 				id: 'myCoreMockStep1',
 				canBeRunAutomatically: true,
 				validate: () => {
-					if (!Studios.findOne('studioMock1')) return 'No Studio found'
+					if (!Studios.findOne(protectString('studioMock1'))) return 'No Studio found'
 					return false
 				},
 				migrate: () => {
 					Studios.insert({
-						_id: 'studioMock1',
+						_id: protectString('studioMock1'),
 						name: 'Default studio',
 						supportedShowStyleBase: [],
 						settings: {
@@ -349,9 +349,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Blueprints.insert(generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest))
 
 		ShowStyleBases.insert({
-			_id: 'showStyle0',
+			_id: protectString('showStyle0'),
 			name: '',
-			blueprintId: 'showStyle0',
+			blueprintId: protectString('showStyle0'),
 			outputLayers: [],
 			sourceLayers: [],
 			hotkeyLegend: [],
@@ -360,16 +360,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		ShowStyleVariants.insert({
-			_id: 'variant0',
+			_id: protectString('variant0'),
 			name: '',
-			showStyleBaseId: 'showStyle0',
+			showStyleBaseId: protectString('showStyle0'),
 			config: [],
 			_rundownVersionHash: '',
 		})
 
 		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
 		Studios.update(studio._id, { $set: {
-			blueprintId: 'studio0'
+			blueprintId: protectString('studio0')
 		}})
 
 		// migrationStatus = Meteor.call(MigrationMethods.getMigrationStatus)

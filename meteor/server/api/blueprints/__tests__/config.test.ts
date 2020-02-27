@@ -3,6 +3,7 @@ import { compileStudioConfig, ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { protectString } from '../../../../lib/lib'
 
 describe('Test blueprint config', () => {
 
@@ -31,10 +32,10 @@ describe('Test blueprint config', () => {
 	})
 
 	test('getStudioConfigRef', () => {
-		expect(ConfigRef.getStudioConfigRef('st0', 'key0')).toEqual('${studio.st0.key0}')
+		expect(ConfigRef.getStudioConfigRef(protectString('st0'), 'key0')).toEqual('${studio.st0.key0}')
 	})
 	test('getShowStyleConfigRef', () => {
-		expect(ConfigRef.getShowStyleConfigRef('var0', 'key1')).toEqual('${showStyle.var0.key1}')
+		expect(ConfigRef.getShowStyleConfigRef(protectString('var0'), 'key1')).toEqual('${showStyle.var0.key1}')
 	})
 
 	describe('retrieveRefs', () => {

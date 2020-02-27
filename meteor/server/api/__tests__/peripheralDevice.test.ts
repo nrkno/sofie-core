@@ -3,33 +3,34 @@ import { Random } from 'meteor/random'
 
 import { PeripheralDevice, SpreadsheetDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
+import { Segment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Part, Parts } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 describe('test peripheralDevice general API methods', () => {
 
 	let device: PeripheralDevice
 	beforeAll(() => {
 		device = setupDefaultStudioEnvironment().ingestDevice
-		let rundownID = 'rundown0'
-		let rundownPlaylistID = 'rundownPlaylist0'
+		let rundownID: RundownId = protectString('rundown0')
+		let rundownExternalID: string = 'rundown0'
+		let rundownPlaylistID: RundownPlaylistId = protectString('rundownPlaylist0')
 		RundownPlaylists.insert({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
 			name: 'Mock',
-			studioId: '',
-			peripheralDeviceId: '',
+			studioId: protectString(''),
+			peripheralDeviceId: protectString(''),
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: null,
@@ -39,16 +40,16 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		Rundowns.insert({
 			_id: rundownID,
-			externalId: rundownID,
-			studioId: 'studio0',
-			showStyleBaseId: 'showStyle0',
-			showStyleVariantId: 'variant0',
+			externalId: rundownExternalID,
+			studioId: protectString('studio0'),
+			showStyleBaseId: protectString('showStyle0'),
+			showStyleVariantId: protectString('variant0'),
 			name: 'test rundown',
 			created: 1000,
 			playlistId: rundownPlaylistID,
 			_rank: 0,
 			dataSource: 'mock',
-			peripheralDeviceId: 'testMosDevice',
+			peripheralDeviceId: protectString('testMosDevice'),
 			modified: getCurrentTime(),
 			importVersions: {
 				studio: 'wibble',
@@ -58,16 +59,17 @@ describe('test peripheralDevice general API methods', () => {
 				core: 'plate'
 			},
 		})
-		let segmentID = 'segment0'
+		let segmentID: SegmentId = protectString('segment0')
+		let segmentExternalID = 'segment0'
 		Segments.insert({
 			_id: segmentID,
-			externalId: segmentID,
+			externalId: segmentExternalID,
 			_rank: 0,
 			rundownId: rundownID,
 			name: 'Fire',
 		})
 		Parts.insert({
-			_id: 'part000',
+			_id: protectString('part000'),
 			_rank: 0,
 			externalId: 'part000',
 			segmentId: segmentID,
@@ -76,7 +78,7 @@ describe('test peripheralDevice general API methods', () => {
 			typeVariant: 'mos'
 		})
 		Parts.insert({
-			_id: 'part001',
+			_id: protectString('part001'),
 			_rank: 1,
 			externalId: 'part001',
 			segmentId: segmentID,
@@ -85,14 +87,14 @@ describe('test peripheralDevice general API methods', () => {
 			typeVariant: 'mos'
 		})
 		Segments.insert({
-			_id: 'segment1',
+			_id: protectString('segment1'),
 			_rank: 1,
 			externalId: 'segment01',
 			rundownId: rundownID,
 			name: 'Water'
 		})
 		Segments.insert({
-			_id: 'segment2',
+			_id: protectString('segment2'),
 			_rank: 2,
 			externalId: 'segment02',
 			rundownId: rundownID,
@@ -823,9 +825,9 @@ describe('peripheralDevice: MOS Basic functions', function () {
 	// 	Rundowns.insert({
 	// 		_id: rundownID,
 	// 		mosId: 'rundown0',
-	// 		studioId: 'studio0',
-	// 		showStyleBaseId: 'showStyle0',
-	// 		showStyleVariantId: 'variant0',
+	// 		studioId: protectString('studio0'),
+	// 		showStyleBaseId: protectString('showStyle0'),
+	// 		showStyleVariantId: protectString('variant0'),
 	// 		name: 'test rundown',
 	// 		created: 1000,
 	// 		currentPartId: null,
@@ -880,9 +882,9 @@ describe('peripheralDevice: MOS Basic functions', function () {
 	// 	Rundowns.insert({
 	// 		_id: rundownID,
 	// 		mosId: 'rundown1',
-	// 		studioId: 'studio0',
+	// 		studioId: protectString('studio0'),
 	// 		showStyleBaseId: 'showStyle1',
-	// 		showStyleVariantId: 'variant0',
+	// 		showStyleVariantId: protectString('variant0'),
 	// 		name: 'test rundown 1',
 	// 		created: 2000,
 	// 		currentPartId: null,
@@ -903,9 +905,9 @@ describe('peripheralDevice: MOS Basic functions', function () {
 	// 	Rundowns.insert({
 	// 		_id: rundownId(new MOS.MosString128('rundown2')),
 	// 		mosId: 'rundown2',
-	// 		studioId: 'studio0',
+	// 		studioId: protectString('studio0'),
 	// 		showStyleBaseId: 'showStyle1',
-	// 		showStyleVariantId: 'variant0',
+	// 		showStyleVariantId: protectString('variant0'),
 	// 		name: 'test rundown 2',
 	// 		created: 2000,
 	// 		currentPartId: null,
