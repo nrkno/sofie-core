@@ -57,7 +57,8 @@ export namespace ClientAPI {
 		return (
 			_.isObject(res) &&
 			!_.isArray(res) &&
-			res.error === undefined
+			res.error === undefined &&
+			res.success
 		)
 	}
 }
