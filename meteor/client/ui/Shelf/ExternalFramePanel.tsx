@@ -168,24 +168,40 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 		this.sendMOSMessage(createMosAppInfoXmlString(uiMetrics))
 	}
 
+	private findBucketId(el: HTMLElement): string | undefined {
+		while (el.dataset.bucketId === undefined && el.parentElement) {
+			el = el.parentElement
+		}
+
+		if (el) {
+			return el.dataset.bucketId
+		}
+
+		return undefined
+	}
+
 	receiveMOSItem (e: any, mosItem: IMOSItem) {
 		const { t, rundown } = this.props
 
 		console.log('Object received, passing onto blueprints', mosItem)
 
-		const targetBucket = Buckets.findOne()
+		const bucketId = this.findBucketId(e.target)
 
-		doUserAction(t, e, UserActionAPI.methods.bucketAdlibImport, [
-			rundown.studioId,
-			rundown.showStyleVariantId,
-			targetBucket ? targetBucket._id : '',
-			literal<IngestAdlib>({
-				externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
-				name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
-				payloadType: 'MOS',
-				payload: fixMosData(mosItem)
-			})
-		])
+		if (bucketId) {
+			const targetBucket = Buckets.findOne()
+	
+			doUserAction(t, e, UserActionAPI.methods.bucketAdlibImport, [
+				rundown.studioId,
+				rundown.showStyleVariantId,
+				targetBucket ? targetBucket._id : '',
+				literal<IngestAdlib>({
+					externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
+					name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
+					payloadType: 'MOS',
+					payload: fixMosData(mosItem)
+				})
+			])
+		}
 	}
 
 	handleMosMessage = (e: any, mos: MosPluginMessage) => {
@@ -332,7 +348,6 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 	onDragLeave = (e: DragEvent) => {
 		this.failedDragTimeout = undefined
-		console.log(e)
 		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 			cancelable: false
 		})
@@ -340,7 +355,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	}
 
 	onDrop = (e: DragEvent) => {
-		console.log(e)
+		// console.log(e)
 		if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 			// this is quite probably a MOS object, let's try and ingest it
 			this.actMOSMessage(e, e.dataTransfer.getData('Text'))
@@ -355,16 +370,17 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 					this.actMOSMessage(e, e.dataTransfer.getData('Text'))
 				}
 			})
-		} else if (
-			e.dataTransfer.items.length === 0 &&
-			e.dataTransfer.types.length === 0 &&
-			e.dataTransfer.files.length === 0
-		) {
-			// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
-			// let's try and ask the plugin for some content maybe?
-			console.log('Requesting an object because of a dubious drop event')
-			this.sendMOSMessage(createMosItemRequest())
 		}
+		// else if (
+		// 	e.dataTransfer.items.length === 0 &&
+		// 	e.dataTransfer.types.length === 0 &&
+		// 	e.dataTransfer.files.length === 0
+		// ) {
+		// 	// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
+		// 	// let's try and ask the plugin for some content maybe?
+		// 	console.log('Requesting an object because of a dubious drop event')
+		// 	this.sendMOSMessage(createMosItemRequest())
+		// }
 
 		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 			cancelable: false
