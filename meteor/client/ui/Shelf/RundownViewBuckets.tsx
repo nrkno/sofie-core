@@ -20,6 +20,8 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 import { MeteorCall } from '../../../lib/api/methods'
+import { DropTarget } from 'react-dnd'
+import update from 'immutability-helper'
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
@@ -32,6 +34,7 @@ interface IState {
 	panelWidths: number[]
 	contextBucket: Bucket | undefined
 	editedNameId: BucketId | undefined
+	localBuckets: Bucket[]
 }
 
 export const RundownViewBuckets = translate()(
@@ -59,7 +62,8 @@ export const RundownViewBuckets = translate()(
 			this.state = {
 				panelWidths: [],
 				contextBucket: undefined,
-				editedNameId: undefined
+				editedNameId: undefined,
+				localBuckets: ([] as Bucket[]).concat(props.buckets || [])
 			}
 		}
 
@@ -72,6 +76,17 @@ export const RundownViewBuckets = translate()(
 							UIStateStorage.getItemNumber('rundownView.shelf.buckets', unprotectString(bucket._id),
 								bucket.width !== undefined ? bucket.width : 0.2)
 					) : []
+			}
+		}
+
+		componentDidUpdate(prevProps: IBucketsProps) {
+			if (this.props.buckets !== prevProps.buckets) {
+				this.setState({
+					localBuckets: ([] as Bucket[]).concat(this.props.buckets || []),
+					panelWidths: (this.props.buckets || []).map((bucket) =>
+						UIStateStorage.getItemNumber('rundownView.shelf.buckets', unprotectString(bucket._id),
+							bucket.width !== undefined ? bucket.width : 0.2))
+				})
 			}
 		}
 
@@ -216,7 +231,8 @@ export const RundownViewBuckets = translate()(
 						editedNameId: (res.result as Bucket)._id
 					})
 				}
-			})
+			}
+			)
 		}
 
 		deleteBucket = (e: any, bucket: Bucket) => {
@@ -257,8 +273,63 @@ export const RundownViewBuckets = translate()(
 			})))
 		}
 
+		private moveBucket = (id: BucketId, atIndex: number) => {
+			const { bucket, index } = this.findBucket(id)
+			const panelWidth = this.state.panelWidths[index]
+
+			if (bucket) {
+				this.setState(
+					update(this.state, {
+						localBuckets: {
+							$splice: [[index, 1], [atIndex, 0, bucket] as any]
+						},
+						panelWidths: {
+							$splice: [[index, 1], [atIndex, 0, panelWidth] as any]
+						}
+					})
+				)
+			}
+		}
+
+		private findBucket = (id: BucketId) => {
+			const { localBuckets: buckets } = this.state
+			const bucket = buckets.find(b => b._id === id)
+
+			return {
+				bucket,
+				index: bucket ? buckets.indexOf(bucket) : -1
+			}
+		}
+
+		private onBucketReorder = (draggedId: BucketId, newIndex: number) => {
+			const { t } = this.props
+			if (this.props.buckets) {
+				const draggedB = this.props.buckets.find(b => b._id === draggedId)
+
+				if (draggedB) {
+					let newRank = draggedB._rank
+
+					// Dragged over into first place
+					if (newIndex === 0) {
+						newRank = this.props.buckets[0]._rank - 1
+						// Dragged over into last place
+					} else if (newIndex === this.props.buckets.length - 1) {
+						newRank = this.props.buckets[this.props.buckets.length - 1]._rank + 1
+						// Dragged into any other place
+					} else {
+						newRank = (this.props.buckets[newIndex]._rank + this.props.buckets[newIndex + 1]._rank) / 2
+					}
+
+					doUserAction(t, { type: 'drop' }, 'Modify Bucket', (e) => MeteorCall.userAction.bucketsModifyBucket(e, draggedB._id, partial<Bucket>({
+						_rank: newRank
+					})))
+				}
+			}
+		}
+
 		render() {
-			const { playlist, buckets, showStyleBase, shouldQueue, t } = this.props
+			const { playlist, showStyleBase, shouldQueue, t } = this.props
+			const { localBuckets: buckets } = this.state
 			return <>
 				<Escape to='document'>
 					<ContextMenu id='bucket-context-menu' onHide={this.clearContextBucket}>
@@ -286,7 +357,7 @@ export const RundownViewBuckets = translate()(
 							{t('Create new Bucket')}
 						</MenuItem>
 					</ContextMenu>
-				</Escape>
+				</Escape >
 				{buckets && buckets.map((bucket, index) =>
 					<div className='rundown-view__shelf__contents__pane'
 						key={unprotectString(bucket._id)}
@@ -300,23 +371,26 @@ export const RundownViewBuckets = translate()(
 							<div className='rundown-view__shelf__contents__pane__handle'>
 								<FontAwesomeIcon icon={faBars} />
 							</div>
+							<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
+								this.setState({
+									contextBucket: bucket
+								}, resolve)
+							})}>
+								{this.state.panelWidths[index] > 0 &&
+									<BucketPanel
+										playlist={playlist}
+										showStyleBase={showStyleBase}
+										shouldQueue={shouldQueue}
+										bucket={bucket}
+										editableName={this.state.editedNameId === bucket._id}
+										onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
+										moveBucket={this.moveBucket}
+										findBucket={this.findBucket}
+										onBucketReorder={this.onBucketReorder}
+									/>
+								}
+							</ContextMenuTrigger>
 						</div>
-						<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
-							this.setState({
-								contextBucket: bucket
-							}, resolve)
-						})}>
-							{this.state.panelWidths[index] > 0 &&
-								<BucketPanel
-									playlist={playlist}
-									showStyleBase={showStyleBase}
-									shouldQueue={shouldQueue}
-									bucket={bucket}
-									editableName={this.state.editedNameId === bucket._id}
-									onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
-								/>
-							}
-						</ContextMenuTrigger>
 					</div>
 				)}
 			</>

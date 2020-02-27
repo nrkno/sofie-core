@@ -11,6 +11,16 @@ import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
+import {
+	DragSource,
+	DropTarget,
+	ConnectDragSource,
+	ConnectDropTarget,
+	DragSourceMonitor,
+	DropTargetMonitor,
+	ConnectDragPreview,
+} from 'react-dnd'
+
 import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
@@ -32,13 +42,94 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { IDashboardPanelProps, getUnfinishedPieceInstancesReactive, DashboardPanelInner, IDashboardPanelTrackedProps, dashboardElementPosition } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
-import { Bucket } from '../../../lib/collections/Buckets'
+import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { DragDropItemTypes } from '../DragDropItemTypes'
 
 const HOTKEY_GROUP = 'BucketPanel'
+
+const bucketSource = {
+	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
+		let size = {
+			width: 0,
+			height: 0
+		}
+
+		if (component._panel) {
+			const { width, height } = (component._panel as HTMLDivElement).getBoundingClientRect()
+			size.width = width
+			size.height = height
+		}
+
+		return {
+			id: props.bucket._id,
+			originalIndex: props.findBucket(props.bucket._id).index,
+			size
+		}
+	},
+
+	endDrag(props: IBucketPanelProps, monitor: DragSourceMonitor) {
+		const { id: droppedId, originalIndex } = monitor.getItem()
+		const didDrop = monitor.didDrop()
+
+		if (!didDrop) {
+			props.moveBucket(droppedId, originalIndex)
+		} else {
+			const { index: newIndex } = monitor.getDropResult()
+
+			props.onBucketReorder(droppedId, newIndex)
+		}
+	}
+}
+
+const bucketTarget = {
+	canDrop(props: IBucketPanelProps, monitor: DropTargetMonitor) {
+		return true
+	},
+
+	hover(props: IBucketPanelProps, monitor: DropTargetMonitor, component: any) {
+		const { id: draggedId, size: draggedSize } = monitor.getItem()
+		const overId = props.bucket._id
+		let farEnough = true
+
+		let rect = {
+			width: 0,
+			height: 0,
+			left: 0,
+			top: 0
+		}
+
+		if (draggedId !== overId) {
+			if (component && component.decoratedRef && component.decoratedRef.current &&
+				component.decoratedRef.current._panel) {
+				rect = (component.decoratedRef.current._panel as HTMLDivElement).getBoundingClientRect()
+			}
+
+			const draggedPosition = monitor.getClientOffset()
+			if (draggedPosition) {
+				if (rect.width - (draggedPosition.x - rect.left) >= draggedSize.width) {
+					farEnough = false
+				}
+			}
+
+			if (farEnough) {
+				const { index: overIndex } = props.findBucket(overId)
+				props.moveBucket(draggedId, overIndex)
+			}
+		}
+	},
+
+	drop(props: IBucketPanelProps, monitor: DropTargetMonitor) {
+		const { index } = props.findBucket(props.bucket._id)
+
+		return {
+			index
+		}
+	}
+}
 
 interface IState {
 	outputLayers: {
@@ -58,12 +149,25 @@ export interface IBucketPanelProps {
 	shouldQueue: boolean
 	editableName?: boolean
 	onNameChanged?: (e: any, newName: string) => void
+	moveBucket: (id: BucketId, atIndex: number) => void
+	findBucket: (id: BucketId) => { bucket: Bucket | undefined, index: number }
+	onBucketReorder: (draggedId: BucketId, newIndex: number) => void
 }
 
 export interface IBucketPanelTrackedProps {
 	adLibPieces: BucketAdLib[]
 	unfinishedPieceInstanceIds: _.Dictionary<PieceInstanceId[]>
 	studio: Studio
+}
+
+interface BucketSourceCollectedProps {
+	connectDragSource: ConnectDragSource
+	connectDragPreview: ConnectDragPreview
+	isDragging: boolean
+}
+
+interface BucketTargetCollectedProps {
+	connectDropTarget: ConnectDropTarget
 }
 
 export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, IState, IBucketPanelTrackedProps>((props: Translated<IBucketPanelProps>) => {
@@ -76,8 +180,15 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	})
 }, (data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(class BucketPanel extends MeteorReactComponent<Translated<IBucketPanelProps & IBucketPanelTrackedProps>, IState> {
+})(DropTarget(DragDropItemTypes.BUCKET, bucketTarget, connect => ({
+	connectDropTarget: connect.dropTarget(),
+}))(DragSource(DragDropItemTypes.BUCKET, bucketSource, (connect, monitor) => ({
+	connectDragSource: connect.dragSource(),
+	connectDragPreview: connect.dragPreview(),
+	isDragging: monitor.isDragging(),
+}))(class BucketPanel extends MeteorReactComponent<Translated<IBucketPanelProps & IBucketPanelTrackedProps> & BucketSourceCollectedProps & BucketTargetCollectedProps, IState> {
 	_nameTextBox: HTMLInputElement | null = null
+	_panel: HTMLDivElement | null = null
 
 	constructor(props: Translated<IBucketPanelProps & IBucketPanelTrackedProps>) {
 		super(props)
@@ -269,53 +380,69 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	}
 
 	render() {
+		const {
+			isDragging,
+			connectDragSource,
+			connectDragPreview,
+			connectDropTarget,
+		} = this.props
+		const opacity = isDragging ? 0 : 1
+
 		if (this.props.showStyleBase) {
 			return (
-				<div className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
-					'dashboard-panel__panel--bucket-active': this.state.dropActive
-				})}
-					data-bucket-id={this.props.bucket._id}
-				>
-					{this.props.editableName ?
-						<input
-							className='h4 dashboard-panel__header'
-							value={this.state.bucketName}
-							onChange={this.onRenameTextBoxChange}
-							onBlur={this.onRenameTextBoxBlur}
-							ref={this.onRenameTextBoxShow}
-						/> :
-						<h4 className='dashboard-panel__header'><FontAwesomeIcon icon={faBars} />&nbsp;{this.state.bucketName}</h4>
-					}
-					{/* 
-					<FontAwesomeIcon icon={faBars} />&nbsp;
-					
-					{ filter.enableSearch &&
-						<AdLibPanelToolbar
-							onFilterChange={this.onFilterChange} />
-					} */}
-					<div className='dashboard-panel__panel'>
-						{this.props.adLibPieces
-							.map((item) => {
-								return <DashboardPieceButton
-									key={unprotectString(item._id)}
-									adLibListItem={item}
-									layer={this.state.sourceLayers[item.sourceLayerId]}
-									outputLayer={this.state.outputLayers[item.outputLayerId]}
-									onToggleAdLib={this.onToggleAdLib}
-									playlist={this.props.playlist}
-									isOnAir={this.isAdLibOnAir(item)}
-									mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
-									widthScale={1}
-									heightScale={1}
-								>
-									{item.name}
-								</DashboardPieceButton>
-							})}
+				connectDragPreview(connectDropTarget(
+					<div className={ClassNames('dashboard-panel', 'dashboard-panel__panel--bucket', {
+						'dashboard-panel__panel--bucket-active': this.state.dropActive,
+						'dashboard-panel__panel--sort-dragging': this.props.isDragging
+					})}
+						data-bucket-id={this.props.bucket._id}
+						ref={(el) => this._panel = el}
+					>
+						{this.props.editableName ?
+							<input
+								className='h4 dashboard-panel__header'
+								value={this.state.bucketName}
+								onChange={this.onRenameTextBoxChange}
+								onBlur={this.onRenameTextBoxBlur}
+								ref={this.onRenameTextBoxShow}
+							/> :
+							<h4 className='dashboard-panel__header'>
+								{connectDragSource(<span className='dashboard-panel__handle'><FontAwesomeIcon icon={faBars} /></span>)}&nbsp;
+								{this.state.bucketName}
+							</h4>
+						}
+						{/* 
+						<FontAwesomeIcon icon={faBars} />&nbsp;
+						
+						{ filter.enableSearch &&
+							<AdLibPanelToolbar
+								onFilterChange={this.onFilterChange} />
+						} */}
+						<div className='dashboard-panel__panel'>
+							{this.props.adLibPieces
+								.map((adlib: BucketAdLib) => {
+									return <DashboardPieceButton
+										key={unprotectString(adlib._id)}
+										adLibListItem={adlib}
+										layer={this.state.sourceLayers[adlib.sourceLayerId]}
+										outputLayer={this.state.outputLayers[adlib.outputLayerId]}
+										onToggleAdLib={this.onToggleAdLib}
+										playlist={this.props.playlist}
+										isOnAir={this.isAdLibOnAir(adlib)}
+										mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+										widthScale={1}
+										heightScale={1}
+									>
+										{adlib.name}
+									</DashboardPieceButton>
+								})}
+						</div>
 					</div>
-				</div>
+				))
 			)
 		}
 		return null
 	}
 
-})
+})))
+
