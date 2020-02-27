@@ -26,7 +26,7 @@ import { IMOSItem } from 'mos-connection'
 import { doUserAction } from '../../lib/userAction'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets } from '../../../lib/collections/Buckets'
+import { Buckets, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -170,12 +170,32 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 		this.sendMOSMessage(createMosAppInfoXmlString(uiMetrics))
 	}
 
+	private findBucketId(el: HTMLElement): BucketId | undefined {
+		while (el.dataset.bucketId === undefined && el.parentElement) {
+			el = el.parentElement
+		}
+
+		if (el) {
+			return protectString(el.dataset.bucketId)
+		}
+
+		return undefined
+	}
+
 	receiveMOSItem(e: any, mosItem: IMOSItem) {
 		const { t, playlist } = this.props
 
 		console.log('Object received, passing onto blueprints', mosItem)
 
-		const targetBucket = Buckets.findOne()
+		const bucketId = this.findBucketId(e.target)
+		let targetBucket
+
+		if (bucketId) {
+			targetBucket = Buckets.findOne(bucketId)
+		} else {
+			targetBucket = Buckets.findOne()
+		}
+
 		let targetRundown: Rundown | undefined
 		let currentPart
 		if (playlist.currentPartInstanceId || playlist.nextPartInstanceId) {
@@ -355,7 +375,6 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 	onDragLeave = (e: DragEvent) => {
 		this.failedDragTimeout = undefined
-		console.log(e)
 		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 			cancelable: false
 		})
@@ -363,6 +382,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	}
 
 	onDrop = (e: DragEvent) => {
+		// console.log(e)
 		if (e.dataTransfer) {
 			if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 				// this is quite probably a MOS object, let's try and ingest it
@@ -373,28 +393,18 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 				e.dataTransfer.files.length === 0
 			) {
 				const idx = e.dataTransfer.types.indexOf('text/plain')
-				const data = e.dataTransfer
 				e.dataTransfer.items.item(idx).getAsString((text: string) => {
 					if (text.trim().endsWith('</mos>')) {
-						this.actMOSMessage(e, data.getData('Text'))
+						this.actMOSMessage(e, e.dataTransfer!.getData('Text'))
 					}
 				})
-			} else if (
-				e.dataTransfer.items.length === 0 &&
-				e.dataTransfer.types.length === 0 &&
-				e.dataTransfer.files.length === 0
-			) {
-				// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
-				// let's try and ask the plugin for some content maybe?
-				console.log('Requesting an object because of a dubious drop event')
-				this.sendMOSMessage(createMosItemRequest())
 			}
-		}
 
-		const event = new CustomEvent<{}>(MOSEvents.dragleave, {
-			cancelable: false
-		})
-		window.dispatchEvent(event)
+			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
+				cancelable: false
+			})
+			window.dispatchEvent(event)
+		}
 	}
 
 	registerHandlers = () => {
