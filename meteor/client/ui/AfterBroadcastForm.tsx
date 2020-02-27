@@ -50,17 +50,13 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			})
 		}
 
-		if (answers.q0 !== 'nothing') {
-			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'Evaluation form'], (err, response) => {
-				if (!err && response) {
-					saveEvaluation(response.result)
-				} else {
-					saveEvaluation()
-				}
-			})
-		} else {
-			saveEvaluation()
-		}
+		doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.rundown._id, 'Evaluation form'], (err, response) => {
+			if (!err && response) {
+				saveEvaluation(response.result)
+			} else {
+				saveEvaluation()
+			}
+		})
 	}
 	onUpdateValue = (edit: any, newValue: any) => {
 		let attr = edit.props.attribute
