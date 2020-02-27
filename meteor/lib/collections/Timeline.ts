@@ -105,7 +105,8 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used f
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
 			rundownId: RundownId,
-			pieceInstanceId: PieceInstanceId
+			pieceInstanceId: PieceInstanceId,
+			dynamicallyInserted?: boolean
 		}
 	}
 }

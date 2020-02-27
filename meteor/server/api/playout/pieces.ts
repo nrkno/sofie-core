@@ -127,7 +127,7 @@ export function createPieceGroupFirstObject (
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
 ): (TimelineObjPieceAbstract & OnGenerateTimelineObj) {
-	return literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
+	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
 		id: getPieceFirstObjectId(unprotectObject(pieceInstance.piece)),
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
@@ -139,17 +139,18 @@ export function createPieceGroupFirstObject (
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
-
 			callBack: 'piecePlaybackStarted',
 			callBackData: {
 				rundownId: pieceInstance.rundownId,
-				pieceInstanceId: pieceInstance._id
+				pieceInstanceId: pieceInstance._id,
+				dynamicallyInserted: pieceInstance.piece.dynamicallyInserted
 			},
 			callBackStopped: 'piecePlaybackStopped' // Will cause a callback to be called, when the object stops playing:
 		},
 		classes: firstObjClasses,
 		inGroup: pieceGroup.id
 	})
+	return firstObject
 }
 export function createPieceGroup (
 	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,

@@ -225,9 +225,10 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.time, Number)
 		check(r.rundownId, String)
 		check(r.pieceInstanceId, String)
+		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
-		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceInstanceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
 	}
 	export function piecePlaybackStopped (deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -237,9 +238,10 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.time, Number)
 		check(r.rundownId, String)
 		check(r.pieceInstanceId, String)
+		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
 		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
-		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceInstanceId, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
 	}
 	export function pingWithCommand (deviceId: PeripheralDeviceId, token: string, message: string, cb?: Function) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)

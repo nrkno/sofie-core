@@ -872,7 +872,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Triggered from Playout-gateway when a Piece has started playing
 	 */
-	export function onPiecePlaybackStarted (rundownId: RundownId, pieceInstanceId: PieceInstanceId, startedPlayback: Time) {
+	export function onPiecePlaybackStarted (rundownId: RundownId, pieceInstanceId: PieceInstanceId, dynamicallyInserted: boolean, startedPlayback: Time) {
 		check(rundownId, String)
 		check(pieceInstanceId, String)
 		check(startedPlayback, Number)
@@ -885,6 +885,7 @@ export namespace ServerPlayoutAPI {
 				_id: pieceInstanceId,
 				rundownId: rundownId
 			})
+			if (dynamicallyInserted && !pieceInstance) return// if it was dynamically inserted, it's okay if we can't find it
 			if (!pieceInstance) throw new Meteor.Error(404, `PieceInstance "${pieceInstanceId}" in rundown "${rundownId}" not found!`)
 
 			const isPlaying: boolean = !!(
@@ -903,7 +904,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Triggered from Playout-gateway when a Piece has stopped playing
 	 */
-	export function onPiecePlaybackStopped (rundownId: RundownId, pieceInstanceId: PieceInstanceId, stoppedPlayback: Time) {
+	export function onPiecePlaybackStopped (rundownId: RundownId, pieceInstanceId: PieceInstanceId, dynamicallyInserted: boolean, stoppedPlayback: Time) {
 		check(rundownId, String)
 		check(pieceInstanceId, String)
 		check(stoppedPlayback, Number)
@@ -917,6 +918,7 @@ export namespace ServerPlayoutAPI {
 				_id: pieceInstanceId,
 				rundownId: rundownId
 			})
+			if (dynamicallyInserted && !pieceInstance) return// if it was dynamically inserted, it's okay if we can't find it
 			if (!pieceInstance) throw new Meteor.Error(404, `PieceInstance "${pieceInstanceId}" in rundown "${rundownId}" not found!`)
 
 			const isPlaying: boolean = !!(

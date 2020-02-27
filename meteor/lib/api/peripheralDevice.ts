@@ -75,6 +75,7 @@ export type PartPlaybackStoppedResult = PartPlaybackStartedResult
 export interface PiecePlaybackStartedResult {
 	rundownId: RundownId,
 	pieceInstanceId: PieceInstanceId,
+	dynamicallyInserted?: boolean,
 	time: number
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
