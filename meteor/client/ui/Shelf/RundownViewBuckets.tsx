@@ -255,8 +255,18 @@ export const RundownViewBuckets = translate()(
 			})
 		}
 
-		emptyBucket = () => {
+		emptyBucket = (e: any, bucket: Bucket) => {
+			const { t } = this.props
 
+			if (e.persist) e.persist()
+
+			doModalDialog(literal<ModalDialogQueueItem>({
+				message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
+				title: bucket.name,
+				onAccept: () => {
+					doUserAction(t, e, 'Empty Bucket', (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
+				}
+			}))
 		}
 
 		finishRenameBucket = (e: any, bucket: Bucket, newName: string) => {
@@ -337,7 +347,9 @@ export const RundownViewBuckets = translate()(
 							<div className='react-contextmenu-label'>
 								{this.state.contextBucket.name}
 							</div>}
-						<MenuItem onClick={(e) => { }} disabled={!this.state.contextBucket}>
+						<MenuItem
+							onClick={(e) => this.state.contextBucket && this.emptyBucket(e, this.state.contextBucket)}
+							disabled={!this.state.contextBucket}>
 							{t('Empty this Bucket')}
 						</MenuItem>
 						<MenuItem
