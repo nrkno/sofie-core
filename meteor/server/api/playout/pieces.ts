@@ -28,7 +28,7 @@ import { prefixAllObjectIds } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
-import { PieceInstance, ResolvedPieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
 export interface PieceResolved extends Piece {
@@ -44,7 +44,7 @@ export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: numb
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
 		const obj = createPieceGroup({
-			_id: piece._id, // Set the id to the same, as it is just for metadata
+			_id: protectString(unprotectString(piece._id)) as PieceInstanceId, // Set the id to the same, as it is just for metadata
 			rundownId: piece.rundownId,
 			piece: piece
 		})
