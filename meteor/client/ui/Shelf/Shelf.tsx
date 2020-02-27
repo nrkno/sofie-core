@@ -22,7 +22,7 @@ import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ExternalFramePanel } from './ExternalFramePanel'
@@ -389,9 +389,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					<FontAwesomeIcon icon={faBars} />
 				</div>}
 				<div className='rundown-view__shelf__contents'>
-					<ContextMenuTrigger id='bucket-context-menu' attributes={{
-						className: 'rundown-view__shelf__contents__pane fill'
-					}}>
+					<ContextMenuTrigger
+						id='bucket-context-menu'
+						attributes={{
+							className: 'rundown-view__shelf__contents__pane fill'
+						}}
+						holdToDisplay={contextMenuHoldToDisplayTime()}>
 						<ErrorBoundary>
 							{
 								(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?

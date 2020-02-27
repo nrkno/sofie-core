@@ -69,6 +69,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import { contextMenuHoldToDisplayTime } from '../lib/lib'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -967,7 +968,7 @@ const RundownHeader = translate()(class RundownHeader extends React.Component<Tr
 			})}>
 				<ContextMenuTrigger id='rundown-context-menu' attributes={{
 					className: 'flex-col col-timing horizontal-align-center'
-				}}>
+				}} holdToDisplay={contextMenuHoldToDisplayTime()}>
 					<WarningDisplay
 						studioMode={this.props.studioMode}
 						inActiveRundownView={this.props.inActiveRundownView}

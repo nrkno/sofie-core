@@ -23,6 +23,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
 	playlist: RundownPlaylist
@@ -387,7 +389,8 @@ export const RundownViewBuckets = translate()(
 								this.setState({
 									contextBucket: bucket
 								}, resolve)
-							})}>
+							})}
+								holdToDisplay={contextMenuHoldToDisplayTime()}>
 								{this.state.panelWidths[index] > 0 &&
 									<BucketPanel
 										playlist={playlist}
