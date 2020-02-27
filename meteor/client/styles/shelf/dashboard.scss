@@ -41,6 +41,22 @@ $dashboard-button-height: 5.625em;
 				border-radius: 10px;
 			}
 		}
+
+		&.dashboard-panel__panel--sort-dragging {
+			opacity: 0.5;
+
+			&::after {
+				content: ' ';
+				display: block;
+				background-color: rgba(0, 183, 255, 0.5);
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				border-radius: 10px;
+			}
+		}
 	}
 
 	&.dashboard-panel--actions {
@@ -85,6 +101,10 @@ $dashboard-button-height: 5.625em;
 		line-height: 1.1em;
 		width: 100%;
 		border: none;
+
+		.dashboard-panel__handle {
+			cursor: move;
+		}
 	}
 
 	> .adlib-panel__list-view__toolbar {
