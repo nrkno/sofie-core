@@ -178,6 +178,9 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		this.showStyleVariantId = showStyleVariantId
 		this.notesContext = notesContext
 	}
+	getNotes () {
+		return this.notesContext.getNotes()
+	}
 
 	getShowStyleBase (): ShowStyleBase {
 		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
