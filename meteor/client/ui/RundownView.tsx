@@ -63,6 +63,7 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { Buckets, Bucket } from '../../lib/collections/Buckets';
 import { Settings } from '../../lib/Settings';
+import { contextMenuHoldToDisplayTime } from '../lib/lib'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1006,7 +1007,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			})}>
 				<ContextMenuTrigger id='rundown-context-menu' attributes={{
 					className: 'flex-col col-timing horizontal-align-center'
-				}}>
+				}} holdToDisplay={contextMenuHoldToDisplayTime()}>
 					<WarningDisplay
 						studioMode={this.props.studioMode}
 						inActiveRundownView={this.props.inActiveRundownView}

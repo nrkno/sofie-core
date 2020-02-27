@@ -19,7 +19,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -130,6 +130,7 @@ class SourceLayer extends React.PureComponent<ISourceLayerProps> {
 				className: 'segment-timeline__layer',
 				onMouseUpCapture: (e) => this.onMouseUp(e)
 			}}
+				holdToDisplay={contextMenuHoldToDisplayTime()}
 				collect={this.getPartContext}>
 				{this.renderInside()}
 			</ContextMenuTrigger>

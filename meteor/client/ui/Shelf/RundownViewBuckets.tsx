@@ -23,6 +23,7 @@ import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
 import { partial, literal } from '../../../lib/lib'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
@@ -386,11 +387,13 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 							<FontAwesomeIcon icon={faBars} />
 						</div>
 					</div>
-					<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
-						this.setState({
-							contextBucket: bucket
-						}, resolve)
-					})}>
+					<ContextMenuTrigger id='bucket-context-menu'
+						collect={() => new Promise((resolve) => {
+							this.setState({
+								contextBucket: bucket
+							}, resolve)
+						})}
+						holdToDisplay={contextMenuHoldToDisplayTime()}>
 						{this.state.panelWidths[index] > 0 &&
 							<BucketPanel
 								rundown={rundown}
