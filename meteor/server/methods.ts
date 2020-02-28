@@ -7,6 +7,9 @@ import { MethodContext } from '../lib/api/methods'
 export interface Methods {
 	[method: string]: Function
 }
+export interface MethodsInner {
+	[method: string]: { wrapped: Function, original: Function}
+}
 export const MeteorMethodSignatures: {[key: string]: string[]} = {}
 
 let runningMethods: {[methodId: string]: {
@@ -17,30 +20,46 @@ let runningMethods: {[methodId: string]: {
 let runningMethodstudio: number = 0
 
 export function registerClassToMeteorMethods (methodEnum: any, orgClass: any, secret?: boolean, wrapper?: (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => any): void {
-	let methods: any = {}
+	const methods: MethodsInner = {}
 	_.each(Object.getOwnPropertyNames(orgClass.prototype), classMethodName => {
 		const enumValue = methodEnum[classMethodName]
 		if (wrapper) {
-			methods[enumValue] = function (...args: any[]) {
-				return wrapper(this, enumValue, args, orgClass.prototype[classMethodName])
+			methods[enumValue] = {
+				wrapped: function (...args: any[]) {
+					return wrapper(this, enumValue, args, orgClass.prototype[classMethodName])
+				},
+				original: orgClass.prototype[classMethodName]
 			}
 		} else {
-			methods[enumValue] = orgClass.prototype[classMethodName]
+			methods[enumValue] = {
+				wrapped: orgClass.prototype[classMethodName],
+				original: orgClass.prototype[classMethodName]
+			}
 		}
 	})
-	setMeteorMethods(methods, secret)
+	setMeteorMethodsInner(methods, secret)
+}
+export function setMeteorMethods (orgMethods: Methods, secret?: boolean): void {
+	const methods: MethodsInner = {}
+	_.each(orgMethods, (fcn, key) => {
+		methods[key] = {
+			wrapped: fcn,
+			original: fcn,
+		}
+	})
+	return setMeteorMethodsInner(methods, secret)
 }
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods The methods to add
  * @param secret Set to true to not expose methods to API
  */
-export function setMeteorMethods (orgMethods: Methods, secret?: boolean): void {
+export function setMeteorMethodsInner (orgMethods: MethodsInner, secret?: boolean): void {
 
 	// Wrap methods
 	let methods: Methods = {}
-	_.each(orgMethods, (method: Function, methodName: string) => {
-
+	_.each(orgMethods, (m, methodName: string) => {
+		let method = m.wrapped
 		if (method) {
 
 			methods[methodName] = function (...args: any[]) {
@@ -73,7 +92,7 @@ export function setMeteorMethods (orgMethods: Methods, secret?: boolean): void {
 				}
 			}
 			if (!secret) {
-				const signature = extractFunctionSignature(method)
+				const signature = extractFunctionSignature(m.original)
 				if (signature) MeteorMethodSignatures[methodName] = signature
 			}
 		}
