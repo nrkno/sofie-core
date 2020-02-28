@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
+import { MethodContext } from '../lib/api/methods'
 
 export interface Methods {
 	[method: string]: Function
@@ -14,6 +15,21 @@ let runningMethods: {[methodId: string]: {
 	i: number
 }} = {}
 let runningMethodstudio: number = 0
+
+export function registerClassToMeteorMethods (methodEnum: any, orgClass: any, secret?: boolean, wrapper?: (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => any): void {
+	let methods: any = {}
+	_.each(Object.getOwnPropertyNames(orgClass.prototype), classMethodName => {
+		const enumValue = methodEnum[classMethodName]
+		if (wrapper) {
+			methods[enumValue] = function (...args: any[]) {
+				return wrapper(this, enumValue, args, orgClass.prototype[classMethodName])
+			}
+		} else {
+			methods[enumValue] = orgClass.prototype[classMethodName]
+		}
+	})
+	setMeteorMethods(methods, secret)
+}
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods The methods to add

@@ -11,6 +11,7 @@ import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from '../methods'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { MethodContext } from '../../lib/api/methods'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport (timestamp: Time, errorObject: any, location: string) {
@@ -18,12 +19,19 @@ export namespace ServerClientAPI {
 
 		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${this.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
 
-		return ClientAPI.responseSuccess()
+		return ClientAPI.responseSuccess(undefined)
 	}
 
-	export function execMethod (context: string, methodName: string, ...args: any[]) {
+	export function execMethod (methodContext: MethodContext, context: string, methodName: string, ...args: any[]) {
 		check(methodName, String)
 		check(context, String)
+
+		return runInUserLog(methodContext, context, methodName, args, () => {
+			return Meteor.call(methodName, ...args)
+		})
+	}
+
+	export function runInUserLog (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => any) {
 		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
@@ -32,15 +40,15 @@ export namespace ServerClientAPI {
 
 		UserActionsLog.insert(literal<UserActionsLogItem>({
 			_id: actionId,
-			clientAddress: this.connection.clientAddress,
-			userId: this.userId,
+			clientAddress: methodContext.connection.clientAddress,
+			userId: methodContext.userId,
 			context: context,
 			method: methodName,
 			args: JSON.stringify(args),
 			timestamp: getCurrentTime()
 		}))
 		try {
-			let result = Meteor.call(methodName, ...args)
+			let result = fcn()
 
 			// check the nature of the result
 			if (
@@ -77,7 +85,7 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export function callPeripheralDeviceFunction (context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]): Promise<any> {
+	export function callPeripheralDeviceFunction (methodContext: MethodContext, context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]): Promise<any> {
 		check(deviceId, String)
 		check(functionName, String)
 		check(context, String)
@@ -89,7 +97,7 @@ export namespace ServerClientAPI {
 			UserActionsLog.insert(literal<UserActionsLogItem>({
 				_id: actionId,
 				clientAddress: this.connection.clientAddress,
-				userId: this.userId,
+				userId: methodContext.userId,
 				context: context,
 				method: `${deviceId}: ${functionName}`,
 				args: JSON.stringify(args),
@@ -144,8 +152,8 @@ export namespace ServerClientAPI {
 	}
 }
 let methods: Methods = {}
-methods[ClientAPI.methods.execMethod] = function (...args: any[]) {
-	return ServerClientAPI.execMethod.apply(this, args)
+methods[ClientAPI.methods.execMethod] = function (context: string, methodName: string, ...args: any[]) {
+	return ServerClientAPI.execMethod(this as any, context, methodName, ...args)
 }
 methods[ClientAPI.methods.clientErrorReport] = function (...args: any[]) {
 	return ServerClientAPI.clientErrorReport.apply(this, args)

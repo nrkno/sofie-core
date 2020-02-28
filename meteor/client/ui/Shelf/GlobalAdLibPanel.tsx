@@ -27,10 +27,10 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
@@ -428,7 +428,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
+			doUserAction(t, e, 'Start playing Sticky Piece', () => MeteorCall.userAction.sourceLayerStickyPieceStart(this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -458,7 +458,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false])
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			doUserAction(t, e, 'Start Global Adlib', () => MeteorCall.userAction.baselineAdLibPieceStart(this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false))
 		}
 	}
 
@@ -467,7 +468,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.playlist._id, this.props.playlist.currentPartInstanceId, sourceLayer._id])
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			doUserAction(t, e, 'Stop Global Adlib', () => MeteorCall.userAction.sourceLayerOnPartStop(this.props.playlist._id, currentPartInstanceId, sourceLayer._id))
 		}
 	}
 

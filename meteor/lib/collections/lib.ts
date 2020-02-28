@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString, protectString, unprotectObject } from '../lib'
+import { stringifyObjects, getHash, ProtectedString, protectString, unprotectObject, unprotectString } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 
@@ -26,24 +26,24 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 	} = {}
 
 	collection.find().observeChanges({
-		changed: (id: string, changedFields) => {
+		changed: (id: ProtectedString<any>, changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
 			delete changedFields[hashName]
 
 			if (_.keys(changedFields).length > 0) {
-				let data: Timeout | undefined = observedChangesTimeouts[id]
+				let data: Timeout | undefined = observedChangesTimeouts[unprotectString(id)]
 				if (data !== undefined) {
 					// Already queued, so do nothing
 				} else {
 					// Schedule update
-					observedChangesTimeouts[id] = Meteor.setTimeout(() => {
+					observedChangesTimeouts[unprotectString(id)] = Meteor.setTimeout(() => {
 						// This looks like a race condition, but is safe as the data for the 'lost' change will still be loaded below
-						delete observedChangesTimeouts[id]
+						delete observedChangesTimeouts[unprotectString(id)]
 
 						// Perform hash update
-						const obj = collection.findOne(protectString(id))
+						const obj = collection.findOne(id)
 						if (obj) {
-							doUpdate(protectString(id), obj)
+							doUpdate(id, obj)
 						}
 					}, ObserveChangeBufferTimeout)
 				}
@@ -81,7 +81,7 @@ export function createMongoCollection<T> (
 		}
 	}
 
-	const collection = new Mongo.Collection<T>(name, options)
+	const collection: TransformedCollection<T, any> = new Mongo.Collection<T>(name, options) as any
 
 	overrideMethod(collection, 'find')
 	overrideMethod(collection, 'findOne')

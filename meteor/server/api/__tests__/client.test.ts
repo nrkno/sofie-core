@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime, protectString } from '../../../lib/lib'
@@ -9,6 +8,7 @@ import { setLoggerLevel } from '../logger'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -21,11 +21,11 @@ describe('ClientAPI', () => {
 		const mockContext = 'Context description'
 		const mockMethods = {}
 
-		mockMethods[UserActionAPI.methods.activate] = jest.fn()
-		mockMethods[UserActionAPI.methods.take] = jest.fn(() => {
+		mockMethods[UserActionAPIMethods.activate] = jest.fn()
+		mockMethods[UserActionAPIMethods.take] = jest.fn(() => {
 			return ClientAPI.responseError('Mock error')
 		})
-		mockMethods[UserActionAPI.methods.setNext] = jest.fn(() => {
+		mockMethods[UserActionAPIMethods.setNext] = jest.fn(() => {
 			throw new Meteor.Error(502, 'Mock exception')
 		})
 		MeteorMock.methods(mockMethods)
@@ -35,24 +35,24 @@ describe('ClientAPI', () => {
 		})
 
 		describe('Execute and log Meteor method calls', () => {
-			Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.activate, ...mockArgs)
+			Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPIMethods.activate, ...mockArgs)
 
 			it('Allows executing Meteor methods', () => {
 				// make sure that it's only called once
-				expect(mockMethods[UserActionAPI.methods.activate]).toBeCalledTimes(1)
+				expect(mockMethods[UserActionAPIMethods.activate]).toBeCalledTimes(1)
 				// make sure that the arguments are passed in correctly
-				expect(mockMethods[UserActionAPI.methods.activate]).toBeCalledWith(...mockArgs)
+				expect(mockMethods[UserActionAPIMethods.activate]).toBeCalledWith(...mockArgs)
 			})
 
 			it('Logs each call', () => {
 				const logItem = UserActionsLog.findOne({
-					method: UserActionAPI.methods.activate
+					method: UserActionAPIMethods.activate
 				})
 				if (!logItem) {
 					fail('Log entry not found')
 					return
 				}
-				expect(logItem.method).toBe(UserActionAPI.methods.activate)
+				expect(logItem.method).toBe(UserActionAPIMethods.activate)
 				expect(logItem.success).toBe(true)
 				expect(logItem.args).toBe(JSON.stringify(mockArgs))
 				expect(logItem.context).toBe(mockContext)
@@ -61,18 +61,18 @@ describe('ClientAPI', () => {
 		})
 
 		it('Logs error messages when responseError is returned', () => {
-			const response = Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.take, ...mockArgs)
+			const response = Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPIMethods.take, ...mockArgs)
 
-			expect(mockMethods[UserActionAPI.methods.take]).toBeCalledTimes(1)
+			expect(mockMethods[UserActionAPIMethods.take]).toBeCalledTimes(1)
 
 			const logItem = UserActionsLog.findOne({
-				method: UserActionAPI.methods.take
+				method: UserActionAPIMethods.take
 			})
 			if (!logItem) {
 				fail('Log entry not found')
 				return
 			}
-			expect(logItem.method).toBe(UserActionAPI.methods.take)
+			expect(logItem.method).toBe(UserActionAPIMethods.take)
 			expect(logItem.success).toBe(false)
 			expect(ClientAPI.isClientResponseSuccess(response)).toBe(false)
 			expect(logItem.userId).toBeDefined()
@@ -81,20 +81,20 @@ describe('ClientAPI', () => {
 
 		it('Logs exception messages if an exception is thrown by a method', () => {
 			const f = () => {
-				Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPI.methods.setNext, ...mockArgs)
+				Meteor.call(ClientAPI.methods.execMethod, mockContext, UserActionAPIMethods.setNext, ...mockArgs)
 			}
 
 			expect(f).toThrow()
-			expect(mockMethods[UserActionAPI.methods.setNext]).toBeCalledTimes(1)
+			expect(mockMethods[UserActionAPIMethods.setNext]).toBeCalledTimes(1)
 
 			const logItem = UserActionsLog.findOne({
-				method: UserActionAPI.methods.setNext
+				method: UserActionAPIMethods.setNext
 			})
 			if (!logItem) {
 				fail('Log entry not found')
 				return
 			}
-			expect(logItem.method).toBe(UserActionAPI.methods.setNext)
+			expect(logItem.method).toBe(UserActionAPIMethods.setNext)
 			expect(logItem.success).toBe(false)
 			expect(logItem.userId).toBeDefined()
 			expect(logItem.errorMessage).toBe('[502] Mock exception')

@@ -7,10 +7,11 @@ import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
+import { MethodContext } from '../../lib/methods/methods'
 
-export function saveEvaluation (evaluation: EvaluationBase): void {
+export function saveEvaluation (methodContext: MethodContext, evaluation: EvaluationBase): void {
 	Evaluations.insert(_.extend(evaluation, {
-		userId: this.userId,
+		userId: methodContext.userId,
 		timestamp: getCurrentTime(),
 	}))
 	logger.info({

@@ -21,7 +21,6 @@ import {
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
-import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
@@ -34,11 +33,11 @@ import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { UpdateNext } from './ingest/updateNext'
-import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
+import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -388,14 +387,14 @@ export namespace ServerRundownAPI {
 		rundown.remove()
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): UserActionAPI.ReloadRundownPlaylistResponse {
+	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
 		check(playlistId, String)
 		logger.info('resyncRundownPlaylist ' + playlistId)
 
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
-		const response: UserActionAPI.ReloadRundownPlaylistResponse = {
+		const response: ReloadRundownPlaylistResponse = {
 			rundownsResponses: playlist.getRundowns().map(rundown => {
 				return {
 					rundownId: rundown._id,
@@ -405,7 +404,7 @@ export namespace ServerRundownAPI {
 		}
 		return response
 	}
-	export function resyncRundown (rundownId: RundownId): UserActionAPI.ReloadRundownResponse {
+	export function resyncRundown (rundownId: RundownId): ReloadRundownResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 

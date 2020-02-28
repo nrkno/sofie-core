@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { RundownPlaylistId } from './RundownPlaylists'
+import { SnapshotId } from './Snapshots'
 /** A string, identifying a Evaluation */
 export type EvaluationId = ProtectedString<'EvaluationId'>
 
@@ -18,7 +19,7 @@ export interface EvaluationBase {
 	answers: {
 		[key: string]: string
 	},
-	snapshots?: Array<string>
+	snapshots?: Array<SnapshotId>
 }
 
 export const Evaluations: TransformedCollection<Evaluation, Evaluation>

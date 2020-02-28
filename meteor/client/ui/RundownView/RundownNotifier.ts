@@ -18,7 +18,6 @@ import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
@@ -27,6 +26,7 @@ import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { MeteorCall } from '../../../lib/api/methods'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -190,9 +190,9 @@ class RundownViewNotifier extends WithManagedTracker {
 											yes: t('Re-sync'),
 											no: t('Cancel'),
 											onAccept: (event) => {
-												doUserAction(t, event, UserActionAPI.methods.resyncRundownPlaylist, [ playlist._id ], (err, response) => {
-													if (!err && response) {
-														handleRundownPlaylistReloadResponse(t, playlist, response.result)
+												doUserAction(t, event, 'Re-Syncing Rundown Playlist', () => MeteorCall.userAction.resyncRundownPlaylist(playlist._id), (err, reloadResult) => {
+													if (!err && reloadResult) {
+														handleRundownPlaylistReloadResponse(t, playlist, reloadResult)
 													}
 												})
 											}
@@ -335,7 +335,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 }}).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
+			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
 			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 				return o.notes.map(note => _.extend(note, {
 					rank: o.rank

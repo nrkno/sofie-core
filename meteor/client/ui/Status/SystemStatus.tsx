@@ -26,7 +26,8 @@ import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { SystemStatusAPI, StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { MeteorCall } from '../../../lib/api/methods'
+import { RESTART_SALT } from '../../../lib/api/userActions'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -378,21 +379,21 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 	handleConfirmKillAccept = (e) => {
 		const { t } = this.props
 		if (this.state.showKillCoreConfirm) {
-			doUserAction(t, e, UserActionAPI.methods.generateRestartToken, [], (err, res) => {
-				if (err || !res || !res.result) {
+			doUserAction(t, e, 'Generate restart token', () => MeteorCall.userAction.generateRestartToken(), (err, token) => {
+				if (err || !token) {
 					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))
 					return
 				}
 
-				const restartToken = getHash(UserActionAPI.RESTART_SALT + res.result)
+				const restartToken = getHash(RESTART_SALT + token)
 
-				doUserAction(t, {}, UserActionAPI.methods.restartCore, [ restartToken ], (err, res) => {
-					if (err || !res || !res.result) {
+				doUserAction(t, {}, '', () => MeteorCall.userAction.restartCore(restartToken), (err, token) => {
+					if (err || !token) {
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))
 						return
 					}
 					let time = 'unknown'
-					const match = res.result.match(/([\d\.]+)s/)
+					const match = token.match(/([\d\.]+)s/)
 					if (match) {
 						time = match[1]
 					}

@@ -116,7 +116,7 @@ function (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseI
 	check(showStyleBaseId, String)
 
 	createRundownLayout(name, type, showStyleBaseId, undefined, this.connection.userId)
-	return ClientAPI.responseSuccess()
+	return ClientAPI.responseSuccess(undefined)
 }
 methods[RundownLayoutsAPI.methods.removeRundownLayout] =
 function (id: RundownLayoutId) {
@@ -124,7 +124,7 @@ function (id: RundownLayoutId) {
 
 	if (RundownLayoutSecurity.allowWriteAccess(this.connection.userId)) {
 		removeRundownLayout(id)
-		return ClientAPI.responseSuccess()
+		return ClientAPI.responseSuccess(undefined)
 	}
 	throw new Meteor.Error(403, 'Access denied')
 }

@@ -20,7 +20,6 @@ import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
 import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
-import { UserActionAPI } from '../../lib/api/userActions'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { Studios, StudioId } from '../../lib/collections/Studios'
@@ -29,6 +28,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
+import { MeteorCall } from '../../lib/api/methods'
 
 const PackageInfo = require('../../package.json')
 
@@ -74,7 +74,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRundownPlaylist, [rundownPlaylist._id])
+				doUserAction(t, e, 'Removing Rundown Playlist', () => MeteorCall.userAction.removeRundownPlaylist(rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to delete the "{{name}}" RundownPlaylist?', { name: rundownPlaylist.name }) + '\n' +
@@ -90,7 +90,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.resyncRundownPlaylist, [rundownPlaylist._id])
+				doUserAction(t, e, 'Re-Syncing Rundown Playlist', () => MeteorCall.userAction.resyncRundownPlaylist(rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to re-sync all rundowns in playlist "{{name}}"?', { name: rundownPlaylist.name })

@@ -29,7 +29,6 @@ import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, } from '../../../lib/co
 import { LookaheadMode, BlueprintManifestType, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
-import { PlayoutAPI } from '../../../lib/api/playout'
 import {
 	mappingIsAbstract,
 	mappingIsCasparCG,
@@ -49,6 +48,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
+import { PlayoutAPIMethods } from '../../../lib/api/playout'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -880,7 +880,7 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
 		const studio = props ? props.studio : this.props.studio
 
-		Meteor.call(PlayoutAPI.methods.shouldUpdateStudioBaseline, studio._id, (err, res) => {
+		Meteor.call(PlayoutAPIMethods.shouldUpdateStudioBaseline, studio._id, (err, res) => {
 			if (err) {
 				console.log('Failed to update studio baseline status: ' + err)
 				res = false
@@ -895,7 +895,7 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 	}
 
 	reloadBaseline () {
-		Meteor.call(PlayoutAPI.methods.updateStudioBaseline, this.props.studio._id, (err, res) => {
+		Meteor.call(PlayoutAPIMethods.updateStudioBaseline, this.props.studio._id, (err, res) => {
 			if (err) {
 				console.log('Failed to update studio baseline: ' + err)
 				res = false

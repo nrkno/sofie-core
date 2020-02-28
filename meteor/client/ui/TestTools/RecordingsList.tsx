@@ -13,10 +13,10 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/fontawesome-free-solid'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { StudioSelect } from './StudioSelect'
 import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IRecordingListProps {
 	match?: {
@@ -78,14 +78,16 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	stopRecording (e) {
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordStop, [this.props.match.params.studioId])
+			const studioId = this.props.match.params.studioId
+			doUserAction(t, e, 'Stopping recording', () => MeteorCall.userAction.recordStop(studioId))
 
 		}
 	}
 	startRecording (e) {
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordStart, [this.props.match.params.studioId, this.state.filename], () => {
+			const studioId = this.props.match.params.studioId
+			doUserAction(t, e, 'Starting recording', () => MeteorCall.userAction.recordStart(studioId, this.state.filename), () => {
 				this.setState({
 					filename: ''
 				})
@@ -108,7 +110,8 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordDelete, [this.state.deleteConfirmItem._id])
+			const recordingId = this.state.deleteConfirmItem._id
+			doUserAction(t, e, 'Deleting Recording', () => MeteorCall.userAction.recordDelete(recordingId))
 		}
 		this.setState({
 			showDeleteConfirm: false

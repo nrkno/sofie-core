@@ -6,8 +6,8 @@ import { Studio } from '../../../lib/collections/Studios'
 import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { MeteorCall } from '../../../lib/api/methods'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
@@ -39,13 +39,13 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 	}
 	handleAccept = (e) => {
 		this.props.onClose && this.props.onClose()
-		doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
+		doUserAction(this.props.t, e, 'Set In & Out points', () => MeteorCall.userAction.setInOutPoints(
 			this.props.playlistId,
 			this.props.selectedPiece.partId,
 			this.props.selectedPiece._id,
 			this.state.inPoint,
 			this.state.duration
-		])
+		))
 	}
 	render () {
 		const { t } = this.props

@@ -14,7 +14,8 @@ import { UserActionsList } from '../Status/UserActivity'
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { MeteorCall } from '../../../lib/api/methods'
+import { UserActionAPIMethods, CallUserActionAPIMethod } from '../../../lib/api/userActions'
 
 interface NextUserLogAction {
 	message: UserActionsLogItem
@@ -137,19 +138,19 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 	executeSingle (e, msg: UserActionsLogItem) {
 		const { t } = this.props
 
-		const method = msg.method as UserActionAPI.methods
+		const method = msg.method as UserActionAPIMethods
 		const args = JSON.parse(msg.args)
 
 		// Modify any parameters here
 		switch (msg.method) {
-			case UserActionAPI.methods.activate:
-			case UserActionAPI.methods.resetAndActivate:
+			case UserActionAPIMethods.activate:
+			case UserActionAPIMethods.resetAndActivate:
 				// Always run in rehearsal mode
 				args[1] = true
 				break
 		}
 
-		doUserAction(t, e, method, args)
+		doUserAction(t, e, `Method ${method}`, () => CallUserActionAPIMethod(method, args))
 	}
 
 	renderButtons (msg: UserActionsLogItem) {
