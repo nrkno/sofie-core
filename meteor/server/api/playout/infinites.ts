@@ -88,7 +88,6 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 	ps = []
 	for (let part of partsToProcess) {
-		if (part.gap) continue
 	   // Drop any that relate only to previous segments
 	   for (let k in activeInfiniteItemsSegmentId) {
 		   let s = activeInfiniteItemsSegmentId[k]
