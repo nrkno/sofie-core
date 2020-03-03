@@ -389,7 +389,14 @@ function updateRundownFromIngestData (
 		const removeWithPartId: string[] = removePartUpdatesBySegmentId(dbRundown, prepareSaveParts, removeWithSegmentId)
 
 		// Remove piece updates for pieces with these part Ids
-		removeWithPartId.push(...processPartChangesToReject(dbRundown, prepareSaveParts))
+		const changes = processPartChangesToReject(dbRundown, prepareSaveParts)
+		removeWithPartId.push(...changes.partIds)
+
+		removeSegmentUpdatesBySegmentId(prepareSaveSegments, changes.segmentIds)
+
+		changes.segmentIds.forEach((id) => {
+			ServerRundownAPI.unsync(dbRundown._id, id)
+		})
 
 		// Remove piece updates that must be rejected
 		removePieceUpdatesByPartId(prepareSavePieces, removeWithPartId)
@@ -963,6 +970,12 @@ function removePieceUpdatesByPartId(changes: PreparedChanges<Piece>, partIds: st
 	changes.changed = changes.changed.filter((piece) => !partIds.includes(piece.doc.partId))
 }
 
+function removeSegmentUpdatesBySegmentId(changes: PreparedChanges<DBSegment>, segmentIds: string[]) {
+	changes.removed = changes.removed.filter((segment) => !segmentIds.includes(segment._id))
+	changes.inserted = changes.inserted.filter((segment) => !segmentIds.includes(segment._id))
+	changes.changed = changes.changed.filter((segment) => !segmentIds.includes(segment.doc._id))
+}
+
 /**
  * Filters out changes to segments that should be rejected and unsyncs segments that have become unsynced.
  * @param rundown Rundown the changes belong to.
@@ -1019,7 +1032,7 @@ function rejectSegmentUpdate (rundown: Rundown, segment: DBSegment, field: keyof
  * @param rundown Rundown the changes belong to.
  * @param changes Changes to check.
  */
-function processPartChangesToReject (rundown: Rundown, changes: PreparedChanges<DBPart>): string[] {
+function processPartChangesToReject (rundown: Rundown, changes: PreparedChanges<DBPart>): { partIds: string[], segmentIds: string[] } {
 	const removeWithPartId: string[] = []
 	const removeWithSegmentId: string[] = []
 
@@ -1083,7 +1096,7 @@ function processPartChangesToReject (rundown: Rundown, changes: PreparedChanges<
 		return true
 	})
 
-	return removeWithPartId
+	return { partIds: removeWithPartId, segmentIds: removeWithSegmentId }
 }
 
 /**
