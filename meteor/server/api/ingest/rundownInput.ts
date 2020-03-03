@@ -685,7 +685,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 			})
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
-			logger.info('THIS SHOULD FAIL')
+
 			if (!isUpdateAllowed(rundown, {}, {}, { removed: [part] })) {
 				ServerRundownAPI.unsync(rundown._id, segmentId)
 			} else {
