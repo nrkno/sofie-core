@@ -285,17 +285,27 @@ export function getNextPart (
 		)
 	) {
 
+		const segment = Segments.findOne({ _id: rundown.nextSegmentId })
+
 		const partsInSegment = _.filter(partsInRundown, p => p.segmentId === rundown.nextSegmentId)
 
 		const nextPart = getNextPartSegment(
 			partsInSegment,
 			false
 		)
-		if (nextPart) {
+		if (nextPart && segment && !segment.isHidden) {
 			return nextPart
 		} // else: return the normally next
 	}
-	return partAfter
+
+	if (!partAfter) return
+
+	const segment = Segments.findOne({ _id: partAfter.segmentId })
+	if (segment && !segment.isHidden) {
+		return partAfter
+	}
+
+	return getNextPart(rundown, partsInRundown, partAfter)
 }
 export function getNextPartSegment (
 	partsInSegment: Part[],
