@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { setLoggerLevel } from '../../server/api/logger'
@@ -28,7 +29,6 @@ import {
 	escapeHtml,
 	protectString
 } from '../lib'
-import { setMeteorMethods } from '../../server/methods'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
@@ -46,7 +46,7 @@ describe('lib/lib', () => {
 	})
 	testInFiber('MeteorPromiseCall', () => {
 		// set up method:
-		setMeteorMethods({
+		Meteor.methods({
 			'myMethod': (value: any) => {
 				// Do an async operation, to ensure that asynchronous operations work:
 				const v = waitForPromise(new Promise(resolve => {

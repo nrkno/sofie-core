@@ -1,12 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { RecordedFiles, RecordedFile, RecordedFileId } from '../../lib/collections/RecordedFiles'
 import { Studios, Studio, ITestToolsConfig, MappingExt, StudioId } from '../../lib/collections/Studios'
-import { getCurrentTime, literal, waitForPromise, getHash, getRandomId, protectString } from '../../lib/lib'
-import { TestToolsAPI } from '../../lib/api/testTools'
-import { setMeteorMethods, Methods } from '../methods'
-import { logger } from '../logging'
+import { getCurrentTime, literal, waitForPromise, getHash, getRandomId, protectString, makePromise } from '../../lib/lib'
+import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
+import { registerClassToMeteorMethods } from '../methods'
 import * as moment from 'moment'
 import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'
 import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -104,8 +102,6 @@ export namespace ServerTestToolsAPI {
 		if (updated === 0) throw new Meteor.Error(404, `No active recording for "${studioId}" was found!`)
 
 		updateTimeline(studioId)
-
-		return true
 	}
 
 	export function recordStart (studioId: StudioId, name: string) {
@@ -161,8 +157,6 @@ export namespace ServerTestToolsAPI {
 		})
 
 		updateTimeline(studioId)
-
-		return true
 	}
 
 	export function recordDelete (fileId: RecordedFileId) {
@@ -176,47 +170,25 @@ export namespace ServerTestToolsAPI {
 		const config = getStudioConfig(studio)
 		if (!config.recordings.urlPrefix) throw new Meteor.Error(500, `URL prefix for Studio "${studio._id}" not defined!`)
 
-		const p = deleteRequest({ uri: config.recordings.urlPrefix + file.path })
-		.then(res => {
-			// 404 is ok, as it means file already doesnt exist. 200 is also good
-			if (res.statusCode !== 404 && res.statusCode !== 200) {
-				throw new Meteor.Error(500, `Failed to delete recording "${fileId}"!`)
-			}
+		const res = waitForPromise(deleteRequest({ uri: config.recordings.urlPrefix + file.path }))
 
-			RecordedFiles.remove(fileId)
-
-			return true
-		})
-		waitForPromise(p)
-	}
-}
-
-let methods: Methods = {}
-methods[TestToolsAPI.methods.recordStop] = (studioId: StudioId) => {
-	return ServerTestToolsAPI.recordStop(studioId)
-}
-methods[TestToolsAPI.methods.recordStart] = (studioId: StudioId, name: string) => {
-	return ServerTestToolsAPI.recordStart(studioId, name)
-}
-methods[TestToolsAPI.methods.recordDelete] = (fileId: RecordedFileId) => {
-	return ServerTestToolsAPI.recordDelete(fileId)
-}
-
-// Transform methods:
-_.each(methods, (fcn: Function, key) => {
-	methods[key] = (...args: any[]) => {
-		// logger.info('------- Method call -------')
-		// logger.info(key)
-		// logger.info(args)
-		// logger.info('---------------------------')
-		try {
-			return fcn.apply(null, args)
-		} catch (e) {
-			logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
-			throw e
+		// 404 is ok, as it means file already doesnt exist. 200 is also good
+		if (res.statusCode !== 404 && res.statusCode !== 200) {
+			throw new Meteor.Error(500, `Failed to delete recording "${fileId}"!`)
 		}
-	}
-})
 
-// Apply methods:
-setMeteorMethods(methods)
+		RecordedFiles.remove(fileId)
+	}
+}
+class ServerTestToolsAPIClass implements NewTestToolsAPI {
+	recordStop (studioId: StudioId) {
+		return makePromise(() => ServerTestToolsAPI.recordStop(studioId))
+	}
+	recordStart (studioId: StudioId, name: string) {
+		return makePromise(() => ServerTestToolsAPI.recordStart(studioId, name))
+	}
+	recordDelete (fileId: RecordedFileId) {
+		return makePromise(() => ServerTestToolsAPI.recordDelete(fileId))
+	}
+}
+registerClassToMeteorMethods(TestToolsAPIMethods, ServerTestToolsAPIClass, false)

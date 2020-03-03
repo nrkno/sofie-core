@@ -2,7 +2,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios';
+import { StudioId } from './Studios'
 
 /** A string, identifying a MediaObj */
 export type MediaObjId = ProtectedString<'MediaObjId'>

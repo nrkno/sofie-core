@@ -3,7 +3,6 @@ import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import {
-	Rundown,
 	Rundowns,
 	RundownHoldState,
 	RundownId
@@ -22,7 +21,7 @@ import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
 import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
-import { setMeteorMethods, registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
 import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles, RecordedFileId } from '../../lib/collections/RecordedFiles'
@@ -34,7 +33,7 @@ import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
@@ -206,7 +205,9 @@ export function deactivate (rundownPlaylistId: RundownPlaylistId): ClientAPI.Cli
 
 }
 export function reloadRundownPlaylistData (rundownPlaylistId: RundownPlaylistId) {
-	return ServerPlayoutAPI.reloadRundownPlaylistData(rundownPlaylistId)
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.reloadRundownPlaylistData(rundownPlaylistId)
+	)
 }
 export function unsyncRundown (rundownId: RundownId) {
 	return ClientAPI.responseSuccess(
@@ -214,7 +215,9 @@ export function unsyncRundown (rundownId: RundownId) {
 	)
 }
 export function disableNextPiece (rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-	return ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo)
+	)
 }
 export function togglePartArgument (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string) {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -633,10 +636,10 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	restartCore (token: string) {
 		return makePromise(() => restartCore(token))
 	}
-	guiFocused () {
+	guiFocused (_viewInfo: any[]) {
 		return makePromise(() => noop())
 	}
-	guiBlurred () {
+	guiBlurred (_viewInfo: any[]) {
 		return makePromise(() => noop())
 	}
 }

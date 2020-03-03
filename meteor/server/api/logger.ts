@@ -1,8 +1,8 @@
-import { setMeteorMethods } from '../methods'
+import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as _ from 'underscore'
 
-setMeteorMethods({
+Meteor.methods({
 	'logger': (type: string, ...args: any[]) => {
 		// @ts-ignore
 		let l: any = logger[type] || logger.log

@@ -1,5 +1,6 @@
-import { Methods, setMeteorMethods, registerClassToMeteorMethods } from '../../methods'
-import { NewPlayoutAPI } from '../../../lib/api/playout'
+import { Meteor } from 'meteor/meteor'
+import { registerClassToMeteorMethods } from '../../methods'
+import { NewPlayoutAPI, PlayoutAPIMethods } from '../../../lib/api/playout'
 import { ServerPlayoutAPI } from './playout'
 import { getCurrentTime, makePromise } from '../../../lib/lib'
 import { logger } from '../../logging'
@@ -10,7 +11,7 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { StudioId } from '../../../lib/collections/Studios'
 import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
 
-class PlayoutAPIMethods implements NewPlayoutAPI {
+class ServerPlayoutAPIClass implements NewPlayoutAPI {
 
 	rundownPrepareForBroadcast (playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(playlistId))
@@ -70,12 +71,11 @@ class PlayoutAPIMethods implements NewPlayoutAPI {
 		return makePromise(() => ServerPlayoutAPI.shouldUpdateStudioBaseline(studioId))
 	}
 }
-registerClassToMeteorMethods('playout', PlayoutAPIMethods)
-// Apply methods:
-// setMeteorMethods(methods)
+registerClassToMeteorMethods(PlayoutAPIMethods, ServerPlayoutAPIClass, false)
+
 
 // Temporary methods
-setMeteorMethods({
+Meteor.methods({
 	'debug__printTime': () => {
 		let now = getCurrentTime()
 		logger.debug(new Date(now))

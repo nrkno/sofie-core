@@ -210,9 +210,7 @@ export namespace ServerPlayoutAPI {
 					}
 				})
 			}
-			return ClientAPI.responseSuccess(
-				response
-			)
+			return response
 		})
 	}
 	/**
@@ -856,8 +854,6 @@ export namespace ServerPlayoutAPI {
 				}})
 
 				updateTimeline(playlist.studioId)
-
-				return ClientAPI.responseSuccess(undefined)
 			} else {
 				throw new Meteor.Error(500, 'Found no future pieces')
 			}
@@ -1309,7 +1305,7 @@ export namespace ServerPlayoutAPI {
 
 		return shouldUpdateStudioBaseline(studioId)
 	}
-	export function shouldUpdateStudioBaseline (studioId: StudioId) {
+	export function shouldUpdateStudioBaseline (studioId: StudioId): string | false {
 		check(studioId, String)
 
 		const studio = Studios.findOne(studioId)

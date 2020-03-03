@@ -12,8 +12,6 @@ import { Studio, Studios } from '../../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { Meteor } from 'meteor/meteor'
-import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
@@ -21,6 +19,7 @@ import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { unprotectString } from '../../../lib/lib'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {
 	match: {
@@ -92,7 +91,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								'content-type': 'text/javascript'
 							},
 						})
-						.then(response => {
+						.then(() => {
 							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
 							// console.log('Blueprint restore success')
 						}).catch(err => {
@@ -117,7 +116,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 													'content-type': 'text/javascript'
 												},
 											})
-											.then(response => {
+											.then(() => {
 												NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
 												// console.log('Blueprint restore success')
 											}).catch((err: string) => {
@@ -151,7 +150,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	assignSystemBlueprint (id: BlueprintId | undefined) {
-		Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, id)
+		MeteorCall.blueprint.assignSystemBlueprint(id).catch(console.error)
 	}
 
 	renderAssignment (blueprint: Blueprint) {
@@ -184,7 +183,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				return (
 					<div>
 						<p className='mod mhn mvs'>
-							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
+							<button className='btn btn-primary' onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
 								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
 							</button>
 						</p>

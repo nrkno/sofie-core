@@ -506,11 +506,10 @@ class RundownViewNotifier extends WithManagedTracker {
 		// TODO-ASAP this wont show multiple correctly (but is that ok?)
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
 		rundownIds.map(rundownId => {
-			Meteor.call(RundownAPI.methods.rundownNeedsUpdating, rundownId, (err: Error, versionMismatch: string) => {
+			MeteorCall.rundown.rundownNeedsUpdating(rundownId)
+			.then((versionMismatch: string) => {
 				let newNotification: Notification | undefined = undefined
-				if (err) {
-					newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'rundown_' + rundownId, getCurrentTime(), true, undefined, -1)
-				} else if (versionMismatch) {
+				if (versionMismatch) {
 					newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), 'rundown_' + rundownId, getCurrentTime(), true, [
 						{
 							label: t('Reload ENPS Data'),
@@ -525,11 +524,18 @@ class RundownViewNotifier extends WithManagedTracker {
 					], -1)
 				}
 
-				if (newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
+				if (
+					(newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) ||
+					(!newNotification && this._rundownImportVersionStatus)
+				) {
 					this._rundownImportVersionStatus = newNotification
 					this._rundownImportVersionStatusDep.changed()
-				} else if (!newNotification && this._rundownImportVersionStatus) {
-					this._rundownImportVersionStatus = undefined
+				}
+			}).catch(err => {
+				console.error(err)
+				let newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'rundown_' + rundownId, getCurrentTime(), true, undefined, -1)
+				if (!Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
+					this._rundownImportVersionStatus = newNotification
 					this._rundownImportVersionStatusDep.changed()
 				}
 			})

@@ -1,6 +1,5 @@
 import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
@@ -18,7 +17,7 @@ import {
 	SnapshotRundownPlaylist,
 	SnapshotId
 } from '../../lib/collections/Snapshots'
-import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Part, Parts } from '../../lib/collections/Parts'
@@ -35,7 +34,8 @@ import {
 	normalizeArray,
 	protectString,
 	getRandomId,
-	unprotectString
+	unprotectString,
+	makePromise
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -44,8 +44,8 @@ import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
-import { Methods, setMeteorMethods } from '../methods'
-import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
+import { registerClassToMeteorMethods } from '../methods'
+import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
@@ -58,7 +58,7 @@ import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/Inges
 import { ingestMOSRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylist, RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
@@ -603,29 +603,29 @@ export function removeSnapshot (snapshotId: SnapshotId) {
 	Snapshots.remove(snapshot._id)
 }
 
-Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.studioId, Match.Optional(String))
 		return createSystemSnapshot(protectString(params.studioId))
 	})
 })
-Picker.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+Picker.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.playlistId, String)
 		return createRundownPlaylistSnapshot(protectString(params.playlistId))
 	})
 })
-Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.studioId, String)
 		return createDebugSnapshot(protectString(params.studioId))
 	})
 })
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
+const postRoute = Picker.filter((req) => req.method === 'POST')
 postRoute.middleware(bodyParser.json({
 	limit: '15mb' // Arbitrary limit
 }))
-postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse, next) => {
+postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
 	response.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -650,29 +650,28 @@ postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: Se
 	}
 })
 // Retrieve snapshot:
-Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.snapshotId, String)
 		return retreiveSnapshot(protectString(params.snapshotId))
 	})
 })
 
-// Setup methods:
-let methods: Methods = {}
-methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId: StudioId | null, reason: string) => {
-	return storeSystemSnapshot(studioId, reason)
+class ServerSnapshotAPI implements NewSnapshotAPI {
+	storeSystemSnapshot (studioId: StudioId | null, reason: string) {
+		return makePromise(() => storeSystemSnapshot(studioId, reason))
+	}
+	storeRundownPlaylist (playlistId: RundownPlaylistId, reason: string) {
+		return makePromise(() => storeRundownPlaylistSnapshot(playlistId, reason))
+	}
+	storeDebugSnapshot (studioId: StudioId, reason: string) {
+		return makePromise(() => storeDebugSnapshot(studioId, reason))
+	}
+	restoreSnapshot (snapshotId: SnapshotId) {
+		return makePromise(() => restoreSnapshot(snapshotId))
+	}
+	removeSnapshot (snapshotId: SnapshotId) {
+		return makePromise(() => removeSnapshot(snapshotId))
+	}
 }
-methods[SnapshotFunctionsAPI.STORE_RUNDOWN_PLAYLIST_SNAPSHOT] = (playlistId: RundownPlaylistId, reason: string) => {
-	return storeRundownPlaylistSnapshot(playlistId, reason)
-}
-methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: StudioId, reason: string) => {
-	return storeDebugSnapshot(studioId, reason)
-}
-methods[SnapshotFunctionsAPI.RESTORE_SNAPSHOT] = (snapshotId: SnapshotId) => {
-	return restoreSnapshot(snapshotId)
-}
-methods[SnapshotFunctionsAPI.REMOVE_SNAPSHOT] = (snapshotId: SnapshotId) => {
-	return removeSnapshot(snapshotId)
-}
-// Apply methods:
-setMeteorMethods(methods)
+registerClassToMeteorMethods(SnapshotAPIMethods, ServerSnapshotAPI, false)

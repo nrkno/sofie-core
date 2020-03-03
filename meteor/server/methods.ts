@@ -4,7 +4,7 @@ import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext } from '../lib/api/methods'
 
-export interface Methods {
+interface Methods {
 	[method: string]: Function
 }
 export interface MethodsInner {
@@ -19,10 +19,18 @@ let runningMethods: {[methodId: string]: {
 }} = {}
 let runningMethodstudio: number = 0
 
+function getAllClassMethods (myClass: any): string[] {
+	const objectProtProps = Object.getOwnPropertyNames(Object.prototype)
+	const classProps = Object.getOwnPropertyNames(myClass.prototype)
+
+	return classProps.filter((name) => objectProtProps.indexOf(name) < 0).filter((name) => typeof myClass.prototype[name] === 'function')
+}
+
 export function registerClassToMeteorMethods (methodEnum: any, orgClass: any, secret?: boolean, wrapper?: (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => any): void {
 	const methods: MethodsInner = {}
-	_.each(Object.getOwnPropertyNames(orgClass.prototype), classMethodName => {
+	_.each(getAllClassMethods(orgClass), classMethodName => {
 		const enumValue = methodEnum[classMethodName]
+		if (!enumValue) throw new Meteor.Error(500, `registerClassToMeteorMethods: Unknown method "${classMethodName}"`)
 		if (wrapper) {
 			methods[enumValue] = {
 				wrapped: function (...args: any[]) {
@@ -37,24 +45,14 @@ export function registerClassToMeteorMethods (methodEnum: any, orgClass: any, se
 			}
 		}
 	})
-	setMeteorMethodsInner(methods, secret)
-}
-export function setMeteorMethods (orgMethods: Methods, secret?: boolean): void {
-	const methods: MethodsInner = {}
-	_.each(orgMethods, (fcn, key) => {
-		methods[key] = {
-			wrapped: fcn,
-			original: fcn,
-		}
-	})
-	return setMeteorMethodsInner(methods, secret)
+	setMeteorMethods(methods, secret)
 }
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods The methods to add
  * @param secret Set to true to not expose methods to API
  */
-export function setMeteorMethodsInner (orgMethods: MethodsInner, secret?: boolean): void {
+function setMeteorMethods (orgMethods: MethodsInner, secret?: boolean): void {
 
 	// Wrap methods
 	let methods: Methods = {}
@@ -75,6 +73,7 @@ export function setMeteorMethodsInner (orgMethods: MethodsInner, secret?: boolea
 					let result = method.apply(this, args)
 
 					if (typeof result === 'object' && result.then) {
+						// The method result is a promise
 						return Promise.resolve(result)
 						.then((result) => {
 							delete runningMethods[methodId]

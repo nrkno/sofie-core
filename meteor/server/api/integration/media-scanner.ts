@@ -1,15 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
-import { logger } from '../../logging'
 import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
-import { setMeteorMethods, Methods } from '../../methods'
-import { PeripheralDevices, PeripheralDevice, getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
+import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 
 export namespace MediaScannerIntegration {
-	export function getMediaObjectRevisions (deviceId: PeripheralDeviceId, token: string, collectionId: string) {
+	export function getMediaObjectRevisions (deviceId: PeripheralDeviceId, token: string, collectionId: string): MediaObjectRevision[] {
 		// logger.debug('getMediaObjectRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 
@@ -55,13 +53,3 @@ export namespace MediaScannerIntegration {
 		}
 	}
 }
-
-let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.getMediaObjectRevisions] = (deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string,) => {
-	return MediaScannerIntegration.getMediaObjectRevisions(deviceId, deviceToken, collectionId)
-}
-methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string, id: string, doc: MediaObject | null) => {
-	return MediaScannerIntegration.updateMediaObject(deviceId, deviceToken, collectionId, id, doc)
-}
-// Apply methods:
-setMeteorMethods(methods)

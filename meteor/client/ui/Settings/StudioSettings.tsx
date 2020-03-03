@@ -49,6 +49,7 @@ import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { PlayoutAPIMethods } from '../../../lib/api/playout'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -880,32 +881,22 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
 		const studio = props ? props.studio : this.props.studio
 
-		Meteor.call(PlayoutAPIMethods.shouldUpdateStudioBaseline, studio._id, (err, res) => {
-			if (err) {
-				console.log('Failed to update studio baseline status: ' + err)
-				res = false
-			}
-
-			if (this.updateInterval) {
-				this.setState({
-					needsUpdate: !!res
-				})
-			}
+		MeteorCall.playout.shouldUpdateStudioBaseline(studio._id)
+		.then(result => {
+			if (this.updateInterval) this.setState({ needsUpdate: !!result })
+		}).catch(err => {
+			console.error('Failed to update studio baseline status',err)
+			if (this.updateInterval) this.setState({ needsUpdate: false })
 		})
 	}
 
 	reloadBaseline () {
-		Meteor.call(PlayoutAPIMethods.updateStudioBaseline, this.props.studio._id, (err, res) => {
-			if (err) {
-				console.log('Failed to update studio baseline: ' + err)
-				res = false
-			}
-
-			if (this.updateInterval) {
-				this.setState({
-					needsUpdate: !!res
-				})
-			}
+		MeteorCall.playout.updateStudioBaseline(this.props.studio._id)
+		.then(result => {
+			if (this.updateInterval) this.setState({ needsUpdate: !!result })
+		}).catch(err => {
+			console.error('Failed to update studio baseline',err)
+			if (this.updateInterval) this.setState({ needsUpdate: false })
 		})
 	}
 

@@ -14,8 +14,8 @@ import { UserActionsList } from '../Status/UserActivity'
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
-import { MeteorCall } from '../../../lib/api/methods'
-import { UserActionAPIMethods, CallUserActionAPIMethod } from '../../../lib/api/userActions'
+import { MeteorCall, CallUserActionAPIMethod } from '../../../lib/api/methods'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 interface NextUserLogAction {
 	message: UserActionsLogItem

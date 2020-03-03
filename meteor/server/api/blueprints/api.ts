@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString, getRandomId, makePromise } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -7,10 +7,9 @@ import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Random } from 'meteor/random'
 import { check, Match } from 'meteor/check'
-import { BlueprintAPI } from '../../../lib/api/blueprint'
-import { Methods, setMeteorMethods } from '../../methods'
+import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
+import { registerClassToMeteorMethods } from '../../methods'
 import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprints } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
@@ -163,14 +162,15 @@ function assignSystemBlueprint (blueprintId?: BlueprintId) {
 	}
 }
 
-let methods: Methods = {}
-methods[BlueprintAPI.methods.insertBlueprint] = () => {
-	return insertBlueprint()
+class ServerBlueprintAPI implements NewBlueprintAPI {
+	insertBlueprint () {
+		return makePromise(() => insertBlueprint())
+	}
+	removeBlueprint (blueprintId: BlueprintId) {
+		return makePromise(() => removeBlueprint(blueprintId))
+	}
+	assignSystemBlueprint (blueprintId?: BlueprintId) {
+		return makePromise(() => assignSystemBlueprint(blueprintId))
+	}
 }
-methods[BlueprintAPI.methods.removeBlueprint] = (blueprintId: BlueprintId) => {
-	return removeBlueprint(blueprintId)
-}
-methods[BlueprintAPI.methods.assignSystemBlueprint] = (blueprintId?: BlueprintId) => {
-	return assignSystemBlueprint(blueprintId)
-}
-setMeteorMethods(methods)
+registerClassToMeteorMethods(BlueprintAPIMethods, ServerBlueprintAPI, false)

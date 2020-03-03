@@ -1,15 +1,23 @@
-import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration'
+import { MigrationStepInput, MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
 import { BlueprintId } from '../collections/Blueprints'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { StudioId } from '../collections/Studios'
 import { SnapshotId } from '../collections/Snapshots'
 
-export enum MigrationMethods {
+export interface NewMigrationAPI {
+	getMigrationStatus (): Promise<GetMigrationStatusResult>
+	runMigration (chunks: Array<MigrationChunk>, hash: string, inputResults: Array<MigrationStepInputResult>, isFirstOfPartialMigrations?: boolean): Promise<RunMigrationResult>
+	forceMigration (chunks: Array<MigrationChunk>): Promise<void>
+	resetDatabaseVersions (): Promise<void>
+}
+
+export enum MigrationAPIMethods {
 	'getMigrationStatus' 	= 'migration.getMigrationStatus',
 	'runMigration' 			= 'migration.runMigration',
 	'forceMigration' 		= 'migration.forceMigration',
 	'resetDatabaseVersions' = 'migration.resetDatabaseVersions'
 }
+
 export interface GetMigrationStatusResult {
 	migrationNeeded: boolean
 

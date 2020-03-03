@@ -1,11 +1,10 @@
-import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
-import { Methods, setMeteorMethods } from '../methods'
-import { ShowStylesAPI } from '../../lib/api/showStyles'
+import { registerClassToMeteorMethods } from '../methods'
+import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
-import { literal, protectString, getRandomId } from '../../lib/lib'
+import { literal, protectString, getRandomId, makePromise } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 
 export function insertShowStyleBase (): ShowStyleBaseId {
@@ -55,19 +54,18 @@ export function removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) 
 	ShowStyleVariants.remove(showStyleVariantId)
 }
 
-let methods: Methods = {}
-methods[ShowStylesAPI.methods.insertShowStyleBase] = () => {
-	return insertShowStyleBase()
+class ServerShowStylesAPI implements NewShowStylesAPI {
+	insertShowStyleBase () {
+		return makePromise(() => insertShowStyleBase())
+	}
+	insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId) {
+		return makePromise(() => insertShowStyleVariant(showStyleBaseId))
+	}
+	removeShowStyleBase (showStyleBaseId: ShowStyleBaseId) {
+		return makePromise(() => removeShowStyleBase(showStyleBaseId))
+	}
+	removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) {
+		return makePromise(() => removeShowStyleVariant(showStyleVariantId))
+	}
 }
-methods[ShowStylesAPI.methods.insertShowStyleVariant] = (showStyleBaseId: ShowStyleBaseId) => {
-	return insertShowStyleVariant(showStyleBaseId)
-}
-methods[ShowStylesAPI.methods.removeShowStyleBase] = (showStyleBaseId: ShowStyleBaseId) => {
-	return removeShowStyleBase(showStyleBaseId)
-}
-methods[ShowStylesAPI.methods.removeShowStyleVariant] = (showStyleVariantId: ShowStyleVariantId) => {
-	return removeShowStyleVariant(showStyleVariantId)
-}
-
-// Apply methods:
-setMeteorMethods(methods)
+registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)

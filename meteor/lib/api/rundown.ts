@@ -1,6 +1,27 @@
-import { Rundown } from '../collections/Rundowns'
+import { Rundown, RundownId } from '../collections/Rundowns'
 import { NoteType } from './notes'
 import * as _ from 'underscore'
+import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from './userActions'
+
+export interface NewRundownAPI {
+	removeRundownPlaylist (playlistId: RundownPlaylistId): Promise<void>
+	resyncRundownPlaylist (playlistId: RundownPlaylistId): Promise<ReloadRundownPlaylistResponse>
+	removeRundown (rundownId: RundownId): Promise<void>
+	resyncRundown (rundownId: RundownId): Promise<ReloadRundownResponse>
+	unsyncRundown (rundownId: RundownId): Promise<void>
+	rundownNeedsUpdating (rundownId: RundownId): Promise<string | false>
+}
+
+export enum RundownAPIMethods {
+	'removeRundownPlaylist' = 'rundown.removeRundownPlaylist',
+	'resyncRundownPlaylist' = 'rundown.resyncRundownPlaylist',
+
+	'removeRundown' 		= 'rundown.removeRundown',
+	'resyncRundown' 		= 'rundown.resyncRundown',
+	'unsyncRundown' 		= 'rundown.unsyncRundown',
+	'rundownNeedsUpdating' 	= 'rundown.rundownNeedsUpdating'
+}
 
 export namespace RundownAPI {
 	/** A generic list of playback availability statuses for a Piece */
@@ -16,16 +37,6 @@ export namespace RundownAPI {
 		SOURCE_BROKEN = 2,
 		/** Source not set - the source object is not set to an actual source */
 		SOURCE_NOT_SET = 3
-	}
-
-	export enum methods {
-		'removeRundownPlaylist' = 'rundown.removeRundownPlaylist',
-		'resyncRundownPlaylist' = 'rundown.resyncRundownPlaylist',
-
-		'removeRundown' 		= 'rundown.removeRundown',
-		'resyncRundown' 		= 'rundown.resyncRundown',
-		'unsyncRundown' 		= 'rundown.unsyncRundown',
-		'rundownNeedsUpdating' 	= 'rundown.rundownNeedsUpdating'
 	}
 }
 

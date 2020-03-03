@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { logger } from '../logging'
@@ -17,12 +16,12 @@ import {
 import {
 	getCurrentTime,
 	removeNullyProperties,
-	getRandomId
+	getRandomId,
+	makePromise
 } from '../../lib/lib'
-import { setMeteorMethods, Methods } from '../methods'
+import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
+import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
@@ -230,12 +229,11 @@ Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-let methods: Methods = {}
-methods[ExternalMessageQueueAPI.methods.remove] = (messageId: ExternalMessageQueueObjId) => {
+function removeExternalMessage (messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
 	ExternalMessageQueue.remove(messageId)
 }
-methods[ExternalMessageQueueAPI.methods.toggleHold] = (messageId: ExternalMessageQueueObjId) => {
+function toggleHold (messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
 	let m = ExternalMessageQueue.findOne(messageId)
 	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on toggleHold`)
@@ -243,7 +241,7 @@ methods[ExternalMessageQueueAPI.methods.toggleHold] = (messageId: ExternalMessag
 		hold: !m.hold
 	}})
 }
-methods[ExternalMessageQueueAPI.methods.retry] = (messageId: ExternalMessageQueueObjId) => {
+function retry (messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
 	let m = ExternalMessageQueue.findOne(messageId)
 	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on retry`)
@@ -256,7 +254,7 @@ methods[ExternalMessageQueueAPI.methods.retry] = (messageId: ExternalMessageQueu
 	}})
 	triggerdoMessageQueue(1000)
 }
-methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) => {
+function setRunMessageQueue (value: boolean): void {
 	check(value, Boolean)
 	logger.info('setRunMessageQueue: set to ' + value)
 	runMessageQueue = value
@@ -265,4 +263,18 @@ methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) =
 	}
 }
 
-setMeteorMethods(methods)
+class ServerExternalMessageQueueAPI implements NewExternalMessageQueueAPI {
+	remove (messageId: ExternalMessageQueueObjId) {
+		return makePromise(() => removeExternalMessage(messageId))
+	}
+	toggleHold (messageId: ExternalMessageQueueObjId) {
+		return makePromise(() => toggleHold(messageId))
+	}
+	retry (messageId: ExternalMessageQueueObjId) {
+		return makePromise(() => retry(messageId))
+	}
+	setRunMessageQueue (value: boolean) {
+		return makePromise(() => setRunMessageQueue(value))
+	}
+}
+registerClassToMeteorMethods(ExternalMessageQueueAPIMethods, ServerExternalMessageQueueAPI, false)

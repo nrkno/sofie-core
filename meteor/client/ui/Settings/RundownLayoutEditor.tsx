@@ -9,7 +9,6 @@ import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } f
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, DashboardLayout, ActionButtonType, DashboardLayoutActionButton, RundownLayoutId } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
 import { literal, unprotectString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
@@ -20,6 +19,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { fetchFrom } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
+import { MeteorCall } from '../../../lib/api/methods'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
@@ -65,13 +65,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	onAddLayout = (e: any) => {
 		const { t, showStyleBase } = this.props
-		callMethod(
-			e,
-			RundownLayoutsAPI.methods.createRundownLayout,
+		MeteorCall.rundownLayout.createRundownLayout(
 			t('New Layout'),
 			RundownLayoutType.RUNDOWN_LAYOUT,
 			showStyleBase._id
-		)
+		).catch(console.error)
 	}
 
 	onAddButton = (item: RundownLayoutBase) => {
@@ -189,11 +187,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			no: t('Cancel'),
 			message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
 			onAccept: () => {
-				callMethod(
-					e,
-					RundownLayoutsAPI.methods.removeRundownLayout,
-					item._id
-				)
+				MeteorCall.rundownLayout.removeRundownLayout(item._id).catch(console.error)
 			}
 
 		})

@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, VTEditableParameters, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -14,10 +14,10 @@ import * as Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
 const Tooltip = require('rc-tooltip')
-import { NavLink, Route, Prompt, Switch } from 'react-router-dom'
+import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, Segments, SegmentId } from '../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios } from '../../lib/collections/Studios'
 import { Part, Parts } from '../../lib/collections/Parts'
 
@@ -46,7 +46,7 @@ import { Tracker } from 'meteor/tracker'
 import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction, callMethod } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
@@ -54,7 +54,7 @@ import { SupportPopUp } from './SupportPopUp'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
-import { UserActionAPIMethods, ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
@@ -62,7 +62,6 @@ import { RundownLayout, RundownLayouts, RundownLayoutType, RundownLayoutBase, Ru
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
-import { AdlibSegmentUi } from './Shelf/AdLibPanel'
 import { OffsetPosition } from '../utils/positions'
 import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
@@ -76,7 +75,6 @@ interface IKeyboardFocusMarkerProps {
 }
 class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
 	private keyboardFocusInterval: number
-	private static readonly SYNTHETIC_TIMER_EVENT = { type: 'interval' }
 
 	constructor (props) {
 		super(props)
@@ -87,7 +85,7 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 	}
 
 	componentDidMount () {
-		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(KeyboardFocusMarker.SYNTHETIC_TIMER_EVENT), 3000)
+		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
 		document.body.addEventListener('mousedown', this.checkFocus)
@@ -102,17 +100,24 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 		document.removeEventListener('visibilitychange', this.checkFocus)
 	}
 
-	checkFocus = (e: object) => {
+	checkFocus = () => {
 		const focusNow = document.hasFocus()
 		if (this.state.inFocus !== focusNow) {
 			this.setState({
 				inFocus: focusNow
 			})
-			const viewInfo = [ window.location.href + window.location.search, window.innerWidth, window.innerHeight, getAllowStudio(), getAllowConfigure(), getAllowService() ]
+			const viewInfo = [
+				window.location.href + window.location.search,
+				window.innerWidth,
+				window.innerHeight,
+				getAllowStudio(),
+				getAllowConfigure(),
+				getAllowService()
+			]
 			if (focusNow) {
-				callMethod(e, UserActionAPIMethods.guiFocused, viewInfo)
+				MeteorCall.userAction.guiFocused(viewInfo).catch(console.error)
 			} else {
-				callMethod(e, UserActionAPIMethods.guiBlurred, viewInfo)
+				MeteorCall.userAction.guiBlurred(viewInfo).catch(console.error)
 			}
 		}
 	}
@@ -663,7 +668,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 					acceptOnly: true,
 					warning: true,
 					yes: t('OK'),
-					onAccept: (le: any) => { console.log() }
+					onAccept: () => { console.log() }
 				})
 			}
 		}
@@ -710,7 +715,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				this.deferFlushAndRewindSegments()
 				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 			}
-			const doActivate = (le: any) => {
+			const doActivate = () => {
 				doUserAction(t, e, 'Activating Rundown Playlist', () => MeteorCall.userAction.activate(this.props.playlist._id, false), (err) => {
 					if (!err) {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -729,7 +734,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				doModalDialog({
 					title: this.props.playlist.name,
 					message: t('Do you want to activate this Rundown?'),
-					onAccept: (le: any) => {
+					onAccept: () => {
 						this.rewindSegments()
 						doUserAction(t, e, 'Resetting and activating Rundown', () => MeteorCall.userAction.resetAndActivate(this.props.playlist._id), (err) => {
 							if (!err) {
@@ -745,14 +750,14 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				})
 			} else if (!this.rundownShouldHaveEnded()) {
 				// The broadcast has started
-				doActivate(e)
+				doActivate()
 			} else {
 				// The broadcast has ended, going into active mode is probably not what you want to do
 				doModalDialog({
 					title: this.props.playlist.name,
 					message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
-					onAccept: (le: any) => {
-						doActivate(e)
+					onAccept: () => {
+						doActivate()
 					}
 				})
 			}
@@ -775,7 +780,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			const onSuccess = () => {
 				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 			}
-			let doActivateRehersal = (le: any) => {
+			let doActivateRehersal = () => {
 				doUserAction(t, e, 'Activating Rundown Playlist', () => MeteorCall.userAction.activate(this.props.playlist._id, true), (err) => {
 					if (!err) {
 						onSuccess()
@@ -807,7 +812,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: (e) => {
-							doActivateRehersal(e)
+							doActivateRehersal()
 						}
 					})
 				} else {
@@ -821,12 +826,12 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: (e) => {
-							doActivateRehersal(e)
+							doActivateRehersal()
 						}
 					})
 				} else {
 					// The broadcast has ended
-					doActivateRehersal(e)
+					doActivateRehersal()
 				}
 			}
 		}
@@ -1108,7 +1113,7 @@ interface ITrackedProps {
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
 }
-export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
+export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 
 	let playlistId
 	if (props.match && props.match.params.playlistId) {
@@ -1225,7 +1230,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		}
 	}
 
-	static getDerivedStateFromProps (props: Translated<IProps & ITrackedProps>, state: IState) {
+	static getDerivedStateFromProps (props: Translated<IProps & ITrackedProps>) {
 		let selectedLayout: RundownLayoutBase | undefined = undefined
 
 		if (props.rundownLayouts) {
@@ -1476,7 +1481,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		}
 	}
 
-	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
+	onSelectPiece = (piece: PieceUi) => {
 		if (piece) {
 			const vtContent = piece.instance.piece.content as VTContent | undefined
 			if (vtContent && vtContent.editable &&
@@ -1610,7 +1615,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		}
 	}
 
-	onActivate = (isRehearsal: boolean) => {
+	onActivate = () => {
 		this.onGoToLiveSegment()
 	}
 
@@ -1624,7 +1629,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		const { t } = this.props
 		if (this.state.studioMode && part && part._id && this.props.playlist) {
 			const playlistId = this.props.playlist._id
-			doUserAction(t, e, 'Setting Next', () => MeteorCall.userAction.setNext(playlistId, part._id, offset), (err, res) => {
+			doUserAction(t, e, 'Setting Next', () => MeteorCall.userAction.setNext(playlistId, part._id, offset), (err) => {
 				this.setState({
 					manualSetAsNext: true
 				})
@@ -1680,7 +1685,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		}, isOpen ? 1 : 1000)
 	}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onToggleSupportPanel = () => {
 		this.setState({
 			isSupportPanelOpen: !this.state.isSupportPanelOpen
 		})
@@ -1731,7 +1736,6 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 	}
 
 	renderSegmentsList () {
-		const { t } = this.props
 
 		if (this.props.playlist && this.props.rundowns.length) {
 			return (
@@ -1770,7 +1774,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		return false
 	}
 
-	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onToggleNotifications = () => {
 		if (!this.state.isNotificationsCenterOpen === true) {
 			NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 		}
@@ -1828,14 +1832,11 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 			onAccept: (event: any) => {
 
-				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
-					if (err) {
-						// console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
-					} else {
-						// console.log(result)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
-					}
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+				.then(() => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
+				}).catch(err => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 				})
 			},
 		})

@@ -7,7 +7,7 @@ import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
-import { MethodContext } from '../../lib/methods/methods'
+import { MethodContext } from '../../lib/api/methods'
 
 export function saveEvaluation (methodContext: MethodContext, evaluation: EvaluationBase): void {
 	Evaluations.insert(_.extend(evaluation, {

@@ -1,5 +1,5 @@
 import { ClientAPI } from '../api/client'
-import { MethodsBase, MeteorCall } from './methods'
+import { MeteorCall } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'
@@ -39,8 +39,8 @@ export interface NewUserActionAPI {
 	resyncRundownPlaylist (playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown (rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown (rundownId: RundownId): Promise<ClientAPI.ClientResponse<ReloadRundownResponse>>
-	recordStop (studioId: StudioId): Promise<ClientAPI.ClientResponse<boolean>>
-	recordStart (studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<boolean>>
+	recordStop (studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
+	recordStart (studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
 	recordDelete (id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>
 	mediaRestartWorkflow (workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow (workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
@@ -50,8 +50,8 @@ export interface NewUserActionAPI {
 	regenerateRundownPlaylist (playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	generateRestartToken (): Promise<ClientAPI.ClientResponse<string>>
 	restartCore (token: string): Promise<ClientAPI.ClientResponse<string>>
-	guiFocused (): Promise<ClientAPI.ClientResponse<void>>
-	guiBlurred (): Promise<ClientAPI.ClientResponse<void>>
+	guiFocused (viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	guiBlurred (viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -108,11 +108,6 @@ export enum UserActionAPIMethods {
 
 	'guiFocused'							= 'userAction.focused',
 	'guiBlurred'							= 'userAction.blurred'
-}
-export function CallUserActionAPIMethod (method: UserActionAPIMethods, ...args: any[]) {
-	const m: string = method
-	const fcn = MeteorCall[m.replace(/^userAction\./,'')]
-	return fcn(...args)
 }
 
 export interface ReloadRundownPlaylistResponse {

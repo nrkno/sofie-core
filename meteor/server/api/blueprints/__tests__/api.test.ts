@@ -2,16 +2,14 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, Omit, getRandomId, protectString } from '../../../../lib/lib'
-import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
-import { Random } from 'meteor/random'
-import { BlueprintAPI } from '../../../../lib/api/blueprint'
+import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'
 import { insertBlueprint, uploadBlueprint } from '../api'
 
-require('../api.ts') // include in order to create the Meteor methods needed
+require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint management api', () => {
 
@@ -19,11 +17,6 @@ describe('Test blueprint management api', () => {
 		setupDefaultStudioEnvironment()
 	})
 
-	function getStudio () {
-		const studio = Studios.findOne() as Studio
-		expect(studio).toBeTruthy()
-		return studio
-	}
 	function getCurrentBlueprintIds () {
 		return _.pluck(Blueprints.find().fetch(), '_id')
 	}
@@ -71,7 +64,7 @@ describe('Test blueprint management api', () => {
 			const initialBlueprintId = getActiveSystemBlueprintId()
 
 			try {
-				Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, '')
+				Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, '')
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not found`)
@@ -84,7 +77,7 @@ describe('Test blueprint management api', () => {
 			const initialBlueprintId = getActiveSystemBlueprintId()
 
 			try {
-				Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, blueprint._id + '_no')
+				Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id + '_no')
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not found`)
@@ -98,7 +91,7 @@ describe('Test blueprint management api', () => {
 			// Ensure starts off 'wrong'
 			expect(getActiveSystemBlueprintId()).not.toEqual(blueprint._id)
 
-			Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, blueprint._id)
+			Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id)
 
 			// Ensure ends up good
 			expect(getActiveSystemBlueprintId()).toEqual(blueprint._id)
@@ -107,7 +100,7 @@ describe('Test blueprint management api', () => {
 			// Ensure starts off 'wrong'
 			expect(getActiveSystemBlueprintId()).toBeTruthy()
 
-			Meteor.call(BlueprintAPI.methods.assignSystemBlueprint)
+			Meteor.call(BlueprintAPIMethods.assignSystemBlueprint)
 
 			// Ensure ends up good
 			expect(getActiveSystemBlueprintId()).toBeFalsy()
@@ -121,7 +114,7 @@ describe('Test blueprint management api', () => {
 			expect(initialBlueprintId).not.toEqual(blueprint._id)
 
 			try {
-				Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, blueprint._id)
+				Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not of type SYSTEM`)
@@ -135,7 +128,7 @@ describe('Test blueprint management api', () => {
 	describe('removeBlueprint', () => {
 		testInFiber('undefined id', () => {
 			try {
-				Meteor.call(BlueprintAPI.methods.removeBlueprint)
+				Meteor.call(BlueprintAPIMethods.removeBlueprint)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`Match error: Expected string, got undefined`)
@@ -144,7 +137,7 @@ describe('Test blueprint management api', () => {
 
 		testInFiber('empty id', () => {
 			try {
-				Meteor.call(BlueprintAPI.methods.removeBlueprint, '')
+				Meteor.call(BlueprintAPIMethods.removeBlueprint, '')
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint id "" was not found`)
@@ -152,13 +145,13 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('missing id', () => {
 			// Should not error
-			Meteor.call(BlueprintAPI.methods.removeBlueprint, 'not_a_real_blueprint')
+			Meteor.call(BlueprintAPIMethods.removeBlueprint, 'not_a_real_blueprint')
 		})
 		testInFiber('good', () => {
 			const blueprint = ensureSystemBlueprint()
 			expect(Blueprints.findOne(blueprint._id)).toBeTruthy()
 
-			Meteor.call(BlueprintAPI.methods.removeBlueprint, blueprint._id)
+			Meteor.call(BlueprintAPIMethods.removeBlueprint, blueprint._id)
 
 			expect(Blueprints.findOne(blueprint._id)).toBeFalsy()
 		})
@@ -169,7 +162,7 @@ describe('Test blueprint management api', () => {
 		testInFiber('no params', () => {
 			const initialBlueprints = getCurrentBlueprintIds()
 
-			const newId = Meteor.call(BlueprintAPI.methods.insertBlueprint)
+			const newId = Meteor.call(BlueprintAPIMethods.insertBlueprint)
 			expect(newId).toBeTruthy()
 
 			const finalBlueprints = getCurrentBlueprintIds()

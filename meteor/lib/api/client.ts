@@ -1,11 +1,19 @@
 import * as _ from 'underscore'
+import { Time } from '../lib'
+import { PeripheralDeviceId } from '../collections/PeripheralDevices'
+
+
+export interface NewClientAPI {
+	clientErrorReport (timestamp: Time, errorObject: any, location: string): Promise<void>
+	callPeripheralDeviceFunction (context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]): Promise<any>
+}
+
+export enum ClientAPIMethods {
+	'clientErrorReport' = 'client.clientErrorReport',
+	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
+}
 
 export namespace ClientAPI {
-	export enum methods {
-		'execMethod' = 'client.execMethod',
-		'clientErrorReport' = 'client.clientErrorReport',
-		'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
-	}
 
 	/** Response from a method that's called from the client */
 	export interface ClientResponseError {

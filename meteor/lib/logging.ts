@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { MeteorCall } from './api/methods'
 
 export interface LoggerInstanceFixed {
 	error: LeveledLogMethodFixed
@@ -55,8 +56,6 @@ if (Meteor.isServer) {
 	let getLogMethod = (type) => {
 		return (...args) => {
 			console.log(type, ...args)
-			// TODO: Maybe add sending logs to server here?
-			// Meteor.call('logger', type, ...args)
 			return logger
 		}
 	}

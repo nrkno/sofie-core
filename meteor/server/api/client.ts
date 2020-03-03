@@ -3,35 +3,23 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise } from '../../lib/lib'
 
 import { logger } from '../logging'
-import { ClientAPI } from '../../lib/api/client'
+import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { setMeteorMethods, Methods } from '../methods'
+import { registerClassToMeteorMethods } from '../methods'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../lib/api/methods'
 
 export namespace ServerClientAPI {
-	export function clientErrorReport (timestamp: Time, errorObject: any, location: string) {
+	export function clientErrorReport (methodContext: MethodContext, timestamp: Time, errorObject: any, location: string): void {
 		check(timestamp, Number)
-
-		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${this.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
-
-		return ClientAPI.responseSuccess(undefined)
+		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${methodContext.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
 	}
 
-	export function execMethod (methodContext: MethodContext, context: string, methodName: string, ...args: any[]) {
-		check(methodName, String)
-		check(context, String)
-
-		return runInUserLog(methodContext, context, methodName, args, () => {
-			return Meteor.call(methodName, ...args)
-		})
-	}
-
-	export function runInUserLog (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => any) {
+	export function runInUserLog<Result> (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => Result): Result {
 		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
@@ -96,7 +84,7 @@ export namespace ServerClientAPI {
 		return new Promise((resolve, reject) => {
 			UserActionsLog.insert(literal<UserActionsLogItem>({
 				_id: actionId,
-				clientAddress: this.connection.clientAddress,
+				clientAddress: methodContext.connection.clientAddress,
 				userId: methodContext.userId,
 				context: context,
 				method: `${deviceId}: ${functionName}`,
@@ -151,16 +139,13 @@ export namespace ServerClientAPI {
 		})
 	}
 }
-let methods: Methods = {}
-methods[ClientAPI.methods.execMethod] = function (context: string, methodName: string, ...args: any[]) {
-	return ServerClientAPI.execMethod(this as any, context, methodName, ...args)
-}
-methods[ClientAPI.methods.clientErrorReport] = function (...args: any[]) {
-	return ServerClientAPI.clientErrorReport.apply(this, args)
-}
-methods[ClientAPI.methods.callPeripheralDeviceFunction] = function (...args: any[]) {
-	return ServerClientAPI.callPeripheralDeviceFunction.apply(this, args)
-}
 
-// Apply methods:
-setMeteorMethods(methods)
+class ServerClientAPIClass implements NewClientAPI {
+	clientErrorReport (timestamp: Time, errorObject: any, location: string) {
+		return makePromise(() => ServerClientAPI.clientErrorReport(this as any, timestamp, errorObject, location))
+	}
+	callPeripheralDeviceFunction (context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) {
+		return makePromise(() => ServerClientAPI.callPeripheralDeviceFunction(this as any, context, deviceId, functionName, ...args))
+	}
+}
+registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

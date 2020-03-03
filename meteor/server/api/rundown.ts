@@ -17,22 +17,22 @@ import {
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
-	unprotectString
+	unprotectString,
+	makePromise
 } from '../../lib/lib'
 import { logger } from '../logging'
-import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
-import { Methods, setMeteorMethods } from '../methods'
-import { RundownAPI } from '../../lib/api/rundown'
+import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { registerClassToMeteorMethods } from '../methods'
+import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
 import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown, BlueprintResultRundownPlaylist, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
-import { UpdateNext } from './ingest/updateNext'
 import { IngestActions } from './ingest/actions'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
@@ -97,7 +97,6 @@ export interface RundownPlaylistAndOrder {
 }
 
 export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
-	const context = new StudioConfigContext(studio)
 
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
@@ -271,7 +270,7 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 	const partsToPutAfter: {[partId: string]: Array<Part>} = {}
 
 	_.each(orgParts, (part) => {
-		const afterPart: string = unprotectString(part._id)
+		const afterPart: string | undefined = unprotectString(part.afterPart)
 		if (afterPart) {
 			if (!partsToPutAfter[afterPart]) partsToPutAfter[afterPart] = []
 			partsToPutAfter[afterPart].push(part)
@@ -350,7 +349,6 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 			}
 		})
 	}
-
 	waitForPromiseAll(ps)
 
 	return parts
@@ -434,7 +432,7 @@ export namespace ServerRundownAPI {
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownNeedsUpdating (rundownId: RundownId) {
+	export function rundownNeedsUpdating (rundownId: RundownId): string | false {
 		check(rundownId, String)
 		// logger.info('rundownNeedsUpdating ' + rundownId)
 
@@ -460,28 +458,28 @@ export namespace ClientRundownAPI {
 		if (!studio) return 'missing studio'
 		if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
-		return undefined
+		return false
 	}
 }
 
-let methods: Methods = {}
-methods[RundownAPI.methods.removeRundownPlaylist] = (playlistId: RundownPlaylistId) => {
-	return ServerRundownAPI.removeRundownPlaylist(playlistId)
+class ServerRundownAPIClass implements NewRundownAPI {
+	removeRundownPlaylist (playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(playlistId))
+	}
+	resyncRundownPlaylist (playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(playlistId))
+	}
+	removeRundown (rundownId: RundownId) {
+		return makePromise(() => ServerRundownAPI.removeRundown(rundownId))
+	}
+	resyncRundown (rundownId: RundownId) {
+		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
+	}
+	unsyncRundown (rundownId: RundownId) {
+		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
+	}
+	rundownNeedsUpdating (rundownId: RundownId) {
+		return makePromise(() => ClientRundownAPI.rundownNeedsUpdating(rundownId))
+	}
 }
-methods[RundownAPI.methods.resyncRundownPlaylist] = (playlistId: RundownPlaylistId) => {
-	return ServerRundownAPI.resyncRundownPlaylist(playlistId)
-}
-methods[RundownAPI.methods.removeRundown] = (rundownId: RundownId) => {
-	return ServerRundownAPI.removeRundown(rundownId)
-}
-methods[RundownAPI.methods.resyncRundown] = (rundownId: RundownId) => {
-	return ServerRundownAPI.resyncRundown(rundownId)
-}
-methods[RundownAPI.methods.unsyncRundown] = (rundownId: RundownId) => {
-	return ServerRundownAPI.unsyncRundown(rundownId)
-}
-methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: RundownId) => {
-	return ClientRundownAPI.rundownNeedsUpdating(rundownId)
-}
-// Apply methods:
-setMeteorMethods(methods)
+registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)
