@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns, DBRundown, Rundown } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart } from '../../lib/collections/Parts'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
@@ -91,14 +91,14 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
  * @param rundownId The Rundown id to remove from
  * @param segmentIds The Segment ids to be removed
  */
-export function removeSegments (rundownId: string, segmentIds: string[]): number {
-	logger.debug('removeSegments', rundownId, segmentIds)
+export function removeSegments (rundown: Rundown, segmentIds: string[]): number {
+	logger.debug('removeSegments', rundown._id, segmentIds)
 	const count = Segments.remove({
 		_id: { $in: segmentIds },
-		rundownId: rundownId
+		rundownId: rundown._id
 	})
 	if (count > 0) {
-		afterRemoveSegments(rundownId, segmentIds)
+		afterRemoveSegments(rundown, segmentIds)
 	}
 	return count
 }
@@ -108,36 +108,37 @@ export function removeSegments (rundownId: string, segmentIds: string[]): number
  * @param rundownId Id of the Rundown
  * @param segmentIds Id of the Segments
  */
-export function afterRemoveSegments (rundownId: string, segmentIds: string[]) {
+export function afterRemoveSegments (rundown: Rundown, segmentIds: string[]) {
 	// Remove the parts:
 	saveIntoDb(Parts, {
-		rundownId: rundownId,
+		rundownId: rundown._id,
 		segmentId: { $in: segmentIds }
 	},[],{
 		afterRemoveAll (parts) {
-			afterRemoveParts(rundownId, parts)
+			afterRemoveParts(rundown, parts)
 		}
 	})
 
-	triggerUpdateTimelineAfterIngestData(rundownId, segmentIds)
+	triggerUpdateTimelineAfterIngestData(rundown._id, segmentIds)
 }
 
 /**
  * After Parts have been removed, handle the contents.
  * This will NOT trigger an update of the timeline
- * @param rundownId Id of the Rundown
+ * @param rundown the Rundown
  * @param removedParts The parts that have been removed
  * @param skipEnsure For when caller is handling state changes themselves.
  */
-export function afterRemoveParts (rundownId: string, removedParts: DBPart[], skipEnsure?: boolean) {
+export function afterRemoveParts (rundown: Rundown, removedParts: DBPart[], skipEnsure?: boolean) {
 	saveIntoDb(Parts, {
-		rundownId: rundownId,
+		rundownId: rundown._id,
 		dynamicallyInserted: true,
-		afterPart: { $in: _.map(removedParts, p => p._id) }
+		afterPart: { $in: _.map(removedParts, p => p._id) },
+		_id: { $ne: rundown.active && rundown.currentPartId || '' }
 	}, [], {
 		afterRemoveAll (parts) {
 			// Do the same for any affected dynamicallyInserted Parts
-			afterRemoveParts(rundownId, parts, skipEnsure)
+			afterRemoveParts(rundown, parts, skipEnsure)
 		}
 	})
 
@@ -145,24 +146,24 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[], ski
 	// TODO - is there anything else to remove?
 
 	ExpectedPlayoutItems.remove({
-		rundownId: rundownId,
+		rundownId: rundown._id,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	})
 
 	saveIntoDb<Piece, Piece>(Pieces, {
-		rundownId: rundownId,
+		rundownId: rundown._id,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
 		afterRemoveAll (pieces) {
-			afterRemovePieces(rundownId, pieces)
+			afterRemovePieces(rundown._id, pieces)
 		}
 	})
 	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
-		rundownId: rundownId,
+		rundownId: rundown._id,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
 		afterRemoveAll (pieces) {
-			afterRemovePieces(rundownId, pieces)
+			afterRemovePieces(rundown._id, pieces)
 		}
 	})
 	_.each(removedParts, part => {
@@ -170,8 +171,6 @@ export function afterRemoveParts (rundownId: string, removedParts: DBPart[], ski
 		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
 		updateExpectedPlayoutItemsOnPart(part.rundownId, part._id)
 	})
-
-	const rundown = Rundowns.findOne(rundownId)
 	if (rundown && rundown.active && !skipEnsure) {
 		// Ensure the next-part is still valid
 		UpdateNext.ensureNextPartIsValid(rundown)

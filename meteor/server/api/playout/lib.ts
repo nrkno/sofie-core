@@ -13,7 +13,8 @@ import {
 	pushOntoPath,
 	clone,
 	toc,
-	fetchAfter
+	fetchAfter,
+	asyncCollectionFindFetch
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
@@ -22,6 +23,7 @@ import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { TimelineEnable } from 'superfly-timeline'
+import { afterRemoveParts } from '../rundown'
 
 /**
  * Reset the rundown:
@@ -29,6 +31,11 @@ import { TimelineEnable } from 'superfly-timeline'
  */
 export function resetRundown (rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
+
+	if (rundown.active && rundown.currentPartId) {
+		throw new Meteor.Error(500, `Not able to reset active rundown "${rundown._id}"`)
+	}
+
 	// Remove all dunamically inserted pieces (adlibs etc)
 	Pieces.remove({
 		rundownId: rundown._id,
@@ -195,7 +202,7 @@ export function setNextPart (
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
 
-		ps.push(resetPart(nextPart))
+		ps.push(resetPart(nextPart, rundown))
 
 		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 			$set: {
@@ -305,7 +312,7 @@ export function getNextPartSegment (
 
 }
 
-function resetPart (part: DBPart): Promise<void> {
+function resetPart (part: DBPart, rundown: DBRundown): Promise<void> {
 	let ps: Array<Promise<any>> = []
 
 
@@ -324,7 +331,7 @@ function resetPart (part: DBPart): Promise<void> {
 		}
 	}))
 	ps.push(asyncCollectionUpdate(Pieces, {
-		// rundownId: part.rundownId,
+		rundownId: part.rundownId,
 		partId: part._id
 	}, {
 		$unset: {
@@ -337,12 +344,26 @@ function resetPart (part: DBPart): Promise<void> {
 	}, {
 		multi: true
 	}))
-	// remove parts that have been dynamically queued for after this part (queued adLibs)
-	ps.push(asyncCollectionRemove(Parts, {
+
+	// Remove parts that have been dynamically queued for after this part (queued adLibs)
+	let afterPartsToRemove = Parts.find({
 		rundownId: part.rundownId,
 		afterPart: part._id,
 		dynamicallyInserted: true
-	}))
+	}).fetch()
+	if (rundown.active && rundown.currentPartId) {
+		// Don't remove a currently playing part:
+		afterPartsToRemove = afterPartsToRemove.filter(part => part._id !== rundown.currentPartId)
+	}
+	if (afterPartsToRemove.length) {
+		ps.push(asyncCollectionRemove(Parts, {
+			_id: { $in: afterPartsToRemove.map(p => p._id) }
+		}))
+		ps.push(asyncCollectionRemove(Pieces, {
+			rundownId: part.rundownId,
+			partId: { $in: afterPartsToRemove.map(p => p._id) },
+		}))
+	}
 
 	// Remove all pieces that have been dynamically created (such as adLib pieces)
 	ps.push(asyncCollectionRemove(Pieces, {

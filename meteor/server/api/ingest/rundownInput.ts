@@ -418,7 +418,7 @@ function updateRundownFromIngestData (
 				logger.info('removed segment ' + segment._id)
 			},
 			afterRemoveAll (segments) {
-				afterRemoveSegments(rundownId, _.map(segments, s => s._id))
+				afterRemoveSegments(dbRundown, _.map(segments, s => s._id))
 			}
 		}),
 
@@ -433,7 +433,7 @@ function updateRundownFromIngestData (
 				logger.debug('deleted part ' + part._id)
 			},
 			afterRemoveAll (parts) {
-				afterRemoveParts(rundownId, parts)
+				afterRemoveParts(dbRundown, parts)
 			}
 		}),
 
@@ -488,7 +488,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 			if (!isUpdateAllowed(rundown, {}, { removed: [segment] }, {})) {
 				ServerRundownAPI.unsync(rundown._id, segment._id)
 			} else {
-				if (removeSegments(rundownId, [segmentId]) === 0) {
+				if (removeSegments(rundown, [segmentId]) === 0) {
 					throw new Meteor.Error(404, `handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`)
 				}
 			}
@@ -625,7 +625,7 @@ function updateSegmentFromIngestData (
 				logger.debug('deleted part ' + part._id)
 			},
 			afterRemoveAll (parts) {
-				afterRemoveParts(rundown._id, parts)
+				afterRemoveParts(rundown, parts)
 			}
 		}),
 		savePreparedChanges<Piece, Piece>(prepareSavePieces, Pieces, {
@@ -868,15 +868,26 @@ export function isUpdateAllowed (
 					}
 				})
 			}
-			if (allowed && segmentChanges.removed && segmentChanges.removed.length && !unsyncedSegmentAllowed) {
+			if (allowed) {
 				const currentPart = rundown.getParts({ _id: rundown.currentPartId })[0]
-				_.each(segmentChanges.removed, segment => {
-					if (currentPart.segmentId === segment._id) {
-						// Don't allow removing segment with currently playing part
-						logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}"`)
+				if (segmentChanges.removed && segmentChanges.removed.length && !unsyncedSegmentAllowed) {
+					_.each(segmentChanges.removed, segment => {
+						if (currentPart.segmentId === segment._id) {
+							// Don't allow removing segment with currently playing part
+							logger.warn(`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}"`)
+							allowed = false
+						}
+					})
+				}
+				if (allowed && partChanges.removed && partChanges.removed.length && currentPart && currentPart.afterPart && !unsyncedSegmentAllowed) {
+					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
+					const removedPartIds = partChanges.removed.map(part => part._id)
+					if (removedPartIds.includes(currentPart.afterPart)) {
+						// Don't allow removal of a part that has a currently playing queued Part
+						logger.warn(`Not allowing removal of part "${currentPart.afterPart}", because currently playing (queued) part "${currentPart._id}" is after it`)
 						allowed = false
 					}
-				})
+				}
 			}
 		}
 	}
