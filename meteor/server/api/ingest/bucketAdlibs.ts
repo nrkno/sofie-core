@@ -44,7 +44,18 @@ export function updateBucketAdlibFromIngestData(showStyle: ShowStyleCompound, st
 
 		return null
 	} else {
-		const adlib = postProcessBucketAdLib(context, rawAdlib, blueprintId, bucketId, importVersions)
+		const newRank = (BucketAdLibs.find({
+			bucketId
+		}, {
+			sort: {
+				'_rank': 1
+			},
+			fields: {
+				_rank: 1
+			}
+		}).fetch().reverse()[0] || { _rank: 0 })._rank + 1
+
+		const adlib = postProcessBucketAdLib(context, rawAdlib, blueprintId, bucketId, newRank, importVersions)
 
 		BucketAdLibs.upsert({
 			externalId: ingestData.externalId,

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment } from '../../../lib/collections/Segments'
 import { Part } from '../../../lib/collections/Parts'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -34,10 +34,9 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal, getCurrentTime, unprotectString } from '../../../lib/lib'
+import { literal, getCurrentTime, unprotectString, partial } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
-import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { IDashboardPanelProps, getUnfinishedPieceInstancesReactive, DashboardPanelInner, IDashboardPanelTrackedProps, dashboardElementPosition } from './DashboardPanel'
@@ -46,8 +45,14 @@ import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstanceId, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { DragDropItemTypes } from '../DragDropItemTypes'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { BucketPieceButton } from './BucketPieceButton'
+
+import update from 'immutability-helper'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 
 const HOTKEY_GROUP = 'BucketPanel'
 
@@ -91,33 +96,35 @@ const bucketTarget = {
 	},
 
 	hover(props: IBucketPanelProps, monitor: DropTargetMonitor, component: any) {
-		const { id: draggedId, size: draggedSize } = monitor.getItem()
-		const overId = props.bucket._id
-		let farEnough = true
+		if (monitor.getItemType() === DragDropItemTypes.BUCKET) {
+			const { id: draggedId, size: draggedSize } = monitor.getItem()
+			const overId = props.bucket._id
+			let farEnough = true
 
-		let rect = {
-			width: 0,
-			height: 0,
-			left: 0,
-			top: 0
-		}
-
-		if (draggedId !== overId) {
-			if (component && component.decoratedRef && component.decoratedRef.current &&
-				component.decoratedRef.current._panel) {
-				rect = (component.decoratedRef.current._panel as HTMLDivElement).getBoundingClientRect()
+			let rect = {
+				width: 0,
+				height: 0,
+				left: 0,
+				top: 0
 			}
 
-			const draggedPosition = monitor.getClientOffset()
-			if (draggedPosition) {
-				if (rect.width - (draggedPosition.x - rect.left) >= draggedSize.width) {
-					farEnough = false
+			if (draggedId !== overId) {
+				if (component && component.decoratedRef && component.decoratedRef.current &&
+					component.decoratedRef.current._panel) {
+					rect = (component.decoratedRef.current._panel as HTMLDivElement).getBoundingClientRect()
 				}
-			}
 
-			if (farEnough) {
-				const { index: overIndex } = props.findBucket(overId)
-				props.moveBucket(draggedId, overIndex)
+				const draggedPosition = monitor.getClientOffset()
+				if (draggedPosition) {
+					if (rect.width - (draggedPosition.x - rect.left) >= draggedSize.width) {
+						farEnough = false
+					}
+				}
+
+				if (farEnough) {
+					const { index: overIndex } = props.findBucket(overId)
+					props.moveBucket(draggedId, overIndex)
+				}
 			}
 		}
 	},
@@ -126,7 +133,13 @@ const bucketTarget = {
 		const { index } = props.findBucket(props.bucket._id)
 
 		return {
-			index
+			index,
+			action:
+				monitor.getItemType() === DragDropItemTypes.BUCKET ?
+					'reorder' :
+					monitor.getItemType() === DragDropItemTypes.BUCKET_ADLIB_PIECE ?
+						'move' :
+						undefined
 		}
 	}
 }
@@ -140,6 +153,7 @@ interface IState {
 	}
 	dropActive: boolean
 	bucketName: string
+	adLibPieces: BucketAdLib[]
 }
 
 export interface IBucketPanelProps {
@@ -148,7 +162,7 @@ export interface IBucketPanelProps {
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
 	editableName?: boolean
-	onNameChanged?: (e: any, newName: string) => void
+	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined, index: number }
 	onBucketReorder: (draggedId: BucketId, newIndex: number) => void
@@ -158,6 +172,7 @@ export interface IBucketPanelTrackedProps {
 	adLibPieces: BucketAdLib[]
 	unfinishedPieceInstanceIds: _.Dictionary<PieceInstanceId[]>
 	studio: Studio
+	showStyleVariantId: ShowStyleVariantId
 }
 
 interface BucketSourceCollectedProps {
@@ -171,16 +186,46 @@ interface BucketTargetCollectedProps {
 }
 
 export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, IState, IBucketPanelTrackedProps>((props: Translated<IBucketPanelProps>) => {
+	let showStyleVariantId
+	const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+	if (selectedPart) {
+		const part = PartInstances.findOne(selectedPart, {
+			fields: {
+				rundownId: 1
+			}
+		})
+		if (part) {
+			const rundown = Rundowns.findOne(part.rundownId, {
+				fields: {
+					showStyleVariantId: 1
+				}
+			})
+			if (rundown) {
+				showStyleVariantId = rundown.showStyleVariantId
+			}
+		}
+	}
+	if (showStyleVariantId === undefined) {
+		const rundown = props.playlist.getRundowns({}, {
+			fields: {
+				showStyleVariantId: 1
+			}
+		})[0]
+		if (rundown) {
+			showStyleVariantId = rundown.showStyleVariantId
+		}
+	}
 	return literal<IBucketPanelTrackedProps>({
 		adLibPieces: BucketAdLibs.find({
 			bucketId: props.bucket._id
 		}).fetch(),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+		showStyleVariantId
 	})
 }, (data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(DropTarget(DragDropItemTypes.BUCKET, bucketTarget, connect => ({
+})(DropTarget([DragDropItemTypes.BUCKET, DragDropItemTypes.BUCKET_ADLIB_PIECE], bucketTarget, connect => ({
 	connectDropTarget: connect.dropTarget(),
 }))(DragSource(DragDropItemTypes.BUCKET, bucketSource, (connect, monitor) => ({
 	connectDragSource: connect.dragSource(),
@@ -197,7 +242,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			outputLayers: {},
 			sourceLayers: {},
 			dropActive: false,
-			bucketName: props.bucket.name
+			bucketName: props.bucket.name,
+			adLibPieces: ([] as BucketAdLib[]).concat(props.adLibPieces || [])
 		}
 	}
 
@@ -236,6 +282,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const showStyleBases = showStyles.map(showStyle => showStyle[0])
 			const showStyleVariants = showStyles.map(showStyle => showStyle[1])
 			this.subscribe(PubSub.bucketAdLibPieces, {
+				bucketId: this.props.bucket._id,
 				studioId: this.props.playlist.studioId,
 				showStyleVariantId: {
 					$in: showStyleVariants
@@ -250,6 +297,14 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 		window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
+	}
+
+	componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
+		if (this.props.adLibPieces !== prevProps.adLibPieces) {
+			this.setState({
+				adLibPieces: ([] as BucketAdLib[]).concat(this.props.adLibPieces || [])
+			})
+		}
 	}
 
 	componentWillUnmount() {
@@ -330,7 +385,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
+	private onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
 			this.setState({
 				bucketName: this.props.bucket.name
@@ -348,7 +403,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	onRenameTextBoxBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+	private onRenameTextBoxBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		if (!this.state.bucketName.trim()) {
 			this.setState({
 				bucketName: this.props.bucket.name
@@ -360,23 +415,74 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	onRenameTextBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	private onRenameTextBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		this.setState({
 			bucketName: e.target.value || ''
 		})
 	}
 
-	renameTextBoxFocus = (input: HTMLInputElement) => {
+	private renameTextBoxFocus = (input: HTMLInputElement) => {
 		input.focus()
 		input.setSelectionRange(0, input.value.length)
 	}
 
-	onRenameTextBoxShow = (ref: HTMLInputElement) => {
+	private onRenameTextBoxShow = (ref: HTMLInputElement) => {
 		if (ref && !this._nameTextBox) {
 			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
 			this.renameTextBoxFocus(ref)
 		}
 		this._nameTextBox = ref
+	}
+
+	private moveAdLib = (id: PieceId, atIndex: number) => {
+		const { piece, index } = this.findAdLib(id)
+
+		if (piece) {
+			this.setState(
+				update(this.state, {
+					adLibPieces: {
+						$splice: [[index, 1], [atIndex, 0, piece] as any]
+					}
+				})
+			)
+		}
+	}
+
+	private findAdLib = (id: PieceId): { piece: BucketAdLib | undefined, index: number } => {
+		const { adLibPieces: pieces } = this.state
+		const piece = pieces.find(b => b._id === id)
+
+		return {
+			piece,
+			index: piece ? pieces.indexOf(piece) : -1
+		}
+	}
+
+	private onAdLibReorder = (draggedId: PieceId, newIndex: number) => {
+		const { t } = this.props
+		if (this.props.adLibPieces) {
+			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
+
+			if (draggedB) {
+				var newRank = draggedB._rank
+
+				// Dragged over into first place
+				if (newIndex === 0) {
+					newRank = this.props.adLibPieces[0]._rank - 1
+					// Dragged over into last place
+				} else if (newIndex === this.props.adLibPieces.length - 1) {
+					newRank = this.props.adLibPieces[this.props.adLibPieces.length - 1]._rank + 1
+					// Dragged into any other place
+				} else {
+					newRank = (this.props.adLibPieces[newIndex]._rank + this.props.adLibPieces[newIndex + 1]._rank) / 2
+				}
+
+				doUserAction(t, { type: 'drop' }, 'Modify bucket Adlib', (e) =>
+					MeteorCall.userAction.bucketsModifyBucketAdLib(e, draggedB._id, partial<BucketAdLib>({
+						_rank: newRank
+					})))
+			}
+		}
 	}
 
 	render() {
@@ -421,7 +527,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						<div className='dashboard-panel__panel'>
 							{this.props.adLibPieces
 								.map((adlib: BucketAdLib) => {
-									return <DashboardPieceButton
+									return <BucketPieceButton
 										key={unprotectString(adlib._id)}
 										adLibListItem={adlib}
 										layer={this.state.sourceLayers[adlib.sourceLayerId]}
@@ -432,9 +538,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 										widthScale={1}
 										heightScale={1}
+										disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
+										findAdLib={this.findAdLib}
+										moveAdLib={this.moveAdLib}
+										onAdLibReorder={this.onAdLibReorder}
 									>
 										{adlib.name}
-									</DashboardPieceButton>
+									</BucketPieceButton>
 								})}
 						</div>
 					</div>

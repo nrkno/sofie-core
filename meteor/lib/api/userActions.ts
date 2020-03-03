@@ -15,6 +15,7 @@ import { SegmentId } from '../collections/Segments'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { BucketAdLib } from '../collections/BucketAdlibs'
 
 export interface NewUserActionAPI {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -64,6 +65,7 @@ export interface NewUserActionAPI {
 	bucketsEmptyBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsCreateNewBucket(userEvent: string, name: string, studioId: StudioId, userId: string | null): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucketAdLib(userEvent: string, id: PieceId, bucket: Partial<Omit<BucketAdLib, '_id'>>): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -89,11 +91,12 @@ export enum UserActionAPIMethods {
 	'bucketAdlibImport' = 'userAction.bucketAdlibImport',
 	'bucketAdlibStart' = 'userAction.bucketAdlibStart',
 
-	'createBucket' = 'userAction.createBucket',
-	'removeBucket' = 'userAction.removeBucket',
-	'emptyBucket' = 'userAction.emptyBucket',
-	'modifyBucket' = 'userAction.modifyBucket',
-	'removeBucketAdLib' = 'userAction.removeBucketAdLib',
+	'bucketsCreateNewBucket' = 'userAction.createBucket',
+	'bucketsRemoveBucket' = 'userAction.removeBucket',
+	'bucketsEmptyBucket' = 'userAction.emptyBucket',
+	'bucketsModifyBucket' = 'userAction.modifyBucket',
+	'bucketsRemoveBucketAdLib' = 'userAction.removeBucketAdLib',
+	'bucketsModifyBucketAdLib' = 'userAction.bucketsModifyBucketAdLib',
 
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',

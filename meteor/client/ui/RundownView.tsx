@@ -1103,7 +1103,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownLayouts: rundowns.length > 0 ?
 			RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() :
 			undefined,
-		buckets: playlist && Buckets.find({}, {
+		buckets: playlist && Buckets.find({
+			studioId: playlist.studioId
+		}, {
 			sort: {
 				'_rank': 1
 			}

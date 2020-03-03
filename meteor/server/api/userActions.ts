@@ -44,6 +44,7 @@ import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
+import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -556,6 +557,11 @@ export function bucketsRemoveBucketAdLib(id: PieceId) {
 		BucketsAPI.removeBucketAdLib(id)
 	)
 }
+export function bucketsModifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.modifyBucketAdLib(id, adlib)
+	)
+}
 export function regenerateRundownPlaylist(rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
 
@@ -778,6 +784,9 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	}
 	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
 		return makePromise(() => bucketsRemoveBucketAdLib(id))
+	}
+	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
+		return makePromise(() => )
 	}
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {

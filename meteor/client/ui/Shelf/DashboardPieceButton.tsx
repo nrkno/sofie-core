@@ -31,25 +31,17 @@ export interface IDashboardButtonProps {
 	isOnAir?: boolean
 	widthScale?: number
 	heightScale?: number
+	disabled?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
 
-interface IDashboardButtonTrackedProps {
+export interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
 	metadata: MediaObject | null
 }
 
-export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
-	const piece = props.adLibListItem as any as AdLibPieceUi
-
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
-
-	return {
-		status,
-		metadata
-	}
-})(class DashboardPieceButton extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
+export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps> & T> {
 	private objId: string
 
 	constructor(props: IDashboardButtonProps) {
@@ -109,7 +101,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	renderVTLiveSpeak() {
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
-			const adLib = this.props.adLibListItem as AdLibPieceUi
+			const adLib = this.props.adLibListItem as any as AdLibPieceUi
 			const vtContent = adLib.content as VTContent | undefined
 			return <React.Fragment>
 				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
@@ -122,7 +114,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	renderSplits() {
-		const splitAdLib = this.props.adLibListItem as AdLibPieceUi
+		const splitAdLib = this.props.adLibListItem as any as AdLibPieceUi
 		if (splitAdLib && splitAdLib.content) {
 			return (
 				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
@@ -140,13 +132,18 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
-				'live': this.props.isOnAir
+				'live': this.props.isOnAir,
+
+				'disabled': this.props.disabled
 			}, this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: this.props.widthScale ?
+						//@ts-ignore: widthScale is in a weird state between a number and something else
+						//		      because of the optional generic type argument
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
 						undefined,
 					height: this.props.heightScale ?
+						//@ts-ignore
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
@@ -166,4 +163,15 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 			</div>
 		)
 	}
-})
+}
+
+export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
+	const piece = props.adLibListItem as any as AdLibPieceUi
+
+	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
+
+	return {
+		status,
+		metadata
+	}
+})(DashboardPieceButtonBase)

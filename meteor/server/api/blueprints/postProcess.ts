@@ -136,7 +136,7 @@ export function postProcessRundownBaselineItems(innerContext: RundownContext, ba
 	})
 }
 
-export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig: IBlueprintAdLibPiece, blueprintId: BlueprintId, bucketId: BucketId, importVersions: RundownImportVersions): BucketAdLib {
+export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig: IBlueprintAdLibPiece, blueprintId: BlueprintId, bucketId: BucketId, rank: number | undefined, importVersions: RundownImportVersions): BucketAdLib {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -147,6 +147,7 @@ export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig:
 		showStyleVariantId: innerContext.showStyleVariantId,
 		bucketId,
 		importVersions,
+		_rank: rank || itemOrig._rank
 		// status: RundownAPI.PieceStatusCode.UNKNOWN,
 		// disabled: false
 	}

@@ -6,10 +6,11 @@ import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
 import { literal, Omit, protectString } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
 import { BucketSecurity } from '../security/buckets'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { PieceId } from '../../lib/collections/Pieces'
-import { StudioId } from '../../lib/collections/Studios'
+import { StudioId, Studios } from '../../lib/collections/Studios'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -69,6 +70,39 @@ export namespace BucketsAPI {
 		Buckets.insert(newBucket)
 
 		return newBucket
+	}
+
+	export function modifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+		check(id, String)
+		check(adlib, Object)
+
+		const oldAdLib = BucketAdLibs.findOne(id)
+		if (!oldAdLib) {
+			throw new Meteor.Error(404, `Bucket AdLib not found: ${id}`)
+		}
+
+		if (!BucketSecurity.allowWriteAccess(oldAdLib.bucketId)) {
+			throw new Meteor.Error(403, 'Access denied')
+		}
+		if (adlib.bucketId && !BucketSecurity.allowWriteAccess(adlib.bucketId)) {
+			throw new Meteor.Error(403, 'Access denied')
+		}
+
+		if (adlib.bucketId && !Buckets.findOne(adlib.bucketId)) {
+			throw new Meteor.Error(`Could not find bucket: "${adlib.bucketId}"`)
+		}
+
+		if (adlib.showStyleVariantId && !ShowStyleVariants.findOne(adlib.showStyleVariantId)) {
+			throw new Meteor.Error(`Could not find show style variant: "${adlib.showStyleVariantId}"`)
+		}
+
+		if (adlib.studioId && !Studios.findOne(adlib.studioId)) {
+			throw new Meteor.Error(`Could not find studio: "${adlib.studioId}"`)
+		}
+
+		BucketAdLibs.update(id, {
+			$set: _.omit(adlib, ['_id'])
+		})
 	}
 
 	export function removeBucket(id: BucketId) {

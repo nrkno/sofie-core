@@ -341,14 +341,16 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 			) {
 				// it might be a MOS object, but we can't know
 				dragAllowed = true
-			} else if (
-				e.dataTransfer.items.length === 0 &&
-				e.dataTransfer.types.length === 0 &&
-				e.dataTransfer.files.length === 0
-			) {
-				// it might be a MOS object, but we can't know
-				dragAllowed = true
 			}
+			// else if (
+			// 	e.dataTransfer.items.length === 0 &&
+			// 	e.dataTransfer.types.length === 0 &&
+			// 	e.dataTransfer.files.length === 0
+			// ) {
+			// 	// it might be a MOS object, but we can't know
+			// 	dragAllowed = true
+			// 	console.log(e.dataTransfer)
+			// }
 
 			if (dragAllowed) {
 				e.dataTransfer.dropEffect = 'copy'
