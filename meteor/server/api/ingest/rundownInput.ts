@@ -816,6 +816,11 @@ function generateSegmentContents (
 		})
 		parts.push(part)
 
+		// Do checks of Part:
+		if (newSegment.isHidden && !part.invalid) {
+			logger.warn(`Warning: Segment "${newSegment._id}" is hidden, but Part "${part._id}" is not invalid!`)
+		}
+
 		// Update pieces
 		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
 		segmentPieces.push(...pieces)
