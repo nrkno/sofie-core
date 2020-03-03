@@ -562,26 +562,21 @@ function updateSegmentFromIngestData (
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
 
-	waitForPromise(Promise.all([
-
-		// Update segment info:
-		asyncCollectionUpsert(Segments, {
-			_id: segmentId,
-			rundownId: rundown._id
-		}, newSegment),
-
-		// Move over parts from other segments:
-		asyncCollectionUpdate(Parts, {
-			rundownId: rundown._id,
-			segmentId: { $ne: segmentId },
-			dynamicallyInserted: { $ne: true },
-			_id: { $in: _.pluck(parts, '_id') }
-		}, { $set: {
-			segmentId: segmentId
-		}}, {
-			multi: true
-		})
-	]))
+	// Move part over from other segments:
+	// This is done so that metadata and play-status is retained when a part is moved between segments.
+	const partsToMoveFromOtherSegments = Parts.find({
+		rundownId: rundown._id,
+		segmentId: { $ne: segmentId },
+		dynamicallyInserted: { $ne: true },
+		_id: { $in: _.pluck(parts, '_id') }
+	}).fetch()
+	Parts.update({
+		_id: { $in: _.pluck(partsToMoveFromOtherSegments, '_id')}
+	}, { $set: {
+		segmentId: segmentId
+	}}, {
+		multi: true
+	})
 
 	const prepareSaveParts = prepareSaveIntoDb<Part, DBPart>(Parts, {
 		rundownId: rundown._id,
@@ -598,11 +593,25 @@ function updateSegmentFromIngestData (
 		partId: { $in: parts.map(p => p._id) },
 	}, adlibPieces)
 
-	// determine if update is allowed here
+	// Determine if update is allowed here
 	if (!isUpdateAllowed(rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts)) {
 		ServerRundownAPI.unsync(rundown._id, segmentId)
+
+		// Roll back changes to moved parts:
+		_.each(partsToMoveFromOtherSegments, part => {
+			logger.info(`Roll back changed segmentId for Part "${part._id}" to "${part.segmentId}"`)
+			Parts.update(part._id, {$set: {
+				segmentId: part.segmentId
+			}})
+		})
 		return null
 	}
+
+	// Update segment info:
+	const p = asyncCollectionUpsert(Segments, {
+		_id: segmentId,
+		rundownId: rundown._id
+	}, newSegment)
 
 	const changes = sumChanges(
 		savePreparedChanges<Part, DBPart>(prepareSaveParts, Parts, {
@@ -644,6 +653,7 @@ function updateSegmentFromIngestData (
 			}
 		})
 	)
+	waitForPromise(p)
 	return anythingChanged(changes) ? segmentId : null
 }
 export function afterIngestChangedData (rundown: Rundown, segmentIds: string[]) {
