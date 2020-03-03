@@ -36,6 +36,7 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketSecurity } from '../security/buckets'
+import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -595,6 +596,25 @@ export function removeBucket(id: string) {
 	throw new Meteor.Error(403, 'Access denied')
 }
 
+export function modifyBucketAdLib(id: string, newAdLib: Partial<Omit<BucketAdLib, '_id'>>) {
+	check(id, String)
+	check(newAdLib, Object)
+
+	const oldAdLib = BucketAdLibs.findOne(id)
+	if (!oldAdLib) {
+		throw new Meteor.Error(404, `Bucket AdLib not found: ${id}`)
+	}
+
+	if (!BucketSecurity.allowWriteAccess(oldAdLib.bucketId)) {
+		throw new Meteor.Error(403, 'Access denied')
+	}
+	if (newAdLib.bucketId && !BucketSecurity.allowWriteAccess(newAdLib.bucketId)) {
+		throw new Meteor.Error(403, 'Access denied')
+	}
+
+	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLib(id, newAdLib))
+}
+
 
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse | Promise<ClientAPI.ClientResponse>
@@ -726,6 +746,9 @@ methods[UserActionAPI.methods.modifyBucket] = function (id: string, bucket: Buck
 }
 methods[UserActionAPI.methods.removeBucketAdLib] = function (id: string) {
 	return removeBucketAdLib.call(this, id)
+}
+methods[UserActionAPI.methods.modifyBucketAdLib] = function (id: string, adlib: BucketAdLib) {
+	return modifyBucketAdLib.call(this, id, adlib)
 }
 methods[UserActionAPI.methods.emptyBucket] = function (id: string) {
 	return emptyBucket.call(this, id)

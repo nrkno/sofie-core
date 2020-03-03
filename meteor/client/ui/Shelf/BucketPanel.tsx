@@ -35,10 +35,9 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal, getCurrentTime } from '../../../lib/lib'
+import { literal, getCurrentTime, partial } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
-import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
@@ -47,7 +46,10 @@ import { IDashboardPanelProps, getUnfinishedPiecesReactive, DashboardPanelInner,
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { DragDropItemTypes } from '../DragDropItemTypes';
+import { DragDropItemTypes } from '../DragDropItemTypes'
+import { BucketPieceButton } from './BucketPieceButton'
+
+import update from 'immutability-helper'
 
 const HOTKEY_GROUP = 'BucketPanel'
 
@@ -91,33 +93,35 @@ const bucketTarget = {
 	},
 
 	hover(props: IBucketPanelProps, monitor: DropTargetMonitor, component: any) {
-		const { id: draggedId, size: draggedSize } = monitor.getItem()
-		const overId = props.bucket._id
-		let farEnough = true
-
-		let rect = {
-			width: 0,
-			height: 0,
-			left: 0,
-			top: 0
-		}
-
-		if (draggedId !== overId) {
-			if (component && component.decoratedRef && component.decoratedRef.current &&
-				component.decoratedRef.current._panel) {
-				rect = (component.decoratedRef.current._panel as HTMLDivElement).getBoundingClientRect()
+		if (monitor.getItemType() === DragDropItemTypes.BUCKET) {
+			const { id: draggedId, size: draggedSize } = monitor.getItem()
+			const overId = props.bucket._id
+			let farEnough = true
+	
+			let rect = {
+				width: 0,
+				height: 0,
+				left: 0,
+				top: 0
 			}
-
-			const draggedPosition = monitor.getClientOffset()
-			if (draggedPosition) {
-				if (rect.width - (draggedPosition.x - rect.left) >= draggedSize.width) {
-					farEnough = false
+	
+			if (draggedId !== overId) {
+				if (component && component.decoratedRef && component.decoratedRef.current &&
+					component.decoratedRef.current._panel) {
+					rect = (component.decoratedRef.current._panel as HTMLDivElement).getBoundingClientRect()
 				}
-			}
-
-			if (farEnough) {
-				const { index: overIndex } = props.findBucket(overId)
-				props.moveBucket(draggedId, overIndex)
+	
+				const draggedPosition = monitor.getClientOffset()
+				if (draggedPosition) {
+					if (rect.width - (draggedPosition.x - rect.left) >= draggedSize.width) {
+						farEnough = false
+					}
+				}
+	
+				if (farEnough) {
+					const { index: overIndex } = props.findBucket(overId)
+					props.moveBucket(draggedId, overIndex)
+				}
 			}
 		}
 	},
@@ -126,7 +130,13 @@ const bucketTarget = {
 		const { index } = props.findBucket(props.bucket._id)
 
 		return {
-			index
+			index,
+			action:
+				monitor.getItemType() === DragDropItemTypes.BUCKET ?
+					'reorder' :
+				monitor.getItemType() === DragDropItemTypes.BUCKET_ADLIB_PIECE ?
+					'move':
+					undefined
 		}
 	}
 }
@@ -140,6 +150,7 @@ interface IState {
 	}
 	dropActive: boolean
 	bucketName: string
+	adLibPieces: BucketAdLib[]
 }
 
 export interface IBucketPanelProps {
@@ -148,7 +159,7 @@ export interface IBucketPanelProps {
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
 	editableName?: boolean
-	onNameChanged?: (e: any, newName: string) => void
+	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: string, atIndex: number) => void
 	findBucket: (id: string) => { bucket: Bucket | undefined, index: number }
 	onBucketReorder: (draggedId: string, newIndex: number) => void
@@ -180,7 +191,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	})
 }, (data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(DropTarget(DragDropItemTypes.BUCKET, bucketTarget, connect => ({
+})(DropTarget([ DragDropItemTypes.BUCKET, DragDropItemTypes.BUCKET_ADLIB_PIECE ], bucketTarget, connect => ({
 	connectDropTarget: connect.dropTarget(),
 }))(DragSource(DragDropItemTypes.BUCKET, bucketSource, (connect, monitor) => ({
 	connectDragSource: connect.dragSource(),
@@ -197,7 +208,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			outputLayers: {},
 			sourceLayers: {},
 			dropActive: false,
-			bucketName: props.bucket.name
+			bucketName: props.bucket.name,
+			adLibPieces: ([] as BucketAdLib[]).concat(props.adLibPieces || [])
 		}
 	}
 
@@ -229,8 +241,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			_id: this.props.bucket._id
 		})
 		this.subscribe(PubSub.bucketAdLibPieces, {
-			studioId: this.props.rundown.studioId,
-			showStyleVariantId: this.props.rundown.showStyleVariantId
+			bucketId: this.props.bucket._id
 		})
 		this.subscribe(PubSub.studios, {
 			_id: this.props.rundown.studioId
@@ -241,6 +252,14 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 		window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
+	}
+
+	componentDidUpdate (prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
+		if (this.props.adLibPieces !== prevProps.adLibPieces) {
+			this.setState({
+				adLibPieces: ([] as BucketAdLib[]).concat(this.props.adLibPieces || [])
+			})
+		}
 	}
 
 	componentWillUnmount () {
@@ -318,7 +337,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
+	private onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
 			this.setState({
 				bucketName: this.props.bucket.name
@@ -336,7 +355,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	onRenameTextBoxBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+	private onRenameTextBoxBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		if (!this.state.bucketName.trim()) {
 			this.setState({
 				bucketName: this.props.bucket.name
@@ -348,23 +367,73 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	onRenameTextBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	private onRenameTextBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		this.setState({
 			bucketName: e.target.value || ''
 		})
 	}
 
-	renameTextBoxFocus = (input: HTMLInputElement) => {
+	private renameTextBoxFocus = (input: HTMLInputElement) => {
 		input.focus()
 		input.setSelectionRange(0, input.value.length)
 	}
 
-	onRenameTextBoxShow = (ref: HTMLInputElement) => {
+	private onRenameTextBoxShow = (ref: HTMLInputElement) => {
 		if (ref && !this._nameTextBox) {
 			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
 			this.renameTextBoxFocus(ref)
 		}
 		this._nameTextBox = ref
+	}
+
+	private moveAdLib = (id: string, atIndex: number) => {
+		const { piece, index } = this.findAdLib(id)
+
+		if (piece) {
+			this.setState(
+				update(this.state, {
+					adLibPieces: {
+						$splice: [[index, 1], [atIndex, 0, piece] as any]
+					}
+				})
+			)
+		}
+	}
+
+	private findAdLib = (id: string): { piece: BucketAdLib | undefined, index: number } => {
+		const { adLibPieces: pieces } = this.state
+		const piece = pieces.find(b => b._id === id)
+
+		return {
+			piece,
+			index: piece ? pieces.indexOf(piece) : -1
+		}
+	}
+
+	private onAdLibReorder = (draggedId: string, newIndex: number) => {
+		const { t } = this.props
+		if (this.props.adLibPieces) {
+			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
+
+			if (draggedB) {
+				var newRank = draggedB._rank
+	
+				// Dragged over into first place
+				if (newIndex === 0) {
+					newRank = this.props.adLibPieces[0]._rank - 1
+				// Dragged over into last place
+				} else if (newIndex === this.props.adLibPieces.length - 1) {
+					newRank = this.props.adLibPieces[this.props.adLibPieces.length - 1]._rank + 1
+				// Dragged into any other place
+				} else {
+					newRank = (this.props.adLibPieces[newIndex]._rank + this.props.adLibPieces[newIndex + 1]._rank) / 2
+				}
+
+				doUserAction(t, { type: 'drop' }, UserActionAPI.methods.modifyBucketAdLib, [draggedB._id, partial<BucketAdLib>({
+					_rank: newRank
+				})])
+			}
+		}
 	}
 
 	render () {
@@ -407,9 +476,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								onFilterChange={this.onFilterChange} />
 						} */}
 						<div className='dashboard-panel__panel'>
-							{this.props.adLibPieces
+							{this.state.adLibPieces
 								.map((item: BucketAdLib) => {
-									return <DashboardPieceButton
+									return <BucketPieceButton
 												key={item._id}
 												item={item}
 												layer={this.state.sourceLayers[item.sourceLayerId]}
@@ -420,9 +489,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={1}
 												heightScale={1}
+												disabled={item.showStyleVariantId !== this.props.rundown.showStyleVariantId}
+												findAdLib={this.findAdLib}
+												moveAdLib={this.moveAdLib}
+												onAdLibReorder={this.onAdLibReorder}
 											>
 												{item.name}
-									</DashboardPieceButton>
+									</BucketPieceButton>
 								})}
 						</div>
 					</div>

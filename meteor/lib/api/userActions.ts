@@ -66,7 +66,8 @@ export namespace UserActionAPI {
 		'removeBucket'						= 'userAction.buckets.removeBucket',
 		'emptyBucket' 						= 'userAction.buckets.emptyBucket',
 		'modifyBucket'						= 'userAction.buckets.modifyBucket',
-		'removeBucketAdLib'					= 'userAction.buckets.removeBucketAdLib'
+		'removeBucketAdLib'					= 'userAction.buckets.removeBucketAdLib',
+		'modifyBucketAdLib'					= 'userAction.buckets.modifyBucketAdLib',
 	}
 
 	export enum ReloadRundownResponse {

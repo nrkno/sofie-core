@@ -7,8 +7,10 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { literal, Omit } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
 import { BucketSecurity } from '../security/buckets'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants';
+import { Studios } from '../../lib/collections/Studios';
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -68,6 +70,24 @@ export namespace BucketsAPI {
 		Buckets.insert(newBucket)
 	
 		return newBucket
+	}
+
+	export function modifyBucketAdLib(id: string, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+		if (adlib.bucketId && !Buckets.findOne(adlib.bucketId)) {
+			throw new Meteor.Error(`Could not find bucket: "${adlib.bucketId}"`)
+		}
+
+		if (adlib.showStyleVariantId && !ShowStyleVariants.findOne(adlib.showStyleVariantId)) {
+			throw new Meteor.Error(`Could not find show style variant: "${adlib.showStyleVariantId}"`)
+		}
+
+		if (adlib.studioId && !Studios.findOne(adlib.studioId)) {
+			throw new Meteor.Error(`Could not find studio: "${adlib.studioId}"`)
+		}
+
+		BucketAdLibs.update(id, {
+			$set: _.omit(adlib, [ '_id' ])
+		})
 	}
 	
 	export function removeBucket(id: string) {
