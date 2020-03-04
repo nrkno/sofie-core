@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-01-10T17:37:50.515Z\n"
-"PO-Revision-Date: 2020-01-10 18:38+0100\n"
+"POT-Creation-Date: 2020-03-04T08:26:08.620Z\n"
+"PO-Revision-Date: 2020-03-04 09:31+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 
 msgid "Return to list"
 msgstr "Gå tilbake til listen"
@@ -421,7 +421,7 @@ msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
 msgstr "Playout Gateway \"{{playoutDeviceName}}\" starter på nytt..."
 
 msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
-msgstr "Playout gateway \"{{playoutDeviceName}}\" kunne ikke startes på nytt."
+msgstr "Playout Gateway \"{{playoutDeviceName}}\" kunne ikke startes på nytt."
 
 msgid "Restart CasparCG Server"
 msgstr "Restart Caspar"
@@ -443,7 +443,7 @@ msgid "Take a Snapshot"
 msgstr "Lagre et snapshot"
 
 msgid "Restart Playout"
-msgstr "Start avspilling på nytt"
+msgstr "Start Playout Gateway på nytt"
 
 msgid "Restart {{device}}"
 msgstr "Start {{device}} på nytt"
@@ -998,23 +998,18 @@ msgstr "Medieflyter"
 msgid "Monitors"
 msgstr "Monitorer"
 
-#, fuzzy
 msgid "Primary ID (Newsroom System MOS ID)"
 msgstr "Primær id (News Room System MOS ID)"
 
-#, fuzzy
 msgid "Primary Host (IP or Hostname)"
 msgstr "Primær vert (ip-adresse eller vertsnavn)"
 
-#, fuzzy
 msgid "Secondary ID (Newsroom System MOS ID)"
 msgstr "Sekundær id (News Room System MOS ID)"
 
-#, fuzzy
 msgid "Secondary Host (IP Address or Hostname)"
 msgstr "Sekundær vert (ip-adresse eller vertsnavn)"
 
-#, fuzzy
 msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr "MOS-id for gateway (Sofie MOS ID)"
 
@@ -1030,7 +1025,6 @@ msgstr "Enhets-id"
 msgid "Disable"
 msgstr "Deaktiver"
 
-#, fuzzy
 msgid "Thread Usage"
 msgstr "Tråder i bruk"
 
@@ -1065,13 +1059,13 @@ msgid "Enable SSL"
 msgstr "Aktiver SSL"
 
 msgid "URI"
-msgstr ""
+msgstr "URI"
 
 msgid "HTTPMethod"
-msgstr ""
+msgstr "HTTPMethod"
 
 msgid "expectedHttpResponse"
-msgstr ""
+msgstr "expectedHttpResponse"
 
 msgid "Keyword"
 msgstr "Nøkkelord"
@@ -1281,6 +1275,9 @@ msgstr "Alt er greit, gå og hent deg en"
 msgid "New Layout"
 msgstr "Ny layout"
 
+msgid "Button"
+msgstr "Knapp"
+
 msgid "New Tab"
 msgstr "Ny fane"
 
@@ -1296,17 +1293,13 @@ msgstr "Slett layout?"
 msgid "Are you sure you want to delete the shelf layout \"{{name}}\"?"
 msgstr "Er du sikker på at du vil slette layouten \"{{name}}\"?"
 
-msgid "Only Match Global AdLibs"
-msgstr "Vis kun treff med hurtigtaster"
+#, fuzzy
+#| msgid "Action"
+msgid "Action Buttons"
+msgstr "Handling"
 
-msgid "Tabs"
-msgstr "Faner"
-
-msgid "Panels"
-msgstr "Paneler"
-
-msgid "Name"
-msgstr "Navn"
+msgid "Label"
+msgstr "Etikett"
 
 msgid "X"
 msgstr "X"
@@ -1319,6 +1312,18 @@ msgstr "Bredde"
 
 msgid "Height"
 msgstr "Høyde"
+
+msgid "Only Match Global AdLibs"
+msgstr "Vis kun treff med hurtigtaster"
+
+msgid "Tabs"
+msgstr "Faner"
+
+msgid "Panels"
+msgstr "Paneler"
+
+msgid "Name"
+msgstr "Navn"
 
 msgid "Button width scale factor"
 msgstr "Målestokk for knappens bredde"
@@ -1341,7 +1346,6 @@ msgstr "Inkluder hurtigtaster"
 msgid "Filter Disabled"
 msgstr "Filter deaktivert"
 
-#, fuzzy
 msgid "Include Clear Source Layer in Ad-Libs"
 msgstr "Ta med\"Tøm kildelag\" i manuelle elementer"
 
@@ -1351,15 +1355,27 @@ msgstr "Kildelagstyper"
 msgid "Filter disabled"
 msgstr "Filter deaktivert"
 
-#, fuzzy
 msgid "Label contains"
 msgstr "Etikett inneholder"
+
+#, fuzzy
+msgid "Tags must contain"
+msgstr "Tagger må inneholde"
 
 msgid "Register Shortcuts for this Panel"
 msgstr "Legg til snarveier for dette panelet"
 
 msgid "Default Layout"
 msgstr "Standardlayout"
+
+msgid "Add tab"
+msgstr "Legg til fane"
+
+msgid "Add panel"
+msgstr "Legg til panel"
+
+msgid "Add button"
+msgstr "Legg til knapp"
 
 msgid "Upload Layout?"
 msgstr "Last opp layout?"
@@ -1383,7 +1399,6 @@ msgstr "Opplasting av layout feilet: {{errorMessage}}"
 msgid "Shelf Layouts"
 msgstr "Layouter for skuffen"
 
-#, fuzzy
 msgid "Show Style Base Name"
 msgstr "Showstylenavn"
 
@@ -1399,7 +1414,6 @@ msgstr "Kompatible studio:"
 msgid "This Show Style is not compatible with any Studio"
 msgstr "Denne showstylen er ikke kompatibelt med noe studio"
 
-#, fuzzy
 msgid ""
 "Are you sure you want to delete this runtime argument \"{{property}}: "
 "{{value}}\"?"
@@ -1509,8 +1523,9 @@ msgstr ""
 msgid "Allow disabling of elements"
 msgstr "Tillat deaktivering av elementer"
 
+#, fuzzy
 msgid "Adlibs on this layer can be queued"
-msgstr ""
+msgstr "Manuelle elementer på dette laget kan legges på preview"
 
 msgid "Exclusivity group"
 msgstr ""
@@ -1815,10 +1830,10 @@ msgid "Search..."
 msgstr "Søk..."
 
 msgid "Last {{layerName}}"
-msgstr ""
+msgstr "Siste {{layerName}}"
 
 msgid "Clear {{layerName}}"
-msgstr ""
+msgstr "Tøm {{layerName}}"
 
 msgid "Invalid AdLib"
 msgstr "Ugyldig manuelt element"
@@ -1935,7 +1950,6 @@ msgstr "Avbrutt"
 msgid "Idle"
 msgstr "Inaktiv"
 
-#, fuzzy
 msgid "Skipped"
 msgstr "Hoppet over"
 
@@ -2058,6 +2072,15 @@ msgstr "Parametre"
 
 msgid "User Activity Log"
 msgstr "Aktivitetslogg"
+
+msgid "Disable hints by adding this to the URL:"
+msgstr "Deaktiver hint ved å legge dette til på url-en:"
+
+msgid "Enable hints by adding this to the URL:"
+msgstr "Aktiver hint ved å legge dette til på url-en:"
+
+msgid "More documentation available at:"
+msgstr "Mer dokumentasjon er tilgjengelig på"
 
 msgid "Recordings"
 msgstr "Opptak"
