@@ -47,7 +47,7 @@ import { RundownFullscreenControls } from './RundownView/RundownFullscreenContro
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction, callMethod } from '../lib/clientAPI'
-import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownClick } from './RundownView/RundownNotifier'
+import { RONotificationEvent, onRONotificationClick as rundownNotificationHandler, RundownNotifier, reloadRundownPlaylistClick } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
@@ -513,7 +513,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			this.props.onRegisterHotkeys(this.bindKeys)
 		}
 
-		reloadRundownClick.set(this.reloadRundown)
+		reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 	}
 
 	componentWillUnmount () {
@@ -552,7 +552,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		this.resetRundown(e)
 	}
 	keyReloadRundown = (e: ExtendedKeyboardEvent) => {
-		this.reloadRundown(e)
+		this.reloadRundownPlaylist(e)
 	}
 	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
 		// "forward" = to next Part
@@ -883,7 +883,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		}
 	}
 
-	reloadRundown = (e: any, changeRehearsal?: boolean) => {
+	reloadRundownPlaylist = (e: any, changeRehearsal?: boolean) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.playlist._id, changeRehearsal], (err, response) => {
@@ -990,7 +990,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 										</MenuItem> :
 										null
 								}
-								<MenuItem onClick={(e) => this.reloadRundown(e)}>
+								<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
 									{t('Reload ENPS Data')}
 								</MenuItem>
 								<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>

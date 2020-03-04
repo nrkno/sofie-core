@@ -435,33 +435,37 @@ export namespace ServerRundownAPI {
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownNeedsUpdating (rundownId: RundownId) {
-		check(rundownId, String)
-		// logger.info('rundownNeedsUpdating ' + rundownId)
+	export function rundownPlaylistNeedsResync (playlistId: RundownPlaylistId): string[] {
+		check(playlistId, String)
+		// logger.info('rundownPlaylistNeedsResync ' + playlistId)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		if (!rundown.importVersions) return 'unknown'
+		const playlist = RundownPlaylists.findOne(playlistId)
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
-		if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
+		const rundowns = playlist.getRundowns()
+		const errors = rundowns.map(rundown => {
+			if (!rundown.importVersions) return 'unknown'
+	
+			if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
+	
+			const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
+			if (!showStyleVariant) return 'missing showStyleVariant'
+			if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0)) return 'showStyleVariant'
+	
+			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			if (!showStyleBase) return 'missing showStyleBase'
+			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0)) return 'showStyleBase'
+	
+			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
+			if (!blueprint) return 'missing blueprint'
+			if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
+	
+			const studio = Studios.findOne(rundown.studioId)
+			if (!studio) return 'missing studio'
+			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
+		})
 
-		const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
-		if (!showStyleVariant) return 'missing showStyleVariant'
-		if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0)) return 'showStyleVariant'
-
-		const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-		if (!showStyleBase) return 'missing showStyleBase'
-		if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0)) return 'showStyleBase'
-
-		const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
-		if (!blueprint) return 'missing blueprint'
-		if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
-
-		const studio = Studios.findOne(rundown.studioId)
-		if (!studio) return 'missing studio'
-		if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
-
-		return undefined
+		return _.compact(errors)
 	}
 }
 
@@ -472,6 +476,9 @@ methods[RundownAPI.methods.removeRundownPlaylist] = (playlistId: RundownPlaylist
 methods[RundownAPI.methods.resyncRundownPlaylist] = (playlistId: RundownPlaylistId) => {
 	return ServerRundownAPI.resyncRundownPlaylist(playlistId)
 }
+methods[RundownAPI.methods.rundownPlaylistNeedsResync] = (playlistId: RundownPlaylistId) => {
+	return ClientRundownAPI.rundownPlaylistNeedsResync(playlistId)
+}
 methods[RundownAPI.methods.removeRundown] = (rundownId: RundownId) => {
 	return ServerRundownAPI.removeRundown(rundownId)
 }
@@ -480,9 +487,6 @@ methods[RundownAPI.methods.resyncRundown] = (rundownId: RundownId) => {
 }
 methods[RundownAPI.methods.unsyncRundown] = (rundownId: RundownId) => {
 	return ServerRundownAPI.unsyncRundown(rundownId)
-}
-methods[RundownAPI.methods.rundownNeedsUpdating] = (rundownId: RundownId) => {
-	return ClientRundownAPI.rundownNeedsUpdating(rundownId)
 }
 // Apply methods:
 setMeteorMethods(methods)
