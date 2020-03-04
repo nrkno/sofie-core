@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.0...v1.6.1) (2020-03-04)
+
+
+### Bug Fixes
+
+* Updated translations R18 ([e293d4f](https://github.com/nrkno/tv-automation-server-core/commit/e293d4f))
+
+
+
 ## [1.6.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.0-0...v1.6.0) (2020-03-04)
 
 
