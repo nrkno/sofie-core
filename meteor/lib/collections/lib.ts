@@ -21,31 +21,29 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 		}
 	}
 
-	let observedChangesTimeouts: {
-		[id: string]: Timeout
-	} = {}
+	let observedChangesTimeouts = new Map<Tb['_id'], Timeout>()
 
 	collection.find().observeChanges({
-		changed: (id: string, changedFields) => {
+		changed: (id: Tb['_id'], changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
 			delete changedFields[hashName]
 
 			if (_.keys(changedFields).length > 0) {
-				let data: Timeout | undefined = observedChangesTimeouts[id]
+				let data: Timeout | undefined = observedChangesTimeouts.get(id)
 				if (data !== undefined) {
 					// Already queued, so do nothing
 				} else {
 					// Schedule update
-					observedChangesTimeouts[id] = Meteor.setTimeout(() => {
+					observedChangesTimeouts.set(id, Meteor.setTimeout(() => {
 						// This looks like a race condition, but is safe as the data for the 'lost' change will still be loaded below
-						delete observedChangesTimeouts[id]
+						observedChangesTimeouts.delete(id)
 
 						// Perform hash update
-						const obj = collection.findOne(protectString(id))
+						const obj = collection.findOne(id)
 						if (obj) {
-							doUpdate(protectString(id), obj)
+							doUpdate(id, obj)
 						}
-					}, ObserveChangeBufferTimeout)
+					}, ObserveChangeBufferTimeout))
 				}
 			}
 		}
