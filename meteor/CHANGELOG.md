@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.0-0...v1.6.0) (2020-03-04)
+
+
+### Bug Fixes
+
+* **getAllStoredNotes:** check that we have stuff to append to ([996eeeb](https://github.com/nrkno/tv-automation-server-core/commit/996eeeb))
+* **getAllStoredNotes:** check that we have stuff to append to ([4fd5eba](https://github.com/nrkno/tv-automation-server-core/commit/4fd5eba))
+* resolve an issue with optimizing parts away when parts are inserted/removed ([1eae907](https://github.com/nrkno/tv-automation-server-core/commit/1eae907))
+
+
+
 ## [1.6.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0...v1.6.0-0) (2020-02-19)
 
 
