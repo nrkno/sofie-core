@@ -11,6 +11,8 @@ export interface ISettings {
 	allowUnsyncedSegments: boolean
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
+	// Allow resets while a rundown is on-air
+	allowUnsafeResets: boolean
 }
 
 export let Settings: ISettings
@@ -22,7 +24,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	'autoRewindLeavingSegment': false,
 	'defaultTimeScale': 1,
 	'allowUnsyncedSegments': true,
-	'allowGrabbingTimeline': false
+	'allowGrabbingTimeline': true,
+	'allowUnsafeResets': false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

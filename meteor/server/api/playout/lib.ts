@@ -24,6 +24,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { TimelineEnable } from 'superfly-timeline'
 import { afterRemoveParts } from '../rundown'
+import { Settings } from '../../../lib/Settings'
 
 /**
  * Reset the rundown:
@@ -32,7 +33,7 @@ import { afterRemoveParts } from '../rundown'
 export function resetRundown (rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
 
-	if (rundown.active && rundown.currentPartId) {
+	if (rundown.active && rundown.currentPartId && !Settings.allowUnsafeResets) {
 		throw new Meteor.Error(500, `Not able to reset active rundown "${rundown._id}"`)
 	}
 
