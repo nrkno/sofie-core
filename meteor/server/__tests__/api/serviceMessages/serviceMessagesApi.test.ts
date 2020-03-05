@@ -1,5 +1,6 @@
 import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
 import * as CoreSystem from '../../../../lib/collections/CoreSystem'
+import { protectString } from '../../../../lib/lib'
 
 jest.mock('../../../../lib/collections/CoreSystem')
 
@@ -20,7 +21,7 @@ const message2: CoreSystem.ServiceMessage = {
 }
 
 const fakeCoreSystem: CoreSystem.ICoreSystem = {
-	_id: 'core',
+	_id: protectString('core'),
 	created: 1,
 	modified: 2,
 	version: '3',

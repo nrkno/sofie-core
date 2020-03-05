@@ -2,20 +2,22 @@ import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Pieces, Piece } from '../../../lib/collections/Pieces'
+import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { PartId } from '../../../lib/collections/Parts'
 
 export interface IProps {
-	pieceId: string
-	rundownId: string
-	partId: string
-	studioId: string
+	pieceId: PieceId
+	playlistId: RundownPlaylistId
+	partId: PartId
+	studioId: StudioId
 
 	inPoint: number
 	duration: number

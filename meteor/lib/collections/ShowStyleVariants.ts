@@ -2,21 +2,26 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
-import { registerCollection, applyClassToDocument } from '../lib'
-import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { string } from 'prop-types'
 
-export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
+/** A string, identifying a ShowStyleVariant */
+export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
+
+export interface DBShowStyleVariant extends ProtectedStringProperties<IBlueprintShowStyleVariant, '_id'> {
+	_id: ShowStyleVariantId
 	/** Id of parent ShowStyleBase */
-	showStyleBaseId: string
+	showStyleBaseId: ShowStyleBaseId
 
 	_rundownVersionHash: string
 }
 
 export interface ShowStyleCompound extends ShowStyleBase {
-	showStyleVariantId: string
+	showStyleVariantId: ShowStyleVariantId
 }
-export function getShowStyleCompound (showStyleVariantId: string): ShowStyleCompound | undefined {
+export function getShowStyleCompound (showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
 	let showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
 	if (!showStyleVariant) return undefined
 	let showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
@@ -39,9 +44,9 @@ export function getShowStyleCompound (showStyleVariantId: string): ShowStyleComp
 }
 
 export class ShowStyleVariant implements DBShowStyleVariant {
-	public _id: string
+	public _id: ShowStyleVariantId
 	public name: string
-	public showStyleBaseId: string
+	public showStyleBaseId: ShowStyleBaseId
 	public config: Array<IConfigItem>
 	public _rundownVersionHash: string
 

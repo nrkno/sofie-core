@@ -1,10 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time } from '../lib'
+import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
+import { PartId } from './Parts'
+import { StudioId } from './Studios'
+
+/** A string, identifying a ExpectedMediaItem */
+export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
 
 export interface ExpectedMediaItem {
-	_id: string
+	_id: ExpectedMediaItemId
 
 	/** Source label that can be used to identify the EMI */
 	label?: string
@@ -16,13 +22,13 @@ export interface ExpectedMediaItem {
 	url: string
 
 	/** The rundown id that is the source of this MediaItem */
-	rundownId: string
+	rundownId: RundownId
 
 	/** The part id that is the source of this Media Item */
-	partId: string
+	partId: PartId
 
 	/** The studio installation this ExpectedMediaItem was generated in */
-	studioId: string
+	studioId: StudioId
 
 	/** True if the media item has been marked as possibly unavailable */
 	disabled: boolean

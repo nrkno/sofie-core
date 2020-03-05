@@ -9,6 +9,7 @@ import { NotificationCenter, Notification, NoticeLevel, NotificationAction } fro
 import { sofieWarningIcon as WarningIcon } from './warningIcon'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 import * as _ from 'underscore'
+import { SegmentId } from '../../../lib/collections/Segments'
 
 interface IPopUpProps {
 	item: Notification
@@ -116,7 +117,7 @@ interface IState {
 
 interface ITrackedProps {
 	notifications: Array<Notification>,
-	highlightedSource: string | undefined
+	highlightedSource: SegmentId | string | undefined
 	highlightedLevel: NoticeLevel
 }
 

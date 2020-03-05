@@ -3,7 +3,7 @@ import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Blueprints } from '../../lib/collections/Blueprints'
@@ -11,6 +11,7 @@ import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Random } from 'meteor/random'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { getRandomId, protectString } from '../../lib/lib'
 
 /**
  * This file contains system specific migration steps.
@@ -40,7 +41,7 @@ addMigrationSteps('0.19.0', [
 				ShowStyleBases.insert({
 					_id: id,
 					name: showstyle.name || 'Default showstyle',
-					blueprintId: '',
+					blueprintId: protectString(''),
 					// @ts-ignore
 					outputLayers: studio.outputLayers,
 					// @ts-ignore
@@ -51,7 +52,7 @@ addMigrationSteps('0.19.0', [
 					_rundownVersionHash: '',
 				})
 
-				const variantId = Random.id()
+				const variantId: ShowStyleVariantId = getRandomId()
 				ShowStyleVariants.insert({
 					_id: variantId,
 					name: 'Default variant',
@@ -69,9 +70,9 @@ addMigrationSteps('0.19.0', [
 				// create default ShowStyleBase:
 				logger.info(`Migration: Add default ShowStyleBase`)
 				ShowStyleBases.insert({
-					_id: 'show0',
+					_id: protectString('show0'),
 					name: 'Default showstyle',
-					blueprintId: '',
+					blueprintId: protectString(''),
 					outputLayers: [],
 					sourceLayers: [],
 					config: [],
@@ -79,9 +80,9 @@ addMigrationSteps('0.19.0', [
 				})
 
 				ShowStyleVariants.insert({
-					_id: Random.id(),
+					_id: getRandomId(),
 					name: 'Default variant',
-					showStyleBaseId: 'show0',
+					showStyleBaseId: protectString('show0'),
 					config: [],
 					_rundownVersionHash: '',
 				})
@@ -173,7 +174,7 @@ addMigrationSteps('0.19.0', [
 			let fail: string | undefined = undefined
 
 			ros.forEach((item) => {
-				let showStyleBase = ShowStyleBases.findOne((item as any).showStyleId) || ShowStyleBases.findOne('show0') || ShowStyleBases.findOne()
+				let showStyleBase = ShowStyleBases.findOne((item as any).showStyleId) || ShowStyleBases.findOne(protectString('show0')) || ShowStyleBases.findOne()
 				if (showStyleBase) {
 					let showStyleVariant = ShowStyleVariants.findOne({
 						showStyleBaseId: showStyleBase._id

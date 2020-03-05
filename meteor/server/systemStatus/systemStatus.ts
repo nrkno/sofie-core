@@ -1,12 +1,13 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time } from '../../lib/lib'
+import { getCurrentTime, Time, unprotectString } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
 import { StatusResponse, CheckObj, ExternalStatus, CheckError } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import * as semver from 'semver'
+import { StudioId } from '../../lib/collections/Studios'
 
 /**
  * Handling of system statuses
@@ -28,12 +29,12 @@ export enum StatusCode {
 	FATAL = 5
 }
 export interface StatusObject {
-	studioId?: string
+	studioId?: StudioId
 	statusCode: StatusCode
 	messages?: Array<string>
 }
 export interface StatusObjectInternal {
-	studioId?: string
+	studioId?: StudioId
 	statusCode: StatusCode
 	/** Timestamp when statusCode was last changed */
 	timestamp: Time
@@ -47,7 +48,7 @@ export interface StatusObjectInternal {
  * Returns system status
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
-export function getSystemStatus (studioId?: string): StatusResponse {
+export function getSystemStatus (studioId?: StudioId): StatusResponse {
 	let checks: Array<CheckObj> = []
 
 	// Check systemStatuses:
@@ -155,7 +156,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 		}
 		let so: StatusResponse = {
 			name: device.name,
-			instanceId: device._id,
+			instanceId: unprotectString(device._id),
 			status: 'UNDEFINED',
 			updated: new Date(device.lastSeen).toISOString(),
 			_status: deviceStatus,

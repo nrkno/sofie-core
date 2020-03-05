@@ -1,18 +1,21 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 import { ConfigManifestEntry, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 
+/** A string, identifying a Blueprint */
+export type BlueprintId = ProtectedString<'BlueprintId'>
+
 export interface Blueprint {
-	_id: string
+	_id: BlueprintId
 	name: string
 	code: string
 	modified: number
 	created: number
 
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprintType?: BlueprintManifestType
 
 	studioConfigManifest?: ConfigManifestEntry[]

@@ -84,7 +84,7 @@
     "soap": "^0.24.0",
     "superfly-timeline": "^7.3.1",
     "timecode": "0.0.4",
-    "tv-automation-sofie-blueprints-integration": "1.8.0",
+    "tv-automation-sofie-blueprints-integration": "1.8.0-nightly-feat-part-instances-20200217-132739-bc70e01.0",
     "underscore": "^1.8.3",
     "velocity-animate": "^1.5.1",
     "velocity-react": "^1.3.3",

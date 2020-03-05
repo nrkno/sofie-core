@@ -7,6 +7,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -56,7 +57,7 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 interface IEditAttributeBaseProps {
 	updateOnKey?: boolean,
 	attribute?: string,
-	collection?: Mongo.Collection<any>,
+	collection?: TransformedCollection<any, any>,
 	myObject?: any,
 	obj?: any
 	options?: any

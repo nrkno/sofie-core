@@ -2,8 +2,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { callMethod } from '../lib/clientAPI'
-import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 
 import { Studios, Studio, MappingExt } from '../../lib/collections/Studios'
 import {
@@ -17,6 +15,8 @@ import { EditAttribute } from '../lib/EditAttribute'
 import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
 import { PubSub } from '../../lib/api/pubsub'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { unprotectString } from '../../lib/lib'
+import { MeteorCall } from '../../lib/api/methods'
 interface IManualPlayoutProps {
 }
 interface IManualPlayoutState {
@@ -78,7 +78,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	atemCamera (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string, cam: number) {
+	atemCamera (studio: Studio, mappingLayerId: string, cam: number) {
 
 		let o: TSR.TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
@@ -96,7 +96,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				}
 			}
 		}
-		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
+		MeteorCall.manualPlayout.insertTimelineObject(studio._id, o).catch(console.error)
 	}
 	getManualLayers (studio: Studio) {
 		let mappings: {[layer: string]: MappingExt} = {}
@@ -111,7 +111,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	casparcgPlay (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
+	casparcgPlay (studio: Studio, mappingLayerId: string) {
 
 		let file = this.state.inputValues[mappingLayerId].file
 
@@ -129,12 +129,12 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 			}
 		}
-		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
+		MeteorCall.manualPlayout.insertTimelineObject(studio._id, o).catch(console.error)
 	}
-	casparcgClear (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
-		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'caspar_' + mappingLayerId)
+	casparcgClear (studio: Studio, mappingLayerId: string) {
+		MeteorCall.manualPlayout.removeTimelineObject(studio._id, 'caspar_' + mappingLayerId).catch(console.error)
 	}
-	quantelPlay (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
+	quantelPlay (studio: Studio, mappingLayerId: string) {
 
 		let input = this.state.inputValues[mappingLayerId]
 
@@ -162,10 +162,10 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		}
 
-		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
+		MeteorCall.manualPlayout.insertTimelineObject(studio._id, o).catch(console.error)
 	}
-	quantelClear (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
-		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'quantel_' + mappingLayerId)
+	quantelClear (studio: Studio, mappingLayerId: string) {
+		MeteorCall.manualPlayout.removeTimelineObject(studio._id, 'quantel_' + mappingLayerId).catch(console.error)
 	}
 	onInputChange (id: string, no: string, value: any) {
 
@@ -183,7 +183,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				<h1>Manual control</h1>
 				{
 					_.map(this.getStudios(), (studio) => {
-						return <div key={studio._id}>
+						return <div key={unprotectString(studio._id)}>
 							<h2>{studio.name}</h2>
 							<h3 className='mhs'>ATEM Control</h3>
 							<table>
@@ -196,7 +196,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 												_.map([1,2,3,4,5,6,7,8], (cam) => {
 													return (
 														<td key={cam}>
-															<button className='btn btn-primary' onClick={(e) => this.atemCamera(e, studio, mappingLayerId, cam)}>
+															<button className='btn btn-primary' onClick={(e) => this.atemCamera(studio, mappingLayerId, cam)}>
 																Camera {cam}
 															</button>
 														</td>
@@ -217,10 +217,10 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 											return <tr key={mappingLayerId}>
 												<th>{mappingLayerId}</th>
 												<td>
-													<button className='btn btn-primary' onClick={(e) => this.casparcgPlay(e, studio, mappingLayerId)}>
+													<button className='btn btn-primary' onClick={(e) => this.casparcgPlay(studio, mappingLayerId)}>
 														Caspar Play
 													</button>
-													<button className='btn btn-primary' onClick={(e) => this.casparcgClear(e, studio, mappingLayerId)}>
+													<button className='btn btn-primary' onClick={(e) => this.casparcgClear(studio, mappingLayerId)}>
 														Clear
 													</button>
 												</td>
@@ -236,10 +236,10 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 											return <tr key={mappingLayerId}>
 												<th>{mappingLayerId}</th>
 												<td>
-													<button className='btn btn-primary' onClick={(e) => this.quantelPlay(e, studio, mappingLayerId)}>
+													<button className='btn btn-primary' onClick={(e) => this.quantelPlay(studio, mappingLayerId)}>
 														Quantel Play
 													</button>
-													<button className='btn btn-primary' onClick={(e) => this.quantelClear(e, studio, mappingLayerId)}>
+													<button className='btn btn-primary' onClick={(e) => this.quantelClear(studio, mappingLayerId)}>
 														Clear
 													</button>
 												</td>
