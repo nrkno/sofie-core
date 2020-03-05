@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -15,13 +14,12 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
-import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
+import { doModalDialog } from '../lib/ModalDialog'
+import { StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
 import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
-import { UserActionAPI } from '../../lib/api/userActions'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../lib/collections/CoreSystem'
+import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -29,6 +27,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
+import { MeteorCall } from '../../lib/api/methods'
 
 const PackageInfo = require('../../package.json')
 
@@ -74,7 +73,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.removeRundownPlaylist, [rundownPlaylist._id])
+				doUserAction(t, e, 'Removing Rundown Playlist', () => MeteorCall.userAction.removeRundownPlaylist(rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to delete the "{{name}}" RundownPlaylist?', { name: rundownPlaylist.name }) + '\n' +
@@ -90,7 +89,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, UserActionAPI.methods.resyncRundownPlaylist, [rundownPlaylist._id])
+				doUserAction(t, e, 'Re-Syncing Rundown Playlist', () => MeteorCall.userAction.resyncRundownPlaylist(rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to re-sync all rundowns in playlist "{{name}}"?', { name: rundownPlaylist.name })
@@ -161,7 +160,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						{
 							(this.props.rundownPlaylist.unsyncedRundowns.length > 0 || getAllowConfigure() || getAllowService()) ?
 							<Tooltip overlay={t('Delete')} placement='top'>
-								<button className='action-btn' onClick={(e) => this.confirmDeleteRundownPlaylist(this.props.rundownPlaylist)}>
+								<button className='action-btn' onClick={() => this.confirmDeleteRundownPlaylist(this.props.rundownPlaylist)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</Tooltip> : null
@@ -169,7 +168,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						{
 							this.props.rundownPlaylist.unsyncedRundowns.length > 0 ?
 							<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement='top'>
-								<button className='action-btn' onClick={(e) => this.confirmReSyncRundownPlaylist(this.props.rundownPlaylist)}>
+								<button className='action-btn' onClick={() => this.confirmReSyncRundownPlaylist(this.props.rundownPlaylist)}>
 									<FontAwesomeIcon icon={faSync} />
 								</button>
 							</Tooltip> : null
@@ -189,11 +188,6 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		)
 	}
 }
-interface RundownUI extends Rundown {
-	studioName: string
-	showStyleBaseName: string
-	showStyleVariantName: string
-}
 
 enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -211,7 +205,7 @@ interface IRundownsListState {
 	subsReady: boolean
 }
 
-export const RundownList = translateWithTracker((props) => {
+export const RundownList = translateWithTracker(() => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -313,20 +307,14 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 			}
 		})
 
-		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
-			if (err) {
-				// console.error(err)
-				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
-				return
-			}
-
-			this.setState({
-				systemStatus: systemStatus
-			})
+		MeteorCall.systemStatus.getSystemStatus().then((systemStatus: StatusResponse) => {
+			this.setState({	systemStatus })
+		}).catch(() => {
+			NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
 		})
 	}
 
-	registerHelp (core: ICoreSystem) {
+	registerHelp () {
 		const { t } = this.props
 
 		const step = this.tooltipStep()
@@ -387,7 +375,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 		return <React.Fragment>
 			{
-				this.props.coreSystem ? this.registerHelp(this.props.coreSystem) : null
+				this.props.coreSystem ? this.registerHelp() : null
 			}
 			{
 				(

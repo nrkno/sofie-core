@@ -1,18 +1,15 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { literal, getRandomId, protectString } from '../../../../lib/lib'
-import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, BlueprintMapping, IConfigItem, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
-
-// require('../api.ts') // include in order to create the Meteor methods needed
+import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 
 describe('Test blueprint migrationContext', () => {
 

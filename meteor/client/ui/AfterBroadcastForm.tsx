@@ -7,7 +7,8 @@ import { translate } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction } from '../lib/userAction'
-import { UserActionAPI } from '../../lib/api/userActions'
+import { MeteorCall } from '../../lib/api/methods'
+import { SnapshotId } from '../../lib/collections/Snapshots'
 
 interface IProps {
 	playlist: RundownPlaylist
@@ -32,7 +33,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		const { t } = this.props
 		let answers = this.state
 
-		const saveEvaluation = (snapshotId?: string) => {
+		const saveEvaluation = (snapshotId?: SnapshotId) => {
 			let evaluation: EvaluationBase = {
 				studioId: this.props.playlist.studioId,
 				playlistId: this.props.playlist._id,
@@ -40,9 +41,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-			doUserAction(t, e, UserActionAPI.methods.saveEvaluation, [evaluation])
+			doUserAction(t, e, 'Saving Evaluation', () => MeteorCall.userAction.saveEvaluation(evaluation))
 
-			doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.playlist._id])
+			doUserAction(t, e, 'Deactivating Rundown Playlist', () => MeteorCall.userAction.deactivate(this.props.playlist._id))
 
 			this.setState({
 				q0: '',
@@ -52,9 +53,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 
 		if (answers.q0 !== 'nothing') {
-			doUserAction(t, e, UserActionAPI.methods.storeRundownSnapshot, [this.props.playlist._id, 'Evaluation form'], (err, response) => {
-				if (!err && response) {
-					saveEvaluation(response.result)
+			doUserAction(t, e, 'Creating Snapshot for debugging', () => MeteorCall.userAction.storeRundownSnapshot(this.props.playlist._id, 'Evaluation form'), (err, snapshotId) => {
+				if (!err && snapshotId) {
+					saveEvaluation(snapshotId)
 				} else {
 					saveEvaluation()
 				}

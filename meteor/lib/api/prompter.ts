@@ -10,9 +10,12 @@ import { normalizeArray, protectString, unprotectString, getRandomId } from '../
 import { SegmentId } from '../collections/Segments'
 import { PieceId } from '../collections/Pieces'
 
-export enum PrompterMethods {
-	getPrompterData = 'PrompterMethods.getPrompterData'
-}
+// export interface NewPrompterAPI {
+// 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
+// }
+// export enum PrompterAPIMethods {
+// 	'getPrompterData' = 'PrompterMethods.getPrompterData'
+// }
 
 export interface PrompterDataSegment {
 	id: SegmentId
@@ -36,7 +39,7 @@ export interface PrompterData {
 }
 
 export namespace PrompterAPI {
-
+	// TODO: discuss: move this implementation to server-side?
 	export function getPrompterData (playlistId: RundownPlaylistId): PrompterData {
 
 		check(playlistId, String)
@@ -122,9 +125,6 @@ export namespace PrompterAPI {
 		return data
 	}
 }
-let methods: any = {}
-methods[PrompterMethods.getPrompterData] = PrompterAPI.getPrompterData
-Meteor.methods(methods)
 
 if (Meteor.isClient) {
 	// @ts-ignore

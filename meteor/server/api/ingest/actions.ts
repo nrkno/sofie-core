@@ -12,8 +12,8 @@ import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownPlaylistSyncF
 import { logger } from '../../logging'
 import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { ReloadRundownResponse } from '../../../lib/api/userActions'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -22,7 +22,7 @@ export namespace IngestActions {
 	/**
 	 * Trigger a reload of a rundown
 	 */
-	export function reloadRundown (rundown: Rundown): UserActionAPI.ReloadRundownResponse {
+	export function reloadRundown (rundown: Rundown): ReloadRundownResponse {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?

@@ -1,22 +1,21 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION, clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
-import { MigrationMethods, RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
-import { literal, protectString } from '../../../lib/lib'
+import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
+import { literal, protectString, waitForPromise } from '../../../lib/lib'
 import { MigrationStepInputResult, BlueprintManifestType, MigrationStep, MigrationContextStudio, MigrationContextShowStyle } from 'tv-automation-sofie-blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
-import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { MeteorCall } from '../../../lib/api/methods'
 
-require('../api.ts') // include in order to create the Meteor methods needed
+require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
+require('../api') // include in order to create the Meteor methods needed
 require('../../api/blueprints/api.ts') // include in order to create the Meteor methods needed
 
 // Include all migration scripts:
@@ -49,20 +48,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 		}))
 	}
-	function getSteps (migrationStatus: GetMigrationStatusResult) {
-		const allSteps: string[] = []
-		_.each(migrationStatus.migration.chunks, chunk => {
-			_.each(chunk._steps, step => {
-				allSteps.push(step)
-			})
-		})
-		return allSteps
-	}
 	testInFiber('System migrations, initial setup', () => {
 
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
 
-		const migrationStatus0: GetMigrationStatusResult = Meteor.call(MigrationMethods.getMigrationStatus)
+		const migrationStatus0: GetMigrationStatusResult = waitForPromise(MeteorCall.migration.getMigrationStatus())
 
 		expect(migrationStatus0).toMatchObject({
 			migrationNeeded: true,
@@ -80,11 +70,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 		expect(migrationStatus0.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
-		const migrationResult0: RunMigrationResult = Meteor.call(MigrationMethods.runMigration,
+		const migrationResult0: RunMigrationResult = waitForPromise(MeteorCall.migration.runMigration(
 			migrationStatus0.migration.chunks,
 			migrationStatus0.migration.hash,
 			userInput(migrationStatus0)
-		)
+		))
 
 		expect(migrationResult0).toMatchObject({
 			migrationCompleted: false,
@@ -101,11 +91,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		)
 
 		// Continue with migration:
-		const migrationStatus1: GetMigrationStatusResult = Meteor.call(MigrationMethods.getMigrationStatus)
+		const migrationStatus1: GetMigrationStatusResult = waitForPromise(MeteorCall.migration.getMigrationStatus())
 		expect(migrationStatus1.migrationNeeded).toEqual(true)
 		expect(migrationStatus1.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
-		const migrationResult1: RunMigrationResult = Meteor.call(MigrationMethods.runMigration,
+		const migrationResult1: RunMigrationResult = waitForPromise(MeteorCall.migration.runMigration(
 			migrationStatus1.migration.chunks,
 			migrationStatus1.migration.hash,
 			userInput(migrationStatus1, {
@@ -115,7 +105,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				'Studios.settings.slackEvaluationUrls': 'mock',
 				'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff'
 			})
-		)
+		))
 		expect(migrationResult1).toMatchObject({
 			migrationCompleted: true,
 			// partialMigration: true,
@@ -129,7 +119,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	testInFiber('Ensure migrations run in correct order', () => {
 
-		Meteor.call(MigrationMethods.resetDatabaseVersions)
+		waitForPromise(MeteorCall.migration.resetDatabaseVersions())
 
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
 

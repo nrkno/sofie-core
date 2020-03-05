@@ -8,7 +8,7 @@ export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>
 
 export interface UserActionsLogItem {
 	_id: UserActionsLogItemId
-	userId: string,
+	userId?: string,
 	clientAddress: string,
 	timestamp: Time,
 	method: string,

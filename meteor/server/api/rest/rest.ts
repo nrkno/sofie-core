@@ -1,11 +1,11 @@
 import { ServerResponse, IncomingMessage } from 'http'
 import { Picker, Router, Params } from 'meteor/meteorhacks:picker'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../methods'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 
 const POST = Picker.filter((req: IncomingMessage, _res: ServerResponse) => {
@@ -23,9 +23,9 @@ const index: any = []
 Meteor.startup(() => {
 	// Expose all user actions:
 
-	_.each(_.keys(UserActionAPI.methods), (methodName) => {
+	_.each(_.keys(UserActionAPIMethods), (methodName) => {
 
-		const methodValue = UserActionAPI.methods[methodName]
+		const methodValue = UserActionAPIMethods[methodName]
 		const signature = MeteorMethodSignatures[methodValue]
 
 

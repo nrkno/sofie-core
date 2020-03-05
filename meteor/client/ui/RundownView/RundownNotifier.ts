@@ -18,7 +18,6 @@ import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
@@ -27,6 +26,7 @@ import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { MeteorCall } from '../../../lib/api/methods'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -174,9 +174,9 @@ class RundownViewNotifier extends WithManagedTracker {
 											yes: t('Re-sync'),
 											no: t('Cancel'),
 											onAccept: (event) => {
-												doUserAction(t, event, UserActionAPI.methods.resyncRundownPlaylist, [ playlist._id ], (err, response) => {
-													if (!err && response) {
-														handleRundownPlaylistReloadResponse(t, playlist, response.result)
+												doUserAction(t, event, 'Re-Syncing Rundown Playlist', () => MeteorCall.userAction.resyncRundownPlaylist(playlist._id), (err, reloadResult) => {
+													if (!err && reloadResult) {
+														handleRundownPlaylistReloadResponse(t, playlist, reloadResult)
 													}
 												})
 											}
@@ -319,7 +319,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 }}).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
+			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
 			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 				return o.notes.map(note => _.extend(note, {
 					rank: o.rank
@@ -485,33 +485,39 @@ class RundownViewNotifier extends WithManagedTracker {
 		// console.log('update_version_status, ' + rundownId)
 
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
-		Meteor.call(RundownAPI.methods.rundownPlaylistNeedsResync, playlistId, (err: Error, versionMismatch: string) => {
-			let newNotification: Notification | undefined = undefined
-			if (err) {
-				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, undefined, -1)
-			} else if (versionMismatch && versionMismatch.length) {
-				newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, [
-					{
-						label: t('Reload ENPS Data'),
-						type: 'primary',
-						action: (e) => {
-							const reloadFunc = reloadRundownPlaylistClick.get()
-							if (reloadFunc) {
-								reloadFunc(e)
+		MeteorCall.rundown.rundownPlaylistNeedsResync(playlistId)
+			.then((versionMismatch: string[]) => {
+				let newNotification: Notification | undefined = undefined
+				if (versionMismatch && versionMismatch.length) {
+					newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this rundown. It might not run correctly'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, [
+						{
+							label: t('Reload ENPS Data'),
+							type: 'primary',
+							action: (e) => {
+								const reloadFunc = reloadRundownPlaylistClick.get()
+								if (reloadFunc) {
+									reloadFunc(e)
+								}
 							}
 						}
-					}
-				], -1)
-			}
+					], -1)
+				}
 
-			if (newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
-				this._rundownImportVersionStatus = newNotification
-				this._rundownImportVersionStatusDep.changed()
-			} else if (!newNotification && this._rundownImportVersionStatus) {
-				this._rundownImportVersionStatus = undefined
-				this._rundownImportVersionStatusDep.changed()
-			}
-		})
+				if (
+					(newNotification && !Notification.isEqual(this._rundownImportVersionStatus, newNotification)) ||
+					(!newNotification && this._rundownImportVersionStatus)
+				) {
+					this._rundownImportVersionStatus = newNotification
+					this._rundownImportVersionStatusDep.changed()
+				}
+			}).catch(err => {
+				// console.error(err)
+				let newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, undefined, -1)
+				if (!Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
+					this._rundownImportVersionStatus = newNotification
+					this._rundownImportVersionStatusDep.changed()
+				}
+			})
 	}
 
 	private cleanUpMediaStatus () {

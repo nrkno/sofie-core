@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import {
-	setMeteorMethods,
 	getRunningMethods,
 	resetRunningMethods
 } from './methods'
@@ -213,13 +212,4 @@ Meteor.startup(() => {
 	Meteor.setTimeout(() => {
 		monitorPerformance()
 	}, 5000)
-})
-
-setMeteorMethods({
-	'debug_traceDebuggingData': () => {
-		return traceDebuggingData()
-	},
-	'debug_getPerformanceStatistics': () => {
-		return getStatistics()
-	}
 })

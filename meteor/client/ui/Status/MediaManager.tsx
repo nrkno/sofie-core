@@ -17,7 +17,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { MeteorCall } from '../../../lib/api/methods'
 const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {
@@ -331,19 +331,19 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		})
 	}
 	actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaRestartWorkflow, [workflow._id])
+		doUserAction(this.props.t, event, 'Restarting Media Workflow', () => MeteorCall.userAction.mediaRestartWorkflow(workflow._id))
 	}
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortWorkflow, [workflow._id])
+		doUserAction(this.props.t, event, 'Aborting Media Workflow ', () => MeteorCall.userAction.mediaAbortWorkflow(workflow._id))
 	}
 	actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaPrioritizeWorkflow, [workflow._id])
+		doUserAction(this.props.t, event, 'Prioritizing Media Workflow', () => MeteorCall.userAction.mediaPrioritizeWorkflow(workflow._id))
 	}
 	actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaRestartAllWorkflows, [])
+		doUserAction(this.props.t, event, 'Restarting Media Workflow', () => MeteorCall.userAction.mediaRestartAllWorkflows())
 	}
 	actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortAllWorkflows, [])
+		doUserAction(this.props.t, event, 'Aborting all Media Workflows', () => MeteorCall.userAction.mediaAbortAllWorkflows())
 	}
 
 	renderWorkFlows () {

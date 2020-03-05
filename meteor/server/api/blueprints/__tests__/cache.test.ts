@@ -5,13 +5,11 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, protectString } from '../../../../lib/lib'
 import { loadSystemBlueprints, loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown, WrappedStudioBlueprint } from '../cache'
 import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
-import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType, BlueprintResultRundown, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { generateFakeBlueprint } from './lib'
-
-// require('../api.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint cache', () => {
 

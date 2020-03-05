@@ -23,7 +23,6 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -36,6 +35,7 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IState {
 	outputLayers: {
@@ -335,15 +335,20 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 			return
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (!this.isAdLibOnAir(adlibPiece)) {
 				if (!adlibPiece.isGlobal) {
-					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-						this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false
-					])
+					doUserAction(t, e, 'Start playing Adlib', () => MeteorCall.userAction.segmentAdLibPieceStart(
+						this.props.playlist._id,
+						currentPartInstanceId,
+						adlibPiece._id, queue || false
+					))
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-						this.props.playlist._id, this.props.playlist.currentPartInstanceId, adlibPiece._id, queue || false
-					])
+					doUserAction(t, e, 'Start playing Adlib', () => MeteorCall.userAction.baselineAdLibPieceStart(
+						this.props.playlist._id,
+						currentPartInstanceId,
+						adlibPiece._id, queue || false
+					))
 				} else if (adlibPiece.isSticky) {
 					this.onToggleSticky(adlibPiece.sourceLayerId, e)
 				}
@@ -358,7 +363,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.playlist._id, sourceLayerId])
+			doUserAction(t, e, '', () => MeteorCall.userAction.sourceLayerStickyPieceStart(this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -366,9 +371,13 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 		// console.log(sourceLayer)
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [
-				this.props.playlist._id, this.props.playlist.currentPartInstanceId, sourceLayer._id
-			])
+			const playlistId = this.props.playlist._id
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			doUserAction(t, e, 'Stopping SourceLayer', () => MeteorCall.userAction.sourceLayerOnPartStop(
+				playlistId,
+				currentPartInstanceId,
+				sourceLayer._id
+			))
 		}
 	}
 

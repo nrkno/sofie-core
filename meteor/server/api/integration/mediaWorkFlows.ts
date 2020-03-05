@@ -5,13 +5,12 @@ import { logger } from '../../logging'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
-import { setMeteorMethods, Methods } from '../../methods'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI, MediaWorkFlowRevision, MediaWorkFlowStepRevision } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 
 export namespace MediaManagerIntegration {
 
-	export function getMediaWorkFlowStepRevisions (deviceId: PeripheralDeviceId, token: string) {
+	export function getMediaWorkFlowStepRevisions (deviceId: PeripheralDeviceId, token: string): MediaWorkFlowStepRevision[] {
 		logger.debug('getMediaWorkFlowStepRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 
@@ -29,7 +28,7 @@ export namespace MediaManagerIntegration {
 		}
 	}
 
-	export function getMediaWorkFlowRevisions (deviceId: PeripheralDeviceId, token: string) {
+	export function getMediaWorkFlowRevisions (deviceId: PeripheralDeviceId, token: string): MediaWorkFlowRevision[] {
 		logger.debug('getMediaWorkFlowRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 
@@ -47,7 +46,7 @@ export namespace MediaManagerIntegration {
 		}
 	}
 
-	export function updateMediaWorkFlow (deviceId: PeripheralDeviceId, token: string, workFlowId: MediaWorkFlowId, obj: MediaWorkFlow | null) {
+	export function updateMediaWorkFlow (deviceId: PeripheralDeviceId, token: string, workFlowId: MediaWorkFlowId, obj: MediaWorkFlow | null): void {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) throw new Meteor.Error(400, `Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `)
 		if (!peripheralDevice.studioId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
@@ -76,7 +75,7 @@ export namespace MediaManagerIntegration {
 		}
 	}
 
-	export function updateMediaWorkFlowStep (deviceId: PeripheralDeviceId, token: string, stepId: MediaWorkFlowStepId, obj: MediaWorkFlowStep | null) {
+	export function updateMediaWorkFlowStep (deviceId: PeripheralDeviceId, token: string, stepId: MediaWorkFlowStepId, obj: MediaWorkFlowStep | null): void {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) throw new Meteor.Error(400, `Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `)
 		if (!peripheralDevice.studioId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
@@ -102,19 +101,3 @@ export namespace MediaManagerIntegration {
 		}
 	}
 }
-
-let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.getMediaWorkFlowRevisions] = (deviceId: PeripheralDeviceId, deviceToken: string) => {
-	return MediaManagerIntegration.getMediaWorkFlowRevisions(deviceId, deviceToken)
-}
-methods[PeripheralDeviceAPI.methods.getMediaWorkFlowStepRevisions] = (deviceId: PeripheralDeviceId, deviceToken: string) => {
-	return MediaManagerIntegration.getMediaWorkFlowStepRevisions(deviceId, deviceToken)
-}
-methods[PeripheralDeviceAPI.methods.updateMediaWorkFlow] = (deviceId: PeripheralDeviceId, deviceToken: string, workFlowId: MediaWorkFlowId , obj: MediaWorkFlow | null) => {
-	return MediaManagerIntegration.updateMediaWorkFlow(deviceId, deviceToken, workFlowId, obj)
-}
-methods[PeripheralDeviceAPI.methods.updateMediaWorkFlowStep] = (deviceId: PeripheralDeviceId, deviceToken: string, docId: MediaWorkFlowStepId, obj: MediaWorkFlowStep | null) => {
-	return MediaManagerIntegration.updateMediaWorkFlowStep(deviceId, deviceToken, docId, obj)
-}
-// Apply methods:
-setMeteorMethods(methods)

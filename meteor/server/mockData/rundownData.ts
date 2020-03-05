@@ -5,7 +5,6 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
 import { Parts, PartId } from '../../lib/collections/Parts'
@@ -16,7 +15,7 @@ import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/Rundo
 // These are temporary method to fill the rundown database with some sample data
 // for development
 
-setMeteorMethods({
+Meteor.methods({
 
 	'debug_scrambleDurations' () {
 		let pieces = Pieces.find().fetch()

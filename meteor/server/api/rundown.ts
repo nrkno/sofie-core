@@ -17,28 +17,27 @@ import {
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
-	unprotectString
+	unprotectString,
+	makePromise
 } from '../../lib/lib'
 import { logger } from '../logging'
-import { ServerPlayoutAPI, triggerUpdateTimelineAfterIngestData } from './playout/playout'
-import { PlayoutAPI } from '../../lib/api/playout'
-import { Methods, setMeteorMethods } from '../methods'
-import { RundownAPI } from '../../lib/api/rundown'
+import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { registerClassToMeteorMethods } from '../methods'
+import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
 import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown, BlueprintResultRundownPlaylist, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
-import { UpdateNext } from './ingest/updateNext'
-import { UserActionAPI } from '../../lib/api/userActions'
 import { IngestActions } from './ingest/actions'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
+import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -98,7 +97,6 @@ export interface RundownPlaylistAndOrder {
 }
 
 export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
-	const context = new StudioConfigContext(studio)
 
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
@@ -272,7 +270,7 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 	const partsToPutAfter: {[partId: string]: Array<Part>} = {}
 
 	_.each(orgParts, (part) => {
-		const afterPart: string = unprotectString(part._id)
+		const afterPart: string | undefined = unprotectString(part.afterPart)
 		if (afterPart) {
 			if (!partsToPutAfter[afterPart]) partsToPutAfter[afterPart] = []
 			partsToPutAfter[afterPart].push(part)
@@ -351,7 +349,6 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 			}
 		})
 	}
-
 	waitForPromiseAll(ps)
 
 	return parts
@@ -388,14 +385,14 @@ export namespace ServerRundownAPI {
 		rundown.remove()
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): UserActionAPI.ReloadRundownPlaylistResponse {
+	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
 		check(playlistId, String)
 		logger.info('resyncRundownPlaylist ' + playlistId)
 
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
-		const response: UserActionAPI.ReloadRundownPlaylistResponse = {
+		const response: ReloadRundownPlaylistResponse = {
 			rundownsResponses: playlist.getRundowns().map(rundown => {
 				return {
 					rundownId: rundown._id,
@@ -405,7 +402,7 @@ export namespace ServerRundownAPI {
 		}
 		return response
 	}
-	export function resyncRundown (rundownId: RundownId): UserActionAPI.ReloadRundownResponse {
+	export function resyncRundown (rundownId: RundownId): ReloadRundownResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
@@ -465,28 +462,28 @@ export namespace ClientRundownAPI {
 			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 		})
 
-		return _.compact(errors)
+		return []
 	}
 }
 
-let methods: Methods = {}
-methods[RundownAPI.methods.removeRundownPlaylist] = (playlistId: RundownPlaylistId) => {
-	return ServerRundownAPI.removeRundownPlaylist(playlistId)
+class ServerRundownAPIClass implements NewRundownAPI {
+	removeRundownPlaylist (playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(playlistId))
+	}
+	resyncRundownPlaylist (playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(playlistId))
+	}
+	rundownPlaylistNeedsResync (playlistId: RundownPlaylistId) {
+		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(playlistId))
+	}
+	removeRundown (rundownId: RundownId) {
+		return makePromise(() => ServerRundownAPI.removeRundown(rundownId))
+	}
+	resyncRundown (rundownId: RundownId) {
+		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
+	}
+	unsyncRundown (rundownId: RundownId) {
+		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
+	}
 }
-methods[RundownAPI.methods.resyncRundownPlaylist] = (playlistId: RundownPlaylistId) => {
-	return ServerRundownAPI.resyncRundownPlaylist(playlistId)
-}
-methods[RundownAPI.methods.rundownPlaylistNeedsResync] = (playlistId: RundownPlaylistId) => {
-	return ClientRundownAPI.rundownPlaylistNeedsResync(playlistId)
-}
-methods[RundownAPI.methods.removeRundown] = (rundownId: RundownId) => {
-	return ServerRundownAPI.removeRundown(rundownId)
-}
-methods[RundownAPI.methods.resyncRundown] = (rundownId: RundownId) => {
-	return ServerRundownAPI.resyncRundown(rundownId)
-}
-methods[RundownAPI.methods.unsyncRundown] = (rundownId: RundownId) => {
-	return ServerRundownAPI.unsyncRundown(rundownId)
-}
-// Apply methods:
-setMeteorMethods(methods)
+registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

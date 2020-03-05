@@ -73,7 +73,7 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -107,7 +107,7 @@ export namespace ServerPlayoutAPI {
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
-	export function resetRundownPlaylist (rundownPlaylistId: RundownPlaylistId) {
+	export function resetRundownPlaylist (rundownPlaylistId: RundownPlaylistId): void {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -116,8 +116,6 @@ export namespace ServerPlayoutAPI {
 			libResetRundownPlaylist(playlist)
 
 			updateTimeline(playlist.studioId)
-
-			return { success: 200 }
 		})
 	}
 	/**
@@ -204,7 +202,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 			const rundowns = playlist.getRundowns()
 
-			const response: UserActionAPI.ReloadRundownPlaylistResponse = {
+			const response: ReloadRundownPlaylistResponse = {
 				rundownsResponses: rundowns.map(rundown => {
 					return {
 						rundownId: rundown._id,
@@ -212,15 +210,13 @@ export namespace ServerPlayoutAPI {
 					}
 				})
 			}
-			return ClientAPI.responseSuccess(
-				response
-			)
+			return response
 		})
 	}
 	/**
 	 * Take the currently Next:ed Part (start playing it)
 	 */
-	export function takeNextPart (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse {
+	export function takeNextPart (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
 		let now = getCurrentTime()
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
@@ -318,7 +314,7 @@ export namespace ServerPlayoutAPI {
 				waitForPromiseAll(ps)
 
 				updateTimeline(playlist.studioId)
-				return ClientAPI.responseSuccess()
+				return ClientAPI.responseSuccess(undefined)
 			}
 
 			let previousPartInstance = rundownData.currentPartInstance || null
@@ -544,7 +540,7 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 
-			return ClientAPI.responseSuccess()
+			return ClientAPI.responseSuccess(undefined)
 		})
 	}
 	export function setNextPart (
@@ -552,7 +548,7 @@ export namespace ServerPlayoutAPI {
 		nextPartId: PartId | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
-	): ClientAPI.ClientResponse {
+	): ClientAPI.ClientResponse<void> {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
 
@@ -562,7 +558,7 @@ export namespace ServerPlayoutAPI {
 
 			setNextPartInner(playlist, nextPartId, setManually, nextTimeOffset)
 
-			return ClientAPI.responseSuccess()
+			return ClientAPI.responseSuccess(undefined)
 		})
 	}
 	export function setNextPartInner (
@@ -736,8 +732,6 @@ export namespace ServerPlayoutAPI {
 			RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
 
 			updateTimeline(playlist.studioId)
-
-			return ClientAPI.responseSuccess()
 		})
 	}
 	export function deactivateHold (rundownPlaylistId: RundownPlaylistId) {
@@ -753,8 +747,6 @@ export namespace ServerPlayoutAPI {
 			Rundowns.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.NONE } })
 
 			updateTimeline(playlist.studioId)
-
-			return ClientAPI.responseSuccess()
 		})
 	}
 	export function disableNextPiece (rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
@@ -862,10 +854,8 @@ export namespace ServerPlayoutAPI {
 				}})
 
 				updateTimeline(playlist.studioId)
-
-				return ClientAPI.responseSuccess()
 			} else {
-				return ClientAPI.responseError('Found no future pieces')
+				throw new Meteor.Error(500, 'Found no future pieces')
 			}
 		})
 	}
@@ -1255,7 +1245,7 @@ export namespace ServerPlayoutAPI {
 					updateTimeline(rundown.studioId)
 				}
 			}
-			return ClientAPI.responseSuccess()
+			return ClientAPI.responseSuccess(undefined)
 		})
 	}
 	/**
@@ -1315,7 +1305,7 @@ export namespace ServerPlayoutAPI {
 
 		return shouldUpdateStudioBaseline(studioId)
 	}
-	export function shouldUpdateStudioBaseline (studioId: StudioId) {
+	export function shouldUpdateStudioBaseline (studioId: StudioId): string | false {
 		check(studioId, String)
 
 		const studio = Studios.findOne(studioId)

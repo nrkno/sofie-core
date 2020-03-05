@@ -21,11 +21,12 @@ import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
+import { MeteorCall } from '../../../lib/api/methods'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -307,13 +308,16 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			// acceptOnly?: boolean
 			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
 				console.log('accept', inputResult)
-				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
-					this.props.part.instance.rundownId,
+				const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
+				if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
+
+				doUserAction(this.props.t, e, 'Set In & Out points', () => MeteorCall.userAction.setInOutPoints(
+					rundown.playlistId,
 					this.props.part.instance.part._id,
 					this.props.piece.instance.piece._id,
 					inputResult.inPoint,
 					inputResult.outPoint
-				])
+				))
 			},
 			inputs: {
 				inPoint: {

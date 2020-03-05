@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { runInFiber } from '../../../../__mocks__/Fibers'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
@@ -10,10 +10,10 @@ import { UpdateNext } from '../updateNext'
 
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances, DBPartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 jest.mock('../../playout/playout')
 
-require('../api.ts') // include in order to create the Meteor methods needed
+require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
 const rundownId: RundownId = protectString('mock_ro')
 const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
@@ -254,11 +254,6 @@ describe('Test mos update next part helpers', () => {
 			previousPartInstanceId: null,
 			nextPartManual: nextPartManual || false,
 		}})
-	}
-	function getRundown () {
-		const rundown = Rundowns.findOne(rundownId) as Rundown
-		expect(rundown).toBeTruthy()
-		return rundown
 	}
 	function getRundownPlaylist () {
 		const playlist = RundownPlaylists.findOne(rundownPlaylistId) as RundownPlaylist

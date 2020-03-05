@@ -8,7 +8,7 @@ import { Segment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Part, Parts } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
 import { getCurrentTime, literal, protectString } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
@@ -117,7 +117,7 @@ describe('test peripheralDevice general API methods', () => {
 			  deviceConfig: []
 		  }
 		}
-		Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token, options)
+		Meteor.call(PeripheralDeviceAPIMethods.initialize, device._id, device.token, options)
 		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(initDevice).toBeTruthy()
 		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100)
@@ -130,7 +130,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})
-		Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token, {
+		Meteor.call(PeripheralDeviceAPIMethods.setStatus, device._id, device.token, {
 			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"]
 		})
@@ -141,7 +141,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('getPeripheralDevice', () => {
-		let gotDevice: PeripheralDevice = Meteor.call(PeripheralDeviceAPI.methods.getPeripheralDevice, device._id, device.token)
+		let gotDevice: PeripheralDevice = Meteor.call(PeripheralDeviceAPIMethods.getPeripheralDevice, device._id, device.token)
 		expect(gotDevice).toBeTruthy()
 		expect(gotDevice._id).toBe(device._id)
 	})
@@ -149,7 +149,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('ping', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
-		Meteor.call(PeripheralDeviceAPI.methods.ping, device._id, device.token)
+		Meteor.call(PeripheralDeviceAPIMethods.ping, device._id, device.token)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
 
@@ -172,7 +172,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		let message = 'Waving!'
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
-		Meteor.call(PeripheralDeviceAPI.methods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
+		Meteor.call(PeripheralDeviceAPIMethods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
 		expect(command).toBeTruthy()
@@ -184,7 +184,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultMessage).toBeUndefined()
 
 		let replyMessage = 'Waving back!'
-		Meteor.call(PeripheralDeviceAPI.methods.functionReply, device._id, device.token, command._id, undefined, replyMessage)
+		Meteor.call(PeripheralDeviceAPIMethods.functionReply, device._id, device.token, command._id, undefined, replyMessage)
 		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
 
 		expect(resultErr).toBeNull()
@@ -200,7 +200,7 @@ describe('test peripheralDevice general API methods', () => {
 			partId: 'part000',
 			time: getCurrentTime()
 		}
-		Meteor.call(PeripheralDeviceAPI.methods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
+		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
 	}) */
 
 	/* testInFiber('partPlaybackStopped', () => {
@@ -211,7 +211,7 @@ describe('test peripheralDevice general API methods', () => {
 			time: getCurrentTime()
 		}
 		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
-		Meteor.call(PeripheralDeviceAPI.methods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
+		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
 		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
 	}) */
 
@@ -222,7 +222,7 @@ describe('test peripheralDevice general API methods', () => {
 			pieceId: 'piece000',
 			time: getCurrentTime()
 		}
-		Meteor.call(PeripheralDeviceAPI.methods.piecePlaybackStarted, device._id, device.token, piecePlaybackStartedResult)
+		Meteor.call(PeripheralDeviceAPIMethods.piecePlaybackStarted, device._id, device.token, piecePlaybackStartedResult)
 	}) */
 
 	/* testInFiber('piecePlaybackStopped', () => {
@@ -233,7 +233,7 @@ describe('test peripheralDevice general API methods', () => {
 			time: getCurrentTime()
 		}
 		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
-		Meteor.call(PeripheralDeviceAPI.methods.piecePlaybackStopped, device._id, device.token, piecePlaybackStoppedResult)
+		Meteor.call(PeripheralDeviceAPIMethods.piecePlaybackStopped, device._id, device.token, piecePlaybackStoppedResult)
 		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
 	})
 	*/
@@ -241,7 +241,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('killProcess with a rundown present', () => { // test this does not shutdown because Rundown stored
 		setLoggerLevel('debug')
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.killProcess, device._id, device.token, true)
+			Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[400] Unable to run killProcess: Rundowns not empty!`)
@@ -252,10 +252,10 @@ describe('test peripheralDevice general API methods', () => {
 		setLoggerLevel('debug')
 		let throwPlease = false
 		try {
-			let result = 	Meteor.call(PeripheralDeviceAPI.methods.testMethod, device._id, device.token, 'european')
+			let result = 	Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
 			expect(result).toBe('european')
 			throwPlease = true
-			Meteor.call(PeripheralDeviceAPI.methods.testMethod, device._id, device.token, 'european', throwPlease)
+			Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european', throwPlease)
 			fail('expected to throw')
 		} catch (e) {
 			if (throwPlease) {
@@ -271,7 +271,7 @@ describe('test peripheralDevice general API methods', () => {
 		setLoggerLevel('debug')
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = [
 			{ id: 'wibble', time: getCurrentTime() }, { id: 'wobble', time: getCurrentTime() - 100 }]
-		Meteor.call(PeripheralDeviceAPI.methods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
+		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
 	})
 	*/
 
@@ -279,7 +279,7 @@ describe('test peripheralDevice general API methods', () => {
 		setLoggerLevel('debug')
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
+			Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[400] can only request user auth token for peripheral device of spreadsheet type')
@@ -288,7 +288,7 @@ describe('test peripheralDevice general API methods', () => {
 		PeripheralDevices.update(device._id, { $set: {
 			type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
 		}})
-		Meteor.call(PeripheralDeviceAPI.methods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
+		Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
 		let deviceWithAccessToken = PeripheralDevices.findOne(device._id)
 		expect(deviceWithAccessToken).toBeTruthy()
 		expect((deviceWithAccessToken as SpreadsheetDevice).accessTokenUrl).toBe('http://auth.url/')
@@ -302,7 +302,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('storeAccessToken', () => {
 		setLoggerLevel('debug')
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.storeAccessToken, device._id, device.token, 'http://auth.url/')
+			Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'http://auth.url/')
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[400] can only store access token for peripheral device of spreadsheet type')
@@ -312,7 +312,7 @@ describe('test peripheralDevice general API methods', () => {
 			type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
 		}})
 
-		Meteor.call(PeripheralDeviceAPI.methods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+		Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 		let deviceWithSecretToken = PeripheralDevices.findOne(device._id)
 		// console.log(deviceWithSecretToken)
 		expect(deviceWithSecretToken).toBeTruthy()
@@ -323,7 +323,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('uninitialize', () => {
 		setLoggerLevel('debug')
-		Meteor.call(PeripheralDeviceAPI.methods.unInitialize, device._id, device.token)
+		Meteor.call(PeripheralDeviceAPIMethods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 
 		device = setupDefaultStudioEnvironment().ingestDevice
@@ -342,14 +342,14 @@ describe('test peripheralDevice general API methods', () => {
 			}
 		}
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.initialize, 'wibbly', device.token, options)
+			Meteor.call(PeripheralDeviceAPIMethods.initialize, 'wibbly', device.token, options)
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
 		}
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.initialize, device._id, device.token.slice(0, -1), options)
+			Meteor.call(PeripheralDeviceAPIMethods.initialize, device._id, device.token.slice(0, -1), options)
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`)
@@ -359,21 +359,21 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('setStatus with bad arguments', () => {
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.setStatus, 'wibbly', device.token, { statusCode: 0 })
+			Meteor.call(PeripheralDeviceAPIMethods.setStatus, 'wibbly', device.token, { statusCode: 0 })
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
 		}
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token.slice(0, -1), { statusCode: 0 })
+			Meteor.call(PeripheralDeviceAPIMethods.setStatus, device._id, device.token.slice(0, -1), { statusCode: 0 })
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[401] Not allowed access to peripheralDevice`)
 		}
 
 		try {
-			Meteor.call(PeripheralDeviceAPI.methods.setStatus, device._id, device.token, { statusCode: 42 })
+			Meteor.call(PeripheralDeviceAPIMethods.setStatus, device._id, device.token, { statusCode: 42 })
 			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[400] device status code is not known`)

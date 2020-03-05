@@ -20,8 +20,6 @@ import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { callMethod } from '../../lib/clientAPI'
-import { ShowStylesAPI } from '../../../lib/api/showStyles'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
@@ -30,6 +28,7 @@ import RundownLayoutEditor from './RundownLayoutEditor'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {
 	match: {
@@ -317,10 +316,10 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 							{item.value}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+							<button className='action-btn' onClick={() => this.confirmDelete(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -367,7 +366,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -530,7 +529,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 				return newItem
 			}).sort((a, b) => {
 				return a._rank - b._rank
-			}).map((item, index) => {
+			}).map((item) => {
 				return <React.Fragment key={item._id}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -545,10 +544,10 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+							<button className='action-btn' onClick={() => this.confirmDelete(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -768,7 +767,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -913,7 +912,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 				return newItem
 			}).sort((a, b) => {
 				return a._rank - b._rank
-			}).map((item, index) => {
+			}).map((item) => {
 				return [
 					<tr key={item._id} className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -930,10 +929,10 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 							})}>PGM</div>
 						</td>
 						<td className='settings-studio-output-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+							<button className='action-btn' onClick={() => this.confirmDelete(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -992,7 +991,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1127,10 +1126,10 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 							{item.label}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}>
+							<button className='action-btn' onClick={() => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -1165,7 +1164,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1234,7 +1233,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		}
 	}
 	onAddShowStyleVariant = () => {
-		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleVariant, this.props.showStyleBase._id)
+		MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(console.error)
 	}
 	confirmRemove = (showStyleVariant: ShowStyleVariant) => {
 		const { t } = this.props
@@ -1243,7 +1242,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			no: t('Cancel'),
 			yes: t('Remove'),
 			onAccept: () => {
-				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
+				MeteorCall.showstyles.removeShowStyleVariant(showStyleVariant._id).catch(console.error)
 			},
 			message: <React.Fragment>
 				<p>{t('Are you sure you want to remove the variant "{{showStyleVariantId}}"?', { showStyleVariantId: showStyleVariant.name })}</p>
@@ -1255,7 +1254,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		const { t } = this.props
 
 		return (
-			this.props.showStyleVariants.map((showStyleVariant, index) => {
+			this.props.showStyleVariants.map((showStyleVariant) => {
 				return <React.Fragment key={unprotectString(showStyleVariant._id)}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(showStyleVariant._id)
@@ -1264,10 +1263,10 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 							{showStyleVariant.name || t('Unnamed variant')}
 						</th>
 						<td className='settings-studio-showStyleVariant__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(showStyleVariant._id)}>
+							<button className='action-btn' onClick={() => this.editItem(showStyleVariant._id)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmRemove(showStyleVariant)}>
+							<button className='action-btn' onClick={() => this.confirmRemove(showStyleVariant)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -1301,7 +1300,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(showStyleVariant._id)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(showStyleVariant._id)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>

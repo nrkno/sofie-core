@@ -17,6 +17,7 @@ import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IExternalMessagesProps {
 }
@@ -160,13 +161,13 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		this._cleanUp()
 	}
 	removeMessage (msg: ExternalMessageQueueObj) {
-		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.remove, msg._id)
+		MeteorCall.externalMessages.remove(msg._id).catch(console.error)
 	}
 	toggleHoldMessage (msg: ExternalMessageQueueObj) {
-		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.toggleHold, msg._id)
+		MeteorCall.externalMessages.toggleHold(msg._id).catch(console.error)
 	}
 	retryMessage (msg: ExternalMessageQueueObj) {
-		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.retry, msg._id)
+		MeteorCall.externalMessages.retry(msg._id).catch(console.error)
 	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
 

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString, protectString, unprotectObject } from '../lib'
+import { stringifyObjects, getHash, ProtectedString, protectString, unprotectObject, unprotectString } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 
@@ -79,7 +79,7 @@ export function createMongoCollection<T> (
 		}
 	}
 
-	const collection = new Mongo.Collection<T>(name, options)
+	const collection: TransformedCollection<T, any> = new Mongo.Collection<T>(name, options) as any
 
 	overrideMethod(collection, 'find')
 	overrideMethod(collection, 'findOne')
