@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { queueExternalMessages } from '../ExternalMessageQueue'
-import { ExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessageQueue'
+import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessageQueue'
 import {
 	ExternalMessageQueue,
 	ExternalMessageQueueObj

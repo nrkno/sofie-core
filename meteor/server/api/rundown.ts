@@ -462,7 +462,7 @@ export namespace ClientRundownAPI {
 			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 		})
 
-		return []
+		return _.compact(errors)
 	}
 }
 

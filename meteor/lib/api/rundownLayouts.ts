@@ -12,11 +12,6 @@ export enum RundownLayoutsAPIMethods {
 }
 
 export namespace RundownLayoutsAPI {
-	export enum methods {
-		// 'removeRundownLayout' = 'rundown.removeRundownLayout',
-		// 'createRundownLayout' = 'rundown.createRundownLayout'
-	}
-
 	export function isRundownLayout (layout: RundownLayoutBase): layout is RundownLayout {
 		return layout.type === RundownLayoutType.RUNDOWN_LAYOUT
 	}

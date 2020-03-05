@@ -1,8 +1,5 @@
 import { ExternalMessageQueueObjId } from '../collections/ExternalMessageQueue'
 
-export namespace ExternalMessageQueueAPI {
-}
-
 export interface NewExternalMessageQueueAPI {
 	remove (messageId: ExternalMessageQueueObjId): Promise<void>
 	toggleHold (messageId: ExternalMessageQueueObjId): Promise<void>

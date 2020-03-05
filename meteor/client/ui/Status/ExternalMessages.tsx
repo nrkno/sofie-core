@@ -15,7 +15,6 @@ import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/fontawesome-free-solid'
-import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 

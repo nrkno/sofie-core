@@ -93,19 +93,18 @@ const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavig
 	}
 
 	onBlueprintAdd () {
-		let before = Blueprints.find({}).fetch()
-		MeteorCall.blueprint.insertBlueprint().catch(console.error)
-		setTimeout(() => {
-			let after = Blueprints.find({}).fetch()
-			let newBlueprint = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.props.obj['blueprintId'] = newBlueprint
-			if (this.props.obj) {
-				let m = {}
-				m['blueprintId'] = newBlueprint
-				Studios.update(this.props.obj['_id'], { $set: m })
-			}
-			this.redirectUser('/settings/blueprint/' + newBlueprint)
-		}, 1000)
+		MeteorCall.blueprint.insertBlueprint()
+			.then(blueprintId => {
+				this.props.obj['blueprintId'] = blueprintId
+				if (this.props.obj) {
+					let m = {}
+					m['blueprintId'] = blueprintId
+					Studios.update(this.props.obj['_id'], { $set: m })
+				}
+				console.log(this.props.obj)
+				this.redirectUser('/settings/blueprint/' + blueprintId)
+			})
+			.catch(console.error)
 	}
 
 	renderButton () {
@@ -133,16 +132,6 @@ const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavig
 		super(props)
 	}
 
-	onShowStyleAdd () {
-		let before = ShowStyleBases.find({}).fetch()
-		MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
-		setTimeout(() => {
-			let after = ShowStyleBases.find({}).fetch()
-			let newShowStyle = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/showStyleBase/' + newShowStyle)
-		}, 1000)
-	}
-
 	renderButton () {
 		if (this.props.obj && this.props.attribute) {
 			return (
@@ -163,13 +152,11 @@ const NewShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNa
 	}
 
 	onShowStyleAdd () {
-		let before = ShowStyleBases.find({}).fetch()
-		MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
-		setTimeout(() => {
-			let after = ShowStyleBases.find({}).fetch()
-			let newShowStyle = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/showStyleBase/' + newShowStyle)
-		}, 1000)
+		MeteorCall.showstyles.insertShowStyleBase()
+		.then(showStyleBaseId => {
+			this.redirectUser('/settings/showStyleBase/' + showStyleBaseId)
+		})
+		.catch(console.error)
 	}
 
 	renderButton () {

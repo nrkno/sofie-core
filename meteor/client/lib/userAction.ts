@@ -10,11 +10,12 @@ import { Meteor } from 'meteor/meteor'
 export function doUserAction<Result> (
 	t: i18next.TranslationFunction<any, object, string>,
 	event: any,
-	actionName: string,
+	actionName0: string,
 	fcn: () => Promise<ClientAPI.ClientResponse<Result>>,
 	callback?: (err: any, res?: Result) => void | boolean,
 	okMessage?: string
 ) {
+	const actionName = t(actionName0)
 
 	// Display a progress message, if the method takes a long time to execute:
 	let timeoutMessage: Notification | null = null
