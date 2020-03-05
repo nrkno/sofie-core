@@ -291,7 +291,6 @@ describe('Test blueprint api context', () => {
 		class FakeNotesContext implements INotesContext {
 			error: (message: string) => void = jest.fn()
 			warning: (message: string) => void = jest.fn()
-			getNotes: () => any[] = jest.fn(() => [1,2,3])
 			getHashId: (originString: string, originIsNotUnique?: boolean | undefined) => string = jest.fn(() => 'hashed')
 			unhashId: (hash: string) => string = jest.fn(() => 'unhash')
 		}
@@ -313,10 +312,6 @@ describe('Test blueprint api context', () => {
 			context.warning('this is an warning')
 			expect(fakeNotes.warning).toHaveBeenCalledTimes(1)
 			expect(fakeNotes.warning).toHaveBeenCalledWith('this is an warning')
-
-			const notes = context.getNotes()
-			expect(notes).toEqual([1,2,3])
-			expect(fakeNotes.getNotes).toHaveBeenCalledTimes(1)
 
 			const hash = context.getHashId('str 1', false)
 			expect(hash).toEqual('hashed')
