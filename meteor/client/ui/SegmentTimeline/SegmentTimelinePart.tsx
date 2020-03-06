@@ -678,6 +678,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 						</div>
 					}
 					{this.renderTimelineOutputGroups(this.props.part)}
+					{!this.props.relative && this.props.part.identifier && <div className='segment-timeline__identifier'>{this.props.part.identifier}</div>}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
 						'auto-next': innerPart.autoNext,
 						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.playlist.nextPartInstanceId),

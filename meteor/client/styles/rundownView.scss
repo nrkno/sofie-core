@@ -1697,6 +1697,14 @@ body.no-overflow {
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
 				}
 			}
+
+			.segment-timeline__identifier {
+				background-color: #095709;
+				width: min-content;
+				padding: 2px;
+				margin-left: 5px;
+				border-radius: 3px;
+			}
 		}
 	}
 
