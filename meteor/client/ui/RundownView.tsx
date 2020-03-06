@@ -61,8 +61,8 @@ import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
-import { PointerLockCursor } from '../lib/PointerLockCursor';
 import { Settings } from '../../lib/Settings'
+import { PointerLockCursor } from '../lib/PointerLockCursor'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1869,6 +1869,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								}
 							</ErrorBoundary>
 							{this.renderSegmentsList()}
+							<ErrorBoundary>
+								<PointerLockCursor />
+							</ErrorBoundary>
 							<ErrorBoundary>
 								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
 									rundown={this.props.rundown}
