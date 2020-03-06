@@ -11,10 +11,12 @@ import { StudioId } from '../collections/Studios'
 import { RecordedFileId } from '../collections/RecordedFiles'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
+import { SegmentId } from '../collections/Segments'
 
 export interface NewUserActionAPI {
 	take (rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	setNext (rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number): Promise<ClientAPI.ClientResponse<void>>
+	setNextSegment (rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId | null): Promise<ClientAPI.ClientResponse<void>>
 	moveNext (rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number): Promise<ClientAPI.ClientResponse<PartId | null>>
 	prepareForBroadcast (rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	resetRundownPlaylist (rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -29,7 +31,7 @@ export interface NewUserActionAPI {
 	pieceTakeNow (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId): Promise<ClientAPI.ClientResponse<void>>
 	setInOutPoints (rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean)
-	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string)
+	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string[])
 	baselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
 	sourceLayerStickyPieceStart (rundownPlaylistId: RundownPlaylistId, sourceLayerId: string): Promise<ClientAPI.ClientResponse<void>>
 	activateHold (rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
@@ -57,6 +59,7 @@ export interface NewUserActionAPI {
 export enum UserActionAPIMethods {
 	'take' 									= 'userAction.take',
 	'setNext' 								= 'userAction.setNext',
+	'setNextSegment' 						= 'userAction.setNextSegment',
 	'moveNext' 								= 'userAction.moveNext',
 
 	'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',

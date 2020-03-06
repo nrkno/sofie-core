@@ -11,4 +11,3 @@ export interface PlayoutDeviceSettings {
 	multiThreading?: boolean
 	multiThreadedResolver?: boolean
 }
-

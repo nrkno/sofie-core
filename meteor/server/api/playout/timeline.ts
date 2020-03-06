@@ -7,7 +7,8 @@ import {
 	getPieceGroupId,
 	TimelineObjHoldMode,
 	OnGenerateTimelineObj,
-	TSR
+	TSR,
+	PieceLifespan
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import {
@@ -454,10 +455,9 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 
 	// Currently playing:
 	if (currentPartInstance) {
-
 		const currentPieces = currentPartInstance.getAllPieceInstances()
-		const currentInfinitePieces = currentPieces.filter(l => (l.piece.infiniteMode && l.piece.infiniteId && l.piece.infiniteId !== l.piece._id))
-		const currentNormalItems = currentPieces.filter(l => !(l.piece.infiniteMode && l.piece.infiniteId && l.piece.infiniteId !== l.piece._id))
+		const currentInfinitePieces = currentPieces.filter(l => (l.piece.infiniteMode! > PieceLifespan.OutOnNextPart && l.piece.infiniteId))
+		const currentNormalItems = currentPieces.filter(l => !(l.piece.infiniteMode! > PieceLifespan.OutOnNextPart && l.piece.infiniteId))
 
 		let allowTransition = false
 
@@ -504,7 +504,10 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
-			const infiniteGroup = createPartGroup(currentPartInstance, { duration: piece.piece.enable.duration || undefined })
+			const infiniteGroup = createPartGroup(currentPartInstance, {
+				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
+				duration: piece.piece.enable.duration || undefined
+			})
 			infiniteGroup.id = getPartGroupId(unprotectString(piece._id)) + '_infinite' // This doesnt want to belong to a part, so force the ids
 			infiniteGroup.priority = 1
 
@@ -532,6 +535,14 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 							infiniteGroup.enable.duration = offsetTimelineEnableExpression(piece.piece.userDuration.duration, previousPartsDuration)
 						}
 					}
+				}
+			}
+
+			// If this piece does not continue in the next part, then set it to end with the part it belongs to
+			if (nextPartInstance && currentPartInstance.part.autoNext && infiniteGroup.enable.duration === undefined) {
+				const nextItem = _.find(playoutData.selectedInstancePieces, p => p.partInstanceId === nextPartInstance!._id && p.piece.infiniteId === piece.piece.infiniteId)
+				if (!nextItem) {
+					infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
 				}
 			}
 
@@ -690,6 +701,7 @@ function transformPartIntoTimeline (
 		if (pieceInstance.piece.isTransition && (!allowTransition || isHold)) {
 			return
 		}
+		if (pieceInstance.piece.definitelyEnded && pieceInstance.piece.definitelyEnded < getCurrentTime()) return
 
 		const isInfiniteContinuation = pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId !== pieceInstance.piece._id
 		if (isInfiniteContinuation && pieceInstance.piece.infiniteId) {

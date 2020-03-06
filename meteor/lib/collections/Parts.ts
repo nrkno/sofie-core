@@ -165,6 +165,9 @@ export class Part implements DBPart {
 			}, options)
 		).fetch()
 	}
+	getAllAdLibPieces () {
+		return this.getAdLibPieces()
+	}
 	getInvalidReasonNotes (): Array<PartNote> {
 		return this.invalidReason ? [
 			{

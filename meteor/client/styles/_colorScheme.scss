@@ -1,26 +1,31 @@
-$color-status-good: green;
-$color-status-minor-warning: lime;
-$color-status-minor-warning-text: black;
-$color-status-warning: gold;
-$color-status-bad: #FF5E00;
-$color-status-fatal: #E62421;
-$color-status-unknown: #777;
+// color variables are defined in defaultColors.scss
 
-//$general-live-color: #FFE900;
-$general-live-color: #e30000;
-//$general-next-color: #FF0000;
-$general-next-color:#3eca19;
+$color-status-good: var(--color-status-good);
+$color-status-minor-warning: var(--color-status-minor-warning);
+$color-status-minor-warning-text: var(--color-status-minor-warning-text);
+$color-status-warning: var(--color-status-warning);
+$color-status-bad: var(--color-status-bad);
+$color-status-fatal: var(--color-status-fatal);
+$color-status-fatal--translucent: var(--color-status-fatal--translucent);
+$color-status-unknown: var(--color-status-unknown);
 
-//$general-live-remote-color: #8d008d;
-$general-live-remote-color: #e80064;
-$general-live-guest-color: #008a92;
+//$general-live-color: var(--general-live-color);
+$general-live-color: var(--general-live-color);
+//$general-next-color: var(--general-next-color);
+$general-next-color: var(--general-next-color);
 
-$general-late-color: #FF0000;
-$general-fast-color: #FF0000;
+//$general-live-remote-color: var(--general-live-remote-color);
+$general-live-remote-color: var(--general-live-remote-color);
+$general-live-guest-color: var(--general-live-guest-color);
 
-$general-clock: #49C0FB;
+$general-late-color: var(--general-late-color);
+$general-fast-color: var(--general-fast-color);
+$general-fast-color--shadow: var(--general-fast-color--shadow);
 
-$ui-button-primary: #1769ff;
-$ui-button-primary--hover: #0050e3;
+$general-clock: var(--general-clock);
 
-$ui-dark-color: #252627;
+$ui-button-primary: var(--ui-button-primary);
+$ui-button-primary--hover: var(--ui-button-primary--hover);
+$ui-button-primary--translucent: var(--ui-button-primary--translucent);
+
+$ui-dark-color: var(--ui-dark-color);

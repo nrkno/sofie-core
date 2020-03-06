@@ -205,6 +205,8 @@ export enum StatusCode {
 	FATAL = 5			// Operation affected, not possible to recover without manual interference
 }
 
+// Note The actual type of a device is determined by the Category, Type and SubType
+
 export interface StatusObject {
 	statusCode: StatusCode,
 	messages?: Array<string>
@@ -219,6 +221,7 @@ export enum DeviceType {
 	// Ingest devices:
 	MOS 			= 'mos',
 	SPREADSHEET 	= 'spreadsheet',
+	INEWS			= 'inews',
 	// Playout devices:
 	PLAYOUT 		= 'playout',
 	// Media-manager devices:

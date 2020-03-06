@@ -54,7 +54,7 @@ import { SupportPopUp } from './SupportPopUp'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
-import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, ReloadRundownResponse, UserActionAPIMethods } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
@@ -65,6 +65,10 @@ import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRend
 import { OffsetPosition } from '../utils/positions'
 import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
+import { PointerLockCursor } from '../lib/PointerLockCursor'
+import { AdlibSegmentUi } from './Shelf/AdLibPanel'
+
+export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -146,7 +150,7 @@ interface ITimingWarningState {
 }
 const WarningDisplay = translate()(timer(5000)(
 	class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
-		private REHEARSAL_MARGIN = 1 * 60 * 1000
+		private readonly REHEARSAL_MARGIN = 1 * 60 * 1000
 
 		constructor (props: Translated<ITimingWarningProps>) {
 			super(props)
@@ -243,7 +247,8 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_NEXT_UP = 'shift+f10',
 	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR	= 'backspace'
+	RUNDOWN_LOG_ERROR	= 'backspace',
+	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = ''
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -278,12 +283,16 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 							{RundownUtils.formatDiffToTimecode(this.props.rundownPlaylist.startedPlayback - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
 						</span>) || undefined
 					:
-					(this.props.rundownPlaylist.expectedStart &&
+					(this.props.rundownPlaylist.expectedStart ?
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundownPlaylist.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
-						{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
+							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
+						</span>
+						:
+						<span className={ClassNames('timing-clock countdown plan-start left')}>
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
 						</span>) || undefined
 				}
 				<span className='timing-clock time-now'>
@@ -1099,7 +1108,9 @@ interface IState {
 export enum RundownViewEvents {
 	'rewindsegments'	=	'sofie:rundownRewindSegments',
 	'goToLiveSegment'	=	'sofie:goToLiveSegment',
-	'goToTop'			=	'sofie:goToTop'
+	'goToTop'			=	'sofie:goToTop',
+	'segmentZoomOn'		=	'sofie:segmentZoomOn',
+	'segmentZoomOff'	=	'sofie:segmentZoomOff'
 }
 
 interface ITrackedProps {
@@ -1163,6 +1174,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(
 class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	private readonly LIVELINE_HISTORY_SIZE = 100
 
 	private bindKeys: Array<{
 		key: string,
@@ -1179,6 +1191,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		global?: boolean
 	}> = []
 	private _inspectorShelf: WrappedShelf | null
+	private _segmentZoomOn: boolean = false
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1200,10 +1213,20 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			}
 		]
 
+		if (RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH) {
+			this.bindKeys.push({
+				key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
+				down: this.onShowCurrentSegmentFullOn,
+				up: this.onShowCurrentSegmentFullOff,
+				label: t('Show entire current segment'),
+				global: false
+			})
+		}
+
 		this.usedArgumentKeys = []
 
 		this.state = {
-			timeScale: 0.03,
+			timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
@@ -1539,6 +1562,20 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 	}
 
+	onShowCurrentSegmentFullOn = () => {
+		if (this._segmentZoomOn === false) {
+			console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOn}`)
+			window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOn))
+			this._segmentZoomOn = true
+		}
+	}
+
+	onShowCurrentSegmentFullOff = () => {
+		console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOff}`)
+		window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOff))
+		this._segmentZoomOn = false
+	}
+
 	onTimeScaleChange = (timeScaleVal) => {
 		if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
 			this.setState({
@@ -1640,6 +1677,18 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			})
 		}
 	}
+	onSetNextSegment = (segmentId: SegmentId | null, e: any) => {
+		const { t } = this.props
+		if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+			const playlistId = this.props.playlist._id
+			doUserAction(t, e, 'Set next Segment', () => MeteorCall.userAction.setNextSegment(playlistId, segmentId), (err, res) => {
+				if (err) console.error(err)
+				this.setState({
+					manualSetAsNext: true
+				})
+			})
+		}
+	}
 
 	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const { t } = this.props
@@ -1714,7 +1763,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									followLiveSegments={this.state.followLiveSegments}
 									segmentId={segment._id}
 									playlist={this.props.playlist}
-									liveLineHistorySize={100}
+									liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
 									timeScale={this.state.timeScale}
 									onTimeScaleChange={this.onTimeScaleChange}
 									onContextMenu={this.onContextMenu}
@@ -1966,6 +2015,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									contextMenuContext={this.state.contextMenuContext}
 									playlist={this.props.playlist}
 									onSetNext={this.onSetNext}
+									onSetNextSegment={this.onSetNextSegment}
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
@@ -1983,6 +2033,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 								{ this.props.segments && this.props.segments.length > 0 &&
 									<AfterBroadcastForm playlist={this.props.playlist} />
 								}
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<PointerLockCursor />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf

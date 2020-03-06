@@ -319,7 +319,14 @@ class RundownViewNotifier extends WithManagedTracker {
 			Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
+			}, { sort: { _rank: 1 } }).map(part => {
+				if (part.notes) {
+					const sn = segmentNotes[unprotectString(part.segmentId)]
+					if (sn) {
+						return sn.notes.concat(part.notes)
+					}
+				}
+			})
 			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
 				return o.notes.map(note => _.extend(note, {
 					rank: o.rank
@@ -511,7 +518,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					this._rundownImportVersionStatusDep.changed()
 				}
 			}).catch(err => {
-				// console.error(err)
+				console.error(err)
 				let newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, undefined, -1)
 				if (!Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
 					this._rundownImportVersionStatus = newNotification

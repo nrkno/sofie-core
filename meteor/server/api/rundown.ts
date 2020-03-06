@@ -3,8 +3,8 @@ import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
-import { Pieces } from '../../lib/collections/Pieces'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { Pieces, Piece } from '../../lib/collections/Pieces'
+import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
@@ -35,6 +35,8 @@ import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cach
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
@@ -237,18 +239,46 @@ export function afterRemoveParts (rundownId: RundownId, removedParts: DBPart[]) 
 		}
 	})
 
-	// Clean up all the db parts that belong to the removed Parts
-	Pieces.remove({
+	// Clean up all the db items that belong to the removed Parts
+	// TODO - is there anything else to remove?
+
+	ExpectedPlayoutItems.remove({
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	})
-	AdLibPieces.remove({
+
+	saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
+	}, [], {
+		afterRemoveAll (pieces) {
+			afterRemovePieces(rundownId, pieces)
+		}
+	})
+	saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
+		rundownId: rundownId,
+		partId: { $in: _.map(removedParts, p => p._id) }
+	}, [], {
+		afterRemoveAll (pieces) {
+			afterRemovePieces(rundownId, pieces)
+		}
 	})
 	_.each(removedParts, part => {
 		// TODO - batch?
 		updateExpectedMediaItemsOnPart(part.rundownId, part._id)
+		updateExpectedPlayoutItemsOnPart(part.rundownId, part._id)
+	})
+}
+/**
+ * After Pieces have been removed, handle the contents.
+ * This will NOT trigger an update of the timeline
+ * @param rundownId Id of the Rundown
+ * @param removedPieces The pieces that have been removed
+ */
+export function afterRemovePieces (rundownId: RundownId, removedPieces: Array<Piece | AdLibPiece>) {
+	ExpectedPlayoutItems.remove({
+		rundownId: rundownId,
+		pieceId: { $in: _.map(removedPieces, p => p._id) }
 	})
 }
 /**
@@ -425,10 +455,14 @@ export namespace ServerRundownAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		Rundowns.update(rundown._id, {$set: {
-			unsynced: true,
-			unsyncedTime: getCurrentTime()
-		}})
+		if (!rundown.unsynced) {
+			Rundowns.update(rundown._id, {$set: {
+				unsynced: true,
+				unsyncedTime: getCurrentTime()
+			}})
+		} else {
+			logger.info(`Rundown "${rundownId}" was already unsynced`)
+		}
 	}
 }
 export namespace ClientRundownAPI {
@@ -442,21 +476,21 @@ export namespace ClientRundownAPI {
 		const rundowns = playlist.getRundowns()
 		const errors = rundowns.map(rundown => {
 			if (!rundown.importVersions) return 'unknown'
-	
+
 			if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
-	
+
 			const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
 			if (!showStyleVariant) return 'missing showStyleVariant'
 			if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0)) return 'showStyleVariant'
-	
+
 			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
 			if (!showStyleBase) return 'missing showStyleBase'
 			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0)) return 'showStyleBase'
-	
+
 			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
 			if (!blueprint) return 'missing blueprint'
 			if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
-	
+
 			const studio = Studios.findOne(rundown.studioId)
 			if (!studio) return 'missing studio'
 			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'

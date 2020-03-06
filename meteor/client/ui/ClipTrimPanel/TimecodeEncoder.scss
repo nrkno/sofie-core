@@ -14,7 +14,7 @@
 			padding: 0 0.33em;
 
 			&:focus {
-				text-shadow: 0 0 5px transparentize($ui-button-primary, 0.5);
+				text-shadow: 0 0 5px $ui-button-primary--translucent;
 			}
 		}
 	}
@@ -32,7 +32,7 @@
 
 	&.error {
 		> input {
-			box-shadow: 0 0 10px transparentize($color-status-fatal, 0.5);
+			box-shadow: 0 0 10px $color-status-fatal--translucent;
 			background: $color-status-fatal;
 		}
 	}

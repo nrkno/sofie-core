@@ -114,6 +114,7 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
+	let contentDuration: number | undefined = undefined
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer) {
@@ -172,6 +173,11 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 											isStereo = true
 										}
 										audioStreams++
+
+										const format = buildFormatString(mediaObject.mediainfo, stream)
+										if (!acceptFormat(format, formats)) {
+											messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
+										}
 									}
 								}
 								if (timebase) {
@@ -237,6 +243,7 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 	return {
 		status: newStatus,
 		metadata: metadata,
-		message: message
+		message: message,
+		contentDuration: contentDuration
 	}
 }

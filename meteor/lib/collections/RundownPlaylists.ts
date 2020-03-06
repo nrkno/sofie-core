@@ -23,6 +23,7 @@ export interface DBRundownPlaylist {
 	externalId: string
 	studioId: StudioId
 	peripheralDeviceId: PeripheralDeviceId
+	restoredFromSnapshotId?: RundownPlaylistId
 	name: string
 	created: Time
 	modified: Time
@@ -42,6 +43,9 @@ export interface DBRundownPlaylist {
 	nextPartManual?: boolean
 	/** the id of the Previous Part */
 	previousPartInstanceId: PartInstanceId | null
+
+	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
+	nextSegmentId?: SegmentId
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
@@ -73,6 +77,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public externalId: string
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
+	public restoredFromSnapshotId?: RundownPlaylistId // TODO-Next2020Q1 set this
 	public name: string
 	public created: Time
 	public modified: Time
@@ -85,6 +90,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
+	public nextSegmentId: SegmentId
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null

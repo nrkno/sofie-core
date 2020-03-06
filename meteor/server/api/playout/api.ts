@@ -58,8 +58,8 @@ class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceId: PieceId, queue: boolean) {
 		return makePromise(() => ServerPlayoutAPI.rundownBaselineAdLibPieceStart(rundownPlaylistId, partInstanceId, pieceId, queue))
 	}
-	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string) {
-		return makePromise(() => ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerId))
+	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
+		return makePromise(() => ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerIds))
 	}
 	sourceLayerStickyPieceStart (playlistId: RundownPlaylistId, sourceLayerId: string) {
 		return makePromise(() => ServerPlayoutAPI.sourceLayerStickyPieceStart(playlistId, sourceLayerId))

@@ -24,33 +24,45 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		return (
 			<div className='dashboard-panel dashboard-panel--actions'
 				style={{
-							width: button.width >= 0 ?
-								`calc((${button.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
-								undefined,
-							height: button.height >= 0 ?
-								`calc((${button.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
-								undefined,
-							left: button.x >= 0 ?
-								`calc(${button.x} * var(--dashboard-button-grid-width))` :
-								button.width < 0 ?
-									`calc(${-1 * button.width - 1} * var(--dashboard-button-grid-width))` :
-									undefined,
-							top: button.y >= 0 ?
-								`calc(${button.y} * var(--dashboard-button-grid-height) * 1.022)` :
-								button.height < 0 ?
-									`calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height)) * 1.022` :
-									undefined,
-							right: button.x < 0 ?
-								`calc(${-1 * button.x - 1} * var(--dashboard-button-grid-width))` :
-								button.width < 0 ?
-									`calc(${-1 * button.width - 1} * var(--dashboard-button-grid-width))` :
-									undefined,
-							bottom: button.y < 0 ?
-								`calc(${-1 * button.y - 1} * var(--dashboard-button-grid-height))` :
-								button.height < 0 ?
-									`calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height))` :
-									undefined
-						}}
+					width: (
+						button.width >= 0 ?
+						`calc((${button.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
+						undefined
+					),
+					height: (
+						button.height >= 0 ?
+						`calc((${button.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))` :
+						undefined
+					),
+					left: (
+						button.x >= 0 ?
+						`calc(${button.x} * var(--dashboard-button-grid-width))` :
+						button.width < 0 ?
+						`calc(${-1 * button.width - 1} * var(--dashboard-button-grid-width))` :
+						undefined
+					),
+					top: (
+						button.y >= 0 ?
+						`calc(${button.y} * var(--dashboard-button-grid-height) * 1.022)` :
+						button.height < 0 ?
+						`calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height)) * 1.022` :
+						undefined
+					),
+					right: (
+						button.x < 0 ?
+						`calc(${-1 * button.x - 1} * var(--dashboard-button-grid-width))` :
+					button.width < 0 ?
+						`calc(${-1 * button.width - 1} * var(--dashboard-button-grid-width))` :
+						undefined
+					),
+					bottom: (
+						button.y < 0 ?
+						`calc(${-1 * button.y - 1} * var(--dashboard-button-grid-height))` :
+						button.height < 0 ?
+						`calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height))` :
+						undefined
+					)
+				}}
 				>
 				<div className='dashboard-panel__panel'>
 					<div className={ClassNames(
