@@ -21,7 +21,7 @@ import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { Studios } from '../lib/collections/Studios'
+import { Studios, StudioId } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
 import { findMissingConfigs } from './api/blueprints/config'
@@ -383,7 +383,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig () {
 	})
 	lastBlueprintConfigIds = blueprintIds
 })
-function setBlueprintConfigStatus (systemStatusId: string, diff: string[], studioId?: string) {
+function setBlueprintConfigStatus (systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
 		setSystemStatus(systemStatusId, {
 			studioId: studioId,
