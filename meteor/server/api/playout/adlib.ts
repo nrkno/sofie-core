@@ -182,6 +182,24 @@ export namespace ServerPlayoutAdLibAPI {
 		const part = Parts.findOne(partId)
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
+		const afterPartId = part.afterPart || part._id
+
+		// check if there's already a queued part after this:
+		const alreadyQueuedPart = Parts.findOne({
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			afterPart: afterPartId,
+			_rank: { $gt: part._rank }
+		}, {
+			sort: { _rank: -1, _id: -1 }
+		})
+		if (alreadyQueuedPart) {
+			if (rundown.currentPartId !== alreadyQueuedPart._id) {
+				Parts.remove(alreadyQueuedPart._id)
+				afterRemoveParts(rundown._id, [alreadyQueuedPart], true)
+			}
+		}
+
 		const newPartId = Random.id()
 		Parts.insert({
 			_id: newPartId,
