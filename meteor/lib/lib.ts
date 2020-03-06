@@ -154,12 +154,12 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 				if (p) ps.push(p)
 				change.updated++
+				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id })
 			} else {
 				if (options.unchanged) options.unchanged(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
-				let p: Promise<any> | undefined
 				let oInsert = (options.beforeInsert ? options.beforeInsert(o) : o)
 				if (options.insert) {
 					options.insert(oInsert)
@@ -178,9 +178,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		}
 		delete removeObjs['' + o[identifier]]
 	})
-	_.each(removeObjs, function (obj: DocClass, key) {
+	_.each(removeObjs, function (obj: DocClass) {
 		if (obj) {
-			let p: Promise<any> | undefined
 			let oRemove: DBInterface = (options.beforeRemove ? options.beforeRemove(obj) : obj)
 			if (options.remove) {
 				options.remove(oRemove)
@@ -197,12 +196,18 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			}
 			change.removed++
 
+	const removeObjs: {[id: string]: DocClass} = {}
+
+	const newObjIds: {[identifier: string]: true} = {}
+	const checkInsertId = (id) => {
+		if (newObjIds[id]) {
+			throw new Meteor.Error(500, `savePreparedChanges into collection "${(collection as any)._name}": Duplicate identifier "${id}"`)
 		}
 	})
 	waitForPromiseAll(ps)
 
 	if (options.afterRemoveAll) {
-		const objs = _.compact(_.values(removeObjs))
+		const objs = _.compact(preparedChanges.removed || [])
 		if (objs.length > 0) {
 			options.afterRemoveAll(objs)
 		}
