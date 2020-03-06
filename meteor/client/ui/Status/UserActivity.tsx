@@ -64,7 +64,7 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 						return (
 							<tr className={this.props.onItemClick ? 'clickable' : undefined} key={unprotectString(msg._id)} onClick={(e) => this.props.onItemClick && this.props.onItemClick(msg)}>
 								<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss.SSS'>{msg.timestamp}</Moment></td>
-								<td className='user-action-log__executionTime'>{msg.executionTime ? msg.executionTime + 'ms' : ''}</td>
+								<td className='user-action-log__executionTime'>{msg.executionTime ? msg.executionTime + 'ms' : null}</td>
 								<td className='user-action-log__userId'>{msg.userId}</td>
 								<td className='user-action-log__clientAddress'>{msg.clientAddress}</td>
 								<td className='user-action-log__context'>{msg.context}</td>
@@ -74,11 +74,11 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 										'Success' :
 									msg.success === false ?
 										'Error: ' + msg.errorMessage :
-									''
+									null
 								}</td>
 								<td className='user-action-log__args'>{msg.args}</td>
 								{
-									this.props.renderButtons ? <td className='user-action-log__buttons'>{this.props.renderButtons(msg)}</td> : ''
+									this.props.renderButtons ? <td className='user-action-log__buttons'>{this.props.renderButtons(msg)}</td> : null
 								}
 							</tr>
 						)
