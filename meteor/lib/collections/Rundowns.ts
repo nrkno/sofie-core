@@ -269,6 +269,23 @@ export class Rundown implements DBRundown {
 
 		return notes
 	}
+	getAllStoredNotes (): Array<GenericNote & {rank: number}> {
+		let notes: Array<GenericNote & {rank: number}> = []
+		notes = notes.concat((this.notes || []).map(note => _.extend(note, { rank: 0 })))
+
+		const segmentNotes = _.object(this.getSegments().map(segment => [ segment._id, {
+			rank: segment._rank,
+			notes: segment.notes
+		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } } 
+		this.getParts().map(part => part.notes && segmentNotes[part.segmentId] && segmentNotes[part.segmentId].notes.concat(part.notes))
+		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
+			return o.notes.map(note => _.extend(note, {
+				rank: o.rank
+			}))
+		})))
+
+		return notes
+	}
 	appendNote (note: RundownNote): void {
 		Rundowns.update(this._id, {$push: {
 			notes: note
