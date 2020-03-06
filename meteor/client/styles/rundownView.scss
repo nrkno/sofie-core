@@ -107,6 +107,52 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
 
+	.rundown-view__part__icon {
+		display: inline-block;
+		margin-left: 0.2em;
+
+		&.rundown-view__part__icon--next {
+			position: relative;
+			width: 0;
+			height: 0;
+			top: -2px;
+			border-width: 5px 0 5px 9px;
+			border-style: solid;
+			border-color: transparent transparent transparent $general-next-color;
+
+			&::after {
+				content: ' ';
+				position: absolute;
+				top: -5px;
+				right: -1px;
+				height: 10px;
+				width: 0;
+				border-left: 2px solid $general-next-color;
+			}
+		}
+
+		&.rundown-view__part__icon--auto-next {
+			position: relative;
+			width: 0;
+			height: 0;
+			top: -2px;
+			left: 4px;
+			border-width: 5px 0 5px 9px;
+			border-style: solid;
+			border-color: transparent transparent transparent $general-next-color;
+
+			&::after {
+				content: ' ';
+				position: absolute;
+				top: -5px;
+				left: -13px;
+				height: 10px;
+				width: 0;
+				border-left: 2px solid $general-next-color;
+			}
+		}
+	}
+
 	.header.rundown .notification-pop-ups {
 		top: 65px;
 	}
@@ -131,6 +177,20 @@ body.vertical-overflow-only {
     overflow-y: auto;
 }
 
+body.no-overflow {
+	overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+@keyframes border-dance {
+  0% {
+    background-position: 0 0, 300px 100%, 0 150px, 100% 0;
+  }
+  100% {
+    background-position: 300px 0, 0 100%, 0 0, 100% 150px;
+  }
+}
+
 .rundown-view__focus-lost-frame {
 	position: fixed;
 	top: 0;
@@ -138,21 +198,16 @@ body.vertical-overflow-only {
 	bottom: 0;
 	right: 0;
 
-	border: 8px dashed $color-status-fatal;
-	border-image: repeating-linear-gradient(
-		315deg,
-		transparent,
-		transparent 10px,
-		$color-status-fatal 11px,
-		$color-status-fatal 31px,
-		transparent 32px) 8; 
-/* 	border-image: repeating-linear-gradient(
-		315deg,
-		#ffff00,
-		#ffff00 10px,
-		$color-status-fatal 11px,
-		$color-status-fatal 31px,
-		#ffff00 32px) 8;  */
+	background:
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%);
+	background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+	background-size: 30px 8px, 30px 8px, 8px 30px, 8px 30px;
+	background-position: 0 0, 100% 100%, 0 100%, 100% 0;
+	animation: border-dance 3s infinite linear;
+
 	z-index: 10000;
 	pointer-events: none;
 }
@@ -224,6 +279,19 @@ body.vertical-overflow-only {
 				text-align: center;
 			}
 
+			&.current-remaining {
+				position: absolute;
+				left: calc(50% + 3.5em);
+				text-align: left;
+				color: $liveline-timecode-color;
+				font-weight: 500;
+
+				.overtime {
+					color: $general-fast-color;
+					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
+				}
+			}
+
 			.timing-clock-label {
 				position: absolute;
 				top: -1em;
@@ -281,11 +349,11 @@ body.vertical-overflow-only {
 			text-transform: uppercase;
 			background: #fff;
 			border-radius: 1rem;
+			line-height: 1em;
 			font-weight: 700;
 			color: #000;
-			top: 13px;
-			right: -5px;
-			transform: translateX(100%);
+			top: 2.4em;
+			left: 0;
 			padding: 2px 5px 1px;
 
 			&.rundown__header-status--hold {
@@ -827,8 +895,8 @@ body.vertical-overflow-only {
 		.segment-timeline__part {
 			.segment-timeline__part__invalid-cover {
 				background-image:
-					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
-					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
+					repeating-linear-gradient(45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px),
+					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px) !important;
 			}
 		}
 	}
@@ -918,54 +986,8 @@ body.vertical-overflow-only {
 
 			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out $output-layer-group-collapse-animation-duration;
 
-			&.overtime {
+			> .overtime {
 				color: $general-late-color;
-			}
-		}
-
-		.segment-timeline__liveline__icon {
-			display: inline-block;
-			margin-left: 0.2em;
-
-			&.segment-timeline__liveline__icon--next {
-				position: relative;
-				width: 0;
-				height: 0;
-				top: -2px;
-				border-width: 5px 0 5px 9px;
-				border-style: solid;
-				border-color: transparent transparent transparent $general-next-color;
-
-				&::after {
-					content: ' ';
-					position: absolute;
-					top: -5px;
-					right: -1px;
-					height: 10px;
-					width: 0;
-					border-left: 2px solid $general-next-color;
-				}
-			}
-
-			&.segment-timeline__liveline__icon--auto-next {
-				position: relative;
-				width: 0;
-				height: 0;
-				top: 1px;
-				left: 4px;
-				border-width: 5px 0 5px 9px;
-				border-style: solid;
-				border-color: transparent transparent transparent $general-next-color;
-
-				&::after {
-					content: ' ';
-					position: absolute;
-					top: -5px;
-					left: -13px;
-					height: 10px;
-					width: 0;
-					border-left: 2px solid $general-next-color;
-				}
 			}
 		}
 
@@ -975,7 +997,7 @@ body.vertical-overflow-only {
 			text-transform: uppercase;
 			font-size: 0.7rem;
 			padding: 2px 5px 1px;
-			line-height: 1.2em;
+			line-height: 1.0em;
 			margin-top: 2px;
 			font-weight: 700;
 			color: #000;
@@ -996,11 +1018,14 @@ body.vertical-overflow-only {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
-		// Part is an element grouping all parts
+		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
 			z-index: 1;
 			transform-style: preserve-3d;
+
+			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
+			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
 
 			* {
 				backface-visibility: hidden;
@@ -1014,6 +1039,7 @@ body.vertical-overflow-only {
 				min-width: 200%;
 				z-index: 0;
 			}
+			
 			&.invalid {
 				background-color: #333;
 			}
@@ -1111,9 +1137,21 @@ body.vertical-overflow-only {
 				z-index: 1;
 				pointer-events: none;
 				background-image:
-					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
-					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+					repeating-linear-gradient(45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 5px, var(--invalid-reason-color-opaque) 5px, var(--invalid-reason-color-opaque) 10px),
+					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 5px, var(--invalid-reason-color-opaque) 5px, var(--invalid-reason-color-opaque) 10px);
+			}
 
+			.segment-timeline__part__floated-cover {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				z-index: 1;
+				pointer-events: none;
+				background-image:
+					repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
+   				backdrop-filter: saturate(0%) brightness(50%);
 			}
 
 			&:not(.live) {
@@ -1910,6 +1948,34 @@ body.vertical-overflow-only {
 
 	&.segment-timeline__mini-inspector--pop-down {
 		transform: translate(-50%, 2em);
+	}
+
+	&.segment-timeline__mini-inspector--graphics {
+		padding: 0;
+		border: 1px solid #1f1f1f;
+		border-radius: 0px;
+		transform: translate(-100%, -100%);
+		width: 480px;
+		height: 270px;
+
+		> .preview {
+			width: 1920px;
+			height: 1080px;
+			transform: translate(-50%, 0rem) scale(0.249479);
+			position: relative;
+			left: 50%;
+			top: 0;
+			transform-origin: center top;
+
+			> iframe {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				transform-origin: center center;
+				border: 0;
+			}
+		}
 	}
 
 	&.segment-timeline__mini-inspector--video {

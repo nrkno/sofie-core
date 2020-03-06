@@ -4,10 +4,14 @@ import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { Part, Parts } from '../../../lib/collections/Parts'
-import { getCurrentTime, literal } from '../../../lib/lib'
+import { Part, Parts, PartId } from '../../../lib/collections/Parts'
+import { getCurrentTime, literal, normalizeArray, unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import * as ClassNames from 'classnames'
+import { SpeechSynthesiser } from '../../lib/speechSynthesis'
+import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -78,7 +82,14 @@ export namespace RundownTiming {
 		partExpectedDurations?: {
 			[key: string]: number
 		}
+		/** Remaining time on current part */
+		remainingTimeOnCurrentPart?: number | undefined
+		/** Current part will autoNext */
+		currentPartWillAutoNext?: boolean
+		/** Current time of this calculation */
 		currentTime?: number
+		/** Was this time context calculated during a high-resolution tick */
+		isLowResolution: boolean
 	}
 
 	/**
@@ -94,14 +105,16 @@ export namespace RundownTiming {
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
 										   // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
+const DEFAULT_DURATION = 3000
 
 /**
  * RundownTimingProvider properties.
  * @interface IRundownTimingProviderProps
  */
 interface IRundownTimingProviderProps {
-	/** Rundown that is to be used for generating the timing information. */
-	rundown?: Rundown
+	/** Rundown Playlist that is to be used for generating the timing information. */
+	playlist?: RundownPlaylist
+
 	/** Interval for high-resolution timing events. If undefined, it will fall back
 	 * onto TIMING_DEFAULT_REFRESH_INTERVAL.
 	 */
@@ -116,6 +129,7 @@ interface IRundownTimingProviderState {
 }
 interface IRundownTimingProviderTrackedProps {
 	parts: Array<Part>
+	partInstancesMap: { [partId: string]: PartInstance | undefined }
 }
 
 /**
@@ -128,17 +142,14 @@ export const RundownTimingProvider =
 withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTimingProviderTrackedProps>(
 (props) => {
 	let parts: Array<Part> = []
-	if (props.rundown) {
-		parts = Parts.find({
-			'rundownId': props.rundown._id,
-		}, {
-			sort: {
-				'_rank': 1
-			}
-		}).fetch()
+	let partInstancesMap: { [partId: string]: PartInstance | undefined } = {}
+	if (props.playlist) {
+		parts = props.playlist.getAllOrderedParts()
+		partInstancesMap = props.playlist.getActivePartInstancesMap()
 	}
 	return {
-		parts
+		parts,
+		partInstancesMap
 	}
 })(class RundownTimingProvider extends MeteorReactComponent<
 	IRundownTimingProviderProps & IRundownTimingProviderTrackedProps, IRundownTimingProviderState
@@ -147,12 +158,14 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		durations: PropTypes.object.isRequired
 	}
 
-	durations: RundownTiming.RundownTimingContext = {}
+	durations: RundownTiming.RundownTimingContext = {
+		isLowResolution: false
+	}
 	refreshTimer: number
 	refreshTimerInterval: number
 	refreshDecimator: number
 
-	private linearParts: Array<[string, number | null]> = []
+	private linearParts: Array<[PartId, number | null]> = []
 	// look at the comments on RundownTimingContext to understand what these do
 	private partDurations: {
 		[key: string]: number
@@ -170,6 +183,9 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		[key: string]: number
 	} = {}
 	private partDisplayDurations: {
+		[key: string]: number
+	} = {}
+	private partDisplayDurationsNoPlayback: {
 		[key: string]: number
 	} = {}
 	private displayDurationGroups: _.Dictionary<number> = {}
@@ -190,11 +206,12 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 	onRefreshTimer = () => {
 		const now = getCurrentTime()
-		this.updateDurations(now)
+		const isLowResolution = (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0)
+		this.updateDurations(now, isLowResolution)
 		this.dispatchHREvent(now)
 
 		this.refreshDecimator++
-		if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
+		if (isLowResolution) {
 			this.dispatchEvent(now)
 		}
 	}
@@ -202,6 +219,8 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 	componentDidMount () {
 		this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		this.onRefreshTimer()
+
+		window['rundownTimingContext'] = this.durations
 	}
 
 	componentDidUpdate (prevProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -215,6 +234,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 	componentWillUnmount () {
 		this._cleanUp()
+		delete window['rundownTimingContext']
 		Meteor.clearInterval(this.refreshTimer)
 	}
 
@@ -238,7 +258,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 		window.dispatchEvent(event)
 	}
 
-	updateDurations (now: number) {
+	updateDurations (now: number, isLowResolution: boolean) {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
 		let asPlayedRundownDuration = 0
@@ -252,46 +272,47 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 
 		let debugConsole = ''
 
-		const { rundown, parts } = this.props
+		const { playlist, parts, partInstancesMap } = this.props
 
 		let nextAIndex = -1
 		let currentAIndex = -1
 
-		if (rundown && parts) {
-			parts.forEach((part, itIndex) => {
-				// ignore if part is invalid
-				if (part.invalid) return
+		if (playlist && parts) {
+			parts.forEach((origPart, itIndex) => {
+				const partInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, origPart)
+
 				// add piece to accumulator
-				const aIndex = this.linearParts.push([part._id, waitAccumulator]) - 1
+				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
 
 				// if this is next segementLine, clear previous countdowns and clear accumulator
-				if (rundown.nextPartId === part._id) {
+				if (playlist.nextPartInstanceId === partInstance._id) {
 					nextAIndex = aIndex
-				} else if (rundown.currentPartId === part._id) {
+				} else if (playlist.currentPartInstanceId === partInstance._id) {
 					currentAIndex = aIndex
 				}
 
 				// expected is just a sum of expectedDurations
-				totalRundownDuration += part.expectedDuration || 0
+				totalRundownDuration += partInstance.part.expectedDuration || 0
 
-				const lastStartedPlayback = part.getLastStartedPlayback()
-				const playOffset = part.timings && part.timings.playOffset && _.last(part.timings.playOffset) || 0
+				const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
+				const playOffset = partInstance.part.timings && partInstance.part.timings.playOffset && _.last(partInstance.part.timings.playOffset) || 0
 
 				// asPlayed is the actual duration so far and expected durations in unplayed lines
 				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
 				if (
-					part.startedPlayback &&
+					partInstance.part.startedPlayback &&
 					lastStartedPlayback &&
-					!part.duration &&
-					lastStartedPlayback + (part.expectedDuration || 0) < now
+					!partInstance.part.duration &&
+					lastStartedPlayback + (partInstance.part.expectedDuration || 0) < now
 				) {
-					asPlayedRundownDuration += (now - lastStartedPlayback) - playOffset
+					asPlayedRundownDuration += (now - lastStartedPlayback)
 				} else {
-					asPlayedRundownDuration += (part.duration || part.expectedDuration || 0) - playOffset
+					asPlayedRundownDuration += (partInstance.part.duration || partInstance.part.expectedDuration || 0)
 				}
 
 				let partDuration = 0
 				let partDisplayDuration = 0
+				let partDisplayDurationNoPlayback = 0
 				let displayDurationFromGroup = 0
 
 
@@ -302,78 +323,98 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				// will be used by Parts without expectedDurations.
 				let memberOfDisplayDurationGroup = false
 				// using a separate displayDurationGroup processing flag simplifies implementation
-				if (part.displayDurationGroup && (
+				if (partInstance.part.displayDurationGroup
+					&& (
 					// either this is not the first element of the displayDurationGroup
-					(this.displayDurationGroups[part.displayDurationGroup] !== undefined) ||
+					(this.displayDurationGroups[partInstance.part.displayDurationGroup] !== undefined) ||
 					// or there is a following member of this displayDurationGroup
-					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === part.displayDurationGroup)
-				)) {
-					this.displayDurationGroups[part.displayDurationGroup] =
-						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
-					displayDurationFromGroup = part.displayDuration
-						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], this.props.defaultDuration || 3000)
+					(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === partInstance.part.displayDurationGroup)
+					)
+					&& !partInstance.part.floated
+				) {
+					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
+						(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) + (partInstance.part.expectedDuration || 0)
+					displayDurationFromGroup = partInstance.part.displayDuration
+						|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], this.props.defaultDuration || DEFAULT_DURATION)
 					memberOfDisplayDurationGroup = true
 				}
-				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
-					currentRemaining = Math.max(0, (part.duration ||
+
+				// This is where we actually calculate all the various variants of duration of a part
+				if (partInstance.part.startedPlayback && lastStartedPlayback && !partInstance.part.duration) {
+					currentRemaining = Math.max(0, (partInstance.part.duration ||
 						(memberOfDisplayDurationGroup ?
 							displayDurationFromGroup :
-							part.expectedDuration) ||
+							partInstance.part.expectedDuration) ||
 						0)
-						- (now - lastStartedPlayback)) + playOffset
-					partDuration = Math.max((part.duration || part.expectedDuration || 0),
-						(now - lastStartedPlayback))
-					partDisplayDuration = Math.max((part.duration ||
+						- (now - lastStartedPlayback))
+					partDuration = Math.max((partInstance.part.duration || partInstance.part.expectedDuration || 0),
+						(now - lastStartedPlayback)) - playOffset
+					// because displayDurationGroups have no actual timing on them, we need to have a copy of the
+					// partDisplayDuration, but calculated as if it's not playing, so that the countdown can be
+					// calculated
+					partDisplayDurationNoPlayback = (partInstance.part.duration ||
 						(memberOfDisplayDurationGroup ?
 							displayDurationFromGroup :
-							part.expectedDuration) ||
-						this.props.defaultDuration || 3000),
-						(now - lastStartedPlayback)) + playOffset
-					this.partPlayed[part._id] = (now - lastStartedPlayback) - playOffset
+							partInstance.part.expectedDuration) ||
+						this.props.defaultDuration || DEFAULT_DURATION)
+					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, (now - lastStartedPlayback))
+					this.partPlayed[unprotectString(partInstance.part._id)] = (now - lastStartedPlayback)
 				} else {
-					partDuration = part.duration || part.expectedDuration || 0
-					partDisplayDuration = Math.max(0, part.duration && part.duration + playOffset
+					partDuration = (partInstance.part.duration || partInstance.part.expectedDuration || 0) - playOffset
+					partDisplayDuration = Math.max(0, partInstance.part.duration && (partInstance.part.duration + playOffset)
 						|| displayDurationFromGroup
-						|| part.expectedDuration
-						|| this.props.defaultDuration || 3000)
-					this.partPlayed[part._id] = (part.duration || 0) - playOffset
+						|| partInstance.part.expectedDuration
+						|| this.props.defaultDuration || DEFAULT_DURATION)
+					partDisplayDurationNoPlayback = partDisplayDuration
+					this.partPlayed[unprotectString(partInstance.part._id)] = (partInstance.part.duration || 0) - playOffset
 				}
-				if (memberOfDisplayDurationGroup && part.displayDurationGroup) {
-					this.displayDurationGroups[part.displayDurationGroup] =
-						this.displayDurationGroups[part.displayDurationGroup] - partDisplayDuration
+
+				// the part is the current part but has not yet started playback
+				if (playlist.currentPartInstanceId === partInstance._id && !partInstance.part.startedPlayback) {
+					currentRemaining = partDisplayDuration
 				}
-				/* if (item.displayDurationGroup && item.slug.startsWith('Julian')) {
-					console.log(item.displayDurationGroup + ', ' + item.slug + ': ' + (segLineDisplayDuration / 1000))
-				} */
-				this.partExpectedDurations[part._id] = part.expectedDuration || part.duration || 0
-				this.partStartsAt[part._id] = startsAtAccumulator
-				this.partDisplayStartsAt[part._id] = displayStartsAtAccumulator
-				this.partDurations[part._id] = partDuration
-				this.partDisplayDurations[part._id] = partDisplayDuration
-				startsAtAccumulator += this.partDurations[part._id]
-				displayStartsAtAccumulator += partDisplayDuration // || this.props.defaultDuration || 3000
+
+				// Handle invalid parts by overriding the values to preset values for Invalid parts
+				if (partInstance.part.invalid) {
+					partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
+					this.partPlayed[unprotectString(partInstance.part._id)] = 0
+				}
+
+				if (memberOfDisplayDurationGroup && partInstance.part.displayDurationGroup && !partInstance.part.floated) {
+					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
+						this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
+				}
+				const partInstancePartId = unprotectString(partInstance.part._id)
+				this.partExpectedDurations[partInstancePartId] = partInstance.part.expectedDuration || partInstance.part.duration || 0
+				this.partStartsAt[partInstancePartId] = startsAtAccumulator
+				this.partDisplayStartsAt[partInstancePartId] = displayStartsAtAccumulator
+				this.partDurations[partInstancePartId] = partDuration
+				this.partDisplayDurations[partInstancePartId] = partDisplayDuration
+				this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
+				startsAtAccumulator += this.partDurations[partInstancePartId]
+				displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
 				if (memberOfDisplayDurationGroup) {
-					waitAccumulator += (part.duration || partDisplayDuration || part.expectedDuration || 0)
+					waitAccumulator += (partInstance.part.duration || partDisplayDuration || partInstance.part.expectedDuration || 0)
 				} else {
-					waitAccumulator += (part.duration || part.expectedDuration || 0)
+					waitAccumulator += (partInstance.part.duration || partInstance.part.expectedDuration || 0)
 				}
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
-				if (!part.startedPlayback) {
-					remainingRundownDuration += part.expectedDuration || 0
+				if (!partInstance.part.startedPlayback && !partInstance.part.floated) {
+					remainingRundownDuration += partInstance.part.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
 				} else if (
-					part.startedPlayback &&
+					partInstance.part.startedPlayback &&
 					lastStartedPlayback &&
-					!part.duration &&
-					rundown.currentPartId === part._id &&
-					lastStartedPlayback + (part.expectedDuration || 0) > now
+					!partInstance.part.duration &&
+					playlist.currentPartInstanceId === partInstance._id &&
+					lastStartedPlayback + (partInstance.part.expectedDuration || 0) > now
 				) {
 					// console.log((now - item.startedPlayback))
-					remainingRundownDuration += (part.expectedDuration || 0) - (now - lastStartedPlayback)
+					remainingRundownDuration += (partInstance.part.expectedDuration || 0) - (now - lastStartedPlayback)
 				}
 			})
 
@@ -402,6 +443,32 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 			// }
 		}
 
+		let remainingTimeOnCurrentPart: number | undefined = undefined
+		let currentPartWillAutoNext = false
+		if (currentAIndex >= 0) {
+			const currentLivePart = parts[currentAIndex]
+
+			const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
+
+			let onAirPartDuration = (currentLivePart.duration || currentLivePart.expectedDuration || 0)
+			if (currentLivePart.displayDurationGroup && !currentLivePart.displayDuration) {
+				onAirPartDuration = this.partDisplayDurationsNoPlayback[unprotectString(currentLivePart._id)] || onAirPartDuration
+			}
+
+			remainingTimeOnCurrentPart = currentLivePart.startedPlayback && lastStartedPlayback ?
+				(now - (lastStartedPlayback + onAirPartDuration)) :
+				(onAirPartDuration * -1)
+
+			currentPartWillAutoNext = !!(
+				currentLivePart.autoNext &&
+				(
+					(currentLivePart.expectedDuration !== undefined) ?
+						currentLivePart.expectedDuration !== 0 :
+						false
+				)
+			)
+		}
+
 		// console.log(linearSegLines.map((value) => value[1]))
 
 		this.durations = Object.assign(this.durations, literal<RundownTiming.RundownTimingContext>({
@@ -415,7 +482,10 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 			partDisplayStartsAt: this.partDisplayStartsAt,
 			partExpectedDurations: this.partExpectedDurations,
 			partDisplayDurations: this.partDisplayDurations,
-			currentTime: now
+			currentTime: now,
+			remainingTimeOnCurrentPart,
+			currentPartWillAutoNext,
+			isLowResolution
 		}))
 	}
 
@@ -424,9 +494,11 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 	}
 })
 
+export type TimingFilterFunction = (durations: RundownTiming.RundownTimingContext) => any
+
 export interface WithTimingOptions {
 	isHighResolution?: boolean
-	filter?: string | any[]
+	filter?: TimingFilterFunction | string | (string | number)[]
 }
 export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & { children?: React.ReactNode }
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState)
@@ -459,7 +531,8 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 			}
 
 			filterGetter: (o: any) => any
-			previousValue: any = null
+			previousValue: any = undefined
+			isDirty: boolean = false
 
 			constructor (props, context) {
 				super(props, context)
@@ -468,7 +541,9 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 					expandedOptions = _.extend(expandedOptions, options(this.props))
 				}
 
-				if (expandedOptions.filter) {
+				if (typeof expandedOptions.filter === 'function') {
+					this.filterGetter = expandedOptions.filter
+				} else if (expandedOptions.filter) {
 					this.filterGetter = _.property(expandedOptions.filter as string)
 				}
 			}
@@ -494,8 +569,9 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 					this.forceUpdate()
 				} else {
 					const buf = this.filterGetter(this.context.durations || {})
-					if (buf !== this.previousValue) {
+					if (this.isDirty || !_.isEqual(buf, this.previousValue)) {
 						this.previousValue = buf
+						this.isDirty = false
 						this.forceUpdate()
 					}
 				}
@@ -505,6 +581,17 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 				const durations: RundownTiming.RundownTimingContext
 					= this.context.durations
 
+				// If the timing HOC is supposed to be low resolution and we are rendering
+				// during a high resolution tick, the WrappedComponent will render using
+				// a RundownTimingContext that has not gone through the filter and thus
+				// previousValue may go out of sync.
+				// To bring it back to sync, we mark the component as dirty, which will
+				// force an update on the next low resoluton tick, regardless of what
+				// the filter says.
+				if (this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
+					this.isDirty = true
+				}
+
 				return <WrappedComponent {...this.props} timingDurations={durations} />
 			}
 		}
@@ -512,10 +599,8 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | ((prop
 }
 
 interface IPartCountdownProps {
-	partId?: string
+	partId?: PartId
 	hideOnZero?: boolean
-}
-interface IPartCountdownState {
 }
 
 /**
@@ -523,23 +608,111 @@ interface IPartCountdownState {
  * @class PartCountdown
  * @extends React.Component<WithTiming<IPartCountdownProps>>
  */
-export const PartCountdown = withTiming<IPartCountdownProps, IPartCountdownState>()(
-class PartCountdown extends React.Component<WithTiming<IPartCountdownProps>, IPartCountdownState> {
+export const PartCountdown = withTiming<IPartCountdownProps, {}>()(
+class PartCountdown extends React.Component<WithTiming<IPartCountdownProps>> {
 	render () {
 		return (<span>
 			{this.props.partId &&
 				this.props.timingDurations &&
 				this.props.timingDurations.partCountdown &&
-				this.props.timingDurations.partCountdown[this.props.partId] !== undefined &&
-				(this.props.hideOnZero !== true || this.props.timingDurations.partCountdown[this.props.partId] > 0) &&
-					RundownUtils.formatTimeToShortTime(this.props.timingDurations.partCountdown[this.props.partId])}
+				this.props.timingDurations.partCountdown[unprotectString(this.props.partId)] !== undefined &&
+				(this.props.hideOnZero !== true || this.props.timingDurations.partCountdown[unprotectString(this.props.partId)] > 0) &&
+					RundownUtils.formatTimeToShortTime(this.props.timingDurations.partCountdown[unprotectString(this.props.partId)])}
 		</span>)
 	}
 })
-interface ISegmentDurationProps {
-	partIds: Array<string>
+
+export const AutoNextStatus = withTiming<{}, {}>({
+	filter: 'currentPartWillAutoNext',
+	isHighResolution: true
+})(
+class AutoNextStatus extends React.Component<WithTiming<{}>> {
+	render () {
+		return this.props.timingDurations.currentPartWillAutoNext ?
+			<div className='rundown-view__part__icon rundown-view__part__icon--auto-next'></div> :
+			<div className='rundown-view__part__icon rundown-view__part__icon--next'></div>
+	}
+})
+
+const SPEAK_ADVANCE = 500
+
+interface IPartRemainingProps {
+	currentPartInstanceId: PartInstanceId | null
+	hideOnZero?: boolean
+	className?: string
+	heavyClassName?: string
+	speaking?: boolean
 }
-interface ISegmentDurationState {
+
+// global variable for remembering last uttered displayTime
+let prevDisplayTime: number | undefined = undefined
+
+/**
+ * A presentational component that will render a countdown to the end of the current part
+ * @class CurrentPartRemaining
+ * @extends React.Component<WithTiming<{}>>
+ */
+export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
+	isHighResolution: true
+})(class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
+
+	render () {
+		const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
+		return (<span className={ClassNames(this.props.className,
+				(Math.floor((displayTimecode || 0) / 1000) > 0) ? this.props.heavyClassName : undefined
+			)}>{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>)
+	}
+
+	speak () {
+		// Note that the displayTime is negative when counting down to 0.
+		let displayTime = this.props.timingDurations.remainingTimeOnCurrentPart || 0
+
+		if (displayTime === 0) {
+			// do nothing
+		} else {
+			displayTime += SPEAK_ADVANCE
+			displayTime = Math.floor(displayTime / 1000)
+		}
+
+		if (prevDisplayTime !== displayTime) {
+			let text = '' // Say nothing
+
+			switch (displayTime) {
+				case -1: text = 'One'; break
+				case -2: text = 'Two'; break
+				case -3: text = 'Three'; break
+				case -4: text = 'Four'; break
+				case -5: text = 'Five'; break
+				case -6: text = 'Six'; break
+				case -7: text = 'Seven'; break
+				case -8: text = 'Eight'; break
+				case -9: text = 'Nine'; break
+				case -10: text = 'Ten'; break
+			}
+			// if (displayTime === 0 && prevDisplayTime !== undefined) {
+			// 	text = 'Zero'
+			// }
+
+			if (text) {
+				SpeechSynthesiser.speak(text, 'countdown')
+			}
+
+			prevDisplayTime = displayTime
+		}
+	}
+
+	componentDidUpdate (prevProps: WithTiming<IPartRemainingProps>) {
+		if (this.props.speaking) {
+			if (this.props.currentPartInstanceId !== prevProps.currentPartInstanceId) {
+				prevDisplayTime = undefined
+			}
+			this.speak()
+		}
+	}
+})
+
+interface ISegmentDurationProps {
+	partIds: PartId[]
 }
 
 /**
@@ -548,8 +721,8 @@ interface ISegmentDurationState {
  * @class SegmentDuration
  * @extends React.Component<WithTiming<ISegmentDurationProps>>
  */
-export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDurationState>()(
-class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>, ISegmentDurationState> {
+export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(
+class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>> {
 	render () {
 		if (
 			this.props.partIds &&
@@ -559,9 +732,10 @@ class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>,
 			let partExpectedDurations = this.props.timingDurations.partExpectedDurations
 			let partPlayed = this.props.timingDurations.partPlayed
 
-			const duration = this.props.partIds.reduce((memo, item) => {
-				return partExpectedDurations[item] !== undefined ?
-					memo + Math.max(0, partExpectedDurations[item] - (partPlayed[item] || 0)) :
+			const duration = this.props.partIds.reduce((memo, partId) => {
+				const pId = unprotectString(partId)
+				return partExpectedDurations[pId] !== undefined ?
+					memo + Math.max(0, partExpectedDurations[pId] - (partPlayed[pId] || 0)) :
 					memo
 			}, 0)
 
@@ -582,16 +756,17 @@ class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>,
  * @return number
  */
 export function computeSegmentDuration (
-	timingDurations: RundownTiming.RundownTimingContext, partIds: Array<string>
+	timingDurations: RundownTiming.RundownTimingContext, partIds: PartId[]
 ): number {
 	let partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 
-	return partIds.reduce((memo, item) => {
+	return partIds.reduce((memo, partId) => {
+		const pId = unprotectString(partId)
 		return partDurations ?
-				partDurations[item] !== undefined ?
-				memo + partDurations[item] :
+				partDurations[pId] !== undefined ?
+				memo + partDurations[pId] :
 				memo
 			: 0
 	}, 0)

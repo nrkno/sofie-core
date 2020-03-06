@@ -52,13 +52,19 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 
 	updateTime = () => {
 		if (this.vPreview) {
-			const piece = this.props.piece
-			const itemDuration = ((piece.content ? piece.content.sourceDuration as number : undefined) || piece.playoutDuration || piece.renderedDuration || 0)
+			const innerPiece = this.props.piece.instance.piece
+			const vtContent = innerPiece.content as VTContent | undefined
+
+			const itemDuration = ((vtContent ? vtContent.sourceDuration : undefined) || innerPiece.playoutDuration || this.props.piece.renderedDuration || 0)
 			let targetTime = this.props.cursorTimePosition
-			let seek = ((piece.content ? piece.content.seek as number : undefined) || 0)
-			if (piece.content && piece.content.loop && this.vPreview.duration > 0) {
-				targetTime = targetTime % (Math.min(this.vPreview.duration, itemDuration) * 1000)
-			} else if (itemDuration === 0 && piece.infiniteMode) {
+			let seek = ((vtContent ? vtContent.seek : undefined) || 0)
+			if (vtContent && vtContent.loop && this.vPreview.duration > 0) {
+				targetTime = targetTime % (
+					(itemDuration > 0 ?
+						Math.min(this.vPreview.duration, itemDuration) :
+						this.vPreview.duration)
+					* 1000)
+			} else if (itemDuration === 0 && innerPiece.infiniteMode) {
 				// noop
 			} else {
 				targetTime = Math.min(targetTime, itemDuration)
@@ -94,7 +100,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		}
 		this.updateTime()
 
-		if (this.props.piece.name !== prevProps.piece.name) {
+		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 
@@ -231,7 +237,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 	render () {
 		const { t } = this.props
 
-		let labelItems = this.props.piece.name.split('||')
+		let labelItems = this.props.piece.instance.piece.name.split('||')
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
 
@@ -245,12 +251,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		}
 
 		const itemDuration = this.getItemDuration()
-		const content = this.props.piece.content as VTContent
-		const seek = content && content.seek ? content.seek : 0
+		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
+		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
-
-		const vtContent = this.props.piece.content as VTContent
 
 		return <React.Fragment>
 			{this.renderInfiniteItemContentEnded()}
@@ -261,11 +265,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 			{this.state.freezes &&
 				this.state.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker' key={i.start}
-						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(itemDuration - (i.start - seek), i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 			{this.state.blacks &&
 				this.state.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
 					<span className='segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes' key={i.start}
-						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(itemDuration - (i.start - seek), i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: (Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				<span className={ClassNames('segment-timeline__piece__label', {
 					'overflow-label': this.end !== ''
@@ -273,16 +277,16 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 					{this.begin}
 				</span>
 				{(this.begin && this.end === '' && vtContent && vtContent.loop) &&
-					(<div className='segment-timeline__piece__label label-icon'>
-						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					(<div className='segment-timeline__piece__label label-icon label-loop-icon'>
+						<Lottie options={defaultOptions} width={24} height={24} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
 				}
 				{this.renderContentTrimmed()}
 			</span>
 			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
-					(<div className='segment-timeline__piece__label label-icon'>
-						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+				{(this.end && vtContent && vtContent.loop) &&
+					(<div className='segment-timeline__piece__label label-icon label-loop-icon'>
+						<Lottie options={defaultOptions} width={24} height={24} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
 				}
 				{this.renderInfiniteIcon()}
@@ -301,7 +305,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 					<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 						<div>
 							<span className='mini-inspector__label'>{t('File name')}</span>
-							<span className='mini-inspector__value'>{this.props.piece.content && this.props.piece.content.fileName}</span>
+							<span className='mini-inspector__value'>{vtContent && vtContent.fileName}</span>
 						</div>
 					</div>
 				}

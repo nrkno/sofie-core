@@ -6,7 +6,7 @@ import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -29,16 +29,6 @@ Meteor.startup(() => {
 			let previousLastNightlyCronjob = lastNightlyCronjob
 			lastNightlyCronjob = getCurrentTime()
 			logger.info('Nightly cronjob: starting...')
-
-			// remove old Rundowns:
-			let rundownCount = 0
-			Rundowns.find({
-				created: { $lt: getCurrentTime() - 60 * 24 * 3600 * 1000 } // older than 60 days
-			}).forEach(rundown => {
-				rundown.remove()
-				rundownCount++
-			})
-			if (rundownCount) logger.info('Cronjob: Removed ' + rundownCount + ' old rundowns')
 
 			// Clean up Rundown data cache:
 			// Remove caches not related to rundowns:
@@ -63,7 +53,7 @@ Meteor.startup(() => {
 					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
 						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-						subDevice.subType === TSR_DeviceType.CASPARCG
+						subDevice.subType === TSR.DeviceType.CASPARCG
 					) {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 

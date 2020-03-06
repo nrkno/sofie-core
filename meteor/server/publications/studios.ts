@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { Studios } from '../../lib/collections/Studios'
 import { StudiosSecurity } from '../security/studios'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 
@@ -19,7 +19,7 @@ meteorPublish(PubSub.studios, (selector, token) => {
 	}
 	return null
 })
-meteorPublish(PubSub.studioOfDevice, (deviceId: string, token) => {
+meteorPublish(PubSub.studioOfDevice, (deviceId: PeripheralDeviceId, token) => {
 
 	if (PeripheralDeviceSecurity.allowReadAccess({ _id: deviceId }, token, this)) {
 

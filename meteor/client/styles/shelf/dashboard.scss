@@ -8,19 +8,56 @@
 	bottom: 2px;
 	right: 2px;
 	overflow: auto;
+
+	--dashboard-button-grid-width: 1.875em;
+	--dashboard-button-grid-height: 1.625em;
+	--dashboard-panel-margin-width: 0.938em;
+	--dashboard-panel-margin-height: 2.750em;
 }
 
 .dashboard-panel {
 	position: absolute;
 	background: rgba(0, 0, 0, 0.2);
 	border: 1px solid rgba(0,0,0,0.1);
-	border-radius: 5px;
-	padding: 10px;
-	margin: 10px;
+	border-radius: 10px;
+	padding: 0.625rem;
+	margin: 0.625rem;
 	user-select: none;
 
+	&.dashboard-panel--actions {
+		background-color: none !important;
+		background: none !important;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		border-color: transparent;
+		box-shadow: none;
+		pointer-events: none;
+		margin-top: 0.5555555555555555555em;
+		z-index: 10;
+
+		> .dashboard-panel__panel {
+			max-height: none;
+			overflow: visible;
+			background-color: none !important;
+			background: none !important;
+			border: none !important;
+
+			> .dashboard-panel__panel__button {
+				pointer-events: visible;
+			}
+
+			> .dashboard-panel__panel__button--standalone {
+				&.type--take {
+					background-color: $general-live-color;
+				}
+			}
+		}
+	}
+
 	.dashboard-panel__header {
-		margin: 0 0 10px;
+		margin: 0 0 0.625rem;
 		padding: 0;
 		white-space: nowrap;
 		overflow: hidden;
@@ -37,11 +74,11 @@
 		}
 
 		display: flex;
-		padding: 10px 5px;
+		padding: 0.625rem 0.313rem;
 
 		> .adlib-panel__list-view__toolbar__filter {
 			flex: 2 2;
-			max-width: 25em;
+			max-width: 25rem;
 			position: relative;
 
 			> .adlib-panel__list-view__toolbar__filter__input {
@@ -98,17 +135,17 @@
 
 	.dashboard-panel__panel__button {
 		display: inline-flex;
-  		align-items: flex-end;
 		position: relative;
 		background: #000;
-		border-radius: 3px;
+		border: none;
+		border-radius: 4px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: normal;
 		line-break: loose;
 		word-break: break-all;
-		width: 82px;
-		height: 72px;
+		width: 6.40625em;
+		height: 5.625em;
 		border: none;
 		margin: 4px;
 		vertical-align: top;
@@ -116,6 +153,7 @@
 
 		@include item-type-colors();
 		@include invalid-overlay();
+		@include floated-overlay();
 		@include missing-overlay();
 
 		&.live {
@@ -148,6 +186,11 @@
 			}
 		}
 
+		&:focus {
+			outline: none;
+			box-shadow: none;
+		}
+
 		&:active {
 			&::before {
 				content: ' ';
@@ -165,18 +208,26 @@
 		> .dashboard-panel__panel__button__label {
 			position: absolute;
 			
-			vertical-align: bottom;
 			max-height: calc(100% - 4px);
 
 			left: 4px;
 			max-width: calc(100% - 8px);
 			text-align: left;
 			hyphens: auto;
-			-webkit-hyphens: auto;
-			-ms-hyphens: auto;
-			text-transform: uppercase;
+			
+			vertical-align: top;
+			// -webkit-text-stroke-color: #000;
+			// -webkit-text-stroke-width: 0.02em;
+			line-height: 1.15em;
+			top: 3px;
+			font-family: "Roboto Condensed", sans-serif;
+			font-size: 1.17em;
 			font-weight: 400;
-			text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+			text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.5),
+				1px 1px 0px rgba(0, 0, 0, 0.5),
+				1px -1px 0px rgba(0, 0, 0, 0.5),
+				1px -1px 0px rgba(0, 0, 0, 0.5),
+				0.5px 0.5px 2px rgba(0, 0, 0, 1);
 			z-index: 2;
 		}
 

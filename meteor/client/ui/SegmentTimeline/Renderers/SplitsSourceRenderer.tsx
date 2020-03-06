@@ -24,23 +24,49 @@ interface SplitSubItem {
 	role: SplitRole
 	content?: any
 }
+
 interface IProps extends ICustomLayerItemProps {
 }
+
 interface IState {
-}
-export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	subItems: Array<SplitSubItem>
+}
+
+const DEFAULT_POSITIONS = [
+	{
+		x: 0.25,
+		y: 0.5,
+		scale: 0.5
+	},
+	{
+		x: 0.75,
+		y: 0.5,
+		scale: 0.5
+	}
+]
+
+export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
-	constructor (props) {
-		super(props)
+	static getDerivedStateFromProps (props: IProps): IState {
+		let subItems: Array<SplitSubItem> = []
+		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined
+		if (splitContent) {
+			subItems = _.map(splitContent.boxSourceConfiguration, (item, index) => {
+				return literal<SplitSubItem>({
+					_id: item.studioLabel + '_' + index,
+					type: item.type,
+					label: item.studioLabel,
+					role: SplitRole.BOX,
+					content: item.geometry || DEFAULT_POSITIONS[index]
+				})
+			})
+		}
 
-		this.subItems = this.rebuildSubItems()
-	}
-
-	componentWillUpdate () {
-		this.subItems = this.rebuildSubItems()
+		return {
+			subItems: subItems
+		}
 	}
 
 	setLeftLabelRef = (e: HTMLSpanElement) => {
@@ -67,43 +93,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.piece.name !== prevProps.piece.name) {
+		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
 
-	rebuildSubItems = () => {
-		const positions = [
-			{
-				x: 0.25,
-				y: 0.5,
-				scale: 0.5
-			},
-			{
-				x: 0.75,
-				y: 0.5,
-				scale: 0.5
-			}
-		]
-
-		if (this.props.piece.content) {
-			const splitContent = this.props.piece.content as SplitsContent
-			return _.map(splitContent.boxSourceConfiguration, (item, index) => {
-				return literal<SplitSubItem>({
-					_id: item.studioLabel + '_' + index,
-					type: item.type,
-					label: item.studioLabel,
-					role: SplitRole.BOX,
-					content: positions[index]
-				})
-			})
-		}
-
-		return []
-	}
-
 	renderSubItems () {
-		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item, index, array) => {
+		return this.state.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item, index, array) => {
 			return (
 				<div key={'item-' + item._id}
 					className={ClassNames(
@@ -122,7 +118,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		return (
 			<div className='video-preview'>
 				{
-					this.subItems.map((item, index, array) => {
+					this.state.subItems.reverse().map((item, index, array) => {
 						return (
 							<div className={ClassNames(
 								'video-preview',
@@ -139,7 +135,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 									'left': ((item.content && item.content.x) * 100).toString() + '%',
 									'top': ((item.content && item.content.y) * 100).toString() + '%',
 									'width': ((item.content && item.content.scale) * 100).toString() + '%',
-									'height': ((item.content && item.content.scale) * 100).toString() + '%'
+									'height': ((item.content && item.content.scale) * 100).toString() + '%',
+									'clipPath': (item.content && item.content.crop) ? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop.bottom * 100}% ${item.content.crop.left * 100}%)` : undefined
 								}}>
 								{item.role === SplitRole.BOX && (
 									<div className='video-preview__label'>{item.label}</div>
@@ -153,7 +150,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	render () {
-		let labelItems = this.props.piece.name.split('||')
+		let labelItems = this.props.piece.instance.piece.name.split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 

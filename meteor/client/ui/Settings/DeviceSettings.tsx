@@ -2,7 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice,
-	PeripheralDevices} from '../../../lib/collections/PeripheralDevices'
+	PeripheralDevices,
+	PeripheralDeviceId} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -12,15 +13,18 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
-import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
+import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 
 interface IDeviceSettingsProps {
 	match: {
 		params: {
-			deviceId: string
+			deviceId: PeripheralDeviceId
 		}
 	}
 }
@@ -45,6 +49,13 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 			this.props.device &&
 			this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 		) {
+			if (this.props.device.configManifest) {
+				return <GenericDeviceSettingsComponent
+						device={this.props.device}
+						subDevices={this.props.subDevices}
+					/>
+			}
+			// @todo: deprecate:
 			switch (this.props.device.type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:
 					return <MosDeviceSettingsComponent
@@ -94,40 +105,45 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 
 		return (
 			<div className='studio-edit mod mhl mvn'>
-				<div>
-					<div className='row'>
-						<div className='col c12 rl-c6'>
-							<h2 className='mhn mtn'>
-								{t('Generic Properties')}
-							</h2>
-							<label className='field'>
-								{t('Device Name')}
-								<div className='mdi'>
-									<EditAttribute
-										modifiedClassName='bghl'
-										attribute='name'
-										obj={device}
-										type='text'
-										collection={PeripheralDevices}
-										className='mdinput'></EditAttribute>
-									<span className='mdfx'></span>
-								</div>
-							</label>
+				<div className='row'>
+					<div className='col c12 rl-c6'>
+						<h2 className='mhn mtn'>
+							{t('Generic Properties')}
+						</h2>
+						<label className='field'>
+							{t('Device Name')}
+							{
+								!(this.props.device && this.props.device.name) ?
+								<div className='error-notice inline'>
+									{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+								</div> :
+								null
+							}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='name'
+									obj={this.props.device}
+									type='text'
+									collection={PeripheralDevices}
+									className='mdinput'></EditAttribute>
+								<span className='mdfx'></span>
+							</div>
+						</label>
+					</div>
+					<div className='col c12 rl-c6 alright'>
+						<div className='mbs'>
+							<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
+								{t('Restart Device')}
+							</button>
 						</div>
-						<div className='col c12 rl-c6 alright'>
-							<div className='mbs'>
-								<button className='btn btn-secondary btn-tight' onClick={(e) => device && this.restartDevice(device)}>
-									{t('Restart Device')}
-								</button>
-							</div>
-							<div className='mbs'>
-								<PeripheralDeviceStatus device={device}/>
-							</div>
+						<div className='mbs'>
+							<PeripheralDeviceStatus device={device}/>
 						</div>
 					</div>
-
-					{this.renderSpecifics()}
 				</div>
+
+				{this.renderSpecifics()}
 			</div>
 		)
 	}

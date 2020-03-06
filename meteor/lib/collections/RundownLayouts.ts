@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
+import { ShowStyleBaseId } from './ShowStyleBases'
 
 /**
  * The view targeted by this layout:
@@ -70,12 +72,16 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	buttonHeightScale: number
 
 	includeClearInRundownBaseline: boolean
+	assignHotKeys: boolean
 }
 
+/** A string, identifying a RundownLayout */
+export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
+
 export interface RundownLayoutBase {
-	_id: string
-	showStyleBaseId: string
-	blueprintId?: string
+	_id: RundownLayoutId
+	showStyleBaseId: ShowStyleBaseId
+	blueprintId?: BlueprintId
 	userId?: string
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
@@ -103,18 +109,20 @@ export enum ActionButtonType {
 }
 
 export interface DashboardLayoutActionButton {
+	_id: string
 	type: ActionButtonType
 	x: number
 	y: number
 	width: number
 	height: number
+	label: string
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
 	// TODO: Interface to be defined later
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: DashboardLayoutFilter[]
-	actionButtons: DashboardLayoutActionButton[]
+	actionButtons?: DashboardLayoutActionButton[]
 }
 
 export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>

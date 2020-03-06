@@ -1,34 +1,58 @@
-
-export function setStudioMode (studioMode: boolean) {
-	localStorage.setItem('studioMode', (studioMode ? '1' : '0'))
-}
-export function getStudioMode (): boolean {
-	return localStorage.getItem('studioMode') === '1'
-}
-
-export function setAdminMode (adminMode: boolean) {
-	localStorage.setItem('adminMode', (adminMode ? '1' : '0'))
-}
-export function getAdminMode (): boolean {
-	return localStorage.getItem('adminMode') === '1'
+enum UiAllowAccess {
+	STUDIO = 'studioMode',
+	CONFIGURE = 'configureMode',
+	DEVELOPER = 'developerMode',
+	TESTING = 'testingMode',
+	SPEAKING = 'speakingMode',
+	SERVICE = 'serviceMode'
 }
 
-export function setDeveloperMode (developerMode: boolean) {
-	localStorage.setItem('developerMode', (developerMode ? '1' : '0'))
+export function setAllowStudio (studioMode: boolean) {
+	localStorage.setItem(UiAllowAccess.STUDIO, (studioMode ? '1' : '0'))
 }
-export function getDeveloperMode (): boolean {
-	return localStorage.getItem('developerMode') === '1'
+export function getAllowStudio (): boolean {
+	return localStorage.getItem(UiAllowAccess.STUDIO) === '1'
 }
 
-export function setTestingMode (testingMode: boolean) {
-	localStorage.setItem('testingMode', (testingMode ? '1' : '0'))
+export function setAllowConfigure (configureMode: boolean) {
+	localStorage.setItem(UiAllowAccess.CONFIGURE, (configureMode ? '1' : '0'))
 }
-export function getTestingMode (): boolean {
-	return localStorage.getItem('testingMode') === '1'
+export function getAllowConfigure (): boolean {
+	return localStorage.getItem(UiAllowAccess.CONFIGURE) === '1'
 }
-export function setSpeakingMode (speakingMode: boolean) {
-	localStorage.setItem('speakingMode', (speakingMode ? '1' : '0'))
+
+export function setAllowService (serviceMode: boolean) {
+	localStorage.setItem(UiAllowAccess.SERVICE, (serviceMode ? '1' : '0'))
 }
-export function getSpeakingMode (): boolean {
-	return localStorage.getItem('speakingMode') === '1'
+export function getAllowService (): boolean {
+	return localStorage.getItem(UiAllowAccess.SERVICE) === '1'
+}
+
+export function setAllowDeveloper (developerMode: boolean) {
+	localStorage.setItem(UiAllowAccess.DEVELOPER, (developerMode ? '1' : '0'))
+}
+export function getAllowDeveloper (): boolean {
+	return localStorage.getItem(UiAllowAccess.DEVELOPER) === '1'
+}
+
+export function setAllowTesting (testingMode: boolean) {
+	localStorage.setItem(UiAllowAccess.TESTING, (testingMode ? '1' : '0'))
+}
+export function getAllowTesting (): boolean {
+	return localStorage.getItem(UiAllowAccess.TESTING) === '1'
+}
+
+export function setAllowSpeaking (speakingMode: boolean) {
+	localStorage.setItem(UiAllowAccess.SPEAKING, (speakingMode ? '1' : '0'))
+}
+export function getAllowSpeaking (): boolean {
+	return localStorage.getItem(UiAllowAccess.SPEAKING) === '1'
+}
+
+export function setHelpMode (helpMode: boolean) {
+	localStorage.setItem('helpMode', (helpMode ? '1' : '0'))
+}
+
+export function getHelpMode (): boolean {
+	return localStorage.getItem('helpMode') === '1'
 }

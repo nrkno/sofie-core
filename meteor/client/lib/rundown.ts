@@ -11,7 +11,7 @@ export namespace RundownUtils {
 
 	export function getSegmentDuration (parts: Array<PartUi>) {
 		return parts.reduce((memo, part) => {
-			return memo + (part.duration || part.expectedDuration || part.renderedDuration || 0)
+			return memo + (part.instance.part.duration || part.instance.part.expectedDuration || part.renderedDuration || 0)
 		}, 0)
 	}
 
@@ -23,7 +23,7 @@ export namespace RundownUtils {
 		} else {
 			if (showPlus) sign = '+'
 		}
-		const tc = Timecode.init({ framerate: Settings['frameRate'], timecode: milliseconds * Settings['frameRate'] / 1000, drop_frame: !Number.isInteger(Settings['frameRate']) })
+		const tc = Timecode.init({ framerate: Settings.frameRate + '', timecode: milliseconds * Settings.frameRate / 1000, drop_frame: !Number.isInteger(Settings.frameRate) })
 		const timeCodeString: String = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
@@ -103,8 +103,7 @@ export namespace RundownUtils {
 		scrollLeft: number,
 		scrollWidth: number,
 		part: PartUi,
-		partStartsAt:
-		number | undefined,
+		partStartsAt: number | undefined,
 		partDuration: number | undefined,
 		piece?: PieceUi
 	) {
@@ -115,14 +114,14 @@ export namespace RundownUtils {
 		} else if (scrollLeft > (partStartsAt || part.startsAt || 0) +
 					(piece !== undefined ?
 						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
-							(part.duration !== undefined ?
-								(part.duration + (part.getLastPlayOffset() || 0)) :
-								(partDuration || part.renderedDuration || part.expectedDuration || 0)
+							(part.instance.part.duration !== undefined ?
+								(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
+								(partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0)
 									- (piece.renderedInPoint || 0))
 							)
 						) :
-						(part.duration !== undefined ?
-							(part.duration + (part.getLastPlayOffset() || 0)) :
+						(part.instance.part.duration !== undefined ?
+							(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
 							(partDuration || part.renderedDuration || 0)
 						)
 					)

@@ -1,14 +1,16 @@
 import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection } from '../lib'
+import { applyClassToDocument, registerCollection, ProtectedString } from '../lib'
 import * as _ from 'underscore'
-import { ChannelFormat } from 'timeline-state-resolver-types'
 import {
 	IConfigItem,
 	BlueprintMappings,
-	BlueprintMapping
+	BlueprintMapping,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
+import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -31,19 +33,22 @@ export interface IStudioSettings {
 	/** Audio Stream Formats supported by the studio for media playback */
 	supportedAudioStreams?: string // (former audioStreams in config)
 }
+/** A string, identifying a Studio */
+export type StudioId = ProtectedString<'StudioId'>
+
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
-	_id: string
+	_id: StudioId
 	/** User-presentable name for the studio installation */
 	name: string
 	/** Id of the blueprint used by this studio-installation */
-	blueprintId?: string
+	blueprintId?: BlueprintId
 
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
 
 	/** List of which ShowStyleBases this studio wants to support */
-	supportedShowStyleBase: Array<string>
+	supportedShowStyleBase: Array<ShowStyleBaseId>
 
 	/** Config values are used by the Blueprints */
 	config: Array<IConfigItem>
@@ -58,7 +63,7 @@ export interface ITestToolsConfig {
 	recordings: {
 		deviceId?: string
 		channelIndex?: number
-		channelFormat: ChannelFormat
+		channelFormat: TSR.ChannelFormat
 		decklinkDevice?: number
 		filePrefix?: string
 		urlPrefix?: string
@@ -66,11 +71,11 @@ export interface ITestToolsConfig {
 }
 
 export class Studio implements DBStudio {
-	public _id: string
+	public _id: StudioId
 	public name: string
-	public blueprintId?: string
+	public blueprintId?: BlueprintId
 	public mappings: MappingsExt
-	public supportedShowStyleBase: Array<string>
+	public supportedShowStyleBase: Array<ShowStyleBaseId>
 	public config: Array<IConfigItem> // TODO - migration to rename
 	public settings: IStudioSettings
 	public testToolsConfig?: ITestToolsConfig

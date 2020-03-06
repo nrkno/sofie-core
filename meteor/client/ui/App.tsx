@@ -5,15 +5,18 @@ import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
 import {
-	setStudioMode,
-	setAdminMode,
-	getStudioMode,
-	getAdminMode,
-	setDeveloperMode,
-	setTestingMode,
-	getTestingMode,
-	getDeveloperMode,
-	setSpeakingMode
+	setAllowStudio,
+	setAllowConfigure,
+	getAllowStudio,
+	getAllowConfigure,
+	setAllowDeveloper,
+	setAllowTesting,
+	getAllowTesting,
+	getAllowDeveloper,
+	setAllowSpeaking,
+	setAllowService,
+	getAllowService,
+	setHelpMode
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -34,10 +37,11 @@ import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 
 interface IAppState {
-	studioMode: boolean
-	adminMode: boolean
-	testingMode: boolean
-	developerMode: boolean
+	allowStudio: boolean
+	allowConfigure: boolean
+	allowTesting: boolean
+	allowDeveloper: boolean
+	allowService: boolean
 }
 
 const NullComponent = () => null
@@ -56,24 +60,29 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 
 		const params = queryStringParse(location.search)
 
-		if (params['studio']) 	setStudioMode(params['studio'] === '1')
-		if (params['configure']) setAdminMode(params['configure'] === '1')
-		if (params['develop']) setDeveloperMode(params['develop'] === '1')
-		if (params['testing']) setTestingMode(params['testing'] === '1')
-		if (params['speak']) setSpeakingMode(params['speak'] === '1')
+		if (params['studio']) 	setAllowStudio(params['studio'] === '1')
+		if (params['configure']) setAllowConfigure(params['configure'] === '1')
+		if (params['develop']) setAllowDeveloper(params['develop'] === '1')
+		if (params['testing']) setAllowTesting(params['testing'] === '1')
+		if (params['speak']) setAllowSpeaking(params['speak'] === '1')
+		if (params['service']) setAllowService(params['service'] === '1')
+		if (params['help']) setHelpMode(params['help'] === '1')
+
 		if (params['admin']) {
 			const val = params['admin'] === '1'
-			setStudioMode(val)
-			setAdminMode(val)
-			setDeveloperMode(val)
-			setTestingMode(val)
+			setAllowStudio(val)
+			setAllowConfigure(val)
+			setAllowDeveloper(val)
+			setAllowTesting(val)
+			setAllowService(val)
 		}
 
 		this.state = {
-			studioMode: getStudioMode(),
-			adminMode: getAdminMode(),
-			testingMode: getTestingMode(),
-			developerMode: getDeveloperMode()
+			allowStudio: getAllowStudio(),
+			allowConfigure: getAllowConfigure(),
+			allowTesting: getAllowTesting(),
+			allowDeveloper: getAllowDeveloper(),
+			allowService: getAllowService()
 		}
 
 		this.lastStart = Date.now()
@@ -110,12 +119,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					{/* Header switch - render the usual header for all pages but the rundown view */}
 					<ErrorBoundary>
 						<Switch>
-							<Route path='/rundown/:rundownId' component={NullComponent} />
+							<Route path='/rundown/:playlistId' component={NullComponent} />
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRundown' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
-							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} testingMode={this.state.testingMode} developerMode={this.state.developerMode} />} />
+							<Route path='/' render={(props) => <Header {...props} allowConfigure={this.state.allowConfigure} allowTesting={this.state.allowTesting} allowDeveloper={this.state.allowDeveloper} />} />
 						</Switch>
 					</ErrorBoundary>
 					{/* Main app switch */}
@@ -124,7 +133,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							{/* <Route exact path='/' component={Dashboard} /> */}
 							<Route exact path='/' component={RundownList} />
 							<Route path='/rundowns' component={RundownList} />
-							<Route path='/rundown/:rundownId' component={RundownView} />
+							<Route path='/rundown/:playlistId' component={RundownView} />
 							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />

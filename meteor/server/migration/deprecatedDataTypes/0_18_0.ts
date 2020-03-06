@@ -1,12 +1,15 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../../../lib/typings/meteor'
+import { createMongoCollection } from '../../../lib/collections/lib'
+import { ProtectedString } from '../../../lib/lib'
 
 // lib/collections/ShowStyles.ts
 export interface TemplateMappings {
 	[key: string]: string
 }
+export type ShowStyleId = ProtectedString<'ShowStyleBaseId'>
 export interface ShowStyle {
-	_id: string
+	_id: ShowStyleId
 	name: string
 	/** Map a template name to a runtime function? */
 	templateMappings: TemplateMappings | never[]
@@ -20,4 +23,4 @@ export interface ShowStyle {
 	postProcessBlueprint: string
 }
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
-	= new Mongo.Collection<ShowStyle>('showStyles')
+	= createMongoCollection<ShowStyle>('showStyles')

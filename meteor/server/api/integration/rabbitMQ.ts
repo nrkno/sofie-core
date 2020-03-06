@@ -4,11 +4,12 @@ import * as AMQP from 'amqplib'
 import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
 import { promisify } from 'util'
-import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj, ExternalMessageQueueObjId } from '../../../lib/collections/ExternalMessageQueue'
 import { ConfigRef } from '../blueprints/config'
+import { unprotectString } from '../../../lib/lib'
 
 interface Message {
-	_id: string
+	_id: ExternalMessageQueueObjId
 	exchangeTopic: string
 	routingKey: string
 	headers: {[header: string]: string} | undefined
@@ -68,12 +69,18 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		await super.init()
 
 		if (this.connection) {
-			await this.connection.close()
+			await this.connection.close().catch(() => null) // already closed connections will error
 		}
 
 		this.initializing = this.initConnection()
 
-		this.connection = await this.initializing
+		try {
+			this.connection = await this.initializing
+		} catch (e) {
+			// make sure this doesn't hang around
+			delete this.initializing
+			throw new Error(e)
+		}
 		delete this.initializing
 
 		this.channelManager = new ChannelManager(this.connection)
@@ -186,7 +193,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 
-	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string, headers: {[headers: string]: string} | undefined) {
+	sendMessage (exchangeTopic: string, routingKey: string, messageId: ExternalMessageQueueObjId, message: string, headers: {[headers: string]: string} | undefined) {
 		return new Promise((resolve, reject) => {
 
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
@@ -226,7 +233,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				{
 					// options
 					headers: messageToSend.headers,
-					messageId: messageToSend._id,
+					messageId: unprotectString(messageToSend._id),
 					persistent : true // same thing as deliveryMode=2
 				}, (err, ok) => {
 					if (err) {

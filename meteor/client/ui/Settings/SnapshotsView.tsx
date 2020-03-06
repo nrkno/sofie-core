@@ -1,21 +1,20 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
+import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SnapshotItem, Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
-import { getCurrentTime } from '../../../lib/lib'
+import { SnapshotItem, Snapshots, SnapshotId } from '../../../lib/collections/Snapshots'
+import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
-import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
 import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {
 	match: {
@@ -26,14 +25,14 @@ interface IProps {
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
-	editSnapshotId: string | null
+	editSnapshotId: SnapshotId | null
 	removeSnapshots: boolean
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
 	studios: Array<Studio>
 }
-export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 
 	return {
 		snapshots: Snapshots.find({}, {
@@ -86,7 +85,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						headers: {
 							'content-type': 'application/json'
 						},
-					}).then(res => {
+					}).then(() => {
 						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Successfully restored snapshot'), 'RestoreSnapshot'))
 					}).catch(err => {
 						// console.error('Snapshot restore failure: ', err)
@@ -110,64 +109,55 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				title: 'Restore Snapshot',
 				message: `Do you really want to restore the snapshot ${snapshot.name}?`,
 				onAccept: () => {
-					Meteor.call(SnapshotFunctionsAPI.RESTORE_SNAPSHOT, snapshotId, (err) => {
-						if (err) {
-							// todo: notify user
-							logger.error(err)
-							doModalDialog({
-								title: 'Restore Snapshot',
-								message: `Error: ${err.toString()}`,
-								acceptOnly: true,
-								onAccept: () => {
-									// nothing
-								}
-							})
-						} else {
-							// todo: replace this with something else
-							doModalDialog({
-								title: 'Restore Snapshot',
-								message: `Snapshot restored!`,
-								acceptOnly: true,
-								onAccept: () => {
-									// nothing
-								}
-							})
-						}
+					MeteorCall.snapshot.restoreSnapshot(snapshotId).then(() => {
+						// todo: replace this with something else
+						doModalDialog({
+							title: 'Restore Snapshot',
+							message: `Snapshot restored!`,
+							acceptOnly: true,
+							onAccept: () => {
+								// nothing
+							}
+						})
+					}).catch(err => {
+						logger.error(err)
+						doModalDialog({
+							title: 'Restore Snapshot',
+							message: `Error: ${err.toString()}`,
+							acceptOnly: true,
+							onAccept: () => {
+								// nothing
+							}
+						})
 					})
 				}
 			})
 		}
 	}
-	takeSystemSnapshot = (studioId: string | null) => {
-		Meteor.call(SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT, studioId, `Requested by user`, (err) => {
-			if (err) {
-				// todo: notify user
-				logger.error(err)
-				doModalDialog({
-					title: 'Restore Snapshot',
-					message: `Error: ${err.toString()}`,
-					acceptOnly: true,
-					onAccept: () => {
-						// nothing
-					}
-				})
-			}
+	takeSystemSnapshot = (studioId: StudioId | null) => {
+		MeteorCall.snapshot.storeSystemSnapshot(studioId, `Requested by user`).catch(err => {
+			logger.error(err)
+			doModalDialog({
+				title: 'Restore Snapshot',
+				message: `Error: ${err.toString()}`,
+				acceptOnly: true,
+				onAccept: () => {
+					// nothing
+				}
+			})
 		})
 	}
-	takeDebugSnapshot = (studioId: string) => {
-		Meteor.call(SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT, studioId, `Requested by user`, (err) => {
-			if (err) {
-				// todo: notify user
-				logger.error(err)
-				doModalDialog({
-					title: 'Restore Snapshot',
-					message: `Error: ${err.toString()}`,
-					acceptOnly: true,
-					onAccept: () => {
-						// nothing
-					}
-				})
-			}
+	takeDebugSnapshot = (studioId: StudioId) => {
+		MeteorCall.snapshot.storeDebugSnapshot(studioId, `Requested by user`).catch(err => {
+			logger.error(err)
+			doModalDialog({
+				title: 'Restore Snapshot',
+				message: `Error: ${err.toString()}`,
+				acceptOnly: true,
+				onAccept: () => {
+					// nothing
+				}
+			})
 		})
 	}
 	editSnapshot = (snapshotId) => {
@@ -186,26 +176,23 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			removeSnapshots: !this.state.removeSnapshots
 		})
 	}
-	removeStoredSnapshot = (snapshotId: string) => {
+	removeStoredSnapshot = (snapshotId: SnapshotId) => {
 		let snapshot = Snapshots.findOne(snapshotId)
 		if (snapshot) {
 			doModalDialog({
 				title: 'Remove Snapshot',
 				message: `Are you sure, do you really want to REMOVE the Snapshot ${snapshot.name}?\r\nThis cannot be undone!!`,
 				onAccept: () => {
-					Meteor.call(SnapshotFunctionsAPI.REMOVE_SNAPSHOT, snapshotId, (err) => {
-						if (err) {
-							// todo: notify user
-							logger.error(err)
-							doModalDialog({
-								title: 'Remove Snapshot',
-								message: `Error: ${err.toString()}`,
-								acceptOnly: true,
-								onAccept: () => {
-									// nothing
-								}
-							})
-						}
+					MeteorCall.snapshot.removeSnapshot(snapshotId).catch(err => {
+						logger.error(err)
+						doModalDialog({
+							title: 'Remove Snapshot',
+							message: `Error: ${err.toString()}`,
+							acceptOnly: true,
+							onAccept: () => {
+								// nothing
+							}
+						})
 					})
 				}
 			})
@@ -240,7 +227,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</p>
 									{
 										_.map(this.props.studios, (studio) => {
-											return <div key={studio._id}>
+											return <div key={unprotectString(studio._id)}>
 												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}</button>
 											</div>
 										})
@@ -272,7 +259,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</tr>
 								{_.map(this.props.snapshots, (snapshot) => {
 									return (
-										<tr key={snapshot._id}>
+										<tr key={unprotectString(snapshot._id)}>
 											<td>
 												<button className='btn mod mhm' onClick={() => { this.restoreStoredSnapshot(snapshot._id) }}>{t('Restore')}</button>
 											</td>

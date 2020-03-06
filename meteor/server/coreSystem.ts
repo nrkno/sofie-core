@@ -10,7 +10,7 @@ import {
 	VersionRange,
 	GENESIS_SYSTEM_VERSION
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, unprotectString } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	CURRENT_SYSTEM_VERSION,
@@ -25,6 +25,7 @@ import { Studios } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
 const PackageInfo = require('../package.json')
+const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 export { PackageInfo }
 
@@ -40,7 +41,8 @@ function initializeCoreSystem () {
 			modified: getCurrentTime(),
 			version: version,
 			previousVersion: null,
-			storePath: '' // to be filled in later
+			storePath: '', // to be filled in later
+			serviceMessages: {}
 		})
 
 		// Check what migration has to provide:
@@ -92,7 +94,7 @@ function checkDatabaseVersions () {
 		let blueprintIds: { [id: string]: true } = {}
 		Blueprints.find().forEach((blueprint) => {
 			if (blueprint.code) {
-				blueprintIds[blueprint._id] = true
+				blueprintIds[unprotectString(blueprint._id)] = true
 
 				// @ts-ignore
 				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -115,7 +117,7 @@ function checkDatabaseVersions () {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = checkDatabaseVersion(
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseRange(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'),
 							'to fix, run migration',
 							'blueprint.blueprintVersion',
 							`databaseVersion.showStyle[${showStyleBase._id}]`
@@ -125,13 +127,13 @@ function checkDatabaseVersions () {
 					Studios.find({
 						supportedShowStyleBase: showStyleBase._id
 					}).forEach((studio) => {
-						if (!studioIds[studio._id]) { // only run once per blueprint and studio
-							studioIds[studio._id] = true
+						if (!studioIds[unprotectString(studio._id)]) { // only run once per blueprint and studio
+							studioIds[unprotectString(studio._id)] = true
 
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseRange(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'),
 									'to fix, run migration',
 									'blueprint.blueprintVersion',
 									`databaseVersion.studio[${studio._id}]`
@@ -264,7 +266,7 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseRange(PackageInfo.dependencies['timeline-state-resolver-types']),
+		parseRange(BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']),
 		'Blueprint has to be updated',
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
@@ -352,6 +354,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 			'react-escape',
 			'react-hotkeys',
 			'react-i18next',
+			'react-intersection-observer',
 			'react-lottie',
 			'react-moment',
 			'react-router-dom',
@@ -382,6 +385,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 			versions[name] = sanitizeVersion(dependencies[name])
 		})
 		versions['core'] = PackageInfo.version // package version
+		versions['timeline-state-resolver-types'] = BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']
 
 	} else logger.error(`Core package dependencies missing`)
 	return versions
