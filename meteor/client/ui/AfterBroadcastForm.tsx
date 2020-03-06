@@ -41,9 +41,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-			doUserAction(t, e, 'Saving Evaluation', () => MeteorCall.userAction.saveEvaluation(evaluation))
+			doUserAction(t, e, 'Saving Evaluation', (e) => MeteorCall.userAction.saveEvaluation(e, evaluation))
 
-			doUserAction(t, e, 'Deactivating Rundown Playlist', () => MeteorCall.userAction.deactivate(this.props.playlist._id))
+			doUserAction(t, e, 'Deactivating Rundown Playlist', (e) => MeteorCall.userAction.deactivate(e, this.props.playlist._id))
 
 			this.setState({
 				q0: '',
@@ -53,7 +53,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 
 		if (answers.q0 !== 'nothing') {
-			doUserAction(t, e, 'Creating Snapshot for debugging', () => MeteorCall.userAction.storeRundownSnapshot(this.props.playlist._id, 'Evaluation form'), (err, snapshotId) => {
+			doUserAction(t, e, 'Creating Snapshot for debugging', (e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Evaluation form'), (err, snapshotId) => {
 				if (!err && snapshotId) {
 					saveEvaluation(snapshotId)
 				} else {

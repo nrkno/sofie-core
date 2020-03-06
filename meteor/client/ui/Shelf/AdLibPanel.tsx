@@ -826,15 +826,15 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (!adlibPiece.isGlobal) {
-				doUserAction(t, e, 'Start Global Adlib', () => MeteorCall.userAction.segmentAdLibPieceStart(
+				doUserAction(t, e, 'Start Global Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false
 				))
 			} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-				doUserAction(t, e, 'Start Global Adlib', () => MeteorCall.userAction.baselineAdLibPieceStart(
+				doUserAction(t, e, 'Start Global Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false
 				))
 			} else if (adlibPiece.isSticky) {
-				doUserAction(t, e, 'Start Sticky Piece', () => MeteorCall.userAction.sourceLayerStickyPieceStart(
+				doUserAction(t, e, 'Start Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
 					this.props.playlist._id, adlibPiece.sourceLayerId
 				))
 			}
@@ -846,7 +846,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Clearing SourceLayer', () => MeteorCall.userAction.sourceLayerOnPartStop(
+			doUserAction(t, e, 'Clearing SourceLayer', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
 				this.props.playlist._id, currentPartInstanceId, sourceLayer._id
 			))
 		}

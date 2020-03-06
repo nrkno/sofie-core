@@ -338,13 +338,13 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (!this.isAdLibOnAir(adlibPiece)) {
 				if (!adlibPiece.isGlobal) {
-					doUserAction(t, e, 'Start playing Adlib', () => MeteorCall.userAction.segmentAdLibPieceStart(
+					doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 						this.props.playlist._id,
 						currentPartInstanceId,
 						adlibPiece._id, queue || false
 					))
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, 'Start playing Adlib', () => MeteorCall.userAction.baselineAdLibPieceStart(
+					doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
 						this.props.playlist._id,
 						currentPartInstanceId,
 						adlibPiece._id, queue || false
@@ -363,7 +363,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, '', () => MeteorCall.userAction.sourceLayerStickyPieceStart(this.props.playlist._id, sourceLayerId))
+			doUserAction(t, e, '', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -373,7 +373,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const playlistId = this.props.playlist._id
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Stopping SourceLayer', () => MeteorCall.userAction.sourceLayerOnPartStop(
+			doUserAction(t, e, 'Stopping SourceLayer', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
 				playlistId,
 				currentPartInstanceId,
 				sourceLayer._id

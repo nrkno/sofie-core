@@ -6,12 +6,13 @@ import {
 } from './notifications/notifications'
 import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
+import { eventContextForLog } from './clientAPI'
 
 export function doUserAction<Result> (
 	t: i18next.TranslationFunction<any, object, string>,
-	event: any,
+	userEvent: any,
 	actionName0: string,
-	fcn: () => Promise<ClientAPI.ClientResponse<Result>>,
+	fcn: (event: any) => Promise<ClientAPI.ClientResponse<Result>>,
 	callback?: (err: any, res?: Result) => void | boolean,
 	okMessage?: string
 ) {
@@ -37,7 +38,7 @@ export function doUserAction<Result> (
 		}
 	}
 
-	fcn().then((res: ClientAPI.ClientResponseSuccess<Result>) => {
+	fcn(eventContextForLog(userEvent)).then((res: ClientAPI.ClientResponseSuccess<Result>) => {
 		clearMethodTimeout()
 
 		if (ClientAPI.isClientResponseError(res)) {

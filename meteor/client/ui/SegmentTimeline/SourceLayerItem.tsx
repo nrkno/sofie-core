@@ -311,7 +311,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 				const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
 				if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
 
-				doUserAction(this.props.t, e, 'Set In & Out points', () => MeteorCall.userAction.setInOutPoints(
+				doUserAction(this.props.t, e, 'Set In & Out points', (e) => MeteorCall.userAction.setInOutPoints(e,
 					rundown.playlistId,
 					this.props.part.instance.part._id,
 					this.props.piece.instance.piece._id,

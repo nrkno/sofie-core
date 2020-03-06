@@ -24,7 +24,7 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, 'Take', () => MeteorCall.userAction.take(this.props.playlist._id))
+			doUserAction(t, e, 'Take', (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
 		}
 	}
 

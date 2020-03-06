@@ -39,7 +39,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 	}
 	handleAccept = (e) => {
 		this.props.onClose && this.props.onClose()
-		doUserAction(this.props.t, e, 'Set In & Out points', () => MeteorCall.userAction.setInOutPoints(
+		doUserAction(this.props.t, e, 'Set In & Out points', (e) => MeteorCall.userAction.setInOutPoints(e,
 			this.props.playlistId,
 			this.props.selectedPiece.partId,
 			this.props.selectedPiece._id,

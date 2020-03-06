@@ -353,13 +353,13 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 									no: t('Cancel'),
 									message: <p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', { name: this.props.coreSystem.name || 'unnamed' })}</p>,
 									onAccept: (e) => {
-										doUserAction(t, e, 'Generate restart token', () => MeteorCall.userAction.generateRestartToken(), (err, token) => {
+										doUserAction(t, e, 'Generate restart token', (e) => MeteorCall.userAction.generateRestartToken(e, ), (err, token) => {
 											if (err || !token) {
 												NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))
 												return
 											}
 											const restartToken = getHash(RESTART_SALT + token)
-											doUserAction(t, {}, '', () => MeteorCall.userAction.restartCore(restartToken), (err, token) => {
+											doUserAction(t, {}, '', (e) => MeteorCall.userAction.restartCore(e, restartToken), (err, token) => {
 												if (err || !token) {
 													NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))
 													return

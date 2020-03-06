@@ -73,7 +73,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, 'Removing Rundown Playlist', () => MeteorCall.userAction.removeRundownPlaylist(rundownPlaylist._id))
+				doUserAction(t, e, 'Removing Rundown Playlist', (e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to delete the "{{name}}" RundownPlaylist?', { name: rundownPlaylist.name }) + '\n' +
@@ -89,7 +89,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, 'Re-Syncing Rundown Playlist', () => MeteorCall.userAction.resyncRundownPlaylist(rundownPlaylist._id))
+				doUserAction(t, e, 'Re-Syncing Rundown Playlist', (e) => MeteorCall.userAction.resyncRundownPlaylist(e, rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to re-sync all rundowns in playlist "{{name}}"?', { name: rundownPlaylist.name })
