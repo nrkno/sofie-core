@@ -38,7 +38,7 @@ import { Random } from 'meteor/random'
 import { literal, getCurrentTime, partial } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
@@ -48,6 +48,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketPieceButton } from './BucketPieceButton'
+import { ContextMenuTrigger } from 'react-contextmenu'
 
 import update from 'immutability-helper'
 
@@ -82,7 +83,7 @@ const bucketSource = {
 		} else {
 			const { index: newIndex } = monitor.getDropResult()
 			
-			props.onBucketReorder(droppedId, newIndex)
+			props.onBucketReorder(droppedId, newIndex, originalIndex)
 		}
 	}
 }
@@ -131,11 +132,15 @@ const bucketTarget = {
 
 		return {
 			index,
+			bucketId: props.bucket._id,
 			action:
 				monitor.getItemType() === DragDropItemTypes.BUCKET ?
 					'reorder' :
 				monitor.getItemType() === DragDropItemTypes.BUCKET_ADLIB_PIECE ?
-					'move':
+					monitor.getItem().bucketId === props.bucket._id ?
+						'reorder' :
+						'move'
+					:
 					undefined
 		}
 	}
@@ -162,7 +167,8 @@ export interface IBucketPanelProps {
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: string, atIndex: number) => void
 	findBucket: (id: string) => { bucket: Bucket | undefined, index: number }
-	onBucketReorder: (draggedId: string, newIndex: number) => void
+	onBucketReorder: (draggedId: string, newIndex: number, oldIndex: number) => void
+	onAdLibContext: (args: {contextBucket: Bucket, contextBucketAdLib: BucketAdLib}, callback: () => void) => void
 }
 
 export interface IBucketPanelTrackedProps {
@@ -185,6 +191,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	return literal<IBucketPanelTrackedProps>({
 		adLibPieces: BucketAdLibs.find({
 			bucketId: props.bucket._id
+		}, {
+			sort: {
+				'_rank': 1,
+				'name': 1
+			}
 		}).fetch(),
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
@@ -410,27 +421,43 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		}
 	}
 
-	private onAdLibReorder = (draggedId: string, newIndex: number) => {
+	private onAdLibReorder = (draggedId: string, newIndex: number, oldIndex: number) => {
 		const { t } = this.props
 		if (this.props.adLibPieces) {
-			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
+			const draggedOver = this.props.adLibPieces[newIndex]
 
-			if (draggedB) {
-				var newRank = draggedB._rank
+			if (draggedOver) {
+				var newRank = draggedOver._rank
 	
 				// Dragged over into first place
 				if (newIndex === 0) {
-					newRank = this.props.adLibPieces[0]._rank - 1
+					newRank = draggedOver._rank - 1
 				// Dragged over into last place
 				} else if (newIndex === this.props.adLibPieces.length - 1) {
-					newRank = this.props.adLibPieces[this.props.adLibPieces.length - 1]._rank + 1
+					newRank = draggedOver._rank + 1
+				// Last element swapped with next to last
+				} else if (oldIndex === this.props.adLibPieces.length - 1 && newIndex === this.props.adLibPieces.length - 2) {
+					newRank = (this.props.adLibPieces[newIndex - 1]._rank + this.props.adLibPieces[newIndex]._rank) / 2
 				// Dragged into any other place
 				} else {
 					newRank = (this.props.adLibPieces[newIndex]._rank + this.props.adLibPieces[newIndex + 1]._rank) / 2
 				}
 
-				doUserAction(t, { type: 'drop' }, UserActionAPI.methods.modifyBucketAdLib, [draggedB._id, partial<BucketAdLib>({
+				doUserAction(t, { type: 'drop' }, UserActionAPI.methods.modifyBucketAdLib, [draggedId, partial<BucketAdLib>({
 					_rank: newRank
+				})])
+			}
+		}
+	}
+
+	private onAdLibMove = (draggedId: string, bucketId: string) => {
+		const { t } = this.props
+		if (this.props.adLibPieces) {
+			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
+
+			if (draggedB) {
+				doUserAction(t, { type: 'drop' }, UserActionAPI.methods.modifyBucketAdLib, [draggedB._id, partial<BucketAdLib>({
+					bucketId
 				})])
 			}
 		}
@@ -478,9 +505,19 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						<div className='dashboard-panel__panel'>
 							{this.state.adLibPieces
 								.map((item: BucketAdLib) => {
-									return <BucketPieceButton
-												key={item._id}
+									return <ContextMenuTrigger id='bucket-context-menu'
+										collect={() => new Promise((resolve) => {
+											this.props.onAdLibContext({
+												contextBucketAdLib: item,
+												contextBucket: this.props.bucket
+											}, resolve)
+										})}
+										renderTag='span'
+										key={item._id}
+										holdToDisplay={contextMenuHoldToDisplayTime()}>
+										<BucketPieceButton
 												item={item}
+												bucketId={item.bucketId}
 												layer={this.state.sourceLayers[item.sourceLayerId]}
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
@@ -493,9 +530,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												findAdLib={this.findAdLib}
 												moveAdLib={this.moveAdLib}
 												onAdLibReorder={this.onAdLibReorder}
+												onAdLibMove={this.onAdLibMove}
 											>
 												{item.name}
-									</BucketPieceButton>
+										</BucketPieceButton>
+									</ContextMenuTrigger>
 								})}
 						</div>
 					</div>

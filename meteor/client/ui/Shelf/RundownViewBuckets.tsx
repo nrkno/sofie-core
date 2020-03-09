@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Bucket } from '../../../lib/collections/Buckets'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -35,6 +36,7 @@ interface IBucketsProps {
 interface IState {
 	panelWidths: number[]
 	contextBucket: Bucket | undefined
+	contextBucketAdLib: BucketAdLib | undefined
 	editedNameId: string | undefined
 	localBuckets: Bucket[]
 }
@@ -64,6 +66,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		this.state = {
 			panelWidths: [],
 			contextBucket: undefined,
+			contextBucketAdLib: undefined,
 			editedNameId: undefined,
 			localBuckets: ([] as Bucket[]).concat(props.buckets || [])
 		}
@@ -238,6 +241,20 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		)
 	}
 
+	deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLib) => {
+		const { t } = this.props
+
+		if (e.persist) e.persist()
+
+		doModalDialog(literal<ModalDialogQueueItem>({
+			message: t('Are you sure you want to delete this AdLib?'),
+			title: bucketAdLib.name,
+			onAccept: () => {
+				doUserAction(t, e, UserActionAPI.methods.removeBucketAdLib, [ bucketAdLib._id ])
+			}
+		}))
+	}
+
 	deleteBucket = (e: any, bucket: Bucket) => {
 		const { t } = this.props
 		
@@ -314,7 +331,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		}
 	}
 
-	private onBucketReorder = (draggedId: string, newIndex: number) => {
+	private onBucketReorder = (draggedId: string, newIndex: number, oldIndex: number) => {
 		const { t } = this.props
 		if (this.props.buckets) {
 			const draggedB = this.props.buckets.find(b => b._id === draggedId)
@@ -328,6 +345,9 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 				// Dragged over into last place
 				} else if (newIndex === this.props.buckets.length - 1) {
 					newRank = this.props.buckets[this.props.buckets.length - 1]._rank + 1
+				// Last element swapped with next to last
+				} else if (oldIndex === this.props.buckets.length - 1 && newIndex === this.props.buckets.length - 2) {
+					newRank = (this.props.buckets[newIndex - 1]._rank + this.props.buckets[newIndex]._rank) / 2
 				// Dragged into any other place
 				} else {
 					newRank = (this.props.buckets[newIndex]._rank + this.props.buckets[newIndex + 1]._rank) / 2
@@ -340,16 +360,33 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		}
 	}
 
+	private onAdLibContext = ({contextBucketAdLib, contextBucket}: {contextBucketAdLib: BucketAdLib, contextBucket: Bucket}, callback: () => void) => {
+		this.setState({
+			contextBucket,
+			contextBucketAdLib
+		}, callback)
+	}
+
 	render () {
 		const { rundown, showStyleBase, shouldQueue, t } = this.props
 		const { localBuckets: buckets } = this.state
 		return <>
 			<Escape to='document'>
 				<ContextMenu id='bucket-context-menu' onHide={this.clearContextBucket}>
-					{this.state.contextBucket &&
+					{!this.state.contextBucketAdLib && this.state.contextBucket &&
 						<div className='react-contextmenu-label'>
 							{this.state.contextBucket.name}
 						</div>}
+					{this.state.contextBucketAdLib && <>
+						<div className='react-contextmenu-label'>
+							{this.state.contextBucketAdLib.name}
+						</div>
+						<MenuItem
+						onClick={(e) => this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)}>
+							{t('Delete this AdLib')}
+						</MenuItem>
+						<hr />
+						</>}
 					<MenuItem
 						onClick={(e) => this.state.contextBucket && this.emptyBucket(e, this.state.contextBucket)}
 						disabled={!this.state.contextBucket}>
@@ -390,7 +427,8 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 					<ContextMenuTrigger id='bucket-context-menu'
 						collect={() => new Promise((resolve) => {
 							this.setState({
-								contextBucket: bucket
+								contextBucket: bucket,
+								contextBucketAdLib: undefined
 							}, resolve)
 						})}
 						holdToDisplay={contextMenuHoldToDisplayTime()}>
@@ -405,6 +443,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 								moveBucket={this.moveBucket}
 								findBucket={this.findBucket}
 								onBucketReorder={this.onBucketReorder}
+								onAdLibContext={this.onAdLibContext}
 							/>
 						}
 					</ContextMenuTrigger>
