@@ -25,6 +25,7 @@ import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
@@ -336,7 +337,7 @@ export const RundownViewBuckets = translate()(
 				const draggedB = this.props.buckets.find(b => b._id === draggedId)
 
 				if (draggedB) {
-					let newRank = draggedB._rank
+					var newRank = draggedB._rank
 
 					// Dragged over into first place
 					if (newIndex === 0) {
@@ -370,7 +371,7 @@ export const RundownViewBuckets = translate()(
 			const { playlist, showStyleBase, shouldQueue, t } = this.props
 			const { localBuckets: buckets } = this.state
 			return <>
-				<Escape to='document'>
+				< Escape to='document' >
 					<ContextMenu id='bucket-context-menu' onHide={this.clearContextBucket}>
 						{!this.state.contextBucketAdLib && this.state.contextBucket &&
 							<div className='react-contextmenu-label'>

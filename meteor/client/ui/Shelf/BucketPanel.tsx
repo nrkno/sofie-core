@@ -513,11 +513,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
 
 			if (draggedB) {
-				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) => MeteorCall.userAction.bucketsModifyBucketAdLib(e,
-					draggedB._id, partial<BucketAdLib>({
+				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) =>
+					MeteorCall.userAction.bucketsModifyBucketAdLib(e, draggedB._id, partial<BucketAdLib>({
 						bucketId
-					})
-				))
+					})))
 			}
 		}
 	}
@@ -596,7 +595,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									</ContextMenuTrigger>
 								})}
 						</div>
-					</div>
+					</div >
 				))
 			)
 		}
