@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
@@ -24,6 +25,7 @@ import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
@@ -35,6 +37,7 @@ interface IBucketsProps {
 interface IState {
 	panelWidths: number[]
 	contextBucket: Bucket | undefined
+	contextBucketAdLib: BucketAdLib | undefined
 	editedNameId: BucketId | undefined
 	localBuckets: Bucket[]
 }
@@ -64,6 +67,7 @@ export const RundownViewBuckets = translate()(
 			this.state = {
 				panelWidths: [],
 				contextBucket: undefined,
+				contextBucketAdLib: undefined,
 				editedNameId: undefined,
 				localBuckets: ([] as Bucket[]).concat(props.buckets || [])
 			}
@@ -237,6 +241,20 @@ export const RundownViewBuckets = translate()(
 			)
 		}
 
+		deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLib) => {
+			const { t } = this.props
+
+			if (e.persist) e.persist()
+
+			doModalDialog(literal<ModalDialogQueueItem>({
+				message: t('Are you sure you want to delete this AdLib?'),
+				title: bucketAdLib.name,
+				onAccept: () => {
+					doUserAction(t, e, UserActionAPIMethods.bucketsRemoveBucketAdLib, (e) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id))
+				}
+			}))
+		}
+
 		deleteBucket = (e: any, bucket: Bucket) => {
 			const { t } = this.props
 
@@ -246,7 +264,7 @@ export const RundownViewBuckets = translate()(
 				message: t('Are you sure you want to delete this Bucket?'),
 				title: bucket.name,
 				onAccept: () => {
-					doUserAction(t, e, 'Remove Bucket', (e) => MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id))
+					doUserAction(t, e, UserActionAPIMethods.bucketsRemoveBucket, (e) => MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id))
 				}
 			}))
 		}
@@ -266,7 +284,7 @@ export const RundownViewBuckets = translate()(
 				message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
 				title: bucket.name,
 				onAccept: () => {
-					doUserAction(t, e, 'Empty Bucket', (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
+					doUserAction(t, e, UserActionAPIMethods.bucketsEmptyBucket, (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
 				}
 			}))
 		}
@@ -313,13 +331,13 @@ export const RundownViewBuckets = translate()(
 			}
 		}
 
-		private onBucketReorder = (draggedId: BucketId, newIndex: number) => {
+		private onBucketReorder = (draggedId: BucketId, newIndex: number, oldIndex: number) => {
 			const { t } = this.props
 			if (this.props.buckets) {
 				const draggedB = this.props.buckets.find(b => b._id === draggedId)
 
 				if (draggedB) {
-					let newRank = draggedB._rank
+					var newRank = draggedB._rank
 
 					// Dragged over into first place
 					if (newIndex === 0) {
@@ -327,6 +345,9 @@ export const RundownViewBuckets = translate()(
 						// Dragged over into last place
 					} else if (newIndex === this.props.buckets.length - 1) {
 						newRank = this.props.buckets[this.props.buckets.length - 1]._rank + 1
+						// Last element swapped with next to last
+					} else if (oldIndex === this.props.buckets.length - 1 && newIndex === this.props.buckets.length - 2) {
+						newRank = (this.props.buckets[newIndex - 1]._rank + this.props.buckets[newIndex]._rank) / 2
 						// Dragged into any other place
 					} else {
 						newRank = (this.props.buckets[newIndex]._rank + this.props.buckets[newIndex + 1]._rank) / 2
@@ -339,16 +360,33 @@ export const RundownViewBuckets = translate()(
 			}
 		}
 
+		private onAdLibContext = ({ contextBucketAdLib, contextBucket }: { contextBucketAdLib: BucketAdLib, contextBucket: Bucket }, callback: () => void) => {
+			this.setState({
+				contextBucket,
+				contextBucketAdLib
+			}, callback)
+		}
+
 		render() {
 			const { playlist, showStyleBase, shouldQueue, t } = this.props
 			const { localBuckets: buckets } = this.state
 			return <>
-				<Escape to='document'>
+				< Escape to='document' >
 					<ContextMenu id='bucket-context-menu' onHide={this.clearContextBucket}>
-						{this.state.contextBucket &&
+						{!this.state.contextBucketAdLib && this.state.contextBucket &&
 							<div className='react-contextmenu-label'>
 								{this.state.contextBucket.name}
 							</div>}
+						{this.state.contextBucketAdLib && <>
+							<div className='react-contextmenu-label'>
+								{this.state.contextBucketAdLib.name}
+							</div>
+							<MenuItem
+								onClick={(e) => this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)}>
+								{t('Delete this AdLib')}
+							</MenuItem>
+							<hr />
+						</>}
 						<MenuItem
 							onClick={(e) => this.state.contextBucket && this.emptyBucket(e, this.state.contextBucket)}
 							disabled={!this.state.contextBucket}>
@@ -387,7 +425,8 @@ export const RundownViewBuckets = translate()(
 							</div>
 							<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
 								this.setState({
-									contextBucket: bucket
+									contextBucket: bucket,
+									contextBucketAdLib: undefined
 								}, resolve)
 							})}
 								holdToDisplay={contextMenuHoldToDisplayTime()}>
@@ -402,6 +441,7 @@ export const RundownViewBuckets = translate()(
 										moveBucket={this.moveBucket}
 										findBucket={this.findBucket}
 										onBucketReorder={this.onBucketReorder}
+										onAdLibContext={this.onAdLibContext}
 									/>
 								}
 							</ContextMenuTrigger>

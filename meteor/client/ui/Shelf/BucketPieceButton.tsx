@@ -30,6 +30,7 @@ import { DragDropItemTypes } from '../DragDropItemTypes'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceId } from '../../../lib/collections/Pieces'
+import { BucketId } from '../../../lib/collections/Buckets'
 
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps & IDashboardButtonTrackedProps
 
@@ -37,7 +38,8 @@ const buttonSource = {
 	beginDrag(props: IDashboardButtonPropsCombined, monitor: DragSourceMonitor, component: any) {
 		return {
 			id: props.adLibListItem._id,
-			originalIndex: props.findAdLib(props.adLibListItem._id).index
+			originalIndex: props.findAdLib(props.adLibListItem._id).index,
+			bucketId: props.bucketId
 		}
 	},
 
@@ -48,9 +50,14 @@ const buttonSource = {
 		if (!didDrop) {
 			props.moveAdLib(droppedId, originalIndex)
 		} else {
-			const { index: newIndex } = monitor.getDropResult()
-
-			props.onAdLibReorder(droppedId, newIndex)
+			const { action } = monitor.getDropResult()
+			if (action === 'reorder') {
+				const { index: newIndex } = props.findAdLib(droppedId)
+				props.onAdLibReorder(droppedId, newIndex, originalIndex)
+			} else if (action === 'move') {
+				const { bucketId } = monitor.getDropResult()
+				props.onAdLibMove(droppedId, bucketId)
+			}
 		}
 	}
 }
@@ -74,7 +81,8 @@ const buttonTarget = {
 		const { index } = props.findAdLib(props.adLibListItem._id)
 
 		return {
-			index
+			index,
+			action: 'reorder'
 		}
 	}
 }
@@ -82,7 +90,9 @@ const buttonTarget = {
 export interface BucketPieceButtonBaseProps {
 	moveAdLib: (id: PieceId, atIndex: number) => void
 	findAdLib: (id: PieceId) => { piece: BucketAdLib | undefined, index: number }
-	onAdLibReorder: (draggedId: PieceId, newIndex: number) => void
+	onAdLibReorder: (draggedId: PieceId, newIndex: number, oldIndex: number) => void
+	onAdLibMove: (id: PieceId, newBucketId: BucketId) => void
+	bucketId: BucketId
 }
 
 interface ButtonSourceCollectedProps {
