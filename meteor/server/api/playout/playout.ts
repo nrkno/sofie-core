@@ -1040,7 +1040,7 @@ export namespace ServerPlayoutAPI {
 
 			const now = getCurrentTime()
 			const relativeNow = now - (part.getLastStartedPlayback() || 0)
-			const orderedPieces = getResolvedPieces(part, undefined, true)
+			const orderedPieces = getResolvedPieces(part)
 
 			orderedPieces.forEach((piece) => {
 				if (sourceLayerIds.indexOf(piece.sourceLayerId) !== -1) {

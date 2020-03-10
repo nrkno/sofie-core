@@ -169,7 +169,7 @@ export function createPieceGroup (
 		}
 	})
 }
-export function getResolvedPieces (part: Part, allPieces?: Piece[], skipEmulateStartingNow?: boolean): Piece[] {
+export function getResolvedPieces (part: Part, allPieces?: Piece[]): Piece[] {
 	// TODO - was this mangled for endState and could it have broken something else?
 	let pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
 
@@ -180,7 +180,7 @@ export function getResolvedPieces (part: Part, allPieces?: Piece[], skipEmulateS
 
 	const objs = pieces.map(piece => clone(createPieceGroup(piece)))
 	objs.forEach(o => {
-		if (o.enable.start === 'now' && part.getLastStartedPlayback() && !skipEmulateStartingNow) {
+		if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
 			// Emulate playout starting now. TODO - ensure didnt break other uses
 			o.enable.start = getCurrentTime() - (part.getLastStartedPlayback() || 0)
 		} else if (o.enable.start === 0 || o.enable.start === 'now') {
