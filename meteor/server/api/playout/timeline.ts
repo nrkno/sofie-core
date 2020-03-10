@@ -504,7 +504,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
 			const infiniteGroup = createPartGroup(currentPart, {
-				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
+				start: _.isNumber(piece.enable.start) || !piece.enable.start ? `#${currentPartGroup.id}.start + ${piece.enable.start || 0}` : piece.enable.start, // This gets overriden with a concrete time if the original piece is known to have already started
 				duration: piece.enable.duration || undefined
 			})
 			infiniteGroup.id = getPartGroupId(piece._id) + '_infinite'
@@ -546,7 +546,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 			const showHoldExcept = piece.infiniteId !== piece._id
-			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(rundownData.rundown, [piece], groupClasses, infiniteGroup, undefined, activeRundown.holdState, showHoldExcept))
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(rundownData.rundown, [piece], groupClasses, infiniteGroup, undefined, activeRundown.holdState, showHoldExcept, true))
 		}
 
 		const groupClasses: string[] = ['current_part']
@@ -685,7 +685,8 @@ function transformPartIntoTimeline (
 	partGroup?: TimelineObjRundown,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
-	showHoldExcept?: boolean
+	showHoldExcept?: boolean,
+	ignorePieceStart?: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObj> {
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 
@@ -712,7 +713,7 @@ function transformPartIntoTimeline (
 		) {
 			let tos: TimelineObjectCoreExt[] = piece.content.timelineObjects
 
-			const isInfiniteContinuation = piece.infiniteId && piece.infiniteId !== piece._id
+			const isInfiniteContinuation = piece.infiniteId && piece.infiniteId !== piece._id 
 			if (piece.enable.start === 0 && !isInfiniteContinuation) {
 				// If timed absolute and there is a transition delay, then apply delay
 				if (!piece.isTransition && allowTransition && transition && !piece.adLibSourceId) {
@@ -721,6 +722,11 @@ function transformPartIntoTimeline (
 				} else if (piece.isTransition && transitionPieceDelay) {
 					piece.enable.start = Math.max(0, transitionPieceDelay)
 				}
+			}
+			
+			if (ignorePieceStart) {
+				// The start time is used for the fake part group
+				piece.enable.start = 0
 			}
 
 			// create a piece group for the pieces and then place all of them there
