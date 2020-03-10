@@ -65,6 +65,7 @@ import { prefixAllObjectIds } from './lib'
 import { createPieceGroup, createPieceGroupFirstObject, getResolvedPieces, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
+import { isNumber } from 'util'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -546,7 +547,7 @@ function buildTimelineObjsForRundown (rundownData: RundownData, baselineItems: R
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 			const showHoldExcept = piece.infiniteId !== piece._id
-			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(rundownData.rundown, [piece], groupClasses, infiniteGroup, undefined, activeRundown.holdState, showHoldExcept, true))
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline(rundownData.rundown, [piece], groupClasses, infiniteGroup, undefined, activeRundown.holdState, showHoldExcept, isNumber(piece.enable.start)))
 		}
 
 		const groupClasses: string[] = ['current_part']
