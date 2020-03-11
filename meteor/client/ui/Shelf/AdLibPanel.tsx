@@ -30,6 +30,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal, extendMandadory } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry';
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -640,6 +641,10 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			e.preventDefault()
 		}
 
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_GROUP
+		})
+
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
@@ -650,6 +655,19 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
 
+					if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+						registerHotkey(
+							item.hotkey,
+							item.name,
+							HotkeyAssignmentType.ADLIB,
+							this.props.sourceLayerLookup[item.sourceLayerId],
+							item.toBeQueued || false,
+							this.onToggleAdLib,
+							[item, false, { type: 'simulatedhotkey' }],
+							HOTKEY_GROUP
+						)
+					}
+
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
@@ -659,6 +677,19 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							this.onToggleAdLib(item, true, e)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(queueHotkey)
+
+						if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+							registerHotkey(
+								item.hotkey,
+								item.name,
+								HotkeyAssignmentType.ADLIB,
+								this.props.sourceLayerLookup[item.sourceLayerId],
+								true,
+								this.onToggleAdLib,
+								[item, true, { type: 'simulatedhotkey' }],
+								HOTKEY_GROUP
+							)
+						}
 					}
 				}
 			})

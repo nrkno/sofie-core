@@ -28,6 +28,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
+import { KeyboardPreview, KeyboardLayouts } from './Shelf/KeyboardPreview';
 
 const PackageInfo = require('../../package.json')
 
@@ -495,7 +496,14 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				</div>
 				{
 					getAllowDeveloper() ?
-					<ManualPlayout></ManualPlayout> : null
+						<>
+							<ManualPlayout></ManualPlayout>
+							<KeyboardPreview 
+								hotkeys={[]}
+								physicalLayout={KeyboardLayouts.STANDARD_102}
+							/>
+						</> :
+						null
 				}
 			</div>
 		</React.Fragment>
