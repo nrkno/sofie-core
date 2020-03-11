@@ -25,14 +25,16 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { DashboardActionButton } from './DashboardActionButton';
-import { DashboardActionButtonGroup } from './DashboardActionButtonGroup';
+import { DashboardActionButton } from './DashboardActionButton'
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
+import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
 	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
 	GLOBAL_ADLIB = 'global_adlib',
-	SYSTEM_HOTKEYS = 'system_hotkeys'
+	SYSTEM_HOTKEYS = 'system_hotkeys',
+	KEYBOARD = 'keyboard_preview'
 }
 export interface ShelfProps {
 	isExpanded: boolean
@@ -123,8 +125,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	componentDidMount () {
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
@@ -368,6 +368,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
 					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS
 				})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
+				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD
+				})} onClick={(e) => this.switchTab(ShelfTabs.KEYBOARD)} tabIndex={0}>{t('Keyboard')}</div>
 			</div>
 			<div className='rundown-view__shelf__panel super-dark'>
 				<ErrorBoundary>
@@ -392,6 +395,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<KeyboardPreviewPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD} {...this.props}></KeyboardPreviewPanel>
 				</ErrorBoundary>
 			</div>
 		</React.Fragment>

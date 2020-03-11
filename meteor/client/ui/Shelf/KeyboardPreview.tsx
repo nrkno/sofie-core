@@ -22,8 +22,12 @@ declare global {
 	}
 }
 
-export interface IParsedHotkeyAssignment extends IHotkeyAssignment {
-	keys: Set<string>
+export interface IHotkeyAssignmentExtended extends IHotkeyAssignment {
+	finalKey: string
+}
+
+export type ParsedHotkeyAssignments = {
+	[ modifiers: string ]: IHotkeyAssignmentExtended[]
 }
 
 export enum SpecialKeyPositions {
@@ -47,11 +51,12 @@ export interface IProps {
 }
 
 interface ITrackedProps {
-	hotkeys: IHotkeyAssignment[]
+	hotkeys: ParsedHotkeyAssignments
 }
 
 interface IState {
 	layout: KeyboardLayoutMap | undefined
+	keyDown: { [key: string]: boolean }
 }
 
 /**
@@ -138,16 +143,72 @@ export namespace KeyboardLayouts {
 }
 
 export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+	const registered = RegisteredHotkeys.find().fetch()
+
+	const parsed: ParsedHotkeyAssignments = {}
+	
+	registered.forEach(hotkey => {
+		const modifiers: string[] = []
+
+		const allKeys = hotkey.combo.toLowerCase().split('+')
+		while (allKeys.length > 1) {
+			modifiers.push(allKeys.shift()!)
+		}
+
+		const parsedHotkey: IHotkeyAssignmentExtended = Object.assign({}, hotkey, {
+			finalKey: allKeys.shift()!
+		})
+
+		const modifiersKey = modifiers.join(' ')
+
+		if (parsed[modifiersKey] === undefined) {
+			parsed[modifiersKey] = []
+		}
+
+		parsed[modifiersKey].push(parsedHotkey)
+	})
+
+	console.log(parsed)
+
 	return {
-		hotkeys: RegisteredHotkeys.find().fetch()
+		hotkeys: parsed
 	}
 })(class KeyboardPreview extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	constructor(props: IProps) {
 		super(props)
 
 		this.state = {
-			layout: undefined
+			layout: undefined,
+			keyDown: {}
 		}
+	}
+
+	onKeyUp = (e: KeyboardEvent) => {
+		const keyDown = {}
+		keyDown[e.code] = false
+
+		if (this.state.keyDown[e.code] !== keyDown[e.code]) {
+			this.setState({
+				keyDown: Object.assign({}, this.state.keyDown, keyDown)
+			})
+		}
+	}
+
+	onKeyDown = (e: KeyboardEvent) => {
+		const keyDown = {}
+		keyDown[e.code] = true
+		
+		if (this.state.keyDown[e.code] !== keyDown[e.code]) {
+			this.setState({
+				keyDown: Object.assign({}, this.state.keyDown, keyDown)
+			})
+		}
+	}
+
+	onBlur = () => {
+		this.setState({
+			keyDown: {}
+		})
 	}
 
 	onLayoutChange = () => {
@@ -163,24 +224,38 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 				navigator.keyboard.addEventListener('layoutchange', this.onLayoutChange)
 			}
 		}
+		window.addEventListener('keydown', this.onKeyDown)
+		window.addEventListener('keyup', this.onKeyUp)
+		window.addEventListener('blur', this.onBlur)
 	}
 
 	componentWillUnmount() {
 		if (navigator.keyboard && navigator.keyboard.removeEventListener) {
 			navigator.keyboard.removeEventListener('layoutchange', this.onLayoutChange)
 		}
+		window.removeEventListener('keydown', this.onKeyDown)
+		window.removeEventListener('keyup', this.onKeyUp)
+		window.removeEventListener('blur', this.onBlur)
 	}
 
-	private renderBlock(block) {
-		return block.map((row) => <div className='keyboard-preview__key-row'>
+	private renderBlock(block: KeyPositon[][], modifiers: string) {
+		return block.map((row, index) => <div className='keyboard-preview__key-row' key={index}>
 			{ row.map((key, index) => {
 				if (key.code === SpecialKeyPositions.BLANK_SPACE) {
 					return <div key={'idx' + index} className={classNames('keyboard-preview__blank-space', {
 						'keyboard-preview__blank-space--spring': (key.width < 0)
 					})} style={{fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}></div>
 				} else {
+					let func = this.props.hotkeys[modifiers] && this.props.hotkeys[modifiers].find(hotkey =>
+						hotkey.finalKey === key.code.toLowerCase() ||
+						(this.state.layout ?
+							hotkey.finalKey === (this.state.layout.get(key.code) || '').toLowerCase() :
+							false)
+					)
+
 					return <div key={key.code} className={classNames('keyboard-preview__key', {
-						'keyboard-preview__key--fill': (key.width < 0)
+						'keyboard-preview__key--fill': (key.width < 0),
+						'keyboard-preview__key--down': this.state.keyDown[key.code] === true
 					})} style={{fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}>
 							<div className='keyboard-preview__key__label'>
 								{this.state.layout ?
@@ -188,6 +263,9 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 									GenericFuncionalKeyLabels[key.code] || key.code
 								}
 							</div>
+							{func && <div className='keyboard-preview__key__function-label'>
+								{func.label}
+							</div>}
 						</div>
 				}
 			}) }
@@ -202,21 +280,33 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		const arrowPad = keys.slice(8, 10)
 		const numPad = keys.slice(11, 15)
 
+		const knownModifiers = [GenericFuncionalKeyLabels.AltLeft, GenericFuncionalKeyLabels.ShiftLeft, GenericFuncionalKeyLabels.ControlLeft]
+
+		const currentModifiers = _.intersection(_.compact(
+			_.map(this.state.keyDown, (value, key) => !!value ? key : undefined)
+		).map(keyCode => {
+			return this.state.layout ?
+				this.state.layout.get(keyCode) || GenericFuncionalKeyLabels[keyCode] || keyCode :
+				GenericFuncionalKeyLabels[keyCode] || keyCode
+		}), knownModifiers).join(' ').toLowerCase()
+
+		console.log(currentModifiers)
+
 		return <div className='keyboard-preview'>
 			{functionBlock.length > 0 && <div className='keyboard-preview__function'>
-				{this.renderBlock(functionBlock)}
+				{this.renderBlock(functionBlock, currentModifiers)}
 			</div>}
 			{alphanumericBlock.length > 0 && <div className='keyboard-preview__alphanumeric'>
-				{this.renderBlock(alphanumericBlock)}
+				{this.renderBlock(alphanumericBlock, currentModifiers)}
 			</div>}
 			{controlPad.length > 0 && <div className='keyboard-preview__control-pad'>
-				{this.renderBlock(controlPad)}
+				{this.renderBlock(controlPad, currentModifiers)}
 			</div>}
 			{arrowPad.length > 0 && <div className='keyboard-preview__arrow-pad'>
-				{this.renderBlock(arrowPad)}
+				{this.renderBlock(arrowPad, currentModifiers)}
 			</div>}
 			{numPad.length > 0 && <div className='keyboard-preview__num-pad'>
-				{this.renderBlock(numPad)}
+				{this.renderBlock(numPad, currentModifiers)}
 			</div>}
 		</div>
 	}

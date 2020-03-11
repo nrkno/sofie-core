@@ -522,10 +522,6 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 					getAllowDeveloper() ?
 						<>
 							<ManualPlayout></ManualPlayout>
-							<KeyboardPreview 
-								hotkeys={[]}
-								physicalLayout={KeyboardLayouts.STANDARD_102}
-							/>
 						</> :
 						null
 				}

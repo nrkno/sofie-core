@@ -333,4 +333,9 @@ $adlib-item-selected-color: #009DFF;
 			}
 		}
 	}
+
+	&.adlib-panel--keyboard-preview {
+		display: block;
+		padding: 20px;
+	}
 }
