@@ -1,3 +1,5 @@
+@import "_itemTypeColors";
+
 .keyboard-preview {
 	position: relative;
 	display: flex;
@@ -48,12 +50,14 @@
 
 			color: #fff;
 
+			@include item-type-colors();
+
 			&.keyboard-preview__key--fill {
 				max-width: none;
 				flex-grow: 1;
 			}
 
-			&.keyboard-preview__key--down {
+			&.keyboard-preview__key--down, &:active {
 				&::after {
 					content: ' ';
 					display: block;
@@ -74,12 +78,13 @@
 				color: #999;
 
 				text-transform: capitalize;
+				mix-blend-mode: screen;
 			}
 
 			> .keyboard-preview__key__function-label {
 				font-size: 16px;
 				font-weight: bold;
-				text-align: right;
+				text-align: left;
 				padding: 3px;
 				color: #fff;
 				position: absolute;

@@ -35,8 +35,8 @@ import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../l
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
-	onToggleSticky: (item: IAdLibListItem, e: any) => void
-	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: any) => void
+	onToggleSticky: (e: any, item: IAdLibListItem) => void
+	onToggleAdLib: (e: any, piece: AdLibPieceUi, queue: boolean) => void
 	selectedPiece: AdLibPieceUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
@@ -381,7 +381,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleAdLib(item, false, e)
+							this.onToggleAdLib(e, item, false)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(item.hotkey)
 
@@ -393,7 +393,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 								this.props.sourceLayerLookup[item.sourceLayerId],
 								item.toBeQueued || false,
 								this.onToggleAdLib,
-								[item, false, { type: 'simulatedhotkey' }],
+								[item, false],
 								HOTKEY_GROUP
 							)
 						}
@@ -404,7 +404,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 							mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 								preventDefault(e)
-								this.onToggleAdLib(item, true, e)
+								this.onToggleAdLib(e, item, true)
 							}, 'keyup', HOTKEY_GROUP)
 							this.usedHotkeys.push(queueHotkey)
 
@@ -416,7 +416,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 									this.props.sourceLayerLookup[item.sourceLayerId],
 									true,
 									this.onToggleAdLib,
-									[item, true, { type: 'simulatedhotkey' }],
+									[item, true],
 									HOTKEY_GROUP
 								)
 							}
@@ -431,7 +431,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onClearAllSourceLayer(item, e)
+							this.onClearAllSourceLayer(e, item)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(element)
 
@@ -442,7 +442,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							undefined,
 							false,
 							this.onClearAllSourceLayer,
-							[item, { type: 'simulatedhotkey' }],
+							[item],
 							HOTKEY_GROUP
 						)
 					})
@@ -454,7 +454,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleSticky(item._id, e)
+							this.onToggleSticky(e, item._id)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(element)
 
@@ -465,7 +465,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							item,
 							false,
 							this.onToggleSticky,
-							[item._id, { type: 'simulatedhotkey' }],
+							[item._id],
 							HOTKEY_GROUP
 						)
 					})
@@ -480,11 +480,11 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		})
 	}
 
-	onToggleStickyItem = (item: IAdLibListItem, e: any) => {
-		this.onToggleSticky(unprotectString(item._id), e)
+	onToggleStickyItem = (e: any, item: IAdLibListItem) => {
+		this.onToggleSticky(e, unprotectString(item._id))
 	}
 
-	onToggleSticky = (sourceLayerId: string, e: any) => {
+	onToggleSticky = (e: any, sourceLayerId: string) => {
 		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
 			doUserAction(t, e, 'Start playing Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
@@ -498,7 +498,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		})
 	}
 
-	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (e: any, adlibPiece: AdLibPieceUi, queue: boolean) => {
 		const { t } = this.props
 
 		if (adlibPiece.invalid) {
@@ -522,7 +522,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 	}
 
-	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
+	onClearAllSourceLayer = (e: any, sourceLayer: ISourceLayer) => {
 		// console.log(sourceLayer)
 
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {

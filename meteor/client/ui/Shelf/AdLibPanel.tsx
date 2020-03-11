@@ -37,7 +37,7 @@ import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../l
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: AdLibPieceUi) => void
-	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
+	onToggleAdLib: (e: ExtendedKeyboardEvent, piece: AdLibPieceUi, queue: boolean) => void
 	selectedPart: AdLibPieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
@@ -771,7 +771,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
-						this.onToggleAdLib(item, false, e)
+						this.onToggleAdLib(e, item, false)
 					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
 
@@ -783,7 +783,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							this.props.sourceLayerLookup[item.sourceLayerId],
 							item.toBeQueued || false,
 							this.onToggleAdLib,
-							[item, false, { type: 'simulatedhotkey' }],
+							[item, false],
 							HOTKEY_GROUP
 						)
 					}
@@ -794,7 +794,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleAdLib(item, true, e)
+							this.onToggleAdLib(e, item, true)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(queueHotkey)
 
@@ -806,7 +806,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 								this.props.sourceLayerLookup[item.sourceLayerId],
 								true,
 								this.onToggleAdLib,
-								[item, true, { type: 'simulatedhotkey' }],
+								[item, true],
 								HOTKEY_GROUP
 							)
 						}
@@ -829,7 +829,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		})
 	}
 
-	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (e: any, adlibPiece: AdLibPieceUi, queue: boolean) => {
 		const { t } = this.props
 
 		if (adlibPiece.invalid) {

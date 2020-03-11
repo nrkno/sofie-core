@@ -65,6 +65,7 @@ import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRend
 import { OffsetPosition } from '../utils/positions'
 import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -349,6 +350,8 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 interface HotkeyDefinition {
 	key: string
 	label: string
+	up?: (e: any) => void
+	down?: (e: any) => void
 }
 
 interface IRundownHeaderProps {
@@ -1757,6 +1760,27 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
 		this.setState({
 			usedHotkeys: this.state.usedHotkeys
+		})
+
+		const HOTKEY_TAG = 'RundownView'
+
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_TAG
+		})
+
+		function noop() { }
+
+		this.state.usedHotkeys.forEach((hotkey) => {
+			registerHotkey(
+				hotkey.key,
+				hotkey.label,
+				HotkeyAssignmentType.SYSTEM,
+				undefined,
+				false,
+				hotkey.up || hotkey.down || noop,
+				undefined,
+				HOTKEY_TAG
+			)
 		})
 	}
 

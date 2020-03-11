@@ -3,8 +3,9 @@ import * as _ from 'underscore'
 import * as classNames from 'classnames'
 import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { IHotkeyAssignment, RegisteredHotkeys } from '../../lib/hotkeyRegistry'
-import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData';
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent';
+import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { RundownUtils } from '../../lib/rundown'
 
 declare global {
 	type KeyboardLayoutMap = Map<string, string>
@@ -115,7 +116,8 @@ export enum GenericFuncionalKeyLabels {
 }
 
 export namespace KeyboardLayouts {
-	export const STANDARD_102: PhysicalLayout = createPhysicalLayout([
+	// This is a small keyboard layout: 102-Standard keybord, without the Numpad
+	export const STANDARD_102_TKL: PhysicalLayout = createPhysicalLayout([
 		// Row E
 		'Backquote,Digit1,Digit2,Digit3,Digit4,Digit5,Digit6,Digit7,Digit8,Digit9,Digit0,Minus,Equal,X:Backspace',
 		// Row D
@@ -150,25 +152,31 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 	registered.forEach(hotkey => {
 		const modifiers: string[] = []
 
-		const allKeys = hotkey.combo.toLowerCase().split('+')
+		const allKeys = hotkey.combo.toLowerCase().split(/\s*\+\s*/)
 		while (allKeys.length > 1) {
-			modifiers.push(allKeys.shift()!)
+			let modifier = allKeys.shift()!
+			if (modifier === "mod" || modifier === "cmd") {
+				modifier = "ctrl"
+			}
+			modifiers.push(modifier)
 		}
 
-		const parsedHotkey: IHotkeyAssignmentExtended = Object.assign({}, hotkey, {
-			finalKey: allKeys.shift()!
-		})
+		const finalKey = allKeys.shift()
 
-		const modifiersKey = modifiers.join(' ')
-
-		if (parsed[modifiersKey] === undefined) {
-			parsed[modifiersKey] = []
+		if (finalKey) {
+			const parsedHotkey: IHotkeyAssignmentExtended = Object.assign({}, hotkey, {
+				finalKey
+			})
+	
+			const modifiersKey = modifiers.sort().join(' ')
+	
+			if (parsed[modifiersKey] === undefined) {
+				parsed[modifiersKey] = []
+			}
+	
+			parsed[modifiersKey].push(parsedHotkey)
 		}
-
-		parsed[modifiersKey].push(parsedHotkey)
 	})
-
-	console.log(parsed)
 
 	return {
 		hotkeys: parsed
@@ -217,6 +225,16 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		}
 	}
 
+	onKeyClick = (e: any, hotkey: IHotkeyAssignmentExtended) => {
+		if (hotkey) {
+			if (hotkey.eventHandlerArguments) {
+				hotkey.eventHandler(e, ...hotkey.eventHandlerArguments)
+			} else {
+				hotkey.eventHandler(e)
+			}
+		}
+	}
+
 	componentDidMount() {
 		if (navigator.keyboard) {
 			navigator.keyboard.getLayoutMap().then(layout => this.setState({ layout }))
@@ -253,10 +271,18 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 							false)
 					)
 
-					return <div key={key.code} className={classNames('keyboard-preview__key', {
-						'keyboard-preview__key--fill': (key.width < 0),
-						'keyboard-preview__key--down': this.state.keyDown[key.code] === true
-					})} style={{fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}>
+					return <div
+						key={key.code}
+						className={classNames('keyboard-preview__key',
+							func && func.sourceLayer ? RundownUtils.getSourceLayerClassName(func.sourceLayer.type) : undefined,
+							{
+								'keyboard-preview__key--fill': (key.width < 0),
+								'keyboard-preview__key--down': this.state.keyDown[key.code] === true
+							}
+						)}
+						style={{fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}
+						onClick={(e) => func && this.onKeyClick(e, func)}
+					>
 							<div className='keyboard-preview__key__label'>
 								{this.state.layout ?
 									this.state.layout.get(key.code) || GenericFuncionalKeyLabels[key.code] || key.code :
@@ -288,9 +314,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			return this.state.layout ?
 				this.state.layout.get(keyCode) || GenericFuncionalKeyLabels[keyCode] || keyCode :
 				GenericFuncionalKeyLabels[keyCode] || keyCode
-		}), knownModifiers).join(' ').toLowerCase()
-
-		console.log(currentModifiers)
+		}), knownModifiers).sort().join(' ').toLowerCase()
 
 		return <div className='keyboard-preview'>
 			{functionBlock.length > 0 && <div className='keyboard-preview__function'>
