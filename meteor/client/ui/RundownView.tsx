@@ -105,6 +105,10 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 			this.setState({
 				inFocus: focusNow
 			})
+
+			if (focusNow === false) {
+				window.dispatchEvent(new Event('blur'))
+			}
 		}
 	}
 
@@ -461,8 +465,6 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 
 		let preventDefault = (e: Event) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
@@ -1276,8 +1278,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
@@ -1363,8 +1363,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		const { t } = this.props
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		const noOp = (e) => {
 			preventDefault(e)
