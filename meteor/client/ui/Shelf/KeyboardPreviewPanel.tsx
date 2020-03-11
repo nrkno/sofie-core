@@ -21,7 +21,7 @@ export const KeyboardPreviewPanel = translate()(class KeyboardPreviewPanel exten
 			return (
 				<div className='adlib-panel super-dark adlib-panel--keyboard-preview'>
 					<KeyboardPreview
-						physicalLayout={KeyboardLayouts.STANDARD_102}
+						physicalLayout={KeyboardLayouts.STANDARD_102_TKL}
 					/>
 				</div>
 			)

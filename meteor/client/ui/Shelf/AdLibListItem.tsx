@@ -30,7 +30,7 @@ interface IListViewItemProps {
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
 	onSelectAdLib: (aSLine: IAdLibListItem) => void
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
+	onToggleAdLib: (context: any, aSLine: IAdLibListItem, queue: boolean) => void
 	rundown: Rundown
 }
 
@@ -102,7 +102,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 				'invalid': this.props.item.invalid
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
-				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
+				onDoubleClick={(e) => this.props.onToggleAdLib(e, this.props.item, e.shiftKey)}
 				data-obj-id={this.props.item._id}
 				>
 				<td className={ClassNames(

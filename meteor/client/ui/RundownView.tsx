@@ -64,6 +64,7 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry';
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -336,6 +337,8 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 interface HotkeyDefinition {
 	key: string
 	label: string
+	up?: (e: any) => void
+	down?: (e: any) => void
 }
 
 interface IRundownHeaderProps {
@@ -1713,6 +1716,27 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
 		this.setState({
 			usedHotkeys: this.state.usedHotkeys
+		})
+
+		const HOTKEY_TAG = 'RundownView'
+
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_TAG
+		})
+
+		function noop() { }
+
+		this.state.usedHotkeys.forEach((hotkey) => {
+			registerHotkey(
+				hotkey.key,
+				hotkey.label,
+				HotkeyAssignmentType.SYSTEM,
+				undefined,
+				false,
+				hotkey.up || hotkey.down || noop,
+				undefined,
+				HOTKEY_TAG
+			)
 		})
 	}
 
