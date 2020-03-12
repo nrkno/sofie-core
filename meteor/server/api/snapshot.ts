@@ -469,26 +469,6 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	// TODO: Import old snapshot - development only
-	if (!playlistId && (snapshot as any).rundownId) {
-		const rundownId = (snapshot as any).rundownId
-		saveIntoDb(Rundowns, { _id: rundownId }, [ (snapshot as any).rundown ])
-		saveIntoDb(IngestDataCache, { rundownId }, snapshot.ingestData)
-		// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-		saveIntoDb(RundownBaselineObjs, { rundownId }, snapshot.baselineObjs)
-		saveIntoDb(RundownBaselineAdLibPieces, { rundownId }, snapshot.baselineAdlibs)
-		saveIntoDb(Segments, { rundownId }, snapshot.segments)
-		saveIntoDb(Parts, { rundownId }, snapshot.parts)
-		saveIntoDb(Pieces, { rundownId }, snapshot.pieces)
-		saveIntoDb(AdLibPieces, { rundownId }, snapshot.adLibPieces)
-		saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
-		saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
-
-		logger.info('Restore single rundown done')
-
-		return
-	}
-
 	if (playlistId !== snapshot.playlist._id) throw new Meteor.Error(500, `Restore snapshot: playlistIds don\'t match, "${playlistId}", "${snapshot.playlist._id}!"`)
 
 	const dbPlaylist = RundownPlaylists.findOne(playlistId)
@@ -526,6 +506,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	saveIntoDb(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } }, snapshot.baselineAdlibs)
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, snapshot.segments)
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, snapshot.parts)
+	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, snapshot.pieces)
 	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
 	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, snapshot.adLibPieces)
