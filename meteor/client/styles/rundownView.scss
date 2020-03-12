@@ -1208,6 +1208,10 @@ body.no-overflow {
 						display: none;
 					}
 				}
+
+				.segment-timeline__piece {
+					display: none;
+				}
 			}
 
 			&:not(.live) {
