@@ -7,6 +7,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -56,7 +57,7 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 interface IEditAttributeBaseProps {
 	updateOnKey?: boolean,
 	attribute?: string,
-	collection?: Mongo.Collection<any>,
+	collection?: TransformedCollection<any, any>,
 	myObject?: any,
 	obj?: any
 	options?: any
@@ -253,6 +254,7 @@ const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttribute
 		return (
 			<textarea
 				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}
@@ -291,6 +293,7 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 			<input type='number'
 				step='1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}
@@ -328,6 +331,7 @@ const EditAttributeFloat = wrapEditAttribute(class extends EditAttributeBase {
 			<input type='number'
 				step='0.1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}

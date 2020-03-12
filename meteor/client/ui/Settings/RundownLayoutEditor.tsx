@@ -7,11 +7,10 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, DashboardLayout, ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, DashboardLayout, ActionButtonType, DashboardLayoutActionButton, RundownLayoutId } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { UploadButton } from '../../lib/uploadButton'
@@ -20,6 +19,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { fetchFrom } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
+import { MeteorCall } from '../../../lib/api/methods'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
@@ -28,7 +28,7 @@ export interface IProps {
 }
 
 interface IState {
-	editedItems: string[]
+	editedItems: RundownLayoutId[]
 	uploadFileKey: number
 }
 
@@ -65,13 +65,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	onAddLayout = (e: any) => {
 		const { t, showStyleBase } = this.props
-		callMethod(
-			e,
-			RundownLayoutsAPI.methods.createRundownLayout,
+		MeteorCall.rundownLayout.createRundownLayout(
 			t('New Layout'),
 			RundownLayoutType.RUNDOWN_LAYOUT,
 			showStyleBase._id
-		)
+		).catch(console.error)
 	}
 
 	onAddButton = (item: RundownLayoutBase) => {
@@ -149,19 +147,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
-	isItemEdited = (item: RundownLayoutBase) => {
-		return this.state.editedItems.indexOf(item._id) >= 0
+	isItemEdited = (layoutBase: RundownLayoutBase) => {
+		return this.state.editedItems.indexOf(layoutBase._id) >= 0
 	}
 
-	editItem = (item: RundownLayoutBase) => {
-		if (!this.isItemEdited(item)) {
-			this.state.editedItems.push(item._id)
+	editItem = (layoutBase: RundownLayoutBase) => {
+		if (!this.isItemEdited(layoutBase)) {
+			this.state.editedItems.push(layoutBase._id)
 
 			this.setState({
 				editedItems: this.state.editedItems
 			})
 		} else {
-			this.finishEditItem(item)
+			this.finishEditItem(layoutBase)
 		}
 	}
 
@@ -189,11 +187,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			no: t('Cancel'),
 			message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
 			onAccept: () => {
-				callMethod(
-					e,
-					RundownLayoutsAPI.methods.removeRundownLayout,
-					item._id
-				)
+				MeteorCall.rundownLayout.removeRundownLayout(item._id).catch(console.error)
 			}
 
 		})
@@ -629,7 +623,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	renderItems () {
 		const { t } = this.props
 		return (this.props.rundownLayouts || []).map((item, index) =>
-			<React.Fragment key={item._id}>
+			<React.Fragment key={unprotectString(item._id)}>
 				<tr className={ClassNames({
 					'hl': this.isItemEdited(item)
 				})}>
@@ -641,7 +635,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</td>
 					<td className='settings-studio-rundown-layouts-table__value c1'>
 						{this.props.studios.map(studio =>
-							<span className='pill' key={studio._id}>
+							<span className='pill' key={unprotectString(studio._id)}>
 								<Link target='_blank' className='pill-link' to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>{studio.name}</Link>
 							</span>
 						)}

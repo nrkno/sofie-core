@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { setLoggerLevel } from '../../server/api/logger'
@@ -25,9 +26,9 @@ import {
 	getRank,
 	partial,
 	partialExceptId,
-	escapeHtml
+	escapeHtml,
+	protectString
 } from '../lib'
-import { setMeteorMethods } from '../../server/methods'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
@@ -45,7 +46,7 @@ describe('lib/lib', () => {
 	})
 	testInFiber('MeteorPromiseCall', () => {
 		// set up method:
-		setMeteorMethods({
+		Meteor.methods({
 			'myMethod': (value: any) => {
 				// Do an async operation, to ensure that asynchronous operations work:
 				const v = waitForPromise(new Promise(resolve => {
@@ -68,7 +69,7 @@ describe('lib/lib', () => {
 	testInFiber('saveIntoDb', () => {
 
 		Timeline.insert({
-			_id: 'abc',
+			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0
@@ -76,11 +77,11 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: 'myStudio',
+			studioId: protectString('myStudio'),
 			classes: ['abc'] // to be removed
 		})
 		Timeline.insert({
-			_id: 'abc2',
+			_id: protectString('abc2'),
 			id: 'abc2',
 			enable: {
 				start: 0
@@ -88,10 +89,10 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: 'myStudio'
+			studioId: protectString('myStudio')
 		})
 		Timeline.insert({
-			_id: 'abc10',
+			_id: protectString('abc10'),
 			id: 'abc10',
 			enable: {
 				start: 0
@@ -99,7 +100,7 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: 'myStudio2'
+			studioId: protectString('myStudio2')
 		})
 
 		const options = {
@@ -116,10 +117,10 @@ describe('lib/lib', () => {
 		}
 
 		const changes = saveIntoDb(Timeline, {
-			studioId: 'myStudio'
+			studioId: protectString('myStudio')
 		}, [
 			{
-				_id: 'abc',
+				_id: protectString('abc'),
 				id: 'abc',
 				enable: {
 					start: 0
@@ -127,10 +128,10 @@ describe('lib/lib', () => {
 				layer: 'L2', // changed property
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
-				studioId: 'myStudio'
+				studioId: protectString('myStudio')
 			},
 			{ // insert object
-				_id: 'abc3',
+				_id: protectString('abc3'),
 				id: 'abc3',
 				enable: {
 					start: 0
@@ -138,21 +139,21 @@ describe('lib/lib', () => {
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
-				studioId: 'myStudio'
+				studioId: protectString('myStudio')
 			}
 			// remove abc2
 		], options)
 
 		expect(Timeline.find({
-			studioId: 'myStudio'
+			studioId: protectString('myStudio')
 		}).count()).toEqual(2)
-		const abc = Timeline.findOne('abc') as TimelineObjGeneric
+		const abc = Timeline.findOne(protectString('abc')) as TimelineObjGeneric
 		expect(abc).toBeTruthy()
 		expect(abc.classes).toEqual(undefined)
 		expect(abc.layer).toEqual('L2')
 
 		expect(Timeline.find({
-			studioId: 'myStudio2'
+			studioId: protectString('myStudio2')
 		}).count()).toEqual(1)
 
 		expect(options.beforeInsert).toHaveBeenCalledTimes(1)
@@ -205,7 +206,7 @@ describe('lib/lib', () => {
 	})
 	testInFiber('literal', () => {
 		const obj = literal<TimelineObjGeneric>({
-			_id: 'abc',
+			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0
@@ -213,10 +214,10 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: 'myStudio',
+			studioId: protectString('myStudio'),
 		})
 		expect(obj).toEqual({
-			_id: 'abc',
+			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0
@@ -224,7 +225,7 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: 'myStudio',
+			studioId: protectString('myStudio'),
 		})
 		const layer: string | number = obj.layer // just to check typings
 		expect(layer).toBeTruthy()
@@ -356,40 +357,40 @@ describe('lib/lib', () => {
 		expect(MyCollection.findOne()).toBeFalsy()
 
 		MyCollection.insert({
-			_id: 'id0',
+			_id: protectString('id0'),
 			name: 'abc',
 			rank: 0
 		})
 		MyCollection.insert({
-			_id: 'id1',
+			_id: protectString('id1'),
 			name: 'abc',
 			rank: 1
 		})
 		MyCollection.insert({
-			_id: 'id2',
+			_id: protectString('id2'),
 			name: 'abcd',
 			rank: 2
 		})
 		MyCollection.insert({
-			_id: 'id3',
+			_id: protectString('id3'),
 			name: 'abcd',
 			rank: 3
 		})
 		MyCollection.insert({
-			_id: 'id4',
+			_id: protectString('id4'),
 			name: 'xyz',
 			rank: 4
 		})
 		MyCollection.insert({
-			_id: 'id5',
+			_id: protectString('id5'),
 			name: 'xyz',
 			rank: 5
 		})
 
 		expect(MyCollection.find().fetch()).toHaveLength(6)
 
-		expect(MyCollection.find({ _id: 'id3' }).fetch()).toHaveLength(1)
-		expect(MyCollection.find({ _id: 'id99' }).fetch()).toHaveLength(0)
+		expect(MyCollection.find({ _id: protectString('id3') }).fetch()).toHaveLength(1)
+		expect(MyCollection.find({ _id: protectString('id99') }).fetch()).toHaveLength(0)
 
 		expect(MyCollection.find({ name: 'abcd' }).fetch()).toHaveLength(2)
 		expect(MyCollection.find({ name: 'xyz' }).fetch()).toHaveLength(2)
@@ -455,7 +456,7 @@ describe('lib/lib', () => {
 	})
 	testInFiber('partialExceptId', () => {
 		const o = {
-			_id: 'myId',
+			_id: protectString('myId'),
 			a: 1,
 			b: 'asdf',
 			c: {

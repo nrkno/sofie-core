@@ -8,6 +8,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import * as semver from 'semver'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection
@@ -151,7 +152,7 @@ interface RenameContent {
 }
 export function renamePropertiesInCollection<T extends any > (
 	id: string,
-	collection: Mongo.Collection<T>,
+	collection: TransformedCollection<T, any>,
 	collectionName: string,
 	renames: Partial<{[newAttr in keyof T]: string | RenameContent}>,
 	dependOnResultFrom?: string

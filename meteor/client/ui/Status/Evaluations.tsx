@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import Moment from 'react-moment'
-import { Time } from '../../../lib/lib'
+import { Time, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Evaluations, Evaluation } from '../../../lib/collections/Evaluations'
@@ -115,13 +115,13 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 								e.timestamp >= this.state.dateFrom &&
 								e.timestamp < this.state.dateTo
 							)
-						}), (e) => {
+						}), (evaluation) => {
 							let tds = [
-								<td key='c0' className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{e.timestamp}</Moment></td>,
-								<td key='c1' className='user-action-log__userId'>{e.answers && e.answers.q2}</td>,
-								<td key='c2' className='user-action-log__rundown'>{e.rundownId}</td>
+								<td key='c0' className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{evaluation.timestamp}</Moment></td>,
+								<td key='c1' className='user-action-log__userId'>{evaluation.answers && evaluation.answers.q2}</td>,
+								<td key='c2' className='user-action-log__rundown'>{evaluation.playlistId}</td>
 							]
-							tds = tds.concat(_.map(e.answers, (answer, key) => {
+							tds = tds.concat(_.map(evaluation.answers, (answer, key) => {
 								let str: string = answer
 								if (key === 'q0') {
 									_.find(getQuestionOptions(t), (o) => {
@@ -136,7 +136,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 								)
 							}))
 							return (
-								<tr key={e._id}>
+								<tr key={unprotectString(evaluation._id)}>
 									{tds}
 								</tr>
 							)

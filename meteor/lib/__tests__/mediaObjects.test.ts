@@ -4,10 +4,11 @@ import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { buildFormatString, acceptFormat, getAcceptedFormats, getMediaObjectMediaId, checkPieceContentStatus } from '../mediaObjects'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly, MediaStreamType } from './../collections/MediaObjects'
-import { literal } from '../lib'
-import { IBlueprintPieceGeneric, ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { literal, protectString } from '../lib'
+import { ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { IStudioSettings } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
+import { InternalIBlueprintPieceGeneric } from '../collections/Pieces'
 
 
 describe('lib/mediaObjects', () => {
@@ -76,7 +77,7 @@ describe('lib/mediaObjects', () => {
 	})
 
 	testInFiber('getMediaObjectMediaId', () => {
-		const mediaId1 = getMediaObjectMediaId(literal<IBlueprintPieceGeneric>({
+		const mediaId1 = getMediaObjectMediaId(literal<InternalIBlueprintPieceGeneric>({
 			externalId: '',
 			name: '',
 			sourceLayerId: '',
@@ -92,7 +93,7 @@ describe('lib/mediaObjects', () => {
 		}))
 		expect(mediaId1).toEqual('TEST')
 
-		const mediaId2 = getMediaObjectMediaId(literal<IBlueprintPieceGeneric>({
+		const mediaId2 = getMediaObjectMediaId(literal<InternalIBlueprintPieceGeneric>({
 			externalId: '',
 			name: '',
 			sourceLayerId: '',
@@ -108,7 +109,7 @@ describe('lib/mediaObjects', () => {
 		}))
 		expect(mediaId2).toEqual(undefined)
 
-		const mediaId3 = getMediaObjectMediaId(literal<IBlueprintPieceGeneric>({
+		const mediaId3 = getMediaObjectMediaId(literal<InternalIBlueprintPieceGeneric>({
 			externalId: '',
 			name: '',
 			sourceLayerId: '',
@@ -132,7 +133,7 @@ describe('lib/mediaObjects', () => {
 		}
 
 		MediaObjects.insert(literal<MediaObject>({
-			_id: '',
+			_id: protectString(''),
 			_attachments: {},
 			_rev: '',
 			cinf: '',
@@ -187,13 +188,13 @@ describe('lib/mediaObjects', () => {
 			previewPath: '',
 			previewSize: 0,
 			previewTime: 0,
-			studioId: 'studio0',
+			studioId: protectString('studio0'),
 			thumbSize: 0,
 			thumbTime: 0,
 			tinf: ''
 		}))
 
-		const piece1 = literal<IBlueprintPieceGeneric>({
+		const piece1 = literal<InternalIBlueprintPieceGeneric>({
 			name: 'Test_file',
 			adlibPreroll: 0,
 			externalId: '',
@@ -201,7 +202,7 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			partId: '',
+			partId: protectString(''),
 			content: {
 				fileName: 'test_file'
 			}
@@ -215,7 +216,7 @@ describe('lib/mediaObjects', () => {
 		})
 
 		MediaObjects.insert(literal<MediaObject>({
-			_id: '',
+			_id: protectString(''),
 			_attachments: {},
 			_rev: '',
 			cinf: '',
@@ -270,13 +271,13 @@ describe('lib/mediaObjects', () => {
 			previewPath: '',
 			previewSize: 0,
 			previewTime: 0,
-			studioId: 'studio0',
+			studioId: protectString('studio0'),
 			thumbSize: 0,
 			thumbTime: 0,
 			tinf: ''
 		}))
 
-		const piece2 = literal<IBlueprintPieceGeneric>({
+		const piece2 = literal<InternalIBlueprintPieceGeneric>({
 			name: 'Test_file_2',
 			adlibPreroll: 0,
 			externalId: '',
@@ -284,13 +285,13 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			partId: '',
+			partId: protectString(''),
 			content: {
 				fileName: 'test_file_2'
 			}
 		})
 
-		const piece3 = literal<IBlueprintPieceGeneric>({
+		const piece3 = literal<InternalIBlueprintPieceGeneric>({
 			name: 'Test_file_3',
 			adlibPreroll: 0,
 			externalId: '',
@@ -298,7 +299,7 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			partId: '',
+			partId: protectString(''),
 			content: {
 				fileName: 'test_file_3'
 			}

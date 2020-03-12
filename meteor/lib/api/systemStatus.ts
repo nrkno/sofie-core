@@ -46,6 +46,10 @@ export interface StatusResponse extends StatusResponseBase {
 export interface Component extends StatusResponseBase {
 	documentation?: string
 }
-export enum SystemStatusAPI {
-	getSystemStatus = 'systemStatus.getSystemStatus'
+
+export interface NewSystemStatusAPI {
+	getSystemStatus (): Promise<StatusResponse>
+}
+export enum SystemStatusAPIMethods {
+	'getSystemStatus' = 'systemStatus.getSystemStatus'
 }

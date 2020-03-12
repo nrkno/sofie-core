@@ -9,6 +9,8 @@ import * as bodyParser from 'body-parser'
 import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { uploadBlueprint } from './api'
+import { protectString } from '../../../lib/lib'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
 
 const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
 postJsRoute.middleware(bodyParser.text({
@@ -39,7 +41,7 @@ postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMess
 
 		if (!_.isString(body) || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		uploadBlueprint(blueprintId, body, blueprintName, force)
+		uploadBlueprint(protectString<BlueprintId>(blueprintId), body, blueprintName, force)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -80,7 +82,7 @@ postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: S
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
-				uploadBlueprint(id, collection[id], id)
+				uploadBlueprint(protectString<BlueprintId>(id), collection[id], id)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)
 				errors.push(e)

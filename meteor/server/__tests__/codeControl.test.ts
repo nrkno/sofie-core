@@ -2,8 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
-import { RundownSyncFunctionPriority, rundownSyncFunction } from '../api/ingest/rundownInput'
-import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
+import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction } from '../api/ingest/rundownInput'
+import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime, protectString } from '../../lib/lib'
 
 const TIME_FUZZY = 200
 const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {
@@ -17,18 +17,18 @@ describe('codeControl rundown', () => {
 	})
 	testInFiber('rundownSyncFunction', () => {
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownSyncFunction('ro1', priority, () => takesALongTimeInner(name))
+			return rundownPlaylistSyncFunction(protectString('ro1'), priority, () => takesALongTimeInner(name))
 		}
 
 		let res: any[] = []
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest0', RundownSyncFunctionPriority.Ingest))
+			res.push(sync1('ingest0', RundownSyncFunctionPriority.INGEST))
 		}, 10)
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest1', RundownSyncFunctionPriority.Ingest))
+			res.push(sync1('ingest1', RundownSyncFunctionPriority.INGEST))
 		}, 30)
 		Meteor.setTimeout(() => {
-			res.push(sync1('playout0', RundownSyncFunctionPriority.Playout))
+			res.push(sync1('playout0', RundownSyncFunctionPriority.USER_PLAYOUT))
 		}, 50)
 
 		jest.advanceTimersByTime(350)

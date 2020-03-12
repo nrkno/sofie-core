@@ -8,7 +8,6 @@ import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fort
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import {
-	MigrationMethods,
 	GetMigrationStatusResult,
 	RunMigrationResult,
 	MigrationChunk
@@ -19,6 +18,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {
 }
@@ -101,38 +101,35 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			databasePreviousVersion: '',
 			migrationNeeded: false
 		})
-		Meteor.call(MigrationMethods.getMigrationStatus, (err, r: GetMigrationStatusResult) => {
+		MeteorCall.migration.getMigrationStatus().then((r: GetMigrationStatusResult) => {
 			if (this.cancelRequests) return
-			if (err) {
-				logger.error(err)
-				// todo: notify user
-				this.setErrorMessage(err)
-			} else {
-				console.log(r)
+			console.log(r)
 
-				let inputValues = this.state.inputValues
-				_.each(r.migration.manualInputs, (manualInput: MigrationStepInput) => {
-					if (manualInput.stepId && manualInput.inputType && manualInput.attribute) {
-						let stepId = manualInput.stepId
+			let inputValues = this.state.inputValues
+			_.each(r.migration.manualInputs, (manualInput: MigrationStepInput) => {
+				if (manualInput.stepId && manualInput.inputType && manualInput.attribute) {
+					let stepId = manualInput.stepId
 
-						if (!inputValues[stepId]) inputValues[stepId] = {}
+					if (!inputValues[stepId]) inputValues[stepId] = {}
 
-						let value = inputValues[stepId][manualInput.attribute]
-						if (_.isUndefined(value)) {
-							inputValues[stepId][manualInput.attribute] = manualInput.defaultValue
-						}
+					let value = inputValues[stepId][manualInput.attribute]
+					if (_.isUndefined(value)) {
+						inputValues[stepId][manualInput.attribute] = manualInput.defaultValue
 					}
-				})
+				}
+			})
 
-				this.setState({
-					// systemVersion: r.systemVersion,
-					// databaseVersion: r.databaseVersion,
-					// databasePreviousVersion: r.databasePreviousVersion,
-					migrationNeeded: r.migrationNeeded,
-					migration: r.migration,
-					inputValues: inputValues
-				})
-			}
+			this.setState({
+				// systemVersion: r.systemVersion,
+				// databaseVersion: r.databaseVersion,
+				// databasePreviousVersion: r.databasePreviousVersion,
+				migrationNeeded: r.migrationNeeded,
+				migration: r.migration,
+				inputValues: inputValues
+			})
+		}).catch(err => {
+			logger.error(err)
+			this.setErrorMessage(err)
 		})
 	}
 	runMigration () {
@@ -164,47 +161,42 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				}
 			})
 			this.setErrorMessage('')
-			Meteor.call(MigrationMethods.runMigration,
+			MeteorCall.migration.runMigration(
 				this.state.migration.chunks,
 				this.state.migration.hash, // hash
-				inputResults, // inputResults
-			(err, r: RunMigrationResult) => {
+				inputResults // inputResults
+			)
+			.then((r: RunMigrationResult) => {
 				if (this.cancelRequests) return
-				if (err) {
-					logger.error(err)
-					// todo: notify user
-					this.setErrorMessage(err)
-				} else {
-					this.setState({
-						warnings: r.warnings,
-						migrationCompleted: r.migrationCompleted,
-						haveRunMigration: true
-					})
+				this.setState({
+					warnings: r.warnings,
+					migrationCompleted: r.migrationCompleted,
+					haveRunMigration: true
+				})
 
-					this.updateVersions()
-				}
+				this.updateVersions()
+			}).catch(err => {
+				logger.error(err)
+				this.setErrorMessage(err)
 			})
 		}
 	}
 	forceMigration () {
 		this.setErrorMessage('')
 		if (this.state.migration) {
-			Meteor.call(MigrationMethods.forceMigration,
-				this.state.migration.chunks,
-			(err) => {
+			MeteorCall.migration.forceMigration(
+				this.state.migration.chunks
+			).then(() => {
 				if (this.cancelRequests) return
-				if (err) {
-					logger.error(err)
-					// todo: notify user
-					this.setErrorMessage(err)
-				} else {
-					this.setState({
-						migrationCompleted: true,
-						haveRunMigration: true
-					})
+				this.setState({
+					migrationCompleted: true,
+					haveRunMigration: true
+				})
 
-					this.updateVersions()
-				}
+				this.updateVersions()
+			}).catch(err => {
+				logger.error(err)
+				this.setErrorMessage(err)
 			})
 		}
 
@@ -216,36 +208,12 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			title: t('Reset Database Version'),
 			message: t('Are you sure you want to reset the database version?\nOnly do this if you plan on running the migration right after.'),
 			onAccept: () => {
-				Meteor.call(MigrationMethods.resetDatabaseVersions,
-				(err) => {
-					if (err) {
-						logger.error(err)
-						// todo: notify user
-						this.setErrorMessage(err)
-					} else {
-						this.updateVersions()
-					}
-				})
-			}
-		})
-	}
-	setDatabaseVersion (version: string) {
-		const { t } = this.props
-		this.setErrorMessage('')
-		doModalDialog({
-			title: t('Set Database Version'),
-			message: t('Are you sure you want to set the database version to') + ` ${version}?`,
-			onAccept: () => {
-				Meteor.call(MigrationMethods.forceMigration,
-					version, // targetVersionStr
-				(err) => {
-					if (err) {
-						logger.error(err)
-						// todo: notify user
-						this.setErrorMessage(err)
-					} else {
-						this.updateVersions()
-					}
+				MeteorCall.migration.resetDatabaseVersions()
+				.then(() => {
+					this.updateVersions()
+				}).catch(err => {
+					logger.error(err)
+					this.setErrorMessage(err)
 				})
 			}
 		})
