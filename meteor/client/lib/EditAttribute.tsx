@@ -102,10 +102,14 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleUpdateButDontSave(newValue)
 		this.updateValue(newValue)
 	}
-	handleUpdateButDontSave (newValue) {
+	handleUpdateEditing (newValue) {
+		this.handleUpdateButDontSave(newValue, true)
+		this.updateValue(newValue)
+	}
+	handleUpdateButDontSave (newValue, editing=false) {
 		this.setState({
 			value: newValue,
-			editing: false
+			editing
 		})
 	}
 	handleDiscard () {
@@ -277,7 +281,7 @@ const EditAttributeInt = wrapEditAttribute(class EditAttributeInt extends EditAt
 	handleChange (event) {
 		// this.handleEdit(this.getValue(event))
 		let v = this.getValue(event)
-		_.isNaN(v) ? this.handleUpdateButDontSave(v) : this.handleUpdate(v)
+		_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
 	}
 	handleBlur (event) {
 		let v = this.getValue(event)
@@ -285,7 +289,7 @@ const EditAttributeInt = wrapEditAttribute(class EditAttributeInt extends EditAt
 	}
 	getEditAttributeNumber () {
 		let val = this.getEditAttribute()
-		if (_.isNaN(val)) val = 'NaN'
+		if (_.isNaN(val)) val = ''
 		return val
 	}
 	render () {
@@ -315,7 +319,7 @@ const EditAttributeFloat = wrapEditAttribute(class EditAttributeFloat extends Ed
 	handleChange (event) {
 		// this.handleEdit(this.getValue(event))
 		let v = this.getValue(event)
-		_.isNaN(v) ? this.handleUpdateButDontSave(v) : this.handleUpdate(v)
+		_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
 	}
 	handleBlur (event) {
 		let v = this.getValue(event)
@@ -323,7 +327,7 @@ const EditAttributeFloat = wrapEditAttribute(class EditAttributeFloat extends Ed
 	}
 	getEditAttributeNumber () {
 		let val = this.getEditAttribute()
-		if (_.isNaN(val)) val = 'NaN'
+		if (_.isNaN(val)) val = ''
 		return val
 	}
 	render () {
