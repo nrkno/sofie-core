@@ -93,6 +93,33 @@
 				}
 			}
 		}
+
+		.expando-details > td {
+			max-width: 0;
+		}
+	}
+
+	.settings-studio-sticky-scroller {
+		overflow: auto;
+		max-height: 80vh;
+		margin-bottom: 8px;
+
+		> table {
+
+			> tbody > tr > td {
+				text-align: center;
+				padding-right: 3px;
+			}
+	
+			> thead > tr > th {
+				position: sticky;
+				position: -webkit-sticky;
+				top: 0;
+				background: #fff;
+				z-index: 20;
+				padding-right: 3px;
+			}
+		}
 	}
 
 	.settings-studio-device-dropdown {
