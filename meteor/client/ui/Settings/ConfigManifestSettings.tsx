@@ -42,7 +42,7 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 				obj={object}
 				type='int'
 				collection={collection}
-				className='input text-input input-l' />
+				className='input text-input input-m' />
 		case ConfigManifestEntryType.BOOLEAN:
 			return <EditAttribute
 				modifiedClassName='bghl'
