@@ -44,7 +44,7 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocC
 				obj={object}
 				type='int'
 				collection={collection}
-				className='input text-input input-l' />
+				className='input text-input input-m' />
 		case ConfigManifestEntryType.BOOLEAN:
 			return <EditAttribute
 				modifiedClassName='bghl'
