@@ -21,7 +21,7 @@ import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteo
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import { Random } from 'meteor/random'
-import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fortawesome/fontawesome-free-solid'
+import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload, faSort, faSortUp, faSortDown } from '@fortawesome/fontawesome-free-solid'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
@@ -95,6 +95,8 @@ interface IConfigManifestTableProps<TCol extends TransformedCollection<TObj2, TO
 }
 interface IConfigManifestTableState {
 	uploadFileKey: number // Used to force clear the input after use
+	sortColumn: number
+	sortOrder: 'asc' | 'desc'
 }
 
 export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
@@ -104,7 +106,9 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 		super(props)
 
 		this.state = {
-			uploadFileKey: Date.now()
+			uploadFileKey: Date.now(),
+			sortColumn: -1,
+			sortOrder: 'asc'
 		}
 	}
 
@@ -194,28 +198,84 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 		reader.readAsText(file)
 	}
 
+	sort (columnNumber: number) {
+		if (this.state.sortColumn === columnNumber) {
+			if (this.state.sortOrder === 'asc') {
+				this.setState({
+					sortOrder: 'desc'
+				})
+			} else {
+				this.setState({
+					sortColumn: -1
+				})
+			}
+		} else {
+			this.setState({
+				sortColumn: columnNumber,
+				sortOrder: 'asc'
+			})
+		}
+	}
+
 	render () {
 		const { t } = this.props
 
 		const baseAttribute = this.props.baseAttribute
 		const vals: TableConfigItemValue = objectPath.get(this.props.object, baseAttribute) || []
 		const configEntry = this.props.item
-
+		let sortedIndices = _.range(vals.length)
+		if (this.state.sortColumn >= 0) {
+			sortedIndices = sortedIndices.sort((x, y) => {
+				const col = configEntry.columns[this.state.sortColumn]
+				let a
+				let b
+				if (this.state.sortOrder === 'asc') {
+					a = vals[x][col.id]
+					b = vals[y][col.id]
+				} else {
+					a = vals[y][col.id]
+					b = vals[x][col.id]
+				}
+				switch (col.type) {
+					case ConfigManifestEntryType.STRING:
+						if (a === '') {
+							return 1
+						} else if (b === '') {
+							return -1
+						} else {
+							return (a as string).localeCompare(b as string)
+						}
+					case ConfigManifestEntryType.NUMBER:
+						return (a as number) - (b as number)
+					default:
+						return 0
+				}
+			})
+		}
 		return (
 			<div>
 				<div className='settings-studio-sticky-scroller'>
 					<table className='table'>
 						<thead>
 							<tr>
-								{ _.map(configEntry.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+								{ _.map(configEntry.columns, (col, i) => <th key={col.id}>
+									<span title={col.description}>{ col.name} </span>
+									{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) &&
+										<button className={ClassNames('action-btn', {
+											disabled: this.state.sortColumn !== i
+										})} onClick={() => this.sort(i)}>
+											<FontAwesomeIcon icon={(this.state.sortColumn === i ? this.state.sortOrder === 'asc' ? faSortUp : faSortDown : faSort)} />
+										</button>
+									}
+								</th>) }
 								<th>&nbsp;</th>
 							</tr>
 						</thead>
 						<tbody>
 						{
-							_.map(vals, (val, i) => <tr key={i}>
+							_.map(vals, (val, i) => <tr key={sortedIndices[i]}>
 								{ _.map(configEntry.columns, col => <td key={col.id}>{
-									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${i}.${col.id}`)
+									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${sortedIndices[i]}.${col.id}`)
 								}</td>) }
 								<td>
 									<button className={ClassNames('btn btn-danger', {
