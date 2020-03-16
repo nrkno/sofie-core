@@ -18,10 +18,13 @@ import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
+import { Link } from 'react-router-dom'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
+	studios: Studio[]
 }
 
 interface IState {
@@ -583,6 +586,46 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Tags must contain')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.tags`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas'
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
+								mutateUpdateValue={(v) => undefined} />
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.tags`}
+								obj={item}
+								type='text'
+								collection={RundownLayouts}
+								className='input text-input input-l'
+								label={t('Filter Disabled')}
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
+								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+						</label>
+					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Register Shortcuts for this Panel')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.assignHotKeys`}
+										obj={item}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 				</React.Fragment>
 			}
 		</React.Fragment>
@@ -590,7 +633,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	renderElements (item: RundownLayoutBase) {
 		const { t } = this.props
-		
+
 		const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
 
@@ -653,6 +696,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</th>
 					<td className='settings-studio-rundown-layouts-table__value c2'>
 						{item.type}
+					</td>
+					<td className='settings-studio-rundown-layouts-table__value c1'>
+						{this.props.studios.map(studio =>
+							<span className='pill' key={studio._id}>
+								<Link target='_blank' className='pill-link' to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>{studio.name}</Link>
+							</span>
+						)}
 					</td>
 					<td className='settings-studio-rundown-layouts-table__actions table-item-actions c3'>
 						<button className='action-btn' onClick={(e) => this.downloadItem(item)}>
