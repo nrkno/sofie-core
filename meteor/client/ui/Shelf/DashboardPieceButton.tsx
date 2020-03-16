@@ -16,6 +16,7 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
+import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -36,6 +37,7 @@ interface IDashboardButtonProps {
 	isOnAir?: boolean
 	widthScale?: number
 	heightScale?: number
+	displayStyle?: PieceDisplayStyle
 }
 const DEFAULT_BUTTON_WIDTH = 6.40625
 const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -136,6 +138,8 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	render () {
+		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
+		const hasMediaInfo = this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
 				'invalid': this.props.item.invalid,
@@ -144,13 +148,14 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
-				'live': this.props.isOnAir
+				'live': this.props.isOnAir,
+				'list': isList
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
-					width: this.props.widthScale ?
+					width: isList ? 'calc(100% - 8px)' : (this.props.widthScale ?
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
-						undefined,
-					height: this.props.heightScale ?
+						undefined),
+					height: !isList && this.props.heightScale ?
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
@@ -164,7 +169,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						this.renderSplits() :
 						null
 				}
-				<span className='dashboard-panel__panel__button__label'>{this.props.item.name}</span>
+				<span className='dashboard-panel__panel__button__label'>{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
 			</div>
 		)
 	}

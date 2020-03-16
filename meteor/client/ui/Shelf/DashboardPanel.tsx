@@ -370,6 +370,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
+												displayStyle={filter.displayStyle}
 											>
 												{item.name}
 									</DashboardPieceButton>
