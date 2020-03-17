@@ -211,6 +211,38 @@ export namespace ServerPlayoutAdLibAPI {
 				})
 			}
 
+			if (newPiece.adlibAutoNext !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						autoNext: newPiece.adlibAutoNext
+					}
+				})
+			}
+
+			if (newPiece.adlibAutoNextOverlap !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						autoNextOverlap: newPiece.adlibAutoNextOverlap
+					}
+				})
+			}
+
+			if (newPiece.adlibDisableOutTransition !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						disableOutTransition: newPiece.adlibDisableOutTransition
+					}
+				})
+			}
+
+			if (adLibPiece.expectedDuration !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						expectedDuration: adLibPiece.expectedDuration
+					}
+				})
+			}
+
 			ServerPlayoutAPI.setNextPartInner(rundown, partId)
 		} else {
 			updateSourceLayerInfinitesAfterPart(rundown)
