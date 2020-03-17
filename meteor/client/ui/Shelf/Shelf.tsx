@@ -26,6 +26,7 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
+import { MultiViewPanel } from './MultiViewPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -371,6 +372,14 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								/> :
 					RundownLayoutsAPI.isExternalFrame(panel) ?
 						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={true}
+							{...this.props}
+							/> :
+					RundownLayoutsAPI.isMultiView(panel) ?
+						<MultiViewPanel
 							key={panel._id}
 							panel={panel}
 							layout={rundownLayout}

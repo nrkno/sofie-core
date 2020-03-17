@@ -1,4 +1,4 @@
-import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame } from '../collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame, RundownLayoutMultiView } from '../collections/RundownLayouts'
 
 export namespace RundownLayoutsAPI {
 	export enum methods {
@@ -20,5 +20,9 @@ export namespace RundownLayoutsAPI {
 
 	export function isExternalFrame (element: RundownLayoutElementBase): element is RundownLayoutExternalFrame {
 		return element.type === RundownLayoutElementType.EXTERNAL_FRAME
+	}
+
+	export function isMultiView (element: RundownLayoutElementBase): element is RundownLayoutMultiView {
+		return element.type === RundownLayoutElementType.MULTIVIEW
 	}
 }
