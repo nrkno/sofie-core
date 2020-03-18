@@ -174,6 +174,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	renderFilter (item: RundownLayoutBase, tab: RundownLayoutFilterBase, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
+		const isList = tab.displayStyle === PieceDisplayStyle.LIST
 		const rundownBaselineOptions = [
 			{
 				name: t('Yes'),
@@ -265,30 +266,34 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Button width scale factor')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.buttonWidthScale`}
-								obj={item}
-								type='float'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Button height scale factor')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.buttonHeightScale`}
-								obj={item}
-								type='float'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
+					{!isList &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button width scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonWidthScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button height scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonHeightScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 				</React.Fragment>
 			}
 			<div className='mod mvs mhs'>
