@@ -41,6 +41,17 @@
 			font-size: 1em;
 		}
 
+		> .multiview-panel__button {
+			position: absolute;
+			width: auto;
+			bottom: 0;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 3;
+			background: transparent;
+		}
+
 		&.next {
 			border: 3px solid var(--general-next-color);
 		}

@@ -687,6 +687,30 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						className='input text-input input-l' />
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+				{t('Tags must contain')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas'
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
+						mutateUpdateValue={(v) => undefined} />
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='text'
+						collection={RundownLayouts}
+						className='input text-input input-l'
+						label={t('Filter Disabled')}
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
+						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+				</label>
+			</div>
 			{isDashboardLayout &&
 				<React.Fragment>
 					<div className='mod mvs mhs'>
