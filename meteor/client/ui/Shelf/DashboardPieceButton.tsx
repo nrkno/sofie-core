@@ -38,6 +38,7 @@ interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 	displayStyle?: PieceDisplayStyle
+	isSelected?: boolean
 }
 const DEFAULT_BUTTON_WIDTH = 6.40625
 const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -149,7 +150,8 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 				'live': this.props.isOnAir,
-				'list': isList
+				'list': isList,
+				'selected': this.props.isSelected
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: isList ? 'calc(100% - 8px)' : (this.props.widthScale ?
