@@ -1,6 +1,7 @@
 .multiview-panel {
 	position: absolute;
 	text-align: center;
+	user-select: none;
 
 	.multiview-panel__label {
 		width: 100%;
